@@ -292,7 +292,6 @@
     eve-arc-r-release
     eve-arcnext-release
     eve-arcvm-mesa-virgl-next-release
-    eve-arcvm-release
     eve-arm64-release
     eve-kvm-release
     eve-lacros-release
@@ -434,7 +433,6 @@
 == vmpi_android_pfq ==
   master-vmpi-android-pfq
     eve-arcvm-mesa-virgl-next-vmpi-android-pfq
-    eve-arcvm-vmpi-android-pfq
 
 == tryjob ==
   amd64-generic-asan-tryjob
@@ -797,9 +795,6 @@
   eve-arcnext-qt-android-pfq-tryjob
   eve-arcnext-release-tryjob
   eve-arcnext-unittest-stress
-  eve-arcvm-full-tryjob
-  eve-arcvm-llvm-next-toolchain-tryjob
-  eve-arcvm-llvm-toolchain-tryjob
   eve-arcvm-mesa-virgl-next-full-tryjob
   eve-arcvm-mesa-virgl-next-llvm-next-toolchain-tryjob
   eve-arcvm-mesa-virgl-next-llvm-toolchain-tryjob
@@ -807,10 +802,6 @@
   eve-arcvm-mesa-virgl-next-release-tryjob
   eve-arcvm-mesa-virgl-next-unittest-stress
   eve-arcvm-mesa-virgl-next-vmpi-android-pfq-tryjob
-  eve-arcvm-payloads-tryjob
-  eve-arcvm-release-tryjob
-  eve-arcvm-unittest-stress
-  eve-arcvm-vmpi-android-pfq-tryjob
   eve-arm64-full-tryjob
   eve-arm64-llvm-next-toolchain-tryjob
   eve-arm64-llvm-toolchain-tryjob
@@ -1445,7 +1436,6 @@
     eve-arc-r-release-tryjob
     eve-arcnext-release-tryjob
     eve-arcvm-mesa-virgl-next-release-tryjob
-    eve-arcvm-release-tryjob
     eve-arm64-release-tryjob
     eve-kvm-release-tryjob
     eve-lacros-release-tryjob
@@ -1563,7 +1553,6 @@
     betty-arcvm-master-vmmst-android-pfq-tryjob
   master-vmpi-android-pfq-tryjob
     eve-arcvm-mesa-virgl-next-vmpi-android-pfq-tryjob
-    eve-arcvm-vmpi-android-pfq-tryjob
   mistral-factory-mistral-12361.B-factorybranch-tryjob
   mistral-full-tryjob
   mistral-llvm-next-toolchain-tryjob
