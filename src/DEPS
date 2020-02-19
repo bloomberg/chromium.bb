@@ -3635,6 +3635,7 @@ hooks = [
   {
     'name': 'opus_test_files',
     'pattern': '.',
+    'condition': 'not checkout_blpwtk2',
     'action': ['download_from_google_storage',
                '--no_auth',
                '--quiet',
