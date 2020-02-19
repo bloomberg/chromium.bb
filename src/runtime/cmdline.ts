@@ -49,8 +49,7 @@ for (const a of process.argv.slice(2)) {
     const failed: Array<[TestSpecID, LiveTestCaseResult]> = [];
     const warned: Array<[TestSpecID, LiveTestCaseResult]> = [];
 
-    // TODO: don't run all tests all at once
-    const running = [];
+    let total = 0;
     for (const f of files) {
       if (!('g' in f.spec)) {
         continue;
@@ -58,23 +57,18 @@ for (const a of process.argv.slice(2)) {
 
       const [rec] = log.record(f.id);
       for (const t of f.spec.g.iterate(rec)) {
-        running.push(
-          (async () => {
-            const res = await t.run();
-            if (res.status === 'fail') {
-              failed.push([f.id, res]);
-            }
-            if (res.status === 'warn') {
-              warned.push([f.id, res]);
-            }
-          })()
-        );
+        const res = await t.run();
+        if (res.status === 'fail') {
+          failed.push([f.id, res]);
+        }
+        if (res.status === 'warn') {
+          warned.push([f.id, res]);
+        }
       }
+      total++;
     }
 
-    assert(running.length !== 0, 'found no tests!');
-
-    await Promise.all(running);
+    assert(total > 0, 'found no tests!');
 
     // TODO: write results out somewhere (a file?)
     if (verbose) {
@@ -103,7 +97,6 @@ for (const a of process.argv.slice(2)) {
       printResults(failed);
     }
 
-    const total = running.length;
     const passed = total - warned.length - failed.length;
     function pct(x: number): string {
       return ((100 * x) / total).toFixed(2);
