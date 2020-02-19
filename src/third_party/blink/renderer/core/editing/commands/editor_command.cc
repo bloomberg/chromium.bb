@@ -1825,6 +1825,9 @@ static const EditorInternalCommand* InternalCommand(
 
 
       // patch section: insert HTML nested
+      {WebEditingCommandType::kInsertHTMLNested, InsertCommands::ExecuteInsertHTMLNested,
+       Supported, EnabledInEditableText, StateNone, ValueStateOrNull,
+       kNotTextInsertion, CanNotExecuteWhenDisabled },
 
 
       // patch section: indent-block/outdent-block
