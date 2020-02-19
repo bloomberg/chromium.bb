@@ -483,27 +483,32 @@ static INLINE unsigned int check_better_fast(
   return cost;
 }
 
-static INLINE unsigned int check_better(
-    MACROBLOCKD *xd, const AV1_COMMON *cm, int r, int c, int *br, int *bc,
+static AOM_FORCE_INLINE unsigned int check_better(
+    MACROBLOCKD *xd, const AV1_COMMON *cm, const MV *this_mv, MV *best_mv,
     const SubpelMvLimits *mv_limits, const uint8_t *const src,
     const int src_stride, const uint8_t *const ref, int ref_stride,
     const SUBPEL_SEARCH_VAR_PARAMS *var_params,
     const MV_COST_PARAMS *mv_cost_params, unsigned int *besterr,
-    unsigned int *sse1, int *distortion) {
-  const MV this_mv = { r, c };
+    unsigned int *sse1, int *distortion, int *is_better) {
   unsigned int cost;
-  if (av1_is_subpelmv_in_range(mv_limits, this_mv)) {
+  if (av1_is_subpelmv_in_range(mv_limits, *this_mv)) {
     unsigned int sse;
-    int thismse = upsampled_pref_error(xd, cm, &this_mv, src, src_stride, ref,
-                                       ref_stride, var_params, &sse);
-    cost = mv_err_cost_(&this_mv, mv_cost_params);
+    int thismse;
+    if (var_params->subpel_search_type != USE_2_TAPS_ORIG) {
+      thismse = upsampled_pref_error(xd, cm, this_mv, src, src_stride, ref,
+                                     ref_stride, var_params, &sse);
+    } else {
+      thismse = estimated_pref_error(this_mv, src, src_stride, ref, ref_stride,
+                                     var_params, &sse);
+    }
+    cost = mv_err_cost_(this_mv, mv_cost_params);
     cost += thismse;
     if (cost < *besterr) {
       *besterr = cost;
-      *br = r;
-      *bc = c;
+      *best_mv = *this_mv;
       *distortion = thismse;
       *sse1 = sse;
+      *is_better |= 1;
     }
   } else {
     cost = INT_MAX;
@@ -1090,6 +1095,43 @@ static unsigned int upsampled_setup_center_error(
   return besterr;
 }
 
+static AOM_FORCE_INLINE void second_level_check_v2(
+    MACROBLOCKD *xd, const AV1_COMMON *const cm, const MV *diag_mv, MV *best_mv,
+    int kr, int kc, const SubpelMvLimits *mv_limits, const uint8_t *const src,
+    const int src_stride, const uint8_t *const ref, int ref_stride,
+    const SUBPEL_SEARCH_VAR_PARAMS *var_params,
+    const MV_COST_PARAMS *mv_cost_params, unsigned int *besterr,
+    unsigned int *sse1, int *distortion) {
+  const MV center_mv = *best_mv;
+
+  assert(diag_mv->row == best_mv->row || diag_mv->col == best_mv->col);
+  if (best_mv->row == diag_mv->row && best_mv->col != diag_mv->col) {
+    kc = best_mv->col - diag_mv->col;
+  } else if (best_mv->row != diag_mv->row && best_mv->col == diag_mv->col) {
+    kr = best_mv->row - diag_mv->row;
+  }
+
+  const MV row_bias_mv = { center_mv.row + kr, center_mv.col };
+  const MV col_bias_mv = { center_mv.row, center_mv.col + kc };
+  const MV diag_bias_mv = { center_mv.row + kr, center_mv.col + kc };
+  int has_better_mv = 0;
+
+  check_better(xd, cm, &row_bias_mv, best_mv, mv_limits, src, src_stride, ref,
+               ref_stride, var_params, mv_cost_params, besterr, sse1,
+               distortion, &has_better_mv);
+  check_better(xd, cm, &col_bias_mv, best_mv, mv_limits, src, src_stride, ref,
+               ref_stride, var_params, mv_cost_params, besterr, sse1,
+               distortion, &has_better_mv);
+
+  // Do an additional search if the second iteration gives a better mv
+  if (has_better_mv) {
+    int dummy = 0;
+    check_better(xd, cm, &diag_bias_mv, best_mv, mv_limits, src, src_stride,
+                 ref, ref_stride, var_params, mv_cost_params, besterr, sse1,
+                 distortion, &dummy);
+  }
+}
+
 int av1_find_best_sub_pixel_tree(MACROBLOCK *x, const AV1_COMMON *const cm,
                                  const SUBPEL_MOTION_SEARCH_PARAMS *ms_params,
                                  int *distortion, unsigned int *sse1) {
@@ -1108,21 +1150,16 @@ int av1_find_best_sub_pixel_tree(MACROBLOCK *x, const AV1_COMMON *const cm,
   const int src_stride = x->plane[0].src.stride;
   MACROBLOCKD *xd = &x->e_mbd;
   unsigned int besterr = INT_MAX;
-  unsigned int sse;
-  unsigned int thismse;
   const int y_stride = xd->plane[0].pre[0].stride;
 
   const uint8_t *const y = xd->plane[0].pre[0].buf;
   convert_fullmv_to_mv(&x->best_mv);
   MV *bestmv = &x->best_mv.as_mv;
 
-  int br = bestmv->row;
-  int bc = bestmv->col;
   int hstep = 4;
   int iter, round = FULL_PEL - forced_stop;
-  MV start_mv = *bestmv;
   const MV *search_step = search_step_table;
-  int idx, best_idx = -1;
+  int best_idx = -1;
   unsigned int cost_array[5];
   int kr, kc;
   SubpelMvLimits mv_limits;
@@ -1147,38 +1184,28 @@ int av1_find_best_sub_pixel_tree(MACROBLOCK *x, const AV1_COMMON *const cm,
     av1_set_fractional_mv(x->fractional_best_mv);
   }
 
+  MV iter_center_mv = *bestmv;
   for (iter = 0; iter < round; ++iter) {
-    if ((x->fractional_best_mv[iter].as_mv.row == br) &&
-        (x->fractional_best_mv[iter].as_mv.col == bc))
+    if (x->fractional_best_mv[iter].as_mv.row == iter_center_mv.row &&
+        x->fractional_best_mv[iter].as_mv.col == iter_center_mv.col)
       return INT_MAX;
-    x->fractional_best_mv[iter].as_mv.row = br;
-    x->fractional_best_mv[iter].as_mv.col = bc;
+
+    x->fractional_best_mv[iter].as_mv = iter_center_mv;
+
+    MV best_iter_mv = { INT16_MAX, INT16_MAX };
+
     // Check vertical and horizontal sub-pixel positions.
-    for (idx = 0; idx < 4; ++idx) {
-      const int tr = br + search_step[idx].row;
-      const int tc = bc + search_step[idx].col;
-      start_mv.row = tr;
-      start_mv.col = tc;
-      if (av1_is_subpelmv_in_range(&mv_limits, start_mv)) {
-        if (subpel_search_type != USE_2_TAPS_ORIG) {
-          thismse =
-              upsampled_pref_error(xd, cm, &start_mv, src_address, src_stride,
-                                   y, y_stride, var_params, &sse);
-        } else {
-          thismse = estimated_pref_error(&start_mv, src_address, src_stride, y,
-                                         y_stride, var_params, &sse);
-        }
+    for (int idx = 0; idx < 4; ++idx) {
+      const MV this_mv = { iter_center_mv.row + search_step[idx].row,
+                           iter_center_mv.col + search_step[idx].col };
 
-        cost_array[idx] = thismse + mv_err_cost_(&start_mv, mv_cost_params);
-
-        if (cost_array[idx] < besterr) {
-          best_idx = idx;
-          besterr = cost_array[idx];
-          *distortion = thismse;
-          *sse1 = sse;
-        }
-      } else {
-        cost_array[idx] = INT_MAX;
+      int is_better = 0;
+      cost_array[idx] =
+          check_better(xd, cm, &this_mv, &best_iter_mv, &mv_limits, src_address,
+                       src_stride, y, y_stride, var_params, mv_cost_params,
+                       &besterr, sse1, distortion, &is_better);
+      if (is_better) {
+        best_idx = idx;
       }
     }
 
@@ -1186,46 +1213,25 @@ int av1_find_best_sub_pixel_tree(MACROBLOCK *x, const AV1_COMMON *const cm,
     kc = (cost_array[0] <= cost_array[1] ? -hstep : hstep);
     kr = (cost_array[2] <= cost_array[3] ? -hstep : hstep);
 
-    const int tc = bc + kc;
-    const int tr = br + kr;
-    start_mv.row = tr;
-    start_mv.col = tc;
+    const MV diag_mv = { iter_center_mv.row + kr, iter_center_mv.col + kc };
+    int is_better = 0;
 
-    if (av1_is_subpelmv_in_range(&mv_limits, start_mv)) {
-      if (subpel_search_type != USE_2_TAPS_ORIG) {
-        thismse =
-            upsampled_pref_error(xd, cm, &start_mv, src_address, src_stride, y,
-                                 y_stride, var_params, &sse);
-      } else {
-        thismse = estimated_pref_error(&start_mv, src_address, src_stride, y,
-                                       y_stride, var_params, &sse);
-      }
-
-      cost_array[4] = thismse + mv_err_cost_(&start_mv, mv_cost_params);
-
-      if (cost_array[4] < besterr) {
-        best_idx = 4;
-        besterr = cost_array[4];
-        *distortion = thismse;
-        *sse1 = sse;
-      }
-    } else {
-      cost_array[idx] = INT_MAX;
+    cost_array[4] =
+        check_better(xd, cm, &diag_mv, &best_iter_mv, &mv_limits, src_address,
+                     src_stride, y, y_stride, var_params, mv_cost_params,
+                     &besterr, sse1, distortion, &is_better);
+    if (is_better) {
+      best_idx = 4;
     }
 
-    if (best_idx < 4 && best_idx >= 0) {
-      br += search_step[best_idx].row;
-      bc += search_step[best_idx].col;
-    } else if (best_idx == 4) {
-      br = tr;
-      bc = tc;
-    }
+    if (best_idx != -1) {
+      iter_center_mv = best_iter_mv;
 
-    if (iters_per_step > 1 && best_idx != -1) {
-      if (subpel_search_type != USE_2_TAPS_ORIG) {
-        SECOND_LEVEL_CHECKS_BEST(1);
-      } else {
-        SECOND_LEVEL_CHECKS_BEST(0);
+      if (iters_per_step > 1) {
+        second_level_check_v2(xd, cm, &diag_mv, &iter_center_mv, kr, kc,
+                              &mv_limits, src_address, src_stride, y, y_stride,
+                              var_params, mv_cost_params, &besterr, sse1,
+                              distortion);
       }
     }
 
@@ -1234,8 +1240,7 @@ int av1_find_best_sub_pixel_tree(MACROBLOCK *x, const AV1_COMMON *const cm,
     best_idx = -1;
   }
 
-  bestmv->row = br;
-  bestmv->col = bc;
+  *bestmv = iter_center_mv;
 
   return besterr;
 }
