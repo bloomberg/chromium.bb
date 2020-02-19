@@ -793,20 +793,22 @@ class Settings(object):
     self.git_editor = None
     self.format_full_by_default = None
 
-  def LazyUpdateIfNeeded(self):
+  def _LazyUpdateIfNeeded(self):
     """Updates the settings from a codereview.settings file, if available."""
-    if not self.updated:
-      # The only value that actually changes the behavior is
-      # autoupdate = "false". Everything else means "true".
-      autoupdate = RunGit(['config', 'rietveld.autoupdate'],
-                          error_ok=True
-                          ).strip().lower()
+    if self.updated:
+      return
 
-      cr_settings_file = FindCodereviewSettingsFile()
-      if autoupdate != 'false' and cr_settings_file:
-        LoadCodereviewSettingsFromFile(cr_settings_file)
-        cr_settings_file.close()
-      self.updated = True
+    # The only value that actually changes the behavior is
+    # autoupdate = "false". Everything else means "true".
+    autoupdate = (
+        scm.GIT.GetConfig(self.GetRoot(), 'rietveld.autoupdate', '').lower())
+
+    cr_settings_file = FindCodereviewSettingsFile()
+    if autoupdate != 'false' and cr_settings_file:
+      LoadCodereviewSettingsFromFile(cr_settings_file)
+      cr_settings_file.close()
+
+    self.updated = True
 
   @staticmethod
   def GetRelativeRoot():
@@ -819,45 +821,43 @@ class Settings(object):
 
   def GetTreeStatusUrl(self, error_ok=False):
     if not self.tree_status_url:
-      error_message = ('You must configure your tree status URL by running '
-                       '"git cl config".')
-      self.tree_status_url = self._GetConfig(
-          'rietveld.tree-status-url', error_ok=error_ok,
-          error_message=error_message)
+      self.tree_status_url = self._GetConfig('rietveld.tree-status-url')
+      if self.tree_status_url is None and not error_ok:
+        DieWithError(
+            'You must configure your tree status URL by running '
+            '"git cl config".')
     return self.tree_status_url
 
   def GetViewVCUrl(self):
     if not self.viewvc_url:
-      self.viewvc_url = self._GetConfig('rietveld.viewvc-url', error_ok=True)
+      self.viewvc_url = self._GetConfig('rietveld.viewvc-url')
     return self.viewvc_url
 
   def GetBugPrefix(self):
-    return self._GetConfig('rietveld.bug-prefix', error_ok=True)
+    return self._GetConfig('rietveld.bug-prefix')
 
   def GetRunPostUploadHook(self):
     run_post_upload_hook = self._GetConfig(
-        'rietveld.run-post-upload-hook', error_ok=True)
+        'rietveld.run-post-upload-hook')
     return run_post_upload_hook == "True"
 
   def GetDefaultCCList(self):
-    return self._GetConfig('rietveld.cc', error_ok=True)
+    return self._GetConfig('rietveld.cc')
 
   def GetIsGerrit(self):
     """Returns True if this repo is associated with Gerrit."""
     if self.is_gerrit is None:
-      self.is_gerrit = (
-          self._GetConfig('gerrit.host', error_ok=True).lower() == 'true')
+      self.is_gerrit = self._GetConfig('gerrit.host').lower() == 'true'
     return self.is_gerrit
 
   def GetSquashGerritUploads(self):
     """Returns True if uploads to Gerrit should be squashed by default."""
     if self.squash_gerrit_uploads is None:
       self.squash_gerrit_uploads = self.GetSquashGerritUploadsOverride()
-      if self.squash_gerrit_uploads is None:
-        # Default is squash now (http://crbug.com/611892#c23).
-        self.squash_gerrit_uploads = not (
-            RunGit(['config', '--bool', 'gerrit.squash-uploads'],
-                   error_ok=True).strip() == 'false')
+    if self.squash_gerrit_uploads is None:
+      # Default is squash now (http://crbug.com/611892#c23).
+      self.squash_gerrit_uploads = self._GetConfig(
+          'gerrit.squash-uploads').lower() != 'false'
     return self.squash_gerrit_uploads
 
   def GetSquashGerritUploadsOverride(self):
@@ -866,8 +866,7 @@ class Settings(object):
     Returns None if no override has been defined.
     """
     # See also http://crbug.com/611892#c23
-    result = RunGit(['config', '--bool', 'gerrit.override-squash-uploads'],
-                    error_ok=True).strip()
+    result = self._GetConfig('gerrit.override-squash-uploads').lower()
     if result == 'true':
       return True
     if result == 'false':
@@ -878,9 +877,8 @@ class Settings(object):
     """Return True if EnsureAuthenticated should not be done for Gerrit
     uploads."""
     if self.gerrit_skip_ensure_authenticated is None:
-      self.gerrit_skip_ensure_authenticated = (
-          RunGit(['config', '--bool', 'gerrit.skip-ensure-authenticated'],
-                 error_ok=True).strip() == 'true')
+      self.gerrit_skip_ensure_authenticated = self._GetConfig(
+          'gerrit.skip-ensure-authenticated').lower() == 'true'
     return self.gerrit_skip_ensure_authenticated
 
   def GetGitEditor(self):
@@ -889,17 +887,15 @@ class Settings(object):
       # Git requires single quotes for paths with spaces. We need to replace
       # them with double quotes for Windows to treat such paths as a single
       # path.
-      self.git_editor = self._GetConfig(
-          'core.editor', error_ok=True).replace('\'', '"')
+      self.git_editor = self._GetConfig('core.editor').replace('\'', '"')
     return self.git_editor or None
 
   def GetLintRegex(self):
-    return (self._GetConfig('rietveld.cpplint-regex', error_ok=True) or
-            DEFAULT_LINT_REGEX)
+    return self._GetConfig('rietveld.cpplint-regex', DEFAULT_LINT_REGEX)
 
   def GetLintIgnoreRegex(self):
-    return (self._GetConfig('rietveld.cpplint-ignore-regex', error_ok=True) or
-            DEFAULT_LINT_IGNORE_REGEX)
+    return self._GetConfig(
+        'rietveld.cpplint-ignore-regex', DEFAULT_LINT_IGNORE_REGEX)
 
   def GetFormatFullByDefault(self):
     if self.format_full_by_default is None:
@@ -909,9 +905,9 @@ class Settings(object):
       self.format_full_by_default = (result == 'true')
     return self.format_full_by_default
 
-  def _GetConfig(self, param, **kwargs):
-    self.LazyUpdateIfNeeded()
-    return RunGit(['config', param], **kwargs).strip()
+  def _GetConfig(self, key, default=''):
+    self._LazyUpdateIfNeeded()
+    return scm.GIT.GetConfig(self.GetRoot(), key, default)
 
 
 class _CQState(object):
@@ -1234,7 +1230,7 @@ class Changelist(object):
       return value
 
     remote, _ = self.GetRemoteBranch()
-    url = RunGit(['config', 'remote.%s.url' % remote], error_ok=True).strip()
+    url = scm.GIT.GetConfig(settings.GetRoot(), 'remote.%s.url' % remote, '')
 
     # Check if the remote url can be parsed as an URL.
     host = urllib.parse.urlparse(url).netloc
@@ -1254,9 +1250,7 @@ class Changelist(object):
       return None
 
     cache_path = url
-    url = RunGit(['config', 'remote.%s.url' % remote],
-                 error_ok=True,
-                 cwd=url).strip()
+    url = scm.GIT.GetConfig(url, 'remote.%s.url' % remote, '')
 
     host = urllib.parse.urlparse(url).netloc
     if not host:
