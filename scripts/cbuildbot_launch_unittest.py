@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import sys
 import time
 
 import mock
@@ -21,6 +22,10 @@ from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import timeout_util
 from chromite.scripts import cbuildbot_launch
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 EXPECTED_MANIFEST_URL = 'https://chrome-internal-review.googlesource.com/chromeos/manifest-internal'  # pylint: disable=line-too-long
 
