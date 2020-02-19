@@ -30,6 +30,7 @@
 #include "libavutil/opt.h"
 #include "v4l2_context.h"
 #include "v4l2_m2m.h"
+#include "v4l2_fmt.h"
 
 #define MPEG_CID(x) V4L2_CID_MPEG_VIDEO_##x
 #define MPEG_VIDEO(x) V4L2_MPEG_VIDEO_##x
@@ -82,7 +83,7 @@ static inline int v4l2_get_ext_ctrl(V4L2m2mContext *s, unsigned int id, signed i
 
     ret = ioctl(s->fd, VIDIOC_G_EXT_CTRLS, &ctrls);
     if (ret < 0) {
-        av_log(s->avctx, AV_LOG_WARNING, "Failed to set %s\n", name);
+        av_log(s->avctx, AV_LOG_WARNING, "Failed to get %s\n", name);
         return ret;
     }
 
@@ -288,6 +289,8 @@ static av_cold int v4l2_encode_init(AVCodecContext *avctx)
     V4L2Context *capture, *output;
     V4L2m2mContext *s;
     V4L2m2mPriv *priv = avctx->priv_data;
+    enum AVPixelFormat pix_fmt_output;
+    uint32_t v4l2_fmt_output;
     int ret;
 
     ret = ff_v4l2_m2m_create_context(priv, &s);
@@ -309,12 +312,24 @@ static av_cold int v4l2_encode_init(AVCodecContext *avctx)
     capture->av_codec_id = avctx->codec_id;
     capture->av_pix_fmt = AV_PIX_FMT_NONE;
 
+    s->avctx = avctx;
     ret = ff_v4l2_m2m_codec_init(priv);
     if (ret) {
         av_log(avctx, AV_LOG_ERROR, "can't configure encoder\n");
         return ret;
     }
-    s->avctx = avctx;
+
+    if (V4L2_TYPE_IS_MULTIPLANAR(output->type))
+        v4l2_fmt_output = output->format.fmt.pix_mp.pixelformat;
+    else
+        v4l2_fmt_output = output->format.fmt.pix.pixelformat;
+
+    pix_fmt_output = ff_v4l2_format_v4l2_to_avfmt(v4l2_fmt_output, AV_CODEC_ID_RAWVIDEO);
+    if (pix_fmt_output != avctx->pix_fmt) {
+        const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(pix_fmt_output);
+        av_log(avctx, AV_LOG_ERROR, "Encoder requires %s pixel format.\n", desc->name);
+        return AVERROR(EINVAL);
+    }
 
     return v4l2_prepare_encoder(s);
 }

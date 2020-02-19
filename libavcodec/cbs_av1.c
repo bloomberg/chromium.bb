@@ -170,6 +170,9 @@ static int cbs_av1_read_leb128(CodedBitstreamContext *ctx, GetBitContext *gbc,
             break;
     }
 
+    if (value > UINT32_MAX)
+        return AVERROR_INVALIDDATA;
+
     if (ctx->trace_enable)
         ff_cbs_trace_syntax_element(ctx, position, name, NULL, "", value);
 
@@ -1039,6 +1042,7 @@ static int cbs_av1_read_unit(CodedBitstreamContext *ctx,
 
     if (obu->obu_size > 0 &&
         obu->header.obu_type != AV1_OBU_TILE_GROUP &&
+        obu->header.obu_type != AV1_OBU_TILE_LIST &&
         obu->header.obu_type != AV1_OBU_FRAME) {
         int nb_bits = obu->obu_size * 8 + start_pos - end_pos;
 

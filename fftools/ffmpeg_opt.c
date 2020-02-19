@@ -3194,7 +3194,7 @@ void show_help_default(const char *opt, const char *arg)
            "    -h      -- print basic options\n"
            "    -h long -- print more options\n"
            "    -h full -- print all options (including all format and codec specific options, very long)\n"
-           "    -h type=name -- print all options for the named decoder/encoder/demuxer/muxer/filter/bsf\n"
+           "    -h type=name -- print all options for the named decoder/encoder/demuxer/muxer/filter/bsf/protocol\n"
            "    See man %s for detailed description of the options.\n"
            "\n", program_name);
 
@@ -3202,7 +3202,7 @@ void show_help_default(const char *opt, const char *arg)
                       OPT_EXIT, 0, 0);
 
     show_help_options(options, "Global options (affect whole program "
-                      "instead of just one file:",
+                      "instead of just one file):",
                       0, per_file | OPT_EXIT | OPT_EXPERT, 0);
     if (show_advanced)
         show_help_options(options, "Advanced global options:", OPT_EXPERT,

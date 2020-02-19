@@ -127,8 +127,9 @@ static av_cold int rl2_read_header(AVFormatContext *s)
     if(signature == RLV3_TAG && back_size > 0)
         st->codecpar->extradata_size += back_size;
 
-    if(ff_get_extradata(s, st->codecpar, pb, st->codecpar->extradata_size) < 0)
-        return AVERROR(ENOMEM);
+    ret = ff_get_extradata(s, st->codecpar, pb, st->codecpar->extradata_size);
+    if (ret < 0)
+        return ret;
 
     /** setup audio stream if present */
     if(sound_rate){
@@ -255,7 +256,6 @@ static int rl2_read_packet(AVFormatContext *s,
     /** fill the packet */
     ret = av_get_packet(pb, pkt, sample->size);
     if(ret != sample->size){
-        av_packet_unref(pkt);
         return AVERROR(EIO);
     }
 

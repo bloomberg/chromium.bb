@@ -236,6 +236,7 @@ External library support:
   --enable-libfontconfig   enable libfontconfig, useful for drawtext filter [no]
   --enable-libfreetype     enable libfreetype, needed for drawtext filter [no]
   --enable-libfribidi      enable libfribidi, improves drawtext filter [no]
+  --enable-libglslang      enable GLSL->SPIRV compilation via libglslang [no]
   --enable-libgme          enable Game Music Emu via libgme [no]
   --enable-libgsm          enable GSM de/encoding via libgsm [no]
   --enable-libiec61883     enable iec61883 via libiec61883 [no]
@@ -316,6 +317,7 @@ External library support:
   --disable-securetransport disable Secure Transport, needed for TLS support
                            on OSX if openssl and gnutls are not used [autodetect]
   --enable-vapoursynth     enable VapourSynth demuxer [no]
+  --enable-vulkan          enable Vulkan code [no]
   --disable-xlib           disable xlib [autodetect]
   --disable-zlib           disable zlib [autodetect]
 
@@ -482,6 +484,7 @@ Developer options (useful when working on FFmpeg itself):
   --ignore-tests=TESTS     comma-separated list (without "fate-" prefix
                            in the name) of tests whose result is ignored
   --enable-linux-perf      enable Linux Performance Monitor API
+  --disable-large-tests    disable tests that use a large amount of memory
 
 NOTE: Object files are built at the place where configure is launched.
 EOF
@@ -1548,11 +1551,11 @@ require_cc(){
 }
 
 require_cpp(){
-    name="$1"
-    headers="$2"
-    classes="$3"
-    shift 3
-    check_lib_cpp "$headers" "$classes" "$@" || die "ERROR: $name not found"
+    log require_cpp "$@"
+    name_version="$1"
+    name="${1%% *}"
+    shift
+    check_lib_cpp "$name" "$@" || die "ERROR: $name_version not found"
 }
 
 require_headers(){
@@ -1769,6 +1772,7 @@ EXTERNAL_LIBRARY_LIST="
     libfontconfig
     libfreetype
     libfribidi
+    libglslang
     libgme
     libgsm
     libiec61883
@@ -1853,6 +1857,7 @@ HWACCEL_LIBRARY_LIST="
     mmal
     omx
     opencl
+    vulkan
 "
 
 DOCUMENT_LIST="
@@ -1931,6 +1936,7 @@ CONFIG_LIST="
     $SUBSYSTEM_LIST
     autodetect
     fontconfig
+    large_tests
     linux_perf
     memory_poisoning
     neon_clobber_test
@@ -2194,10 +2200,12 @@ SYSTEM_FUNCS="
     getaddrinfo
     gethrtime
     getopt
+    GetModuleHandle
     GetProcessAffinityMask
     GetProcessMemoryInfo
     GetProcessTimes
     getrusage
+    GetStdHandle
     GetSystemTimeAsFileTime
     gettimeofday
     glob
@@ -2223,6 +2231,7 @@ SYSTEM_FUNCS="
     SecItemImport
     SetConsoleTextAttribute
     SetConsoleCtrlHandler
+    SetDllDirectory
     setmode
     setrlimit
     Sleep
@@ -3452,6 +3461,7 @@ ass_filter_deps="libass"
 atempo_filter_deps="avcodec"
 atempo_filter_select="rdft"
 avgblur_opencl_filter_deps="opencl"
+avgblur_vulkan_filter_deps="vulkan libglslang"
 azmq_filter_deps="libzmq"
 blackframe_filter_deps="gpl"
 bm3d_filter_deps="avcodec"
@@ -3459,6 +3469,7 @@ bm3d_filter_select="dct"
 boxblur_filter_deps="gpl"
 boxblur_opencl_filter_deps="opencl gpl"
 bs2b_filter_deps="libbs2b"
+chromaber_vulkan_filter_deps="vulkan libglslang"
 colorkey_opencl_filter_deps="opencl"
 colormatrix_filter_deps="gpl"
 convolution_opencl_filter_deps="opencl"
@@ -3499,7 +3510,6 @@ freezedetect_filter_select="scene_sad"
 frei0r_filter_deps="frei0r libdl"
 frei0r_src_filter_deps="frei0r libdl"
 fspp_filter_deps="gpl"
-geq_filter_deps="gpl"
 headphone_filter_select="fft"
 histeq_filter_deps="gpl"
 hqdn3d_filter_deps="gpl"
@@ -3523,7 +3533,9 @@ openclsrc_filter_deps="opencl"
 overlay_opencl_filter_deps="opencl"
 overlay_qsv_filter_deps="libmfx"
 overlay_qsv_filter_select="qsvvpp"
+overlay_vulkan_filter_deps="vulkan libglslang"
 owdenoise_filter_deps="gpl"
+pad_opencl_filter_deps="opencl"
 pan_filter_deps="swresample"
 perspective_filter_deps="gpl"
 phase_filter_deps="gpl"
@@ -3576,6 +3588,7 @@ tinterlace_filter_deps="gpl"
 tinterlace_merge_test_deps="tinterlace_filter"
 tinterlace_pad_test_deps="tinterlace_filter"
 tonemap_filter_deps="const_nan"
+tonemap_vaapi_filter_deps="vaapi VAProcFilterParameterBufferHDRToneMapping"
 tonemap_opencl_filter_deps="opencl const_nan"
 transpose_opencl_filter_deps="opencl"
 transpose_vaapi_filter_deps="vaapi VAProcPipelineCaps_rotation_flags"
@@ -3589,8 +3602,10 @@ zmq_filter_deps="libzmq"
 zoompan_filter_deps="swscale"
 zscale_filter_deps="libzimg const_nan"
 scale_vaapi_filter_deps="vaapi"
+scale_vulkan_filter_deps="vulkan libglslang"
 vpp_qsv_filter_deps="libmfx"
 vpp_qsv_filter_select="qsvvpp"
+xfade_opencl_filter_deps="opencl"
 yadif_cuda_filter_deps="ffnvcodec"
 yadif_cuda_filter_deps_any="cuda_nvcc cuda_llvm"
 
@@ -3635,7 +3650,7 @@ avformat_deps="avcodec avutil"
 avformat_suggest="libm network zlib"
 avresample_deps="avutil"
 avresample_suggest="libm"
-avutil_suggest="clock_gettime ffnvcodec libm libdrm libmfx opencl user32 vaapi videotoolbox corefoundation corevideo coremedia bcrypt"
+avutil_suggest="clock_gettime ffnvcodec libm libdrm libmfx opencl user32 vaapi vulkan videotoolbox corefoundation corevideo coremedia bcrypt"
 postproc_deps="avutil gpl"
 postproc_suggest="libm"
 swresample_deps="avutil"
@@ -3724,6 +3739,7 @@ enable asm
 enable debug
 enable doc
 enable faan faandct faanidct
+enable large_tests
 enable optimizations
 enable runtime_cpudetect
 enable safe_bitstream_reader
@@ -5924,10 +5940,10 @@ EOF
             elf*) enabled debug && append X86ASMFLAGS $x86asm_debug ;;
         esac
 
-        check_x86asm avx512_external "vmovdqa32 [eax]{k1}{z}, zmm0"
-        check_x86asm avx2_external   "vextracti128 xmm0, ymm0, 0"
-        check_x86asm xop_external    "vpmacsdd xmm0, xmm1, xmm2, xmm3"
-        check_x86asm fma4_external   "vfmaddps ymm0, ymm1, ymm2, ymm3"
+        enabled avx512 && check_x86asm avx512_external "vmovdqa32 [eax]{k1}{z}, zmm0"
+        enabled avx2   && check_x86asm avx2_external   "vextracti128 xmm0, ymm0, 0"
+        enabled xop    && check_x86asm xop_external    "vpmacsdd xmm0, xmm1, xmm2, xmm3"
+        enabled fma4   && check_x86asm fma4_external   "vfmaddps ymm0, ymm1, ymm2, ymm3"
         check_x86asm cpunop          "CPU amdnop"
     fi
 
@@ -6037,14 +6053,17 @@ check_func_headers mach/mach_time.h mach_absolute_time
 check_func_headers stdlib.h getenv
 check_func_headers sys/stat.h lstat
 
+check_func_headers windows.h GetModuleHandle
 check_func_headers windows.h GetProcessAffinityMask
 check_func_headers windows.h GetProcessTimes
+check_func_headers windows.h GetStdHandle
 check_func_headers windows.h GetSystemTimeAsFileTime
 check_func_headers windows.h LoadLibrary
 check_func_headers windows.h MapViewOfFile
 check_func_headers windows.h PeekNamedPipe
 check_func_headers windows.h SetConsoleTextAttribute
 check_func_headers windows.h SetConsoleCtrlHandler
+check_func_headers windows.h SetDllDirectory
 check_func_headers windows.h Sleep
 check_func_headers windows.h VirtualAlloc
 check_func_headers glob.h glob
@@ -6254,6 +6273,7 @@ enabled fontconfig        && enable libfontconfig
 enabled libfontconfig     && require_pkg_config libfontconfig fontconfig "fontconfig/fontconfig.h" FcInit
 enabled libfreetype       && require_pkg_config libfreetype freetype2 "ft2build.h FT_FREETYPE_H" FT_Init_FreeType
 enabled libfribidi        && require_pkg_config libfribidi fribidi fribidi.h fribidi_version_info
+enabled libglslang        && require_cpp libglslang glslang/SPIRV/GlslangToSpv.h "glslang::TIntermediate*" -lglslang -lOSDependent -lHLSL -lOGLCompiler -lSPVRemapper -lSPIRV -lSPIRV-Tools-opt -lSPIRV-Tools -lpthread -lstdc++
 enabled libgme            && { check_pkg_config libgme libgme gme/gme.h gme_new_emu ||
                                require libgme gme/gme.h gme_new_emu -lgme -lstdc++; }
 enabled libgsm            && { for gsm_hdr in "gsm.h" "gsm/gsm.h"; do
@@ -6360,7 +6380,7 @@ enabled libx264           && { check_pkg_config libx264 x264 "stdint.h x264.h" x
                              require_cpp_condition libx264 x264.h "X264_BUILD >= 118" &&
                              check_cpp_condition libx262 x264.h "X264_MPEG2"
 enabled libx265           && require_pkg_config libx265 x265 x265.h x265_api_get &&
-                             require_cpp_condition libx265 x265.h "X265_BUILD >= 68"
+                             require_cpp_condition libx265 x265.h "X265_BUILD >= 70"
 enabled libxavs           && require libxavs "stdint.h xavs.h" xavs_encoder_encode "-lxavs $pthreads_extralibs $libm_extralibs"
 enabled libxavs2          && require_pkg_config libxavs2 "xavs2 >= 1.3.0" "stdint.h xavs2.h" xavs2_api_get
 enabled libxvid           && require libxvid xvid.h xvid_global -lxvidcore
@@ -6409,6 +6429,7 @@ enabled omx_rpi           && { test_code cc OMX_Core.h OMX_IndexConfigBrcmVideoR
 enabled omx               && require_headers OMX_Core.h
 enabled openssl           && { check_pkg_config openssl openssl openssl/ssl.h OPENSSL_init_ssl ||
                                check_pkg_config openssl openssl openssl/ssl.h SSL_library_init ||
+                               check_lib openssl openssl/ssl.h OPENSSL_init_ssl -lssl -lcrypto ||
                                check_lib openssl openssl/ssl.h SSL_library_init -lssl -lcrypto ||
                                check_lib openssl openssl/ssl.h SSL_library_init -lssl32 -leay32 ||
                                check_lib openssl openssl/ssl.h SSL_library_init -lssl -lcrypto -lws2_32 -lgdi32 ||
@@ -6582,6 +6603,7 @@ if enabled vaapi; then
 
     check_type "va/va.h va/va_dec_hevc.h" "VAPictureParameterBufferHEVC"
     check_struct "va/va.h" "VADecPictureParameterBufferVP9" bit_depth
+    check_type   "va/va.h va/va_vpp.h" "VAProcFilterParameterBufferHDRToneMapping"
     check_struct "va/va.h va/va_vpp.h" "VAProcPipelineCaps" rotation_flags
     check_type "va/va.h va/va_enc_hevc.h" "VAEncPictureParameterBufferHEVC"
     check_type "va/va.h va/va_enc_jpeg.h" "VAEncPictureParameterBufferJPEG"
@@ -6622,6 +6644,9 @@ enabled vdpau &&
     check_lib vdpau_x11 "vdpau/vdpau.h vdpau/vdpau_x11.h" vdp_device_create_x11 -lvdpau -lX11
 
 enabled crystalhd && check_lib crystalhd "stdint.h libcrystalhd/libcrystalhd_if.h" DtsCrystalHDVersion -lcrystalhd
+
+enabled vulkan &&
+    require_pkg_config vulkan "vulkan >= 1.1.97" "vulkan/vulkan.h" vkCreateInstance
 
 if enabled x86; then
     case $target_os in
@@ -7453,7 +7478,7 @@ cat > $TMPH <<EOF
 #define FFMPEG_CONFIG_H
 #define FFMPEG_CONFIGURATION "$(c_escape $FFMPEG_CONFIGURATION)"
 #define FFMPEG_LICENSE "$(c_escape $license)"
-#define CONFIG_THIS_YEAR 2019
+#define CONFIG_THIS_YEAR 2020
 #define FFMPEG_DATADIR "$(eval c_escape $datadir)"
 #define AVCONV_DATADIR "$(eval c_escape $datadir)"
 #define CC_IDENT "$(c_escape ${cc_ident:-Unknown compiler})"

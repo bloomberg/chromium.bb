@@ -26,7 +26,7 @@
 #include "yuv4mpeg.h"
 
 /* Header size increased to allow room for optional flags */
-#define MAX_YUV4_HEADER 80
+#define MAX_YUV4_HEADER 96
 #define MAX_FRAME_HEADER 80
 
 static int yuv4_read_header(AVFormatContext *s)
@@ -53,10 +53,14 @@ static int yuv4_read_header(AVFormatContext *s)
             break;
         }
     }
-    if (i == MAX_YUV4_HEADER)
-        return -1;
-    if (strncmp(header, Y4M_MAGIC, strlen(Y4M_MAGIC)))
-        return -1;
+    if (i == MAX_YUV4_HEADER) {
+        av_log(s, AV_LOG_ERROR, "Header too large.\n");
+        return AVERROR(EINVAL);
+    }
+    if (strncmp(header, Y4M_MAGIC, strlen(Y4M_MAGIC))) {
+        av_log(s, AV_LOG_ERROR, "Invalid magic number for yuv4mpeg.\n");
+        return AVERROR(EINVAL);
+    }
 
     header_end = &header[i + 1]; // Include space
     for (tokstart = &header[strlen(Y4M_MAGIC) + 1];
@@ -310,7 +314,6 @@ static int yuv4_read_packet(AVFormatContext *s, AVPacket *pkt)
     if (ret < 0)
         return ret;
     else if (ret != s->packet_size - Y4M_FRAME_MAGIC_LEN) {
-        av_packet_unref(pkt);
         return s->pb->eof_reached ? AVERROR_EOF : AVERROR(EIO);
     }
     pkt->stream_index = 0;

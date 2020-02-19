@@ -496,6 +496,7 @@ static inline int ape_decode_value_3860(APEContext *ctx, GetBitContext *gb,
         x = (overflow << rice->k) + get_bits(gb, rice->k);
     } else {
         av_log(ctx->avctx, AV_LOG_ERROR, "Too many bits: %"PRIu32"\n", rice->k);
+        ctx->error = 1;
         return AVERROR_INVALIDDATA;
     }
     rice->ksum += x - (rice->ksum + 8 >> 4);
@@ -614,7 +615,7 @@ static void decode_array_0000(APEContext *ctx, GetBitContext *gb,
             return ;
         }
         out[i] = get_rice_ook(&ctx->gb, rice->k);
-        rice->ksum += out[i] - out[i - 64];
+        rice->ksum += out[i] - (unsigned)out[i - 64];
         while (rice->ksum < ksummin) {
             rice->k--;
             ksummin = rice->k ? ksummin >> 1 : 0;
@@ -1207,14 +1208,14 @@ static void predictor_decode_mono_3950(APEContext *ctx, int count)
         A = *decoded0;
 
         p->buf[YDELAYA] = currentA;
-        p->buf[YDELAYA - 1] = p->buf[YDELAYA] - p->buf[YDELAYA - 1];
+        p->buf[YDELAYA - 1] = p->buf[YDELAYA] - (unsigned)p->buf[YDELAYA - 1];
 
         predictionA = p->buf[YDELAYA    ] * p->coeffsA[0][0] +
                       p->buf[YDELAYA - 1] * p->coeffsA[0][1] +
                       p->buf[YDELAYA - 2] * p->coeffsA[0][2] +
                       p->buf[YDELAYA - 3] * p->coeffsA[0][3];
 
-        currentA = A + (predictionA >> 10);
+        currentA = A + (unsigned)(predictionA >> 10);
 
         p->buf[YADAPTCOEFFSA]     = APESIGN(p->buf[YDELAYA    ]);
         p->buf[YADAPTCOEFFSA - 1] = APESIGN(p->buf[YDELAYA - 1]);
@@ -1234,7 +1235,7 @@ static void predictor_decode_mono_3950(APEContext *ctx, int count)
             p->buf = p->historybuffer;
         }
 
-        p->filterA[0] = currentA + ((int)(p->filterA[0] * 31U) >> 5);
+        p->filterA[0] = currentA + (unsigned)((int)(p->filterA[0] * 31U) >> 5);
         *(decoded0++) = p->filterA[0];
     }
 
@@ -1302,7 +1303,7 @@ static void do_apply_filter(APEContext *ctx, int version, APEFilter *f,
             else
                 *f->adaptcoeffs = 0;
 
-            f->avg += (absres - f->avg) / 16;
+            f->avg += (int)(absres - (unsigned)f->avg) / 16;
 
             f->adaptcoeffs[-1] >>= 1;
             f->adaptcoeffs[-2] >>= 1;
@@ -1554,7 +1555,7 @@ static int ape_decode_frame(AVCodecContext *avctx, void *data,
         for (ch = 0; ch < s->channels; ch++) {
             sample24 = (int32_t *)frame->data[ch];
             for (i = 0; i < blockstodecode; i++)
-                *sample24++ = s->decoded[ch][i] << 8;
+                *sample24++ = s->decoded[ch][i] * 256;
         }
         break;
     }

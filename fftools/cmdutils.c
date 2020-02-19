@@ -119,7 +119,7 @@ static void log_callback_report(void *ptr, int level, const char *fmt, va_list v
 
 void init_dynload(void)
 {
-#ifdef _WIN32
+#if HAVE_SETDLLDIRECTORY && defined(_WIN32)
     /* Calling SetDllDirectory with the empty string (but not NULL) removes the
      * current working directory from the DLL search path as a security pre-caution. */
     SetDllDirectory("");
@@ -182,7 +182,7 @@ void show_help_options(const OptionDef *options, const char *msg, int req_flags,
 
     first = 1;
     for (po = options; po->name; po++) {
-        char buf[64];
+        char buf[128];
 
         if (((po->flags & req_flags) != req_flags) ||
             (alt_flags && !(po->flags & alt_flags)) ||
@@ -1870,6 +1870,24 @@ static void show_help_demuxer(const char *name)
         show_help_children(fmt->priv_class, AV_OPT_FLAG_DECODING_PARAM);
 }
 
+static void show_help_protocol(const char *name)
+{
+    const AVClass *proto_class;
+
+    if (!name) {
+        av_log(NULL, AV_LOG_ERROR, "No protocol name specified.\n");
+        return;
+    }
+
+    proto_class = avio_protocol_get_class(name);
+    if (!proto_class) {
+        av_log(NULL, AV_LOG_ERROR, "Unknown protocol '%s'.\n", name);
+        return;
+    }
+
+    show_help_children(proto_class, AV_OPT_FLAG_DECODING_PARAM | AV_OPT_FLAG_ENCODING_PARAM);
+}
+
 static void show_help_muxer(const char *name)
 {
     const AVCodecDescriptor *desc;
@@ -2000,6 +2018,8 @@ int show_help(void *optctx, const char *opt, const char *arg)
         show_help_demuxer(par);
     } else if (!strcmp(topic, "muxer")) {
         show_help_muxer(par);
+    } else if (!strcmp(topic, "protocol")) {
+        show_help_protocol(par);
 #if CONFIG_AVFILTER
     } else if (!strcmp(topic, "filter")) {
         show_help_filter(par);
@@ -2039,7 +2059,7 @@ FILE *get_preset_file(char *filename, size_t filename_size,
         av_strlcpy(filename, preset_name, filename_size);
         f = fopen(filename, "r");
     } else {
-#ifdef _WIN32
+#if HAVE_GETMODULEHANDLE && defined(_WIN32)
         char datadir[MAX_PATH], *ls;
         base[2] = NULL;
 

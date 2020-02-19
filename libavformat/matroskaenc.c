@@ -218,7 +218,7 @@ static int ebml_num_size(uint64_t num)
  * Write a number in EBML variable length format.
  *
  * @param bytes The number of bytes that need to be used to write the number.
- *              If zero, any number of bytes can be used.
+ *              If zero, the minimal number of bytes will be used.
  */
 static void put_ebml_num(AVIOContext *pb, uint64_t num, int bytes)
 {
@@ -228,10 +228,9 @@ static void put_ebml_num(AVIOContext *pb, uint64_t num, int bytes)
     av_assert0(num < (1ULL << 56) - 1);
 
     if (bytes == 0)
-        // don't care how many bytes are used, so use the min
         bytes = needed_bytes;
-    // the bytes needed to write the given size would exceed the bytes
-    // that we need to use, so write unknown size. This shouldn't happen.
+    // The bytes needed to write the given size must not exceed
+    // the bytes that we ought to use.
     av_assert0(bytes >= needed_bytes);
 
     num |= 1ULL << bytes * 7;
@@ -749,9 +748,8 @@ static int mkv_write_native_codecprivate(AVFormatContext *s, AVIOContext *pb,
         return ff_isom_write_avcc(dyn_cp, par->extradata,
                                   par->extradata_size);
     case AV_CODEC_ID_HEVC:
-        ff_isom_write_hvcc(dyn_cp, par->extradata,
-                           par->extradata_size, 0);
-        return 0;
+        return ff_isom_write_hvcc(dyn_cp, par->extradata,
+                                  par->extradata_size, 0);
     case AV_CODEC_ID_AV1:
         if (par->extradata_size)
             return ff_isom_write_av1c(dyn_cp, par->extradata,
@@ -946,11 +944,8 @@ static int mkv_write_video_color(AVIOContext *pb, AVCodecParameters *par, AVStre
 static int mkv_write_video_projection(AVFormatContext *s, AVIOContext *pb,
                                       AVStream *st)
 {
-    AVIOContext b;
-    AVIOContext *dyn_cp;
+    ebml_master projection;
     int side_data_size = 0;
-    int ret, projection_size;
-    uint8_t *projection_ptr;
     uint8_t private[20];
 
     const AVSphericalMapping *spherical =
@@ -960,62 +955,58 @@ static int mkv_write_video_projection(AVFormatContext *s, AVIOContext *pb,
     if (!side_data_size)
         return 0;
 
-    ret = avio_open_dyn_buf(&dyn_cp);
-    if (ret < 0)
-        return ret;
+    if (spherical->projection != AV_SPHERICAL_EQUIRECTANGULAR      &&
+        spherical->projection != AV_SPHERICAL_EQUIRECTANGULAR_TILE &&
+        spherical->projection != AV_SPHERICAL_CUBEMAP) {
+        av_log(s, AV_LOG_WARNING, "Unknown projection type\n");
+        return 0;
+    }
+
+    // Maximally 4 8-byte elements with id-length 2 + 1 byte length field
+    // and the private data of the AV_SPHERICAL_EQUIRECTANGULAR_TILE case
+    projection = start_ebml_master(pb, MATROSKA_ID_VIDEOPROJECTION,
+                                   4 * (2 + 1 + 8) + (2 + 1 + 20));
 
     switch (spherical->projection) {
     case AV_SPHERICAL_EQUIRECTANGULAR:
-        put_ebml_uint(dyn_cp, MATROSKA_ID_VIDEOPROJECTIONTYPE,
+        put_ebml_uint(pb, MATROSKA_ID_VIDEOPROJECTIONTYPE,
                       MATROSKA_VIDEO_PROJECTION_TYPE_EQUIRECTANGULAR);
         break;
     case AV_SPHERICAL_EQUIRECTANGULAR_TILE:
-        ffio_init_context(&b, private, 20, 1, NULL, NULL, NULL, NULL);
-        put_ebml_uint(dyn_cp, MATROSKA_ID_VIDEOPROJECTIONTYPE,
+        put_ebml_uint(pb, MATROSKA_ID_VIDEOPROJECTIONTYPE,
                       MATROSKA_VIDEO_PROJECTION_TYPE_EQUIRECTANGULAR);
-        avio_wb32(&b, 0); // version + flags
-        avio_wb32(&b, spherical->bound_top);
-        avio_wb32(&b, spherical->bound_bottom);
-        avio_wb32(&b, spherical->bound_left);
-        avio_wb32(&b, spherical->bound_right);
-        put_ebml_binary(dyn_cp, MATROSKA_ID_VIDEOPROJECTIONPRIVATE,
-                        private, avio_tell(&b));
+        AV_WB32(private,      0); // version + flags
+        AV_WB32(private +  4, spherical->bound_top);
+        AV_WB32(private +  8, spherical->bound_bottom);
+        AV_WB32(private + 12, spherical->bound_left);
+        AV_WB32(private + 16, spherical->bound_right);
+        put_ebml_binary(pb, MATROSKA_ID_VIDEOPROJECTIONPRIVATE,
+                        private, 20);
         break;
     case AV_SPHERICAL_CUBEMAP:
-        ffio_init_context(&b, private, 12, 1, NULL, NULL, NULL, NULL);
-        put_ebml_uint(dyn_cp, MATROSKA_ID_VIDEOPROJECTIONTYPE,
+        put_ebml_uint(pb, MATROSKA_ID_VIDEOPROJECTIONTYPE,
                       MATROSKA_VIDEO_PROJECTION_TYPE_CUBEMAP);
-        avio_wb32(&b, 0); // version + flags
-        avio_wb32(&b, 0); // layout
-        avio_wb32(&b, spherical->padding);
-        put_ebml_binary(dyn_cp, MATROSKA_ID_VIDEOPROJECTIONPRIVATE,
-                        private, avio_tell(&b));
+        AV_WB32(private,     0); // version + flags
+        AV_WB32(private + 4, 0); // layout
+        AV_WB32(private + 8, spherical->padding);
+        put_ebml_binary(pb, MATROSKA_ID_VIDEOPROJECTIONPRIVATE,
+                        private, 12);
         break;
     default:
-        av_log(s, AV_LOG_WARNING, "Unknown projection type\n");
-        goto end;
+        av_assert0(0);
     }
 
     if (spherical->yaw)
-        put_ebml_float(dyn_cp, MATROSKA_ID_VIDEOPROJECTIONPOSEYAW,
+        put_ebml_float(pb, MATROSKA_ID_VIDEOPROJECTIONPOSEYAW,
                        (double) spherical->yaw   / (1 << 16));
     if (spherical->pitch)
-        put_ebml_float(dyn_cp, MATROSKA_ID_VIDEOPROJECTIONPOSEPITCH,
+        put_ebml_float(pb, MATROSKA_ID_VIDEOPROJECTIONPOSEPITCH,
                        (double) spherical->pitch / (1 << 16));
     if (spherical->roll)
-        put_ebml_float(dyn_cp, MATROSKA_ID_VIDEOPROJECTIONPOSEROLL,
+        put_ebml_float(pb, MATROSKA_ID_VIDEOPROJECTIONPOSEROLL,
                        (double) spherical->roll  / (1 << 16));
 
-end:
-    projection_size = avio_close_dyn_buf(dyn_cp, &projection_ptr);
-    if (projection_size) {
-        ebml_master projection = start_ebml_master(pb,
-                                                   MATROSKA_ID_VIDEOPROJECTION,
-                                                   projection_size);
-        avio_write(pb, projection_ptr, projection_size);
-        end_ebml_master(pb, projection);
-    }
-    av_freep(&projection_ptr);
+    end_ebml_master(pb, projection);
 
     return 0;
 }
@@ -1568,7 +1559,9 @@ static int mkv_write_tag_targets(AVFormatContext *s, uint32_t elementid,
         ret = mkv_add_seekhead_entry(mkv->seekhead, MATROSKA_ID_TAGS, avio_tell(s->pb));
         if (ret < 0) return ret;
 
-        start_ebml_master_crc32(s->pb, &mkv->tags_bc, mkv, MATROSKA_ID_TAGS);
+        ret = start_ebml_master_crc32(s->pb, &mkv->tags_bc, mkv, MATROSKA_ID_TAGS);
+        if (ret < 0)
+            return ret;
     }
     pb = mkv->tags_bc;
 
@@ -1664,7 +1657,10 @@ static int mkv_write_tags(AVFormatContext *s)
             if (st->codecpar->codec_type == AVMEDIA_TYPE_ATTACHMENT)
                 continue;
 
-            mkv_write_tag_targets(s, MATROSKA_ID_TAGTARGETS_TRACKUID, i + 1, &tag_target);
+            ret = mkv_write_tag_targets(s, MATROSKA_ID_TAGTARGETS_TRACKUID,
+                                        i + 1, &tag_target);
+            if (ret < 0)
+                return ret;
             pb = mkv->tags_bc;
 
             tag = start_ebml_master(pb, MATROSKA_ID_SIMPLETAG, 0);
@@ -2002,8 +1998,6 @@ static int mkv_write_header(AVFormatContext *s)
     mkv->cur_audio_pkt.size = 0;
     mkv->cluster_pos = -1;
 
-    avio_flush(pb);
-
     // start a new cluster every 5 MB or 5 sec, or 32k / 1 sec for streaming or
     // after 4k and on a keyframe
     if (pb->seekable & AVIO_SEEKABLE_NORMAL) {
@@ -2083,14 +2077,14 @@ fail:
     return ret;
 }
 
-static void mkv_write_block(AVFormatContext *s, AVIOContext *pb,
-                            uint32_t blockid, AVPacket *pkt, int keyframe)
+static int mkv_write_block(AVFormatContext *s, AVIOContext *pb,
+                           uint32_t blockid, AVPacket *pkt, int keyframe)
 {
     MatroskaMuxContext *mkv = s->priv_data;
     AVCodecParameters *par = s->streams[pkt->stream_index]->codecpar;
     mkv_track *track = &mkv->tracks[pkt->stream_index];
     uint8_t *data = NULL, *side_data = NULL;
-    int offset = 0, size = pkt->size, side_data_size = 0;
+    int err = 0, offset = 0, size = pkt->size, side_data_size = 0;
     int64_t ts = track->write_dts ? pkt->dts : pkt->pts;
     uint64_t additional_id = 0;
     int64_t discard_padding = 0;
@@ -2107,23 +2101,26 @@ static void mkv_write_block(AVFormatContext *s, AVIOContext *pb,
            "at offset %" PRId64 ". TrackNumber %d, keyframe %d\n",
            pkt->size, pkt->pts, pkt->dts, pkt->duration, avio_tell(pb),
            mkv->cluster_pos, track_number, keyframe != 0);
+
     if (par->codec_id == AV_CODEC_ID_H264 && par->extradata_size > 0 &&
-        (AV_RB24(par->extradata) == 1 || AV_RB32(par->extradata) == 1))
-        ff_avc_parse_nal_units_buf(pkt->data, &data, &size);
-    else if (par->codec_id == AV_CODEC_ID_HEVC && par->extradata_size > 6 &&
-             (AV_RB24(par->extradata) == 1 || AV_RB32(par->extradata) == 1))
+        (AV_RB24(par->extradata) == 1 || AV_RB32(par->extradata) == 1)) {
+        err = ff_avc_parse_nal_units_buf(pkt->data, &data, &size);
+    } else if (par->codec_id == AV_CODEC_ID_HEVC && par->extradata_size > 6 &&
+               (AV_RB24(par->extradata) == 1 || AV_RB32(par->extradata) == 1)) {
         /* extradata is Annex B, assume the bitstream is too and convert it */
-        ff_hevc_annexb2mp4_buf(pkt->data, &data, &size, 0, NULL);
-    else if (par->codec_id == AV_CODEC_ID_AV1)
-        ff_av1_filter_obus_buf(pkt->data, &data, &size);
-    else if (par->codec_id == AV_CODEC_ID_WAVPACK) {
-        int ret = mkv_strip_wavpack(pkt->data, &data, &size);
-        if (ret < 0) {
-            av_log(s, AV_LOG_ERROR, "Error stripping a WavPack packet.\n");
-            return;
-        }
+        err = ff_hevc_annexb2mp4_buf(pkt->data, &data, &size, 0, NULL);
+    } else if (par->codec_id == AV_CODEC_ID_AV1) {
+        err = ff_av1_filter_obus_buf(pkt->data, &data, &size, &offset);
+    } else if (par->codec_id == AV_CODEC_ID_WAVPACK) {
+        err = mkv_strip_wavpack(pkt->data, &data, &size);
     } else
         data = pkt->data;
+
+    if (err < 0) {
+        av_log(s, AV_LOG_ERROR, "Error when reformatting data of "
+               "a packet from stream %d.\n", pkt->stream_index);
+        return err;
+    }
 
     if (par->codec_id == AV_CODEC_ID_PRORES && size >= 8) {
         /* Matroska specification requires to remove the first QuickTime atom
@@ -2135,7 +2132,6 @@ static void mkv_write_block(AVFormatContext *s, AVIOContext *pb,
     side_data = av_packet_get_side_data(pkt,
                                         AV_PKT_DATA_SKIP_SAMPLES,
                                         &side_data_size);
-
     if (side_data && side_data_size >= 10) {
         discard_padding = av_rescale_q(AV_RL32(side_data + 4),
                                        (AVRational){1, par->sample_rate},
@@ -2167,9 +2163,9 @@ static void mkv_write_block(AVFormatContext *s, AVIOContext *pb,
         av_free(data);
 
     if (blockid == MATROSKA_ID_BLOCK && !keyframe) {
-        put_ebml_sint(pb, MATROSKA_ID_BLOCKREFERENCE, track->last_timestamp);
+        put_ebml_sint(pb, MATROSKA_ID_BLOCKREFERENCE, track->last_timestamp - ts);
     }
-    track->last_timestamp = ts - mkv->cluster_pts;
+    track->last_timestamp = ts;
 
     if (discard_padding) {
         put_ebml_sint(pb, MATROSKA_ID_DISCARDPADDING, discard_padding);
@@ -2188,6 +2184,8 @@ static void mkv_write_block(AVFormatContext *s, AVIOContext *pb,
     if ((side_data_size && additional_id == 1) || discard_padding) {
         end_ebml_master(pb, block_group);
     }
+
+    return 0;
 }
 
 static int mkv_write_vtt_blocks(AVFormatContext *s, AVIOContext *pb, AVPacket *pkt)
@@ -2239,7 +2237,7 @@ static void mkv_end_cluster(AVFormatContext *s)
 
     end_ebml_master_crc32(s->pb, &mkv->cluster_bc, mkv);
     mkv->cluster_pos = -1;
-    avio_flush(s->pb);
+    avio_write_marker(s->pb, AV_NOPTS_VALUE, AVIO_DATA_MARKER_FLUSH_POINT);
 }
 
 static int mkv_check_new_extra_data(AVFormatContext *s, AVPacket *pkt)
@@ -2264,7 +2262,6 @@ static int mkv_check_new_extra_data(AVFormatContext *s, AVPacket *pkt)
                 return ret;
             if (!output_sample_rate)
                 output_sample_rate = track->sample_rate; // Space is already reserved, so it's this or a void element.
-            av_freep(&par->extradata);
             ret = ff_alloc_extradata(par, side_data_size);
             if (ret < 0)
                 return ret;
@@ -2394,7 +2391,9 @@ static int mkv_write_packet_internal(AVFormatContext *s, AVPacket *pkt, int add_
     relative_packet_pos = avio_tell(pb);
 
     if (par->codec_type != AVMEDIA_TYPE_SUBTITLE) {
-        mkv_write_block(s, pb, MATROSKA_ID_SIMPLEBLOCK, pkt, keyframe);
+        ret = mkv_write_block(s, pb, MATROSKA_ID_SIMPLEBLOCK, pkt, keyframe);
+        if (ret < 0)
+            return ret;
         if ((s->pb->seekable & AVIO_SEEKABLE_NORMAL) && (par->codec_type == AVMEDIA_TYPE_VIDEO && keyframe || add_cue)) {
             ret = mkv_add_cuepoint(mkv->cues, pkt->stream_index, tracknum, ts, mkv->cluster_pos, relative_packet_pos, -1);
             if (ret < 0) return ret;
