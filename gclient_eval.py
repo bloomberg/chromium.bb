@@ -16,13 +16,15 @@ from third_party import six
 if six.PY2:
   # We use cStringIO.StringIO because it is equivalent to Py3's io.StringIO.
   from cStringIO import StringIO
+  import collections as collections_abc
 else:
+  from collections import abc as collections_abc
   from io import StringIO
   # pylint: disable=redefined-builtin
   basestring = str
 
 
-class _NodeDict(collections.MutableMapping):
+class _NodeDict(collections_abc.MutableMapping):
   """Dict-like type that also stores information on AST nodes and tokens."""
   def __init__(self, data, tokens=None):
     self.data = collections.OrderedDict(data)
@@ -421,7 +423,7 @@ def _StandardizeDeps(deps_dict, vars_dict):
   new_deps_dict = {}
   for dep_name, dep_info in deps_dict.items():
     dep_name = dep_name.format(**vars_dict)
-    if not isinstance(dep_info, collections.Mapping):
+    if not isinstance(dep_info, collections_abc.Mapping):
       dep_info = {'url': dep_info}
     dep_info.setdefault('dep_type', 'git')
     new_deps_dict[dep_name] = dep_info
@@ -864,7 +866,7 @@ def GetRevision(gclient_dict, dep_name):
   elif isinstance(dep, basestring):
     _, _, revision = dep.partition('@')
     return revision or None
-  elif isinstance(dep, collections.Mapping) and 'url' in dep:
+  elif isinstance(dep, collections_abc.Mapping) and 'url' in dep:
     _, _, revision = dep['url'].partition('@')
     return revision or None
   else:

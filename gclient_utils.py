@@ -28,9 +28,11 @@ import subprocess2
 
 if sys.version_info.major == 2:
   from cStringIO import StringIO
+  import collections as collections_abc
   import Queue as queue
   import urlparse
 else:
+  from collections import abc as collections_abc
   from io import StringIO
   import queue
   import urllib.parse as urlparse
@@ -1187,7 +1189,7 @@ def freeze(obj):
 
   Will raise TypeError if you pass an object which is not hashable.
   """
-  if isinstance(obj, collections.Mapping):
+  if isinstance(obj, collections_abc.Mapping):
     return FrozenDict((freeze(k), freeze(v)) for k, v in obj.items())
   elif isinstance(obj, (list, tuple)):
     return tuple(freeze(i) for i in obj)
@@ -1198,7 +1200,7 @@ def freeze(obj):
     return obj
 
 
-class FrozenDict(collections.Mapping):
+class FrozenDict(collections_abc.Mapping):
   """An immutable OrderedDict.
 
   Modified From: http://stackoverflow.com/a/2704866
@@ -1212,7 +1214,7 @@ class FrozenDict(collections.Mapping):
         operator.xor, (hash(i) for i in enumerate(self._d.items())), 0)
 
   def __eq__(self, other):
-    if not isinstance(other, collections.Mapping):
+    if not isinstance(other, collections_abc.Mapping):
       return NotImplemented
     if self is other:
       return True
