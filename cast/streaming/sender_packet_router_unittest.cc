@@ -89,7 +89,7 @@ absl::Span<uint8_t> MakeFakePacketWithFlag(char flag,
   const auto packet_size = sizeof(ticks) + sizeof(flag);
   buffer = buffer.subspan(0, packet_size);
   OSP_CHECK_EQ(buffer.size(), packet_size);
-  memcpy(&buffer[0], &ticks, sizeof(ticks));
+  WriteBigEndian(ticks, buffer.data());
   buffer[sizeof(ticks)] = flag;
   return buffer;
 }
@@ -115,7 +115,7 @@ char ParseFlag(absl::Span<const uint8_t> fake_packet) {
 Clock::time_point ParseTimestamp(absl::Span<const uint8_t> fake_packet) {
   Clock::duration::rep ticks = 0;
   if (fake_packet.size() >= sizeof(ticks)) {
-    memcpy(&ticks, &fake_packet[0], sizeof(ticks));
+    ticks = ReadBigEndian<Clock::duration::rep>(fake_packet.data());
   }
   return Clock::time_point() + Clock::duration(ticks);
 }
