@@ -274,6 +274,18 @@ static inline bool ShouldBreakAfterBreakAll(ULineBreak last_line_break,
   return false;
 }
 
+inline bool isKorean(UChar ch)
+{
+  return ch > kAsciiLineBreakTableLastChar
+    && ((0xAC00 <= ch && ch <= 0xD7AF) ||
+        (0x1100 <= ch && ch <= 0x11FF) ||
+        (0x3130 <= ch && ch <= 0x318F) ||
+        (0x3200 <= ch && ch <= 0x32FF) ||
+        (0xA960 <= ch && ch <= 0xA97F) ||
+        (0xD7B0 <= ch && ch <= 0xD7FF) ||
+        (0xFF00 <= ch && ch <= 0xFFEF));
+}
+
 // Computes if 'word-break:keep-all' should prevent line break.
 // https://drafts.csswg.org/css-text-3/#valdef-word-break-keep-all
 // The spec is not very verbose on how this should work. This logic prevents L/M
@@ -313,10 +325,14 @@ inline int LazyLineBreakIterator::NextBreakablePosition(
     last_line_break = LineBreakPropertyValue(last_last_ch, last_ch);
   PriorContext prior_context = GetPriorContext();
   CharacterType ch;
-  bool is_space;
+  bool is_space= false;
   for (int i = pos; i < len;
        i++, last_last_ch = last_ch, last_ch = ch, is_last_space = is_space) {
     ch = str[i];
+
+    if (lineBreakType == LineBreakType::kKeepAllIfKorean && isKorean(ch)) {
+      continue;
+    }
 
     is_space = IsBreakableSpace(ch);
     switch (break_space) {
@@ -442,6 +458,8 @@ int LazyLineBreakIterator::NextBreakablePosition(int pos,
       return NextBreakablePosition<LineBreakType::kBreakAll>(pos, len);
     case LineBreakType::kKeepAll:
       return NextBreakablePosition<LineBreakType::kKeepAll>(pos, len);
+    case LineBreakType::kKeepAllIfKorean:
+      return NextBreakablePosition<LineBreakType::kKeepAllIfKorean>(pos, len);
     case LineBreakType::kBreakCharacter:
       return NextBreakablePositionBreakCharacter(pos);
   }
@@ -501,6 +519,8 @@ std::ostream& operator<<(std::ostream& ostream, LineBreakType line_break_type) {
       return ostream << "BreakAll";
     case LineBreakType::kBreakCharacter:
       return ostream << "BreakCharacter";
+    case LineBreakType::kKeepAllIfKorean:
+      return ostream << "KeepAllIfKorean";
     case LineBreakType::kKeepAll:
       return ostream << "KeepAll";
   }
