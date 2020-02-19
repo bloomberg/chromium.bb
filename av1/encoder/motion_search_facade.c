@@ -9,9 +9,13 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include "aom_ports/system_state.h"
+
 #include "av1/common/reconinter.h"
+
 #include "av1/encoder/encodemv.h"
 #include "av1/encoder/motion_search_facade.h"
+#include "av1/encoder/partition_strategy.h"
 #include "av1/encoder/reconinter_enc.h"
 
 void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
@@ -614,4 +618,115 @@ int av1_interinter_compound_motion_search(const AV1_COMP *const cpi,
     mbmi->mv[which].as_int = tmp_mv[which].as_int;
   }
   return tmp_rate_mv;
+}
+
+void av1_simple_motion_search(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
+                              int mi_col, BLOCK_SIZE bsize, int ref,
+                              FULLPEL_MV start_mv, int num_planes,
+                              int use_subpixel) {
+  assert(num_planes == 1 &&
+         "Currently simple_motion_search only supports luma plane");
+  assert(!frame_is_intra_only(&cpi->common) &&
+         "Simple motion search only enabled for non-key frames");
+  AV1_COMMON *const cm = &cpi->common;
+  MACROBLOCKD *xd = &x->e_mbd;
+
+  set_offsets_for_motion_search(cpi, x, mi_row, mi_col, bsize);
+
+  MB_MODE_INFO *mbmi = xd->mi[0];
+  mbmi->sb_type = bsize;
+  mbmi->ref_frame[0] = ref;
+  mbmi->ref_frame[1] = NONE_FRAME;
+  mbmi->motion_mode = SIMPLE_TRANSLATION;
+  mbmi->interp_filters = av1_broadcast_interp_filter(EIGHTTAP_REGULAR);
+
+  const YV12_BUFFER_CONFIG *yv12 = get_ref_frame_yv12_buf(cm, ref);
+  const YV12_BUFFER_CONFIG *scaled_ref_frame =
+      av1_get_scaled_ref_frame(cpi, ref);
+  struct buf_2d backup_yv12;
+  // ref_mv is used to calculate the cost of the motion vector
+  const MV ref_mv = kZeroMv;
+  const int step_param = cpi->mv_step_param;
+  const FullMvLimits tmp_mv_limits = x->mv_limits;
+  const SEARCH_METHODS search_methods = cpi->sf.mv_sf.search_method;
+  const int do_mesh_search = 0;
+  const int sadpb = x->sadperbit16;
+  int cost_list[5];
+  const int ref_idx = 0;
+  int var;
+
+  av1_setup_pre_planes(xd, ref_idx, yv12, mi_row, mi_col,
+                       get_ref_scale_factors(cm, ref), num_planes);
+  set_ref_ptrs(cm, xd, mbmi->ref_frame[0], mbmi->ref_frame[1]);
+  if (scaled_ref_frame) {
+    backup_yv12 = xd->plane[AOM_PLANE_Y].pre[ref_idx];
+    av1_setup_pre_planes(xd, ref_idx, scaled_ref_frame, mi_row, mi_col, NULL,
+                         num_planes);
+  }
+
+  // This overwrites the mv_limits so we will need to restore it later.
+  av1_set_mv_search_range(&x->mv_limits, &ref_mv);
+  var = av1_full_pixel_search(
+      cpi, x, bsize, &start_mv, step_param, search_methods, do_mesh_search,
+      sadpb, cond_cost_list(cpi, cost_list), &ref_mv, INT_MAX, 1,
+      mi_col * MI_SIZE, mi_row * MI_SIZE, 0, &cpi->ss_cfg[SS_CFG_SRC], 0);
+  // Restore
+  x->mv_limits = tmp_mv_limits;
+
+  const int use_subpel_search =
+      var < INT_MAX && !cpi->common.cur_frame_force_integer_mv && use_subpixel;
+  if (scaled_ref_frame) {
+    xd->plane[AOM_PLANE_Y].pre[ref_idx] = backup_yv12;
+  }
+  if (use_subpel_search) {
+    int not_used = 0;
+
+    const uint8_t *second_pred = NULL;
+    const uint8_t *mask = NULL;
+    const int mask_stride = 0;
+    const int invert_mask = 0;
+    const int reset_fractional_mv = 1;
+    SUBPEL_MOTION_SEARCH_PARAMS ms_params;
+    av1_make_default_subpel_ms_params(&ms_params, cpi, x, bsize, &ref_mv,
+                                      cost_list, second_pred, mask, mask_stride,
+                                      invert_mask, reset_fractional_mv);
+
+    cpi->find_fractional_mv_step(x, cm, &ms_params, &not_used,
+                                 &x->pred_sse[ref]);
+  } else {
+    // Manually convert from units of pixel to 1/8-pixels if we are not doing
+    // subpel search
+    x->best_mv.as_mv = get_mv_from_fullmv(&x->best_mv.as_fullmv);
+  }
+
+  mbmi->mv[0] = x->best_mv;
+
+  // Get a copy of the prediction output
+  av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, NULL, bsize,
+                                AOM_PLANE_Y, AOM_PLANE_Y);
+
+  aom_clear_system_state();
+
+  if (scaled_ref_frame) {
+    xd->plane[AOM_PLANE_Y].pre[ref_idx] = backup_yv12;
+  }
+}
+
+void av1_simple_motion_sse_var(AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
+                               int mi_col, BLOCK_SIZE bsize,
+                               const FULLPEL_MV start_mv, int use_subpixel,
+                               unsigned int *sse, unsigned int *var) {
+  MACROBLOCKD *xd = &x->e_mbd;
+  const MV_REFERENCE_FRAME ref =
+      cpi->rc.is_src_frame_alt_ref ? ALTREF_FRAME : LAST_FRAME;
+
+  av1_simple_motion_search(cpi, x, mi_row, mi_col, bsize, ref, start_mv, 1,
+                           use_subpixel);
+
+  const uint8_t *src = x->plane[0].src.buf;
+  const int src_stride = x->plane[0].src.stride;
+  const uint8_t *dst = xd->plane[0].dst.buf;
+  const int dst_stride = xd->plane[0].dst.stride;
+
+  *var = cpi->fn_ptr[bsize].vf(src, src_stride, dst, dst_stride, sse);
 }

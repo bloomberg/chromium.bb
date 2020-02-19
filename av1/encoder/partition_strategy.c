@@ -25,6 +25,7 @@
 #endif
 #include "av1/encoder/encoder.h"
 
+#include "av1/encoder/motion_search_facade.h"
 #include "av1/encoder/partition_strategy.h"
 #include "av1/encoder/rdopt.h"
 

@@ -56,6 +56,7 @@
 #include "av1/encoder/ethread.h"
 #include "av1/encoder/extend.h"
 #include "av1/encoder/ml.h"
+#include "av1/encoder/motion_search_facade.h"
 #include "av1/encoder/partition_strategy.h"
 #if !CONFIG_REALTIME_ONLY
 #include "av1/encoder/partition_model_weights.h"
