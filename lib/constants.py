@@ -311,6 +311,8 @@ REEXEC_API_WORKSPACE = 9
 REEXEC_API_MASTER_BUILDBUCKET_ID = 10
 # Support --chromeos_goma_dir
 REEXEC_API_CHROMEOS_GOMA_DIR = 11
+# Support --chrome-preload-dir
+REEXEC_API_CHROME_PRELOAD_DIR = 12
 
 # We rely on the (waterfall, builder name, build number) to uniquely identify
 # a build. However, future migrations or state wipes of the buildbot master may

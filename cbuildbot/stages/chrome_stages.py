@@ -110,10 +110,12 @@ class SyncChromeStage(generic_stages.BuilderStage,
       logging.PrintBuildbotStepText('tag %s' % kwargs['tag'])
 
     useflags = self._run.config.useflags
+    git_cache_dir = (
+        self._run.options.chrome_preload_dir or self._run.options.git_cache_dir)
     commands.SyncChrome(self._build_root,
                         self._run.options.chrome_root,
                         useflags,
-                        git_cache_dir=self._run.options.git_cache_dir,
+                        git_cache_dir=git_cache_dir,
                         **kwargs)
     if (self._chrome_rev and not chrome_atom_to_build and
         self._run.options.buildbot and
