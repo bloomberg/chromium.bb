@@ -59,26 +59,6 @@ using FilmGrainSynthesisFunc = bool (*)(
     void* dest_plane_u, ptrdiff_t dest_stride_u, void* dest_plane_v,
     ptrdiff_t dest_stride_v);
 
-bool FilmGrainSynthesis8bpp(
-    const void* source_plane_y, ptrdiff_t source_stride_y,
-    const void* source_plane_u, ptrdiff_t source_stride_u,
-    const void* source_plane_v, ptrdiff_t source_stride_v,
-    const FilmGrainParams& film_grain_params, bool is_monochrome,
-    bool color_matrix_is_identity, int width, int height, int subsampling_x,
-    int subsampling_y, void* dest_plane_y, ptrdiff_t dest_stride_y,
-    void* dest_plane_u, ptrdiff_t dest_stride_u, void* dest_plane_v,
-    ptrdiff_t dest_stride_v);
-
-bool FilmGrainSynthesis10bpp(
-    const void* source_plane_y, ptrdiff_t source_stride_y,
-    const void* source_plane_u, ptrdiff_t source_stride_u,
-    const void* source_plane_v, ptrdiff_t source_stride_v,
-    const FilmGrainParams& film_grain_params, bool is_monochrome,
-    bool color_matrix_is_identity, int width, int height, int subsampling_x,
-    int subsampling_y, void* dest_plane_y, ptrdiff_t dest_stride_y,
-    void* dest_plane_u, ptrdiff_t dest_stride_u, void* dest_plane_v,
-    ptrdiff_t dest_stride_v);
-
 // Section 7.18.3.5. Add noise synthesis process.
 template <int bitdepth>
 class FilmGrain {
