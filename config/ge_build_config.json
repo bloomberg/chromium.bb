@@ -542,6 +542,18 @@
       ]
     },
     {
+      "name": "eve-arcvm",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "poppy",
+          "arch": "X86_INTERNAL"
+        }
+      ]
+    },
+    {
       "name": "eve-arcvm-mesa-virgl-next",
       "configs": [
         {
@@ -1467,18 +1479,6 @@
           "arch": "ARM_INTERNAL"
         }
       ]
-    },
-    {
-      "name": "zork",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": true,
-          "board_group": "",
-          "arch": "X86_INTERNAL"
-        }
-      ]
     }
   ],
   "release_branch": false,
@@ -1789,7 +1789,9 @@
             "bvt-installer",
             "bvt-arc",
             "au",
-            "bvt-cq"
+            "bvt-cq",
+            "bvt-perbuild",
+            "bvt-tast-informational"
           ],
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
@@ -2993,6 +2995,17 @@
         {
           "board_name": "nami",
           "name": "ekko",
+          "test_suites": [
+            "sanity",
+            "bvt-inline",
+            "bvt-tast-cq",
+            "bvt-installer",
+            "bvt-arc",
+            "au",
+            "bvt-cq",
+            "bvt-perbuild",
+            "bvt-tast-informational"
+          ],
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
           "board_id": 351,
@@ -3041,6 +3054,17 @@
         {
           "board_name": "nami",
           "name": "syndra",
+          "test_suites": [
+            "sanity",
+            "bvt-inline",
+            "bvt-tast-cq",
+            "bvt-installer",
+            "bvt-arc",
+            "au",
+            "bvt-cq",
+            "bvt-perbuild",
+            "bvt-tast-informational"
+          ],
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
           "board_id": 351,
@@ -4238,6 +4262,14 @@
       "models": [
         {
           "board_name": "volteer",
+          "name": "unprovisioned_ripto",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 405,
+          "is_active": true
+        },
+        {
+          "board_name": "volteer",
           "name": "unprovisioned_volteer",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
@@ -4250,6 +4282,39 @@
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
           "board_id": 405,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "name": "zork",
+      "reference_board_name": "zork",
+      "arch": "X86_INTERNAL",
+      "builder": "RELEASE",
+      "experimental": false,
+      "models": [
+        {
+          "board_name": "zork",
+          "name": "Dalboz",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 381,
+          "is_active": true
+        },
+        {
+          "board_name": "zork",
+          "name": "Morphius",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 381,
+          "is_active": true
+        },
+        {
+          "board_name": "zork",
+          "name": "Trembyle",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 381,
           "is_active": true
         }
       ]
