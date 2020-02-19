@@ -157,11 +157,18 @@ def _ImpatientlyRebatched(batch_sequence, ideal_size, patience):
     the incomplete batch is yielded as-is (possibly empty).
   """
   # TODO(phobbs) this is probably easier to accomplish with rxpy.
-  while True:
+  finished = False
+  while not finished:
     start_time = time.time()
     accum = []
 
-    for batch in batch_sequence:
+    while True:
+      try:
+        batch = next(batch_sequence)
+      except StopIteration:
+        finished = True
+        break
+
       accum.extend(batch)
       if time.time() - start_time > patience:
         break
@@ -202,7 +209,7 @@ def _BatchAndSendSpans(project_id, client, batch_sequence):
     batch_size_metric.add(len(batch))
 
     traces = []
-    groups = _GroupBy(batch, key=lambda span: span.get('traceId'))
+    groups = _GroupBy(batch, key=lambda span: span.get('traceId', '0' * 32))
     for trace_id, spans in groups:
       traces.append({
           'traceId': trace_id,
