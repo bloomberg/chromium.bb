@@ -13,6 +13,9 @@ if (is_mac) {
   import("//build/config/sanitizers/sanitizers.gni")
 }
 
+assert(!icu_disable_thin_archive || !is_component_build,
+       "icu_disable_thin_archive only works in static library builds")
+
 # Meta target that includes both icuuc and icui18n. Most targets want both.
 # You can depend on the individually if you need to.
 group("icu") {
@@ -634,6 +637,13 @@ component("icui18n") {
     # Fuchsia puts its own libicui18n.so in /system/lib where we need to put our
     # .so when doing component builds, so we need to give this a different name.
     output_name = "icui18n_cr"
+  }
+
+  # Make icu into a standalone static library. Currently This is only useful on
+  # Chrome OS.
+  if (icu_disable_thin_archive) {
+    configs -= [ "//build/config/compiler:thin_archive" ]
+    complete_static_lib = true
   }
 }
 
