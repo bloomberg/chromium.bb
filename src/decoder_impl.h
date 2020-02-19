@@ -166,8 +166,6 @@ class DecoderImpl : public Allocable {
   V1FrameBufferCallbacks v1_callbacks_;
 
   BufferPool buffer_pool_;
-  // TODO(b/142583029): This may have to be moved inside FrameScratchBuffer.
-  TileScratchBufferPool tile_scratch_buffer_pool_;
   WedgeMaskArray wedge_masks_;
   FrameScratchBufferPool frame_scratch_buffer_pool_;
 

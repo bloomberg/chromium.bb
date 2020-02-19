@@ -26,6 +26,7 @@
 #include "src/residual_buffer_pool.h"
 #include "src/symbol_decoder_context.h"
 #include "src/threading_strategy.h"
+#include "src/tile_scratch_buffer.h"
 #include "src/utils/array_2d.h"
 #include "src/utils/memory.h"
 #include "src/utils/stack.h"
@@ -58,6 +59,7 @@ struct FrameScratchBuffer {
   // TODO(vigneshv): The first 4 unused rows can probably be removed by
   // adjusting the offsets.
   YuvBuffer deblock_buffer;
+  TileScratchBufferPool tile_scratch_buffer_pool;
 };
 
 class FrameScratchBufferPool {

@@ -235,7 +235,6 @@ StatusCode DecoderImpl::DecodeTemporalUnit(const TemporalUnit& temporal_unit,
       }
       sequence_header_ = sequence_header;
       has_sequence_header_ = true;
-      tile_scratch_buffer_pool_.Reset(sequence_header.color_config.bitdepth);
     }
     if (!obu->frame_header().show_existing_frame) {
       if (obu->tile_groups().empty()) {
@@ -372,6 +371,8 @@ StatusCode DecoderImpl::DecodeTiles(
     RefCountedBuffer* const current_frame) {
   const ObuSequenceHeader& sequence_header = obu->sequence_header();
   const ObuFrameHeader& frame_header = obu->frame_header();
+  frame_scratch_buffer->tile_scratch_buffer_pool.Reset(
+      sequence_header.color_config.bitdepth);
   if (PostFilter::DoDeblock(frame_header, settings_.post_filter_mask)) {
     if (kDeblockFilterBitMask && !frame_scratch_buffer->loop_filter_mask.Reset(
                                      frame_header.width, frame_header.height)) {
@@ -677,8 +678,8 @@ StatusCode DecoderImpl::DecodeTiles(
           &frame_scratch_buffer->inter_transform_sizes, dsp,
           threading_strategy_.row_thread_pool(tile_index++),
           frame_scratch_buffer->residual_buffer_pool.get(),
-          &tile_scratch_buffer_pool_, &frame_scratch_buffer->superblock_state,
-          &pending_tiles));
+          &frame_scratch_buffer->tile_scratch_buffer_pool,
+          &frame_scratch_buffer->superblock_state, &pending_tiles));
       if (tile == nullptr) {
         LIBGAV1_DLOG(ERROR, "Failed to allocate tile.");
         return kStatusOutOfMemory;
@@ -696,7 +697,7 @@ StatusCode DecoderImpl::DecodeTiles(
     // Decode in superblock row order.
     const int block_width4x4 = sequence_header.use_128x128_superblock ? 32 : 16;
     std::unique_ptr<TileScratchBuffer> tile_scratch_buffer =
-        tile_scratch_buffer_pool_.Get();
+        frame_scratch_buffer->tile_scratch_buffer_pool.Get();
     if (tile_scratch_buffer != nullptr) {
       int row4x4;
       for (row4x4 = 0; row4x4 < frame_header.rows4x4;
@@ -719,7 +720,8 @@ StatusCode DecoderImpl::DecodeTiles(
         post_filter.ApplyFilteringForOneSuperBlockRow(row4x4 - block_width4x4,
                                                       block_width4x4, true);
       }
-      tile_scratch_buffer_pool_.Release(std::move(tile_scratch_buffer));
+      frame_scratch_buffer->tile_scratch_buffer_pool.Release(
+          std::move(tile_scratch_buffer));
     } else {
       ok = false;
     }
