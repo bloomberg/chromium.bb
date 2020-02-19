@@ -105,16 +105,48 @@ inline void GetMvProjectionNoClamp(const int32x4_t mv[2], int numerator,
   projection_mv[1] = MvProjectionClip(mvs.val[1], numerator, denom);
 }
 
-template <int idx>
-int8_t VgetLaneS8(const int8x8_t src) {
-  if (idx == 0) return vget_lane_s8(src, 0);
-  if (idx == 1) return vget_lane_s8(src, 1);
-  if (idx == 2) return vget_lane_s8(src, 2);
-  if (idx == 3) return vget_lane_s8(src, 3);
-  if (idx == 4) return vget_lane_s8(src, 4);
-  if (idx == 5) return vget_lane_s8(src, 5);
-  if (idx == 6) return vget_lane_s8(src, 6);
-  return vget_lane_s8(src, 7);
+void GetPosition(const int8x8x4_t division_table[2],
+                 const MotionVector* const mv,
+                 const int reference_to_current_with_sign, const int x8_start,
+                 const int x8_end, const int x8, const int8x8_t r_offsets,
+                 const int8x8_t source_reference_type8, const int8x8_t skip_r,
+                 const int8x8_t y8_floor8, const int8x8_t y8_ceiling8,
+                 const int16x8_t d_sign, const int delta, int8x8_t* const r,
+                 int8x8_t* const position_y8, int8x8_t* const position_x8,
+                 int64_t* const skip_64, int32x4_t mvs[2]) {
+  const int32_t* const mv_int = reinterpret_cast<const int32_t*>(mv + x8);
+  *r = vtbl1_s8(r_offsets, source_reference_type8);
+  const int16x8_t denorm = LoadDivision(division_table, *r);
+  int16x8_t projection_mv[2];
+  mvs[0] = vld1q_s32(mv_int + 0);
+  mvs[1] = vld1q_s32(mv_int + 4);
+  // reference_to_current_with_sign could be 0.
+  GetMvProjectionNoClamp(mvs, reference_to_current_with_sign, denorm,
+                         projection_mv);
+  // Do not update the motion vector if the block position is not valid or
+  // if position_x8 is outside the current range of x8_start and x8_end.
+  // Note that position_y8 will always be within the range of y8_start and
+  // y8_end.
+  // After subtracting the base, valid projections are within 8-bit.
+  *position_y8 = Project_NEON(projection_mv[0], d_sign);
+  const int8x8_t position_x = Project_NEON(projection_mv[1], d_sign);
+  const int8x8_t k01234567 = vcreate_s8(uint64_t{0x0706050403020100});
+  *position_x8 = vqadd_s8(position_x, k01234567);
+  const int8x16_t position_xy = vcombine_s8(*position_x8, *position_y8);
+  const int x8_floor = std::max(
+      x8_start - x8, delta - kProjectionMvMaxHorizontalOffset);  // [-8, 8]
+  const int x8_ceiling = std::min(
+      x8_end - x8, delta + 8 + kProjectionMvMaxHorizontalOffset);  // [0, 16]
+  const int8x8_t x8_floor8 = vdup_n_s8(x8_floor);
+  const int8x8_t x8_ceiling8 = vdup_n_s8(x8_ceiling);
+  const int8x16_t floor_xy = vcombine_s8(x8_floor8, y8_floor8);
+  const int8x16_t ceiling_xy = vcombine_s8(x8_ceiling8, y8_ceiling8);
+  const uint8x16_t underflow = vcltq_s8(position_xy, floor_xy);
+  const uint8x16_t overflow = vcgeq_s8(position_xy, ceiling_xy);
+  const int8x16_t out = vreinterpretq_s8_u8(vorrq_u8(underflow, overflow));
+  const int8x8_t skip_low = vorr_s8(skip_r, vget_low_s8(out));
+  const int8x8_t skip = vorr_s8(skip_low, vget_high_s8(out));
+  *skip_64 = vget_lane_s64(vreinterpret_s64_s8(skip), 0);
 }
 
 template <int idx>
@@ -167,11 +199,11 @@ void MotionFieldProjectionKernel_NEON(
   const int adjusted_x8_end = std::min(
       x8_end + kProjectionMvMaxHorizontalOffset, static_cast<int>(stride));
   const int adjusted_x8_end8 = adjusted_x8_end & ~7;
+  const int leftover = adjusted_x8_end - adjusted_x8_end8;
   const int8_t* const table =
       reinterpret_cast<const int8_t*>(kProjectionMvDivisionLookup);
   int8_t* dst_reference_offset = motion_field->reference_offset[y8_start];
   MotionVector* dst_mv = motion_field->mv[y8_start];
-  const int8x8_t k01234567 = vcreate_s8(0x0706050403020100);
   const int16x8_t d_sign = vdupq_n_s16(dst_sign);
   int8_t reference_offsets[kNumReferenceFrameTypes];
   bool skip_reference[kNumReferenceFrameTypes];
@@ -237,39 +269,13 @@ void MotionFieldProjectionKernel_NEON(
       const int64_t early_skip = vget_lane_s64(vreinterpret_s64_s8(skip_r), 0);
       // Early termination #1 if all are skips. Chance is typically ~30-40%.
       if (early_skip == -1) continue;
-      const int32_t* const mv_int = reinterpret_cast<const int32_t*>(mv + x8);
-      const int8x8_t r = vtbl1_s8(r_offsets, source_reference_type8);
-      const int16x8_t denorm = LoadDivision(division_table, r);
-      int16x8_t projection_mv[2];
+      int64_t skip_64;
+      int8x8_t r, position_x8, position_y8;
       int32x4_t mvs[2];
-      mvs[0] = vld1q_s32(mv_int + 0);
-      mvs[1] = vld1q_s32(mv_int + 4);
-      // reference_to_current_with_sign could be 0.
-      GetMvProjectionNoClamp(mvs, reference_to_current_with_sign, denorm,
-                             projection_mv);
-      // Do not update the motion vector if the block position is not valid or
-      // if position_x8 is outside the current range of x8_start and x8_end.
-      // Note that position_y8 will always be within the range of y8_start and
-      // y8_end.
-      // After subtracting the base, valid projections are within 8-bit.
-      const int8x8_t position_y8 = Project_NEON(projection_mv[0], d_sign);
-      const int8x8_t position_x = Project_NEON(projection_mv[1], d_sign);
-      const int8x8_t position_x8 = vqadd_s8(position_x, k01234567);
-      const int8x16_t position_xy = vcombine_s8(position_x8, position_y8);
-      const int x8_floor = std::max(
-          x8_start - x8, -kProjectionMvMaxHorizontalOffset);  // [-8, 8]
-      const int x8_ceiling = std::min(
-          x8_end - x8, 8 + kProjectionMvMaxHorizontalOffset);  // [0, 16]
-      const int8x8_t x8_floor8 = vdup_n_s8(x8_floor);
-      const int8x8_t x8_ceiling8 = vdup_n_s8(x8_ceiling);
-      const int8x16_t floor_xy = vcombine_s8(x8_floor8, y8_floor8);
-      const int8x16_t ceiling_xy = vcombine_s8(x8_ceiling8, y8_ceiling8);
-      const uint8x16_t underflow = vcltq_s8(position_xy, floor_xy);
-      const uint8x16_t overflow = vcgeq_s8(position_xy, ceiling_xy);
-      const int8x16_t out = vreinterpretq_s8_u8(vorrq_u8(underflow, overflow));
-      const int8x8_t skip_low = vorr_s8(skip_r, vget_low_s8(out));
-      const int8x8_t skip = vorr_s8(skip_low, vget_high_s8(out));
-      const int64_t skip_64 = vget_lane_s64(vreinterpret_s64_s8(skip), 0);
+      GetPosition(division_table, mv, reference_to_current_with_sign, x8_start,
+                  x8_end, x8, r_offsets, source_reference_type8, skip_r,
+                  y8_floor8, y8_ceiling8, d_sign, 0, &r, &position_y8,
+                  &position_x8, &skip_64, mvs);
       // Early termination #2 if all are skips.
       // Chance is typically ~15-25% after Early termination #1.
       if (skip_64 == -1) continue;
@@ -306,29 +312,95 @@ void MotionFieldProjectionKernel_NEON(
 
     // The following leftover processing cannot be moved out of the do...while
     // loop. Doing so may change the result storing orders of the same position.
-    for (; x8 < adjusted_x8_end; ++x8) {
-      if (skip_reference[source_reference_type[x8]]) continue;
-      const int reference_offset = reference_offsets[source_reference_type[x8]];
-      MotionVector projection_mv;
-      // reference_to_current_with_sign could be 0.
-      GetMvProjectionNoClamp(mv[x8], reference_to_current_with_sign,
-                             reference_offset, &projection_mv);
-      // Do not update the motion vector if the block position is not valid or
-      // if position_x8 is outside the current range of x8_start and x8_end.
-      // Note that position_y8 will always be within the range of y8_start and
-      // y8_end.
-      const int position_y8 = Project(0, projection_mv.mv[0], dst_sign);
-      if (position_y8 < y8_floor || position_y8 >= y8_ceiling) continue;
-      const int x8_base = x8 & ~7;
-      const int x8_floor =
-          std::max(x8_start, x8_base - kProjectionMvMaxHorizontalOffset);
-      const int x8_ceiling =
-          std::min(x8_end, x8_base + 8 + kProjectionMvMaxHorizontalOffset);
-      const int position_x8 = Project(x8, projection_mv.mv[1], dst_sign);
-      if (position_x8 < x8_floor || position_x8 >= x8_ceiling) continue;
-      dst_mv[position_y8 * stride + position_x8] = mv[x8];
-      dst_reference_offset[position_y8 * stride + position_x8] =
-          reference_offset;
+    if (leftover > 0) {
+      // Use SIMD only when leftover is at least 4, and there are at least 8
+      // elements in a row.
+      if (leftover >= 4 && adjusted_x8_start < adjusted_x8_end8) {
+        // Process the last 8 elements to avoid loading invalid memory. Some
+        // elements may have been processed in the above loop, which is OK.
+        const int delta = 8 - leftover;
+        x8 = adjusted_x8_end - 8;
+        const int8x8_t source_reference_type8 = vld1_s8(
+            reinterpret_cast<const int8_t*>(source_reference_type + x8));
+        const int8x8_t skip_r =
+            vtbl1_s8(skip_reference8, source_reference_type8);
+        const int64_t early_skip =
+            vget_lane_s64(vreinterpret_s64_s8(skip_r), 0);
+        // Early termination #1 if all are skips.
+        if (early_skip != -1) {
+          int64_t skip_64;
+          int8x8_t r, position_x8, position_y8;
+          int32x4_t mvs[2];
+          GetPosition(division_table, mv, reference_to_current_with_sign,
+                      x8_start, x8_end, x8, r_offsets, source_reference_type8,
+                      skip_r, y8_floor8, y8_ceiling8, d_sign, delta, &r,
+                      &position_y8, &position_x8, &skip_64, mvs);
+          // Early termination #2 if all are skips.
+          if (skip_64 != -1) {
+            const int16x8_t p_y = vmovl_s8(position_y8);
+            const int16x8_t p_x = vmovl_s8(position_x8);
+            const int16x8_t p_xy = vmlaq_n_s16(p_x, p_y, stride);
+            const int16x8_t position = vaddq_s16(p_xy, vdupq_n_s16(x8));
+            // Store up to 7 elements since leftover is at most 7.
+            if (skip_64 == 0) {
+              // Store all.
+              Store<1>(position, r, mvs[0], dst_reference_offset, dst_mv);
+              Store<2>(position, r, mvs[0], dst_reference_offset, dst_mv);
+              Store<3>(position, r, mvs[0], dst_reference_offset, dst_mv);
+              Store<4>(position, r, mvs[1], dst_reference_offset, dst_mv);
+              Store<5>(position, r, mvs[1], dst_reference_offset, dst_mv);
+              Store<6>(position, r, mvs[1], dst_reference_offset, dst_mv);
+              Store<7>(position, r, mvs[1], dst_reference_offset, dst_mv);
+            } else {
+              // Check and store each.
+              // The compiler is smart enough to not create the local buffer
+              // skips[].
+              int8_t skips[8];
+              memcpy(skips, &skip_64, sizeof(skips));
+              CheckStore<1>(skips, position, r, mvs[0], dst_reference_offset,
+                            dst_mv);
+              CheckStore<2>(skips, position, r, mvs[0], dst_reference_offset,
+                            dst_mv);
+              CheckStore<3>(skips, position, r, mvs[0], dst_reference_offset,
+                            dst_mv);
+              CheckStore<4>(skips, position, r, mvs[1], dst_reference_offset,
+                            dst_mv);
+              CheckStore<5>(skips, position, r, mvs[1], dst_reference_offset,
+                            dst_mv);
+              CheckStore<6>(skips, position, r, mvs[1], dst_reference_offset,
+                            dst_mv);
+              CheckStore<7>(skips, position, r, mvs[1], dst_reference_offset,
+                            dst_mv);
+            }
+          }
+        }
+      } else {
+        for (; x8 < adjusted_x8_end; ++x8) {
+          if (skip_reference[source_reference_type[x8]]) continue;
+          const int reference_offset =
+              reference_offsets[source_reference_type[x8]];
+          MotionVector projection_mv;
+          // reference_to_current_with_sign could be 0.
+          GetMvProjectionNoClamp(mv[x8], reference_to_current_with_sign,
+                                 reference_offset, &projection_mv);
+          // Do not update the motion vector if the block position is not valid
+          // or if position_x8 is outside the current range of x8_start and
+          // x8_end. Note that position_y8 will always be within the range of
+          // y8_start and y8_end.
+          const int position_y8 = Project(0, projection_mv.mv[0], dst_sign);
+          if (position_y8 < y8_floor || position_y8 >= y8_ceiling) continue;
+          const int x8_base = x8 & ~7;
+          const int x8_floor =
+              std::max(x8_start, x8_base - kProjectionMvMaxHorizontalOffset);
+          const int x8_ceiling =
+              std::min(x8_end, x8_base + 8 + kProjectionMvMaxHorizontalOffset);
+          const int position_x8 = Project(x8, projection_mv.mv[1], dst_sign);
+          if (position_x8 < x8_floor || position_x8 >= x8_ceiling) continue;
+          dst_mv[position_y8 * stride + position_x8] = mv[x8];
+          dst_reference_offset[position_y8 * stride + position_x8] =
+              reference_offset;
+        }
+      }
     }
 
     source_reference_type += stride;
