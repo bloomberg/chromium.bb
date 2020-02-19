@@ -191,5 +191,5 @@ class TestPuppetMetrics(cros_test_lib.TempDirTestCase):
         mock.call('puppet/age', (), None,
                   20329.0, enforce_ge=mock.ANY),
     ]
-    setter.assert_has_calls(calls)
+    setter.assert_has_calls(calls, any_order=True)
     self.assertEqual(len(setter.mock_calls), len(calls))
