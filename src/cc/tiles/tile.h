@@ -84,10 +84,9 @@ class CC_EXPORT Tile {
   const TileDrawInfo& draw_info() const { return draw_info_; }
   TileDrawInfo& draw_info() { return draw_info_; }
 
-  float contents_scale_key() const { return raster_transform_.scale(); }
-  const gfx::AxisTransform2d& raster_transform() const {
-    return raster_transform_;
-  }
+  float contents_scale_key() const { return raster_transform_.scale().width(); }
+  const gfx::SizeF& raster_scales() const { return raster_transform_.scale(); }
+  const gfx::AxisTransform2d& raster_transform() const { return raster_transform_; }
   const gfx::Rect& content_rect() const { return content_rect_; }
   const gfx::Rect& enclosing_layer_rect() const {
     return enclosing_layer_rect_;

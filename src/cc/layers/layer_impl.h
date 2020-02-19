@@ -33,6 +33,7 @@
 #include "cc/trees/target_property.h"
 #include "components/viz/common/quads/shared_quad_state.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/geometry/axis_transform2d.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -128,6 +129,11 @@ class CC_EXPORT LayerImpl {
       float layer_to_content_scale,
       const gfx::Rect& content_rect,
       const gfx::Rect& content_visible_rect,
+      bool contents_opaque) const;
+
+  void PopulateTransformedSharedQuadState(
+      viz::SharedQuadState* state,
+      const gfx::AxisTransform2d& transform,
       bool contents_opaque) const;
 
   // WillDraw must be called before AppendQuads. If WillDraw returns false,
@@ -408,6 +414,8 @@ class CC_EXPORT LayerImpl {
   // PopulateScaledSharedQuadStateQuadState(). See
   // PopulateScaledSharedQuadStateQuadState() for more details.
   gfx::Rect GetScaledEnclosingRectInTargetSpace(float scale) const;
+
+  std::pair<float, float> GetIdealContentsScaleAndAspectRatio() const;
 
   float GetIdealContentsScale() const;
 
