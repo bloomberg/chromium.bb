@@ -14,6 +14,7 @@ from __future__ import print_function
 import multiprocessing
 import os
 import re
+import sys
 import zipfile
 
 from chromite.lib import commandline
@@ -22,6 +23,9 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.scripts import cros_generate_breakpad_symbols
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 RELOCATION_PACKER_BIN = 'relocation_packer'
