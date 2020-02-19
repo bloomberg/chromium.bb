@@ -441,6 +441,7 @@ static void set_good_speed_features_framesize_independent(
     // The values in x->pred_mv[] differ for single and multi-thread cases.
     // See aomedia:1778.
     // sf->mv_sf.adaptive_motion_search = 1;
+    sf->mv_sf.full_pixel_search_level = 1;
     sf->mv_sf.subpel_search_method = SUBPEL_TREE_PRUNED;
     sf->mv_sf.use_accurate_subpel_search = USE_2_TAPS;
     sf->mv_sf.search_method = DIAMOND;
@@ -630,6 +631,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
   sf->intra_sf.intra_pruning_with_hog = 1;
   sf->intra_sf.intra_pruning_with_hog_thresh = -1.2f;
 
+  sf->mv_sf.full_pixel_search_level = 1;
   sf->mv_sf.exhaustive_searches_thresh = INT_MAX;
 
   sf->rt_sf.check_intra_pred_nonrd = 1;
@@ -928,6 +930,7 @@ static AOM_INLINE void init_part_sf(PARTITION_SPEED_FEATURES *part_sf) {
 }
 
 static AOM_INLINE void init_mv_sf(MV_SPEED_FEATURES *mv_sf) {
+  mv_sf->full_pixel_search_level = 0;
   mv_sf->adaptive_motion_search = 0;
   mv_sf->auto_mv_step_size = 0;
   mv_sf->exhaustive_searches_thresh = 0;

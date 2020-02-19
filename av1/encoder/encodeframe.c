@@ -3968,7 +3968,8 @@ static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int analysis_type,
 
 static int get_tpl_stats_b(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
                            int mi_col, int64_t *intra_cost_b,
-                           int64_t *inter_cost_b, int *stride) {
+                           int64_t *inter_cost_b,
+                           int_mv mv_b[][INTER_REFS_PER_FRAME], int *stride) {
   if (!cpi->oxcf.enable_tpl_model) return 0;
   if (cpi->superres_mode != SUPERRES_NONE) return 0;
   if (cpi->common.current_frame.frame_type == KEY_FRAME) return 0;
@@ -3995,6 +3996,7 @@ static int get_tpl_stats_b(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
       coded_to_superres_mi(mi_col, cm->superres_scale_denominator);
   const int mi_col_end_sr =
       coded_to_superres_mi(mi_col + mi_wide, cm->superres_scale_denominator);
+  // mi_cols_sr is mi_cols at superres case.
   const int mi_cols_sr = av1_pixels_to_mi(cm->superres_upscaled_width);
 
   // TPL store unit size is not the same as the motion estimation unit size.
@@ -4004,7 +4006,10 @@ static int get_tpl_stats_b(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
   const int step = mi_size_wide[tpl_bsize];
   assert(mi_size_wide[tpl_bsize] == mi_size_high[tpl_bsize]);
 
-  *stride = (mi_col_end_sr - mi_col_sr) / step;
+  const int str = (mi_col_end_sr > mi_cols_sr)
+                      ? (mi_cols_sr - mi_col_sr) / step
+                      : (mi_col_end_sr - mi_col_sr) / step;
+  *stride = str;
 
   for (int row = mi_row; row < mi_row + mi_high; row += step) {
     for (int col = mi_col_sr; col < mi_col_end_sr; col += step) {
@@ -4013,6 +4018,7 @@ static int get_tpl_stats_b(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
           row, col, tpl_stride, tpl_data->tpl_stats_block_mis_log2)];
       inter_cost_b[mi_count] = this_stats->inter_cost;
       intra_cost_b[mi_count] = this_stats->intra_cost;
+      memcpy(mv_b[mi_count], this_stats->mv, sizeof(this_stats->mv));
       mi_count++;
     }
   }
@@ -4743,7 +4749,7 @@ static AOM_INLINE void encode_rd_sb(AV1_COMP *cpi, ThreadData *td,
     // No stats for overlay frames. Exclude key frame.
     x->valid_cost_b =
         get_tpl_stats_b(cpi, sb_size, mi_row, mi_col, x->intra_cost_b,
-                        x->inter_cost_b, &x->cost_stride);
+                        x->inter_cost_b, x->mv_b, &x->cost_stride);
 
     reset_partition(pc_root, sb_size);
 
@@ -4788,7 +4794,8 @@ static AOM_INLINE void encode_rd_sb(AV1_COMP *cpi, ThreadData *td,
                         max_sq_size, min_sq_size, &dummy_rdc, dummy_rdc,
                         pc_root, NULL, SB_WET_PASS, NULL);
     }
-
+    // Reset to 0 so that it wouldn't be used elsewhere mistakenly.
+    x->valid_cost_b = 0;
 #if CONFIG_COLLECT_COMPONENT_TIMING
     end_timing(cpi, rd_pick_partition_time);
 #endif

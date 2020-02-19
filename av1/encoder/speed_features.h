@@ -472,6 +472,9 @@ typedef struct MV_SPEED_FEATURES {
   // 0: obmc_full_pixel_diamond
   // 1: obmc_refining_search_sad (faster)
   int obmc_full_pixel_search_level;
+
+  // Accurate full pixel motion search based on TPL stats.
+  int full_pixel_search_level;
 } MV_SPEED_FEATURES;
 
 typedef struct INTER_MODE_SPEED_FEATURES {

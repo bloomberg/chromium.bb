@@ -19,6 +19,23 @@
 #include "av1/encoder/motion_search_facade.h"
 #include "av1/encoder/partition_strategy.h"
 #include "av1/encoder/reconinter_enc.h"
+#include "av1/encoder/tpl_model.h"
+
+#define RIGHT_SHIFT_MV(x) (((x) + 3 + ((x) >= 0)) >> 3)
+
+typedef struct {
+  FULLPEL_MV fmv;
+  int weight;
+} cand_mv_t;
+
+static int compare_weight(const void *a, const void *b) {
+  const int diff = ((cand_mv_t *)a)->weight - ((cand_mv_t *)b)->weight;
+  if (diff < 0)
+    return 1;
+  else if (diff > 0)
+    return -1;
+  return 0;
+}
 
 void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
                               BLOCK_SIZE bsize, int ref_idx, int *rate_mv,
@@ -100,6 +117,73 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
   }
 
   const MV ref_mv = av1_get_ref_mv(x, ref_idx).as_mv;
+  FULLPEL_MV start_mv;
+  if (mbmi->motion_mode != SIMPLE_TRANSLATION)
+    start_mv = get_fullmv_from_mv(&mbmi->mv[0].as_mv);
+  else
+    start_mv = get_fullmv_from_mv(&ref_mv);
+
+  cand_mv_t cand[MAX_MC_FLOW_BLK_IN_SB * MAX_MC_FLOW_BLK_IN_SB] = { { { 0, 0 },
+                                                                      0 } };
+  cand[0].fmv = start_mv;
+  int cnt = 1;
+  int total_weight = 0;
+
+  if (!cpi->sf.mv_sf.full_pixel_search_level &&
+      mbmi->motion_mode == SIMPLE_TRANSLATION) {
+    if (x->valid_cost_b) {
+      const BLOCK_SIZE tpl_bsize = convert_length_to_bsize(MC_FLOW_BSIZE_1D);
+      const int tplw = mi_size_wide[tpl_bsize];
+      const int tplh = mi_size_high[tpl_bsize];
+      const int nw = mi_size_wide[bsize] / tplw;
+      const int nh = mi_size_high[bsize] / tplh;
+
+      if (nw >= 1 && nh >= 1) {
+        const int of_h = mi_row % mi_size_high[cm->seq_params.sb_size];
+        const int of_w = mi_col % mi_size_wide[cm->seq_params.sb_size];
+        const int start = of_h / tplh * x->cost_stride + of_w / tplw;
+        int valid = 1;
+
+        // Assign large weight to start_mv, so it is always tested.
+        cand[0].weight = nw * nh;
+
+        for (int k = 0; k < nh; k++) {
+          for (int l = 0; l < nw; l++) {
+            const int_mv mv =
+                x->mv_b[start + k * x->cost_stride + l][ref - LAST_FRAME];
+            if (mv.as_int == INVALID_MV) {
+              valid = 0;
+              break;
+            }
+
+            const FULLPEL_MV fmv = { GET_MV_RAWPEL(mv.as_mv.row),
+                                     GET_MV_RAWPEL(mv.as_mv.col) };
+            int unique = 1;
+            for (int m = 0; m < cnt; m++) {
+              if (RIGHT_SHIFT_MV(fmv.row) == RIGHT_SHIFT_MV(cand[m].fmv.row) &&
+                  RIGHT_SHIFT_MV(fmv.col) == RIGHT_SHIFT_MV(cand[m].fmv.col)) {
+                unique = 0;
+                cand[m].weight++;
+                break;
+              }
+            }
+
+            if (unique) {
+              cand[cnt].fmv = fmv;
+              cand[cnt].weight = 1;
+              cnt++;
+            }
+          }
+          if (!valid) break;
+        }
+
+        if (valid) {
+          total_weight = 2 * nh * nw;
+          if (cnt > 2) qsort(cand, cnt, sizeof(cand[0]), &compare_weight);
+        }
+      }
+    }
+  }
 
   // Further reduce the search range.
   if (search_range < INT_MAX) {
@@ -115,12 +199,6 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
     }
   }
 
-  FULLPEL_MV start_mv;
-  if (mbmi->motion_mode != SIMPLE_TRANSLATION)
-    start_mv = get_fullmv_from_mv(&mbmi->mv[0].as_mv);
-  else
-    start_mv = get_fullmv_from_mv(&ref_mv);
-
   int cost_list[5];
   int_mv second_best_mv;
   x->best_mv.as_int = second_best_mv.as_int = INVALID_MV;
@@ -132,11 +210,34 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
                                      src_search_sites);
 
   switch (mbmi->motion_mode) {
-    case SIMPLE_TRANSLATION:
-      bestsme = av1_full_pixel_search(
-          start_mv, &full_ms_params, step_param, cond_cost_list(cpi, cost_list),
-          &x->best_mv.as_fullmv, &second_best_mv.as_fullmv);
-      break;
+    case SIMPLE_TRANSLATION: {
+      int cur_bestsme = bestsme;
+      FULLPEL_MV best_mv;
+      int sum_weight = 0;
+      FULLPEL_MV second_best_mv0;
+
+      for (int m = 0; m < cnt; m++) {
+        FULLPEL_MV smv = cand[m].fmv;
+        bestsme = av1_full_pixel_search(
+            smv, &full_ms_params, step_param, cond_cost_list(cpi, cost_list),
+            &x->best_mv.as_fullmv, &second_best_mv.as_fullmv);
+
+        // Use first search's second_best_mv
+        // TODO(yunqing): second_best_mv decision will be improved later.
+        if (!m) second_best_mv0 = second_best_mv.as_fullmv;
+
+        if (!m || bestsme < cur_bestsme) {
+          cur_bestsme = bestsme;
+          best_mv = x->best_mv.as_fullmv;
+        }
+
+        sum_weight += cand[m].weight;
+        if (m >= 2 || 4 * sum_weight > 3 * total_weight) break;
+      }
+      x->best_mv.as_fullmv = best_mv;
+      bestsme = cur_bestsme;
+      second_best_mv.as_fullmv = second_best_mv0;
+    } break;
     case OBMC_CAUSAL:
       bestsme = av1_obmc_full_pixel_search(start_mv, &full_ms_params,
                                            step_param, &(x->best_mv.as_fullmv));
