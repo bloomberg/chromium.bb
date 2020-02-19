@@ -29,9 +29,8 @@ namespace dsp {
 namespace {
 
 template <int width, int height, int bitdepth, bool mask_is_inverse>
-void WeightMask_C(const void* prediction_0, ptrdiff_t stride_0,
-                  const void* prediction_1, ptrdiff_t stride_1, uint8_t* mask,
-                  ptrdiff_t mask_stride) {
+void WeightMask_C(const void* prediction_0, const void* prediction_1,
+                  uint8_t* mask, ptrdiff_t mask_stride) {
   using PredType =
       typename std::conditional<bitdepth == 8, int16_t, uint16_t>::type;
   const auto* pred_0 = static_cast<const PredType*>(prediction_0);
@@ -47,8 +46,8 @@ void WeightMask_C(const void* prediction_0, ptrdiff_t stride_0,
           static_cast<uint8_t>(std::min(DivideBy16(difference) + 38, 64));
       mask[x] = mask_is_inverse ? 64 - mask_value : mask_value;
     }
-    pred_0 += stride_0;
-    pred_1 += stride_1;
+    pred_0 += width;
+    pred_1 += width;
     mask += mask_stride;
   }
 }

@@ -62,13 +62,12 @@ inline void WeightMask8_NEON(const int16_t* prediction_0,
 
 #define WEIGHT8_AND_STRIDE \
   WEIGHT8_WITHOUT_STRIDE;  \
-  pred_0 += stride_0;      \
-  pred_1 += stride_1;      \
+  pred_0 += 8;             \
+  pred_1 += 8;             \
   mask += mask_stride
 
 template <bool mask_is_inverse>
-void WeightMask8x8_NEON(const void* prediction_0, ptrdiff_t stride_0,
-                        const void* prediction_1, ptrdiff_t stride_1,
+void WeightMask8x8_NEON(const void* prediction_0, const void* prediction_1,
                         uint8_t* mask, ptrdiff_t mask_stride) {
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
@@ -80,8 +79,7 @@ void WeightMask8x8_NEON(const void* prediction_0, ptrdiff_t stride_0,
 }
 
 template <bool mask_is_inverse>
-void WeightMask8x16_NEON(const void* prediction_0, ptrdiff_t stride_0,
-                         const void* prediction_1, ptrdiff_t stride_1,
+void WeightMask8x16_NEON(const void* prediction_0, const void* prediction_1,
                          uint8_t* mask, ptrdiff_t mask_stride) {
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
@@ -95,8 +93,7 @@ void WeightMask8x16_NEON(const void* prediction_0, ptrdiff_t stride_0,
 }
 
 template <bool mask_is_inverse>
-void WeightMask8x32_NEON(const void* prediction_0, ptrdiff_t stride_0,
-                         const void* prediction_1, ptrdiff_t stride_1,
+void WeightMask8x32_NEON(const void* prediction_0, const void* prediction_1,
                          uint8_t* mask, ptrdiff_t mask_stride) {
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
@@ -118,13 +115,12 @@ void WeightMask8x32_NEON(const void* prediction_0, ptrdiff_t stride_0,
 
 #define WEIGHT16_AND_STRIDE \
   WEIGHT16_WITHOUT_STRIDE;  \
-  pred_0 += stride_0;       \
-  pred_1 += stride_1;       \
+  pred_0 += 16;             \
+  pred_1 += 16;             \
   mask += mask_stride
 
 template <bool mask_is_inverse>
-void WeightMask16x8_NEON(const void* prediction_0, ptrdiff_t stride_0,
-                         const void* prediction_1, ptrdiff_t stride_1,
+void WeightMask16x8_NEON(const void* prediction_0, const void* prediction_1,
                          uint8_t* mask, ptrdiff_t mask_stride) {
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
@@ -136,8 +132,7 @@ void WeightMask16x8_NEON(const void* prediction_0, ptrdiff_t stride_0,
 }
 
 template <bool mask_is_inverse>
-void WeightMask16x16_NEON(const void* prediction_0, ptrdiff_t stride_0,
-                          const void* prediction_1, ptrdiff_t stride_1,
+void WeightMask16x16_NEON(const void* prediction_0, const void* prediction_1,
                           uint8_t* mask, ptrdiff_t mask_stride) {
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
@@ -151,8 +146,7 @@ void WeightMask16x16_NEON(const void* prediction_0, ptrdiff_t stride_0,
 }
 
 template <bool mask_is_inverse>
-void WeightMask16x32_NEON(const void* prediction_0, ptrdiff_t stride_0,
-                          const void* prediction_1, ptrdiff_t stride_1,
+void WeightMask16x32_NEON(const void* prediction_0, const void* prediction_1,
                           uint8_t* mask, ptrdiff_t mask_stride) {
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
@@ -169,8 +163,7 @@ void WeightMask16x32_NEON(const void* prediction_0, ptrdiff_t stride_0,
 }
 
 template <bool mask_is_inverse>
-void WeightMask16x64_NEON(const void* prediction_0, ptrdiff_t stride_0,
-                          const void* prediction_1, ptrdiff_t stride_1,
+void WeightMask16x64_NEON(const void* prediction_0, const void* prediction_1,
                           uint8_t* mask, ptrdiff_t mask_stride) {
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
@@ -191,13 +184,12 @@ void WeightMask16x64_NEON(const void* prediction_0, ptrdiff_t stride_0,
 
 #define WEIGHT32_AND_STRIDE \
   WEIGHT32_WITHOUT_STRIDE;  \
-  pred_0 += stride_0;       \
-  pred_1 += stride_1;       \
+  pred_0 += 32;             \
+  pred_1 += 32;             \
   mask += mask_stride
 
 template <bool mask_is_inverse>
-void WeightMask32x8_NEON(const void* prediction_0, ptrdiff_t stride_0,
-                         const void* prediction_1, ptrdiff_t stride_1,
+void WeightMask32x8_NEON(const void* prediction_0, const void* prediction_1,
                          uint8_t* mask, ptrdiff_t mask_stride) {
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
@@ -212,8 +204,7 @@ void WeightMask32x8_NEON(const void* prediction_0, ptrdiff_t stride_0,
 }
 
 template <bool mask_is_inverse>
-void WeightMask32x16_NEON(const void* prediction_0, ptrdiff_t stride_0,
-                          const void* prediction_1, ptrdiff_t stride_1,
+void WeightMask32x16_NEON(const void* prediction_0, const void* prediction_1,
                           uint8_t* mask, ptrdiff_t mask_stride) {
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
@@ -227,8 +218,7 @@ void WeightMask32x16_NEON(const void* prediction_0, ptrdiff_t stride_0,
 }
 
 template <bool mask_is_inverse>
-void WeightMask32x32_NEON(const void* prediction_0, ptrdiff_t stride_0,
-                          const void* prediction_1, ptrdiff_t stride_1,
+void WeightMask32x32_NEON(const void* prediction_0, const void* prediction_1,
                           uint8_t* mask, ptrdiff_t mask_stride) {
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
@@ -245,8 +235,7 @@ void WeightMask32x32_NEON(const void* prediction_0, ptrdiff_t stride_0,
 }
 
 template <bool mask_is_inverse>
-void WeightMask32x64_NEON(const void* prediction_0, ptrdiff_t stride_0,
-                          const void* prediction_1, ptrdiff_t stride_1,
+void WeightMask32x64_NEON(const void* prediction_0, const void* prediction_1,
                           uint8_t* mask, ptrdiff_t mask_stride) {
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
@@ -271,13 +260,12 @@ void WeightMask32x64_NEON(const void* prediction_0, ptrdiff_t stride_0,
 
 #define WEIGHT64_AND_STRIDE \
   WEIGHT64_WITHOUT_STRIDE;  \
-  pred_0 += stride_0;       \
-  pred_1 += stride_1;       \
+  pred_0 += 64;             \
+  pred_1 += 64;             \
   mask += mask_stride
 
 template <bool mask_is_inverse>
-void WeightMask64x16_NEON(const void* prediction_0, ptrdiff_t stride_0,
-                          const void* prediction_1, ptrdiff_t stride_1,
+void WeightMask64x16_NEON(const void* prediction_0, const void* prediction_1,
                           uint8_t* mask, ptrdiff_t mask_stride) {
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
@@ -291,8 +279,7 @@ void WeightMask64x16_NEON(const void* prediction_0, ptrdiff_t stride_0,
 }
 
 template <bool mask_is_inverse>
-void WeightMask64x32_NEON(const void* prediction_0, ptrdiff_t stride_0,
-                          const void* prediction_1, ptrdiff_t stride_1,
+void WeightMask64x32_NEON(const void* prediction_0, const void* prediction_1,
                           uint8_t* mask, ptrdiff_t mask_stride) {
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
@@ -309,8 +296,7 @@ void WeightMask64x32_NEON(const void* prediction_0, ptrdiff_t stride_0,
 }
 
 template <bool mask_is_inverse>
-void WeightMask64x64_NEON(const void* prediction_0, ptrdiff_t stride_0,
-                          const void* prediction_1, ptrdiff_t stride_1,
+void WeightMask64x64_NEON(const void* prediction_0, const void* prediction_1,
                           uint8_t* mask, ptrdiff_t mask_stride) {
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
@@ -324,8 +310,7 @@ void WeightMask64x64_NEON(const void* prediction_0, ptrdiff_t stride_0,
 }
 
 template <bool mask_is_inverse>
-void WeightMask64x128_NEON(const void* prediction_0, ptrdiff_t stride_0,
-                           const void* prediction_1, ptrdiff_t stride_1,
+void WeightMask64x128_NEON(const void* prediction_0, const void* prediction_1,
                            uint8_t* mask, ptrdiff_t mask_stride) {
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
@@ -340,14 +325,11 @@ void WeightMask64x128_NEON(const void* prediction_0, ptrdiff_t stride_0,
 }
 
 template <bool mask_is_inverse>
-void WeightMask128x64_NEON(const void* prediction_0, ptrdiff_t stride_0,
-                           const void* prediction_1, ptrdiff_t stride_1,
+void WeightMask128x64_NEON(const void* prediction_0, const void* prediction_1,
                            uint8_t* mask, ptrdiff_t mask_stride) {
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
   int y3 = 0;
-  const ptrdiff_t adjusted_stride_0 = stride_0 - 64;
-  const ptrdiff_t adjusted_stride_1 = stride_1 - 64;
   const ptrdiff_t adjusted_mask_stride = mask_stride - 64;
   do {
     WEIGHT64_WITHOUT_STRIDE;
@@ -355,8 +337,8 @@ void WeightMask128x64_NEON(const void* prediction_0, ptrdiff_t stride_0,
     pred_1 += 64;
     mask += 64;
     WEIGHT64_WITHOUT_STRIDE;
-    pred_0 += adjusted_stride_0;
-    pred_1 += adjusted_stride_1;
+    pred_0 += 64;
+    pred_1 += 64;
     mask += adjusted_mask_stride;
 
     WEIGHT64_WITHOUT_STRIDE;
@@ -364,8 +346,8 @@ void WeightMask128x64_NEON(const void* prediction_0, ptrdiff_t stride_0,
     pred_1 += 64;
     mask += 64;
     WEIGHT64_WITHOUT_STRIDE;
-    pred_0 += adjusted_stride_0;
-    pred_1 += adjusted_stride_1;
+    pred_0 += 64;
+    pred_1 += 64;
     mask += adjusted_mask_stride;
 
     WEIGHT64_WITHOUT_STRIDE;
@@ -373,8 +355,8 @@ void WeightMask128x64_NEON(const void* prediction_0, ptrdiff_t stride_0,
     pred_1 += 64;
     mask += 64;
     WEIGHT64_WITHOUT_STRIDE;
-    pred_0 += adjusted_stride_0;
-    pred_1 += adjusted_stride_1;
+    pred_0 += 64;
+    pred_1 += 64;
     mask += adjusted_mask_stride;
   } while (++y3 < 21);
   WEIGHT64_WITHOUT_STRIDE;
@@ -385,14 +367,11 @@ void WeightMask128x64_NEON(const void* prediction_0, ptrdiff_t stride_0,
 }
 
 template <bool mask_is_inverse>
-void WeightMask128x128_NEON(const void* prediction_0, ptrdiff_t stride_0,
-                            const void* prediction_1, ptrdiff_t stride_1,
+void WeightMask128x128_NEON(const void* prediction_0, const void* prediction_1,
                             uint8_t* mask, ptrdiff_t mask_stride) {
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
   int y3 = 0;
-  const ptrdiff_t adjusted_stride_0 = stride_0 - 64;
-  const ptrdiff_t adjusted_stride_1 = stride_1 - 64;
   const ptrdiff_t adjusted_mask_stride = mask_stride - 64;
   do {
     WEIGHT64_WITHOUT_STRIDE;
@@ -400,8 +379,8 @@ void WeightMask128x128_NEON(const void* prediction_0, ptrdiff_t stride_0,
     pred_1 += 64;
     mask += 64;
     WEIGHT64_WITHOUT_STRIDE;
-    pred_0 += adjusted_stride_0;
-    pred_1 += adjusted_stride_1;
+    pred_0 += 64;
+    pred_1 += 64;
     mask += adjusted_mask_stride;
 
     WEIGHT64_WITHOUT_STRIDE;
@@ -409,8 +388,8 @@ void WeightMask128x128_NEON(const void* prediction_0, ptrdiff_t stride_0,
     pred_1 += 64;
     mask += 64;
     WEIGHT64_WITHOUT_STRIDE;
-    pred_0 += adjusted_stride_0;
-    pred_1 += adjusted_stride_1;
+    pred_0 += 64;
+    pred_1 += 64;
     mask += adjusted_mask_stride;
 
     WEIGHT64_WITHOUT_STRIDE;
@@ -418,8 +397,8 @@ void WeightMask128x128_NEON(const void* prediction_0, ptrdiff_t stride_0,
     pred_1 += 64;
     mask += 64;
     WEIGHT64_WITHOUT_STRIDE;
-    pred_0 += adjusted_stride_0;
-    pred_1 += adjusted_stride_1;
+    pred_0 += 64;
+    pred_1 += 64;
     mask += adjusted_mask_stride;
   } while (++y3 < 42);
   WEIGHT64_WITHOUT_STRIDE;
@@ -427,8 +406,8 @@ void WeightMask128x128_NEON(const void* prediction_0, ptrdiff_t stride_0,
   pred_1 += 64;
   mask += 64;
   WEIGHT64_WITHOUT_STRIDE;
-  pred_0 += adjusted_stride_0;
-  pred_1 += adjusted_stride_1;
+  pred_0 += 64;
+  pred_1 += 64;
   mask += adjusted_mask_stride;
 
   WEIGHT64_WITHOUT_STRIDE;

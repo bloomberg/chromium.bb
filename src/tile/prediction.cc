@@ -756,9 +756,7 @@ void Tile::InterPrediction(const Block& block, const Plane plane, const int x,
                       [FloorLog2(prediction_height) - 3]
                       [static_cast<int>(prediction_parameters.mask_is_inverse)](
                           block.scratch_buffer->prediction_buffer[0],
-                          /*prediction_stride=*/prediction_width,
                           block.scratch_buffer->prediction_buffer[1],
-                          /*prediction_stride=*/prediction_width,
                           block.scratch_buffer->weight_mask,
                           kMaxSuperBlockSizeInPixels);
     }
