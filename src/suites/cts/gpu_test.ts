@@ -7,6 +7,43 @@ type ShaderStage = import('@webgpu/glslang/dist/web-devel/glslang').ShaderStage;
 
 let glslangInstance: Glslang | undefined;
 
+class DevicePool {
+  device: GPUDevice | undefined = undefined;
+  state: 'free' | 'acquired' | 'uninitialized' | 'failed' = 'uninitialized';
+
+  private async initialize(): Promise<void> {
+    try {
+      const gpu = getGPU();
+      const adapter = await gpu.requestAdapter();
+      this.device = await adapter.requestDevice();
+    } catch (ex) {
+      this.state = 'failed';
+      throw ex;
+    }
+  }
+
+  async acquire(): Promise<GPUDevice> {
+    assert(this.state !== 'acquired', 'Device was in use');
+    assert(this.state !== 'failed', 'Failed to initialize WebGPU device');
+
+    const state = this.state;
+    this.state = 'acquired';
+    if (state === 'uninitialized') {
+      await this.initialize();
+    }
+
+    return this.device!;
+  }
+
+  release(device: GPUDevice): void {
+    assert(this.state === 'acquired');
+    this.device = device;
+    this.state = 'free';
+  }
+}
+
+const devicePool = new DevicePool();
+
 export class GPUTest extends Fixture {
   device: GPUDevice = undefined!;
   queue: GPUQueue = undefined!;
@@ -15,9 +52,7 @@ export class GPUTest extends Fixture {
 
   async init(): Promise<void> {
     super.init();
-    const gpu = getGPU();
-    const adapter = await gpu.requestAdapter();
-    this.device = await adapter.requestDevice();
+    this.device = await devicePool.acquire();
     this.queue = this.device.defaultQueue;
 
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
