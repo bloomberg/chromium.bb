@@ -14,7 +14,6 @@ from __future__ import print_function
 import collections
 import datetime
 import os
-import sys
 
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
@@ -22,9 +21,6 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import portage_util
 from chromite.scripts import cros_mark_as_stable
-
-
-assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 DATE_FORMAT = '%Y-%m-%d'

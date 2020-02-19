@@ -8,7 +8,6 @@
 from __future__ import print_function
 
 import datetime
-import sys
 
 import mock
 
@@ -16,9 +15,6 @@ from chromite.contrib import purge_builds
 from chromite.lib import cros_test_lib
 from chromite.lib import gs
 from chromite.lib import gs_unittest
-
-
-assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # pylint: disable=protected-access

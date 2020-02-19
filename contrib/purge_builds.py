@@ -21,7 +21,6 @@ from __future__ import print_function
 import datetime
 import multiprocessing
 import re
-import sys
 
 from six.moves import urllib
 
@@ -31,9 +30,6 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import parallel
-
-
-assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # Roughly 6 months.
