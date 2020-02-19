@@ -536,6 +536,10 @@ static void set_good_speed_features_framesize_independent(
         frame_is_intra_only(&cpi->common) ? 1 : 0;
     sf->winner_mode_sf.enable_winner_mode_for_tx_size_srch = 1;
 
+    sf->lpf_sf.cdef_pick_method = cm->allow_screen_content_tools
+                                      ? CDEF_FAST_SEARCH_LVL1
+                                      : CDEF_FAST_SEARCH_LVL2;
+
     // TODO(any): The following features have no impact on quality and speed,
     // and are disabled.
     // sf->part_sf.partition_search_breakout_rate_thr = 300;
@@ -567,9 +571,6 @@ static void set_good_speed_features_framesize_independent(
         (boosted || cm->allow_screen_content_tools) ? 0 : 2;
 
     sf->lpf_sf.lpf_pick = LPF_PICK_FROM_FULL_IMAGE_NON_DUAL;
-    sf->lpf_sf.cdef_pick_method = cm->allow_screen_content_tools
-                                      ? CDEF_FAST_SEARCH_LVL1
-                                      : CDEF_FAST_SEARCH_LVL2;
     sf->lpf_sf.disable_lr_filter = 1;
 
     sf->mv_sf.prune_mesh_search = 1;
