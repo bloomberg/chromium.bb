@@ -557,7 +557,9 @@ def _fetch_and_map_with_go(isolated_hash, storage, outdir, go_cache_dir,
     while True:
       # This is to prevent I/O timeout error during isolated setup.
       try:
-        proc.wait(30)
+        retcode = proc.wait(30)
+        if retcode != 0:
+          raise ValueError("retcode of isolated command is not 0: %s" % retcode)
         break
       except subprocess42.TimeoutExpired:
         logging.info('still running isolated')
