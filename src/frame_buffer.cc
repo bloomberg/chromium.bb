@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "src/gav1/frame_buffer.h"
+
 #include <cstdint>
 
 #include "src/frame_buffer_utils.h"
-#include "src/gav1/frame_buffer2.h"
 #include "src/utils/common.h"
 
 extern "C" {
@@ -124,7 +125,7 @@ Libgav1StatusCode Libgav1SetFrameBuffer(const Libgav1FrameBufferInfo* info,
                                         uint8_t* y_buffer, uint8_t* u_buffer,
                                         uint8_t* v_buffer,
                                         void* buffer_private_data,
-                                        Libgav1FrameBuffer2* frame_buffer) {
+                                        Libgav1FrameBuffer* frame_buffer) {
   if (info == nullptr ||
       (info->uv_buffer_size == 0 &&
        (u_buffer != nullptr || v_buffer != nullptr)) ||

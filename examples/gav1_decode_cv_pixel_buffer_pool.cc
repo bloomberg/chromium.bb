@@ -38,7 +38,7 @@ using UniqueCFDictionaryRef =
 
 extern "C" {
 
-int Gav1DecodeOnCVPixelBufferSizeChanged(
+libgav1::StatusCode Gav1DecodeOnCVPixelBufferSizeChanged(
     void* callback_private_data, int bitdepth,
     libgav1::ImageFormat image_format, int width, int height, int left_border,
     int right_border, int top_border, int bottom_border, int stride_alignment) {
@@ -49,12 +49,11 @@ int Gav1DecodeOnCVPixelBufferSizeChanged(
       top_border, bottom_border, stride_alignment);
 }
 
-int Gav1DecodeGetCVPixelBuffer(void* callback_private_data, int bitdepth,
-                               libgav1::ImageFormat image_format, int width,
-                               int height, int left_border, int right_border,
-                               int top_border, int bottom_border,
-                               int stride_alignment,
-                               libgav1::FrameBuffer2* frame_buffer) {
+libgav1::StatusCode Gav1DecodeGetCVPixelBuffer(
+    void* callback_private_data, int bitdepth,
+    libgav1::ImageFormat image_format, int width, int height, int left_border,
+    int right_border, int top_border, int bottom_border, int stride_alignment,
+    libgav1::FrameBuffer* frame_buffer) {
   auto* buffer_pool =
       static_cast<Gav1DecodeCVPixelBufferPool*>(callback_private_data);
   return buffer_pool->GetCVPixelBuffer(
@@ -86,7 +85,7 @@ Gav1DecodeCVPixelBufferPool::~Gav1DecodeCVPixelBufferPool() {
   CVPixelBufferPoolRelease(pool_);
 }
 
-int Gav1DecodeCVPixelBufferPool::OnCVPixelBufferSizeChanged(
+libgav1::StatusCode Gav1DecodeCVPixelBufferPool::OnCVPixelBufferSizeChanged(
     int bitdepth, libgav1::ImageFormat image_format, int width, int height,
     int left_border, int right_border, int top_border, int bottom_border,
     int stride_alignment) {
@@ -96,7 +95,7 @@ int Gav1DecodeCVPixelBufferPool::OnCVPixelBufferSizeChanged(
             "Only bitdepth 8, 4:2:0 videos are supported: bitdepth %d, "
             "image_format: %d.\n",
             bitdepth, image_format);
-    return -1;
+    return libgav1::kStatusUnimplemented;
   }
 
   // stride_alignment must be a power of 2.
@@ -112,7 +111,7 @@ int Gav1DecodeCVPixelBufferPool::OnCVPixelBufferSizeChanged(
       CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &min_buffer_count));
   if (cf_min_buffer_count == nullptr) {
     fprintf(stderr, "CFNumberCreate failed.\n");
-    return -1;
+    return libgav1::kStatusUnknownError;
   }
   const void* pool_values[] = {cf_min_buffer_count.get()};
   UniqueCFDictionaryRef pool_attributes(CFDictionaryCreate(
@@ -120,7 +119,7 @@ int Gav1DecodeCVPixelBufferPool::OnCVPixelBufferSizeChanged(
       &kCFTypeDictionaryValueCallBacks));
   if (pool_attributes == nullptr) {
     fprintf(stderr, "CFDictionaryCreate failed.\n");
-    return -1;
+    return libgav1::kStatusUnknownError;
   }
 
   // The pixelBufferAttributes argument to CVPixelBufferPoolCreate() cannot be
@@ -170,7 +169,7 @@ int Gav1DecodeCVPixelBufferPool::OnCVPixelBufferSizeChanged(
       &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks));
   if (buffer_attributes == nullptr) {
     fprintf(stderr, "CFDictionaryCreate of buffer_attributes failed.\n");
-    return -1;
+    return libgav1::kStatusUnknownError;
   }
   CVPixelBufferPoolRef cv_pool;
   CVReturn ret = CVPixelBufferPoolCreate(
@@ -179,18 +178,18 @@ int Gav1DecodeCVPixelBufferPool::OnCVPixelBufferSizeChanged(
   if (ret != kCVReturnSuccess) {
     fprintf(stderr, "CVPixelBufferPoolCreate failed: %d.\n",
             static_cast<int>(ret));
-    return -1;
+    return libgav1::kStatusOutOfMemory;
   }
   CVPixelBufferPoolRelease(pool_);
   pool_ = cv_pool;
-  return 0;
+  return libgav1::kStatusOk;
 }
 
-int Gav1DecodeCVPixelBufferPool::GetCVPixelBuffer(
+libgav1::StatusCode Gav1DecodeCVPixelBufferPool::GetCVPixelBuffer(
     int bitdepth, libgav1::ImageFormat image_format, int /*width*/,
     int /*height*/, int /*left_border*/, int /*right_border*/,
     int /*top_border*/, int /*bottom_border*/, int /*stride_alignment*/,
-    libgav1::FrameBuffer2* frame_buffer) {
+    libgav1::FrameBuffer* frame_buffer) {
   static_cast<void>(bitdepth);
   assert(bitdepth == 8 && (image_format == libgav1::kImageFormatYuv420 ||
                            image_format == libgav1::kImageFormatMonochrome400));
@@ -214,7 +213,7 @@ int Gav1DecodeCVPixelBufferPool::GetCVPixelBuffer(
       &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks));
   if (aux_attributes == nullptr) {
     fprintf(stderr, "CFDictionaryCreate of aux_attributes failed.\n");
-    return -1;
+    return libgav1::kStatusUnknownError;
   }
 
   CVPixelBufferRef pixel_buffer;
@@ -224,7 +223,7 @@ int Gav1DecodeCVPixelBufferPool::GetCVPixelBuffer(
     fprintf(stderr,
             "CVPixelBufferPoolCreatePixelBufferWithAuxAttributes failed: %d.\n",
             static_cast<int>(ret));
-    return -1;
+    return libgav1::kStatusOutOfMemory;
   }
 
   ret = CVPixelBufferLockBaseAddress(pixel_buffer, /*lockFlags=*/0);
@@ -232,7 +231,7 @@ int Gav1DecodeCVPixelBufferPool::GetCVPixelBuffer(
     fprintf(stderr, "CVPixelBufferLockBaseAddress failed: %d.\n",
             static_cast<int>(ret));
     CFRelease(pixel_buffer);
-    return -1;
+    return libgav1::kStatusUnknownError;
   }
 
   // If the pixel format type is kCVPixelFormatType_OneComponent8, the pixel
@@ -262,7 +261,7 @@ int Gav1DecodeCVPixelBufferPool::GetCVPixelBuffer(
   }
   frame_buffer->private_data = pixel_buffer;
 
-  return 0;
+  return libgav1::kStatusOk;
 }
 
 void Gav1DecodeCVPixelBufferPool::ReleaseCVPixelBuffer(

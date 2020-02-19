@@ -22,18 +22,18 @@
 #include <cstddef>
 #include <memory>
 
-#include "gav1/frame_buffer2.h"
+#include "gav1/frame_buffer.h"
 
-extern "C" int Gav1DecodeOnCVPixelBufferSizeChanged(
+extern "C" libgav1::StatusCode Gav1DecodeOnCVPixelBufferSizeChanged(
     void* callback_private_data, int bitdepth,
     libgav1::ImageFormat image_format, int width, int height, int left_border,
     int right_border, int top_border, int bottom_border, int stride_alignment);
 
-extern "C" int Gav1DecodeGetCVPixelBuffer(
+extern "C" libgav1::StatusCode Gav1DecodeGetCVPixelBuffer(
     void* callback_private_data, int bitdepth,
     libgav1::ImageFormat image_format, int width, int height, int left_border,
     int right_border, int top_border, int bottom_border, int stride_alignment,
-    libgav1::FrameBuffer2* frame_buffer);
+    libgav1::FrameBuffer* frame_buffer);
 
 extern "C" void Gav1DecodeReleaseCVPixelBuffer(void* callback_private_data,
                                                void* buffer_private_data);
@@ -50,16 +50,17 @@ class Gav1DecodeCVPixelBufferPool {
 
   ~Gav1DecodeCVPixelBufferPool();
 
-  int OnCVPixelBufferSizeChanged(int bitdepth,
-                                 libgav1::ImageFormat image_format, int width,
-                                 int height, int left_border, int right_border,
-                                 int top_border, int bottom_border,
-                                 int stride_alignment);
+  libgav1::StatusCode OnCVPixelBufferSizeChanged(
+      int bitdepth, libgav1::ImageFormat image_format, int width, int height,
+      int left_border, int right_border, int top_border, int bottom_border,
+      int stride_alignment);
 
-  int GetCVPixelBuffer(int bitdepth, libgav1::ImageFormat image_format,
-                       int width, int height, int left_border, int right_border,
-                       int top_border, int bottom_border, int stride_alignment,
-                       libgav1::FrameBuffer2* frame_buffer);
+  libgav1::StatusCode GetCVPixelBuffer(int bitdepth,
+                                       libgav1::ImageFormat image_format,
+                                       int width, int height, int left_border,
+                                       int right_border, int top_border,
+                                       int bottom_border, int stride_alignment,
+                                       libgav1::FrameBuffer* frame_buffer);
   void ReleaseCVPixelBuffer(void* buffer_private_data);
 
  private:

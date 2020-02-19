@@ -22,34 +22,23 @@
 #include <memory>
 
 #include "src/gav1/frame_buffer.h"
-#include "src/gav1/frame_buffer2.h"
 #include "src/utils/memory.h"
 #include "src/utils/vector.h"
 
 namespace libgav1 {
 
-extern "C" int OnInternalFrameBufferSizeChanged(
+extern "C" Libgav1StatusCode OnInternalFrameBufferSizeChanged(
     void* callback_private_data, int bitdepth, Libgav1ImageFormat image_format,
     int width, int height, int left_border, int right_border, int top_border,
     int bottom_border, int stride_alignment);
 
-extern "C" int GetInternalFrameBuffer(void* callback_private_data, int bitdepth,
-                                      Libgav1ImageFormat image_format,
-                                      int width, int height, int left_border,
-                                      int right_border, int top_border,
-                                      int bottom_border, int stride_alignment,
-                                      Libgav1FrameBuffer2* frame_buffer);
+extern "C" Libgav1StatusCode GetInternalFrameBuffer(
+    void* callback_private_data, int bitdepth, Libgav1ImageFormat image_format,
+    int width, int height, int left_border, int right_border, int top_border,
+    int bottom_border, int stride_alignment, Libgav1FrameBuffer* frame_buffer);
 
 extern "C" void ReleaseInternalFrameBuffer(void* callback_private_data,
                                            void* buffer_private_data);
-
-extern "C" int V1GetInternalFrameBuffer(void* private_data,
-                                        size_t y_plane_min_size,
-                                        size_t uv_plane_min_size,
-                                        FrameBuffer* frame_buffer);
-
-extern "C" int V1ReleaseInternalFrameBuffer(void* private_data,
-                                            FrameBuffer* frame_buffer);
 
 class InternalFrameBufferList : public Allocable {
  public:
@@ -61,21 +50,21 @@ class InternalFrameBufferList : public Allocable {
 
   ~InternalFrameBufferList() = default;
 
-  int OnFrameBufferSizeChanged(int bitdepth, Libgav1ImageFormat image_format,
-                               int width, int height, int left_border,
-                               int right_border, int top_border,
-                               int bottom_border, int stride_alignment);
+  Libgav1StatusCode OnFrameBufferSizeChanged(int bitdepth,
+                                             Libgav1ImageFormat image_format,
+                                             int width, int height,
+                                             int left_border, int right_border,
+                                             int top_border, int bottom_border,
+                                             int stride_alignment);
 
-  int GetFrameBuffer(int bitdepth, Libgav1ImageFormat image_format, int width,
-                     int height, int left_border, int right_border,
-                     int top_border, int bottom_border, int stride_alignment,
-                     Libgav1FrameBuffer2* frame_buffer);
+  Libgav1StatusCode GetFrameBuffer(int bitdepth,
+                                   Libgav1ImageFormat image_format, int width,
+                                   int height, int left_border,
+                                   int right_border, int top_border,
+                                   int bottom_border, int stride_alignment,
+                                   Libgav1FrameBuffer* frame_buffer);
 
   void ReleaseFrameBuffer(void* buffer_private_data);
-
-  int V1GetFrameBuffer(size_t y_plane_min_size, size_t uv_plane_min_size,
-                       FrameBuffer* frame_buffer);
-  int V1ReleaseFrameBuffer(FrameBuffer* frame_buffer);
 
  private:
   struct Buffer : public Allocable {

@@ -23,7 +23,7 @@
 #include <memory>
 #include <type_traits>
 
-#include "src/gav1/frame_buffer2.h"
+#include "src/gav1/frame_buffer.h"
 #include "src/utils/constants.h"
 
 namespace libgav1 {
@@ -87,7 +87,7 @@ class YuvBuffer {
   bool Realloc(int bitdepth, bool is_monochrome, int width, int height,
                int8_t subsampling_x, int8_t subsampling_y, int left_border,
                int right_border, int top_border, int bottom_border,
-               GetFrameBufferCallback2 get_frame_buffer,
+               GetFrameBufferCallback get_frame_buffer,
                void* callback_private_data, void** buffer_private_data);
 
   int bitdepth() const { return bitdepth_; }

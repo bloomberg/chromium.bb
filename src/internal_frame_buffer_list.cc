@@ -25,11 +25,10 @@
 namespace libgav1 {
 extern "C" {
 
-int OnInternalFrameBufferSizeChanged(void* callback_private_data, int bitdepth,
-                                     Libgav1ImageFormat image_format, int width,
-                                     int height, int left_border,
-                                     int right_border, int top_border,
-                                     int bottom_border, int stride_alignment) {
+Libgav1StatusCode OnInternalFrameBufferSizeChanged(
+    void* callback_private_data, int bitdepth, Libgav1ImageFormat image_format,
+    int width, int height, int left_border, int right_border, int top_border,
+    int bottom_border, int stride_alignment) {
   auto* buffer_list =
       static_cast<InternalFrameBufferList*>(callback_private_data);
   return buffer_list->OnFrameBufferSizeChanged(
@@ -37,12 +36,10 @@ int OnInternalFrameBufferSizeChanged(void* callback_private_data, int bitdepth,
       top_border, bottom_border, stride_alignment);
 }
 
-int GetInternalFrameBuffer(void* callback_private_data, int bitdepth,
-                           Libgav1ImageFormat image_format, int width,
-                           int height, int left_border, int right_border,
-                           int top_border, int bottom_border,
-                           int stride_alignment,
-                           Libgav1FrameBuffer2* frame_buffer) {
+Libgav1StatusCode GetInternalFrameBuffer(
+    void* callback_private_data, int bitdepth, Libgav1ImageFormat image_format,
+    int width, int height, int left_border, int right_border, int top_border,
+    int bottom_border, int stride_alignment, Libgav1FrameBuffer* frame_buffer) {
   auto* buffer_list =
       static_cast<InternalFrameBufferList*>(callback_private_data);
   return buffer_list->GetFrameBuffer(
@@ -57,51 +54,28 @@ void ReleaseInternalFrameBuffer(void* callback_private_data,
   buffer_list->ReleaseFrameBuffer(buffer_private_data);
 }
 
-int V1GetInternalFrameBuffer(void* private_data, size_t y_plane_min_size,
-                             size_t uv_plane_min_size,
-                             FrameBuffer* frame_buffer) {
-  auto* buffer_list = static_cast<InternalFrameBufferList*>(private_data);
-  return buffer_list->V1GetFrameBuffer(y_plane_min_size, uv_plane_min_size,
-                                       frame_buffer);
-}
-
-int V1ReleaseInternalFrameBuffer(void* private_data,
-                                 FrameBuffer* frame_buffer) {
-  auto* buffer_list = static_cast<InternalFrameBufferList*>(private_data);
-  return buffer_list->V1ReleaseFrameBuffer(frame_buffer);
-}
-
 }  // extern "C"
 
-int InternalFrameBufferList::OnFrameBufferSizeChanged(
-    int bitdepth, Libgav1ImageFormat image_format, int width, int height,
-    int left_border, int right_border, int top_border, int bottom_border,
-    int stride_alignment) {
-  static_cast<void>(bitdepth);
-  static_cast<void>(image_format);
-  static_cast<void>(width);
-  static_cast<void>(height);
-  static_cast<void>(left_border);
-  static_cast<void>(right_border);
-  static_cast<void>(top_border);
-  static_cast<void>(bottom_border);
-  static_cast<void>(stride_alignment);
-  return 0;
+StatusCode InternalFrameBufferList::OnFrameBufferSizeChanged(
+    int /*bitdepth*/, Libgav1ImageFormat /*image_format*/, int /*width*/,
+    int /*height*/, int /*left_border*/, int /*right_border*/,
+    int /*top_border*/, int /*bottom_border*/, int /*stride_alignment*/) {
+  return kStatusOk;
 }
 
-int InternalFrameBufferList::GetFrameBuffer(
+StatusCode InternalFrameBufferList::GetFrameBuffer(
     int bitdepth, Libgav1ImageFormat image_format, int width, int height,
     int left_border, int right_border, int top_border, int bottom_border,
-    int stride_alignment, Libgav1FrameBuffer2* frame_buffer) {
+    int stride_alignment, Libgav1FrameBuffer* frame_buffer) {
   FrameBufferInfo info;
   StatusCode status = ComputeFrameBufferInfo(
       bitdepth, image_format, width, height, left_border, right_border,
       top_border, bottom_border, stride_alignment, &info);
-  if (status != kStatusOk) return -1;
+  if (status != kStatusOk) return status;
 
   if (info.uv_buffer_size > SIZE_MAX / 2 ||
       info.y_buffer_size > SIZE_MAX - 2 * info.uv_buffer_size) {
-    return -1;
+    return kStatusInvalidArgument;
   }
   const size_t min_size = info.y_buffer_size + 2 * info.uv_buffer_size;
 
@@ -115,7 +89,7 @@ int InternalFrameBufferList::GetFrameBuffer(
   if (buffer == nullptr) {
     std::unique_ptr<Buffer> new_buffer(new (std::nothrow) Buffer);
     if (new_buffer == nullptr || !buffers_.push_back(std::move(new_buffer))) {
-      return -1;
+      return kStatusOutOfMemory;
     }
     buffer = buffers_.back().get();
   }
@@ -123,7 +97,7 @@ int InternalFrameBufferList::GetFrameBuffer(
   if (buffer->size < min_size) {
     std::unique_ptr<uint8_t[], MallocDeleter> new_data(
         static_cast<uint8_t*>(malloc(min_size)));
-    if (new_data == nullptr) return -1;
+    if (new_data == nullptr) return kStatusOutOfMemory;
     buffer->data = std::move(new_data);
     buffer->size = min_size;
   }
@@ -135,63 +109,14 @@ int InternalFrameBufferList::GetFrameBuffer(
       (info.uv_buffer_size == 0) ? nullptr : u_buffer + info.uv_buffer_size;
   status = Libgav1SetFrameBuffer(&info, y_buffer, u_buffer, v_buffer, buffer,
                                  frame_buffer);
-  if (status != kStatusOk) return -1;
+  if (status != kStatusOk) return status;
   buffer->in_use = true;
-  return 0;
+  return kStatusOk;
 }
 
 void InternalFrameBufferList::ReleaseFrameBuffer(void* buffer_private_data) {
   auto* const buffer = static_cast<Buffer*>(buffer_private_data);
   buffer->in_use = false;
-}
-
-int InternalFrameBufferList::V1GetFrameBuffer(size_t y_plane_min_size,
-                                              size_t uv_plane_min_size,
-                                              FrameBuffer* frame_buffer) {
-  if (uv_plane_min_size > SIZE_MAX / 2 ||
-      y_plane_min_size > SIZE_MAX - 2 * uv_plane_min_size) {
-    return -1;
-  }
-  const size_t min_size = y_plane_min_size + 2 * uv_plane_min_size;
-
-  Buffer* buffer = nullptr;
-  for (auto& buffer_ptr : buffers_) {
-    if (!buffer_ptr->in_use) {
-      buffer = buffer_ptr.get();
-      break;
-    }
-  }
-  if (buffer == nullptr) {
-    std::unique_ptr<Buffer> new_buffer(new (std::nothrow) Buffer);
-    if (new_buffer == nullptr || !buffers_.push_back(std::move(new_buffer))) {
-      return -1;
-    }
-    buffer = buffers_.back().get();
-  }
-
-  if (buffer->size < min_size) {
-    std::unique_ptr<uint8_t[], MallocDeleter> new_data(
-        static_cast<uint8_t*>(malloc(min_size)));
-    if (new_data == nullptr) return -1;
-    buffer->data = std::move(new_data);
-    buffer->size = min_size;
-  }
-
-  frame_buffer->data[0] = buffer->data.get();
-  frame_buffer->size[0] = y_plane_min_size;
-  frame_buffer->data[1] = frame_buffer->data[0] + y_plane_min_size;
-  frame_buffer->size[1] = uv_plane_min_size;
-  frame_buffer->data[2] = frame_buffer->data[1] + uv_plane_min_size;
-  frame_buffer->size[2] = uv_plane_min_size;
-  frame_buffer->private_data = buffer;
-  buffer->in_use = true;
-  return 0;
-}
-
-int InternalFrameBufferList::V1ReleaseFrameBuffer(FrameBuffer* frame_buffer) {
-  auto* const buffer = static_cast<Buffer*>(frame_buffer->private_data);
-  buffer->in_use = false;
-  return 0;
 }
 
 }  // namespace libgav1

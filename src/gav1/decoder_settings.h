@@ -24,7 +24,6 @@
 #endif  // defined(__cplusplus)
 
 #include "gav1/frame_buffer.h"
-#include "gav1/frame_buffer2.h"
 #include "gav1/symbol_visibility.h"
 
 // All the declarations in this file are part of the public ABI.
@@ -44,20 +43,14 @@ typedef struct Libgav1DecoderSettings {
   // NOTE: Frame parallel decoding is not implemented, this setting is
   // currently ignored.
   int frame_parallel;
-  // Get frame buffer callback, version 1.
-  // NOTE: Deprecated. Use |get_frame_buffer| instead.
-  Libgav1GetFrameBufferCallback get;
-  // Release frame buffer callback, version 1.
-  // NOTE: Deprecated. Use |release_frame_buffer| instead.
-  Libgav1ReleaseFrameBufferCallback release;
   // Called when the first sequence header or a sequence header with a
   // different frame size (which includes bitdepth, monochrome, subsampling_x,
   // subsampling_y, maximum frame width, or maximum frame height) is received.
   Libgav1FrameBufferSizeChangedCallback on_frame_buffer_size_changed;
-  // Get frame buffer callback, version 2.
-  Libgav1GetFrameBufferCallback2 get_frame_buffer;
-  // Release frame buffer callback, version 2.
-  Libgav1ReleaseFrameBufferCallback2 release_frame_buffer;
+  // Get frame buffer callback.
+  Libgav1GetFrameBufferCallback get_frame_buffer;
+  // Release frame buffer callback.
+  Libgav1ReleaseFrameBufferCallback release_frame_buffer;
   // Passed as the private_data argument to the callbacks.
   void* callback_private_data;
   // Mask indicating the post processing filters that need to be applied to the
@@ -91,20 +84,14 @@ struct DecoderSettings {
   // NOTE: Frame parallel decoding is not implemented, this setting is
   // currently ignored.
   bool frame_parallel = false;
-  // Get frame buffer callback, version 1.
-  // NOTE: Deprecated. Use |get_frame_buffer| instead.
-  GetFrameBufferCallback get = nullptr;
-  // Release frame buffer callback, version 1.
-  // NOTE: Deprecated. Use |release_frame_buffer| instead.
-  ReleaseFrameBufferCallback release = nullptr;
   // Called when the first sequence header or a sequence header with a
   // different frame size (which includes bitdepth, monochrome, subsampling_x,
   // subsampling_y, maximum frame width, or maximum frame height) is received.
   FrameBufferSizeChangedCallback on_frame_buffer_size_changed = nullptr;
-  // Get frame buffer callback, version 2.
-  GetFrameBufferCallback2 get_frame_buffer = nullptr;
-  // Release frame buffer callback, version 2.
-  ReleaseFrameBufferCallback2 release_frame_buffer = nullptr;
+  // Get frame buffer callback.
+  GetFrameBufferCallback get_frame_buffer = nullptr;
+  // Release frame buffer callback.
+  ReleaseFrameBufferCallback release_frame_buffer = nullptr;
   // Passed as the private_data argument to the callbacks.
   void* callback_private_data = nullptr;
   // Mask indicating the post processing filters that need to be applied to the

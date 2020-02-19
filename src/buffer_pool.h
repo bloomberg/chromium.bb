@@ -70,14 +70,6 @@ class RefCountedBuffer {
   // it allocated the YUV buffer.
   void* buffer_private_data() const {
     assert(buffer_private_data_valid_);
-    // If the callbacks are provided by the frame buffer callback adaptor,
-    // buffer_private_data_ points to a version 1 FrameBuffer struct, and the
-    // real buffer private data is inside that struct.
-    if (using_callback_adaptor_) {
-      FrameBuffer* raw_frame_buffer =
-          static_cast<FrameBuffer*>(buffer_private_data_);
-      return raw_frame_buffer->private_data;
-    }
     return buffer_private_data_;
   }
 
@@ -206,12 +198,10 @@ class RefCountedBuffer {
   // Methods for BufferPool:
   RefCountedBuffer();
   ~RefCountedBuffer();
-  void SetBufferPool(BufferPool* pool, bool using_callback_adaptor);
+  void SetBufferPool(BufferPool* pool);
   static void ReturnToBufferPool(RefCountedBuffer* ptr);
 
   BufferPool* pool_ = nullptr;
-  // True if the callbacks are provided by the frame buffer callback adaptor.
-  bool using_callback_adaptor_ = false;
   bool buffer_private_data_valid_ = false;
   void* buffer_private_data_ = nullptr;
   YuvBuffer yuv_buffer_;
@@ -268,12 +258,10 @@ using RefCountedBufferPtr = std::shared_ptr<RefCountedBuffer>;
 // BufferPool maintains a pool of RefCountedBuffers.
 class BufferPool {
  public:
-  // If using_callback_adaptor is true, the callbacks are provided by the
-  // frame buffer callback adaptor.
   BufferPool(FrameBufferSizeChangedCallback on_frame_buffer_size_changed,
-             GetFrameBufferCallback2 get_frame_buffer,
-             ReleaseFrameBufferCallback2 release_frame_buffer,
-             void* callback_private_data, bool using_callback_adaptor);
+             GetFrameBufferCallback get_frame_buffer,
+             ReleaseFrameBufferCallback release_frame_buffer,
+             void* callback_private_data);
 
   // Not copyable or movable.
   BufferPool(const BufferPool&) = delete;
@@ -304,11 +292,10 @@ class BufferPool {
 
   // Frame buffer callbacks.
   FrameBufferSizeChangedCallback on_frame_buffer_size_changed_;
-  GetFrameBufferCallback2 get_frame_buffer_;
-  ReleaseFrameBufferCallback2 release_frame_buffer_;
+  GetFrameBufferCallback get_frame_buffer_;
+  ReleaseFrameBufferCallback release_frame_buffer_;
   // Private data associated with the frame buffer callbacks.
   void* callback_private_data_;
-  const bool using_callback_adaptor_;
 };
 
 }  // namespace libgav1

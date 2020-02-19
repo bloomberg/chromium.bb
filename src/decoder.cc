@@ -30,8 +30,6 @@ Libgav1StatusCode Libgav1DecoderCreate(const Libgav1DecoderSettings* settings,
   libgav1::DecoderSettings cxx_settings;
   cxx_settings.threads = settings->threads;
   cxx_settings.frame_parallel = settings->frame_parallel != 0;
-  cxx_settings.get = settings->get;
-  cxx_settings.release = settings->release;
   cxx_settings.on_frame_buffer_size_changed =
       settings->on_frame_buffer_size_changed;
   cxx_settings.get_frame_buffer = settings->get_frame_buffer;

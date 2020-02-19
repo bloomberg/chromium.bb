@@ -94,12 +94,6 @@ StatusCode DecoderImpl::Create(const DecoderSettings* settings,
                  "Frame parallel decoding is not implemented, ignoring"
                  " setting.");
   }
-  if (settings->get != nullptr && settings->get_frame_buffer != nullptr) {
-    LIBGAV1_DLOG(
-        ERROR,
-        "Version 1 and version 2 frame buffer callbacks cannot both be used.");
-    return kStatusInvalidArgument;
-  }
   std::unique_ptr<DecoderImpl> impl(new (std::nothrow) DecoderImpl(settings));
   if (impl == nullptr) {
     LIBGAV1_DLOG(ERROR, "Failed to allocate DecoderImpl.");
@@ -112,18 +106,9 @@ StatusCode DecoderImpl::Create(const DecoderSettings* settings,
 }
 
 DecoderImpl::DecoderImpl(const DecoderSettings* settings)
-    : v1_callbacks_(settings->get, settings->release,
-                    settings->callback_private_data),
-      buffer_pool_((settings->get != nullptr)
-                       ? OnFrameBufferSizeChangedAdaptor
-                       : settings->on_frame_buffer_size_changed,
-                   (settings->get != nullptr) ? GetFrameBufferAdaptor
-                                              : settings->get_frame_buffer,
-                   (settings->get != nullptr) ? ReleaseFrameBufferAdaptor
-                                              : settings->release_frame_buffer,
-                   (settings->get != nullptr) ? &v1_callbacks_
-                                              : settings->callback_private_data,
-                   settings->get != nullptr),
+    : buffer_pool_(settings->on_frame_buffer_size_changed,
+                   settings->get_frame_buffer, settings->release_frame_buffer,
+                   settings->callback_private_data),
       settings_(*settings) {
   dsp::DspInit();
 }

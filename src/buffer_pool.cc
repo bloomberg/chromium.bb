@@ -116,11 +116,7 @@ void RefCountedBuffer::SetSegmentationParameters(
   CopySegmentationParameters(/*from=*/segmentation, /*to=*/&segmentation_);
 }
 
-void RefCountedBuffer::SetBufferPool(BufferPool* pool,
-                                     bool using_callback_adaptor) {
-  pool_ = pool;
-  using_callback_adaptor_ = using_callback_adaptor;
-}
+void RefCountedBuffer::SetBufferPool(BufferPool* pool) { pool_ = pool; }
 
 void RefCountedBuffer::ReturnToBufferPool(RefCountedBuffer* ptr) {
   ptr->pool_->ReturnUnusedBuffer(ptr);
@@ -128,12 +124,11 @@ void RefCountedBuffer::ReturnToBufferPool(RefCountedBuffer* ptr) {
 
 BufferPool::BufferPool(
     FrameBufferSizeChangedCallback on_frame_buffer_size_changed,
-    GetFrameBufferCallback2 get_frame_buffer,
-    ReleaseFrameBufferCallback2 release_frame_buffer,
-    void* callback_private_data, bool using_callback_adaptor)
-    : using_callback_adaptor_(using_callback_adaptor) {
+    GetFrameBufferCallback get_frame_buffer,
+    ReleaseFrameBufferCallback release_frame_buffer,
+    void* callback_private_data) {
   if (get_frame_buffer != nullptr) {
-    assert(on_frame_buffer_size_changed != nullptr);
+    // on_frame_buffer_size_changed may be null.
     assert(release_frame_buffer != nullptr);
     on_frame_buffer_size_changed_ = on_frame_buffer_size_changed;
     get_frame_buffer_ = get_frame_buffer;
@@ -162,10 +157,11 @@ bool BufferPool::OnFrameBufferSizeChanged(int bitdepth,
                                           int width, int height,
                                           int left_border, int right_border,
                                           int top_border, int bottom_border) {
+  if (on_frame_buffer_size_changed_ == nullptr) return true;
   return on_frame_buffer_size_changed_(callback_private_data_, bitdepth,
                                        image_format, width, height, left_border,
                                        right_border, top_border, bottom_border,
-                                       /*stride_alignment=*/16) == 0;
+                                       /*stride_alignment=*/16) == kStatusOk;
 }
 
 RefCountedBufferPtr BufferPool::GetFreeBuffer() {
@@ -187,7 +183,7 @@ RefCountedBufferPtr BufferPool::GetFreeBuffer() {
     delete buffer;
     return RefCountedBufferPtr();
   }
-  buffer->SetBufferPool(this, using_callback_adaptor_);
+  buffer->SetBufferPool(this);
   buffer->in_use_ = true;
   return RefCountedBufferPtr(buffer, RefCountedBuffer::ReturnToBufferPool);
 }
