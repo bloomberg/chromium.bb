@@ -1420,8 +1420,6 @@ class Changelist(object):
     self.description = description
     self.has_description = True
 
-
-
   def RunHook(self, committing, may_prompt, verbose, change, parallel):
     """Calls sys.exit() if the hook fails; returns a HookResults otherwise."""
     try:
@@ -1693,11 +1691,6 @@ class Changelist(object):
     if not self.GetIssue():
       return
 
-    # Warm change details cache now to avoid RPCs later, reducing latency for
-    # developers.
-    self._GetChangeDetail(
-        ['DETAILED_ACCOUNTS', 'CURRENT_REVISION', 'CURRENT_COMMIT', 'LABELS'])
-
     status = self._GetChangeDetail()['status']
     if status in ('MERGED', 'ABANDONED'):
       DieWithError('Change %s has been %s, new uploads are not allowed' %
@@ -1912,49 +1905,38 @@ class Changelist(object):
         self._GetGerritHost(), self._GerritChangeIdentifier(),
         wait_for_merge=wait_for_merge)
 
-  def _GetChangeDetail(self, options=None, no_cache=False):
-    """Returns details of associated Gerrit change and caching results.
-
-    If fresh data is needed, set no_cache=True which will clear cache and
-    thus new data will be fetched from Gerrit.
-    """
+  def _GetChangeDetail(self, options=None):
+    """Returns details of associated Gerrit change and caching results."""
     options = options or []
     assert self.GetIssue(), 'issue is required to query Gerrit'
 
     # Optimization to avoid multiple RPCs:
-    if (('CURRENT_REVISION' in options or 'ALL_REVISIONS' in options) and
-        'CURRENT_COMMIT' not in options):
+    if 'CURRENT_REVISION' in options or 'ALL_REVISIONS' in options:
       options.append('CURRENT_COMMIT')
 
     # Normalize issue and options for consistent keys in cache.
     cache_key = str(self.GetIssue())
-    options = [o.upper() for o in options]
+    options_set = frozenset(o.upper() for o in options)
 
-    # Check in cache first unless no_cache is True.
-    if no_cache:
-      self._detail_cache.pop(cache_key, None)
-    else:
-      options_set = frozenset(options)
-      for cached_options_set, data in self._detail_cache.get(cache_key, []):
-        # Assumption: data fetched before with extra options is suitable
-        # for return for a smaller set of options.
-        # For example, if we cached data for
-        #     options=[CURRENT_REVISION, DETAILED_FOOTERS]
-        #   and request is for options=[CURRENT_REVISION],
-        # THEN we can return prior cached data.
-        if options_set.issubset(cached_options_set):
-          return data
+    for cached_options_set, data in self._detail_cache.get(cache_key, []):
+      # Assumption: data fetched before with extra options is suitable
+      # for return for a smaller set of options.
+      # For example, if we cached data for
+      #     options=[CURRENT_REVISION, DETAILED_FOOTERS]
+      #   and request is for options=[CURRENT_REVISION],
+      # THEN we can return prior cached data.
+      if options_set.issubset(cached_options_set):
+        return data
 
     try:
       data = gerrit_util.GetChangeDetail(
-          self._GetGerritHost(), self._GerritChangeIdentifier(), options)
+          self._GetGerritHost(), self._GerritChangeIdentifier(), options_set)
     except gerrit_util.GerritError as e:
       if e.http_status == 404:
         raise GerritChangeNotExists(self.GetIssue(), self.GetCodereviewServer())
       raise
 
-    self._detail_cache.setdefault(cache_key, []).append(
-        (frozenset(options), data))
+    self._detail_cache.setdefault(cache_key, []).append((options_set, data))
     return data
 
   def _GetChangeCommit(self):
@@ -4363,9 +4345,16 @@ def CMDupload(parser, args):
   settings.GetIsGerrit()
 
   cl = Changelist()
+  # Warm change details cache now to avoid RPCs later, reducing latency for
+  # developers.
+  if cl.GetIssue():
+    cl._GetChangeDetail(
+        ['DETAILED_ACCOUNTS', 'CURRENT_REVISION', 'CURRENT_COMMIT', 'LABELS'])
+
   if options.retry_failed and not cl.GetIssue():
     print('No previous patchsets, so --retry-failed has no effect.')
     options.retry_failed = False
+
   # cl.GetMostRecentPatchset uses cached information, and can return the last
   # patchset before upload. Calling it here makes it clear that it's the
   # last patchset before upload. Note that GetMostRecentPatchset will fail

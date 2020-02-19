@@ -629,9 +629,7 @@ class TestGitCl(unittest.TestCase):
         'git_cl.presubmit_support.DoPresubmitChecks', PresubmitMock).start()
     mock.patch('git_cl.watchlists.Watchlists', WatchlistsMock).start()
     mock.patch('git_cl.auth.Authenticator', AuthenticatorMock).start()
-    mock.patch(
-        'git_cl.gerrit_util.GetChangeDetail',
-        lambda *a: self._mocked_call('GetChangeDetail', *a)).start()
+    mock.patch('gerrit_util.GetChangeDetail').start()
     mock.patch(
         'git_cl.gerrit_util.GetChangeComments',
         lambda *a: self._mocked_call('GetChangeComments', *a)).start()
@@ -796,21 +794,15 @@ class TestGitCl(unittest.TestCase):
       ]
 
     if issue:
-      calls += [
-        (('GetChangeDetail', '%s-review.googlesource.com' % short_hostname,
-          'my%2Frepo~123456',
-          ['DETAILED_ACCOUNTS', 'CURRENT_REVISION', 'CURRENT_COMMIT', 'LABELS']
-         ),
-         {
-           'owner': {'email': (other_cl_owner or 'owner@example.com')},
-           'change_id': (change_id or '123456789'),
-           'current_revision': 'sha1_of_current_revision',
-           'revisions': {'sha1_of_current_revision': {
-             'commit': {'message': fetched_description},
-           }},
-           'status': fetched_status or 'NEW',
-         }),
-      ]
+      gerrit_util.GetChangeDetail.return_value = {
+        'owner': {'email': (other_cl_owner or 'owner@example.com')},
+        'change_id': (change_id or '123456789'),
+        'current_revision': 'sha1_of_current_revision',
+        'revisions': {'sha1_of_current_revision': {
+          'commit': {'message': fetched_description},
+        }},
+        'status': fetched_status or 'NEW',
+      }
       if fetched_status == 'ABANDONED':
         calls += [
           (('DieWithError', 'Change https://%s-review.googlesource.com/'
@@ -1714,30 +1706,25 @@ class TestGitCl(unittest.TestCase):
     mock.patch('git_cl.IsGitVersionAtLeast', return_value=True).start()
     self.mockGit.config['remote.origin.url'] = (
         'https://%s.googlesource.com/my/repo' % git_short_host)
-
-    self.calls += [
-      (('GetChangeDetail', git_short_host + '-review.googlesource.com',
-        'my%2Frepo~123456', ['ALL_REVISIONS', 'CURRENT_COMMIT']),
-       {
-         'current_revision': '7777777777',
-         'revisions': {
-           '1111111111': {
-             '_number': 1,
-             'fetch': {'http': {
-               'url': 'https://%s.googlesource.com/my/repo' % git_short_host,
-               'ref': 'refs/changes/56/123456/1',
-             }},
-           },
-           '7777777777': {
-             '_number': 7,
-             'fetch': {'http': {
-               'url': 'https://%s.googlesource.com/my/repo' % git_short_host,
-               'ref': 'refs/changes/56/123456/7',
-             }},
-           },
-         },
-       }),
-    ]
+    gerrit_util.GetChangeDetail.return_value = {
+      'current_revision': '7777777777',
+      'revisions': {
+        '1111111111': {
+          '_number': 1,
+          'fetch': {'http': {
+            'url': 'https://%s.googlesource.com/my/repo' % git_short_host,
+            'ref': 'refs/changes/56/123456/1',
+          }},
+        },
+        '7777777777': {
+          '_number': 7,
+          'fetch': {'http': {
+            'url': 'https://%s.googlesource.com/my/repo' % git_short_host,
+            'ref': 'refs/changes/56/123456/7',
+          }},
+        },
+      },
+    }
 
   def test_patch_gerrit_default(self):
     self._patch_common()
@@ -1810,7 +1797,7 @@ class TestGitCl(unittest.TestCase):
       git_cl.main(['patch', '123456'])
 
   @mock.patch(
-      'git_cl.gerrit_util.GetChangeDetail',
+      'gerrit_util.GetChangeDetail',
       side_effect=gerrit_util.GerritError(404, ''))
   def test_patch_gerrit_not_exists(self, *_mocks):
     self.mockGit.config['remote.origin.url'] = (
@@ -2018,16 +2005,12 @@ class TestGitCl(unittest.TestCase):
   def test_description(self):
     self.mockGit.config['remote.origin.url'] = (
         'https://chromium.googlesource.com/my/repo')
-    self.calls = [
-        (('GetChangeDetail', 'chromium-review.googlesource.com',
-          'my%2Frepo~123123', ['CURRENT_REVISION', 'CURRENT_COMMIT']),
-         {
-           'current_revision': 'sha1',
-           'revisions': {'sha1': {
-             'commit': {'message': 'foobar'},
-           }},
-         }),
-    ]
+    gerrit_util.GetChangeDetail.return_value = {
+      'current_revision': 'sha1',
+      'revisions': {'sha1': {
+        'commit': {'message': 'foobar'},
+      }},
+    }
     self.assertEqual(0, git_cl.main([
         'description',
         'https://chromium-review.googlesource.com/c/my/repo/+/123123',
@@ -2311,11 +2294,7 @@ class TestGitCl(unittest.TestCase):
 
   def test_gerrit_change_detail_cache_simple(self):
     self._mock_gerrit_changes_for_detail_cache()
-    self.calls = [
-        (('GetChangeDetail', 'host', 'my%2Frepo~1', []), 'a'),
-        (('GetChangeDetail', 'host', 'ab%2Frepo~2', []), 'b'),
-        (('GetChangeDetail', 'host', 'ab%2Frepo~2', []), 'b2'),
-    ]
+    gerrit_util.GetChangeDetail.side_effect = ['a', 'b']
     cl1 = git_cl.Changelist(issue=1)
     cl1._cached_remote_url = (
         True, 'https://chromium.googlesource.com/a/my/repo.git/')
@@ -2325,19 +2304,10 @@ class TestGitCl(unittest.TestCase):
     self.assertEqual(cl1._GetChangeDetail(), 'a')  # Miss.
     self.assertEqual(cl1._GetChangeDetail(), 'a')
     self.assertEqual(cl2._GetChangeDetail(), 'b')  # Miss.
-    self.assertEqual(cl2._GetChangeDetail(no_cache=True), 'b2')  # Miss.
-    self.assertEqual(cl1._GetChangeDetail(), 'a')
-    self.assertEqual(cl2._GetChangeDetail(), 'b2')
 
   def test_gerrit_change_detail_cache_options(self):
     self._mock_gerrit_changes_for_detail_cache()
-    self.calls = [
-        (('GetChangeDetail', 'host', 'repo~1', ['C', 'A', 'B']), 'cab'),
-        (('GetChangeDetail', 'host', 'repo~1', ['A', 'D']), 'ad'),
-        (('GetChangeDetail', 'host', 'repo~1', ['A']), 'a'),  # no_cache=True
-        # no longer in cache.
-        (('GetChangeDetail', 'host', 'repo~1', ['B']), 'b'),
-    ]
+    gerrit_util.GetChangeDetail.side_effect = ['cab', 'ad']
     cl = git_cl.Changelist(issue=1)
     cl._cached_remote_url = (True, 'https://chromium.googlesource.com/repo/')
     self.assertEqual(cl._GetChangeDetail(options=['C', 'A', 'B']), 'cab')
@@ -2352,21 +2322,13 @@ class TestGitCl(unittest.TestCase):
     self.assertEqual(cl._GetChangeDetail(options=['D']), 'ad')
     self.assertEqual(cl._GetChangeDetail(), 'cab')
 
-    # Finally, no_cache should invalidate all caches for given change.
-    self.assertEqual(cl._GetChangeDetail(options=['A'], no_cache=True), 'a')
-    self.assertEqual(cl._GetChangeDetail(options=['B']), 'b')
-
   def test_gerrit_description_caching(self):
-    def gen_detail(rev, desc):
-      return {
-        'current_revision': rev,
-        'revisions': {rev: {'commit': {'message': desc}}}
-      }
-    self.calls = [
-        (('GetChangeDetail', 'host', 'my%2Frepo~1',
-          ['CURRENT_REVISION', 'CURRENT_COMMIT']),
-         gen_detail('rev1', 'desc1')),
-    ]
+    gerrit_util.GetChangeDetail.return_value = {
+      'current_revision': 'rev1',
+      'revisions': {
+        'rev1': {'commit': {'message': 'desc1'}},
+      },
+    }
 
     self._mock_gerrit_changes_for_detail_cache()
     cl = git_cl.Changelist(issue=1)
@@ -2477,11 +2439,7 @@ class TestGitCl(unittest.TestCase):
   def test_git_cl_comments_fetch_gerrit(self, *_mocks):
     self.mockGit.config['remote.origin.url'] = (
         'https://chromium.googlesource.com/infra/infra')
-    self.calls = [
-      (('GetChangeDetail', 'chromium-review.googlesource.com',
-        'infra%2Finfra~1',
-        ['MESSAGES', 'DETAILED_ACCOUNTS', 'CURRENT_REVISION',
-         'CURRENT_COMMIT']), {
+    gerrit_util.GetChangeDetail.return_value = {
         'owner': {'email': 'owner@example.com'},
         'current_revision': 'ba5eba11',
         'revisions': {
@@ -2528,7 +2486,8 @@ class TestGitCl(unittest.TestCase):
              u'message': u'Patch Set 2: Code-Review+1',
           },
         ]
-      }),
+      }
+    self.calls = [
       (('GetChangeComments', 'chromium-review.googlesource.com',
         'infra%2Finfra~1'), {
         '/COMMIT_MSG': [
@@ -2620,72 +2579,69 @@ class TestGitCl(unittest.TestCase):
     # comments from the latest patchset are shown.
     self.mockGit.config['remote.origin.url'] = (
         'https://chromium.googlesource.com/infra/infra')
-    self.calls = [
-      (('GetChangeDetail', 'chromium-review.googlesource.com',
-        'infra%2Finfra~1',
-        ['MESSAGES', 'DETAILED_ACCOUNTS', 'CURRENT_REVISION',
-         'CURRENT_COMMIT']), {
-        'owner': {'email': 'owner@example.com'},
-        'current_revision': 'ba5eba11',
-        'revisions': {
-          'deadbeaf': {
-            '_number': 1,
-          },
-          'ba5eba11': {
-            '_number': 2,
-          },
+    gerrit_util.GetChangeDetail.return_value = {
+      'owner': {'email': 'owner@example.com'},
+      'current_revision': 'ba5eba11',
+      'revisions': {
+        'deadbeaf': {
+          '_number': 1,
         },
-        'messages': [
-          {
-             u'_revision_number': 1,
-             u'author': {
-               u'_account_id': 1111084,
-               u'email': u'commit-bot@chromium.org',
-               u'name': u'Commit Bot'
-             },
-             u'date': u'2017-03-15 20:08:45.000000000',
-             u'id': u'f5a6c25ecbd3b3b54a43ae418ed97eff046dc50b',
-             u'message': u'Patch Set 1:\n\nDry run: CQ is trying the patch...',
-             u'tag': u'autogenerated:cq:dry-run'
-          },
-          {
-             u'_revision_number': 1,
-             u'author': {
-               u'_account_id': 123,
-               u'email': u'tricium@serviceaccount.com',
-               u'name': u'Tricium'
-             },
-             u'date': u'2017-03-16 20:00:41.000000000',
-             u'id': u'f5a6c25ecbd3b3b54a43ae418ed97eff046d1234',
-             u'message': u'(1 comment)',
-             u'tag': u'autogenerated:tricium',
-          },
-          {
-             u'_revision_number': 1,
-             u'author': {
-               u'_account_id': 123,
-               u'email': u'tricium@serviceaccount.com',
-               u'name': u'Tricium'
-             },
-             u'date': u'2017-03-16 20:00:41.000000000',
-             u'id': u'f5a6c25ecbd3b3b54a43ae418ed97eff046d1234',
-             u'message': u'(1 comment)',
-             u'tag': u'autogenerated:tricium',
-          },
-          {
-             u'_revision_number': 2,
-             u'author': {
-               u'_account_id': 123,
-               u'email': u'tricium@serviceaccount.com',
-               u'name': u'reviewer'
-             },
-             u'date': u'2017-03-17 05:30:37.000000000',
-             u'tag': u'autogenerated:tricium',
-             u'id': u'f5a6c25ecbd3b3b54a43ae418ed97eff046d4568',
-             u'message': u'(1 comment)',
-          },
-        ]
-      }),
+        'ba5eba11': {
+          '_number': 2,
+        },
+      },
+      'messages': [
+      {
+        u'_revision_number': 1,
+        u'author': {
+          u'_account_id': 1111084,
+          u'email': u'commit-bot@chromium.org',
+          u'name': u'Commit Bot'
+        },
+        u'date': u'2017-03-15 20:08:45.000000000',
+        u'id': u'f5a6c25ecbd3b3b54a43ae418ed97eff046dc50b',
+        u'message': u'Patch Set 1:\n\nDry run: CQ is trying the patch...',
+        u'tag': u'autogenerated:cq:dry-run'
+      },
+      {
+        u'_revision_number': 1,
+        u'author': {
+          u'_account_id': 123,
+          u'email': u'tricium@serviceaccount.com',
+          u'name': u'Tricium'
+        },
+        u'date': u'2017-03-16 20:00:41.000000000',
+        u'id': u'f5a6c25ecbd3b3b54a43ae418ed97eff046d1234',
+        u'message': u'(1 comment)',
+        u'tag': u'autogenerated:tricium',
+      },
+      {
+        u'_revision_number': 1,
+        u'author': {
+          u'_account_id': 123,
+          u'email': u'tricium@serviceaccount.com',
+          u'name': u'Tricium'
+        },
+        u'date': u'2017-03-16 20:00:41.000000000',
+        u'id': u'f5a6c25ecbd3b3b54a43ae418ed97eff046d1234',
+        u'message': u'(1 comment)',
+        u'tag': u'autogenerated:tricium',
+      },
+      {
+        u'_revision_number': 2,
+        u'author': {
+          u'_account_id': 123,
+          u'email': u'tricium@serviceaccount.com',
+          u'name': u'reviewer'
+        },
+        u'date': u'2017-03-17 05:30:37.000000000',
+        u'tag': u'autogenerated:tricium',
+        u'id': u'f5a6c25ecbd3b3b54a43ae418ed97eff046d4568',
+        u'message': u'(1 comment)',
+      },
+      ]
+    }
+    self.calls = [
       (('GetChangeComments', 'chromium-review.googlesource.com',
         'infra%2Finfra~1'), {}),
       (('GetChangeRobotComments', 'chromium-review.googlesource.com',
@@ -2862,16 +2818,27 @@ class CMDTestCaseBase(unittest.TestCase):
     mock.patch('git_cl.sys.stdout', StringIO()).start()
     mock.patch('git_cl.uuid.uuid4', return_value='uuid4').start()
     mock.patch('git_cl.Changelist.GetIssue', return_value=123456).start()
-    mock.patch('git_cl.Changelist.GetCodereviewServer',
-               return_value='https://chromium-review.googlesource.com').start()
-    mock.patch('git_cl.Changelist.GetMostRecentPatchset',
-               return_value=7).start()
-    mock.patch('git_cl.auth.Authenticator',
-               return_value=AuthenticatorMock()).start()
-    mock.patch('git_cl.Changelist._GetChangeDetail',
-               return_value=self._CHANGE_DETAIL).start()
-    mock.patch('git_cl._call_buildbucket',
-               return_value = self._DEFAULT_RESPONSE).start()
+    mock.patch(
+        'git_cl.Changelist.GetCodereviewServer',
+        return_value='https://chromium-review.googlesource.com').start()
+    mock.patch(
+        'git_cl.Changelist._GetGerritHost',
+        return_value='chromium-review.googlesource.com').start()
+    mock.patch(
+        'git_cl.Changelist.GetMostRecentPatchset',
+        return_value=7).start()
+    mock.patch(
+        'git_cl.Changelist.GetRemoteUrl',
+        return_value='https://chromium.googlesource.com/depot_tools').start()
+    mock.patch(
+        'auth.Authenticator',
+        return_value=AuthenticatorMock()).start()
+    mock.patch(
+        'gerrit_util.GetChangeDetail',
+        return_value=self._CHANGE_DETAIL).start()
+    mock.patch(
+        'git_cl._call_buildbucket',
+        return_value = self._DEFAULT_RESPONSE).start()
     mock.patch('git_common.is_dirty_git_tree', return_value=False).start()
     self.addCleanup(mock.patch.stopall)
 
@@ -3239,6 +3206,14 @@ class CMDUploadTestCase(CMDTestCaseBase):
     mock.patch('git_cl.Changelist.CMDUpload', return_value=0).start()
     mock.patch('git_cl.Settings.GetIsGerrit', return_value=True).start()
     self.addCleanup(mock.patch.stopall)
+
+  def testWarmUpChangeDetailCache(self):
+    self.assertEqual(0, git_cl.main(['upload']))
+    gerrit_util.GetChangeDetail.assert_called_once_with(
+        'chromium-review.googlesource.com', 'depot_tools~123456',
+        frozenset([
+            'LABELS', 'CURRENT_REVISION', 'DETAILED_ACCOUNTS',
+            'CURRENT_COMMIT']))
 
   def testUploadRetryFailed(self):
     # This test mocks out the actual upload part, and just asserts that after
