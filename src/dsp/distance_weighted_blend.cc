@@ -27,10 +27,7 @@ namespace dsp {
 namespace {
 
 template <int bitdepth, typename Pixel>
-void DistanceWeightedBlend_C(const void* prediction_0,
-                             const ptrdiff_t prediction_stride_0,
-                             const void* prediction_1,
-                             const ptrdiff_t prediction_stride_1,
+void DistanceWeightedBlend_C(const void* prediction_0, const void* prediction_1,
                              const uint8_t weight_0, const uint8_t weight_1,
                              const int width, const int height,
                              void* const dest, const ptrdiff_t dest_stride) {
@@ -58,8 +55,8 @@ void DistanceWeightedBlend_C(const void* prediction_0,
     } while (++x < width);
 
     dst += dst_stride;
-    pred_0 += prediction_stride_0;
-    pred_1 += prediction_stride_1;
+    pred_0 += width;
+    pred_1 += width;
   } while (++y < height);
 }
 

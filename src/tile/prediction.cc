@@ -901,10 +901,8 @@ void Tile::DistanceWeightedPrediction(void* prediction_0, void* prediction_1,
   }
   GetDistanceWeights(distance, weight);
 
-  dsp_.distance_weighted_blend(prediction_0, /*prediction_stride_0=*/width,
-                               prediction_1,
-                               /*prediction_stride_1=*/width, weight[0],
-                               weight[1], width, height, dest, dest_stride);
+  dsp_.distance_weighted_blend(prediction_0, prediction_1, weight[0], weight[1],
+                               width, height, dest, dest_stride);
 }
 
 // static.

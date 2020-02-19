@@ -50,83 +50,55 @@ inline int16x8_t ComputeWeightedAverage8(const int16x8_t pred0,
                       vqrshrn_n_s32(blended_hi, kInterPostRoundBit + 4));
 }
 
-template <int height>
-inline void DistanceWeightedBlend4xH_NEON(
-    const int16_t* prediction_0, const ptrdiff_t prediction_stride_0,
-    const int16_t* prediction_1, const ptrdiff_t prediction_stride_1,
-    const int16x4_t weights[2], void* const dest, const ptrdiff_t dest_stride) {
+template <int width, int height>
+inline void DistanceWeightedBlendSmall_NEON(const int16_t* prediction_0,
+                                            const int16_t* prediction_1,
+                                            const int16x4_t weights[2],
+                                            void* const dest,
+                                            const ptrdiff_t dest_stride) {
   auto* dst = static_cast<uint8_t*>(dest);
+  constexpr int step = 16 / width;
 
-  for (int y = 0; y < height; y += 4) {
-    const int16x4_t src_00 = vld1_s16(prediction_0);
-    const int16x4_t src_10 = vld1_s16(prediction_1);
-    prediction_0 += prediction_stride_0;
-    prediction_1 += prediction_stride_1;
-    const int16x4_t src_01 = vld1_s16(prediction_0);
-    const int16x4_t src_11 = vld1_s16(prediction_1);
-    prediction_0 += prediction_stride_0;
-    prediction_1 += prediction_stride_1;
-    const int16x8_t res01 = ComputeWeightedAverage8(
-        vcombine_s16(src_00, src_01), vcombine_s16(src_10, src_11), weights);
-
-    const int16x4_t src_02 = vld1_s16(prediction_0);
-    const int16x4_t src_12 = vld1_s16(prediction_1);
-    prediction_0 += prediction_stride_0;
-    prediction_1 += prediction_stride_1;
-    const int16x4_t src_03 = vld1_s16(prediction_0);
-    const int16x4_t src_13 = vld1_s16(prediction_1);
-    prediction_0 += prediction_stride_0;
-    prediction_1 += prediction_stride_1;
-    const int16x8_t res23 = ComputeWeightedAverage8(
-        vcombine_s16(src_02, src_03), vcombine_s16(src_12, src_13), weights);
-
-    const uint8x8_t result_01 = vqmovun_s16(res01);
-    const uint8x8_t result_23 = vqmovun_s16(res23);
-    StoreLo4(dst, result_01);
-    dst += dest_stride;
-    StoreHi4(dst, result_01);
-    dst += dest_stride;
-    StoreLo4(dst, result_23);
-    dst += dest_stride;
-    StoreHi4(dst, result_23);
-    dst += dest_stride;
-  }
-}
-
-template <int height>
-inline void DistanceWeightedBlend8xH_NEON(
-    const int16_t* prediction_0, const ptrdiff_t prediction_stride_0,
-    const int16_t* prediction_1, const ptrdiff_t prediction_stride_1,
-    const int16x4_t weights[2], void* const dest, const ptrdiff_t dest_stride) {
-  auto* dst = static_cast<uint8_t*>(dest);
-
-  for (int y = 0; y < height; y += 2) {
+  for (int y = 0; y < height; y += step) {
     const int16x8_t src_00 = vld1q_s16(prediction_0);
     const int16x8_t src_10 = vld1q_s16(prediction_1);
-    prediction_0 += prediction_stride_0;
-    prediction_1 += prediction_stride_1;
+    prediction_0 += 8;
+    prediction_1 += 8;
     const int16x8_t res0 = ComputeWeightedAverage8(src_00, src_10, weights);
 
     const int16x8_t src_01 = vld1q_s16(prediction_0);
     const int16x8_t src_11 = vld1q_s16(prediction_1);
-    prediction_0 += prediction_stride_0;
-    prediction_1 += prediction_stride_1;
+    prediction_0 += 8;
+    prediction_1 += 8;
     const int16x8_t res1 = ComputeWeightedAverage8(src_01, src_11, weights);
 
     const uint8x8_t result0 = vqmovun_s16(res0);
     const uint8x8_t result1 = vqmovun_s16(res1);
-    vst1_u8(dst, result0);
-    dst += dest_stride;
-    vst1_u8(dst, result1);
-    dst += dest_stride;
+    if (width == 4) {
+      StoreLo4(dst, result0);
+      dst += dest_stride;
+      StoreHi4(dst, result0);
+      dst += dest_stride;
+      StoreLo4(dst, result1);
+      dst += dest_stride;
+      StoreHi4(dst, result1);
+      dst += dest_stride;
+    } else {
+      assert(width == 8);
+      vst1_u8(dst, result0);
+      dst += dest_stride;
+      vst1_u8(dst, result1);
+      dst += dest_stride;
+    }
   }
 }
 
-inline void DistanceWeightedBlendLarge_NEON(
-    const int16_t* prediction_0, const ptrdiff_t prediction_stride_0,
-    const int16_t* prediction_1, const ptrdiff_t prediction_stride_1,
-    const int16x4_t weights[2], const int width, const int height,
-    void* const dest, const ptrdiff_t dest_stride) {
+inline void DistanceWeightedBlendLarge_NEON(const int16_t* prediction_0,
+                                            const int16_t* prediction_1,
+                                            const int16x4_t weights[2],
+                                            const int width, const int height,
+                                            void* const dest,
+                                            const ptrdiff_t dest_stride) {
   auto* dst = static_cast<uint8_t*>(dest);
 
   int y = height;
@@ -149,33 +121,33 @@ inline void DistanceWeightedBlendLarge_NEON(
       x += 16;
     } while (x < width);
     dst += dest_stride;
-    prediction_0 += prediction_stride_0;
-    prediction_1 += prediction_stride_1;
+    prediction_0 += width;
+    prediction_1 += width;
   } while (--y != 0);
 }
 
-inline void DistanceWeightedBlend_NEON(
-    const void* prediction_0, const ptrdiff_t prediction_stride_0,
-    const void* prediction_1, const ptrdiff_t prediction_stride_1,
-    const uint8_t weight_0, const uint8_t weight_1, const int width,
-    const int height, void* const dest, const ptrdiff_t dest_stride) {
+inline void DistanceWeightedBlend_NEON(const void* prediction_0,
+                                       const void* prediction_1,
+                                       const uint8_t weight_0,
+                                       const uint8_t weight_1, const int width,
+                                       const int height, void* const dest,
+                                       const ptrdiff_t dest_stride) {
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
   int16x4_t weights[2] = {vdup_n_s16(weight_0), vdup_n_s16(weight_1)};
+  // TODO(johannkoenig): Investigate the branching. May be fine to call with a
+  // variable height.
   if (width == 4) {
     if (height == 4) {
-      DistanceWeightedBlend4xH_NEON<4>(pred_0, prediction_stride_0, pred_1,
-                                       prediction_stride_1, weights, dest,
-                                       dest_stride);
+      DistanceWeightedBlendSmall_NEON<4, 4>(pred_0, pred_1, weights, dest,
+                                            dest_stride);
     } else if (height == 8) {
-      DistanceWeightedBlend4xH_NEON<8>(pred_0, prediction_stride_0, pred_1,
-                                       prediction_stride_1, weights, dest,
-                                       dest_stride);
+      DistanceWeightedBlendSmall_NEON<4, 8>(pred_0, pred_1, weights, dest,
+                                            dest_stride);
     } else {
       assert(height == 16);
-      DistanceWeightedBlend4xH_NEON<16>(pred_0, prediction_stride_0, pred_1,
-                                        prediction_stride_1, weights, dest,
-                                        dest_stride);
+      DistanceWeightedBlendSmall_NEON<4, 16>(pred_0, pred_1, weights, dest,
+                                             dest_stride);
     }
     return;
   }
@@ -183,33 +155,28 @@ inline void DistanceWeightedBlend_NEON(
   if (width == 8) {
     switch (height) {
       case 4:
-        DistanceWeightedBlend8xH_NEON<4>(pred_0, prediction_stride_0, pred_1,
-                                         prediction_stride_1, weights, dest,
-                                         dest_stride);
+        DistanceWeightedBlendSmall_NEON<8, 4>(pred_0, pred_1, weights, dest,
+                                              dest_stride);
         return;
       case 8:
-        DistanceWeightedBlend8xH_NEON<8>(pred_0, prediction_stride_0, pred_1,
-                                         prediction_stride_1, weights, dest,
-                                         dest_stride);
+        DistanceWeightedBlendSmall_NEON<8, 8>(pred_0, pred_1, weights, dest,
+                                              dest_stride);
         return;
       case 16:
-        DistanceWeightedBlend8xH_NEON<16>(pred_0, prediction_stride_0, pred_1,
-                                          prediction_stride_1, weights, dest,
-                                          dest_stride);
+        DistanceWeightedBlendSmall_NEON<8, 16>(pred_0, pred_1, weights, dest,
+                                               dest_stride);
         return;
       default:
         assert(height == 32);
-        DistanceWeightedBlend8xH_NEON<32>(pred_0, prediction_stride_0, pred_1,
-                                          prediction_stride_1, weights, dest,
-                                          dest_stride);
+        DistanceWeightedBlendSmall_NEON<8, 32>(pred_0, pred_1, weights, dest,
+                                               dest_stride);
 
         return;
     }
   }
 
-  DistanceWeightedBlendLarge_NEON(pred_0, prediction_stride_0, pred_1,
-                                  prediction_stride_1, weights, width, height,
-                                  dest, dest_stride);
+  DistanceWeightedBlendLarge_NEON(pred_0, pred_1, weights, width, height, dest,
+                                  dest_stride);
 }
 
 void Init8bpp() {
