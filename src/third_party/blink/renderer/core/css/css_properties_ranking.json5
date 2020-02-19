@@ -700,6 +700,7 @@
         "syntax",
         "render-subtree",
         "-bb-lcd-background-color",
+        "-bb-suppress-needs-compositing-input-update",
     ],
     "properties": {}
 }
