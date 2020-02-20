@@ -76,21 +76,23 @@ void Alarm::Cancel() {
 }
 
 void Alarm::ScheduleWithTask(TaskRunner::Task task,
-                             Clock::time_point alarm_time) {
+                             Clock::time_point desired_alarm_time) {
   OSP_DCHECK(task.valid());
 
   scheduled_task_ = std::move(task);
-  alarm_time_ = alarm_time;
+
+  const Clock::time_point now = now_function_();
+  alarm_time_ = std::max(now, desired_alarm_time);
 
   // Ensure that a later firing will occur, and not too late.
   if (queued_fire_) {
-    if (next_fire_time_ <= alarm_time) {
+    if (next_fire_time_ <= alarm_time_) {
       return;
     }
     queued_fire_->Cancel();
     OSP_DCHECK(!queued_fire_);
   }
-  InvokeLater(now_function_(), alarm_time);
+  InvokeLater(now, alarm_time_);
 }
 
 void Alarm::InvokeLater(Clock::time_point now, Clock::time_point fire_time) {
@@ -120,5 +122,8 @@ void Alarm::TryInvoke() {
   TaskRunner::Task task = std::move(scheduled_task_);
   task();
 }
+
+// static
+constexpr Clock::time_point Alarm::kImmediately;
 
 }  // namespace openscreen

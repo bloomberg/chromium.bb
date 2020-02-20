@@ -16,7 +16,7 @@ namespace {
 class AlarmTest : public testing::Test {
  public:
   FakeClock* clock() { return &clock_; }
-  TaskRunner* task_runner() { return &task_runner_; }
+  FakeTaskRunner* task_runner() { return &task_runner_; }
   Alarm* alarm() { return &alarm_; }
 
  private:
@@ -45,6 +45,24 @@ TEST_F(AlarmTest, RunsTaskAsClockAdvances) {
   // Confirm the lambda is only run once.
   clock()->Advance(kDelay * 100);
   ASSERT_EQ(alarm_time, actual_run_time);
+}
+
+TEST_F(AlarmTest, RunsTaskImmediately) {
+  const Clock::time_point expected_run_time = FakeClock::now();
+  Clock::time_point actual_run_time{};
+  alarm()->Schedule([&]() { actual_run_time = FakeClock::now(); },
+                    Alarm::kImmediately);
+  // Confirm the lambda did not run yet, since it should run asynchronously, in
+  // a separate TaskRunner task.
+  ASSERT_EQ(Clock::time_point{}, actual_run_time);
+
+  // Confirm the lambda runs without the clock having to tick forward.
+  task_runner()->RunTasksUntilIdle();
+  ASSERT_EQ(expected_run_time, actual_run_time);
+
+  // Confirm the lambda is only run once.
+  clock()->Advance(std::chrono::seconds(2));
+  ASSERT_EQ(expected_run_time, actual_run_time);
 }
 
 TEST_F(AlarmTest, CancelsTaskWhenGoingOutOfScope) {

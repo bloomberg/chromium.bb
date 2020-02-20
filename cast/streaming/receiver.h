@@ -252,7 +252,7 @@ class Receiver {
   // Sets the |consumption_alarm_| to check whether any frames are ready,
   // including possibly skipping over late frames in order to make not-yet-late
   // frames become ready. The default argument value means "without delay."
-  void ScheduleFrameReadyCheck(Clock::time_point when = {});
+  void ScheduleFrameReadyCheck(Clock::time_point when = Alarm::kImmediately);
 
   const ClockNowFunctionPtr now_;
   ReceiverPacketRouter* const packet_router_;

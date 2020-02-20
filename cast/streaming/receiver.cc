@@ -5,7 +5,6 @@
 #include "cast/streaming/receiver.h"
 
 #include <algorithm>
-#include <functional>
 
 #include "absl/types/span.h"
 #include "cast/streaming/constants.h"
@@ -352,8 +351,7 @@ void Receiver::SendRtcp() {
   // When there are no incomplete frames, use a longer "keepalive" interval.
   const Clock::duration interval =
       (no_nacks ? kRtcpReportInterval : kNackFeedbackInterval);
-  rtcp_alarm_.Schedule(std::bind(&Receiver::SendRtcp, this),
-                       last_rtcp_send_time_ + interval);
+  rtcp_alarm_.Schedule([this] { SendRtcp(); }, last_rtcp_send_time_ + interval);
 }
 
 const Receiver::PendingFrame& Receiver::GetQueueEntry(FrameId frame_id) const {

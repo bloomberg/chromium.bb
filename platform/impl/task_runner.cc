@@ -36,8 +36,12 @@ void TaskRunnerImpl::PostPackagedTask(Task task) {
 void TaskRunnerImpl::PostPackagedTaskWithDelay(Task task,
                                                Clock::duration delay) {
   std::lock_guard<std::mutex> lock(task_mutex_);
-  delayed_tasks_.emplace(
-      std::make_pair(now_function_() + delay, std::move(task)));
+  if (delay <= Clock::duration::zero()) {
+    tasks_.emplace_back(std::move(task));
+  } else {
+    delayed_tasks_.emplace(
+        std::make_pair(now_function_() + delay, std::move(task)));
+  }
   if (task_waiter_) {
     task_waiter_->OnTaskPosted();
   } else {

@@ -43,7 +43,8 @@ class Alarm {
   // Schedule the |functor| to be invoked at |alarm_time|. If this Alarm was
   // already scheduled, the prior scheduling is canceled. The Functor can be any
   // callable target (e.g., function, lambda-expression, std::bind result,
-  // etc.).
+  // etc.). If |alarm_time| is on or before "now," such as kImmediately, it is
+  // scheduled to run as soon as possible.
   template <typename Functor>
   inline void Schedule(Functor functor, Clock::time_point alarm_time) {
     ScheduleWithTask(TaskRunner::Task(std::move(functor)), alarm_time);
@@ -64,6 +65,9 @@ class Alarm {
   // Schedule() instead of this, for more-convenient caller-side syntax, unless
   // they already have a Task to pass-in.
   void ScheduleWithTask(TaskRunner::Task task, Clock::time_point alarm_time);
+
+  // A special time_point value representing "as soon as possible."
+  static constexpr Clock::time_point kImmediately = Clock::time_point::min();
 
  private:
   // A move-only functor that holds a raw pointer back to |this| and can be

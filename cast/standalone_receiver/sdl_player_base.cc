@@ -229,11 +229,12 @@ void SDLPlayerBase::ResumeDecoding() {
           OnFramesReady(buffer_size);
         }
       },
-      {});
+      Alarm::kImmediately);
 }
 
 void SDLPlayerBase::ResumeRendering() {
-  render_alarm_.Schedule([this] { RenderAndSchedulePresentation(); }, {});
+  render_alarm_.Schedule([this] { RenderAndSchedulePresentation(); },
+                         Alarm::kImmediately);
 }
 
 // static
