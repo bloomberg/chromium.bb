@@ -31,8 +31,12 @@ source_set("sender") {
   sources = [
     "cast_app_availability_tracker.cc",
     "cast_app_availability_tracker.h",
+    "cast_app_discovery_service_impl.cc",
+    "cast_app_discovery_service_impl.h",
     "cast_platform_client.cc",
     "cast_platform_client.h",
+    "public/cast_app_discovery_service.cc",
+    "public/cast_app_discovery_service.h",
     "public/cast_media_source.cc",
     "public/cast_media_source.h",
   ]
@@ -70,6 +74,7 @@ source_set("unittests") {
   testonly = true
   sources = [
     "cast_app_availability_tracker_unittest.cc",
+    "cast_app_discovery_service_impl_unittest.cc",
     "cast_platform_client_unittest.cc",
     "channel/cast_auth_util_unittest.cc",
   ]
