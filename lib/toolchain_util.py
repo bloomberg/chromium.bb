@@ -1396,9 +1396,17 @@ class PrepareForBuildHandler(_CommonPrepareBundle):
     return PrepareForBuildReturn.NEEDED
 
   def _PrepareUnverifiedLlvmPgoFile(self):
-    # TODO(crbug/1019868): implement *-pgo-generate-llvm
-    raise PrepareForBuildHandlerError(
-        'Unimplemented PrepareForBuild: %s' % self.artifact_name)
+    # If we have a chroot, make sure that the toolchain is set up to generate
+    # the artifact.  Raise an error if we know it will fail.
+    if self.chroot:
+      llvm_pkg = 'sys-devel/llvm'
+      use_flags = portage_util.GetInstalledPackageUseFlags(llvm_pkg)[llvm_pkg]
+      if 'llvm_pgo_generate' not in use_flags:
+        raise PrepareForBuildHandlerError(
+            'sys-devel/llvm lacks llvm_pgo_generate: %s' % sorted(use_flags))
+
+    # Always build this artifact.
+    return PrepareForBuildReturn.NEEDED
 
   def _PrepareUnverifiedChromeBenchmarkAfdoFile(self):
     # TODO(crbug/1019868): implement benchmark-afdo-generate
@@ -1683,9 +1691,8 @@ class BundleArtifactHandler(_CommonPrepareBundle):
     orderfile_name = self._GetArtifactVersionInEbuild(
         constants.CHROME_PN, 'UNVETTED_ORDERFILE') + XZ_COMPRESSION_SUFFIX
     # Strip the leading / from sysroot_path.
-    orderfile_path = os.path.join(
-        self.chroot.path, self.sysroot_path[1:],
-        'opt/google/chrome', orderfile_name)
+    orderfile_path = self.chroot.full_path(
+        self.sysroot_path, 'opt/google/chrome', orderfile_name)
     verified_orderfile = os.path.join(self.output_dir, orderfile_name)
     shutil.copy2(orderfile_path, verified_orderfile)
     return [verified_orderfile]
@@ -1693,13 +1700,13 @@ class BundleArtifactHandler(_CommonPrepareBundle):
   def _BundleChromeClangWarningsFile(self):
     """Bundle clang-tidy warnings file."""
     with self.chroot.tempdir() as tempdir:
-      in_chroot_path = self.chroot.chroot_path(tempdir)
+      in_chroot_tempdir = self.chroot.chroot_path(tempdir)
       clang_tidy_tarball = '%s.%s.clang_tidy_warnings.tar.xz' % (
           self.build_target,
           datetime.datetime.strftime(datetime.datetime.now(), '%Y%m%d'))
       cmd = [
           'cros_generate_tidy_warnings', '--out-file', clang_tidy_tarball,
-          '--out-dir', in_chroot_path, '--board', self.build_target,
+          '--out-dir', in_chroot_tempdir, '--board', self.build_target,
           '--logs-dir', os.path.join('/tmp/clang-tidy-logs', self.build_target)
       ]
       cros_build_lib.run(cmd, cwd=self.chroot.path, enter_chroot=True)
@@ -1708,10 +1715,70 @@ class BundleArtifactHandler(_CommonPrepareBundle):
           os.path.join(tempdir, clang_tidy_tarball), artifact_path)
     return [artifact_path]
 
+  def _GetProfileNames(self, datadir):
+    """Return list of profiles.
+
+    This function is for ease in test writing.
+
+    Args:
+      datadir: Absolute path to build/coverage_data in the sysroot.
+
+    Returns:
+      list of chroot-relative paths to profiles found.
+    """
+    return [
+        self.chroot.chroot_path(os.path.join(dir_name, file_name))
+        for dir_name, _, files in os.walk(datadir)
+        for file_name in files
+        if os.path.basename(dir_name) == 'raw_profiles']
+
   def _BundleUnverifiedLlvmPgoFile(self):
-    # TODO(crbug/1019868): implement *-pgo-generate-llvm
-    raise BundleArtifactsHandlerError(
-        'Unimplemented BundleArtifacts: %s' % self.artifact_name)
+    """Bundle the unverified PGO profile for llvm."""
+    # What is the CPV for the compiler?
+    llvm_cpv = portage_util.FindPackageNameMatches('sys-devel/llvm')[0]
+
+    files = []
+    # Find all of the raw profile data.
+    datadir = self.chroot.full_path(self.sysroot_path, 'build', 'coverage_data')
+    profiles = self._GetProfileNames(datadir)
+    if not profiles:
+      raise BundleArtifactsHandlerError('No raw profiles found in %s' % datadir)
+
+    # Capture the clang version.
+    clang_version_str = cros_build_lib.sudo_run(
+        ['clang', '--version'], enter_chroot=True, stdout=True,
+        encoding='utf-8').output.splitlines()[0].strip()
+    match = re.search(r'llvm-project ([A-Fa-f0-9]{40})\)$', clang_version_str)
+    if not match:
+      raise BundleArtifactsHandlerError(
+          "Can't recognize the version string %s" % clang_version_str)
+    head_sha = match.group(1)
+    profdata_base = '%s-%s' % (llvm_cpv.pv, head_sha)
+    metadata_path = os.path.join(
+        self.output_dir, profdata_base + '.llvm_metadata.json')
+    osutils.WriteFile(metadata_path, json.dumps({'head_sha': head_sha}))
+    files.append(metadata_path)
+    metadata_path = os.path.join(self.output_dir, 'llvm_metadata.json')
+    osutils.WriteFile(metadata_path, json.dumps({'head_sha': head_sha}))
+    files.append(metadata_path)
+
+    # Create a tarball with the merged profile data.  The name will be of the
+    # form '{llvm-package-pv}-{clang-head_sha}.llvm_profdata.tar.zx.
+    with self.chroot.tempdir() as tempdir:
+      raw_list = os.path.join(tempdir, 'profraw_list')
+      with open(raw_list, 'w') as f:
+        f.write('\n'.join(profiles))
+      basename = '%s.llvm.profdata' % profdata_base
+      merged_path = os.path.join(tempdir, basename)
+      cros_build_lib.sudo_run(
+          ['llvm-profdata', 'merge', '-f', self.chroot.chroot_path(raw_list),
+           '-output', self.chroot.chroot_path(merged_path)],
+          cwd=tempdir, enter_chroot=True)
+      artifact = os.path.join(self.output_dir, '%s.tar.xz' % basename)
+      cros_build_lib.CreateTarball(artifact, cwd=tempdir, inputs=[basename])
+      files.append(artifact)
+    return files
+
 
   def _BundleUnverifiedChromeBenchmarkAfdoFile(self):
     # TODO(crbug/1019868): implement benchmark-afdo-generate.

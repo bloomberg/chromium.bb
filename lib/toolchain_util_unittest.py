@@ -508,6 +508,29 @@ class BundleArtifactHandlerTest(PrepareBundleTest):
     self.assertEqual([artifact], self.obj.Bundle())
     self.copy2.assert_called_once_with(mock.ANY, artifact)
 
+  def testBundleUnverifiedLlvmPgoFile(self):
+    self.SetUpBundle('UnverifiedLlvmPgoFile')
+    llvm_version = '10.0_pre377782_p20200113-r14'
+    llvm_clang_sha = 'a21beccea2020f950845cbb68db663d0737e174c'
+    llvm_cpv = portage_util.SplitCPV('sys-devel/llvm-%s' % llvm_version)
+    self.PatchObject(self.obj, '_GetProfileNames', return_value=[
+        self.chroot.full_path(
+            self.sysroot, 'build', 'coverage_data', 'sys-libs', 'libcxxabi',
+            'raw_profiles', 'libcxxabi-10.0_pre3_1673101222_0.profraw')])
+    self.PatchObject(
+        portage_util, 'FindPackageNameMatches', return_value=[llvm_cpv])
+    self.rc.AddCmdResult(
+        partial_mock.In('clang'), returncode=0,
+        stdout=('Chromium OS %s clang version 10.0.0 (/path/to/'
+                'llvm-project %s)\n' % (llvm_version, llvm_clang_sha)))
+    base = '%s-%s' % (llvm_cpv.pv, llvm_clang_sha)
+    artifacts = [
+        os.path.join(self.outdir, x) for x in (
+            '%s.llvm_metadata.json' % base,
+            'llvm_metadata.json',
+            '%s.llvm.profdata.tar.xz' % base)]
+    self.assertEqual(artifacts, self.obj.Bundle())
+
 
 class FindEbuildPathTest(cros_test_lib.MockTempDirTestCase):
   """Test top-level function _FindEbuildPath()."""
