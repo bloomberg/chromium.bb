@@ -59,10 +59,10 @@ typedef struct Libgav1DecoderSettings {
   Libgav1GetFrameBufferCallback get_frame_buffer;
   // Release frame buffer callback.
   Libgav1ReleaseFrameBufferCallback release_frame_buffer;
-  // Passed as the private_data argument to the callbacks.
-  void* callback_private_data;
   // Release input frame buffer callback.
   Libgav1ReleaseInputBufferCallback release_input_buffer;
+  // Passed as the private_data argument to the callbacks.
+  void* callback_private_data;
   // Mask indicating the post processing filters that need to be applied to the
   // reconstructed frame. From LSB:
   //   Bit 0: Loop filter (deblocking filter).
