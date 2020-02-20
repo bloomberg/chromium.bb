@@ -145,7 +145,7 @@ class RoboConfiguration:
     """Find the asan directories.  Note that we don't create them."""
     # Compute gn ASAN out dirnames.
     self.chdir_to_chrome_src();
-    local_directory = os.path.join("out", "asan")
+    local_directory = os.path.join("out", "sushi_asan")
     # ASAN dir, suitable for 'ninja -C'
     self._relative_asan_directory = local_directory
 
