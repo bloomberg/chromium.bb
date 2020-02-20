@@ -18810,21 +18810,6 @@
         "hw_tests_override": null,
         "luci_builder": "Try"
     },
-    "kevin-arcnext-payloads": {
-        "_template": "payloads",
-        "boards": [
-            "kevin-arcnext"
-        ]
-    },
-    "kevin-arcnext-payloads-tryjob": {
-        "_template": "payloads",
-        "boards": [
-            "kevin-arcnext"
-        ],
-        "debug": true,
-        "hw_tests_override": null,
-        "luci_builder": "Try"
-    },
     "kevin-arcnext-release": {
         "_template": "release",
         "boards": [
@@ -18865,14 +18850,7 @@
             "kevin-arcnext"
         ],
         "hw_tests_override": null,
-        "internal": true,
-        "luci_builder": "Try",
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "useflags": [
-            "chrome_internal"
-        ]
+        "luci_builder": "Try"
     },
     "kevin-factory-gru-8652.B-factorybranch": {
         "_template": "factorybranch",

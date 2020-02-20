@@ -689,7 +689,6 @@ PRE_CQ_DEFAULT_CONFIGS = [
     'eve-no-vmtest-pre-cq',           # kabylake    cheets_64 vulkan(Intel)
     'fizz-no-vmtest-pre-cq',          # kabylake
     'grunt-no-vmtest-pre-cq',         # stoneyridge vulkan(AMD)
-    'kevin-arcnext-no-vmtest-pre-cq', # arm64       arcnext
     'lakitu-no-vmtest-pre-cq',        # container
     'whirlwind-no-vmtest-pre-cq',     # brillo
 ]

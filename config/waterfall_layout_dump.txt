@@ -1247,7 +1247,6 @@
   kevin-arcnext-full-tryjob
   kevin-arcnext-llvm-next-toolchain-tryjob
   kevin-arcnext-llvm-toolchain-tryjob
-  kevin-arcnext-payloads-tryjob
   kevin-arcnext-release-tryjob
   kevin-arcnext-unittest-stress
   kevin-factory-gru-8652.B-factorybranch-tryjob
