@@ -32,6 +32,14 @@
 extern "C" {
 #endif
 
+// This callback is invoked by the decoder when it is done using an input frame
+// buffer. When frame_parallel is set to true, this callback must not be
+// nullptr. Otherwise, this callback is optional.
+//
+// |buffer_private_data| is the value passed in the EnqueueFrame() call.
+typedef void (*Libgav1ReleaseInputBufferCallback)(void* callback_private_data,
+                                                  void* buffer_private_data);
+
 typedef struct Libgav1DecoderSettings {
   // Number of threads to use when decoding. Must be greater than 0. The
   // library will create at most |threads|-1 new threads, the calling thread is
@@ -53,6 +61,8 @@ typedef struct Libgav1DecoderSettings {
   Libgav1ReleaseFrameBufferCallback release_frame_buffer;
   // Passed as the private_data argument to the callbacks.
   void* callback_private_data;
+  // Release input frame buffer callback.
+  Libgav1ReleaseInputBufferCallback release_input_buffer;
   // Mask indicating the post processing filters that need to be applied to the
   // reconstructed frame. From LSB:
   //   Bit 0: Loop filter (deblocking filter).
@@ -71,6 +81,8 @@ LIBGAV1_PUBLIC void Libgav1DecoderSettingsInitDefault(
 }  // extern "C"
 
 namespace libgav1 {
+
+using ReleaseInputBufferCallback = Libgav1ReleaseInputBufferCallback;
 
 // Applications must populate this structure before creating a decoder instance.
 struct DecoderSettings {
@@ -94,6 +106,8 @@ struct DecoderSettings {
   ReleaseFrameBufferCallback release_frame_buffer = nullptr;
   // Passed as the private_data argument to the callbacks.
   void* callback_private_data = nullptr;
+  // Release input frame buffer callback.
+  ReleaseInputBufferCallback release_input_buffer = nullptr;
   // Mask indicating the post processing filters that need to be applied to the
   // reconstructed frame. From LSB:
   //   Bit 0: Loop filter (deblocking filter).

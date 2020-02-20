@@ -90,6 +90,12 @@ StatusCode DecoderImpl::Create(const DecoderSettings* settings,
     return kStatusInvalidArgument;
   }
   if (settings->frame_parallel) {
+    if (settings->release_input_buffer == nullptr) {
+      LIBGAV1_DLOG(ERROR,
+                   "release_input_buffer callback must not be null when "
+                   "frame_parallel is true.");
+      return kStatusInvalidArgument;
+    }
     LIBGAV1_DLOG(ERROR,
                  "Frame parallel decoding is not implemented, ignoring"
                  " setting.");
@@ -137,12 +143,14 @@ StatusCode DecoderImpl::Init() {
 }
 
 StatusCode DecoderImpl::EnqueueFrame(const uint8_t* data, size_t size,
-                                     int64_t user_private_data) {
+                                     int64_t user_private_data,
+                                     void* buffer_private_data) {
   if (data == nullptr || size == 0) return kStatusInvalidArgument;
   if (temporal_units_.Full()) {
     return kStatusResourceExhausted;
   }
-  temporal_units_.Push(TemporalUnit(data, size, user_private_data));
+  temporal_units_.Push(
+      TemporalUnit(data, size, user_private_data, buffer_private_data));
   return kStatusOk;
 }
 
@@ -164,6 +172,10 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
   }
   const TemporalUnit& temporal_unit = temporal_units_.Front();
   const StatusCode status = DecodeTemporalUnit(temporal_unit, out_ptr);
+  if (settings_.release_input_buffer != nullptr) {
+    settings_.release_input_buffer(settings_.callback_private_data,
+                                   temporal_unit.buffer_private_data);
+  }
   temporal_units_.Pop();
   return status;
 }

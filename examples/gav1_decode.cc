@@ -220,7 +220,8 @@ int main(int argc, char* argv[]) {
 
     if (temporal_unit.empty()) continue;
     status = decoder.EnqueueFrame(temporal_unit.data(), temporal_unit.size(),
-                                  /*user_private_data=*/0);
+                                  /*user_private_data=*/0,
+                                  /*buffer_private_data=*/nullptr);
     if (status != libgav1::kStatusOk) {
       fprintf(stderr, "Unable to enqueue frame: %s\n",
               libgav1::GetErrorString(status));

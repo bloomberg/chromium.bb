@@ -23,7 +23,7 @@
 // (https://semver.org).
 
 #define LIBGAV1_MAJOR_VERSION 0
-#define LIBGAV1_MINOR_VERSION 9
+#define LIBGAV1_MINOR_VERSION 10
 #define LIBGAV1_PATCH_VERSION 0
 
 #define LIBGAV1_VERSION                                           \

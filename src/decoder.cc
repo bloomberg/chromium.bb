@@ -35,6 +35,7 @@ Libgav1StatusCode Libgav1DecoderCreate(const Libgav1DecoderSettings* settings,
   cxx_settings.get_frame_buffer = settings->get_frame_buffer;
   cxx_settings.release_frame_buffer = settings->release_frame_buffer;
   cxx_settings.callback_private_data = settings->callback_private_data;
+  cxx_settings.release_input_buffer = settings->release_input_buffer;
   cxx_settings.post_filter_mask = settings->post_filter_mask;
 
   const Libgav1StatusCode status = cxx_decoder->Init(&cxx_settings);
@@ -51,9 +52,11 @@ void Libgav1DecoderDestroy(Libgav1Decoder* decoder) {
 
 Libgav1StatusCode Libgav1DecoderEnqueueFrame(Libgav1Decoder* decoder,
                                              const uint8_t* data, size_t size,
-                                             int64_t user_private_data) {
+                                             int64_t user_private_data,
+                                             void* buffer_private_data) {
   auto* cxx_decoder = reinterpret_cast<libgav1::Decoder*>(decoder);
-  return cxx_decoder->EnqueueFrame(data, size, user_private_data);
+  return cxx_decoder->EnqueueFrame(data, size, user_private_data,
+                                   buffer_private_data);
 }
 
 Libgav1StatusCode Libgav1DecoderDequeueFrame(
@@ -91,9 +94,11 @@ StatusCode Decoder::Init(const DecoderSettings* const settings) {
 }
 
 StatusCode Decoder::EnqueueFrame(const uint8_t* data, const size_t size,
-                                 int64_t user_private_data) {
+                                 int64_t user_private_data,
+                                 void* buffer_private_data) {
   if (impl_ == nullptr) return kStatusNotInitialized;
-  return impl_->EnqueueFrame(data, size, user_private_data);
+  return impl_->EnqueueFrame(data, size, user_private_data,
+                             buffer_private_data);
 }
 
 StatusCode Decoder::DequeueFrame(const DecoderBuffer** out_ptr) {

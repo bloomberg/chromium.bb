@@ -47,9 +47,9 @@ LIBGAV1_PUBLIC Libgav1StatusCode Libgav1DecoderCreate(
 
 LIBGAV1_PUBLIC void Libgav1DecoderDestroy(Libgav1Decoder* decoder);
 
-LIBGAV1_PUBLIC Libgav1StatusCode
-Libgav1DecoderEnqueueFrame(Libgav1Decoder* decoder, const uint8_t* data,
-                           size_t size, int64_t user_private_data);
+LIBGAV1_PUBLIC Libgav1StatusCode Libgav1DecoderEnqueueFrame(
+    Libgav1Decoder* decoder, const uint8_t* data, size_t size,
+    int64_t user_private_data, void* buffer_private_data);
 
 LIBGAV1_PUBLIC Libgav1StatusCode Libgav1DecoderDequeueFrame(
     Libgav1Decoder* decoder, const Libgav1DecoderBuffer** out_ptr);
@@ -93,9 +93,14 @@ class LIBGAV1_PUBLIC Decoder {
   //
   // NOTE: |EnqueueFrame()| does not copy the data. Therefore, after a
   // successful |EnqueueFrame()| call, the caller must keep the |data| buffer
-  // alive until the corresponding |DequeueFrame()| call returns.
+  // alive until:
+  // 1) If release_input_buffer is not nullptr, then |data| buffer must be
+  // alives until release_input_buffer is called with the |buffer_private_data|
+  // passed into this EnqueueFrame call.
+  // 2) If release_input_buffer is nullptr, then |data| buffer must be kept
+  // alive until the corresponding DequeueFrame() call is completed.
   StatusCode EnqueueFrame(const uint8_t* data, size_t size,
-                          int64_t user_private_data);
+                          int64_t user_private_data, void* buffer_private_data);
 
   // Dequeues a decompressed frame. If there are enqueued compressed frames,
   // decodes one and sets |*out_ptr| to the last displayable frame in the

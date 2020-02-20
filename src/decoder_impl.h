@@ -49,12 +49,17 @@ struct TemporalUnit : public Allocable {
   // method. Queue<> does not use the default-constructed elements, so it is
   // safe for the default constructor to not initialize the members.
   TemporalUnit() = default;
-  TemporalUnit(const uint8_t* data, size_t size, int64_t user_private_data)
-      : data(data), size(size), user_private_data(user_private_data) {}
+  TemporalUnit(const uint8_t* data, size_t size, int64_t user_private_data,
+               void* buffer_private_data)
+      : data(data),
+        size(size),
+        user_private_data(user_private_data),
+        buffer_private_data(buffer_private_data) {}
 
   const uint8_t* data;
   size_t size;
   int64_t user_private_data;
+  void* buffer_private_data;
 };
 
 struct DecoderState {
@@ -109,7 +114,7 @@ class DecoderImpl : public Allocable {
                            std::unique_ptr<DecoderImpl>* output);
   ~DecoderImpl();
   StatusCode EnqueueFrame(const uint8_t* data, size_t size,
-                          int64_t user_private_data);
+                          int64_t user_private_data, void* buffer_private_data);
   StatusCode DequeueFrame(const DecoderBuffer** out_ptr);
   int GetMaxAllowedFrames() const {
     return settings_.frame_parallel ? settings_.threads : 1;
