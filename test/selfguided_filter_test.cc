@@ -213,9 +213,7 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(av1_apply_selfguided_restoration_avx2));
 #endif
 
-// TODO(b/141858830,b/141859709): neon is currently disabled due to use of
-// uninitialized memory.
-#if 0  // HAVE_NEON
+#if HAVE_NEON
 INSTANTIATE_TEST_SUITE_P(
     NEON, AV1SelfguidedFilterTest,
     ::testing::Values(av1_apply_selfguided_restoration_neon));

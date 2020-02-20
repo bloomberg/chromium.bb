@@ -405,9 +405,7 @@ specialize qw/av1_apply_selfguided_restoration sse4_1 avx2 neon/;
 add_proto qw/int av1_selfguided_restoration/, "const uint8_t *dgd8, int width, int height,
                                  int dgd_stride, int32_t *flt0, int32_t *flt1, int flt_stride,
                                  int sgr_params_idx, int bit_depth, int highbd";
-# TODO(b/141858830,b/141859709): neon is currently disabled due to use of
-# uninitialized memory.
-specialize qw/av1_selfguided_restoration sse4_1 avx2/;
+specialize qw/av1_selfguided_restoration sse4_1 avx2 neon/;
 
 # CONVOLVE_ROUND/COMPOUND_ROUND functions
 
