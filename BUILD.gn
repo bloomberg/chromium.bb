@@ -36,6 +36,7 @@ group("gn_all") {
     "third_party/abseil",
     "third_party/boringssl",
     "third_party/jsoncpp",
+    "third_party/mozilla",
     "third_party/tinycbor",
     "tools/cddl($host_toolchain)",
     "util",
