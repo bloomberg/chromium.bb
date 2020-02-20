@@ -73,8 +73,8 @@ class UpdateArgumentsTest(cros_test_lib.TestCase):
 
   def testNoToolchainTargets(self):
     """Test no toolchain boards argument."""
-    self.assertIn('--skip_toolchain_update',
-                  self._GetArgList(toolchain_targets=None))
+    self.assertEqual(
+        [], self._GetArgList(build_source=False, toolchain_targets=None))
 
 
 class CreateTest(cros_test_lib.RunCommandTempDirTestCase):

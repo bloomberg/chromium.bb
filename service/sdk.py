@@ -93,12 +93,8 @@ class UpdateArguments(object):
 
     if self.build_source:
       args.append('--nousepkg')
-
-    if self.toolchain_targets:
-      if not self.build_source:
-        args.extend(['--toolchain_boards', ','.join(self.toolchain_targets)])
-    else:
-      args.append('--skip_toolchain_update')
+    elif self.toolchain_targets:
+      args.extend(['--toolchain_boards', ','.join(self.toolchain_targets)])
 
     return args
 
