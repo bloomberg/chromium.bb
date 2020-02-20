@@ -456,6 +456,8 @@ static void set_good_speed_features_framesize_independent(
     if (cpi->oxcf.enable_smooth_interintra)
       sf->inter_sf.disable_smooth_interintra = boosted ? 0 : 1;
     sf->inter_sf.reuse_compound_type_decision = 1;
+    sf->inter_sf.txfm_rd_gate_level =
+        (is_boosted_arf2_bwd_type || cm->allow_screen_content_tools) ? 0 : 1;
 
     sf->intra_sf.prune_palette_search_level = 2;
 
