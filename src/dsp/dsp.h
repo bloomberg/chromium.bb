@@ -501,12 +501,14 @@ using DistanceWeightedBlendFunc = void (*)(const void* prediction_0,
 // |prediction_0| is the first input block. When prediction mode is inter_intra
 // (or wedge_inter_intra), this refers to the inter frame prediction. It is
 // int16_t* when bitdepth == 8 and uint16_t* otherwise.
-// |prediction_stride_0| is the stride, given in units of [u]int16_t.
+// The stride for |prediction_0| is equal to |width|.
 // |prediction_1| is the second input block. When prediction mode is inter_intra
 // (or wedge_inter_intra), this refers to the intra frame prediction and uses
 // Pixel values. It is only used for intra frame prediction when bitdepth >= 10.
 // It is int16_t* when bitdepth == 8 and uint16_t* otherwise.
-// |prediction_stride_1| is the stride, given in units of [u]int16_t.
+// |prediction_stride_1| is the stride, given in units of [u]int16_t. When
+// |is_inter_intra| is false (compound prediction) then |prediction_stride_1| is
+// equal to |width|.
 // |mask| is an integer array, whose value indicates the weight of the blending.
 // |mask_stride| is corresponding stride.
 // |width|, |height| are the same for both input blocks.
@@ -523,7 +525,6 @@ using DistanceWeightedBlendFunc = void (*)(const void* prediction_0,
 // |dest| is the output block.
 // |dest_stride| is the corresponding stride for dest.
 using MaskBlendFunc = void (*)(const void* prediction_0,
-                               ptrdiff_t prediction_stride_0,
                                const void* prediction_1,
                                ptrdiff_t prediction_stride_1,
                                const uint8_t* mask, ptrdiff_t mask_stride,
@@ -538,11 +539,10 @@ using MaskBlendFuncs = MaskBlendFunc[3][2];
 // This function is similar to the MaskBlendFunc with the only difference that
 // the predictor buffers are of type uint8_t (Pixel) instead of uint16_t. This
 // function is used only when bitdepth is 8 and is_inter_intra is true.
-using InterIntraMaskBlendFunc8bpp =
-    void (*)(const uint8_t* prediction_0, ptrdiff_t prediction_stride_0,
-             const uint8_t* prediction_1, ptrdiff_t prediction_stride_1,
-             const uint8_t* mask, ptrdiff_t mask_stride, int width, int height,
-             void* dest, ptrdiff_t dest_stride);
+using InterIntraMaskBlendFunc8bpp = void (*)(
+    const uint8_t* prediction_0, const uint8_t* prediction_1,
+    ptrdiff_t prediction_stride_1, const uint8_t* mask, ptrdiff_t mask_stride,
+    int width, int height, void* dest, ptrdiff_t dest_stride);
 
 // InterIntra8bpp mask blending functions signature. When is_wedge_inter_intra
 // is false, the function at index 0 must be used. Otherwise, the function at

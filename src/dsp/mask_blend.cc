@@ -43,11 +43,10 @@ uint8_t GetMaskValue(const uint8_t* mask, const uint8_t* mask_next_row, int x) {
 
 template <int bitdepth, typename Pixel, bool is_inter_intra, int subsampling_x,
           int subsampling_y>
-void MaskBlend_C(const void* prediction_0, const ptrdiff_t prediction_stride_0,
-                 const void* prediction_1, const ptrdiff_t prediction_stride_1,
-                 const uint8_t* mask, const ptrdiff_t mask_stride,
-                 const int width, const int height, void* dest,
-                 const ptrdiff_t dest_stride) {
+void MaskBlend_C(const void* prediction_0, const void* prediction_1,
+                 const ptrdiff_t prediction_stride_1, const uint8_t* mask,
+                 const ptrdiff_t mask_stride, const int width, const int height,
+                 void* dest, const ptrdiff_t dest_stride) {
   static_assert(!(bitdepth == 8 && is_inter_intra), "");
   assert(mask != nullptr);
   using PredType =
@@ -69,6 +68,7 @@ void MaskBlend_C(const void* prediction_0, const ptrdiff_t prediction_stride_0,
         dst[x] = static_cast<Pixel>(RightShiftWithRounding(
             mask_value * pred_1[x] + (64 - mask_value) * pred_0[x], 6));
       } else {
+        assert(prediction_stride_1 == width);
         int res = (mask_value * pred_0[x] + (64 - mask_value) * pred_1[x]) >> 6;
         res -= (bitdepth == 8) ? 0 : kCompoundOffset;
         dst[x] = static_cast<Pixel>(
@@ -79,14 +79,13 @@ void MaskBlend_C(const void* prediction_0, const ptrdiff_t prediction_stride_0,
     dst += dst_stride;
     mask += mask_stride * step_y;
     mask_next_row += mask_stride * step_y;
-    pred_0 += prediction_stride_0;
+    pred_0 += width;
     pred_1 += prediction_stride_1;
   }
 }
 
 template <int subsampling_x, int subsampling_y>
 void InterIntraMaskBlend8bpp_C(const uint8_t* prediction_0,
-                               const ptrdiff_t prediction_stride_0,
                                const uint8_t* prediction_1,
                                const ptrdiff_t prediction_stride_1,
                                const uint8_t* mask, const ptrdiff_t mask_stride,
@@ -108,7 +107,7 @@ void InterIntraMaskBlend8bpp_C(const uint8_t* prediction_0,
     dst += dst_stride;
     mask += mask_stride * step_y;
     mask_next_row += mask_stride * step_y;
-    prediction_0 += prediction_stride_0;
+    prediction_0 += width;
     prediction_1 += prediction_stride_1;
   }
 }

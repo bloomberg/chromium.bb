@@ -117,16 +117,14 @@ inline __m128i GetInterIntraMask8(const uint8_t* mask, ptrdiff_t stride) {
 }
 
 inline void WriteMaskBlendLine4x2(const int16_t* const pred_0,
-                                  const ptrdiff_t pred_stride_0,
                                   const int16_t* const pred_1,
-                                  const ptrdiff_t pred_stride_1,
                                   const __m128i pred_mask_0,
                                   const __m128i pred_mask_1, uint8_t* dst,
                                   const ptrdiff_t dst_stride) {
   const __m128i pred_val_0_lo = LoadLo8(pred_0);
-  const __m128i pred_val_0 = LoadHi8(pred_val_0_lo, pred_0 + pred_stride_0);
+  const __m128i pred_val_0 = LoadHi8(pred_val_0_lo, pred_0 + 4);
   const __m128i pred_val_1_lo = LoadLo8(pred_1);
-  const __m128i pred_val_1 = LoadHi8(pred_val_1_lo, pred_1 + pred_stride_1);
+  const __m128i pred_val_1 = LoadHi8(pred_val_1_lo, pred_1 + 4);
   const __m128i mask_lo = _mm_unpacklo_epi16(pred_mask_0, pred_mask_1);
   const __m128i mask_hi = _mm_unpackhi_epi16(pred_mask_0, pred_mask_1);
   const __m128i pred_lo = _mm_unpacklo_epi16(pred_val_0, pred_val_1);
@@ -149,10 +147,7 @@ inline void WriteMaskBlendLine4x2(const int16_t* const pred_0,
 }
 
 template <int subsampling_x, int subsampling_y>
-inline void MaskBlending4x4_SSE4(const int16_t* pred_0,
-                                 const ptrdiff_t prediction_stride_0,
-                                 const int16_t* pred_1,
-                                 const ptrdiff_t prediction_stride_1,
+inline void MaskBlending4x4_SSE4(const int16_t* pred_0, const int16_t* pred_1,
                                  const uint8_t* mask,
                                  const ptrdiff_t mask_stride, uint8_t* dst,
                                  const ptrdiff_t dst_stride) {
@@ -160,34 +155,28 @@ inline void MaskBlending4x4_SSE4(const int16_t* pred_0,
   __m128i pred_mask_0 =
       GetMask4x2<subsampling_x, subsampling_y>(mask, mask_stride);
   __m128i pred_mask_1 = _mm_sub_epi16(mask_inverter, pred_mask_0);
-  WriteMaskBlendLine4x2(pred_0, prediction_stride_0, pred_1,
-                        prediction_stride_1, pred_mask_0, pred_mask_1, dst,
+  WriteMaskBlendLine4x2(pred_0, pred_1, pred_mask_0, pred_mask_1, dst,
                         dst_stride);
-  pred_0 += prediction_stride_0 << 1;
-  pred_1 += prediction_stride_1 << 1;
+  pred_0 += 4 << 1;
+  pred_1 += 4 << 1;
   mask += mask_stride << (1 + subsampling_y);
   dst += dst_stride << 1;
 
   pred_mask_0 = GetMask4x2<subsampling_x, subsampling_y>(mask, mask_stride);
   pred_mask_1 = _mm_sub_epi16(mask_inverter, pred_mask_0);
-  WriteMaskBlendLine4x2(pred_0, prediction_stride_0, pred_1,
-                        prediction_stride_1, pred_mask_0, pred_mask_1, dst,
+  WriteMaskBlendLine4x2(pred_0, pred_1, pred_mask_0, pred_mask_1, dst,
                         dst_stride);
 }
 
 template <int subsampling_x, int subsampling_y>
-inline void MaskBlending4xH_SSE4(const int16_t* pred_0,
-                                 const ptrdiff_t pred_stride_0,
-                                 const int height, const int16_t* pred_1,
-                                 const ptrdiff_t pred_stride_1,
+inline void MaskBlending4xH_SSE4(const int16_t* pred_0, const int16_t* pred_1,
                                  const uint8_t* const mask_ptr,
-                                 const ptrdiff_t mask_stride, uint8_t* dst,
-                                 const ptrdiff_t dst_stride) {
+                                 const ptrdiff_t mask_stride, const int height,
+                                 uint8_t* dst, const ptrdiff_t dst_stride) {
   const uint8_t* mask = mask_ptr;
   if (height == 4) {
     MaskBlending4x4_SSE4<subsampling_x, subsampling_y>(
-        pred_0, pred_stride_0, pred_1, pred_stride_1, mask, mask_stride, dst,
-        dst_stride);
+        pred_0, pred_1, mask, mask_stride, dst, dst_stride);
     return;
   }
   const __m128i mask_inverter = _mm_set1_epi16(64);
@@ -197,37 +186,37 @@ inline void MaskBlending4xH_SSE4(const int16_t* pred_0,
         GetMask4x2<subsampling_x, subsampling_y>(mask, mask_stride);
     __m128i pred_mask_1 = _mm_sub_epi16(mask_inverter, pred_mask_0);
 
-    WriteMaskBlendLine4x2(pred_0, pred_stride_0, pred_1, pred_stride_1,
-                          pred_mask_0, pred_mask_1, dst, dst_stride);
-    pred_0 += pred_stride_0 << 1;
-    pred_1 += pred_stride_1 << 1;
+    WriteMaskBlendLine4x2(pred_0, pred_1, pred_mask_0, pred_mask_1, dst,
+                          dst_stride);
+    pred_0 += 4 << 1;
+    pred_1 += 4 << 1;
     mask += mask_stride << (1 + subsampling_y);
     dst += dst_stride << 1;
 
     pred_mask_0 = GetMask4x2<subsampling_x, subsampling_y>(mask, mask_stride);
     pred_mask_1 = _mm_sub_epi16(mask_inverter, pred_mask_0);
-    WriteMaskBlendLine4x2(pred_0, pred_stride_0, pred_1, pred_stride_1,
-                          pred_mask_0, pred_mask_1, dst, dst_stride);
-    pred_0 += pred_stride_0 << 1;
-    pred_1 += pred_stride_1 << 1;
+    WriteMaskBlendLine4x2(pred_0, pred_1, pred_mask_0, pred_mask_1, dst,
+                          dst_stride);
+    pred_0 += 4 << 1;
+    pred_1 += 4 << 1;
     mask += mask_stride << (1 + subsampling_y);
     dst += dst_stride << 1;
 
     pred_mask_0 = GetMask4x2<subsampling_x, subsampling_y>(mask, mask_stride);
     pred_mask_1 = _mm_sub_epi16(mask_inverter, pred_mask_0);
-    WriteMaskBlendLine4x2(pred_0, pred_stride_0, pred_1, pred_stride_1,
-                          pred_mask_0, pred_mask_1, dst, dst_stride);
-    pred_0 += pred_stride_0 << 1;
-    pred_1 += pred_stride_1 << 1;
+    WriteMaskBlendLine4x2(pred_0, pred_1, pred_mask_0, pred_mask_1, dst,
+                          dst_stride);
+    pred_0 += 4 << 1;
+    pred_1 += 4 << 1;
     mask += mask_stride << (1 + subsampling_y);
     dst += dst_stride << 1;
 
     pred_mask_0 = GetMask4x2<subsampling_x, subsampling_y>(mask, mask_stride);
     pred_mask_1 = _mm_sub_epi16(mask_inverter, pred_mask_0);
-    WriteMaskBlendLine4x2(pred_0, pred_stride_0, pred_1, pred_stride_1,
-                          pred_mask_0, pred_mask_1, dst, dst_stride);
-    pred_0 += pred_stride_0 << 1;
-    pred_1 += pred_stride_1 << 1;
+    WriteMaskBlendLine4x2(pred_0, pred_1, pred_mask_0, pred_mask_1, dst,
+                          dst_stride);
+    pred_0 += 4 << 1;
+    pred_1 += 4 << 1;
     mask += mask_stride << (1 + subsampling_y);
     dst += dst_stride << 1;
     y += 8;
@@ -235,20 +224,20 @@ inline void MaskBlending4xH_SSE4(const int16_t* pred_0,
 }
 
 template <int subsampling_x, int subsampling_y>
-inline void MaskBlend_SSE4(
-    const void* prediction_0, const ptrdiff_t prediction_stride_0,
-    const void* prediction_1, const ptrdiff_t prediction_stride_1,
-    const uint8_t* const mask_ptr, const ptrdiff_t mask_stride, const int width,
-    const int height, void* dest, const ptrdiff_t dst_stride) {
+inline void MaskBlend_SSE4(const void* prediction_0, const void* prediction_1,
+                           const ptrdiff_t /*prediction_stride_1*/,
+                           const uint8_t* const mask_ptr,
+                           const ptrdiff_t mask_stride, const int width,
+                           const int height, void* dest,
+                           const ptrdiff_t dst_stride) {
   auto* dst = static_cast<uint8_t*>(dest);
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
-  const ptrdiff_t pred_stride_0 = prediction_stride_0;
-  const ptrdiff_t pred_stride_1 = prediction_stride_1;
+  const ptrdiff_t pred_stride_0 = width;
+  const ptrdiff_t pred_stride_1 = width;
   if (width == 4) {
     MaskBlending4xH_SSE4<subsampling_x, subsampling_y>(
-        pred_0, pred_stride_0, height, pred_1, pred_stride_1, mask_ptr,
-        mask_stride, dst, dst_stride);
+        pred_0, pred_1, mask_ptr, mask_stride, height, dst, dst_stride);
     return;
   }
   const uint8_t* mask = mask_ptr;
@@ -295,17 +284,16 @@ inline void MaskBlend_SSE4(
 // correspond with the "unaltered" mask.
 inline void InterIntraWriteMaskBlendLine8bpp4x2(
     const uint8_t* const pred_0, const ptrdiff_t pred_stride_0,
-    const uint8_t* const pred_1, const ptrdiff_t pred_stride_1,
-    const __m128i pred_mask_0, const __m128i pred_mask_1, uint8_t* dst,
-    const ptrdiff_t dst_stride) {
+    const uint8_t* const pred_1, const __m128i pred_mask_0,
+    const __m128i pred_mask_1, uint8_t* dst, const ptrdiff_t dst_stride) {
   const __m128i pred_mask = _mm_unpacklo_epi8(pred_mask_0, pred_mask_1);
 
   __m128i pred_val_0 = Load4(pred_0);
   pred_val_0 = _mm_or_si128(_mm_slli_si128(Load4(pred_0 + pred_stride_0), 4),
                             pred_val_0);
+  // TODO(johannkoenig): One load.
   __m128i pred_val_1 = Load4(pred_1);
-  pred_val_1 = _mm_or_si128(_mm_slli_si128(Load4(pred_1 + pred_stride_1), 4),
-                            pred_val_1);
+  pred_val_1 = _mm_or_si128(_mm_slli_si128(Load4(pred_1 + 4), 4), pred_val_1);
   const __m128i pred = _mm_unpacklo_epi8(pred_val_0, pred_val_1);
   // int res = (mask_value * prediction_0[x] +
   //      (64 - mask_value) * prediction_1[x]) >> 6;
@@ -319,8 +307,7 @@ inline void InterIntraWriteMaskBlendLine8bpp4x2(
 
 template <int subsampling_x, int subsampling_y>
 inline void InterIntraMaskBlending8bpp4x4_SSE4(
-    const uint8_t* pred_0, const ptrdiff_t prediction_stride_0,
-    const uint8_t* pred_1, const ptrdiff_t prediction_stride_1,
+    const uint8_t* pred_0, const ptrdiff_t pred_stride_0, const uint8_t* pred_1,
     const uint8_t* mask, const ptrdiff_t mask_stride, uint8_t* dst,
     const ptrdiff_t dst_stride) {
   const __m128i mask_inverter = _mm_set1_epi8(64);
@@ -333,48 +320,42 @@ inline void InterIntraMaskBlending8bpp4x4_SSE4(
   __m128i pred_mask_0 =
       _mm_packus_epi16(pred_mask_u16_first, pred_mask_u16_second);
   __m128i pred_mask_1 = _mm_sub_epi8(mask_inverter, pred_mask_0);
-  InterIntraWriteMaskBlendLine8bpp4x2(pred_0, prediction_stride_0, pred_1,
-                                      prediction_stride_1, pred_mask_0,
-                                      pred_mask_1, dst, dst_stride);
-  pred_0 += prediction_stride_0 << 1;
-  pred_1 += prediction_stride_1 << 1;
+  InterIntraWriteMaskBlendLine8bpp4x2(
+      pred_0, pred_stride_0, pred_1, pred_mask_0, pred_mask_1, dst, dst_stride);
+  pred_0 += pred_stride_0 << 1;
+  pred_1 += 4 << 1;
   dst += dst_stride << 1;
 
   pred_mask_0 = _mm_srli_si128(pred_mask_0, 8);
   pred_mask_1 = _mm_sub_epi8(mask_inverter, pred_mask_0);
-  InterIntraWriteMaskBlendLine8bpp4x2(pred_0, prediction_stride_0, pred_1,
-                                      prediction_stride_1, pred_mask_0,
-                                      pred_mask_1, dst, dst_stride);
+  InterIntraWriteMaskBlendLine8bpp4x2(
+      pred_0, pred_stride_0, pred_1, pred_mask_0, pred_mask_1, dst, dst_stride);
 }
 
 template <int subsampling_x, int subsampling_y>
 inline void InterIntraMaskBlending8bpp4xH_SSE4(
-    const uint8_t* pred_0, const ptrdiff_t pred_stride_0, const int height,
-    const uint8_t* pred_1, const ptrdiff_t pred_stride_1,
-    const uint8_t* const mask_ptr, const ptrdiff_t mask_stride, uint8_t* dst,
-    const ptrdiff_t dst_stride) {
+    const uint8_t* pred_0, const ptrdiff_t pred_stride_0, const uint8_t* pred_1,
+    const uint8_t* const mask_ptr, const ptrdiff_t mask_stride,
+    const int height, uint8_t* dst, const ptrdiff_t dst_stride) {
   const uint8_t* mask = mask_ptr;
   if (height == 4) {
     InterIntraMaskBlending8bpp4x4_SSE4<subsampling_x, subsampling_y>(
-        pred_0, pred_stride_0, pred_1, pred_stride_1, mask, mask_stride, dst,
-        dst_stride);
+        pred_0, pred_stride_0, pred_1, mask, mask_stride, dst, dst_stride);
     return;
   }
   int y = 0;
   do {
     InterIntraMaskBlending8bpp4x4_SSE4<subsampling_x, subsampling_y>(
-        pred_0, pred_stride_0, pred_1, pred_stride_1, mask, mask_stride, dst,
-        dst_stride);
+        pred_0, pred_stride_0, pred_1, mask, mask_stride, dst, dst_stride);
     pred_0 += pred_stride_0 << 2;
-    pred_1 += pred_stride_1 << 2;
+    pred_1 += 4 << 2;
     mask += mask_stride << (2 + subsampling_y);
     dst += dst_stride << 2;
 
     InterIntraMaskBlending8bpp4x4_SSE4<subsampling_x, subsampling_y>(
-        pred_0, pred_stride_0, pred_1, pred_stride_1, mask, mask_stride, dst,
-        dst_stride);
+        pred_0, pred_stride_0, pred_1, mask, mask_stride, dst, dst_stride);
     pred_0 += pred_stride_0 << 2;
-    pred_1 += pred_stride_1 << 2;
+    pred_1 += 4 << 2;
     mask += mask_stride << (2 + subsampling_y);
     dst += dst_stride << 2;
     y += 8;
@@ -382,20 +363,23 @@ inline void InterIntraMaskBlending8bpp4xH_SSE4(
 }
 
 template <int subsampling_x, int subsampling_y>
-void InterIntraMaskBlend8bpp_SSE4(
-    const uint8_t* prediction_0, const ptrdiff_t prediction_stride_0,
-    const uint8_t* prediction_1, const ptrdiff_t prediction_stride_1,
-    const uint8_t* const mask_ptr, const ptrdiff_t mask_stride, const int width,
-    const int height, void* dest, const ptrdiff_t dst_stride) {
+void InterIntraMaskBlend8bpp_SSE4(const uint8_t* prediction_0,
+                                  const uint8_t* prediction_1,
+                                  const ptrdiff_t prediction_stride_1,
+                                  const uint8_t* const mask_ptr,
+                                  const ptrdiff_t mask_stride, const int width,
+                                  const int height, void* dest,
+                                  const ptrdiff_t dst_stride) {
   auto* dst = static_cast<uint8_t*>(dest);
+  // TODO(johannkoenig): Un-reverse 0 and 1.
   const uint8_t* pred_0 = prediction_1;
   const uint8_t* pred_1 = prediction_0;
   const ptrdiff_t pred_stride_0 = prediction_stride_1;
-  const ptrdiff_t pred_stride_1 = prediction_stride_0;
+  const ptrdiff_t pred_stride_1 = width;
   if (width == 4) {
     InterIntraMaskBlending8bpp4xH_SSE4<subsampling_x, subsampling_y>(
-        pred_0, pred_stride_0, height, pred_1, pred_stride_1, mask_ptr,
-        mask_stride, dst, dst_stride);
+        pred_0, pred_stride_0, pred_1, mask_ptr, mask_stride, height, dst,
+        dst_stride);
     return;
   }
   const uint8_t* mask = mask_ptr;

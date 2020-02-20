@@ -571,10 +571,9 @@ void Tile::InterIntraPrediction(
     GetMaskBlendFunc(dsp_, /*is_inter_intra=*/true,
                      prediction_parameters.is_wedge_inter_intra, subsampling_x,
                      subsampling_y)(
-        prediction_0, /*prediction_stride=*/prediction_width,
-        reinterpret_cast<uint16_t*>(dest), dest_stride / sizeof(uint16_t),
-        prediction_mask, prediction_mask_stride, prediction_width,
-        prediction_height, dest, dest_stride);
+        prediction_0, reinterpret_cast<uint16_t*>(dest),
+        dest_stride / sizeof(uint16_t), prediction_mask, prediction_mask_stride,
+        prediction_width, prediction_height, dest, dest_stride);
     return;
   }
 #endif
@@ -585,9 +584,10 @@ void Tile::InterIntraPrediction(
   // currently declared as a uint16_t buffer.
   // TODO(johannkoenig): convert the prediction buffer to a uint8_t buffer and
   // remove the reinterpret_cast.
+  // TODO(johannkoenig): Remove the duplicated |dest[_stride]| parameters from
+  // this specialized function.
   dsp_.inter_intra_mask_blend_8bpp[function_index](
-      reinterpret_cast<uint8_t*>(prediction_0),
-      /*prediction_stride=*/prediction_width, dest, dest_stride,
+      reinterpret_cast<uint8_t*>(prediction_0), dest, dest_stride,
       prediction_mask, prediction_mask_stride, prediction_width,
       prediction_height, dest, dest_stride);
 }
@@ -621,7 +621,7 @@ void Tile::CompoundInterPrediction(
       GetMaskBlendFunc(dsp_, /*is_inter_intra=*/false,
                        prediction_parameters.is_wedge_inter_intra,
                        subsampling_x, subsampling_y)(
-          prediction[0], /*prediction_stride=*/prediction_width, prediction[1],
+          prediction[0], prediction[1],
           /*prediction_stride=*/prediction_width, prediction_mask,
           prediction_mask_stride, prediction_width, prediction_height, dest,
           dest_stride);
