@@ -1350,7 +1350,7 @@ static INLINE void src_convert_u8_to_u16(const uint8_t *src,
     }
   }
 
-  // memeset for unintialized rows of src buffer as it needed for
+  // memset uninitialized rows of src buffer as they are needed for the
   // boxsum filter calculation.
   for (int x = height; x < height + 5; x++)
     memset(dst + x * dst_stride, 0, (width + 2) * sizeof(*dst));
@@ -1395,7 +1395,7 @@ static INLINE void src_convert_hbd_copy(const uint16_t *src, int src_stride,
     memcpy((dst_ptr + x * dst_stride), (src_ptr + x * src_stride),
            sizeof(uint16_t) * width);
   }
-  // memeset for unintialized rows of src buffer as it needed for
+  // memset uninitialized rows of src buffer as they are needed for the
   // boxsum filter calculation.
   for (int x = height; x < height + 5; x++)
     memset(dst + x * dst_stride, 0, (width + 2) * sizeof(*dst));
