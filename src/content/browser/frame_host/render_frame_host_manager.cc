@@ -177,8 +177,11 @@ ShouldSwapBrowsingInstance ShouldProactivelySwapBrowsingInstance(
 }  // namespace
 
 RenderFrameHostManager::RenderFrameHostManager(FrameTreeNode* frame_tree_node,
+                                               int render_process_affinity,
                                                Delegate* delegate)
-    : frame_tree_node_(frame_tree_node), delegate_(delegate) {
+    : frame_tree_node_(frame_tree_node),
+      render_process_affinity_(render_process_affinity),
+      delegate_(delegate) {
   DCHECK(frame_tree_node_);
 }
 
@@ -202,6 +205,12 @@ void RenderFrameHostManager::Init(SiteInstance* site_instance,
                                   int32_t widget_routing_id,
                                   bool renderer_initiated_creation) {
   DCHECK(site_instance);
+
+  // If we have affinity to a particular render process, then get the process
+  // now, or forever hold your peace.
+  if (render_process_affinity_ != SiteInstance::kNoProcessAffinity)
+    site_instance->GetProcess(render_process_affinity_);
+
   SetRenderFrameHost(CreateRenderFrameHost(site_instance, view_routing_id,
                                            frame_routing_id, widget_routing_id,
                                            renderer_initiated_creation));
@@ -1319,6 +1328,11 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
 
   scoped_refptr<SiteInstance> new_instance =
       ConvertToSiteInstance(new_instance_descriptor, candidate_instance);
+
+  // If we have affinity to a particular process, get it now or forever hold
+  // your peace.
+  if (render_process_affinity_ != SiteInstance::kNoProcessAffinity)
+    new_instance->GetProcess(render_process_affinity_);
 
   // If |force_swap| is true, we must use a different SiteInstance than the
   // current one. If we didn't, we would have two RenderFrameHosts in the same

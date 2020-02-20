@@ -174,7 +174,7 @@ InterstitialPageImpl::InterstitialPageImpl(
           this,
           this,
           this,
-          static_cast<WebContentsImpl*>(web_contents))),
+          static_cast<WebContentsImpl*>(web_contents), SiteInstance::kNoProcessAffinity)),
       original_child_id_(
           web_contents->GetRenderViewHost()->GetProcess()->GetID()),
       original_rvh_id_(web_contents->GetRenderViewHost()->GetRoutingID()),
@@ -600,6 +600,8 @@ RenderViewHostImpl* InterstitialPageImpl::CreateRenderViewHost() {
               ->GetDOMStorageContext());
   session_storage_namespace_ =
       SessionStorageNamespaceImpl::Create(dom_storage_context);
+
+  // TODO: should this interstitial page support process affinity?
 
   // Use the RenderViewHost from our FrameTree.
   frame_tree_->root()->render_manager()->Init(

@@ -230,7 +230,9 @@ class OrderedHashTable : public FixedArray {
   friend class OrderedNameDictionaryHandler;
 };
 
-class V8_EXPORT_PRIVATE OrderedHashSet
+// blpwtk2: Remove V8_EXPORT_PRIVATE to avoid DLL export in static build.
+// V8_EXPORT_PRIVATE requires extra dependencies resulting static build failure.
+class OrderedHashSet
     : public OrderedHashTable<OrderedHashSet, 1> {
  public:
   DECL_CAST(OrderedHashSet)
@@ -255,7 +257,9 @@ class V8_EXPORT_PRIVATE OrderedHashSet
   OBJECT_CONSTRUCTORS(OrderedHashSet, OrderedHashTable<OrderedHashSet, 1>);
 };
 
-class V8_EXPORT_PRIVATE OrderedHashMap
+// blpwtk2: Remove V8_EXPORT_PRIVATE to avoid DLL export in static build.
+// V8_EXPORT_PRIVATE requires extra dependencies resulting static build failure.
+class OrderedHashMap
     : public OrderedHashTable<OrderedHashMap, 2> {
  public:
   DECL_CAST(OrderedHashMap)

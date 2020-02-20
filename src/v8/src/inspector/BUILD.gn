@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("../../gni/v8.gni")
+import("//blpwtk2/blpwtk2.gni")
 
 _inspector_protocol = v8_path_prefix + "/third_party/inspector_protocol"
 import("$_inspector_protocol/inspector_protocol.gni")
