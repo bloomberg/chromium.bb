@@ -603,6 +603,13 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
     logging.info('Sucessfully extract packages under test')
     self.board_runattrs.SetParallel('packages_under_test', packages)
 
+  def _IsGomaEnabledOnlyForLogs(self):
+    # HACK: our ninja log uploading bits for Chromium are pretty closely tied
+    # to goma's logging bits. In latest-toolchain builds, these logs are
+    # useful, but actually using goma isn't, since it just does local
+    # fallbacks.
+    return self._latest_toolchain
+
   def _ShouldEnableGoma(self):
     # Enable goma if 1) chrome actually needs to be built, or we want to use
     # goma to build regular packages 2) not latest_toolchain (because toolchain
@@ -610,7 +617,7 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
     # 3) goma is available.
     return ((self._run.options.managed_chrome or
              self._run.config.build_all_with_goma) and
-            not self._latest_toolchain and self._run.options.goma_dir)
+            self._run.options.goma_dir)
 
   def _SetupGomaIfNecessary(self):
     """Sets up goma envs if necessary.
@@ -634,7 +641,8 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
         chromeos_goma_dir=self._run.options.chromeos_goma_dir)
 
     # Set USE_GOMA env var so that chrome is built with goma.
-    self._portage_extra_env['USE_GOMA'] = 'true'
+    if not self._IsGomaEnabledOnlyForLogs():
+      self._portage_extra_env['USE_GOMA'] = 'true'
     self._portage_extra_env.update(goma.GetChrootExtraEnv())
 
     # Keep GOMA_TMP_DIR for Report stage to upload logs.
