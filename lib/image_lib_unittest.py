@@ -259,6 +259,7 @@ class LoopbackPartitionsTest(cros_test_lib.MockTempDirTestCase):
     self.assertEqual(dirname, lb._Mount(lb._gpt_table[0], ('ro',)))
     # Then make sure we get it when we call it again.
     self.assertEqual(dirname, lb._Mount(lb._gpt_table[0], ('ro',)))
+    lb.close()
 
   def testRemountCallsMount(self):
     """Test that Mount returns the directory name even when already mounted."""
@@ -276,6 +277,7 @@ class LoopbackPartitionsTest(cros_test_lib.MockTempDirTestCase):
         mock.call(devname, dirname, makedirs=True, skip_mtab=False,
                   sudo=True, mount_opts=('remount', 'rw')),
         self.mount_mock.call_args)
+    lb.close()
 
   def testGetPartitionDevName(self):
     """Test GetPartitionDevName()."""
@@ -286,6 +288,7 @@ class LoopbackPartitionsTest(cros_test_lib.MockTempDirTestCase):
       if part.name != 'reserved':
         self.assertEqual('%sp%d' % (LOOP_DEV, part.number),
                          lb.GetPartitionDevName(part.name))
+    lb.close()
 
   def test_GetMountPointAndSymlink(self):
     """Test _GetMountPointAndSymlink()."""
@@ -294,6 +297,7 @@ class LoopbackPartitionsTest(cros_test_lib.MockTempDirTestCase):
       expected = [os.path.join(lb.destination, 'dir-%s' % n)
                   for n in (part.number, part.name)]
       self.assertEqual(expected, list(lb._GetMountPointAndSymlink(part)))
+    lb.close()
 
   def testIsExt2OnVarious(self):
     """Test _IsExt2 works with the various partition types."""
@@ -314,6 +318,8 @@ class LoopbackPartitionsTest(cros_test_lib.MockTempDirTestCase):
     self.assertEqual(
         [part.number in FS_PARTITIONS for part in LOOP_PARTITION_INFO],
         [lb._IsExt2(part.name) for part in LOOP_PARTITION_INFO])
+    lb.close()
+
 
 class LsbUtilsTest(cros_test_lib.MockTempDirTestCase):
   """Tests the various LSB utilities."""
