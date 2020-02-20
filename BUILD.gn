@@ -238,17 +238,7 @@ target(link_target_type, "ffmpeg_internal") {
   # that are under "if (0)" style sections.  Which lead to link time errors
   # when for example it tries to link an ARM symbol on X86.
   configs -= [ "//build/config/compiler:default_optimization" ]
-  if (is_win) {
-    # Setting the optimizations to 'speed' or to 'max' on Windows results in
-    # a lot of unresolved symbols. The only supported mode is 'size' (see
-    # crbug.com/264459).
-    #
-    # FFMmpeg require dead code elimination to be available in all build modes
-    # and thus doesn't support wpo.
-    configs += [ "//build/config/compiler:optimize_no_wpo" ]
-  } else {
-    configs += [ "//build/config/compiler:optimize_max" ]
-  }
+  configs += [ "//build/config/compiler:optimize_max" ]
 
   if (ffmpeg_use_atomics_fallback) {
     if (is_posix || is_fuchsia) {
