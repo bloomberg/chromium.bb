@@ -256,7 +256,8 @@ class RepositoryCommandMethodTest(cros_test_lib.RunCommandTempDirTestCase):
     copy = self.repo.Copy(copy_root)
     self.assertEqual(copy.root, copy_root)
     kwargs = dict(debug_level=logging.DEBUG, capture_output=True,
-                  extra_env={'LC_MESSAGES': 'C'}, cwd=self.root)
+                  encoding='utf-8', extra_env={'LC_MESSAGES': 'C'},
+                  cwd=self.root)
     self.assertCommandCalled([
         'cp', '--archive', '--link', '--parents',
         '.repo/project-objects/p1.git/objects', copy_root,

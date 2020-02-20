@@ -300,7 +300,7 @@ class Repository(object):
           cros_build_lib.run(
               ['cp', '--archive', '--link', '--parents', objects_dir,
                dest_path],
-              debug_level=logging.DEBUG, capture_output=True,
+              debug_level=logging.DEBUG, capture_output=True, encoding='utf-8',
               extra_env={'LC_MESSAGES': 'C'}, cwd=self.root)
         except cros_build_lib.RunCommandError as e:
           if 'Invalid cross-device link' in e.result.error:
@@ -312,7 +312,7 @@ class Repository(object):
       try:
         cros_build_lib.run(
             ['cp', '--archive', '--no-clobber', '.repo', dest_path],
-            debug_level=logging.DEBUG, capture_output=True,
+            debug_level=logging.DEBUG, capture_output=True, encoding='utf-8',
             extra_env={'LC_MESSAGES': 'C'}, cwd=self.root)
       except cros_build_lib.RunCommandError as e:
         # Despite the --no-clobber, `cp` still complains when trying to copy a
