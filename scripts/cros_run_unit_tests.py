@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import multiprocessing
 import os
+import sys
 
 from chromite.lib import commandline
 from chromite.lib import constants
@@ -19,6 +20,10 @@ from chromite.lib import osutils
 from chromite.lib import workon_helper
 from chromite.lib import portage_util
 from chromite.scripts import cros_extract_deps
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 BOARD_VIRTUAL_PACKAGES = (constants.TARGET_OS_PKG,
                           constants.TARGET_OS_DEV_PKG,

@@ -9,10 +9,14 @@ from __future__ import print_function
 
 from collections import namedtuple
 import os
+import sys
 
 from chromite.lib import cros_test_lib
 from chromite.scripts import cros_install_debug_syms
 from chromite.utils import outcap
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 SimpleIndex = namedtuple('SimpleIndex', 'header packages')

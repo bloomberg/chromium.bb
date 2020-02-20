@@ -20,6 +20,7 @@ import functools
 import multiprocessing
 import os
 import pickle
+import sys
 import tempfile
 
 from six.moves import urllib
@@ -38,6 +39,10 @@ from chromite.utils import outcap
 if cros_build_lib.IsInsideChroot():
   # pylint: disable=import-error
   from portage import create_trees
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 DEBUG_SYMS_EXT = '.debug.tbz2'
 
