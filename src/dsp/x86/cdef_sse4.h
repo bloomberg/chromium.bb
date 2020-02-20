@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 The libgav1 Authors
+ * Copyright 2020 The libgav1 Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,34 +14,24 @@
  * limitations under the License.
  */
 
-#ifndef LIBGAV1_SRC_DSP_CDEF_H_
-#define LIBGAV1_SRC_DSP_CDEF_H_
+#ifndef LIBGAV1_SRC_DSP_X86_CDEF_SSE4_H_
+#define LIBGAV1_SRC_DSP_X86_CDEF_SSE4_H_
 
-// Pull in LIBGAV1_DspXXX defines representing the implementation status
-// of each function. The resulting value of each can be used by each module to
-// determine whether an implementation is needed at compile time.
-// IWYU pragma: begin_exports
-
-// ARM:
-#include "src/dsp/arm/cdef_neon.h"
-
-// x86:
-// Note includes should be sorted in logical order avx2/avx/sse4, etc.
-// The order of includes is important as each tests for a superior version
-// before setting the base.
-// clang-format off
-#include "src/dsp/x86/cdef_sse4.h"
-// clang-format on
-// IWYU pragma: end_exports
+#include "src/dsp/dsp.h"
+#include "src/utils/cpu.h"
 
 namespace libgav1 {
 namespace dsp {
 
 // Initializes Dsp::cdef_direction and Dsp::cdef_filter. This function is not
 // thread-safe.
-void CdefInit_C();
+void CdefInit_SSE4_1();
 
 }  // namespace dsp
 }  // namespace libgav1
 
-#endif  // LIBGAV1_SRC_DSP_CDEF_H_
+#if LIBGAV1_ENABLE_SSE4_1
+#define LIBGAV1_Dsp8bpp_CdefDirection LIBGAV1_CPU_SSE4_1
+#endif  // LIBGAV1_ENABLE_SSE4_1
+
+#endif  // LIBGAV1_SRC_DSP_X86_CDEF_SSE4_H_
