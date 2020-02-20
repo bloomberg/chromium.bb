@@ -75,6 +75,9 @@ class CONTENT_EXPORT UtilityProcessHost
   explicit UtilityProcessHost(std::unique_ptr<Client> client);
   ~UtilityProcessHost() override;
 
+  static bool RunUtilityInProcess();
+  static void SetRunUtilityInProcess(bool value);
+
   base::WeakPtr<UtilityProcessHost> AsWeakPtr();
 
   // Makes the process run with a specific sandbox type, or unsandboxed if

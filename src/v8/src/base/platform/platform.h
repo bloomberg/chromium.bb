@@ -104,7 +104,7 @@ class TimezoneCache;
 // functions. Add methods here to cope with differences between the
 // supported platforms.
 
-class V8_BASE_EXPORT OS {
+class BLPV8_BASE_EXPORT OS {
  public:
   // Initialize the OS class.
   // - hard_abort: If true, OS::Abort() will crash instead of aborting.
@@ -136,7 +136,7 @@ class V8_BASE_EXPORT OS {
   static FILE* OpenTemporaryFile();
 
   // Log file open mode is platform-dependent due to line ends issues.
-  static const char* const LogFileOpenMode;
+  static const char* GetLogFileOpenMode() {return  "wb";}
 
   // Print output to console. This is mostly used for debugging output.
   // On platforms that has standard terminal output, the output
@@ -186,7 +186,7 @@ class V8_BASE_EXPORT OS {
     char text[kStackWalkMaxTextLen];
   };
 
-  class V8_BASE_EXPORT MemoryMappedFile {
+  class BLPV8_BASE_EXPORT MemoryMappedFile {
    public:
     enum class FileMode { kReadOnly, kReadWrite };
 
@@ -309,7 +309,7 @@ inline void EnsureConsoleOutput() {
 // thread. The Thread object should not be deallocated before the thread has
 // terminated.
 
-class V8_BASE_EXPORT Thread {
+class BLPV8_BASE_EXPORT Thread {
  public:
   // Opaque data type for thread-local storage keys.
   using LocalStorageKey = int32_t;

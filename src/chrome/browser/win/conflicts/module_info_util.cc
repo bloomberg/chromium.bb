@@ -306,6 +306,7 @@ void CollapseMatchingPrefixInPath(const StringMapping& prefix_mapping,
 bool GetModuleImageSizeAndTimeDateStamp(const base::FilePath& path,
                                         uint32_t* size_of_image,
                                         uint32_t* time_date_stamp) {
+#if false
   base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!file.IsValid())
     return false;
@@ -330,6 +331,9 @@ bool GetModuleImageSizeAndTimeDateStamp(const base::FilePath& path,
   *time_date_stamp = pe_image_reader.GetCoffFileHeader()->TimeDateStamp;
 
   return true;
+#else
+  return false;
+#endif
 }
 
 namespace internal {

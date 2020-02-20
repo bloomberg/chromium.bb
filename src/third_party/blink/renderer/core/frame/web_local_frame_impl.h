@@ -191,6 +191,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   bool Confirm(const WebString& message) override;
   WebString Prompt(const WebString& message,
                    const WebString& default_value) override;
+  v8::Isolate* ScriptIsolate() const override;
   void BindDevToolsAgent(
       mojo::ScopedInterfaceEndpointHandle devtools_agent_host_ptr_info,
       mojo::ScopedInterfaceEndpointHandle devtools_agent_request) override;

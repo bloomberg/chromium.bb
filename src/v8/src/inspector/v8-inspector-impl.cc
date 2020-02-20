@@ -476,4 +476,7 @@ protocol::Response V8InspectorImpl::EvaluateScope::setTimeout(double timeout) {
   return protocol::Response::OK();
 }
 
+V8Inspector::Channel::~Channel() {
+}
+
 }  // namespace v8_inspector
