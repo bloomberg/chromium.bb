@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <iomanip>
 
-#include "include/libplatform/libplatform.h"
+#include "include/v8-default-platform.h"
 #include "src/base/platform/platform.h"
 #include "src/codegen/assembler-arch.h"
 #include "src/codegen/source-position-table.h"

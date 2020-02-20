@@ -20,6 +20,10 @@ config("swiftshader_libGLESv2_private_config") {
     "GL_API=",
     "GL_GLEXT_PROTOTYPES",
   ]
+  defines += [
+    "SWIFT_EGL_LIBRARY_NAME=\"blpcr_egl${optional_bb_suffix}.dll\"",
+    "SWIFT_GLESV2_LIBRARY_NAME=\"blpcr_glesv2${optional_bb_suffix}.dll\"",
+  ]
 
   if (is_win) {
     cflags = [
@@ -101,6 +105,13 @@ swiftshader_static_library("swiftshader_libGLESv2_static") {
 
   configs = [ ":swiftshader_libGLESv2_private_config" ]
 
+  if (bb_generate_map_files) {
+    configs += [ "//blpwtk2:blpwtk2_gen_map" ]
+  }
+  public_deps = [
+    "//blpwtk2:blpwtk2_generate_sources",
+  ]
+
   include_dirs = [
     "../../../include",
     "../..",
@@ -110,7 +121,7 @@ swiftshader_static_library("swiftshader_libGLESv2_static") {
 
 swiftshader_shared_library("swiftshader_libGLESv2") {
   if (!is_mac && !is_fuchsia) {
-    output_name = "libGLESv2"
+    output_name = "blpcr_glesv2${optional_bb_suffix}"
     output_dir = "$root_out_dir/swiftshader"
   }
 
@@ -139,6 +150,13 @@ swiftshader_shared_library("swiftshader_libGLESv2") {
   }
 
   configs = [ ":swiftshader_libGLESv2_private_config" ]
+
+  if (bb_generate_map_files) {
+    configs += [ "//blpwtk2:blpwtk2_gen_map" ]
+  }
+  public_deps = [
+    "//blpwtk2:blpwtk2_generate_sources",
+  ]
 
   include_dirs = [
     "../../../include",
