@@ -25,6 +25,7 @@
 #include "aom_ports/mem.h"
 #include "aom_ports/system_state.h"
 
+#include "av1/encoder/model_rd.h"
 #include "av1/common/mvref_common.h"
 #include "av1/common/pred_common.h"
 #include "av1/common/reconinter.h"
@@ -449,52 +450,6 @@ static void estimate_comp_ref_frame_costs(
       ref_costs_comp[BWDREF_FRAME][ALTREF_FRAME] = 512;
     }
   }
-}
-
-static void model_rd_with_curvfit(const AV1_COMP *const cpi,
-                                  const MACROBLOCK *const x,
-                                  BLOCK_SIZE plane_bsize, int plane,
-                                  int64_t sse, int num_samples, int *rate,
-                                  int64_t *dist) {
-  (void)cpi;
-  (void)plane_bsize;
-  const MACROBLOCKD *const xd = &x->e_mbd;
-  const struct macroblock_plane *const p = &x->plane[plane];
-  const int dequant_shift = (is_cur_buf_hbd(xd)) ? xd->bd - 5 : 3;
-  const int qstep = AOMMAX(p->dequant_QTX[1] >> dequant_shift, 1);
-
-  if (sse == 0) {
-    if (rate) *rate = 0;
-    if (dist) *dist = 0;
-    return;
-  }
-  aom_clear_system_state();
-  const double sse_norm = (double)sse / num_samples;
-  const double qstepsqr = (double)qstep * qstep;
-  const double xqr = log2(sse_norm / qstepsqr);
-
-  double rate_f, dist_by_sse_norm_f;
-  av1_model_rd_curvfit(plane_bsize, sse_norm, xqr, &rate_f,
-                       &dist_by_sse_norm_f);
-  // 9.0 gives the best quality gain on a test video
-  // but it likely shall be qstep dependent
-  if (rate_f < 9.0) rate_f = 0.0;
-  const double dist_f = dist_by_sse_norm_f * sse_norm;
-  int rate_i = (int)(AOMMAX(0.0, rate_f * num_samples) + 0.5);
-  int64_t dist_i = (int64_t)(AOMMAX(0.0, dist_f * num_samples) + 0.5);
-  aom_clear_system_state();
-
-  // Check if skip is better
-  if (rate_i == 0) {
-    dist_i = sse << 4;
-  } else if (RDCOST(x->rdmult, rate_i, dist_i) >=
-             RDCOST(x->rdmult, 0, sse << 4)) {
-    rate_i = 0;
-    dist_i = sse << 4;
-  }
-
-  if (rate) *rate = rate_i;
-  if (dist) *dist = dist_i;
 }
 
 static TX_SIZE calculate_tx_size(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
@@ -1862,17 +1817,14 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                                ? av1_broadcast_interp_filter(EIGHTTAP_REGULAR)
                                : av1_broadcast_interp_filter(filter_ref);
       av1_enc_build_inter_predictor_y(xd, mi_row, mi_col);
-      if (cpi->sf.rt_sf.use_modeled_non_rd_cost) {
-        model_rd_for_sb_y(cpi, bsize, x, xd, &this_rdc.rate, &this_rdc.dist,
-                          &this_rdc.skip, NULL, &var_y, &sse_y, 1);
+      if (use_model_yrd_large) {
+        model_skip_for_sb_y_large(cpi, bsize, mi_row, mi_col, x, xd, NULL, NULL,
+                                  &var_y, &sse_y, &this_early_term,
+                                  cpi->sf.rt_sf.use_modeled_non_rd_cost);
       } else {
-        if (use_model_yrd_large) {
-          model_skip_for_sb_y_large(cpi, bsize, mi_row, mi_col, x, xd, NULL,
-                                    NULL, &var_y, &sse_y, &this_early_term, 0);
-        } else {
-          model_rd_for_sb_y(cpi, bsize, x, xd, &this_rdc.rate, &this_rdc.dist,
-                            &this_rdc.skip, NULL, &var_y, &sse_y, 0);
-        }
+        model_rd_for_sb_y(cpi, bsize, x, xd, &this_rdc.rate, &this_rdc.dist,
+                          &this_rdc.skip, NULL, &var_y, &sse_y,
+                          cpi->sf.rt_sf.use_modeled_non_rd_cost);
       }
     }
 
