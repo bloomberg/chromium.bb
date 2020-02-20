@@ -290,7 +290,7 @@ PRODUCT_TOOLCHAIN_STAGE = 'Product-Toolchain'
 # Major is used for tracking heavy API breakage- for example, no longer
 # supporting the --resume option.
 REEXEC_API_MAJOR = 0
-REEXEC_API_MINOR = 11
+REEXEC_API_MINOR = 12
 REEXEC_API_VERSION = '%i.%i' % (REEXEC_API_MAJOR, REEXEC_API_MINOR)
 
 # Support --master-build-id
