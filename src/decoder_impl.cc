@@ -162,8 +162,10 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
     *out_ptr = nullptr;
     return kStatusOk;
   }
-  const TemporalUnit temporal_unit = temporal_units_.Pop();
-  return DecodeTemporalUnit(temporal_unit, out_ptr);
+  const TemporalUnit& temporal_unit = temporal_units_.Front();
+  const StatusCode status = DecodeTemporalUnit(temporal_unit, out_ptr);
+  temporal_units_.Pop();
+  return status;
 }
 
 StatusCode DecoderImpl::DecodeTemporalUnit(const TemporalUnit& temporal_unit,

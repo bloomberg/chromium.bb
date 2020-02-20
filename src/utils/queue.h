@@ -26,8 +26,7 @@
 
 namespace libgav1 {
 
-// A FIFO queue of a fixed capacity. The elements are copied, so the element
-// type T should be small.
+// A FIFO queue of a fixed capacity.
 //
 // WARNING: No error checking is performed.
 template <typename T>
@@ -42,21 +41,36 @@ class Queue {
 
   // Pushes the element |value| to the end of the queue. It is an error to call
   // Push() when the queue is full.
-  void Push(T value) {
+  void Push(T&& value) {
     assert(size_ < capacity_);
-    elements_[back_++] = value;
-    if (back_ == capacity_) back_ = 0;
+    elements_[end_++] = std::move(value);
+    if (end_ == capacity_) end_ = 0;
     ++size_;
   }
 
-  // Returns the element at the front of the queue and removes it from the
-  // queue. It is an error to call Pop() when the queue is empty.
-  T Pop() {
+  // Removes the element at the front of the queue. It is an error to call Pop()
+  // when the queue is empty.
+  void Pop() {
     assert(size_ != 0);
-    const T front_element = elements_[front_++];
-    if (front_ == capacity_) front_ = 0;
+    const T element = std::move(elements_[begin_++]);
+    static_cast<void>(element);
+    if (begin_ == capacity_) begin_ = 0;
     --size_;
-    return front_element;
+  }
+
+  // Returns a reference to the element at the front of the queue. It is an
+  // error to call Front() when the queue is empty.
+  T& Front() {
+    assert(size_ != 0);
+    return elements_[begin_];
+  }
+
+  // Returns a reference to the element at the back of the queue. It is an error
+  // to call Back() when the queue is empty.
+  T& Back() {
+    assert(size_ != 0);
+    const size_t back = ((end_ == 0) ? capacity_ : end_) - 1;
+    return elements_[back];
   }
 
   // Returns true if the queue is empty.
@@ -73,9 +87,9 @@ class Queue {
   std::unique_ptr<T[]> elements_;
   size_t capacity_ = 0;
   // The index of the element to be removed by Pop().
-  size_t front_ = 0;
+  size_t begin_ = 0;
   // The index where the new element is inserted by Push().
-  size_t back_ = 0;
+  size_t end_ = 0;
   size_t size_ = 0;
 };
 
