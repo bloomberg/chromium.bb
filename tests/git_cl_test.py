@@ -653,9 +653,7 @@ class TestGitCl(unittest.TestCase):
     mock.patch(
         'git_cl.gerrit_util.ValidAccounts',
         lambda *a: self._mocked_call('ValidAccounts', *a)).start()
-    mock.patch(
-        'git_cl.DieWithError',
-        lambda msg, change=None: self._mocked_call('DieWithError', msg)).start()
+    mock.patch('sys.exit', side_effect=SystemExitMock).start()
     mock.patch('git_cl.Settings.GetRoot', return_value='').start()
     self.mockGit = GitMocks()
     mock.patch('scm.GIT.GetBranchRef', self.mockGit.GetBranchRef).start()
@@ -751,32 +749,6 @@ class TestGitCl(unittest.TestCase):
     ]
     self.assertIsNone(git_cl.LoadCodereviewSettingsFromFile(codereview_file))
 
-  @staticmethod
-  def _git_sanity_checks(diff_base, working_branch, get_remote_branch=True):
-    fake_ancestor = 'fake_ancestor'
-    fake_cl = 'fake_cl_for_patch'
-    return [
-      ((['git',
-         'rev-parse', '--verify', diff_base],), fake_ancestor),
-      ((['git',
-         'merge-base', fake_ancestor, 'HEAD'],), fake_ancestor),
-      ((['git',
-         'rev-list', '^' + fake_ancestor, 'HEAD'],), fake_cl),
-      # Mock a config miss (error code 1)
-      ((['git',
-         'config', 'gitcl.remotebranch'],), CERR1),
-    ] + ([
-      # Call to GetRemoteBranch()
-      ((['git',
-         'config', 'branch.%s.merge' % working_branch],),
-       'refs/heads/master'),
-      ((['git',
-         'config', 'branch.%s.remote' % working_branch],), 'origin'),
-    ] if get_remote_branch else []) + [
-      ((['git', 'rev-list', '^' + fake_ancestor,
-         'refs/remotes/origin/master'],), ''),
-    ]
-
   @classmethod
   def _gerrit_base_calls(cls, issue=None, fetched_description=None,
                          fetched_status=None, other_cl_owner=None,
@@ -804,19 +776,12 @@ class TestGitCl(unittest.TestCase):
         'status': fetched_status or 'NEW',
       }
       if fetched_status == 'ABANDONED':
-        calls += [
-          (('DieWithError', 'Change https://%s-review.googlesource.com/'
-                            '123456 has been abandoned, new uploads are not '
-                            'allowed' % short_hostname), SystemExitMock()),
-        ]
         return calls
       if other_cl_owner:
         calls += [
           (('ask_for_data', 'Press Enter to upload, or Ctrl+C to abort'), ''),
         ]
 
-    calls += cls._git_sanity_checks(ancestor_revision, 'master',
-                                    get_remote_branch=False)
     calls += [
       ((['git', 'rev-parse', 'HEAD'],), '12345'),
     ]
@@ -1194,6 +1159,7 @@ class TestGitCl(unittest.TestCase):
               list(args))).start()
     mock.patch('os.path.isfile',
               lambda path: self._mocked_call(['os.path.isfile', path])).start()
+    mock.patch('git_cl.Changelist.GitSanityChecks', return_value=True).start()
 
     self.mockGit.config['gerrit.host'] = 'true'
     self.mockGit.config['branch.master.gerritissue'] = (
@@ -1419,6 +1385,7 @@ class TestGitCl(unittest.TestCase):
         change_id='123456789',
         original_title='User input')
 
+  @mock.patch('sys.stderr', StringIO())
   def test_gerrit_upload_squash_reupload_to_abandoned(self):
     description = 'desc ✔\nBUG=\n\nChange-Id: 123456789'
     with self.assertRaises(SystemExitMock):
@@ -1431,6 +1398,10 @@ class TestGitCl(unittest.TestCase):
           issue=123456,
           fetched_status='ABANDONED',
           change_id='123456789')
+    self.assertEqual(
+        'Change https://chromium-review.googlesource.com/123456 has been '
+        'abandoned, new uploads are not allowed\n',
+        sys.stderr.getvalue())
 
   @mock.patch(
       'gerrit_util.GetAccountDetails',
@@ -1784,31 +1755,33 @@ class TestGitCl(unittest.TestCase):
       0)
     self.assertIssueAndPatchset(patchset='1', git_short_host='else')
 
+  @mock.patch('sys.stderr', StringIO())
   def test_patch_gerrit_conflict(self):
     self._patch_common()
     self.calls += [
       ((['git', 'fetch', 'https://chromium.googlesource.com/my/repo',
          'refs/changes/56/123456/7'],), ''),
       ((['git', 'cherry-pick', 'FETCH_HEAD'],), CERR1),
-      (('DieWithError', 'Command "git cherry-pick FETCH_HEAD" failed.\n'),
-       SystemExitMock()),
     ]
     with self.assertRaises(SystemExitMock):
       git_cl.main(['patch', '123456'])
+    self.assertEqual(
+        'Command "git cherry-pick FETCH_HEAD" failed.\n\n',
+        sys.stderr.getvalue())
 
   @mock.patch(
       'gerrit_util.GetChangeDetail',
       side_effect=gerrit_util.GerritError(404, ''))
+  @mock.patch('sys.stderr', StringIO())
   def test_patch_gerrit_not_exists(self, *_mocks):
     self.mockGit.config['remote.origin.url'] = (
         'https://chromium.googlesource.com/my/repo')
-    self.calls = [
-      (('DieWithError',
-        'change 123456 at https://chromium-review.googlesource.com does not '
-        'exist or you have no access to it'), SystemExitMock()),
-    ]
     with self.assertRaises(SystemExitMock):
       self.assertEqual(1, git_cl.main(['patch', '123456']))
+    self.assertEqual(
+        'change 123456 at https://chromium-review.googlesource.com does not '
+        'exist or you have no access to it\n',
+        sys.stderr.getvalue())
 
   def _checkout_calls(self):
     return [
@@ -1847,18 +1820,20 @@ class TestGitCl(unittest.TestCase):
     cl.branchref = 'refs/heads/master'
     return cl
 
+  @mock.patch('sys.stderr', StringIO())
   def test_gerrit_ensure_authenticated_missing(self):
     cl = self._test_gerrit_ensure_authenticated_common(auth={
       'chromium.googlesource.com': ('git-is.ok', '', 'but gerrit is missing'),
     })
-    self.calls.append(
-        (('DieWithError',
-          'Credentials for the following hosts are required:\n'
-          '  chromium-review.googlesource.com\n'
-          'These are read from ~/.gitcookies (or legacy ~/.netrc)\n'
-          'You can (re)generate your credentials by visiting '
-          'https://chromium-review.googlesource.com/new-password'), ''),)
-    self.assertIsNone(cl.EnsureAuthenticated(force=False))
+    with self.assertRaises(SystemExitMock):
+      cl.EnsureAuthenticated(force=False)
+    self.assertEqual(
+        'Credentials for the following hosts are required:\n'
+        '  chromium-review.googlesource.com\n'
+        'These are read from ~/.gitcookies (or legacy ~/.netrc)\n'
+        'You can (re)generate your credentials by visiting '
+        'https://chromium-review.googlesource.com/new-password\n',
+        sys.stderr.getvalue())
 
   def test_gerrit_ensure_authenticated_conflict(self):
     cl = self._test_gerrit_ensure_authenticated_common(auth={
@@ -1975,8 +1950,7 @@ class TestGitCl(unittest.TestCase):
   def test_StatusFieldOverrideIssueMissingArgs(self):
     try:
       self.assertEqual(git_cl.main(['status', '--issue', '1']), 0)
-    except SystemExit as ex:
-      self.assertEqual(ex.code, 2)
+    except SystemExitMock:
       self.assertIn(
           '--field must be given when --issue is set.', sys.stderr.getvalue())
 
