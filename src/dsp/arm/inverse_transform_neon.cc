@@ -2436,17 +2436,17 @@ LIBGAV1_ALWAYS_INLINE void RowShift(int16_t* source, int num_rows,
   }
 }
 
-template <bool enable_flip_rows = false>
+template <int tx_height, bool enable_flip_rows = false>
 LIBGAV1_ALWAYS_INLINE void StoreToFrameWithRound(
     Array2DView<uint8_t> frame, const int start_x, const int start_y,
-    const int tx_width, const int tx_height, const int16_t* source,
-    TransformType tx_type) {
+    const int tx_width, const int16_t* source, TransformType tx_type) {
   const bool flip_rows =
       enable_flip_rows ? kTransformFlipRowsMask.Contains(tx_type) : false;
   const int stride = frame.columns();
   uint8_t* dst = frame[start_y] + start_x;
 
-  if (tx_width == 4) {
+  // Enable for 4x4, 4x8, 4x16
+  if (tx_height < 32 && tx_width == 4) {
     const uint8x8_t zero = vdup_n_u8(0);
     for (int i = 0; i < tx_height; ++i) {
       const int row = flip_rows ? (tx_height - i - 1) * 4 : i * 4;
@@ -2459,7 +2459,8 @@ LIBGAV1_ALWAYS_INLINE void StoreToFrameWithRound(
       StoreLo4(dst, d);
       dst += stride;
     }
-  } else if (tx_width == 8) {
+    // Enable for 8x4, 8x8, 8x16, 8x32
+  } else if (tx_height < 64 && tx_width == 8) {
     for (int i = 0; i < tx_height; ++i) {
       const int row = flip_rows ? (tx_height - i - 1) * 8 : i * 8;
       const int16x8_t residual = vld1q_s16(&source[row]);
@@ -2471,6 +2472,7 @@ LIBGAV1_ALWAYS_INLINE void StoreToFrameWithRound(
       vst1_u8(dst, d);
       dst += stride;
     }
+    // Remaining widths >= 16.
   } else {
     for (int i = 0; i < tx_height; ++i) {
       const int y = start_y + i;
@@ -2559,7 +2561,7 @@ void Dct4TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
       } while (i < tx_width);
     }
   }
-  StoreToFrameWithRound(frame, start_x, start_y, tx_width, 4, src, tx_type);
+  StoreToFrameWithRound<4>(frame, start_x, start_y, tx_width, src, tx_type);
 }
 
 void Dct8TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
@@ -2625,7 +2627,7 @@ void Dct8TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
       } while (i < tx_width);
     }
   }
-  StoreToFrameWithRound(frame, start_x, start_y, tx_width, 8, src, tx_type);
+  StoreToFrameWithRound<8>(frame, start_x, start_y, tx_width, src, tx_type);
 }
 
 void Dct16TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
@@ -2690,7 +2692,7 @@ void Dct16TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
       } while (i < tx_width);
     }
   }
-  StoreToFrameWithRound(frame, start_x, start_y, tx_width, 16, src, tx_type);
+  StoreToFrameWithRound<16>(frame, start_x, start_y, tx_width, src, tx_type);
 }
 
 void Dct32TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
@@ -2735,7 +2737,7 @@ void Dct32TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
       i += 8;
     } while (i < tx_width);
   }
-  StoreToFrameWithRound(frame, start_x, start_y, tx_width, 32, src, tx_type);
+  StoreToFrameWithRound<32>(frame, start_x, start_y, tx_width, src, tx_type);
 }
 
 void Dct64TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
@@ -2780,7 +2782,7 @@ void Dct64TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
       i += 8;
     } while (i < tx_width);
   }
-  StoreToFrameWithRound(frame, start_x, start_y, tx_width, 64, src, tx_type);
+  StoreToFrameWithRound<64>(frame, start_x, start_y, tx_width, src, tx_type);
 }
 
 void Adst4TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
@@ -2835,8 +2837,8 @@ void Adst4TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
     } while (i < tx_width);
   }
 
-  StoreToFrameWithRound</*enable_flip_rows=*/true>(frame, start_x, start_y,
-                                                   tx_width, 4, src, tx_type);
+  StoreToFrameWithRound<4, /*enable_flip_rows=*/true>(frame, start_x, start_y,
+                                                      tx_width, src, tx_type);
 }
 
 void Adst8TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
@@ -2903,8 +2905,8 @@ void Adst8TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
       } while (i < tx_width);
     }
   }
-  StoreToFrameWithRound</*enable_flip_rows=*/true>(frame, start_x, start_y,
-                                                   tx_width, 8, src, tx_type);
+  StoreToFrameWithRound<8, /*enable_flip_rows=*/true>(frame, start_x, start_y,
+                                                      tx_width, src, tx_type);
 }
 
 void Adst16TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
@@ -2968,8 +2970,8 @@ void Adst16TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
       } while (i < tx_width);
     }
   }
-  StoreToFrameWithRound</*enable_flip_rows=*/true>(frame, start_x, start_y,
-                                                   tx_width, 16, src, tx_type);
+  StoreToFrameWithRound<16, /*enable_flip_rows=*/true>(frame, start_x, start_y,
+                                                       tx_width, src, tx_type);
 }
 
 void Identity4TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
