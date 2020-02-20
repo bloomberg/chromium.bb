@@ -1174,10 +1174,16 @@ static FRAME_DIFF tf_do_filtering(
                                            subblock_filter_weights[0], pred,
                                            accum, count);
           } else {
-            av1_apply_temporal_filter_others(  // Other reference frames.
-                frame_to_filter, mbd, block_size, mb_row, mb_col, num_planes,
-                use_planewise_strategy, strength, use_subblock,
-                subblock_filter_weights, noise_levels, pred, accum, count);
+            // TODO(chengchen): This line disables the calculation of temporal
+            // filtering for other frames, leading to an output identical to
+            // the source frame. In other words, this line disables temporal
+            // filtering. However, we need a better way to do it.
+            if (!cpi->is_screen_content_type) {
+              av1_apply_temporal_filter_others(  // Other reference frames.
+                  frame_to_filter, mbd, block_size, mb_row, mb_col, num_planes,
+                  use_planewise_strategy, strength, use_subblock,
+                  subblock_filter_weights, noise_levels, pred, accum, count);
+            }
           }
         }
       }
