@@ -55,8 +55,14 @@ class FakeTaskRunner : public TaskRunner {
   void PostPackagedTaskWithDelay(Task task, Clock::duration delay) override;
   bool IsRunningOnTaskRunner() override;
 
-  size_t ready_task_count() const { return ready_to_run_tasks_.size(); }
+  int ready_task_count() const { return ready_to_run_tasks_.size(); }
+  int delayed_task_count() const { return delayed_tasks_.size(); }
 
+  // Returns the time at which the next task is scheduled to run, or
+  // Clock::time_point::max() if there is none scheduled.
+  Clock::time_point GetResumeTime() const;
+
+ private:
   FakeClock* const clock_;
 
   std::vector<Task> ready_to_run_tasks_;

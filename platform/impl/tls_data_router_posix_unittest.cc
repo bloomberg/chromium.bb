@@ -4,6 +4,9 @@
 
 #include "platform/impl/tls_data_router_posix.h"
 
+#include <memory>
+#include <utility>
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "platform/base/ip_address.h"
@@ -19,7 +22,8 @@ using testing::Return;
 
 class TestingDataRouter : public TlsDataRouterPosix {
  public:
-  TestingDataRouter(SocketHandleWaiter* waiter) : TlsDataRouterPosix(waiter) {}
+  explicit TestingDataRouter(SocketHandleWaiter* waiter)
+      : TlsDataRouterPosix(waiter) {}
 
   using TlsDataRouterPosix::IsSocketWatched;
   using TlsDataRouterPosix::NetworkingOperation;
@@ -71,124 +75,127 @@ class MockNetworkWaiter final : public SocketHandleWaiter {
 
 class MockConnection : public TlsConnectionPosix {
  public:
-  MockConnection()
-      : TlsConnectionPosix(IPAddress::Version::kV4, &task_runner),
-        clock(Clock::now()),
-        task_runner(&clock) {}
+  explicit MockConnection(TaskRunner* task_runner)
+      : TlsConnectionPosix(IPAddress::Version::kV4, task_runner) {}
   MOCK_METHOD0(SendAvailableBytes, void());
   MOCK_METHOD0(TryReceiveMessage, void());
-
- private:
-  FakeClock clock;
-  FakeTaskRunner task_runner;
 };
 
-TEST(TlsNetworkingManagerPosixTest, SocketsWatchedCorrectly) {
-  MockNetworkWaiter network_waiter;
-  TestingDataRouter network_manager(&network_waiter);
+class TlsNetworkingManagerPosixTest : public testing::Test {
+ public:
+  TlsNetworkingManagerPosixTest()
+      : clock_(Clock::now()),
+        task_runner_(&clock_),
+        network_manager_(&network_waiter_) {}
+
+  FakeTaskRunner* task_runner() { return &task_runner_; }
+  TestingDataRouter* network_manager() { return &network_manager_; }
+
+ private:
+  FakeClock clock_;
+  FakeTaskRunner task_runner_;
+  MockNetworkWaiter network_waiter_;
+  TestingDataRouter network_manager_;
+};
+
+TEST_F(TlsNetworkingManagerPosixTest, SocketsWatchedCorrectly) {
   auto socket = std::make_unique<StreamSocketPosix>(IPAddress::Version::kV4);
   MockObserver observer;
 
   auto* ptr = socket.get();
-  ASSERT_FALSE(network_manager.IsSocketWatched(ptr));
+  ASSERT_FALSE(network_manager()->IsSocketWatched(ptr));
 
-  network_manager.RegisterSocketObserver(std::move(socket), &observer);
-  ASSERT_TRUE(network_manager.IsSocketWatched(ptr));
-  ASSERT_TRUE(network_manager.AnySocketsWatched());
+  network_manager()->RegisterSocketObserver(std::move(socket), &observer);
+  ASSERT_TRUE(network_manager()->IsSocketWatched(ptr));
+  ASSERT_TRUE(network_manager()->AnySocketsWatched());
 
-  network_manager.DeregisterSocketObserver(ptr);
-  ASSERT_FALSE(network_manager.IsSocketWatched(ptr));
-  ASSERT_FALSE(network_manager.AnySocketsWatched());
+  network_manager()->DeregisterSocketObserver(ptr);
+  ASSERT_FALSE(network_manager()->IsSocketWatched(ptr));
+  ASSERT_FALSE(network_manager()->AnySocketsWatched());
 
-  network_manager.DeregisterSocketObserver(ptr);
-  ASSERT_FALSE(network_manager.IsSocketWatched(ptr));
-  ASSERT_FALSE(network_manager.AnySocketsWatched());
+  network_manager()->DeregisterSocketObserver(ptr);
+  ASSERT_FALSE(network_manager()->IsSocketWatched(ptr));
+  ASSERT_FALSE(network_manager()->AnySocketsWatched());
 }
 
-TEST(TlsNetworkingManagerPosixTest, ExitsAfterOneCall) {
-  MockNetworkWaiter network_waiter;
-  TestingDataRouter network_manager(&network_waiter);
-  MockConnection connection1;
-  MockConnection connection2;
-  MockConnection connection3;
-  network_manager.AddConnectionForTesting(&connection1);
-  network_manager.AddConnectionForTesting(&connection2);
-  network_manager.AddConnectionForTesting(&connection3);
+TEST_F(TlsNetworkingManagerPosixTest, ExitsAfterOneCall) {
+  MockConnection connection1(task_runner());
+  MockConnection connection2(task_runner());
+  MockConnection connection3(task_runner());
+  network_manager()->AddConnectionForTesting(&connection1);
+  network_manager()->AddConnectionForTesting(&connection2);
+  network_manager()->AddConnectionForTesting(&connection3);
 
-  EXPECT_CALL(network_manager, HasTimedOut(_, _)).WillOnce(Return(true));
+  EXPECT_CALL(*network_manager(), HasTimedOut(_, _)).WillOnce(Return(true));
   EXPECT_CALL(connection1, SendAvailableBytes()).Times(1);
   EXPECT_CALL(connection1, TryReceiveMessage()).Times(0);
   EXPECT_CALL(connection2, SendAvailableBytes()).Times(0);
   EXPECT_CALL(connection2, TryReceiveMessage()).Times(0);
   EXPECT_CALL(connection3, SendAvailableBytes()).Times(0);
   EXPECT_CALL(connection3, TryReceiveMessage()).Times(0);
-  network_manager.PerformNetworkingOperations(Clock::duration{0});
+  network_manager()->PerformNetworkingOperations(Clock::duration{0});
 }
 
-TEST(TlsNetworkingManagerPosixTest, StartsAfterPrevious) {
-  MockNetworkWaiter network_waiter;
-  TestingDataRouter network_manager(&network_waiter);
-  MockConnection connection1;
-  MockConnection connection2;
-  MockConnection connection3;
-  network_manager.AddConnectionForTesting(&connection1);
-  network_manager.AddConnectionForTesting(&connection2);
-  network_manager.AddConnectionForTesting(&connection3);
-  network_manager.SetLastState(
+TEST_F(TlsNetworkingManagerPosixTest, StartsAfterPrevious) {
+  MockConnection connection1(task_runner());
+  MockConnection connection2(task_runner());
+  MockConnection connection3(task_runner());
+  network_manager()->AddConnectionForTesting(&connection1);
+  network_manager()->AddConnectionForTesting(&connection2);
+  network_manager()->AddConnectionForTesting(&connection3);
+  network_manager()->SetLastState(
       TestingDataRouter::NetworkingOperation::kReading);
-  network_manager.SetLastConnection(&connection2);
+  network_manager()->SetLastConnection(&connection2);
 
-  EXPECT_CALL(network_manager, HasTimedOut(_, _)).WillOnce(Return(true));
+  EXPECT_CALL(*network_manager(), HasTimedOut(_, _)).WillOnce(Return(true));
   EXPECT_CALL(connection1, TryReceiveMessage()).Times(0);
   EXPECT_CALL(connection1, SendAvailableBytes()).Times(0);
   EXPECT_CALL(connection2, TryReceiveMessage()).Times(0);
   EXPECT_CALL(connection2, SendAvailableBytes()).Times(1);
   EXPECT_CALL(connection3, TryReceiveMessage()).Times(0);
   EXPECT_CALL(connection3, SendAvailableBytes()).Times(0);
-  network_manager.PerformNetworkingOperations(Clock::duration{0});
+  network_manager()->PerformNetworkingOperations(Clock::duration{0});
 }
 
-TEST(TlsNetworkingManagerPosixTest, HitsAllCallsOnce) {
-  MockNetworkWaiter network_waiter;
-  TestingDataRouter network_manager(&network_waiter);
-  MockConnection connection1;
-  MockConnection connection2;
-  MockConnection connection3;
-  network_manager.AddConnectionForTesting(&connection1);
-  network_manager.AddConnectionForTesting(&connection2);
-  network_manager.AddConnectionForTesting(&connection3);
+TEST_F(TlsNetworkingManagerPosixTest, HitsAllCallsOnce) {
+  MockConnection connection1(task_runner());
+  MockConnection connection2(task_runner());
+  MockConnection connection3(task_runner());
+  network_manager()->AddConnectionForTesting(&connection1);
+  network_manager()->AddConnectionForTesting(&connection2);
+  network_manager()->AddConnectionForTesting(&connection3);
 
-  EXPECT_CALL(network_manager, HasTimedOut(_, _)).WillRepeatedly(Return(false));
+  EXPECT_CALL(*network_manager(), HasTimedOut(_, _))
+      .WillRepeatedly(Return(false));
   EXPECT_CALL(connection1, TryReceiveMessage()).Times(1);
   EXPECT_CALL(connection1, SendAvailableBytes()).Times(1);
   EXPECT_CALL(connection2, TryReceiveMessage()).Times(1);
   EXPECT_CALL(connection2, SendAvailableBytes()).Times(1);
   EXPECT_CALL(connection3, TryReceiveMessage()).Times(1);
   EXPECT_CALL(connection3, SendAvailableBytes()).Times(1);
-  network_manager.PerformNetworkingOperations(Clock::duration{0});
+  network_manager()->PerformNetworkingOperations(Clock::duration{0});
 }
 
-TEST(TlsNetworkingManagerPosixTest, HitsAllCallsOnceStartedInMiddle) {
-  MockNetworkWaiter network_waiter;
-  TestingDataRouter network_manager(&network_waiter);
-  MockConnection connection1;
-  MockConnection connection2;
-  MockConnection connection3;
-  network_manager.AddConnectionForTesting(&connection1);
-  network_manager.AddConnectionForTesting(&connection2);
-  network_manager.AddConnectionForTesting(&connection3);
-  network_manager.SetLastState(
+TEST_F(TlsNetworkingManagerPosixTest, HitsAllCallsOnceStartedInMiddle) {
+  MockConnection connection1(task_runner());
+  MockConnection connection2(task_runner());
+  MockConnection connection3(task_runner());
+  network_manager()->AddConnectionForTesting(&connection1);
+  network_manager()->AddConnectionForTesting(&connection2);
+  network_manager()->AddConnectionForTesting(&connection3);
+  network_manager()->SetLastState(
       TestingDataRouter::NetworkingOperation::kReading);
-  network_manager.SetLastConnection(&connection2);
+  network_manager()->SetLastConnection(&connection2);
 
-  EXPECT_CALL(network_manager, HasTimedOut(_, _)).WillRepeatedly(Return(false));
+  EXPECT_CALL(*network_manager(), HasTimedOut(_, _))
+      .WillRepeatedly(Return(false));
   EXPECT_CALL(connection1, TryReceiveMessage()).Times(1);
   EXPECT_CALL(connection1, SendAvailableBytes()).Times(1);
   EXPECT_CALL(connection2, TryReceiveMessage()).Times(1);
   EXPECT_CALL(connection2, SendAvailableBytes()).Times(1);
   EXPECT_CALL(connection3, TryReceiveMessage()).Times(1);
   EXPECT_CALL(connection3, SendAvailableBytes()).Times(1);
-  network_manager.PerformNetworkingOperations(Clock::duration{0});
+  network_manager()->PerformNetworkingOperations(Clock::duration{0});
 }
 
 }  // namespace openscreen

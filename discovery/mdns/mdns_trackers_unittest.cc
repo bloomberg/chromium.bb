@@ -4,6 +4,9 @@
 
 #include "discovery/mdns/mdns_trackers.h"
 
+#include <memory>
+#include <utility>
+
 #include "discovery/common/config.h"
 #include "discovery/mdns/mdns_random.h"
 #include "discovery/mdns/mdns_record_changed_callback.h"
@@ -51,7 +54,7 @@ ACTION_P(VerifyRecordCount, record_count) {
 
 class MockMdnsSender : public MdnsSender {
  public:
-  MockMdnsSender(UdpSocket* socket) : MdnsSender(socket) {}
+  explicit MockMdnsSender(UdpSocket* socket) : MdnsSender(socket) {}
 
   MOCK_METHOD1(SendMulticast, Error(const MdnsMessage&));
   MOCK_METHOD2(SendMessage, Error(const MdnsMessage&, const IPEndpoint&));
@@ -68,10 +71,10 @@ class MockRecordChangedCallback : public MdnsRecordChangedCallback {
 class MdnsTrackerTest : public testing::Test {
  public:
   MdnsTrackerTest()
-      : socket_(FakeUdpSocket::CreateDefault()),
-        clock_(Clock::now()),
+      : clock_(Clock::now()),
         task_runner_(&clock_),
-        sender_(socket_.get()),
+        socket_(&task_runner_),
+        sender_(&socket_),
         a_question_(DomainName{"testing", "local"},
                     DnsType::kANY,
                     DnsClass::kIN,
@@ -172,9 +175,9 @@ class MdnsTrackerTest : public testing::Test {
 
   // clang-format on
   Config config_;
-  std::unique_ptr<FakeUdpSocket> socket_;
   FakeClock clock_;
   FakeTaskRunner task_runner_;
+  FakeUdpSocket socket_;
   StrictMock<MockMdnsSender> sender_;
   MdnsRandom random_;
 

@@ -4,6 +4,8 @@
 
 #include "discovery/mdns/mdns_responder.h"
 
+#include <utility>
+
 #include "discovery/mdns/mdns_probe_manager.h"
 #include "discovery/mdns/mdns_random.h"
 #include "discovery/mdns/mdns_receiver.h"
@@ -85,7 +87,7 @@ class MockRecordHandler : public MdnsResponder::RecordHandler {
 
 class MockMdnsSender : public MdnsSender {
  public:
-  MockMdnsSender(UdpSocket* socket) : MdnsSender(socket) {}
+  explicit MockMdnsSender(UdpSocket* socket) : MdnsSender(socket) {}
 
   MOCK_METHOD1(SendMulticast, Error(const MdnsMessage& message));
   MOCK_METHOD2(SendMessage,
@@ -102,10 +104,10 @@ class MockProbeManager : public MdnsProbeManager {
 class MdnsResponderTest : public testing::Test {
  public:
   MdnsResponderTest()
-      : socket_(FakeUdpSocket::CreateDefault()),
-        sender_(socket_.get()),
-        clock_(Clock::now()),
+      : clock_(Clock::now()),
         task_runner_(&clock_),
+        socket_(&task_runner_),
+        sender_(&socket_),
         responder_(&record_handler_,
                    &probe_manager_,
                    &sender_,
@@ -175,13 +177,13 @@ class MdnsResponderTest : public testing::Test {
     return message;
   }
 
-  std::unique_ptr<FakeUdpSocket> socket_;
-  StrictMock<MockRecordHandler> record_handler_;
-  StrictMock<MockMdnsSender> sender_;
-  StrictMock<MockProbeManager> probe_manager_;
-  MdnsReceiver receiver_;
   FakeClock clock_;
   FakeTaskRunner task_runner_;
+  FakeUdpSocket socket_;
+  StrictMock<MockMdnsSender> sender_;
+  StrictMock<MockRecordHandler> record_handler_;
+  StrictMock<MockProbeManager> probe_manager_;
+  MdnsReceiver receiver_;
   MdnsRandom random_;
   MdnsResponder responder_;
 

@@ -6,6 +6,7 @@
 #define PLATFORM_TEST_FAKE_CLOCK_H_
 
 #include <atomic>
+#include <thread>  // NOLINT
 #include <vector>
 
 #include "platform/api/time.h"
@@ -19,6 +20,9 @@ class FakeClock {
   explicit FakeClock(Clock::time_point start_time);
   ~FakeClock();
 
+  // Moves the clock forward, simulating execution by running tasks in all
+  // FakeTaskRunners. The clock advances in one or more jumps, to ensure delayed
+  // tasks see the correct "now time" when they are executed.
   void Advance(Clock::duration delta);
 
   static Clock::time_point now() noexcept;
@@ -30,8 +34,14 @@ class FakeClock {
   void UnsubscribeFromTimeChanges(FakeTaskRunner* task_runner);
 
  private:
+  // Used for ensuring this FakeClock's lifecycle and mutations occur on the
+  // same thread.
+  const std::thread::id control_thread_id_;
+
   std::vector<FakeTaskRunner*> task_runners_;
 
+  // This variable is atomic because some tests (e.g., TaskRunnerImplTest) will
+  // call now() on a different thread.
   static std::atomic<Clock::time_point> now_;
 };
 

@@ -4,7 +4,7 @@
 
 #include "discovery/mdns/mdns_publisher.h"
 
-#include <chrono>
+#include <chrono>  // NOLINT
 #include <vector>
 
 #include "discovery/common/config.h"
@@ -38,7 +38,7 @@ bool ContainsRecord(const std::vector<MdnsRecord::ConstRef>& records,
 
 class MockMdnsSender : public MdnsSender {
  public:
-  MockMdnsSender(UdpSocket* socket) : MdnsSender(socket) {}
+  explicit MockMdnsSender(UdpSocket* socket) : MdnsSender(socket) {}
 
   MOCK_METHOD1(SendMulticast, Error(const MdnsMessage& message));
   MOCK_METHOD2(SendMessage,
@@ -76,8 +76,8 @@ class MdnsPublisherTest : public testing::Test {
   MdnsPublisherTest()
       : clock_(Clock::now()),
         task_runner_(&clock_),
-        socket_(FakeUdpSocket::CreateDefault()),
-        sender_(socket_.get()),
+        socket_(&task_runner_),
+        sender_(&socket_),
         publisher_(&sender_,
                    &probe_manager_,
                    &task_runner_,
@@ -229,7 +229,7 @@ class MdnsPublisherTest : public testing::Test {
 
   FakeClock clock_;
   FakeTaskRunner task_runner_;
-  std::unique_ptr<FakeUdpSocket> socket_;
+  FakeUdpSocket socket_;
   StrictMock<MockMdnsSender> sender_;
   StrictMock<MockProbeManager> probe_manager_;
   Config config_;

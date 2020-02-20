@@ -4,6 +4,8 @@
 
 #include "platform/test/fake_udp_socket.h"
 
+#include <utility>
+
 namespace openscreen {
 
 FakeUdpSocket::FakeUdpSocket(TaskRunner* task_runner,
@@ -11,13 +13,7 @@ FakeUdpSocket::FakeUdpSocket(TaskRunner* task_runner,
                              Version version)
     : client_(client), version_(version) {}
 
-// Ensure that the destructors for the unique_ptr objects are called in
-// the correct order to avoid OSP_CHECK failures.
-FakeUdpSocket::~FakeUdpSocket() {
-  fake_task_runner_.reset();
-  fake_clock_.reset();
-  fake_client_.reset();
-}
+FakeUdpSocket::~FakeUdpSocket() = default;
 
 bool FakeUdpSocket::IsIPv4() const {
   return version_ == UdpSocket::Version::kV4;
@@ -55,11 +51,17 @@ void FakeUdpSocket::SetDscp(DscpMode mode) {
   ProcessConfigurationMethod(&set_dscp_errors_);
 }
 
+void FakeUdpSocket::MockReceivePacket(UdpPacket packet) {
+  if (client_) {
+    client_->OnRead(this, std::move(packet));
+  }
+}
+
 void FakeUdpSocket::ProcessConfigurationMethod(std::queue<Error>* errors) {
   Error error = errors->front();
   errors->pop();
 
-  if (!error.ok()) {
+  if (!error.ok() && client_) {
     client_->OnError(this, std::move(error));
   }
 }
@@ -71,29 +73,9 @@ void FakeUdpSocket::SendMessage(const void* data,
   Error error = send_errors_.front();
   send_errors_.pop();
 
-  if (!error.ok()) {
+  if (!error.ok() && client_) {
     client_->OnSendError(this, std::move(error));
   }
-}
-
-// static
-std::unique_ptr<FakeUdpSocket> FakeUdpSocket::CreateDefault(
-    UdpSocket::Version version) {
-  std::unique_ptr<FakeClock> clock = std::make_unique<FakeClock>(Clock::now());
-  // TODO: Revisit this, since a FakeTaskRunner is being created here, but no
-  // part of FakeUdpSocket makes use of a TaskRunner?
-  std::unique_ptr<FakeTaskRunner> task_runner =
-      std::make_unique<FakeTaskRunner>(clock.get());
-  std::unique_ptr<FakeUdpSocket::MockClient> client =
-      std::make_unique<FakeUdpSocket::MockClient>();
-
-  std::unique_ptr<FakeUdpSocket> socket =
-      std::make_unique<FakeUdpSocket>(task_runner.get(), client.get(), version);
-  socket->fake_clock_.swap(clock);
-  socket->fake_client_.swap(client);
-  socket->fake_task_runner_.swap(task_runner);
-
-  return socket;
 }
 
 }  // namespace openscreen
