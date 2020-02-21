@@ -50,7 +50,7 @@ def CreateBranchForDirectory(prefix, cl_index, directory, upstream):
   the created branch.
   """
   existing_branches = set(git.branches(use_limit = False))
-  branch_name = '_'.join([prefix, cl_index, directory])
+  branch_name = '_'.join([prefix, str(cl_index), directory])
   if branch_name in existing_branches:
     return False
   git.run('checkout', '-t', upstream, '-b', branch_name)
