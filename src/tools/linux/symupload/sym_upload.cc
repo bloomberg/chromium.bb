@@ -108,7 +108,7 @@ SetupOptions(int argc, const char *argv[], Options *options) {
         } else if (strcmp(optarg, "sym-upload-v1") == 0) {
           options->upload_protocol = UploadProtocol::SYM_UPLOAD_V1;
         } else {
-          fprintf(stderr, "Invalid protocol '%c'\n", optarg);
+          fprintf(stderr, "Invalid protocol '%s'\n", optarg);
           Usage(argc, argv);
           exit(1);
         }
