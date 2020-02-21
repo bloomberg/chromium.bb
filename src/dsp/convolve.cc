@@ -146,6 +146,8 @@ void ConvolveCompoundScale2D_C(const void* const reference,
                                const int step_x, const int step_y,
                                const int width, const int height,
                                void* prediction, const ptrdiff_t pred_stride) {
+  // Compound functions start at 4x4.
+  assert(width >= 4 && height >= 4);
   constexpr int kRoundBitsHorizontal = (bitdepth == 12)
                                            ? kInterRoundBitsHorizontal12bpp
                                            : kInterRoundBitsHorizontal;
@@ -226,6 +228,8 @@ void ConvolveCompound2D_C(const void* const reference,
                           const int subpixel_y, const int width,
                           const int height, void* prediction,
                           const ptrdiff_t pred_stride) {
+  // Compound functions start at 4x4.
+  assert(width >= 4 && height >= 4);
   constexpr int kRoundBitsHorizontal = (bitdepth == 12)
                                            ? kInterRoundBitsHorizontal12bpp
                                            : kInterRoundBitsHorizontal;
@@ -478,6 +482,8 @@ void ConvolveCompoundCopy_C(const void* const reference,
                             const int /*subpixel_x*/, const int /*subpixel_y*/,
                             const int width, const int height, void* prediction,
                             const ptrdiff_t pred_stride) {
+  // Compound functions start at 4x4.
+  assert(width >= 4 && height >= 4);
   constexpr int kRoundBitsVertical =
       ((bitdepth == 12) ? kInterRoundBitsVertical12bpp
                         : kInterRoundBitsVertical) -
@@ -509,6 +515,8 @@ void ConvolveCompoundHorizontal_C(
     const int horizontal_filter_index, const int /*vertical_filter_index*/,
     const int subpixel_x, const int /*subpixel_y*/, const int width,
     const int height, void* prediction, const ptrdiff_t pred_stride) {
+  // Compound functions start at 4x4.
+  assert(width >= 4 && height >= 4);
   constexpr int kRoundBitsHorizontal = (bitdepth == 12)
                                            ? kInterRoundBitsHorizontal12bpp
                                            : kInterRoundBitsHorizontal;
@@ -550,6 +558,8 @@ void ConvolveCompoundVertical_C(const void* const reference,
                                 const int /*subpixel_x*/, const int subpixel_y,
                                 const int width, const int height,
                                 void* prediction, const ptrdiff_t pred_stride) {
+  // Compound functions start at 4x4.
+  assert(width >= 4 && height >= 4);
   constexpr int kRoundBitsHorizontal = (bitdepth == 12)
                                            ? kInterRoundBitsHorizontal12bpp
                                            : kInterRoundBitsHorizontal;
