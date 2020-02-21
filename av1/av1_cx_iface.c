@@ -2073,7 +2073,6 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
         cpi->lookahead = av1_lookahead_init(
             cpi->oxcf.width, cpi->oxcf.height, subsampling_x, subsampling_y,
             use_highbitdepth, lag_in_frames, cpi->oxcf.border_in_pixels,
-            (cpi->oxcf.resize_mode || cpi->oxcf.superres_mode),
             ctx->num_lap_buffers);
       }
       if (!cpi->lookahead)

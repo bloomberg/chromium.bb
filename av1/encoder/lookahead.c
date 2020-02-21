@@ -45,7 +45,7 @@ void av1_lookahead_destroy(struct lookahead_ctx *ctx) {
 struct lookahead_ctx *av1_lookahead_init(
     unsigned int width, unsigned int height, unsigned int subsampling_x,
     unsigned int subsampling_y, int use_highbitdepth, unsigned int depth,
-    const int border_in_pixels, int is_scale, int num_lap_buffers) {
+    const int border_in_pixels, int num_lap_buffers) {
   struct lookahead_ctx *ctx = NULL;
   int lag_in_frames = clamp(depth, 1, MAX_LAG_BUFFERS);
 
@@ -76,20 +76,14 @@ struct lookahead_ctx *av1_lookahead_init(
     }
     ctx->buf = calloc(depth, sizeof(*ctx->buf));
     if (!ctx->buf) goto fail;
-    for (i = 0; i < depth; i++)
-      if (is_scale) {
-        if (aom_alloc_frame_buffer(
-                &ctx->buf[i].img, width, height, subsampling_x, subsampling_y,
-                use_highbitdepth, border_in_pixels, legacy_byte_alignment))
-          goto fail;
-      } else {
-        aom_free_frame_buffer(&ctx->buf[i].img);
-        if (aom_realloc_lookahead_buffer(
-                &ctx->buf[i].img, width, height, subsampling_x, subsampling_y,
-                use_highbitdepth, AOM_ENC_LOOKAHEAD_BORDER,
-                legacy_byte_alignment, NULL, NULL, NULL))
-          goto fail;
-      }
+    for (i = 0; i < depth; i++) {
+      aom_free_frame_buffer(&ctx->buf[i].img);
+      if (aom_realloc_lookahead_buffer(&ctx->buf[i].img, width, height,
+                                       subsampling_x, subsampling_y,
+                                       use_highbitdepth, border_in_pixels,
+                                       legacy_byte_alignment, NULL, NULL, NULL))
+        goto fail;
+    }
   }
   return ctx;
 fail:
