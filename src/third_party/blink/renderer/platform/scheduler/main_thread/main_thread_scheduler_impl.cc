@@ -2613,7 +2613,6 @@ void MainThreadSchedulerImpl::OnBeginNestedRunLoop() {
 }
 
 void MainThreadSchedulerImpl::OnExitNestedRunLoop() {
-  DCHECK(!main_thread_only().running_queues.empty());
   base::TimeTicks now = real_time_domain()->Now();
   queueing_time_estimator_.OnExecutionStarted(now);
   // When a nested loop is exited, resume the task that was running when the
