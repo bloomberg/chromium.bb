@@ -201,6 +201,22 @@ LIBGAV1_ALWAYS_INLINE void HadamardRotation(__m128i* a, __m128i* b, bool flip) {
 using ButterflyRotationFunc = void (*)(__m128i* a, __m128i* b, int angle,
                                        bool flip);
 
+LIBGAV1_ALWAYS_INLINE __m128i ShiftResidual(const __m128i residual,
+                                            const __m128i v_row_shift_add,
+                                            const __m128i v_row_shift) {
+  const __m128i k7ffd = _mm_set1_epi16(0x7ffd);
+  // The max row_shift is 2, so int16_t values greater than 0x7ffd may
+  // overflow.  Generate a mask for this case.
+  const __m128i mask = _mm_cmpgt_epi16(residual, k7ffd);
+  const __m128i x = _mm_add_epi16(residual, v_row_shift_add);
+  // Assume int16_t values.
+  const __m128i a = _mm_sra_epi16(x, v_row_shift);
+  // Assume uint16_t values.
+  const __m128i b = _mm_srl_epi16(x, v_row_shift);
+  // Select the correct shifted value.
+  return _mm_blendv_epi8(a, b, mask);
+}
+
 //------------------------------------------------------------------------------
 // Discrete Cosine Transforms (DCT).
 
@@ -2136,36 +2152,26 @@ LIBGAV1_ALWAYS_INLINE void ApplyRounding(int16_t* source, int num_rows) {
 template <int tx_width>
 LIBGAV1_ALWAYS_INLINE void RowShift(int16_t* source, int num_rows,
                                     int row_shift) {
-  const __m128i v_row_shift_add = _mm_set1_epi32(row_shift);
-  const __m128i v_row_shift = _mm_cvtepu32_epi64(v_row_shift_add);
+  const __m128i v_row_shift_add = _mm_set1_epi16(row_shift);
+  const __m128i v_row_shift = _mm_cvtepu16_epi64(v_row_shift_add);
   if (tx_width == 4) {
     // Process two rows per iteration.
     int i = 0;
     do {
-      // Expand to 32 bits to prevent int16_t overflows during the shift add.
       const __m128i residual = LoadUnaligned16(&source[i]);
-      const __m128i a = _mm_cvtepi16_epi32(residual);
-      const __m128i a1 = _mm_cvtepi16_epi32(_mm_srli_si128(residual, 8));
-      const __m128i b = _mm_add_epi32(a, v_row_shift_add);
-      const __m128i b1 = _mm_add_epi32(a1, v_row_shift_add);
-      const __m128i c = _mm_sra_epi32(b, v_row_shift);
-      const __m128i c1 = _mm_sra_epi32(b1, v_row_shift);
-      StoreUnaligned16(&source[i], _mm_packs_epi32(c, c1));
+      const __m128i shifted_residual =
+          ShiftResidual(residual, v_row_shift_add, v_row_shift);
+      StoreUnaligned16(&source[i], shifted_residual);
       i += 8;
     } while (i < tx_width * num_rows);
   } else {
     int i = 0;
     do {
       for (int j = 0; j < tx_width; j += 8) {
-        // Expand to 32 bits to prevent int16_t overflows during the shift add.
         const __m128i residual = LoadUnaligned16(&source[i * tx_width + j]);
-        const __m128i a = _mm_cvtepi16_epi32(residual);
-        const __m128i a1 = _mm_cvtepi16_epi32(_mm_srli_si128(residual, 8));
-        const __m128i b = _mm_add_epi32(a, v_row_shift_add);
-        const __m128i b1 = _mm_add_epi32(a1, v_row_shift_add);
-        const __m128i c = _mm_sra_epi32(b, v_row_shift);
-        const __m128i c1 = _mm_sra_epi32(b1, v_row_shift);
-        StoreUnaligned16(&source[i * tx_width + j], _mm_packs_epi32(c, c1));
+        const __m128i shifted_residual =
+            ShiftResidual(residual, v_row_shift_add, v_row_shift);
+        StoreUnaligned16(&source[i * tx_width + j], shifted_residual);
       }
     } while (++i < num_rows);
   }
