@@ -173,7 +173,19 @@ bool LibcurlWrapper::SendSimplePostRequest(const string& url,
 }
 
 bool LibcurlWrapper::Init() {
-  curl_lib_ = dlopen("libcurl.so", RTLD_NOW);
+  // First check to see if libcurl was statically linked:
+  curl_lib_ = dlopen(nullptr, RTLD_NOW);
+  if (curl_lib_ &&
+      (!dlsym(curl_lib_, "curl_easy_init") ||
+      !dlsym(curl_lib_, "curl_easy_setopt"))) {
+    // Not statically linked, try again below.
+    dlerror();  // Clear dlerror before attempting to open libraries.
+    dlclose(curl_lib_);
+    curl_lib_ = nullptr;
+  }
+  if (!curl_lib_) {
+    curl_lib_ = dlopen("libcurl.so", RTLD_NOW);
+  }
   if (!curl_lib_) {
     curl_lib_ = dlopen("libcurl.so.4", RTLD_NOW);
   }
