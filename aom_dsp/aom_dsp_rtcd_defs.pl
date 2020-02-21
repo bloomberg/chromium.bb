@@ -92,6 +92,7 @@ specialize qw/aom_dc_top_predictor_8x32 sse2/;
 specialize qw/aom_dc_top_predictor_16x4 sse2/;
 specialize qw/aom_dc_top_predictor_16x8 sse2/;
 specialize qw/aom_dc_top_predictor_16x16 neon msa sse2/;
+
 specialize qw/aom_dc_top_predictor_16x32 sse2/;
 specialize qw/aom_dc_top_predictor_16x64 sse2/;
 specialize qw/aom_dc_top_predictor_32x8 sse2/;
@@ -597,7 +598,7 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   specialize qw/aom_subtract_block neon msa sse2 avx2/;
 
   add_proto qw/int64_t/, "aom_sse", "const uint8_t *a, int a_stride, const uint8_t *b,int b_stride, int width, int height";
-  specialize qw/aom_sse  sse4_1 avx2/;
+  specialize qw/aom_sse  sse4_1 avx2 neon/;
 
   add_proto qw/void/, "aom_get_blk_sse_sum", "const int16_t *data, int stride, int bw, int bh, int *x_sum, int64_t *x2_sum";
   specialize qw/aom_get_blk_sse_sum sse2 avx2/;

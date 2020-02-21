@@ -385,6 +385,15 @@ TEST_P(SSETest, DISABLED_Speed) {
     RunTest(1, width_, height, 100);
   }
 }
+
+#if HAVE_NEON
+TestSSEFuncs sse_neon[] = {
+  TestSSEFuncs(&aom_sse_c, &aom_sse_neon),
+};
+INSTANTIATE_TEST_SUITE_P(NEON, SSETest,
+                         Combine(ValuesIn(sse_neon), Range(4, 129, 4)));
+#endif  // HAVE_NEON
+
 #if HAVE_SSE4_1
 TestSSEFuncs sse_sse4[] = {
   TestSSEFuncs(&aom_sse_c, &aom_sse_sse4_1),
