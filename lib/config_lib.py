@@ -159,10 +159,11 @@ CONFIG_ARM_INTERNAL = 'ARM_INTERNAL'
 CONFIG_ARM_EXTERNAL = 'ARM_EXTERNAL'
 
 
-def IsCanaryMaster(config):
+def IsCanaryMaster(builder_run):
   """Returns True if this build type is master-release"""
-  return config.build_type == constants.CANARY_TYPE and config.master
-
+  return (builder_run.config.build_type == constants.CANARY_TYPE and
+          builder_run.config.master and
+          builder_run.manifest_branch == 'master')
 
 def IsPFQType(b_type):
   """Returns True if this build type is a PFQ."""

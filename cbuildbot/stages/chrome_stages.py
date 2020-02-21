@@ -18,6 +18,7 @@ from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot.stages import artifact_stages
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import sync_stages
+from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -201,7 +202,8 @@ class SimpleChromeArtifactsStage(generic_stages.BoardSpecificBuilderStage,
     with self.ArtifactUploader(self._upload_queue, archive=False):
       parallel.RunParallelSteps(steps)
 
-      if self._run.config.chrome_sdk_build_chrome:
+      if (self._run.config.chrome_sdk_build_chrome and
+          config_lib.IsCanaryMaster(self._run)):
         test_stage = TestSimpleChromeWorkflowStage(self._run,
                                                    self.buildstore,
                                                    self._current_board)
