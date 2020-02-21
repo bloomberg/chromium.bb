@@ -245,13 +245,13 @@ inline void MaskBlend_NEON(const void* prediction_0, const void* prediction_1,
 }
 
 inline void InterIntraWriteMaskBlendLine8bpp4x2(
-    const uint8_t* const pred_0, const ptrdiff_t pred_stride_0,
-    const uint8_t* const pred_1, const uint16x8_t pred_mask_0,
+    const uint8_t* const pred_0, const uint8_t* const pred_1,
+    const ptrdiff_t pred_stride_1, const uint16x8_t pred_mask_0,
     const uint16x8_t pred_mask_1, uint8_t* dst, const ptrdiff_t dst_stride) {
   // TODO(johannkoenig): Use uint8x8_t for |pred_val| and |pred_mask|.
-  uint8x8_t pred_val_0 = Load4(pred_0);
-  pred_val_0 = Load4<1>(pred_0 + pred_stride_0, pred_val_0);
-  const uint8x8_t pred_val_1 = vld1_u8(pred_1);
+  const uint8x8_t pred_val_0 = vld1_u8(pred_0);
+  uint8x8_t pred_val_1 = Load4(pred_1);
+  pred_val_1 = Load4<1>(pred_1 + pred_stride_1, pred_val_1);
 
   const uint16x8_t weighted_pred_0 =
       vmull_u8(vmovn_u16(pred_mask_0), pred_val_0);
@@ -264,53 +264,51 @@ inline void InterIntraWriteMaskBlendLine8bpp4x2(
 
 template <int subsampling_x, int subsampling_y>
 inline void InterIntraMaskBlending8bpp4x4_NEON(
-    const uint8_t* pred_0, const ptrdiff_t prediction_stride_0,
-    const uint8_t* pred_1, const uint8_t* mask, const ptrdiff_t mask_stride,
-    uint8_t* dst, const ptrdiff_t dst_stride) {
+    const uint8_t* pred_0, const uint8_t* pred_1, const ptrdiff_t pred_stride_1,
+    const uint8_t* mask, const ptrdiff_t mask_stride, uint8_t* dst,
+    const ptrdiff_t dst_stride) {
   const uint16x8_t mask_inverter = vdupq_n_u16(64);
-  uint16x8_t pred_mask_0 = vreinterpretq_u16_s16(
+  uint16x8_t pred_mask_1 = vreinterpretq_u16_s16(
       GetMask4x2<subsampling_x, subsampling_y>(mask, mask_stride));
-  uint16x8_t pred_mask_1 = vsubq_u16(mask_inverter, pred_mask_0);
-  InterIntraWriteMaskBlendLine8bpp4x2(pred_0, prediction_stride_0, pred_1,
-                                      pred_mask_0, pred_mask_1, dst,
-                                      dst_stride);
-  pred_0 += prediction_stride_0 << 1;
-  pred_1 += 4 << 1;
+  uint16x8_t pred_mask_0 = vsubq_u16(mask_inverter, pred_mask_1);
+  InterIntraWriteMaskBlendLine8bpp4x2(
+      pred_0, pred_1, pred_stride_1, pred_mask_0, pred_mask_1, dst, dst_stride);
+  pred_0 += 4 << 1;
+  pred_1 += pred_stride_1 << 1;
   mask += mask_stride << (1 + subsampling_y);
   dst += dst_stride << 1;
 
-  pred_mask_0 = vreinterpretq_u16_s16(
+  pred_mask_1 = vreinterpretq_u16_s16(
       GetMask4x2<subsampling_x, subsampling_y>(mask, mask_stride));
-  pred_mask_1 = vsubq_u16(mask_inverter, pred_mask_0);
-  InterIntraWriteMaskBlendLine8bpp4x2(pred_0, prediction_stride_0, pred_1,
-                                      pred_mask_0, pred_mask_1, dst,
-                                      dst_stride);
+  pred_mask_0 = vsubq_u16(mask_inverter, pred_mask_1);
+  InterIntraWriteMaskBlendLine8bpp4x2(
+      pred_0, pred_1, pred_stride_1, pred_mask_0, pred_mask_1, dst, dst_stride);
 }
 
 template <int subsampling_x, int subsampling_y>
 inline void InterIntraMaskBlending8bpp4xH_NEON(
-    const uint8_t* pred_0, const ptrdiff_t pred_stride_0, const uint8_t* pred_1,
+    const uint8_t* pred_0, const uint8_t* pred_1, const ptrdiff_t pred_stride_1,
     const uint8_t* const mask_ptr, const ptrdiff_t mask_stride,
     const int height, uint8_t* dst, const ptrdiff_t dst_stride) {
   const uint8_t* mask = mask_ptr;
   if (height == 4) {
     InterIntraMaskBlending8bpp4x4_NEON<subsampling_x, subsampling_y>(
-        pred_0, pred_stride_0, pred_1, mask, mask_stride, dst, dst_stride);
+        pred_0, pred_1, pred_stride_1, mask, mask_stride, dst, dst_stride);
     return;
   }
   int y = 0;
   do {
     InterIntraMaskBlending8bpp4x4_NEON<subsampling_x, subsampling_y>(
-        pred_0, pred_stride_0, pred_1, mask, mask_stride, dst, dst_stride);
-    pred_0 += pred_stride_0 << 2;
-    pred_1 += 4 << 2;
+        pred_0, pred_1, pred_stride_1, mask, mask_stride, dst, dst_stride);
+    pred_0 += 4 << 2;
+    pred_1 += pred_stride_1 << 2;
     mask += mask_stride << (2 + subsampling_y);
     dst += dst_stride << 2;
 
     InterIntraMaskBlending8bpp4x4_NEON<subsampling_x, subsampling_y>(
-        pred_0, pred_stride_0, pred_1, mask, mask_stride, dst, dst_stride);
-    pred_0 += pred_stride_0 << 2;
-    pred_1 += 4 << 2;
+        pred_0, pred_1, pred_stride_1, mask, mask_stride, dst, dst_stride);
+    pred_0 += 4 << 2;
+    pred_1 += pred_stride_1 << 2;
     mask += mask_stride << (2 + subsampling_y);
     dst += dst_stride << 2;
     y += 8;
@@ -324,14 +322,10 @@ inline void InterIntraMaskBlend8bpp_NEON(
     const ptrdiff_t mask_stride, const int width, const int height, void* dest,
     const ptrdiff_t dst_stride) {
   uint8_t* dst = reinterpret_cast<uint8_t*>(dest);
-  // TODO(johannkoenig): Un-reverse 0/1.
-  const uint8_t* pred_0 = prediction_1;
-  const uint8_t* pred_1 = prediction_0;
-  const ptrdiff_t pred_stride_0 = prediction_stride_1;
   if (width == 4) {
     InterIntraMaskBlending8bpp4xH_NEON<subsampling_x, subsampling_y>(
-        pred_0, pred_stride_0, pred_1, mask_ptr, mask_stride, height, dst,
-        dst_stride);
+        prediction_0, prediction_1, prediction_stride_1, mask_ptr, mask_stride,
+        height, dst, dst_stride);
     return;
   }
   const uint8_t* mask = mask_ptr;
@@ -340,27 +334,26 @@ inline void InterIntraMaskBlend8bpp_NEON(
   do {
     int x = 0;
     do {
-      const uint16x8_t pred_mask_0 =
+      const uint16x8_t pred_mask_1 =
           vreinterpretq_u16_s16(GetMask8<subsampling_x, subsampling_y>(
               mask + (x << subsampling_x), mask_stride));
       // 64 - mask
       // TODO(johannkoenig): Don't use vmovl().
-      const uint16x8_t pred_mask_1 = vsubq_u16(mask_inverter, pred_mask_0);
-      const uint16x8_t pred_val_0 = vmovl_u8(vld1_u8(pred_0 + x));
-      const uint16x8_t pred_val_1 = vmovl_u8(vld1_u8(pred_1 + x));
-      uint8x8_t result;
+      const uint16x8_t pred_mask_0 = vsubq_u16(mask_inverter, pred_mask_1);
+      const uint16x8_t pred_val_0 = vmovl_u8(vld1_u8(prediction_0 + x));
+      const uint16x8_t pred_val_1 = vmovl_u8(vld1_u8(prediction_1 + x));
       const uint16x8_t weighted_pred_0 = vmulq_u16(pred_mask_0, pred_val_0);
       // weighted_pred0 + weighted_pred1
       const uint16x8_t weighted_combo =
           vmlaq_u16(weighted_pred_0, pred_mask_1, pred_val_1);
-      result = vrshrn_n_u16(weighted_combo, 6);
+      const uint8x8_t result = vrshrn_n_u16(weighted_combo, 6);
       vst1_u8(dst + x, result);
 
       x += 8;
     } while (x < width);
     dst += dst_stride;
-    pred_0 += pred_stride_0;
-    pred_1 += width;
+    prediction_0 += width;
+    prediction_1 += prediction_stride_1;
     mask += mask_stride << subsampling_y;
   } while (++y < height);
 }
