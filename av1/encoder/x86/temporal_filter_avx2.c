@@ -240,7 +240,7 @@ void av1_apply_temporal_filter_planewise_avx2(
   assert(num_planes >= 1 && num_planes <= MAX_MB_PLANE);
 
   const int frame_height = ref_frame->heights[0] << mbd->plane[0].subsampling_y;
-  const int decay_control = frame_height >= 480 ? 4 : 3;
+  const int decay_control = frame_height >= 720 ? 4 : 3;
 
   const int mb_height = block_size_high[block_size];
   const int mb_width = block_size_wide[block_size];

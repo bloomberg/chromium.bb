@@ -854,7 +854,7 @@ void av1_apply_temporal_filter_planewise_c(
   // Hyper-parameter for filter weight adjustment.
   const int frame_height = frame_to_filter->heights[0]
                            << mbd->plane[0].subsampling_y;
-  const int decay_control = frame_height >= 480 ? 4 : 3;
+  const int decay_control = frame_height >= 720 ? 4 : 3;
 
   // Handle planes in sequence.
   plane_offset = 0;
