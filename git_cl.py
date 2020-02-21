@@ -1479,8 +1479,6 @@ class Changelist(object):
                                   change=change, parallel=options.parallel)
       if not hook_results.should_continue():
         return 1
-      if not options.reviewers and hook_results.reviewers:
-        options.reviewers = hook_results.reviewers.split(',')
       self.ExtendCC(hook_results.more_cc)
 
     print_stats(git_diff_args)

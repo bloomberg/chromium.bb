@@ -594,6 +594,7 @@ class PresubmitUnittest(PresubmitTestsBase):
     fake_notify_long_text = 'Notification long text...'
     always_fail_presubmit_script = """
 def CheckChangeOnUpload(input_api, output_api):
+  output_api.more_cc = ['me@example.com']
   return [
     output_api.PresubmitError("%s",%s, "%s"),
     output_api.PresubmitError("%s",%s, "%s"),
@@ -646,7 +647,9 @@ def CheckChangeOnCommit(input_api, output_api):
             'fatal': False,
             'long_text': fake_warning_long_text
           }
-        ]
+        ],
+        'should_continue': False,
+        'more_cc': ['me@example.com'],
     }
 
     fake_result_json = json.dumps(fake_result, sort_keys=True)

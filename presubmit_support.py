@@ -296,7 +296,6 @@ class PresubmitOutput(object):
   def __init__(self, input_stream=None, output_stream=None):
     self.input_stream = input_stream
     self.output_stream = output_stream
-    self.reviewers = []
     self.more_cc = []
     self.written_output = []
     self.error_count = 0
@@ -1672,23 +1671,6 @@ def DoPresubmitChecks(change,
       else:
         notifications.append(result)
 
-    if json_output:
-      # Write the presubmit results to json output
-      presubmit_results = {
-        'errors': [
-            error.json_format() for error in errors
-        ],
-        'notifications': [
-            notification.json_format() for notification in notifications
-        ],
-        'warnings': [
-            warning.json_format() for warning in warnings
-        ]
-      }
-
-      gclient_utils.FileWrite(
-          json_output, json.dumps(presubmit_results, sort_keys=True))
-
     output.write('\n')
     for name, items in (('Messages', notifications),
                         ('Warnings', warnings),
@@ -1711,6 +1693,25 @@ def DoPresubmitChecks(change,
         output.prompt_yes_no('Are you sure you wish to continue? (y/N): ')
     else:
       output.write('Presubmit checks passed.\n')
+
+    if json_output:
+      # Write the presubmit results to json output
+      presubmit_results = {
+        'errors': [
+            error.json_format() for error in errors
+        ],
+        'notifications': [
+            notification.json_format() for notification in notifications
+        ],
+        'warnings': [
+            warning.json_format() for warning in warnings
+        ],
+        'should_continue': output.should_continue(),
+        'more_cc': output.more_cc,
+      }
+
+      gclient_utils.FileWrite(
+          json_output, json.dumps(presubmit_results, sort_keys=True))
 
     global _ASKED_FOR_FEEDBACK
     # Ask for feedback one time out of 5.
@@ -1875,7 +1876,7 @@ def main(argv=None):
                            'all PRESUBMIT files in parallel.')
   parser.add_argument('--json_output',
                       help='Write presubmit errors to json output.')
-  parser.add_argument('--all-files', action='store_true',
+  parser.add_argument('--all_files', action='store_true',
                       help='Mark all files under source control as modified.')
   parser.add_argument('files', nargs='*',
                       help='List of files to be marked as modified when '
