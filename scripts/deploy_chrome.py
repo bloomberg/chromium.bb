@@ -27,6 +27,7 @@ import multiprocessing
 import os
 import shlex
 import shutil
+import sys
 import time
 
 from chromite.lib import constants
@@ -42,6 +43,9 @@ from chromite.lib import parallel
 from chromite.lib import remote_access as remote
 from chromite.lib import timeout_util
 from gn_helpers import gn_helpers
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 KERNEL_A_PARTITION = 2

@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import errno
 import os
+import sys
 import time
 
 import mock
@@ -22,6 +23,9 @@ from chromite.lib import partial_mock
 from chromite.lib import remote_access
 from chromite.lib import remote_access_unittest
 from chromite.scripts import deploy_chrome
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # pylint: disable=protected-access
