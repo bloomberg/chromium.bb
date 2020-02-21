@@ -445,6 +445,11 @@ void BrowserContextImpl::setPacUrl(const StringRef& url)
 
 
 // patch section: web cache
+void BrowserContextImpl::clearWebCache()
+{
+    // NOTREACHED
+    DCHECK(false);
+}
 
 
 
