@@ -105,8 +105,11 @@ static void msm_calculate_layout(struct bo *bo)
 		uint32_t stride, alignw, alignh;
 
 		alignw = ALIGN(width, DEFAULT_ALIGNMENT);
-		/* HAL_PIXEL_FORMAT_YV12 requires that the buffer's height not be aligned. */
-		if (bo->meta.format == DRM_FORMAT_YVU420_ANDROID) {
+		/* HAL_PIXEL_FORMAT_YV12 requires that the buffer's height not be aligned.
+			DRM_FORMAT_R8 of height one is used for JPEG camera output, so don't
+			height align that. */
+		if (bo->meta.format == DRM_FORMAT_YVU420_ANDROID ||
+						(bo->meta.format == DRM_FORMAT_R8 && height == 1)) {
 			alignh = height;
 		} else {
 			alignh = ALIGN(height, DEFAULT_ALIGNMENT);
