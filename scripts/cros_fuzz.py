@@ -45,6 +45,7 @@ from __future__ import print_function
 
 import os
 import shutil
+import sys
 
 from elftools.elf.elffile import ELFFile
 import lddtree
@@ -56,6 +57,10 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import portage_util
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 # Directory in sysroot's /tmp directory that this script will use for files it
 # needs to write. We need a directory to write files to because this script uses

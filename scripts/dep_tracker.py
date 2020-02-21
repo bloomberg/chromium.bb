@@ -24,6 +24,7 @@ import json
 import multiprocessing
 import os
 import stat
+import sys
 
 from six.moves import map as imap
 
@@ -33,6 +34,9 @@ from chromite.lib import filetype
 from chromite.lib import parseelf
 from chromite.lib import portage_util
 from chromite.scripts import lddtree
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # Regex to parse Gentoo atoms. This should match the following ebuild names,

@@ -21,6 +21,9 @@ from chromite.lib import osutils
 from chromite.lib import portage_util
 
 
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
 class PatchReporter(object):
   """Help discover patches being applied by ebuilds.
 
