@@ -1103,7 +1103,7 @@ static void calculate_gf_length(AV1_COMP *cpi) {
       AOMMIN(rc->max_gf_interval, get_fixed_gf_length(oxcf->gf_max_pyr_height));
 
   i = 0;
-  const int max_intervals = NUM_GF_INTERVALS;
+  const int max_intervals = cpi->lap_enabled ? 1 : NUM_GF_INTERVALS;
   int cut_pos[NUM_GF_INTERVALS + 1] = { 0 };
   int count_cuts = 1;
   int cur_start = 0, cur_last;
