@@ -460,6 +460,7 @@ enum AVCodecID {
     AV_CODEC_ID_IMM5,
     AV_CODEC_ID_MVDV,
     AV_CODEC_ID_MVHA,
+    AV_CODEC_ID_CDTOONS,
 
     /* various PCM "codecs" */
     AV_CODEC_ID_FIRST_AUDIO = 0x10000,     ///< A dummy id pointing at the start of audio codecs
@@ -545,6 +546,9 @@ enum AVCodecID {
     AV_CODEC_ID_ADPCM_IMA_DAT4,
     AV_CODEC_ID_ADPCM_MTAF,
     AV_CODEC_ID_ADPCM_AGM,
+    AV_CODEC_ID_ADPCM_ARGO,
+    AV_CODEC_ID_ADPCM_IMA_SSI,
+    AV_CODEC_ID_ADPCM_ZORK,
 
     /* AMR */
     AV_CODEC_ID_AMR_NB = 0x12000,
@@ -1176,6 +1180,11 @@ typedef struct AVCPBProperties {
     uint64_t vbv_delay;
 } AVCPBProperties;
 
+typedef struct AVProducerReferenceTime {
+    int64_t wallclock;
+    int flags;
+} AVProducerReferenceTime;
+
 /**
  * The decoder will keep a reference to the frame and may reuse it later.
  */
@@ -1409,6 +1418,11 @@ enum AVPacketSideDataType {
      * in ETSI TS 101 154 using AVActiveFormatDescription enum.
      */
     AV_PKT_DATA_AFD,
+
+    /**
+     * Producer Reference Time data corresponding to the AVProducerReferenceTime struct.
+     */
+    AV_PKT_DATA_PRFT,
 
     /**
      * The number of side data types.
@@ -3634,6 +3648,11 @@ typedef struct AVCodec {
      * The user can only access this field via avcodec_get_hw_config().
      */
     const struct AVCodecHWConfigInternal **hw_configs;
+
+    /**
+     * List of supported codec_tags, terminated by FF_CODEC_TAGS_END.
+     */
+    const uint32_t *codec_tags;
 } AVCodec;
 
 #if FF_API_CODEC_GET_SET
@@ -4849,7 +4868,7 @@ int avcodec_decode_video2(AVCodecContext *avctx, AVFrame *picture,
  * If no subtitle could be decompressed, got_sub_ptr is zero.
  * Otherwise, the subtitle is stored in *sub.
  * Note that AV_CODEC_CAP_DR1 is not available for subtitle codecs. This is for
- * simplicity, because the performance difference is expect to be negligible
+ * simplicity, because the performance difference is expected to be negligible
  * and reusing a get_buffer written for video codecs would probably perform badly
  * due to a potentially very different allocation pattern.
  *
@@ -4865,7 +4884,7 @@ int avcodec_decode_video2(AVCodecContext *avctx, AVFrame *picture,
  * before packets may be fed to the decoder.
  *
  * @param avctx the codec context
- * @param[out] sub The Preallocated AVSubtitle in which the decoded subtitle will be stored,
+ * @param[out] sub The preallocated AVSubtitle in which the decoded subtitle will be stored,
  *                 must be freed with avsubtitle_free if *got_sub_ptr is set.
  * @param[in,out] got_sub_ptr Zero if no subtitle could be decompressed, otherwise, it is nonzero.
  * @param[in] avpkt The input AVPacket containing the input buffer.
@@ -4992,7 +5011,7 @@ int avcodec_send_frame(AVCodecContext *avctx, const AVFrame *frame);
  * @param avctx codec context
  * @param avpkt This will be set to a reference-counted packet allocated by the
  *              encoder. Note that the function will always call
- *              av_frame_unref(frame) before doing anything else.
+ *              av_packet_unref(avpkt) before doing anything else.
  * @return 0 on success, otherwise negative error code:
  *      AVERROR(EAGAIN):   output is not available in the current state - user
  *                         must try to send input

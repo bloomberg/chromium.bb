@@ -382,6 +382,8 @@ static int mpegts_write_pmt(AVFormatContext *s, MpegTSService *service)
             stream_type = STREAM_TYPE_METADATA;
             break;
         default:
+            av_log(s, AV_LOG_WARNING, "Stream %d, codec %s, is muxed as a private data stream "
+                   "and may not be recognized upon reading.\n", i, avcodec_get_name(st->codecpar->codec_id));
             stream_type = STREAM_TYPE_PRIVATE_DATA;
             break;
         }
@@ -1617,7 +1619,7 @@ static int mpegts_write_packet_internal(AVFormatContext *s, AVPacket *pkt)
 
             ret = avio_open_dyn_buf(&ts_st->amux->pb);
             if (ret < 0)
-                return AVERROR(ENOMEM);
+                return ret;
 
             ret = av_write_frame(ts_st->amux, &pkt2);
             if (ret < 0) {

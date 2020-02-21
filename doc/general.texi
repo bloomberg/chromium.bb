@@ -814,11 +814,13 @@ following image formats are supported:
 @item Autodesk RLE           @tab     @tab  X
     @tab fourcc: AASC
 @item AV1                    @tab  E  @tab  E
-    @tab Supported through external libraries libaom and libdav1d
+    @tab Supported through external libraries libaom, libdav1d and librav1e
 @item Avid 1:1 10-bit RGB Packer  @tab  X  @tab  X
     @tab fourcc: AVrp
 @item AVS (Audio Video Standard) video  @tab     @tab  X
     @tab Video encoding used by the Creature Shock game.
+@item AVS2-P2/IEEE1857.4     @tab  E  @tab  E
+    @tab Supported through external libraries libxavs2 and libdavs2
 @item AYUV                   @tab  X  @tab  X
     @tab Microsoft uncompressed packed 4:4:4:4
 @item Beam Software VB       @tab     @tab  X
@@ -844,6 +846,8 @@ following image formats are supported:
     @tab Codec used in Delphine Software International games.
 @item Discworld II BMV Video @tab     @tab  X
 @item Canopus Lossless Codec @tab     @tab  X
+@item CDToons                @tab     @tab  X
+    @tab Codec used in various Broderbund games.
 @item Cinepak                @tab     @tab  X
 @item Cirrus Logic AccuPak   @tab  X  @tab  X
     @tab fourcc: CLJR
@@ -1077,6 +1081,7 @@ following image formats are supported:
 @item ACELP.KELVIN           @tab     @tab  X
 @item ADPCM 4X Movie         @tab     @tab  X
 @item APDCM Yamaha AICA      @tab     @tab  X
+@item ADPCM Argonaut Games   @tab     @tab  X
 @item ADPCM CDROM XA         @tab     @tab  X
 @item ADPCM Creative Technology @tab     @tab  X
     @tab 16 -> 4, 8 -> 4, 8 -> 3, 8 -> 2

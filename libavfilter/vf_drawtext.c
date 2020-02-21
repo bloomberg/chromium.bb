@@ -829,6 +829,7 @@ static int config_input(AVFilterLink *inlink)
 {
     AVFilterContext *ctx = inlink->dst;
     DrawTextContext *s = ctx->priv;
+    char *expr;
     int ret;
 
     ff_draw_init(&s->dc, inlink->format, FF_DRAW_PROCESS_ALPHA);
@@ -854,14 +855,15 @@ static int config_input(AVFilterLink *inlink)
     av_expr_free(s->a_pexpr);
     s->x_pexpr = s->y_pexpr = s->a_pexpr = NULL;
 
-    if ((ret = av_expr_parse(&s->x_pexpr, s->x_expr, var_names,
+    if ((ret = av_expr_parse(&s->x_pexpr, expr = s->x_expr, var_names,
                              NULL, NULL, fun2_names, fun2, 0, ctx)) < 0 ||
-        (ret = av_expr_parse(&s->y_pexpr, s->y_expr, var_names,
+        (ret = av_expr_parse(&s->y_pexpr, expr = s->y_expr, var_names,
                              NULL, NULL, fun2_names, fun2, 0, ctx)) < 0 ||
-        (ret = av_expr_parse(&s->a_pexpr, s->a_expr, var_names,
-                             NULL, NULL, fun2_names, fun2, 0, ctx)) < 0)
-
+        (ret = av_expr_parse(&s->a_pexpr, expr = s->a_expr, var_names,
+                             NULL, NULL, fun2_names, fun2, 0, ctx)) < 0) {
+        av_log(ctx, AV_LOG_ERROR, "Failed to parse expression: %s \n", expr);
         return AVERROR(EINVAL);
+    }
 
     return 0;
 }
@@ -1223,7 +1225,8 @@ static int draw_glyphs(DrawTextContext *s, AVFrame *frame,
     for (i = 0, p = text; *p; i++) {
         FT_Bitmap bitmap;
         Glyph dummy = { 0 };
-        GET_UTF8(code, *p++, continue;);
+        GET_UTF8(code, *p ? *p++ : 0, code = 0xfffd; goto continue_on_invalid;);
+continue_on_invalid:
 
         /* skip new line chars, just go to new line */
         if (code == '\n' || code == '\r' || code == '\t')
@@ -1361,7 +1364,8 @@ static int draw_text(AVFilterContext *ctx, AVFrame *frame,
 
     /* load and cache glyphs */
     for (i = 0, p = text; *p; i++) {
-        GET_UTF8(code, *p++, continue;);
+        GET_UTF8(code, *p ? *p++ : 0, code = 0xfffd; goto continue_on_invalid;);
+continue_on_invalid:
 
         /* get glyph */
         dummy.code = code;
@@ -1384,7 +1388,8 @@ static int draw_text(AVFilterContext *ctx, AVFrame *frame,
     /* compute and save position for each glyph */
     glyph = NULL;
     for (i = 0, p = text; *p; i++) {
-        GET_UTF8(code, *p++, continue;);
+        GET_UTF8(code, *p ? *p++ : 0, code = 0xfffd; goto continue_on_invalid2;);
+continue_on_invalid2:
 
         /* skip the \n in the sequence \r\n */
         if (prev_code == '\r' && code == '\n')
