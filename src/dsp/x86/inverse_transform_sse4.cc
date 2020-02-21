@@ -2188,7 +2188,7 @@ void Dct4TransformLoop_SSE4_1(TransformType tx_type, TransformSize tx_size,
 
   if (is_row) {
     const bool should_round = (tx_height == 8);
-    const int row_shift = static_cast<const int>(tx_height == 16);
+    const int row_shift = static_cast<int>(tx_height == 16);
 
     if (DctDcOnly<4>(&src[0], &src[0], non_zero_coeff_count, should_round,
                      row_shift)) {
