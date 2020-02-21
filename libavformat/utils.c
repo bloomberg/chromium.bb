@@ -637,10 +637,12 @@ FF_ENABLE_DEPRECATION_WARNINGS
     } else if (s->internal->id3v2_meta) {
         av_log(s, AV_LOG_WARNING, "Discarding ID3 tags because more suitable tags were found.\n");
         av_dict_free(&s->internal->id3v2_meta);
+#if 0  // Chromium: Don't quit because extra data was found. http://crbug.com/891179
         if (s->error_recognition & AV_EF_EXPLODE) {
             ret = AVERROR_INVALIDDATA;
             goto close;
         }
+#endif
     }
 
     if (id3v2_extra_meta) {

@@ -855,3 +855,12 @@ Affects:
     libavutil/log.c
     libavutil/log.h
 
+------------------------------------------------------------------
+Basically reapplying commit 7262141e8c14462f47e79ed6ba457321dea9cc5d
+
+    Don't trigger errors for multiple id3 tags.
+    Fixes loading of the following wave when using -err_detect explode:
+    https://cs.chromium.org/chromium/src/third_party/blink/web_tests/external/wpt/webaudio/resources/4ch-440.wav
+
+Affects:
+    libavformat/utils.c
