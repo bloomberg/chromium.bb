@@ -24,6 +24,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #endif
+#include <algorithm>
 #include <cassert>
 #include <cinttypes>
 #include <cstddef>
