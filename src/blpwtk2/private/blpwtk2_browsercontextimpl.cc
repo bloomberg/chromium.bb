@@ -273,6 +273,8 @@ void BrowserContextImpl::createWebView(
         params.javascriptCanAccessClipboard();
     properties.rerouteMouseWheelToAnyRelatedWindow =
         params.rerouteMouseWheelToAnyRelatedWindow();
+    properties.messageInterceptionEnabled =
+        params.messageInterceptionEnabled();
 
     WebView *webView =
         new WebViewImpl(delegate,                  // delegate
