@@ -20,7 +20,6 @@ import shutil
 
 from chromite.cbuildbot import commands
 from chromite.cbuildbot.stages import generic_stages
-from chromite.cli.cros.tests import cros_vm_test
 from chromite.lib import cgroups
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -233,7 +232,8 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
     """
     test_type = test_config.test_type
     if test_type == constants.CROS_VM_TEST_TYPE:
-      RunCrosVMTest(self._current_board, self.GetImageDirSymlink())
+      RunCrosVMTest(self._build_root, self._current_board,
+                    self.GetImageDirSymlink())
     elif test_type == constants.DEV_MODE_TEST_TYPE:
       RunDevModeTest(self._build_root, self._current_board,
                      self.GetImageDirSymlink())
@@ -753,11 +753,12 @@ def ArchiveVMFiles(buildroot, test_results_dir, archive_path):
   return artifacts_svc.ArchiveFilesFromImageDir(images_dir, archive_path)
 
 
-def RunCrosVMTest(board, image_dir):
+def RunCrosVMTest(buildroot, board, image_dir):
   """Runs cros_vm_test script to verify cros commands work."""
   image_path = os.path.join(image_dir, constants.TEST_IMAGE_BIN)
-  test = cros_vm_test.CrosVMTest(board, image_path)
-  test.Run()
+  commands.RunBuildScript(
+      buildroot, ['cros_vm_test', '--board', board, '--image_path', image_path],
+      chromite_cmd=True)
 
 
 def RunDevModeTest(buildroot, board, image_dir):
