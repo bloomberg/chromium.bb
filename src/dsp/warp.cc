@@ -67,6 +67,10 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
             const int block_height, const int16_t alpha, const int16_t beta,
             const int16_t gamma, const int16_t delta, void* dest,
             ptrdiff_t dest_stride) {
+  assert(block_width >= 8 && block_height >= 8);
+  if (is_compound) {
+    assert(dest_stride == block_width);
+  }
   constexpr int kRoundBitsHorizontal = (bitdepth == 12)
                                            ? kInterRoundBitsHorizontal12bpp
                                            : kInterRoundBitsHorizontal;
