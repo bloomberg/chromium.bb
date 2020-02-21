@@ -388,9 +388,11 @@
     ultima-release
     veyron_fievel-release
     veyron_jaq-release
+    veyron_jerry-kernelnext-release
     veyron_jerry-release
     veyron_mickey-release
     veyron_mighty-release
+    veyron_minnie-kernelnext-release
     veyron_minnie-release
     veyron_rialto-release
     veyron_speedy-release
@@ -1538,9 +1540,11 @@
     ultima-release-tryjob
     veyron_fievel-release-tryjob
     veyron_jaq-release-tryjob
+    veyron_jerry-kernelnext-release-tryjob
     veyron_jerry-release-tryjob
     veyron_mickey-release-tryjob
     veyron_mighty-release-tryjob
+    veyron_minnie-kernelnext-release-tryjob
     veyron_minnie-release-tryjob
     veyron_rialto-release-tryjob
     veyron_speedy-release-tryjob
@@ -1896,6 +1900,11 @@
   veyron_jaq-unittest-stress
   veyron_jerry-factory-veyron-6591.B-factorybranch-tryjob
   veyron_jerry-full-tryjob
+  veyron_jerry-kernelnext-full-tryjob
+  veyron_jerry-kernelnext-llvm-next-toolchain-tryjob
+  veyron_jerry-kernelnext-llvm-toolchain-tryjob
+  veyron_jerry-kernelnext-release-tryjob
+  veyron_jerry-kernelnext-unittest-stress
   veyron_jerry-llvm-next-toolchain-tryjob
   veyron_jerry-llvm-toolchain-tryjob
   veyron_jerry-payloads-tryjob
@@ -1918,6 +1927,11 @@
   veyron_mighty-unittest-stress
   veyron_minnie-factory-veyron-6591.B-factorybranch-tryjob
   veyron_minnie-full-tryjob
+  veyron_minnie-kernelnext-full-tryjob
+  veyron_minnie-kernelnext-llvm-next-toolchain-tryjob
+  veyron_minnie-kernelnext-llvm-toolchain-tryjob
+  veyron_minnie-kernelnext-release-tryjob
+  veyron_minnie-kernelnext-unittest-stress
   veyron_minnie-llvm-next-toolchain-tryjob
   veyron_minnie-llvm-toolchain-tryjob
   veyron_minnie-payloads-tryjob
