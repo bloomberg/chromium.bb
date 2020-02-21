@@ -170,10 +170,6 @@ def GetExtension(target):
   consistent 'canonical' extension. Ultimately the goal is to group build steps
   by type."""
   for output in target.targets:
-    # Normalize all mojo related outputs to 'mojo'.
-    if output.count('.mojom') > 0:
-      extension = 'mojo'
-      break
     # Not a true extension, but a good grouping.
     if output.endswith('type_mappings'):
       extension = 'type_mappings'
@@ -189,6 +185,13 @@ def GetExtension(target):
     if extension in ['.so', '.TOC']:
       extension = '.so (linking)'
       # Attempt to identify linking, avoid identifying as '.TOC'
+      break
+    # Make sure .obj files don't get categorized as mojo files
+    if extension in ['.obj', '.o']:
+      break
+    # Normalize all mojo related outputs to 'mojo'.
+    if output.count('.mojom') > 0:
+      extension = 'mojo'
       break
   return extension
 
