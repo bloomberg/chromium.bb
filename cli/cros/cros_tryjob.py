@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import json
 import os
+import sys
 import time
 
 from chromite.lib import constants
@@ -20,6 +21,9 @@ from chromite.lib import git
 from chromite.lib import request_build
 
 from chromite.cbuildbot import trybot_patch_pool
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 REMOTE = 'remote'

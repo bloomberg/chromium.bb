@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import subprocess
+import sys
 
 from chromite.cli import command
 from chromite.lib import chroot_util
@@ -17,6 +18,9 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import operation
 from chromite.lib import parallel
 from chromite.lib import workon_helper
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class BrilloBuildOperation(operation.ParallelEmergeOperation):

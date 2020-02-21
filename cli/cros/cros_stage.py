@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import os
 import re
+import sys
 
 from chromite.cbuildbot import commands
 
@@ -23,6 +24,9 @@ from chromite.lib import remote_access
 
 from chromite.lib.paygen import paygen_payload_lib
 from chromite.lib.paygen import paygen_stateful_payload_lib
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 MOBLAB_STATIC_DIR = '/mnt/moblab/static'

@@ -14,6 +14,7 @@ from __future__ import print_function
 import collections
 import os
 import re
+import sys
 
 from chromite.cbuildbot import manifest_version
 from chromite.cli import command
@@ -26,6 +27,10 @@ from chromite.lib import osutils
 from chromite.lib import repo_manifest
 from chromite.lib import repo_util
 from chromite.lib import retry_util
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 # A ProjectBranch is, simply, a git branch on a project.
 #

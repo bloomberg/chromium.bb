@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import sys
 import unittest
 
 import mock
@@ -35,6 +36,9 @@ from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.lib import repo_manifest
 from chromite.lib import repo_util
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 def FileUrl(*args):

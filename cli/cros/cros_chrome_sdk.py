@@ -14,6 +14,7 @@ import glob
 import json
 import os
 import re
+import sys
 
 from chromite.cbuildbot import archive_lib
 from chromite.cli import command
@@ -28,6 +29,9 @@ from chromite.lib import path_util
 from chromite.lib import retry_util
 from chromite.utils import memoize
 from gn_helpers import gn_helpers
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 COMMAND_NAME = 'chrome-sdk'

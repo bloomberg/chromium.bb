@@ -16,13 +16,8 @@ To run this command, first build a test image. e.g.
 
 from __future__ import print_function
 
-import sys
-
 from chromite.cli import command_vm_test
 from chromite.lib import commandline
-
-
-assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class CrosVMTest(command_vm_test.CommandVMTest):

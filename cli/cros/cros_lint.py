@@ -26,6 +26,9 @@ from chromite.lib import osutils
 from chromite.lib import parallel
 
 
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
 # Extract a script's shebang.
 SHEBANG_RE = re.compile(br'^#!\s*([^\s]+)(\s+([^\s]+))?')
 

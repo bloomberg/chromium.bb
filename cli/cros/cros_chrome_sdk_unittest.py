@@ -10,6 +10,7 @@ from __future__ import print_function
 import copy
 import os
 import shutil
+import sys
 
 import mock
 
@@ -23,6 +24,9 @@ from chromite.lib import gs_unittest
 from chromite.lib import osutils
 from chromite.lib import partial_mock
 from gn_helpers import gn_helpers
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # pylint: disable=protected-access
