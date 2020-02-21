@@ -566,9 +566,12 @@ class HWTestConfig(object):
   """
   _MINUTE = 60
   _HOUR = 60 * _MINUTE
-  # CTS timeout about 2 * expected runtime in case other tests are using the CTS
+  _DAY = 24 * _HOUR
+  # CTS timeout ~ 2 * expected runtime in case other tests are using the CTS
   # pool.
-  CTS_QUAL_HW_TEST_TIMEOUT = int(48.0 * _HOUR)
+  # Must not exceed the buildbucket build timeout set at
+  # https://chrome-internal.googlesource.com/chromeos/infra/config/+/8f12edac54383831aaed9ed1819ef909a66ecc97/testplatform/main.star#90
+  CTS_QUAL_HW_TEST_TIMEOUT = int(1 * _DAY + 18 * _HOUR)
   # GTS runs faster than CTS. But to avoid starving GTS by CTS we set both
   # timeouts equal.
   GTS_QUAL_HW_TEST_TIMEOUT = CTS_QUAL_HW_TEST_TIMEOUT
