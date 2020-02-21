@@ -104,10 +104,10 @@ struct DecoderSettings {
   GetFrameBufferCallback get_frame_buffer = nullptr;
   // Release frame buffer callback.
   ReleaseFrameBufferCallback release_frame_buffer = nullptr;
-  // Passed as the private_data argument to the callbacks.
-  void* callback_private_data = nullptr;
   // Release input frame buffer callback.
   ReleaseInputBufferCallback release_input_buffer = nullptr;
+  // Passed as the private_data argument to the callbacks.
+  void* callback_private_data = nullptr;
   // Mask indicating the post processing filters that need to be applied to the
   // reconstructed frame. From LSB:
   //   Bit 0: Loop filter (deblocking filter).

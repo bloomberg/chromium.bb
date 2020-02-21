@@ -22,8 +22,8 @@ void Libgav1DecoderSettingsInitDefault(Libgav1DecoderSettings* settings) {
   settings->on_frame_buffer_size_changed = nullptr;
   settings->get_frame_buffer = nullptr;
   settings->release_frame_buffer = nullptr;
-  settings->callback_private_data = nullptr;
   settings->release_input_buffer = nullptr;
+  settings->callback_private_data = nullptr;
   settings->post_filter_mask = 0x1f;
 }
 
