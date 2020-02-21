@@ -75,7 +75,7 @@ static AOM_INLINE void add_ref_mv_candidate(
     const MB_MODE_INFO *const candidate, const MV_REFERENCE_FRAME rf[2],
     uint8_t *refmv_count, uint8_t *ref_match_count, uint8_t *newmv_count,
     CANDIDATE_MV *ref_mv_stack, uint16_t *ref_mv_weight,
-    int_mv *gm_mv_candidates, const WarpedMotionParams *gm_params, int col,
+    int_mv *gm_mv_candidates, const WarpedMotionParams *gm_params,
     uint16_t weight) {
   if (!is_inter_block(candidate)) return;
   assert(weight % 2 == 0);
@@ -87,9 +87,8 @@ static AOM_INLINE void add_ref_mv_candidate(
       if (candidate->ref_frame[ref] == rf[0]) {
         const int is_gm_block =
             is_global_mv_block(candidate, gm_params[rf[0]].wmtype);
-        const int_mv this_refmv = is_gm_block
-                                      ? gm_mv_candidates[0]
-                                      : get_sub_block_mv(candidate, ref, col);
+        const int_mv this_refmv =
+            is_gm_block ? gm_mv_candidates[0] : get_block_mv(candidate, ref);
         for (index = 0; index < *refmv_count; ++index) {
           if (ref_mv_stack[index].this_mv.as_int == this_refmv.as_int) {
             ref_mv_weight[index] += weight;
@@ -116,7 +115,7 @@ static AOM_INLINE void add_ref_mv_candidate(
         if (is_global_mv_block(candidate, gm_params[rf[ref]].wmtype))
           this_refmv[ref] = gm_mv_candidates[ref];
         else
-          this_refmv[ref] = get_sub_block_mv(candidate, ref, col);
+          this_refmv[ref] = get_block_mv(candidate, ref);
       }
 
       for (index = 0; index < *refmv_count; ++index) {
@@ -141,7 +140,7 @@ static AOM_INLINE void add_ref_mv_candidate(
 }
 
 static AOM_INLINE void scan_row_mbmi(
-    const AV1_COMMON *cm, const MACROBLOCKD *xd, int mi_row, int mi_col,
+    const AV1_COMMON *cm, const MACROBLOCKD *xd, int mi_col,
     const MV_REFERENCE_FRAME rf[2], int row_offset, CANDIDATE_MV *ref_mv_stack,
     uint16_t *ref_mv_weight, uint8_t *refmv_count, uint8_t *ref_match_count,
     uint8_t *newmv_count, int_mv *gm_mv_candidates, int max_row_offset,
@@ -159,7 +158,6 @@ static AOM_INLINE void scan_row_mbmi(
   }
   const int use_step_16 = (xd->n4_w >= 16);
   MB_MODE_INFO **const candidate_mi0 = xd->mi + row_offset * xd->mi_stride;
-  (void)mi_row;
 
   for (i = 0; i < end_mi;) {
     const MB_MODE_INFO *const candidate = candidate_mi0[col_offset + i];
@@ -183,15 +181,14 @@ static AOM_INLINE void scan_row_mbmi(
 
     add_ref_mv_candidate(candidate, rf, refmv_count, ref_match_count,
                          newmv_count, ref_mv_stack, ref_mv_weight,
-                         gm_mv_candidates, cm->global_motion, col_offset + i,
-                         len * weight);
+                         gm_mv_candidates, cm->global_motion, len * weight);
 
     i += len;
   }
 }
 
 static AOM_INLINE void scan_col_mbmi(
-    const AV1_COMMON *cm, const MACROBLOCKD *xd, int mi_row, int mi_col,
+    const AV1_COMMON *cm, const MACROBLOCKD *xd, int mi_row,
     const MV_REFERENCE_FRAME rf[2], int col_offset, CANDIDATE_MV *ref_mv_stack,
     uint16_t *ref_mv_weight, uint8_t *refmv_count, uint8_t *ref_match_count,
     uint8_t *newmv_count, int_mv *gm_mv_candidates, int max_col_offset,
@@ -207,7 +204,6 @@ static AOM_INLINE void scan_col_mbmi(
     if ((mi_row & 0x01) && xd->n4_h < n8_h_8) --row_offset;
   }
   const int use_step_16 = (xd->n4_h >= 16);
-  (void)mi_col;
 
   for (i = 0; i < end_mi;) {
     const MB_MODE_INFO *const candidate =
@@ -232,8 +228,7 @@ static AOM_INLINE void scan_col_mbmi(
 
     add_ref_mv_candidate(candidate, rf, refmv_count, ref_match_count,
                          newmv_count, ref_mv_stack, ref_mv_weight,
-                         gm_mv_candidates, cm->global_motion, col_offset,
-                         len * weight);
+                         gm_mv_candidates, cm->global_motion, len * weight);
 
     i += len;
   }
@@ -258,8 +253,7 @@ static AOM_INLINE void scan_blk_mbmi(
 
     add_ref_mv_candidate(candidate, rf, refmv_count, ref_match_count,
                          newmv_count, ref_mv_stack, ref_mv_weight,
-                         gm_mv_candidates, cm->global_motion, mi_pos.col,
-                         2 * len);
+                         gm_mv_candidates, cm->global_motion, 2 * len);
   }  // Analyze a single 8x8 block motion information.
 }
 
@@ -520,12 +514,12 @@ static AOM_INLINE void setup_ref_mv_list(
 
   // Scan the first above row mode info. row_offset = -1;
   if (abs(max_row_offset) >= 1)
-    scan_row_mbmi(cm, xd, mi_row, mi_col, rf, -1, ref_mv_stack, ref_mv_weight,
+    scan_row_mbmi(cm, xd, mi_col, rf, -1, ref_mv_stack, ref_mv_weight,
                   refmv_count, &row_match_count, &newmv_count, gm_mv_candidates,
                   max_row_offset, &processed_rows);
   // Scan the first left column mode info. col_offset = -1;
   if (abs(max_col_offset) >= 1)
-    scan_col_mbmi(cm, xd, mi_row, mi_col, rf, -1, ref_mv_stack, ref_mv_weight,
+    scan_col_mbmi(cm, xd, mi_row, rf, -1, ref_mv_stack, ref_mv_weight,
                   refmv_count, &col_match_count, &newmv_count, gm_mv_candidates,
                   max_col_offset, &processed_cols);
   // Check top-right boundary
@@ -600,17 +594,15 @@ static AOM_INLINE void setup_ref_mv_list(
 
     if (abs(row_offset) <= abs(max_row_offset) &&
         abs(row_offset) > processed_rows)
-      scan_row_mbmi(cm, xd, mi_row, mi_col, rf, row_offset, ref_mv_stack,
-                    ref_mv_weight, refmv_count, &row_match_count,
-                    &dummy_newmv_count, gm_mv_candidates, max_row_offset,
-                    &processed_rows);
+      scan_row_mbmi(cm, xd, mi_col, rf, row_offset, ref_mv_stack, ref_mv_weight,
+                    refmv_count, &row_match_count, &dummy_newmv_count,
+                    gm_mv_candidates, max_row_offset, &processed_rows);
 
     if (abs(col_offset) <= abs(max_col_offset) &&
         abs(col_offset) > processed_cols)
-      scan_col_mbmi(cm, xd, mi_row, mi_col, rf, col_offset, ref_mv_stack,
-                    ref_mv_weight, refmv_count, &col_match_count,
-                    &dummy_newmv_count, gm_mv_candidates, max_col_offset,
-                    &processed_cols);
+      scan_col_mbmi(cm, xd, mi_row, rf, col_offset, ref_mv_stack, ref_mv_weight,
+                    refmv_count, &col_match_count, &dummy_newmv_count,
+                    gm_mv_candidates, max_col_offset, &processed_cols);
   }
 
   const uint8_t ref_match_count = (row_match_count > 0) + (col_match_count > 0);

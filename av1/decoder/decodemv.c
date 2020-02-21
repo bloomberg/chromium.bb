@@ -687,8 +687,7 @@ static void read_intrabc_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
     av1_find_best_ref_mvs(0, ref_mvs[INTRA_FRAME], &nearestmv, &nearmv, 0);
     int_mv dv_ref = nearestmv.as_int == 0 ? nearmv : nearestmv;
     if (dv_ref.as_int == 0)
-      av1_find_ref_dv(&dv_ref, &xd->tile, cm->seq_params.mib_size, mi_row,
-                      mi_col);
+      av1_find_ref_dv(&dv_ref, &xd->tile, cm->seq_params.mib_size, mi_row);
     // Ref DV should not have sub-pel.
     int valid_dv = (dv_ref.as_mv.col & 7) == 0 && (dv_ref.as_mv.row & 7) == 0;
     dv_ref.as_mv.col = (dv_ref.as_mv.col >> 3) * 8;

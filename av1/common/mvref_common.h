@@ -59,17 +59,7 @@ static INLINE void clamp_mv_ref(MV *mv, int bw, int bh, const MACROBLOCKD *xd) {
   clamp_mv(mv, &mv_limits);
 }
 
-// This function returns either the appropriate sub block or block's mv
-// on whether the block_size < 8x8 and we have check_sub_blocks set.
-static INLINE int_mv get_sub_block_mv(const MB_MODE_INFO *candidate,
-                                      int which_mv, int search_col) {
-  (void)search_col;
-  return candidate->mv[which_mv];
-}
-
-static INLINE int_mv get_sub_block_pred_mv(const MB_MODE_INFO *candidate,
-                                           int which_mv, int search_col) {
-  (void)search_col;
+static INLINE int_mv get_block_mv(const MB_MODE_INFO *candidate, int which_mv) {
   return candidate->mv[which_mv];
 }
 
@@ -272,8 +262,7 @@ uint8_t av1_findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int *pts,
 #define INTRABC_DELAY_SB64 (INTRABC_DELAY_PIXELS / 64)
 
 static INLINE void av1_find_ref_dv(int_mv *ref_dv, const TileInfo *const tile,
-                                   int mib_size, int mi_row, int mi_col) {
-  (void)mi_col;
+                                   int mib_size, int mi_row) {
   if (mi_row - mib_size < tile->mi_row_start) {
     ref_dv->as_fullmv.row = 0;
     ref_dv->as_fullmv.col = -MI_SIZE * mib_size - INTRABC_DELAY_PIXELS;
