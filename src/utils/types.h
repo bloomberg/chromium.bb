@@ -44,8 +44,16 @@ struct MotionVector : public Allocable {
   };
 };
 
-struct CandidateMotionVector {
+union MotionVector64 {
   MotionVector mv[2];
+  int64_t mv64;
+};
+
+struct CandidateMotionVector {
+  union {
+    MotionVector mv[2];
+    int64_t mv64;
+  };
   int weight;
 };
 
