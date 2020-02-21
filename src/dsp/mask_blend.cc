@@ -86,25 +86,21 @@ void MaskBlend_C(const void* prediction_0, const void* prediction_1,
 
 template <int subsampling_x, int subsampling_y>
 void InterIntraMaskBlend8bpp_C(const uint8_t* prediction_0,
-                               const uint8_t* prediction_1,
+                               uint8_t* prediction_1,
                                const ptrdiff_t prediction_stride_1,
                                const uint8_t* mask, const ptrdiff_t mask_stride,
-                               const int width, const int height, void* dest,
-                               const ptrdiff_t dest_stride) {
+                               const int width, const int height) {
   assert(mask != nullptr);
-  auto* dst = static_cast<uint8_t*>(dest);
-  const ptrdiff_t dst_stride = dest_stride;
   constexpr int step_y = subsampling_y ? 2 : 1;
   const uint8_t* mask_next_row = mask + mask_stride;
   for (int y = 0; y < height; ++y) {
     for (int x = 0; x < width; ++x) {
       const uint8_t mask_value =
           GetMaskValue<subsampling_x, subsampling_y>(mask, mask_next_row, x);
-      dst[x] = static_cast<uint8_t>(RightShiftWithRounding(
+      prediction_1[x] = static_cast<uint8_t>(RightShiftWithRounding(
           mask_value * prediction_1[x] + (64 - mask_value) * prediction_0[x],
           6));
     }
-    dst += dst_stride;
     mask += mask_stride * step_y;
     mask_next_row += mask_stride * step_y;
     prediction_0 += width;

@@ -536,13 +536,16 @@ using MaskBlendFunc = void (*)(const void* prediction_0,
 // MaskBlendFunc[subsampling_x + subsampling_y][is_inter_intra].
 using MaskBlendFuncs = MaskBlendFunc[3][2];
 
-// This function is similar to the MaskBlendFunc with the only difference that
-// the predictor buffers are of type uint8_t (Pixel) instead of uint16_t. This
-// function is used only when bitdepth is 8 and is_inter_intra is true.
-using InterIntraMaskBlendFunc8bpp = void (*)(
-    const uint8_t* prediction_0, const uint8_t* prediction_1,
-    ptrdiff_t prediction_stride_1, const uint8_t* mask, ptrdiff_t mask_stride,
-    int width, int height, void* dest, ptrdiff_t dest_stride);
+// This function is similar to the MaskBlendFunc. It is only used when
+// |is_inter_intra| is true and |bitdepth| == 8.
+// |prediction_[01]| are Pixel values (uint8_t).
+// |prediction_1| is also the output buffer.
+using InterIntraMaskBlendFunc8bpp = void (*)(const uint8_t* prediction_0,
+                                             uint8_t* prediction_1,
+                                             ptrdiff_t prediction_stride_1,
+                                             const uint8_t* mask,
+                                             ptrdiff_t mask_stride, int width,
+                                             int height);
 
 // InterIntra8bpp mask blending functions signature. When is_wedge_inter_intra
 // is false, the function at index 0 must be used. Otherwise, the function at

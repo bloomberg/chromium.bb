@@ -584,12 +584,10 @@ void Tile::InterIntraPrediction(
   // currently declared as a uint16_t buffer.
   // TODO(johannkoenig): convert the prediction buffer to a uint8_t buffer and
   // remove the reinterpret_cast.
-  // TODO(johannkoenig): Remove the duplicated |dest[_stride]| parameters from
-  // this specialized function.
   dsp_.inter_intra_mask_blend_8bpp[function_index](
       reinterpret_cast<uint8_t*>(prediction_0), dest, dest_stride,
       prediction_mask, prediction_mask_stride, prediction_width,
-      prediction_height, dest, dest_stride);
+      prediction_height);
 }
 
 void Tile::CompoundInterPrediction(
