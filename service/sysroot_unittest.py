@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import sys
 
 import mock
 
@@ -19,6 +20,9 @@ from chromite.lib import osutils
 from chromite.lib import portage_util
 from chromite.lib import sysroot_lib
 from chromite.service import sysroot
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class SetupBoardRunConfigTest(cros_test_lib.TestCase):

@@ -10,6 +10,7 @@ from __future__ import print_function
 import json
 import os
 import re
+import sys
 
 from google.protobuf import json_format
 from google.protobuf.field_mask_pb2 import FieldMask
@@ -29,6 +30,10 @@ from chromite.lib import portage_util
 from chromite.lib.chroot_lib import Chroot
 from chromite.lib.uprev_lib import GitRef
 from chromite.service import packages
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 D = cros_test_lib.Directory
 

@@ -7,11 +7,16 @@
 
 from __future__ import print_function
 
+import sys
+
 from chromite.api.gen.chromiumos import common_pb2
 from chromite.api.gen.chromite.api import payload_pb2
 from chromite.lib import cros_test_lib
 from chromite.lib.paygen import paygen_payload_lib
 from chromite.service import payload
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class PayloadServiceTest(cros_test_lib.MockTestCase):

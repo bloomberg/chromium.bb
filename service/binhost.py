@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import functools
 import os
+import sys
 
 from chromite.lib import binpkg
 from chromite.lib import constants
@@ -17,6 +18,9 @@ from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import portage_util
 from chromite.utils import key_value_store
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # The name of the ACL argument file.
