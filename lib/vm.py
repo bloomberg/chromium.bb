@@ -16,6 +16,7 @@ import os
 import re
 import shutil
 import socket
+import sys
 import time
 
 from chromite.cli.cros import cros_chrome_sdk
@@ -29,6 +30,9 @@ from chromite.lib import path_util
 from chromite.lib import remote_access
 from chromite.lib import retry_util
 from chromite.utils import memoize
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class VMError(device.DeviceError):

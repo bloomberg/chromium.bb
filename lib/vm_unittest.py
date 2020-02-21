@@ -27,6 +27,9 @@ from chromite.lib import remote_access
 from chromite.lib import vm
 
 
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
 # pylint: disable=protected-access
 class VMTester(cros_test_lib.RunCommandTempDirTestCase):
   """Test vm.VM."""

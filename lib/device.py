@@ -10,6 +10,7 @@ from __future__ import print_function
 import argparse
 import os
 import subprocess
+import sys
 
 from chromite.cli.cros import cros_chrome_sdk
 from chromite.lib import commandline
@@ -17,6 +18,9 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import remote_access
 from chromite.lib import retry_util
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class DeviceError(Exception):
