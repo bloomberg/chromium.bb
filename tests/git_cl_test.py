@@ -659,7 +659,8 @@ class TestGitCl(unittest.TestCase):
     mock.patch('scm.GIT.GetBranchRef', self.mockGit.GetBranchRef).start()
     mock.patch('scm.GIT.GetConfig', self.mockGit.GetConfig).start()
     mock.patch('scm.GIT.SetConfig', self.mockGit.SetConfig).start()
-    mock.patch('git_new_branch.main', self.mockGit.NewBranch).start()
+    mock.patch(
+        'git_new_branch.create_new_branch', self.mockGit.NewBranch).start()
     mock.patch(
         'scm.GIT.FetchUpstreamTuple',
         return_value=('origin', 'refs/heads/master')).start()
