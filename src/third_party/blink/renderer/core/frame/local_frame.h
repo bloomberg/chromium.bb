@@ -432,6 +432,14 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // navigations go through.
   void MaybeLogAdClickNavigation();
 
+  void AllowPrint(bool value) {
+    bb_allow_print_ = value;
+  }
+
+  bool IsPrintAllowed() {
+    return bb_allow_print_;
+  }
+
   // Triggers a use counter if a feature, which is currently available in all
   // frames, would be blocked by the introduction of feature policy. This takes
   // two counters (which may be the same). It triggers |blockedCrossOrigin| if
@@ -604,6 +612,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
   std::unique_ptr<FrameOverlay> frame_color_overlay_;
 
   mojom::FrameLifecycleState lifecycle_state_;
+
+  bool bb_allow_print_ = false;
+
   base::Optional<mojom::FrameLifecycleState> pending_lifecycle_state_;
 
   std::unique_ptr<WebPrescientNetworking> prescient_networking_;
