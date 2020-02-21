@@ -33,8 +33,9 @@ namespace dsp {
 namespace low_bitdepth {
 namespace {
 
-// TODO(johannkoenig): The final mask value is [0, 64]. Evaluate use of int16_t
-// intermediates.
+// Compound predictors use int16_t values and need to multiply long because the
+// Convolve range * 64 is 20 bits. Unfortunately there is no multiply int16_t by
+// int8_t and accumulate into int32_t instruction.
 template <int subsampling_x, int subsampling_y>
 inline int16x8_t GetMask4x2(const uint8_t* mask, ptrdiff_t mask_stride) {
   if (subsampling_x == 1) {
@@ -120,6 +121,8 @@ inline void MaskBlending4x4_NEON(const int16_t* pred_0, const int16_t* pred_1,
   int16x8_t pred_mask_1 = vsubq_s16(mask_inverter, pred_mask_0);
   WriteMaskBlendLine4x2(pred_0, pred_1, pred_mask_0, pred_mask_1, dst,
                         dst_stride);
+  // TODO(johannkoenig): Arm tends to do better with load(val); val += stride
+  // It may be possible to turn this into a loop with a templated height.
   pred_0 += 4 << 1;
   pred_1 += 4 << 1;
   mask += mask_stride << (1 + subsampling_y);
@@ -244,19 +247,74 @@ inline void MaskBlend_NEON(const void* prediction_0, const void* prediction_1,
   } while (++y < height);
 }
 
+// TODO(johannkoenig): This is much faster for inter_intra (input is Pixel
+// values) but regresses compound versions (input is int16_t). Try to
+// consolidate these.
+template <int subsampling_x, int subsampling_y>
+inline uint8x8_t GetInterIntraMask4x2(const uint8_t* mask,
+                                      ptrdiff_t mask_stride) {
+  if (subsampling_x == 1) {
+    const uint8x8_t mask_val =
+        vpadd_u8(vld1_u8(mask), vld1_u8(mask + (mask_stride << subsampling_y)));
+    if (subsampling_y == 1) {
+      const uint8x8_t next_mask_val = vpadd_u8(vld1_u8(mask + mask_stride),
+                                               vld1_u8(mask + mask_stride * 3));
+
+      // Use a saturating add to work around the case where all |mask| values
+      // are 64. Together with the rounding shift this ensures the correct
+      // result.
+      const uint8x8_t sum = vqadd_u8(mask_val, next_mask_val);
+      return vrshr_n_u8(sum, /*subsampling_x=*/1 + subsampling_y);
+    }
+
+    return vrshr_n_u8(mask_val, /*subsampling_x=*/1);
+  }
+
+  assert(subsampling_y == 0 && subsampling_x == 0);
+  const uint8x8_t mask_val0 = Load4(mask);
+  // TODO(johannkoenig): Investigate the source of |mask| and see if the stride
+  // can be removed.
+  // TODO(johannkoenig): The unit tests start at 8x8. Does this get run?
+  return Load4<1>(mask + (mask_stride << subsampling_y), mask_val0);
+}
+
+template <int subsampling_x, int subsampling_y>
+inline uint8x8_t GetInterIntraMask8(const uint8_t* mask,
+                                    ptrdiff_t mask_stride) {
+  if (subsampling_x == 1) {
+    const uint8x16_t mask_val = vld1q_u8(mask);
+    const uint8x8_t mask_paired =
+        vpadd_u8(vget_low_u8(mask_val), vget_high_u8(mask_val));
+    if (subsampling_y == 1) {
+      const uint8x16_t next_mask_val = vld1q_u8(mask + mask_stride);
+      const uint8x8_t next_mask_paired =
+          vpadd_u8(vget_low_u8(next_mask_val), vget_high_u8(next_mask_val));
+
+      // Use a saturating add to work around the case where all |mask| values
+      // are 64. Together with the rounding shift this ensures the correct
+      // result.
+      const uint8x8_t sum = vqadd_u8(mask_paired, next_mask_paired);
+      return vrshr_n_u8(sum, /*subsampling_x=*/1 + subsampling_y);
+    }
+
+    return vrshr_n_u8(mask_paired, /*subsampling_x=*/1);
+  }
+
+  assert(subsampling_y == 0 && subsampling_x == 0);
+  return vld1_u8(mask);
+}
+
 inline void InterIntraWriteMaskBlendLine8bpp4x2(
     const uint8_t* const pred_0, const uint8_t* const pred_1,
-    const ptrdiff_t pred_stride_1, const uint16x8_t pred_mask_0,
-    const uint16x8_t pred_mask_1, uint8_t* dst, const ptrdiff_t dst_stride) {
-  // TODO(johannkoenig): Use uint8x8_t for |pred_val| and |pred_mask|.
+    const ptrdiff_t pred_stride_1, const uint8x8_t pred_mask_0,
+    const uint8x8_t pred_mask_1, uint8_t* dst, const ptrdiff_t dst_stride) {
   const uint8x8_t pred_val_0 = vld1_u8(pred_0);
   uint8x8_t pred_val_1 = Load4(pred_1);
   pred_val_1 = Load4<1>(pred_1 + pred_stride_1, pred_val_1);
 
-  const uint16x8_t weighted_pred_0 =
-      vmull_u8(vmovn_u16(pred_mask_0), pred_val_0);
+  const uint16x8_t weighted_pred_0 = vmull_u8(pred_mask_0, pred_val_0);
   const uint16x8_t weighted_combo =
-      vmlal_u8(weighted_pred_0, vmovn_u16(pred_mask_1), pred_val_1);
+      vmlal_u8(weighted_pred_0, pred_mask_1, pred_val_1);
   const uint8x8_t result = vrshrn_n_u16(weighted_combo, 6);
   StoreLo4(dst, result);
   StoreHi4(dst + dst_stride, result);
@@ -267,10 +325,10 @@ inline void InterIntraMaskBlending8bpp4x4_NEON(
     const uint8_t* pred_0, const uint8_t* pred_1, const ptrdiff_t pred_stride_1,
     const uint8_t* mask, const ptrdiff_t mask_stride, uint8_t* dst,
     const ptrdiff_t dst_stride) {
-  const uint16x8_t mask_inverter = vdupq_n_u16(64);
-  uint16x8_t pred_mask_1 = vreinterpretq_u16_s16(
-      GetMask4x2<subsampling_x, subsampling_y>(mask, mask_stride));
-  uint16x8_t pred_mask_0 = vsubq_u16(mask_inverter, pred_mask_1);
+  const uint8x8_t mask_inverter = vdup_n_u8(64);
+  uint8x8_t pred_mask_1 =
+      GetInterIntraMask4x2<subsampling_x, subsampling_y>(mask, mask_stride);
+  uint8x8_t pred_mask_0 = vsub_u8(mask_inverter, pred_mask_1);
   InterIntraWriteMaskBlendLine8bpp4x2(
       pred_0, pred_1, pred_stride_1, pred_mask_0, pred_mask_1, dst, dst_stride);
   pred_0 += 4 << 1;
@@ -278,9 +336,9 @@ inline void InterIntraMaskBlending8bpp4x4_NEON(
   mask += mask_stride << (1 + subsampling_y);
   dst += dst_stride << 1;
 
-  pred_mask_1 = vreinterpretq_u16_s16(
-      GetMask4x2<subsampling_x, subsampling_y>(mask, mask_stride));
-  pred_mask_0 = vsubq_u16(mask_inverter, pred_mask_1);
+  pred_mask_1 =
+      GetInterIntraMask4x2<subsampling_x, subsampling_y>(mask, mask_stride);
+  pred_mask_0 = vsub_u8(mask_inverter, pred_mask_1);
   InterIntraWriteMaskBlendLine8bpp4x2(
       pred_0, pred_1, pred_stride_1, pred_mask_0, pred_mask_1, dst, dst_stride);
 }
@@ -329,30 +387,31 @@ inline void InterIntraMaskBlend8bpp_NEON(
     return;
   }
   const uint8_t* mask = mask_ptr;
-  const uint16x8_t mask_inverter = vdupq_n_u16(64);
+  const uint8x8_t mask_inverter = vdup_n_u8(64);
   int y = 0;
   do {
     int x = 0;
     do {
-      const uint16x8_t pred_mask_1 =
-          vreinterpretq_u16_s16(GetMask8<subsampling_x, subsampling_y>(
-              mask + (x << subsampling_x), mask_stride));
+      // TODO(johannkoenig): Consider a 16 wide specialization (at least for the
+      // unsampled version) to take advantage of vld1q_u8().
+      const uint8x8_t pred_mask_1 =
+          GetInterIntraMask8<subsampling_x, subsampling_y>(
+              mask + (x << subsampling_x), mask_stride);
       // 64 - mask
-      // TODO(johannkoenig): Don't use vmovl().
-      const uint16x8_t pred_mask_0 = vsubq_u16(mask_inverter, pred_mask_1);
-      const uint16x8_t pred_val_0 = vmovl_u8(vld1_u8(prediction_0 + x));
-      const uint16x8_t pred_val_1 = vmovl_u8(vld1_u8(prediction_1 + x));
-      const uint16x8_t weighted_pred_0 = vmulq_u16(pred_mask_0, pred_val_0);
+      const uint8x8_t pred_mask_0 = vsub_u8(mask_inverter, pred_mask_1);
+      const uint8x8_t pred_val_0 = vld1_u8(prediction_0);
+      prediction_0 += 8;
+      const uint8x8_t pred_val_1 = vld1_u8(prediction_1 + x);
+      const uint16x8_t weighted_pred_0 = vmull_u8(pred_mask_0, pred_val_0);
       // weighted_pred0 + weighted_pred1
       const uint16x8_t weighted_combo =
-          vmlaq_u16(weighted_pred_0, pred_mask_1, pred_val_1);
+          vmlal_u8(weighted_pred_0, pred_mask_1, pred_val_1);
       const uint8x8_t result = vrshrn_n_u16(weighted_combo, 6);
       vst1_u8(dst + x, result);
 
       x += 8;
     } while (x < width);
     dst += dst_stride;
-    prediction_0 += width;
     prediction_1 += prediction_stride_1;
     mask += mask_stride << subsampling_y;
   } while (++y < height);
