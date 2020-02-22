@@ -90,10 +90,14 @@ class TestOsutils(cros_test_lib.TempDirTestCase):
         self.assertEqual('test', osutils.ReadFile(filename))
         self.assertEqual(0, os.stat(filename).st_uid)
 
-      # Appending to a file is not supported with sudo.
-      self.assertRaises(ValueError, osutils.WriteFile,
-                        os.path.join(root_owned_dir, 'nope'), 'data',
-                        sudo=True, mode='a')
+  def testSudoWriteAppend(self):
+    """Verify that we can write a file as sudo when appending."""
+    with osutils.TempDir(sudo_rm=True) as tempdir:
+      path = os.path.join(tempdir, 'foo')
+      osutils.WriteFile(path, 'one', sudo=True)
+      self.assertRaises(IOError, osutils.WriteFile, path, 'data')
+      osutils.WriteFile(path, 'two', mode='a', sudo=True)
+      self.assertEqual('onetwo', osutils.ReadFile(path))
 
   def testReadFileNonExistent(self):
     """Verify what happens if you ReadFile a file that isn't there."""
