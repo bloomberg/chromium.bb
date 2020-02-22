@@ -170,8 +170,8 @@ def FileRead(filename, mode='rbU'):
     return s
 
 
-def FileWrite(filename, content, mode='w'):
-  with codecs.open(filename, mode=mode, encoding='utf-8') as f:
+def FileWrite(filename, content, mode='w', encoding='utf-8'):
+  with codecs.open(filename, mode=mode, encoding=encoding) as f:
     f.write(content)
 
 
@@ -183,6 +183,35 @@ def temporary_directory(**kwargs):
   finally:
     if tdir:
       rmtree(tdir)
+
+
+@contextlib.contextmanager
+def temporary_file():
+  """Creates a temporary file.
+
+  On Windows, a file must be closed before it can be opened again. This function
+  allows to write something like:
+
+    with gclient_utils.temporary_file() as tmp:
+      gclient_utils.FileWrite(tmp, foo)
+      useful_stuff(tmp)
+
+  Instead of something like:
+
+    with tempfile.NamedTemporaryFile(delete=False) as tmp:
+      tmp.write(foo)
+      tmp.close()
+      try:
+        useful_stuff(tmp)
+      finally:
+        os.remove(tmp.name)
+  """
+  handle, name = tempfile.mkstemp()
+  os.close(handle)
+  try:
+    yield name
+  finally:
+    os.remove(name)
 
 
 def safe_rename(old, new):

@@ -2342,12 +2342,10 @@ class Changelist(object):
       parent = self._ComputeParent(remote, upstream_branch, custom_cl_base,
                                    options.force, change_desc)
       tree = RunGit(['rev-parse', 'HEAD:']).strip()
-      with tempfile.NamedTemporaryFile(delete=False) as desc_tempfile:
-        desc_tempfile.write(change_desc.description.encode('utf-8', 'replace'))
-        desc_tempfile.close()
-        ref_to_push = RunGit(['commit-tree', tree, '-p', parent,
-                              '-F', desc_tempfile.name]).strip()
-        os.remove(desc_tempfile.name)
+      with gclient_utils.temporary_file() as desc_tempfile:
+        gclient_utils.FileWrite(desc_tempfile, change_desc.description)
+        ref_to_push = RunGit(
+            ['commit-tree', tree, '-p', parent, '-F', desc_tempfile]).strip()
     else:  # if not options.squash
       change_desc = ChangeDescription(
           options.message or _create_description_from_log(git_diff_args))

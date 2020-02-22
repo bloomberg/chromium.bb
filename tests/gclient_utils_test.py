@@ -337,24 +337,21 @@ class GClientUtilsTest(trial_dir.TestCase):
           expected, gclient_utils.ParseCodereviewSettingsContent(content))
 
   def testFileRead_Bytes(self):
-    with tempfile.NamedTemporaryFile(delete=False) as tmp:
-      tmp.write(b'foo \xe2\x9c bar')
-      # NamedTemporaryFiles must be closed on Windows before being opened again.
-      tmp.close()
-      try:
-        self.assertEqual('foo \ufffd bar', gclient_utils.FileRead(tmp.name))
-      finally:
-        os.remove(tmp.name)
+    with gclient_utils.temporary_file() as tmp:
+      gclient_utils.FileWrite(
+          tmp, b'foo \xe2\x9c bar', mode='wb', encoding=None)
+      self.assertEqual('foo \ufffd bar', gclient_utils.FileRead(tmp))
 
   def testFileRead_Unicode(self):
-    with tempfile.NamedTemporaryFile(delete=False) as tmp:
-      tmp.write(b'foo \xe2\x9c\x94 bar')
-      # NamedTemporaryFiles must be closed on Windows before being opened again.
-      tmp.close()
-      try:
-        self.assertEqual('foo ✔ bar', gclient_utils.FileRead(tmp.name))
-      finally:
-        os.remove(tmp.name)
+    with gclient_utils.temporary_file() as tmp:
+      gclient_utils.FileWrite(tmp, 'foo ✔ bar')
+      self.assertEqual('foo ✔ bar', gclient_utils.FileRead(tmp))
+
+  def testTemporaryFile(self):
+    with gclient_utils.temporary_file() as tmp:
+      gclient_utils.FileWrite(tmp, 'test')
+      self.assertEqual('test', gclient_utils.FileRead(tmp))
+    self.assertFalse(os.path.exists(tmp))
 
 
 if __name__ == '__main__':

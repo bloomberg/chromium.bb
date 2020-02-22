@@ -17,6 +17,7 @@ else:
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+import gclient_utils
 import git_footers
 
 class GitFootersTest(unittest.TestCase):
@@ -256,15 +257,10 @@ My commit message is my best friend. It is my life. I must master it.
       'sys.stdin',
       StringIO('line\r\nany spaces\r\n\r\n\r\nFoo: 1\nBar: 2\nFoo: 3'))
   def testToJson(self):
-    with tempfile.NamedTemporaryFile(delete=False) as tmp:
-      try:
-        # NamedTemporaryFiles must be closed on Windows before being opened
-        # again.
-        tmp.close()
-        self.assertEqual(git_footers.main(['--json', tmp.name]), 0)
-        js = json.load(open(tmp.name))
-      finally:
-        os.remove(tmp.name)
+    with gclient_utils.temporary_file() as tmp:
+      self.assertEqual(git_footers.main(['--json', tmp]), 0)
+      with open(tmp) as f:
+        js = json.load(f)
     self.assertEqual(js, {'Foo': ['3', '1'], 'Bar': ['2']})
 
 

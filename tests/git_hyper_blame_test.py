@@ -28,6 +28,7 @@ sys.path.insert(0, DEPOT_TOOLS_ROOT)
 from testing_support import coverage_utils
 from testing_support import git_test_utils
 
+import gclient_utils
 import git_common
 
 GitRepo = git_test_utils.GitRepo
@@ -186,16 +187,16 @@ class GitHyperBlameMainTest(GitHyperBlameTestBase):
                        self.blame_line('A', '2*) line 2.1')]
     outbuf = BytesIO()
 
-    with tempfile.NamedTemporaryFile(mode='w+', prefix='ignore') as ignore_file:
-      ignore_file.write('# Line comments are allowed.\n')
-      ignore_file.write('\n')
-      ignore_file.write('{}\n'.format(self.repo['B']))
-      # A revision that is not in the repo (should be ignored).
-      ignore_file.write('xxxx\n')
-      ignore_file.flush()
+    with gclient_utils.temporary_file() as ignore_file:
+      gclient_utils.FileWrite(
+          ignore_file,
+          '# Line comments are allowed.\n'
+          '\n'
+          '{}\n'
+          'xxxx\n'.format(self.repo['B']))
       retval = self.repo.run(
           self.git_hyper_blame.main,
-          ['--ignore-file', ignore_file.name, 'tag_C', 'some/files/file'],
+          ['--ignore-file', ignore_file, 'tag_C', 'some/files/file'],
           outbuf)
 
     self.assertEqual(0, retval)

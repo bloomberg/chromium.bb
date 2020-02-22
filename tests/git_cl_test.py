@@ -32,7 +32,9 @@ import metrics
 # We have to disable monitoring before importing git_cl.
 metrics.DISABLE_METRICS_COLLECTION = True
 
+import contextlib
 import clang_format
+import gclient_utils
 import gerrit_util
 import git_cl
 import git_common
@@ -55,26 +57,14 @@ def _constantFn(return_value):
 CERR1 = callError(1)
 
 
-def MakeNamedTemporaryFileMock(test, expected_content):
-  class NamedTemporaryFileMock(object):
-    def __init__(self, *args, **kwargs):
-      self.name = '/tmp/named'
-      self.expected_content = expected_content.encode('utf-8', 'replace')
+class TemporaryFileMock(object):
+  def __init__(self):
+    self.suffix = 0
 
-    def __enter__(self):
-      return self
-
-    def __exit__(self, _type, _value, _tb):
-      pass
-
-    def write(self, content):
-      if self.expected_content:
-        test.assertEqual(self.expected_content, content)
-
-    def close(self):
-      pass
-
-  return NamedTemporaryFileMock
+  @contextlib.contextmanager
+  def __call__(self):
+    self.suffix += 1
+    yield '/tmp/fake-temp' + str(self.suffix)
 
 
 class ChangelistMock(object):
@@ -897,8 +887,9 @@ class TestGitCl(unittest.TestCase):
       calls += [
         ((['git', 'rev-parse', 'HEAD:'],),  # `HEAD:` means HEAD's tree hash.
          '0123456789abcdef'),
+        ((['FileWrite', '/tmp/fake-temp1', description],), None),
         ((['git', 'commit-tree', '0123456789abcdef', '-p', parent,
-           '-F', '/tmp/named'],),
+           '-F', '/tmp/fake-temp1'],),
          ref_to_push),
       ]
     else:
@@ -1178,9 +1169,7 @@ class TestGitCl(unittest.TestCase):
         change_id=change_id)
     if fetched_status != 'ABANDONED':
       mock.patch(
-          'tempfile.NamedTemporaryFile',
-          MakeNamedTemporaryFileMock(
-              self, expected_content=description)).start()
+          'gclient_utils.temporary_file', TemporaryFileMock()).start()
       mock.patch('os.remove', return_value=True).start()
       self.calls += self._gerrit_upload_calls(
           description, reviewers, squash,

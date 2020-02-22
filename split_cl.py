@@ -15,6 +15,7 @@ import subprocess2
 import sys
 import tempfile
 
+import gclient_utils
 import git_footers
 import owners
 import owners_finder
@@ -119,13 +120,11 @@ def UploadCl(cl_index, num_cls, refactor_branch, refactor_branch_upstream,
   # Commit changes. The temporary file is created with delete=False so that it
   # can be deleted manually after git has read it rather than automatically
   # when it is closed.
-  with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
-    tmp_file.write(
+  with gclient_utils.temporary_file() as tmp_file:
+    gclient_utils.FileWrite(
+        tmp_file,
         FormatDescriptionOrComment(description, directory, cl_index, num_cls))
-    # Close the file to let git open it at the next line.
-    tmp_file.close()
-    git.run('commit', '-F', tmp_file.name)
-    os.remove(tmp_file.name)
+    git.run('commit', '-F', tmp_file)
 
   # Upload a CL.
   upload_args = ['-f', '-r', reviewer]
