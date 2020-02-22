@@ -28,13 +28,23 @@ static int vc4_init(struct driver *drv)
 	return drv_modify_linear_combinations(drv);
 }
 
-static int vc4_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
-			 uint64_t use_flags)
+static int vc4_bo_create_for_modifier(struct bo *bo, uint32_t width, uint32_t height,
+				      uint32_t format, uint64_t modifier)
 {
 	int ret;
 	size_t plane;
 	uint32_t stride;
 	struct drm_vc4_create_bo bo_create;
+
+	switch (modifier) {
+	case DRM_FORMAT_MOD_LINEAR:
+		break;
+	case DRM_FORMAT_MOD_BROADCOM_VC4_T_TILED:
+		drv_log("DRM_FORMAT_MOD_BROADCOM_VC4_T_TILED not supported yet\n");
+		return -EINVAL;
+	default:
+		return -EINVAL;
+	}
 
 	/*
 	 * Since the ARM L1 cache line size is 64 bytes, align to that as a
@@ -57,6 +67,31 @@ static int vc4_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_
 		bo->handles[plane].u32 = bo_create.handle;
 
 	return 0;
+}
+
+static int vc4_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
+			 uint64_t use_flags)
+{
+	struct combination *combo;
+
+	combo = drv_get_combination(bo->drv, format, use_flags);
+	if (!combo)
+		return -EINVAL;
+
+	return vc4_bo_create_for_modifier(bo, width, height, format, combo->metadata.modifier);
+}
+
+static int vc4_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint32_t height,
+					uint32_t format, const uint64_t *modifiers, uint32_t count)
+{
+	static const uint64_t modifier_order[] = {
+		DRM_FORMAT_MOD_LINEAR,
+	};
+	uint64_t modifier;
+
+	modifier = drv_pick_modifier(modifiers, count, modifier_order, ARRAY_SIZE(modifier_order));
+
+	return vc4_bo_create_for_modifier(bo, width, height, format, modifier);
 }
 
 static void *vc4_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_t map_flags)
@@ -82,6 +117,7 @@ const struct backend backend_vc4 = {
 	.name = "vc4",
 	.init = vc4_init,
 	.bo_create = vc4_bo_create,
+	.bo_create_with_modifiers = vc4_bo_create_with_modifiers,
 	.bo_import = drv_prime_bo_import,
 	.bo_destroy = drv_gem_bo_destroy,
 	.bo_map = vc4_bo_map,
