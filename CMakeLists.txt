@@ -64,7 +64,7 @@ libgav1_option(
   OFF)
 
 if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE RELEASE)
+  set(CMAKE_BUILD_TYPE Release)
 endif()
 
 libgav1_optimization_detect()
