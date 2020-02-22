@@ -38,21 +38,20 @@ constexpr int kWarpValidThreshold[kMaxBlockSizes] = {
     64, 32, 32, 32, 64, 64, 64, 64, 112, 112, 112};
 
 // 7.10.2.10.
-void LowerMvPrecision(const Tile::Block& block, int16_t* const mv) {
-  assert(mv != nullptr);
+void LowerMvPrecision(const Tile::Block& block, MotionVector* const mvs) {
   if (block.tile.frame_header().allow_high_precision_mv) return;
   if (block.tile.frame_header().force_integer_mv != 0) {
-    for (int i = 0; i < 2; ++i) {
-      const int value = MultiplyBy8(DivideBy8(std::abs(mv[i]) + 3));
-      const int sign = mv[i] >> 15;
-      mv[i] = ApplySign(value, sign);
+    for (auto& mv : mvs->mv) {
+      const int value = (std::abs(static_cast<int>(mv)) + 3) & ~7;
+      const int sign = mv >> 15;
+      mv = ApplySign(value, sign);
     }
   } else {
-    for (int i = 0; i < 2; ++i) {
-      if ((mv[i] & 1) != 0) {
+    for (auto& mv : mvs->mv) {
+      if ((mv & 1) != 0) {
         // The next line is equivalent to:
-        // if (mv[i] > 0) { --mv[i]; } else { ++mv[i]; }
-        mv[i] -= (mv[i] >> 14) | 1;
+        // if (mv > 0) { --mv; } else { ++mv; }
+        mv -= (mv >> 15) | 1;
       }
     }
   }
@@ -92,7 +91,7 @@ void SetupGlobalMv(const Tile::Block& block, int index,
     for (int i = 0; i < 2; ++i) {
       mv->mv[i] = gm.params[i] >> (kWarpedModelPrecisionBits - 3);
     }
-    LowerMvPrecision(block, mv->mv);
+    LowerMvPrecision(block, mv);
     return;
   }
   const int x = MultiplyBy4(block.column4x4) + DivideBy2(block.width) - 1;
@@ -112,7 +111,7 @@ void SetupGlobalMv(const Tile::Block& block, int index,
         RightShiftWithRoundingSigned(yc, kWarpedModelPrecisionBits - 2));
     mv->mv[MotionVector::kColumn] = MultiplyBy2(
         RightShiftWithRoundingSigned(xc, kWarpedModelPrecisionBits - 2));
-    LowerMvPrecision(block, mv->mv);
+    LowerMvPrecision(block, mv);
   }
 }
 
@@ -319,7 +318,7 @@ void AddTemporalReferenceMvCandidate(
       if (reference_offset != 0) {
         GetMvProjection(temporal_mv, reference_offset,
                         temporal_reference_offset, &candidate_mv.mv[i]);
-        LowerMvPrecision(block, candidate_mv.mv[i].mv);
+        LowerMvPrecision(block, &candidate_mv.mv[i]);
       }
     }
     if (zero_mv_context != nullptr && delta_row == 0 && delta_column == 0) {
@@ -353,7 +352,7 @@ void AddTemporalReferenceMvCandidate(
   if (reference_offset != 0) {
     GetMvProjection(temporal_mv, reference_offset, temporal_reference_offset,
                     &candidate_mv);
-    LowerMvPrecision(block, candidate_mv.mv);
+    LowerMvPrecision(block, &candidate_mv);
   }
   if (zero_mv_context != nullptr && delta_row == 0 && delta_column == 0) {
     *zero_mv_context = static_cast<int>(
