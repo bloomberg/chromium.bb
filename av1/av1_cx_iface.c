@@ -2070,10 +2070,11 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
       if (!cpi->lookahead) {
         int lag_in_frames = cpi_lap != NULL ? cpi_lap->oxcf.lag_in_frames
                                             : cpi->oxcf.lag_in_frames;
+
         cpi->lookahead = av1_lookahead_init(
             cpi->oxcf.width, cpi->oxcf.height, subsampling_x, subsampling_y,
             use_highbitdepth, lag_in_frames, cpi->oxcf.border_in_pixels,
-            ctx->num_lap_buffers);
+            cpi->common.byte_alignment, ctx->num_lap_buffers);
       }
       if (!cpi->lookahead)
         aom_internal_error(&cpi->common.error, AOM_CODEC_MEM_ERROR,

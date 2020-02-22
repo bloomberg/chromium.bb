@@ -1047,11 +1047,10 @@ static void alloc_altref_frame_buffer(AV1_COMP *cpi) {
   const AV1EncoderConfig *oxcf = &cpi->oxcf;
 
   // TODO(agrange) Check if ARF is enabled and skip allocation if not.
-  // (yunqing)Here use same border as lookahead buffers.
   if (aom_realloc_frame_buffer(
           &cpi->alt_ref_buffer, oxcf->width, oxcf->height,
           seq_params->subsampling_x, seq_params->subsampling_y,
-          seq_params->use_highbitdepth, AOM_ENC_NO_SCALE_BORDER,
+          seq_params->use_highbitdepth, cpi->oxcf.border_in_pixels,
           cm->byte_alignment, NULL, NULL, NULL))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate altref buffer");
