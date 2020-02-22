@@ -127,7 +127,8 @@ constexpr BitMaskSet kPredictionModeNewMvMask(kPredictionModeNewMv,
 // otherwise.
 template <bool is_compound>
 void SearchStack(const Tile::Block& block, const BlockParameters& mv_bp,
-                 int index, int weight, MotionVector global_mv_candidate[2],
+                 int index, int weight,
+                 const MotionVector global_mv_candidate[2],
                  bool* const found_new_mv, bool* const found_match,
                  int* const num_mv_found,
                  CandidateMotionVector ref_mv_stack[kMaxRefMvStackSize]) {
@@ -181,7 +182,7 @@ void SearchStack(const Tile::Block& block, const BlockParameters& mv_bp,
 // 7.10.2.7.
 void AddReferenceMvCandidate(
     const Tile::Block& block, const BlockParameters& mv_bp, bool is_compound,
-    int weight, MotionVector global_mv[2], bool* const found_new_mv,
+    int weight, const MotionVector global_mv[2], bool* const found_new_mv,
     bool* const found_match, int* const num_mv_found,
     CandidateMotionVector ref_mv_stack[kMaxRefMvStackSize]) {
   if (!mv_bp.is_inter) return;
@@ -211,7 +212,7 @@ int GetMinimumStep(int block_width_or_height4x4, int delta_row_or_column) {
 
 // 7.10.2.2.
 void ScanRow(const Tile::Block& block, int delta_row, bool is_compound,
-             MotionVector global_mv[2], bool* const found_new_mv,
+             const MotionVector global_mv[2], bool* const found_new_mv,
              bool* const found_match, int* const num_mv_found,
              CandidateMotionVector ref_mv_stack[kMaxRefMvStackSize]) {
   int delta_column = 0;
@@ -219,28 +220,30 @@ void ScanRow(const Tile::Block& block, int delta_row, bool is_compound,
     delta_row += block.row4x4 & 1;
     delta_column = 1 - (block.column4x4 & 1);
   }
+  const int mv_row = block.row4x4 + delta_row;
+  if (!block.tile.IsTopInside(mv_row + 1)) return;
   const int end_mv_column =
       block.column4x4 + delta_column +
       std::min({static_cast<int>(block.width4x4),
                 block.tile.frame_header().columns4x4 - block.column4x4, 16});
-  const int mv_row = block.row4x4 + delta_row;
   const int min_step = GetMinimumStep(block.width4x4, delta_row);
-  for (int step, mv_column = block.column4x4 + delta_column;
-       mv_column < end_mv_column; mv_column += step) {
-    if (!block.tile.IsTopInside(mv_row + 1)) break;
+  int mv_column = block.column4x4 + delta_column;
+  do {
     const BlockParameters& mv_bp = block.tile.Parameters(mv_row, mv_column);
-    step = std::max(static_cast<int>(std::min(block.width4x4,
-                                              kNum4x4BlocksWide[mv_bp.size])),
-                    min_step);
+    const int step =
+        std::max(static_cast<int>(
+                     std::min(block.width4x4, kNum4x4BlocksWide[mv_bp.size])),
+                 min_step);
     AddReferenceMvCandidate(block, mv_bp, is_compound, MultiplyBy2(step),
                             global_mv, found_new_mv, found_match, num_mv_found,
                             ref_mv_stack);
-  }
+    mv_column += step;
+  } while (mv_column < end_mv_column);
 }
 
 // 7.10.2.3.
 void ScanColumn(const Tile::Block& block, int delta_column, bool is_compound,
-                MotionVector global_mv[2], bool* const found_new_mv,
+                const MotionVector global_mv[2], bool* const found_new_mv,
                 bool* const found_match, int* const num_mv_found,
                 CandidateMotionVector ref_mv_stack[kMaxRefMvStackSize]) {
   int delta_row = 0;
@@ -248,28 +251,30 @@ void ScanColumn(const Tile::Block& block, int delta_column, bool is_compound,
     delta_row = 1 - (block.row4x4 & 1);
     delta_column += block.column4x4 & 1;
   }
+  const int mv_column = block.column4x4 + delta_column;
+  if (!block.tile.IsLeftInside(mv_column + 1)) return;
   const int end_mv_row =
       block.row4x4 + delta_row +
       std::min({static_cast<int>(block.height4x4),
                 block.tile.frame_header().rows4x4 - block.row4x4, 16});
-  const int mv_column = block.column4x4 + delta_column;
   const int min_step = GetMinimumStep(block.height4x4, delta_column);
-  for (int step, mv_row = block.row4x4 + delta_row; mv_row < end_mv_row;
-       mv_row += step) {
-    if (!block.tile.IsLeftInside(mv_column + 1)) break;
+  int mv_row = block.row4x4 + delta_row;
+  do {
     const BlockParameters& mv_bp = block.tile.Parameters(mv_row, mv_column);
-    step = std::max(static_cast<int>(std::min(block.height4x4,
-                                              kNum4x4BlocksHigh[mv_bp.size])),
-                    min_step);
+    const int step =
+        std::max(static_cast<int>(
+                     std::min(block.height4x4, kNum4x4BlocksHigh[mv_bp.size])),
+                 min_step);
     AddReferenceMvCandidate(block, mv_bp, is_compound, MultiplyBy2(step),
                             global_mv, found_new_mv, found_match, num_mv_found,
                             ref_mv_stack);
-  }
+    mv_row += step;
+  } while (mv_row < end_mv_row);
 }
 
 // 7.10.2.4.
 void ScanPoint(const Tile::Block& block, int delta_row, int delta_column,
-               bool is_compound, MotionVector global_mv[2],
+               bool is_compound, const MotionVector global_mv[2],
                bool* const found_new_mv, bool* const found_match,
                int* const num_mv_found,
                CandidateMotionVector ref_mv_stack[kMaxRefMvStackSize]) {
