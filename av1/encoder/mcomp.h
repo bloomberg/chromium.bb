@@ -124,10 +124,6 @@ unsigned int av1_int_pro_motion_estimation(const struct AV1_COMP *cpi,
                                            MACROBLOCK *x, BLOCK_SIZE bsize,
                                            int mi_row, int mi_col,
                                            const MV *ref_mv);
-// Runs sequence of diamond searches in smaller steps for RD.
-int av1_hex_search(MACROBLOCK *x, FULLPEL_MV *start_mv, int search_param,
-                   int sad_per_bit, int do_init_search, int *cost_list,
-                   const aom_variance_fn_ptr_t *vfp, const MV *ref_mv);
 
 int av1_refining_search_8p_c(MACROBLOCK *x, int error_per_bit, int search_range,
                              const aom_variance_fn_ptr_t *fn_ptr,
@@ -137,15 +133,8 @@ int av1_refining_search_8p_c(MACROBLOCK *x, int error_per_bit, int search_range,
                              const struct buf_2d *src,
                              const struct buf_2d *pre);
 
-int av1_diamond_search_sad_c(MACROBLOCK *x, const search_site_config *cfg,
-                             FULLPEL_MV *start_mv, FULLPEL_MV *best_mv,
-                             int search_param, int sad_per_bit, int *num00,
-                             const aom_variance_fn_ptr_t *fn_ptr,
-                             const MV *ref_mv, uint8_t *second_pred,
-                             uint8_t *mask, int mask_stride, int inv_mask);
-
 int av1_full_pixel_search(const struct AV1_COMP *cpi, MACROBLOCK *x,
-                          BLOCK_SIZE bsize, FULLPEL_MV *start_mv,
+                          BLOCK_SIZE bsize, const FULLPEL_MV start_mv,
                           int step_param, int method, int run_mesh_search,
                           int error_per_bit, int *cost_list, const MV *ref_mv,
                           int var_max, int rd, int x_pos, int y_pos, int intra,
@@ -153,8 +142,8 @@ int av1_full_pixel_search(const struct AV1_COMP *cpi, MACROBLOCK *x,
                           int use_intrabc_mesh_pattern);
 
 int av1_obmc_full_pixel_search(const struct AV1_COMP *cpi, MACROBLOCK *x,
-                               FULLPEL_MV *start_mv, int step_param, int sadpb,
-                               int further_steps, int do_refine,
+                               const FULLPEL_MV start_mv, int step_param,
+                               int sadpb, int further_steps, int do_refine,
                                const aom_variance_fn_ptr_t *fn_ptr,
                                const MV *ref_mv, FULLPEL_MV *dst_mv,
                                const search_site_config *cfg);

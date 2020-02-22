@@ -480,7 +480,7 @@ static INLINE void calc_int_sad_list(const MACROBLOCK *x,
 // candidates as indicated in the num_candidates and candidates arrays
 // passed into this function
 static int pattern_search(
-    MACROBLOCK *x, FULLPEL_MV *start_mv, int search_param, int sad_per_bit,
+    MACROBLOCK *x, FULLPEL_MV start_mv, int search_param, int sad_per_bit,
     int do_init_search, int *cost_list, const aom_variance_fn_ptr_t *vfp,
     const MV *ref_mv, const int num_candidates[MAX_PATTERN_SCALES],
     const MV candidates[MAX_PATTERN_SCALES][MAX_PATTERN_CANDIDATES]) {
@@ -501,9 +501,9 @@ static int pattern_search(
   assert(search_param < MAX_MVSEARCH_STEPS);
   int best_init_s = search_param_to_steps[search_param];
   // adjust ref_mv to make sure it is within MV range
-  clamp_fullmv(start_mv, &x->mv_limits);
-  br = start_mv->row;
-  bc = start_mv->col;
+  clamp_fullmv(&start_mv, &x->mv_limits);
+  br = start_mv.row;
+  bc = start_mv.col;
   if (cost_list != NULL) {
     cost_list[0] = cost_list[1] = cost_list[2] = cost_list[3] = cost_list[4] =
         INT_MAX;
@@ -512,9 +512,9 @@ static int pattern_search(
 
   // Work out the start point for the search
   raw_bestsad = vfp->sdf(what->buf, what->stride,
-                         get_buf_from_mv(in_what, start_mv), in_what->stride);
+                         get_buf_from_mv(in_what, &start_mv), in_what->stride);
   bestsad =
-      raw_bestsad + mvsad_err_cost(x, start_mv, &full_ref_mv, sad_per_bit);
+      raw_bestsad + mvsad_err_cost(x, &start_mv, &full_ref_mv, sad_per_bit);
 
   // Search all possible scales up to the search param around the center point
   // pick the scale of the point that is best as the starting scale of
@@ -754,9 +754,10 @@ static int pattern_search(
 // vfp: a function pointer to the simd function so we can compute the cost
 //   efficiently
 // ref_mv: the reference mv used to compute the mv cost
-int av1_hex_search(MACROBLOCK *x, FULLPEL_MV *start_mv, int search_param,
-                   int sad_per_bit, int do_init_search, int *cost_list,
-                   const aom_variance_fn_ptr_t *vfp, const MV *ref_mv) {
+static int hex_search(MACROBLOCK *x, const FULLPEL_MV start_mv,
+                      int search_param, int sad_per_bit, int do_init_search,
+                      int *cost_list, const aom_variance_fn_ptr_t *vfp,
+                      const MV *ref_mv) {
   // First scale has 8-closest points, the rest have 6 points in hex shape
   // at increasing scales
   static const int hex_num_candidates[MAX_PATTERN_SCALES] = { 8, 6, 6, 6, 6, 6,
@@ -789,9 +790,10 @@ int av1_hex_search(MACROBLOCK *x, FULLPEL_MV *start_mv, int search_param,
                         hex_candidates);
 }
 
-static int bigdia_search(MACROBLOCK *x, FULLPEL_MV *start_mv, int search_param,
-                         int sad_per_bit, int do_init_search, int *cost_list,
-                         const aom_variance_fn_ptr_t *vfp, const MV *ref_mv) {
+static int bigdia_search(MACROBLOCK *x, const FULLPEL_MV start_mv,
+                         int search_param, int sad_per_bit, int do_init_search,
+                         int *cost_list, const aom_variance_fn_ptr_t *vfp,
+                         const MV *ref_mv) {
   // First scale has 4-closest points, the rest have 8 points in diamond
   // shape at increasing scales
   static const int bigdia_num_candidates[MAX_PATTERN_SCALES] = {
@@ -829,9 +831,10 @@ static int bigdia_search(MACROBLOCK *x, FULLPEL_MV *start_mv, int search_param,
                         bigdia_candidates);
 }
 
-static int square_search(MACROBLOCK *x, FULLPEL_MV *start_mv, int search_param,
-                         int sad_per_bit, int do_init_search, int *cost_list,
-                         const aom_variance_fn_ptr_t *vfp, const MV *ref_mv) {
+static int square_search(MACROBLOCK *x, const FULLPEL_MV start_mv,
+                         int search_param, int sad_per_bit, int do_init_search,
+                         int *cost_list, const aom_variance_fn_ptr_t *vfp,
+                         const MV *ref_mv) {
   // All scales have 8 closest points in square shape
   static const int square_num_candidates[MAX_PATTERN_SCALES] = {
     8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
@@ -869,17 +872,16 @@ static int square_search(MACROBLOCK *x, FULLPEL_MV *start_mv, int search_param,
                         square_candidates);
 }
 
-static int fast_hex_search(MACROBLOCK *x, FULLPEL_MV *start_mv,
+static int fast_hex_search(MACROBLOCK *x, const FULLPEL_MV start_mv,
                            int search_param, int sad_per_bit,
                            int do_init_search,  // must be zero for fast_hex
                            int *cost_list, const aom_variance_fn_ptr_t *vfp,
                            const MV *ref_mv) {
-  return av1_hex_search(x, start_mv,
-                        AOMMAX(MAX_MVSEARCH_STEPS - 2, search_param),
-                        sad_per_bit, do_init_search, cost_list, vfp, ref_mv);
+  return hex_search(x, start_mv, AOMMAX(MAX_MVSEARCH_STEPS - 2, search_param),
+                    sad_per_bit, do_init_search, cost_list, vfp, ref_mv);
 }
 
-static int fast_dia_search(MACROBLOCK *x, FULLPEL_MV *start_mv,
+static int fast_dia_search(MACROBLOCK *x, const FULLPEL_MV start_mv,
                            int search_param, int sad_per_bit,
                            int do_init_search, int *cost_list,
                            const aom_variance_fn_ptr_t *vfp, const MV *ref_mv) {
@@ -894,11 +896,10 @@ static int exhuastive_mesh_search(MACROBLOCK *x, FULLPEL_MV *ref_mv,
                                   FULLPEL_MV *best_mv, int range, int step,
                                   int sad_per_bit,
                                   const aom_variance_fn_ptr_t *fn_ptr,
-                                  const FULLPEL_MV *start_mv) {
+                                  FULLPEL_MV start_mv) {
   const MACROBLOCKD *const xd = &x->e_mbd;
   const struct buf_2d *const what = &x->plane[0].src;
   const struct buf_2d *const in_what = &xd->plane[0].pre[0];
-  FULLPEL_MV start_mv_ = *start_mv;
   unsigned int best_sad = INT_MAX;
   int r, c, i;
   int start_col, end_col, start_row, end_row;
@@ -906,22 +907,21 @@ static int exhuastive_mesh_search(MACROBLOCK *x, FULLPEL_MV *ref_mv,
 
   assert(step >= 1);
 
-  clamp_fullmv(&start_mv_, &x->mv_limits);
-  *best_mv = start_mv_;
-  best_sad =
-      fn_ptr->sdf(what->buf, what->stride, get_buf_from_mv(in_what, &start_mv_),
-                  in_what->stride) +
-      mvsad_err_cost(x, &start_mv_, ref_mv, sad_per_bit);
-  start_row = AOMMAX(-range, x->mv_limits.row_min - start_mv_.row);
-  start_col = AOMMAX(-range, x->mv_limits.col_min - start_mv_.col);
-  end_row = AOMMIN(range, x->mv_limits.row_max - start_mv_.row);
-  end_col = AOMMIN(range, x->mv_limits.col_max - start_mv_.col);
+  clamp_fullmv(&start_mv, &x->mv_limits);
+  *best_mv = start_mv;
+  best_sad = fn_ptr->sdf(what->buf, what->stride,
+                         get_buf_from_mv(in_what, &start_mv), in_what->stride) +
+             mvsad_err_cost(x, &start_mv, ref_mv, sad_per_bit);
+  start_row = AOMMAX(-range, x->mv_limits.row_min - start_mv.row);
+  start_col = AOMMAX(-range, x->mv_limits.col_min - start_mv.col);
+  end_row = AOMMIN(range, x->mv_limits.row_max - start_mv.row);
+  end_col = AOMMIN(range, x->mv_limits.col_max - start_mv.col);
 
   for (r = start_row; r <= end_row; r += step) {
     for (c = start_col; c <= end_col; c += col_step) {
       // Step > 1 means we are not checking every location in this pass.
       if (step > 1) {
-        const FULLPEL_MV mv = { start_mv_.row + r, start_mv_.col + c };
+        const FULLPEL_MV mv = { start_mv.row + r, start_mv.col + c };
         unsigned int sad =
             fn_ptr->sdf(what->buf, what->stride, get_buf_from_mv(in_what, &mv),
                         in_what->stride);
@@ -939,15 +939,14 @@ static int exhuastive_mesh_search(MACROBLOCK *x, FULLPEL_MV *ref_mv,
           unsigned int sads[4];
           const uint8_t *addrs[4];
           for (i = 0; i < 4; ++i) {
-            const FULLPEL_MV mv = { start_mv_.row + r, start_mv_.col + c + i };
+            const FULLPEL_MV mv = { start_mv.row + r, start_mv.col + c + i };
             addrs[i] = get_buf_from_mv(in_what, &mv);
           }
           fn_ptr->sdx4df(what->buf, what->stride, addrs, in_what->stride, sads);
 
           for (i = 0; i < 4; ++i) {
             if (sads[i] < best_sad) {
-              const FULLPEL_MV mv = { start_mv_.row + r,
-                                      start_mv_.col + c + i };
+              const FULLPEL_MV mv = { start_mv.row + r, start_mv.col + c + i };
               const unsigned int sad =
                   sads[i] + mvsad_err_cost(x, &mv, ref_mv, sad_per_bit);
               if (sad < best_sad) {
@@ -959,7 +958,7 @@ static int exhuastive_mesh_search(MACROBLOCK *x, FULLPEL_MV *ref_mv,
           }
         } else {
           for (i = 0; i < end_col - c; ++i) {
-            const FULLPEL_MV mv = { start_mv_.row + r, start_mv_.col + c + i };
+            const FULLPEL_MV mv = { start_mv.row + r, start_mv.col + c + i };
             unsigned int sad =
                 fn_ptr->sdf(what->buf, what->stride,
                             get_buf_from_mv(in_what, &mv), in_what->stride);
@@ -980,12 +979,12 @@ static int exhuastive_mesh_search(MACROBLOCK *x, FULLPEL_MV *ref_mv,
   return best_sad;
 }
 
-int av1_diamond_search_sad_c(MACROBLOCK *x, const search_site_config *cfg,
-                             FULLPEL_MV *start_mv, FULLPEL_MV *best_mv,
-                             int search_param, int sad_per_bit, int *num00,
-                             const aom_variance_fn_ptr_t *fn_ptr,
-                             const MV *ref_mv, uint8_t *second_pred,
-                             uint8_t *mask, int mask_stride, int inv_mask) {
+static int diamond_search_sad(MACROBLOCK *x, const search_site_config *cfg,
+                              FULLPEL_MV start_mv, FULLPEL_MV *best_mv,
+                              int search_param, int sad_per_bit, int *num00,
+                              const aom_variance_fn_ptr_t *fn_ptr,
+                              const MV *ref_mv, uint8_t *second_pred,
+                              uint8_t *mask, int mask_stride, int inv_mask) {
   const MACROBLOCKD *const xd = &x->e_mbd;
   uint8_t *what = x->plane[0].src.buf;
   const int what_stride = x->plane[0].src.stride;
@@ -997,18 +996,18 @@ int av1_diamond_search_sad_c(MACROBLOCK *x, const search_site_config *cfg,
   int best_site = 0;
   int is_off_center = 0;
 
+  clamp_fullmv(&start_mv, &x->mv_limits);
+
   // search_param determines the length of the initial step and hence the number
   // of iterations.
   const int tot_steps = cfg->ss_count - search_param;
 
   const FULLPEL_MV full_ref_mv = get_fullmv_from_mv(ref_mv);
-  clamp_fullmv(start_mv, &x->mv_limits);
   *num00 = 0;
-  best_mv->row = start_mv->row;
-  best_mv->col = start_mv->col;
+  *best_mv = start_mv;
 
   // Work out the start point for the search
-  in_what = get_buf_from_mv(&xd->plane[0].pre[0], start_mv);
+  in_what = get_buf_from_mv(&xd->plane[0].pre[0], &start_mv);
   best_address = in_what;
 
   // Check the starting position
@@ -1118,7 +1117,7 @@ int av1_diamond_search_sad_c(MACROBLOCK *x, const search_site_config *cfg,
 /* do_refine: If last step (1-away) of n-step search doesn't pick the center
               point as the best match, we will do a final 1-away diamond
               refining search  */
-static int full_pixel_diamond(MACROBLOCK *x, FULLPEL_MV *start_mv,
+static int full_pixel_diamond(MACROBLOCK *x, const FULLPEL_MV start_mv,
                               int step_param, int sadpb, int *cost_list,
                               const aom_variance_fn_ptr_t *fn_ptr,
                               const MV *ref_mv, const search_site_config *cfg,
@@ -1126,9 +1125,9 @@ static int full_pixel_diamond(MACROBLOCK *x, FULLPEL_MV *start_mv,
                               int mask_stride, int inv_mask) {
   FULLPEL_MV best_mv;
   int thissme, n, num00 = 0;
-  int bestsme = av1_diamond_search_sad_c(x, cfg, start_mv, &best_mv, step_param,
-                                         sadpb, &n, fn_ptr, ref_mv, second_pred,
-                                         mask, mask_stride, inv_mask);
+  int bestsme = diamond_search_sad(x, cfg, start_mv, &best_mv, step_param,
+                                   sadpb, &n, fn_ptr, ref_mv, second_pred, mask,
+                                   mask_stride, inv_mask);
 
   if (bestsme < INT_MAX) {
     if (mask)
@@ -1154,9 +1153,9 @@ static int full_pixel_diamond(MACROBLOCK *x, FULLPEL_MV *start_mv,
     if (num00) {
       num00--;
     } else {
-      thissme = av1_diamond_search_sad_c(
-          x, cfg, start_mv, &best_mv, step_param + n, sadpb, &num00, fn_ptr,
-          ref_mv, second_pred, mask, mask_stride, inv_mask);
+      thissme = diamond_search_sad(x, cfg, start_mv, &best_mv, step_param + n,
+                                   sadpb, &num00, fn_ptr, ref_mv, second_pred,
+                                   mask, mask_stride, inv_mask);
 
       if (thissme < INT_MAX) {
         if (mask)
@@ -1197,7 +1196,7 @@ static int full_pixel_diamond(MACROBLOCK *x, FULLPEL_MV *start_mv,
 // Runs an limited range exhaustive mesh search using a pattern set
 // according to the encode speed profile.
 static int full_pixel_exhaustive(
-    MACROBLOCK *x, const FULLPEL_MV *start_mv, int sadpb, int *cost_list,
+    MACROBLOCK *x, const FULLPEL_MV start_mv, int sadpb, int *cost_list,
     const aom_variance_fn_ptr_t *fn_ptr, const MV *ref_mv, FULLPEL_MV *best_mv,
     const struct MESH_PATTERN *const mesh_patterns) {
   FULLPEL_MV full_ref_mv = get_fullmv_from_mv(ref_mv);
@@ -1207,7 +1206,7 @@ static int full_pixel_exhaustive(
   int range = mesh_patterns[0].range;
   int baseline_interval_divisor;
 
-  *best_mv = *start_mv;
+  *best_mv = start_mv;
 
   // Trap illegal values for interval and range for this function.
   if ((range < MIN_RANGE) || (range > MAX_RANGE) || (interval < MIN_INTERVAL) ||
@@ -1224,7 +1223,7 @@ static int full_pixel_exhaustive(
 
   // initial search
   bestsme = exhuastive_mesh_search(x, &full_ref_mv, best_mv, range, interval,
-                                   sadpb, fn_ptr, best_mv);
+                                   sadpb, fn_ptr, *best_mv);
 
   if ((interval > MIN_INTERVAL) && (range > MIN_RANGE)) {
     // Progressive searches with range and step size decreasing each time
@@ -1233,7 +1232,7 @@ static int full_pixel_exhaustive(
       // First pass with coarser step and longer range
       bestsme = exhuastive_mesh_search(
           x, &full_ref_mv, best_mv, mesh_patterns[i].range,
-          mesh_patterns[i].interval, sadpb, fn_ptr, best_mv);
+          mesh_patterns[i].interval, sadpb, fn_ptr, *best_mv);
 
       if (mesh_patterns[i].interval == 1) break;
     }
@@ -1345,7 +1344,7 @@ int av1_refining_search_8p_c(MACROBLOCK *x, int error_per_bit, int search_range,
 }
 
 int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
-                          FULLPEL_MV *start_mv, int step_param, int method,
+                          const FULLPEL_MV start_mv, int step_param, int method,
                           int run_mesh_search, int error_per_bit,
                           int *cost_list, const MV *ref_mv, int var_max, int rd,
                           int x_pos, int y_pos, int intra,
@@ -1373,8 +1372,8 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
                             cost_list, fn_ptr, ref_mv);
       break;
     case HEX:
-      var = av1_hex_search(x, start_mv, step_param, error_per_bit, 1, cost_list,
-                           fn_ptr, ref_mv);
+      var = hex_search(x, start_mv, step_param, error_per_bit, 1, cost_list,
+                       fn_ptr, ref_mv);
       break;
     case SQUARE:
       var = square_search(x, start_mv, step_param, error_per_bit, 1, cost_list,
@@ -1406,8 +1405,8 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
   // filtering. Can extend it to intrabc.
   if (!use_intrabc_mesh_pattern && sf->mv_sf.prune_mesh_search) {
     const int full_pel_mv_diff =
-        AOMMAX(abs(start_mv->row - x->best_mv.as_fullmv.row),
-               abs(start_mv->col - x->best_mv.as_fullmv.col));
+        AOMMAX(abs(start_mv.row - x->best_mv.as_fullmv.row),
+               abs(start_mv.col - x->best_mv.as_fullmv.col));
     if (full_pel_mv_diff <= 4) {
       run_mesh_search = 0;
     }
@@ -1421,9 +1420,9 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
     const MESH_PATTERN *const mesh_patterns =
         use_intrabc_mesh_pattern ? sf->mv_sf.intrabc_mesh_patterns
                                  : sf->mv_sf.mesh_patterns;
-    var_ex = full_pixel_exhaustive(x, &x->best_mv.as_fullmv, error_per_bit,
-                                   cost_list, fn_ptr, ref_mv, &tmp_mv_ex,
-                                   mesh_patterns);
+    var_ex =
+        full_pixel_exhaustive(x, x->best_mv.as_fullmv, error_per_bit, cost_list,
+                              fn_ptr, ref_mv, &tmp_mv_ex, mesh_patterns);
     if (var_ex < var) {
       var = var_ex;
       x->best_mv.as_fullmv = tmp_mv_ex;
@@ -1522,7 +1521,7 @@ static int get_obmc_mvpred_var(const MACROBLOCK *x, const int32_t *wsrc,
 }
 
 static int obmc_refining_search_sad(const MACROBLOCK *x, const int32_t *wsrc,
-                                    const int32_t *mask, FULLPEL_MV *start_mv,
+                                    const int32_t *mask, FULLPEL_MV *best_mv,
                                     int error_per_bit, int search_range,
                                     const aom_variance_fn_ptr_t *fn_ptr,
                                     const MV *ref_mv) {
@@ -1531,17 +1530,17 @@ static int obmc_refining_search_sad(const MACROBLOCK *x, const int32_t *wsrc,
   const struct buf_2d *const in_what = xd->plane[0].pre;
   const FULLPEL_MV full_ref_mv = get_fullmv_from_mv(ref_mv);
   unsigned int best_sad =
-      fn_ptr->osdf(get_buf_from_mv(in_what, start_mv), in_what->stride, wsrc,
+      fn_ptr->osdf(get_buf_from_mv(in_what, best_mv), in_what->stride, wsrc,
                    mask) +
-      mvsad_err_cost(x, start_mv, &full_ref_mv, error_per_bit);
+      mvsad_err_cost(x, best_mv, &full_ref_mv, error_per_bit);
   int i, j;
 
   for (i = 0; i < search_range; i++) {
     int best_site = -1;
 
     for (j = 0; j < 4; j++) {
-      const FULLPEL_MV mv = { start_mv->row + neighbors[j].row,
-                              start_mv->col + neighbors[j].col };
+      const FULLPEL_MV mv = { best_mv->row + neighbors[j].row,
+                              best_mv->col + neighbors[j].col };
       if (av1_is_fullmv_in_range(&x->mv_limits, mv)) {
         unsigned int sad = fn_ptr->osdf(get_buf_from_mv(in_what, &mv),
                                         in_what->stride, wsrc, mask);
@@ -1558,8 +1557,8 @@ static int obmc_refining_search_sad(const MACROBLOCK *x, const int32_t *wsrc,
     if (best_site == -1) {
       break;
     } else {
-      start_mv->row += neighbors[best_site].row;
-      start_mv->col += neighbors[best_site].col;
+      best_mv->row += neighbors[best_site].row;
+      best_mv->col += neighbors[best_site].col;
     }
   }
   return best_sad;
@@ -1567,7 +1566,7 @@ static int obmc_refining_search_sad(const MACROBLOCK *x, const int32_t *wsrc,
 
 static int obmc_diamond_search_sad(
     const MACROBLOCK *x, const search_site_config *cfg, const int32_t *wsrc,
-    const int32_t *mask, FULLPEL_MV *start_mv, FULLPEL_MV *best_mv,
+    const int32_t *mask, FULLPEL_MV start_mv, FULLPEL_MV *best_mv,
     int search_param, int sad_per_bit, int *num00,
     const aom_variance_fn_ptr_t *fn_ptr, const MV *ref_mv) {
   const MACROBLOCKD *const xd = &x->e_mbd;
@@ -1584,11 +1583,11 @@ static int obmc_diamond_search_sad(
   int best_site = 0;
   int step;
 
-  clamp_fullmv(start_mv, &x->mv_limits);
-  in_what_ref = get_buf_from_mv(in_what, start_mv);
+  clamp_fullmv(&start_mv, &x->mv_limits);
+  in_what_ref = get_buf_from_mv(in_what, &start_mv);
   best_address = in_what_ref;
   *num00 = 0;
-  *best_mv = *start_mv;
+  *best_mv = start_mv;
 
   // Check the starting position
   best_sad = fn_ptr->osdf(best_address, in_what->stride, wsrc, mask) +
@@ -1625,7 +1624,7 @@ static int obmc_diamond_search_sad(
 }
 
 static int obmc_full_pixel_diamond(const AV1_COMP *cpi, MACROBLOCK *x,
-                                   FULLPEL_MV *start_mv, int step_param,
+                                   const FULLPEL_MV start_mv, int step_param,
                                    int sadpb, int further_steps, int do_refine,
                                    const aom_variance_fn_ptr_t *fn_ptr,
                                    const MV *ref_mv, FULLPEL_MV *best_mv,
@@ -1684,8 +1683,8 @@ static int obmc_full_pixel_diamond(const AV1_COMP *cpi, MACROBLOCK *x,
 }
 
 int av1_obmc_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x,
-                               FULLPEL_MV *start_mv, int step_param, int sadpb,
-                               int further_steps, int do_refine,
+                               const FULLPEL_MV start_mv, int step_param,
+                               int sadpb, int further_steps, int do_refine,
                                const aom_variance_fn_ptr_t *fn_ptr,
                                const MV *ref_mv, FULLPEL_MV *best_mv,
                                const search_site_config *cfg) {
@@ -1698,7 +1697,7 @@ int av1_obmc_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x,
     const int32_t *wsrc = x->wsrc_buf;
     const int32_t *mask = x->mask_buf;
     const int search_range = 8;
-    *best_mv = *start_mv;
+    *best_mv = start_mv;
     clamp_fullmv(best_mv, &x->mv_limits);
     int thissme = obmc_refining_search_sad(x, wsrc, mask, best_mv, sadpb,
                                            search_range, fn_ptr, ref_mv);

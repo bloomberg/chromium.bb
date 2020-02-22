@@ -153,7 +153,7 @@ static uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
 
   assert(ss_cfg->stride == stride_ref);
 
-  av1_full_pixel_search(cpi, x, bsize, &start_mv, step_param, search_method, 0,
+  av1_full_pixel_search(cpi, x, bsize, start_mv, step_param, search_method, 0,
                         sadpb, cond_cost_list(cpi, cost_list), &center_mv,
                         INT_MAX, 0, (MI_SIZE * mi_col), (MI_SIZE * mi_row), 0,
                         ss_cfg, 0);
