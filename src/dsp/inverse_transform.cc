@@ -1146,7 +1146,7 @@ void TransformLoop_C(TransformType tx_type, TransformSize tx_size,
   const int tx_height = lossless ? 4 : kTransformHeight[tx_size];
   const int tx_width_log2 = kTransformWidthLog2[tx_size];
   const int tx_height_log2 = kTransformHeightLog2[tx_size];
-  auto* frame = reinterpret_cast<Array2DView<Pixel>*>(dst_frame);
+  auto* frame = static_cast<Array2DView<Pixel>*>(dst_frame);
 
   // Initially this points to the dequantized values. After the transforms are
   // applied, this buffer contains the residual.

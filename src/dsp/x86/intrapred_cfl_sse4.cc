@@ -52,7 +52,7 @@ void CflIntraPredictor_SSE4_1(
     void* const dest, ptrdiff_t stride,
     const int16_t luma[kCflLumaBufferStride][kCflLumaBufferStride],
     const int alpha) {
-  auto* dst = reinterpret_cast<uint8_t*>(dest);
+  auto* dst = static_cast<uint8_t*>(dest);
   const __m128i alpha_sign = _mm_set1_epi16(alpha);
   const __m128i alpha_q12 = _mm_slli_epi16(_mm_abs_epi16(alpha_sign), 9);
   auto* row = reinterpret_cast<const __m128i*>(luma);

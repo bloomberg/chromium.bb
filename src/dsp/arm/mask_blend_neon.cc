@@ -196,9 +196,9 @@ inline void MaskBlend_NEON(const void* prediction_0, const void* prediction_1,
                            const ptrdiff_t mask_stride, const int width,
                            const int height, void* dest,
                            const ptrdiff_t dst_stride) {
-  auto* dst = reinterpret_cast<uint8_t*>(dest);
-  auto* pred_0 = reinterpret_cast<const int16_t*>(prediction_0);
-  auto* pred_1 = reinterpret_cast<const int16_t*>(prediction_1);
+  auto* dst = static_cast<uint8_t*>(dest);
+  const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
+  const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
   if (width == 4) {
     MaskBlending4xH_NEON<subsampling_x, subsampling_y>(
         pred_0, pred_1, mask_ptr, mask_stride, height, dst, dst_stride);

@@ -2502,7 +2502,7 @@ void Dct4TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
                             void* src_buffer, int start_x, int start_y,
                             void* dst_frame, bool is_row,
                             int non_zero_coeff_count) {
-  auto& frame = *reinterpret_cast<Array2DView<uint8_t>*>(dst_frame);
+  auto& frame = *static_cast<Array2DView<uint8_t>*>(dst_frame);
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
   const int tx_height = kTransformHeight[tx_size];
@@ -2568,7 +2568,7 @@ void Dct8TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
                             void* src_buffer, int start_x, int start_y,
                             void* dst_frame, bool is_row,
                             int non_zero_coeff_count) {
-  auto& frame = *reinterpret_cast<Array2DView<uint8_t>*>(dst_frame);
+  auto& frame = *static_cast<Array2DView<uint8_t>*>(dst_frame);
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
   const int tx_height = kTransformHeight[tx_size];
@@ -2634,7 +2634,7 @@ void Dct16TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
                              void* src_buffer, int start_x, int start_y,
                              void* dst_frame, bool is_row,
                              int non_zero_coeff_count) {
-  auto& frame = *reinterpret_cast<Array2DView<uint8_t>*>(dst_frame);
+  auto& frame = *static_cast<Array2DView<uint8_t>*>(dst_frame);
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
   const int tx_height = kTransformHeight[tx_size];
@@ -2699,7 +2699,7 @@ void Dct32TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
                              void* src_buffer, int start_x, int start_y,
                              void* dst_frame, bool is_row,
                              int non_zero_coeff_count) {
-  auto& frame = *reinterpret_cast<Array2DView<uint8_t>*>(dst_frame);
+  auto& frame = *static_cast<Array2DView<uint8_t>*>(dst_frame);
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
   const int tx_height = kTransformHeight[tx_size];
@@ -2744,7 +2744,7 @@ void Dct64TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
                              void* src_buffer, int start_x, int start_y,
                              void* dst_frame, bool is_row,
                              int non_zero_coeff_count) {
-  auto& frame = *reinterpret_cast<Array2DView<uint8_t>*>(dst_frame);
+  auto& frame = *static_cast<Array2DView<uint8_t>*>(dst_frame);
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
   const int tx_height = kTransformHeight[tx_size];
@@ -2789,7 +2789,7 @@ void Adst4TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
                              void* src_buffer, int start_x, int start_y,
                              void* dst_frame, bool is_row,
                              int non_zero_coeff_count) {
-  auto& frame = *reinterpret_cast<Array2DView<uint8_t>*>(dst_frame);
+  auto& frame = *static_cast<Array2DView<uint8_t>*>(dst_frame);
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
   const int tx_height = kTransformHeight[tx_size];
@@ -2845,7 +2845,7 @@ void Adst8TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
                              void* src_buffer, int start_x, int start_y,
                              void* dst_frame, bool is_row,
                              int non_zero_coeff_count) {
-  auto& frame = *reinterpret_cast<Array2DView<uint8_t>*>(dst_frame);
+  auto& frame = *static_cast<Array2DView<uint8_t>*>(dst_frame);
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
   const int tx_height = kTransformHeight[tx_size];
@@ -2913,7 +2913,7 @@ void Adst16TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
                               void* src_buffer, int start_x, int start_y,
                               void* dst_frame, bool is_row,
                               int non_zero_coeff_count) {
-  auto& frame = *reinterpret_cast<Array2DView<uint8_t>*>(dst_frame);
+  auto& frame = *static_cast<Array2DView<uint8_t>*>(dst_frame);
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
   const int tx_height = kTransformHeight[tx_size];
@@ -2978,7 +2978,7 @@ void Identity4TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
                                  void* src_buffer, int start_x, int start_y,
                                  void* dst_frame, bool is_row,
                                  int non_zero_coeff_count) {
-  auto& frame = *reinterpret_cast<Array2DView<uint8_t>*>(dst_frame);
+  auto& frame = *static_cast<Array2DView<uint8_t>*>(dst_frame);
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
   const int tx_height = kTransformHeight[tx_size];
@@ -3039,7 +3039,7 @@ void Identity8TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
                                  void* src_buffer, int start_x, int start_y,
                                  void* dst_frame, bool is_row,
                                  int non_zero_coeff_count) {
-  auto& frame = *reinterpret_cast<Array2DView<uint8_t>*>(dst_frame);
+  auto& frame = *static_cast<Array2DView<uint8_t>*>(dst_frame);
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
   const int tx_height = kTransformHeight[tx_size];
@@ -3099,7 +3099,7 @@ void Identity16TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
                                   void* src_buffer, int start_x, int start_y,
                                   void* dst_frame, bool is_row,
                                   int non_zero_coeff_count) {
-  auto& frame = *reinterpret_cast<Array2DView<uint8_t>*>(dst_frame);
+  auto& frame = *static_cast<Array2DView<uint8_t>*>(dst_frame);
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
   const int tx_height = kTransformHeight[tx_size];
@@ -3138,7 +3138,7 @@ void Identity32TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
                                   void* src_buffer, int start_x, int start_y,
                                   void* dst_frame, bool is_row,
                                   int non_zero_coeff_count) {
-  auto& frame = *reinterpret_cast<Array2DView<uint8_t>*>(dst_frame);
+  auto& frame = *static_cast<Array2DView<uint8_t>*>(dst_frame);
   auto* src = static_cast<int16_t*>(src_buffer);
   const int tx_width = kTransformWidth[tx_size];
   const int tx_height = kTransformHeight[tx_size];

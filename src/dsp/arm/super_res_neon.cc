@@ -33,8 +33,8 @@ namespace {
 void ComputeSuperRes_NEON(const void* source, const int upscaled_width,
                           const int initial_subpixel_x, const int step,
                           void* const dest) {
-  const auto* src = reinterpret_cast<const uint8_t*>(source);
-  auto* dst = reinterpret_cast<uint8_t*>(dest);
+  const auto* src = static_cast<const uint8_t*>(source);
+  auto* dst = static_cast<uint8_t*>(dest);
   src -= kSuperResFilterTaps >> 1;
 
   int p = initial_subpixel_x;

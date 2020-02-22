@@ -601,9 +601,9 @@ void ConvolveIntraBlockCopy2D_C(
     const int /*horizontal_filter_index*/, const int /*vertical_filter_index*/,
     const int /*subpixel_x*/, const int /*subpixel_y*/, const int width,
     const int height, void* prediction, const ptrdiff_t pred_stride) {
-  const auto* src = reinterpret_cast<const Pixel*>(reference);
+  const auto* src = static_cast<const Pixel*>(reference);
   const ptrdiff_t src_stride = reference_stride / sizeof(Pixel);
-  auto* dest = reinterpret_cast<Pixel*>(prediction);
+  auto* dest = static_cast<Pixel*>(prediction);
   const ptrdiff_t dest_stride = pred_stride / sizeof(Pixel);
   const int intermediate_height = height + 1;
   uint16_t intermediate_result[kMaxSuperBlockSizeInPixels *
@@ -651,9 +651,9 @@ void ConvolveIntraBlockCopy1D_C(
     const int /*horizontal_filter_index*/, const int /*vertical_filter_index*/,
     const int /*subpixel_x*/, const int /*subpixel_y*/, const int width,
     const int height, void* prediction, const ptrdiff_t pred_stride) {
-  const auto* src = reinterpret_cast<const Pixel*>(reference);
+  const auto* src = static_cast<const Pixel*>(reference);
   const ptrdiff_t src_stride = reference_stride / sizeof(Pixel);
-  auto* dest = reinterpret_cast<Pixel*>(prediction);
+  auto* dest = static_cast<Pixel*>(prediction);
   const ptrdiff_t dest_stride = pred_stride / sizeof(Pixel);
   const ptrdiff_t offset = is_horizontal ? 1 : src_stride;
   int y = 0;
