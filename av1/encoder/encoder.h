@@ -1466,11 +1466,15 @@ static INLINE int get_chessboard_index(int frame_index) {
 
 static INLINE const int *cond_cost_list_const(const struct AV1_COMP *cpi,
                                               const int *cost_list) {
-  return cpi->sf.mv_sf.subpel_search_method != SUBPEL_TREE ? cost_list : NULL;
+  const int use_cost_list = cpi->sf.mv_sf.subpel_search_method != SUBPEL_TREE &&
+                            cpi->sf.mv_sf.use_fullpel_costlist;
+  return use_cost_list ? cost_list : NULL;
 }
 
 static INLINE int *cond_cost_list(const struct AV1_COMP *cpi, int *cost_list) {
-  return cpi->sf.mv_sf.subpel_search_method != SUBPEL_TREE ? cost_list : NULL;
+  const int use_cost_list = cpi->sf.mv_sf.subpel_search_method != SUBPEL_TREE &&
+                            cpi->sf.mv_sf.use_fullpel_costlist;
+  return use_cost_list ? cost_list : NULL;
 }
 
 // Compression ratio of current frame.

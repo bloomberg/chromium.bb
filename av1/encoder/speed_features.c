@@ -794,6 +794,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
 
     sf->mv_sf.search_method = FAST_DIAMOND;
     sf->mv_sf.subpel_force_stop = QUARTER_PEL;
+    sf->mv_sf.use_fullpel_costlist = 1;
 
     sf->inter_sf.adaptive_mode_search = 2;
     sf->inter_sf.inter_mode_rd_model_estimation = 2;
@@ -939,6 +940,7 @@ static AOM_INLINE void init_mv_sf(MV_SPEED_FEATURES *mv_sf) {
   mv_sf->reduce_search_range = 0;
   mv_sf->prune_mesh_search = 0;
   mv_sf->exhaustive_searches_thresh = 0;
+  mv_sf->use_fullpel_costlist = 0;
 }
 
 static AOM_INLINE void init_inter_sf(INTER_MODE_SPEED_FEATURES *inter_sf) {

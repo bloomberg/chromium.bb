@@ -477,6 +477,9 @@ typedef struct MV_SPEED_FEATURES {
 
   // Prune mesh search.
   int prune_mesh_search;
+
+  // Use the rd cost around the best FULLPEL_MV to speed up subpel search
+  int use_fullpel_costlist;
 } MV_SPEED_FEATURES;
 
 typedef struct INTER_MODE_SPEED_FEATURES {
