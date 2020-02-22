@@ -1329,7 +1329,7 @@ class InstalledPackage(object):
     """
     if field_name not in self._fields:
       try:
-        value = osutils.ReadFile(os.path.join(self.pkgdir, field_name))
+        value = osutils.ReadFile(os.path.join(self.pkgdir, field_name)).strip()
       except IOError as e:
         if e.errno != errno.ENOENT:
           raise
@@ -1342,8 +1342,24 @@ class InstalledPackage(object):
     return self._ReadField('CATEGORY')
 
   @property
+  def homepage(self):
+    return self._ReadField('HOMEPAGE')
+
+  @property
+  def license(self):
+    return self._ReadField('LICENSE')
+
+  @property
   def pf(self):
     return self._ReadField('PF')
+
+  @property
+  def repository(self):
+    return self._ReadField('repository')
+
+  @property
+  def size(self):
+    return self._ReadField('SIZE')
 
   def ListContents(self):
     """List of files and directories installed by this package.

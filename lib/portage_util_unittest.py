@@ -1444,15 +1444,27 @@ class InstalledPackageTest(cros_test_lib.TempDirTestCase):
   """InstalledPackage class tests outside a PortageDB."""
 
   def setUp(self):
-    osutils.WriteFile(os.path.join(self.tempdir, 'package-1.ebuild'), 'EAPI=1')
-    osutils.WriteFile(os.path.join(self.tempdir, 'PF'), 'package-1')
-    osutils.WriteFile(os.path.join(self.tempdir, 'CATEGORY'), 'category-1')
+    content = (
+        ('package-1.ebuild', 'EAPI=1'),
+        ('CATEGORY', 'category-1\n'),
+        ('HOMEPAGE', 'http://example.com\n'),
+        ('LICENSE', 'GPL-2\n'),
+        ('PF', 'package-1\n'),
+        ('repository', 'portage-stable\n'),
+        ('SIZE', '123\n'),
+    )
+    for path, data in content:
+      osutils.WriteFile(os.path.join(self.tempdir, path), data)
 
   def testOutOfDBPackage(self):
     """Tests an InstalledPackage instance can be created without a PortageDB."""
     pkg = portage_util.InstalledPackage(None, self.tempdir)
-    self.assertEqual('package-1', pkg.pf)
     self.assertEqual('category-1', pkg.category)
+    self.assertEqual('http://example.com', pkg.homepage)
+    self.assertEqual('GPL-2', pkg.license)
+    self.assertEqual('package-1', pkg.pf)
+    self.assertEqual('portage-stable', pkg.repository)
+    self.assertEqual('123', pkg.size)
 
   def testIncompletePackage(self):
     """Tests an incomplete or otherwise invalid package raises an exception."""
