@@ -286,11 +286,8 @@ class PackageInfo(object):
     try:
       cpv = portage_util.SplitCPV(fullnamerev)
     except ValueError:
-      cpv = None
-
-    # A bad package can either raise a TypeError exception or return None.
-    if not cpv:
-      raise AssertionError(
+      # A bad package can either raise a TypeError exception or return None.
+      raise ValueError(
           "portage couldn't find %s, missing version number?" % fullnamerev)
 
     #

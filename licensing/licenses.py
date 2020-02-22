@@ -78,7 +78,6 @@ from __future__ import print_function
 import os
 
 from chromite.lib import commandline
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 
@@ -98,14 +97,6 @@ EXTRA_PACKAGES = (
 def LoadPackageInfo(board, all_packages, generateMissing, packages):
   """Do the work when we're not called as a hook."""
   logging.info('Using board %s.', board)
-
-  builddir = os.path.join(cros_build_lib.GetSysroot(board=board),
-                          'tmp', 'portage')
-
-  if not os.path.exists(builddir):
-    raise AssertionError(
-        'FATAL: %s missing.\n'
-        'Did you give the right board and build that tree?' % builddir)
 
   detect_packages = not packages
   if detect_packages:
@@ -140,7 +131,7 @@ def LoadPackageInfo(board, all_packages, generateMissing, packages):
 
 def main(args):
   parser = commandline.ArgumentParser(usage=__doc__)
-  parser.add_argument('-b', '--board',
+  parser.add_argument('-b', '--board', required=True,
                       help='which board to run for, like x86-alex')
   parser.add_argument('-p', '--package', action='append', default=[],
                       dest='packages',
@@ -158,15 +149,8 @@ def main(args):
                       help='which html file to create with output')
   opts = parser.parse_args(args)
 
-
-  if not opts.board:
-    raise AssertionError('No board given (--board)')
-
   if not opts.output and not opts.gen_licenses:
-    raise AssertionError('You must specify --output and/or --generate-licenses')
-
-  if opts.gen_licenses and os.geteuid() != 0:
-    raise AssertionError('Run with sudo if you use --generate-licenses.')
+    parser.error('You must specify --output and/or --generate-licenses')
 
   licensing = LoadPackageInfo(
       opts.board, opts.all_packages, opts.gen_licenses, opts.packages)
