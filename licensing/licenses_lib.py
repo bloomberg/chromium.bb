@@ -32,8 +32,6 @@ try:
 except ImportError:
   yaml = None
 
-debug = True
-
 # See https://crbug.com/207004 for discussion.
 PER_PKG_LICENSE_DIR = 'var/db/pkg'
 
@@ -358,7 +356,7 @@ class PackageInfo(object):
     ebuild_cmd = cros_build_lib.GetSysrootToolPath(
         cros_build_lib.GetSysroot(self.board), 'ebuild')
     return cros_build_lib.run(
-        [ebuild_cmd, ebuild_path] + phases, print_cmd=debug,
+        [ebuild_cmd, ebuild_path] + phases,
         stdout=True, encoding='utf-8')
 
   def _GetOverrideLicense(self):
@@ -465,8 +463,7 @@ class PackageInfo(object):
     # to find the MIT license:
     # dev-libs/libatomic_ops-7.2d/work/gc-7.2/libatomic_ops/doc/LICENSING.txt
     args = ['find', src_dir, '-type', 'f']
-    result = cros_build_lib.run(args, print_cmd=debug, stdout=True,
-                                encoding='utf-8')
+    result = cros_build_lib.run(args, stdout=True, encoding='utf-8')
     # Truncate results to look like this: swig-2.0.4/COPYRIGHT
     files = [x[len(src_dir):].lstrip('/') for x in result.stdout.splitlines()]
     license_files = []
@@ -1282,7 +1279,7 @@ def ListInstalledPackages(board, all_packages=False):
     equery_cmd = cros_build_lib.GetSysrootToolPath(
         cros_build_lib.GetSysroot(board), 'equery')
     args = [equery_cmd, 'list', '*']
-    packages = cros_build_lib.run(args, print_cmd=debug, encoding='utf-8',
+    packages = cros_build_lib.run(args, encoding='utf-8',
                                   stdout=True).output.splitlines()
   else:
     # The following returns all packages that were part of the build tree
@@ -1293,7 +1290,7 @@ def ListInstalledPackages(board, all_packages=False):
         cros_build_lib.GetSysroot(board), 'emerge')
     args = [emerge_cmd, '--with-bdeps=y', '--usepkgonly',
             '--emptytree', '--pretend', '--color=n', 'virtual/target-os']
-    emerge = cros_build_lib.run(args, print_cmd=debug, encoding='utf-8',
+    emerge = cros_build_lib.run(args, encoding='utf-8',
                                 stdout=True).output.splitlines()
     # Another option which we've decided not to use, is bdeps=n.  This outputs
     # just the packages we ship, but does not packages that were used to build
