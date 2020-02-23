@@ -201,8 +201,8 @@ def CreateChroot(chroot_path, sdk_tarball, cache_dir, nousepkg=False):
   logging.notice('Creating chroot. This may take a few minutes...')
   try:
     cros_build_lib.dbg_run(cmd)
-  except cros_build_lib.RunCommandError:
-    raise SystemExit('Running %r failed!' % cmd)
+  except cros_build_lib.RunCommandError as e:
+    cros_build_lib.Die('Creating chroot failed!\n%s', e)
 
 
 def DeleteChroot(chroot_path):
@@ -211,8 +211,8 @@ def DeleteChroot(chroot_path):
   try:
     logging.notice('Deleting chroot.')
     cros_build_lib.dbg_run(cmd)
-  except cros_build_lib.RunCommandError:
-    raise SystemExit('Running %r failed!' % cmd)
+  except cros_build_lib.RunCommandError as e:
+    cros_build_lib.Die('Deleting chroot failed!\n%s', e)
 
 
 def CleanupChroot(chroot_path):
@@ -301,8 +301,8 @@ def CreateChrootSnapshot(snapshot_name, chroot_vg, chroot_lv):
                    chroot_lv, chroot_vg)
     cros_build_lib.dbg_run(cmd, capture_output=True)
     return True
-  except cros_build_lib.RunCommandError:
-    raise SystemExit('Running %r failed!' % cmd)
+  except cros_build_lib.RunCommandError as e:
+    cros_build_lib.Die('Creating snapshot failed!\n%s', e)
 
 
 def DeleteChrootSnapshot(snapshot_name, chroot_vg, chroot_lv):
@@ -333,8 +333,8 @@ def DeleteChrootSnapshot(snapshot_name, chroot_vg, chroot_lv):
   try:
     logging.notice('Deleting snapshot %s in VG %s.', snapshot_name, chroot_vg)
     cros_build_lib.dbg_run(cmd, capture_output=True)
-  except cros_build_lib.RunCommandError:
-    raise SystemExit('Running %r failed!' % cmd)
+  except cros_build_lib.RunCommandError as e:
+    cros_build_lib.Die('Deleting snapshot failed!\n%s', e)
 
 
 def RestoreChrootSnapshot(snapshot_name, chroot_vg, chroot_lv):
@@ -373,23 +373,23 @@ def RestoreChrootSnapshot(snapshot_name, chroot_vg, chroot_lv):
   cmd = ['lvrename', chroot_vg, chroot_lv, backup_chroot_name]
   try:
     cros_build_lib.dbg_run(cmd, capture_output=True)
-  except cros_build_lib.RunCommandError:
-    raise SystemExit('Running %r failed!' % cmd)
+  except cros_build_lib.RunCommandError as e:
+    cros_build_lib.Die('Restoring snapshot failed!\n%s', e)
 
   cmd = ['lvrename', chroot_vg, snapshot_name, chroot_lv]
   try:
     cros_build_lib.dbg_run(cmd, capture_output=True)
-  except cros_build_lib.RunCommandError:
+  except cros_build_lib.RunCommandError as e:
     cmd = ['lvrename', chroot_vg, backup_chroot_name, chroot_lv]
     try:
       cros_build_lib.dbg_run(cmd, capture_output=True)
-    except cros_build_lib.RunCommandError:
-      raise SystemExit('Failed to rename %s to chroot and failed to restore '
-                       '%s back to chroot.  Failed command: %r' %
-                       (snapshot_name, backup_chroot_name, cmd))
-    raise SystemExit(
-        'Failed to rename %s to chroot.  Original chroot LV has '
-        'been restored.  Failed command: %r' % (snapshot_name, cmd))
+    except cros_build_lib.RunCommandError as e:
+      cros_build_lib.Die(
+          'Failed to rename %s to chroot and failed to restore %s back to '
+          'chroot!\n%s', snapshot_name, backup_chroot_name, e)
+    cros_build_lib.Die(
+        'Failed to rename %s to chroot!  Original chroot LV has '
+        'been restored.\n%s', snapshot_name, e)
 
   # Some versions of LVM set snapshots to be skipped at auto-activate time.
   # Other versions don't have this flag at all.  We run lvchange to try
@@ -409,9 +409,9 @@ def RestoreChrootSnapshot(snapshot_name, chroot_vg, chroot_lv):
   cmd = ['lvremove', '-f', '%s/%s' % (chroot_vg, backup_chroot_name)]
   try:
     cros_build_lib.dbg_run(cmd, capture_output=True)
-  except cros_build_lib.RunCommandError:
-    raise SystemExit('Failed to remove backup LV %s/%s.  Failed command: %r' %
-                     (chroot_vg, backup_chroot_name, cmd))
+  except cros_build_lib.RunCommandError as e:
+    cros_build_lib.Die('Failed to remove backup LV %s/%s!\n%s',
+                       chroot_vg, backup_chroot_name, e)
 
   return True
 
@@ -587,8 +587,8 @@ def _ProxySimSetup(options):
     try:
       for cmd in commands:
         cros_build_lib.dbg_run(cmd)
-    except cros_build_lib.RunCommandError:
-      raise SystemExit('Running %r failed!' % (cmd,))
+    except cros_build_lib.RunCommandError as e:
+      cros_build_lib.Die('Proxy setup failed!\n%s', e)
 
     proxy_url = 'http://%s:%u' % (PROXY_HOST_IP, PROXY_PORT)
     for proto in ('http', 'https', 'ftp'):
@@ -646,14 +646,14 @@ def _ProxySimSetup(options):
   try:
     for cmd in commands:
       cros_build_lib.dbg_run(cmd)
-  except cros_build_lib.RunCommandError:
+  except cros_build_lib.RunCommandError as e:
     # Clean up existing interfaces, if any.
     cmd_cleanup = ('ip', 'link', 'del', veth_host)
     try:
       cros_build_lib.run(cmd_cleanup, print_cmd=False)
     except cros_build_lib.RunCommandError:
       logging.error('running %r failed', cmd_cleanup)
-    raise SystemExit('Running %r failed!' % (cmd,))
+    cros_build_lib.Die('Proxy network setup failed!\n%s', e)
 
   # Signal the child that the net ns/proxy is fully configured now.
   ns_setup_lock.Post()
@@ -1075,7 +1075,7 @@ snapshots will be unavailable).""" % ', '.join(missing_image_tools))
       except cros_build_lib.RunCommandError as e:
         logging.warning(
             'Running fstrim failed. Consider running fstrim on '
-            'your chroot manually.\nError: %s', e)
+            'your chroot manually.\n%s', e)
 
   # Enter a new set of namespaces.  Everything after here cannot directly affect
   # the hosts's mounts or alter LVM volumes.
