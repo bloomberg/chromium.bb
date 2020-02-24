@@ -12,6 +12,7 @@ from __future__ import unicode_literals
 import datetime
 import json
 import logging
+import multiprocessing
 import os
 import pprint
 import shutil
@@ -193,6 +194,47 @@ class TestGitClBasic(unittest.TestCase):
     cl.description = 'x'
     cl.has_description = True
     self.assertEqual(cl.FetchDescription(), 'x')
+
+  @mock.patch('git_cl.Changelist.EnsureAuthenticated')
+  @mock.patch('git_cl.Changelist.GetStatus', lambda cl: cl.status)
+  def test_get_cl_statuses(self, *_mocks):
+    statuses = [
+        'closed', 'commit', 'dry-run', 'lgtm', 'reply', 'unsent', 'waiting']
+    changes = []
+    for status in statuses:
+      cl = git_cl.Changelist()
+      cl.status = status
+      changes.append(cl)
+
+    actual = set(git_cl.get_cl_statuses(changes, True))
+    self.assertEqual(set(zip(changes, statuses)), actual)
+
+  def test_get_cl_statuses_no_changes(self):
+    self.assertEqual([], list(git_cl.get_cl_statuses([], True)))
+
+  @mock.patch('git_cl.Changelist.EnsureAuthenticated')
+  @mock.patch('multiprocessing.pool.ThreadPool')
+  def test_get_cl_statuses_timeout(self, *_mocks):
+    changes = [git_cl.Changelist() for _ in range(2)]
+    pool = multiprocessing.pool.ThreadPool()
+    it = pool.imap_unordered.return_value.__iter__ = mock.Mock()
+    it.return_value.next.side_effect = [
+        (changes[0], 'lgtm'),
+        multiprocessing.TimeoutError,
+    ]
+
+    actual = list(git_cl.get_cl_statuses(changes, True))
+    self.assertEqual([(changes[0], 'lgtm'), (changes[1], 'error')], actual)
+
+  @mock.patch('git_cl.Changelist.GetIssueURL')
+  def test_get_cl_statuses_not_finegrained(self, _mock):
+    changes = [git_cl.Changelist() for _ in range(2)]
+    urls = ['some-url', None]
+    git_cl.Changelist.GetIssueURL.side_effect = urls
+
+    actual = set(git_cl.get_cl_statuses(changes, False))
+    self.assertEqual(
+        set([(changes[0], 'waiting'), (changes[1], 'error')]), actual)
 
   def test_set_preserve_tryjobs(self):
     d = git_cl.ChangeDescription('Simple.')

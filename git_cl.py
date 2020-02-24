@@ -10,7 +10,6 @@
 from __future__ import print_function
 
 from distutils.version import LooseVersion
-from multiprocessing.pool import ThreadPool
 import base64
 import collections
 import datetime
@@ -3418,7 +3417,7 @@ def get_cl_statuses(changes, fine_grained, max_processes=None):
   See GetStatus() for a list of possible statuses.
   """
   if not changes:
-    raise StopIteration()
+    return
 
   if not fine_grained:
     # Fast path which doesn't involve querying codereview servers.
@@ -3445,14 +3444,14 @@ def get_cl_statuses(changes, fine_grained, max_processes=None):
     threads_count = max(1, min(threads_count, max_processes))
   logging.debug('querying %d CLs using %d threads', len(changes), threads_count)
 
-  pool = ThreadPool(threads_count)
+  pool = multiprocessing.pool.ThreadPool(threads_count)
   fetched_cls = set()
   try:
     it = pool.imap_unordered(fetch, changes).__iter__()
     while True:
       try:
         cl, status = it.next(timeout=5)
-      except multiprocessing.TimeoutError:
+      except (multiprocessing.TimeoutError, StopIteration):
         break
       fetched_cls.add(cl)
       yield cl, status
