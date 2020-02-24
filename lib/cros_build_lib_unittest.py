@@ -169,6 +169,35 @@ class TestRunCommandNoMock(cros_test_lib.TestCase):
     self.assertRaises(cros_build_lib.RunCommandError, cros_build_lib.run,
                       ['/does/not/exist'], check=False)
 
+  def testDryRun(self):
+    """Verify dryrun doesn't run the real command."""
+    # Check exit & output when not captured.
+    result = cros_build_lib.run(['false'], dryrun=True, mute_output=False)
+    self.assertEqual(0, result.returncode)
+    self.assertEqual(None, result.stdout)
+    self.assertEqual(None, result.stderr)
+
+    # Check captured binary output.
+    result = cros_build_lib.run(['echo', 'hi'], dryrun=True,
+                                capture_output=True)
+    self.assertEqual(0, result.returncode)
+    self.assertEqual(b'', result.stdout)
+    self.assertEqual(b'', result.stderr)
+
+    # Check captured text output.
+    result = cros_build_lib.run(['echo', 'hi'], dryrun=True,
+                                capture_output=True, encoding='utf-8')
+    self.assertEqual(0, result.returncode)
+    self.assertEqual('', result.stdout)
+    self.assertEqual('', result.stderr)
+
+    # Check captured merged output.
+    result = cros_build_lib.run(['echo', 'hi'], dryrun=True,
+                                stdout=True, stderr=subprocess.STDOUT)
+    self.assertEqual(0, result.returncode)
+    self.assertEqual(b'', result.stdout)
+    self.assertEqual(None, result.stderr)
+
   def testInputBytes(self):
     """Verify input argument when it is bytes."""
     for data in (b'', b'foo', b'bar\nhigh'):

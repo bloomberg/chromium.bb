@@ -608,7 +608,8 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
         chroot_args=None, debug_level=logging.INFO,
         check=True, int_timeout=1, kill_timeout=1,
         log_output=False, capture_output=False,
-        quiet=False, mute_output=None, encoding=None, errors=None, **kwargs):
+        quiet=False, mute_output=None, encoding=None, errors=None, dryrun=False,
+        **kwargs):
   """Runs a command.
 
   Args:
@@ -665,6 +666,7 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
       users want 'utf-8' here for string data.
     errors: How to handle errors when |encoding| is used.  Defaults to 'strict',
       but 'ignore' and 'replace' are common settings.
+    dryrun: Only log the command,and return a stub result.
 
   Returns:
     A CommandResult object.
@@ -843,13 +845,20 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
       env[var] = os.environ[var]
 
   # Print out the command before running.
-  if print_cmd or log_output:
+  if dryrun or print_cmd or log_output:
+    log = ''
+    if dryrun:
+      log += '(dryrun) '
+    log += 'run: %s' % (CmdToStr(cmd),)
     if cwd:
-      logging.log(debug_level, 'run: %s in %s', CmdToStr(cmd), cwd)
-    else:
-      logging.log(debug_level, 'run: %s', CmdToStr(cmd))
+      log += ' in %s' % (cwd,)
+    logging.log(debug_level, '%s', log)
 
   cmd_result.args = cmd
+
+  # We want to still something in dryrun mode so we process all the options
+  # and return appropriate values (e.g. output with correct encoding).
+  popen_cmd = ['true'] if dryrun else cmd
 
   proc = None
   # Verify that the signals modules is actually usable, and won't segfault
@@ -857,7 +866,7 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
   # details and upstream python bug.
   use_signals = signals.SignalModuleUsable()
   try:
-    proc = _Popen(cmd, cwd=cwd, stdin=stdin, stdout=popen_stdout,
+    proc = _Popen(popen_cmd, cwd=cwd, stdin=stdin, stdout=popen_stdout,
                   stderr=popen_stderr, shell=False, env=env,
                   close_fds=True)
 
