@@ -1150,8 +1150,11 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
   # rolled every Monday, but we run these builders daily (instead of
   # weekly), in case the Monday profile drop is red, or in case
   # the tree is red for unrelated reasons on Monday.
+  # Schedule these tryjobs 6 hours apart from each other.
   KernelAFDOPublishBuilders('kernel-3_18', 'chell', '0 17 * * *')
   KernelAFDOPublishBuilders('kernel-4_4', 'eve', '0 23 * * *')
+  KernelAFDOPublishBuilders('kernel-4_14', 'auron_yuna', '0 5 * * *')
+  KernelAFDOPublishBuilders('kernel-4_19', 'banon', '0 11 * * *')
 
   site_config.Add(
       'orderfile-generate-toolchain',

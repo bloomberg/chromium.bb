@@ -97,7 +97,8 @@ AFDO_DATA_GENERATORS_LLVM = ('chell', 'samus')
 CHROME_AFDO_VERIFIER_BOARDS = {'samus': 'silvermont',
                                'snappy': 'airmont',
                                'eve': 'broadwell'}
-KERNEL_AFDO_VERIFIER_BOARDS = {'lulu': '3.14', 'chell': '3.18', 'eve': '4.4'}
+KERNEL_AFDO_VERIFIER_BOARDS = {'lulu': '3.14', 'chell': '3.18', 'eve': '4.4',
+                               'auron_yuna': '4.14', 'banon': '4.19'}
 
 AFDO_ALERT_RECIPIENTS = [
     'chromeos-toolchain-oncall1@google.com'

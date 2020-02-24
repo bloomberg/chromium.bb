@@ -18584,6 +18584,60 @@
         "kernel_afdo_verify": true,
         "luci_builder": "Try"
     },
+    "kernel-4_14-release-afdo-verify": {
+        "_template": "release_afdo_verify",
+        "boards": [
+            "auron_yuna"
+        ],
+        "health_alert_recipients": [
+            "c-compiler-chrome@google.com"
+        ],
+        "health_threshold": 1,
+        "kernel_afdo_verify": true,
+        "schedule": "0 5 * * *"
+    },
+    "kernel-4_14-release-afdo-verify-tryjob": {
+        "_template": "release_afdo_verify",
+        "boards": [
+            "auron_yuna"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "health_alert_recipients": [
+            "c-compiler-chrome@google.com"
+        ],
+        "health_threshold": 1,
+        "hw_tests_override": null,
+        "kernel_afdo_verify": true,
+        "luci_builder": "Try"
+    },
+    "kernel-4_19-release-afdo-verify": {
+        "_template": "release_afdo_verify",
+        "boards": [
+            "banon"
+        ],
+        "health_alert_recipients": [
+            "c-compiler-chrome@google.com"
+        ],
+        "health_threshold": 1,
+        "kernel_afdo_verify": true,
+        "schedule": "0 11 * * *"
+    },
+    "kernel-4_19-release-afdo-verify-tryjob": {
+        "_template": "release_afdo_verify",
+        "boards": [
+            "banon"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "health_alert_recipients": [
+            "c-compiler-chrome@google.com"
+        ],
+        "health_threshold": 1,
+        "hw_tests_override": null,
+        "kernel_afdo_verify": true,
+        "luci_builder": "Try"
+    },
     "kernel-4_4-release-afdo-verify": {
         "_template": "release_afdo_verify",
         "boards": [
