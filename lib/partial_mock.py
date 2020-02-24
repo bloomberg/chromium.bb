@@ -396,9 +396,41 @@ class PartialMock(object):
   *dependencies* mocked out is preferred over mocking out the entire function
   and re-implementing the side effect (return value, state modification) logic
   in the test.  It is also useful for creating re-usable mocks.
+
+  Methods mocked out will retain the same spec as their original, but will still
+  be bound to this class rather than the mocked class.  In the example below,
+  this is why the mocked print function has an extra |inst| argument after the
+  first |self| argument.
+
+  Examples:
+    # Defined in chromite/lib/foo.py.
+    class SomeClass(object):
+      def print(self, msg):
+        ...
+      def write(self, fd, msg):
+        ...
+
+    # Defined in chromite/lib/foo_unittest.py.
+    class SomeClassMock(partial_mock.PartialMock):
+      TARGET = 'chromite.lib.foo.SomeClass'
+      ATTRS = ('print',)
+
+      # NB: |self| refers to the instance of |SomeClassMock| while |inst| refers
+      # to the instance of |SomeClass|.  This allows access to state in either.
+      def print(self, inst, msg):
+        ...
+
+  Attributes:
+    TARGET: The import spec for the target object to be (partially) mocked.
+        This is like the target argument to mock.patch().
+    ATTRS: A tuple of attributes on |TARGET| to mock out.  Each attribute must
+        be defined with a corresponding signature.  You may mock out as many or
+        few attributes as needed (hence, "partial mock").
   """
 
+  # The import spec for the object being mocked.
   TARGET = None
+  # Tuples of attribute names on the target object to mock.
   ATTRS = None
 
   def __init__(self, create_tempdir=False):
