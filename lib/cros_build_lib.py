@@ -650,11 +650,6 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
   if 'redirect_stderr' in kwargs:
     logging.warning('run: redirect_stderr=True is now stderr=True')
     stderr = True if kwargs.pop('redirect_stderr') else None
-  if 'combine_stdout_stderr' in kwargs:
-    logging.warning('run: combine_stdout_stderr=True is now '
-                    'stderr=subprocess.STDOUT')
-    if kwargs.pop('combine_stdout_stderr'):
-      stderr = subprocess.STDOUT
   if 'log_stdout_to_file' in kwargs:
     logging.warning('run: log_stdout_to_file=X is now stdout=X')
     log_stdout_to_file = kwargs.pop('log_stdout_to_file')
