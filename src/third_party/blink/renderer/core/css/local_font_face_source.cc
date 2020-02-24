@@ -37,9 +37,9 @@ LocalFontFaceSource::LocalFontFaceSource(CSSFontFace* css_font_face,
                                          const String& font_name)
     : face_(css_font_face),
       font_selector_(font_selector),
+      font_name_(font_name),
       need_to_adjust_for_bold_italic_(font_name.EndsWith(" Bold") ||
-                                      font_name.EndsWith(" Italic")),
-      font_name_(font_name) {}
+                                      font_name.EndsWith(" Italic")) {}
 
 LocalFontFaceSource::~LocalFontFaceSource() {}
 
