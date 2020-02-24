@@ -722,7 +722,7 @@ public:
      * Returns the color that LCD text should be blended with when the background
      * would otherwise be transparent.
      */
-    SkColor defaultLCDBackgroundColor() const { return fInfo.defaultLCDBackgroundColor(); }
+    SkColor defaultLCDBackgroundColor() const { return fInfo.colorInfo().lcdBgColor(); }
 
 private:
     const void*     fPixels;
