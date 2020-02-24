@@ -386,20 +386,6 @@ void PrepareDropData(DropData* drop_data, const ui::OSExchangeData& data) {
         pickle.data(), pickle.size(), &drop_data->custom_data);
 }
 
-// Utility to fill custom DropData object from ui::OSExchangeData.targe
-void ExtractCustomData(DropData* drop_data, const ui::OSExchangeData& data) {
-
-  drop_data->did_originate_from_renderer = data.DidOriginateFromRenderer();
-  std::vector<FORMATETC> custom_data_formats;
-  data.provider().EnumerateCustomData(&custom_data_formats);
-  for (const auto& format_etc : custom_data_formats) {
-    std::wstring key = L"blp_" + std::to_wstring(format_etc.cfFormat);
-    base::string16 value;
-    data.provider().GetCustomData(format_etc, &value);
-    drop_data->custom_data.insert(std::make_pair(key, value));
-  }
-}
-
 // Utilities to convert between blink::WebDragOperationsMask and
 // ui::DragDropTypes.
 int ConvertFromWeb(blink::WebDragOperationsMask ops) {
@@ -1515,7 +1501,16 @@ void WebContentsViewAura::FinishOnPerformDropCallback(
     return;
   }
 
-  ExtractCustomData(current_drop_data_.get(), event.data());
+  // blpwtk2: Fill custom DropData object from ui::OSExchangeData.target
+  current_drop_data_->did_originate_from_renderer = context.data->DidOriginateFromRenderer();
+  std::vector<FORMATETC> custom_data_formats;
+  context.data->provider().EnumerateCustomData(&custom_data_formats);
+  for (const auto& format_etc : custom_data_formats) {
+    std::wstring key = L"blp_" + std::to_wstring(format_etc.cfFormat);
+    base::string16 value;
+    context.data->provider().GetCustomData(format_etc, &value);
+    current_drop_data_->custom_data.insert(std::make_pair(key, value));
+  }
 
 #if defined(OS_WIN)
   if (ShouldIncludeVirtualFiles(*current_drop_data_) &&
