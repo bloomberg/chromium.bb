@@ -1493,6 +1493,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       cm->base_qindex, cm->y_dc_delta_q, cm->seq_params.bit_depth);
   int64_t inter_mode_thresh = RDCOST(x->rdmult, intra_cost_penalty, 0);
   const int perform_intra_pred = cpi->sf.rt_sf.check_intra_pred_nonrd;
+  int use_modeled_non_rd_cost = 0;
 
   (void)best_rd_so_far;
 
@@ -1614,6 +1615,11 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   memset(xd->tx_type_map, DCT_DCT,
          sizeof(xd->tx_type_map[0]) * ctx->num_4x4_blk);
   av1_zero(x->blk_skip);
+
+  if (cpi->sf.rt_sf.use_modeled_non_rd_cost && cm->base_qindex > 140 &&
+      bsize < BLOCK_32X32 && x->source_variance > 100 &&
+      !cyclic_refresh_segment_id_boosted(xd->mi[0]->segment_id))
+    use_modeled_non_rd_cost = 1;
 
   for (int idx = 0; idx < num_inter_modes; ++idx) {
     int rate_mv = 0;
@@ -1820,11 +1826,11 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       if (use_model_yrd_large) {
         model_skip_for_sb_y_large(cpi, bsize, mi_row, mi_col, x, xd, NULL, NULL,
                                   &var_y, &sse_y, &this_early_term,
-                                  cpi->sf.rt_sf.use_modeled_non_rd_cost);
+                                  use_modeled_non_rd_cost);
       } else {
         model_rd_for_sb_y(cpi, bsize, x, xd, &this_rdc.rate, &this_rdc.dist,
                           &this_rdc.skip, NULL, &var_y, &sse_y,
-                          cpi->sf.rt_sf.use_modeled_non_rd_cost);
+                          use_modeled_non_rd_cost);
       }
     }
 
@@ -1839,7 +1845,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     const int skip_cost = x->skip_cost[skip_ctx][1];
     const int no_skip_cost = x->skip_cost[skip_ctx][0];
     if (!this_early_term) {
-      if (cpi->sf.rt_sf.use_modeled_non_rd_cost) {
+      if (use_modeled_non_rd_cost) {
         if (this_rdc.skip) {
           this_rdc.rate = skip_cost;
         } else {
@@ -2028,8 +2034,12 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       mi->tx_size = intra_tx_size;
       compute_intra_yprediction(cm, this_mode, bsize, x, xd);
       // Look into selecting tx_size here, based on prediction residual.
-      block_yrd(cpi, x, mi_row, mi_col, &this_rdc, &args.skippable, &this_sse,
-                bsize, mi->tx_size);
+      if (use_modeled_non_rd_cost)
+        model_rd_for_sb_y(cpi, bsize, x, xd, &this_rdc.rate, &this_rdc.dist,
+                          &this_rdc.skip, NULL, &var_y, &sse_y, 1);
+      else
+        block_yrd(cpi, x, mi_row, mi_col, &this_rdc, &args.skippable, &this_sse,
+                  bsize, mi->tx_size);
       // TODO(kyslov@) Need to account for skippable
       if (x->color_sensitivity[0]) {
         av1_foreach_transformed_block_in_plane(xd, uv_bsize, 1,

@@ -862,13 +862,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->rt_sf.nonrd_reduce_golden_mode_search = 1;
     sf->rt_sf.nonrd_check_partition_merge_mode = 0;
     sf->rt_sf.nonrd_check_partition_split = 0;
-
-// TODO(kyslov) Enable when better model is available
-// It gives +5% speedup and 11% overall BDRate degradation
-// So, can not enable now until better CurvFit is there
-#if 0
-    sf->rt_sf.use_modeled_non_rd_cost = 1;
-#endif
+    sf->rt_sf.use_modeled_non_rd_cost = 0;
   }
 }
 
