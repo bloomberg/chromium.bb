@@ -148,8 +148,7 @@ class UprevEbuildFromPinTest(cros_test_lib.RunCommandTempDirTestCase):
     self.assertEqual(mod.files[0], new_ebuild_path,
                      'unexpected updated ebuild file: %s' % mod.files[1])
 
-    self.assertCommandContains(
-        ['ebuild', new_ebuild_path, 'manifest'])
+    self.assertCommandContains(['ebuild', 'manifest'])
 
   def test_no_ebuild(self):
     """Tests assertion is raised if package has no ebuilds"""

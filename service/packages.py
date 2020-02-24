@@ -26,6 +26,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import osutils
+from chromite.lib import path_util
 from chromite.lib import portage_util
 from chromite.lib import replication_lib
 from chromite.lib import uprev_lib
@@ -394,7 +395,8 @@ def uprev_ebuild_from_pin(package_path, version_pin_path, chroot):
   os.rename(ebuild_path, new_ebuild_path)
 
   try:
-    portage_util.UpdateEbuildManifest(new_ebuild_path, chroot=chroot)
+    chroot_manifest_path = path_util.ToChrootPath(new_ebuild_path)
+    portage_util.UpdateEbuildManifest(chroot_manifest_path, chroot=chroot)
   except cros_build_lib.RunCommandError as e:
     raise UprevError(
         'Unable to update manifest for %s: %s' % (package, e.stderr))
