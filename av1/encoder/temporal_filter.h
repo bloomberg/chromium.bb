@@ -22,13 +22,11 @@ extern "C" {
 #define BH 32
 #define BW 32
 
-// Window size for temporal filtering on YUV planes.
+// Window size for YUV temporal filtering.
 // This is particually used for function `av1_apply_temporal_filter_yuv()`.
 #define TF_YUV_FILTER_WINDOW_LENGTH 3
-
-// Window size for temporal filtering on Y planes.
-// This is particually used for function `av1_apply_temporal_filter_yonly()`.
-#define TF_YONLY_FILTER_WINDOW_LENGTH 3
+// A scale factor used in YUV temporal filtering for weight adjustment.
+#define TF_YUV_FILTER_WEIGHT_SCALE 3
 
 #define TF_ENABLE_PLANEWISE_STRATEGY 1
 // Window size for plane-wise temporal filtering.

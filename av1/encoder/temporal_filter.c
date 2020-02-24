@@ -468,41 +468,7 @@ static INLINE void compute_square_diff(const uint8_t *ref, const int ref_offset,
   }
 }
 
-// Magic numbers used to adjust the pixel-wise weight used in YUV filtering.
-// For now, it only supports 3x3 window for filtering.
-// The adjustment is performed with following steps:
-//   (1) For a particular pixel, compute the sum of squared difference between
-//       input frame and prediction in a small window (i.e., 3x3). There are
-//       three possible outcomes:
-//       (a) If the pixel locates in the middle of the plane, it has 9
-//           neighbours (self-included).
-//       (b) If the pixel locates on the edge of the plane, it has 6
-//           neighbours (self-included).
-//       (c) If the pixel locates on the corner of the plane, it has 4
-//           neighbours (self-included).
-//   (2) For Y-plane, it will also consider the squared difference from U-plane
-//       and V-plane at the corresponding position as reference. This leads to
-//       2 more neighbours.
-//   (3) For U-plane and V-plane, it will consider the squared difference from
-//       Y-plane at the corresponding position (after upsampling) as reference.
-//       This leads to 1 more (subsampling = 0) or 4 more (subsampling = 1)
-//       neighbours.
-//   (4) Find the modifier for adjustment from the lookup table according to
-//       number of reference pixels (neighbours) used. From above, the number
-//       of neighbours can be 9+2 (11), 6+2 (8), 4+2 (6), 9+1 (10), 6+1 (7),
-//       4+1 (5), 9+4 (13), 6+4 (10), 4+4 (8).
-// TODO(any): Not sure what index 4 and index 9 are for.
-static const uint32_t filter_weight_adjustment_lookup_table_yuv[14] = {
-  0, 0, 0, 0, 49152, 39322, 32768, 28087, 24576, 21846, 19661, 17874, 0, 15124
-};
-// Lookup table for high bit-depth.
-static const uint64_t highbd_filter_weight_adjustment_lookup_table_yuv[14] = {
-  0U,          0U,          0U,          0U,          3221225472U,
-  2576980378U, 2147483648U, 1840700270U, 1610612736U, 1431655766U,
-  1288490189U, 1171354718U, 0U,          991146300U
-};
-
-// Function to adjust the filter weight when applying YUV filter.
+// Function to adjust the filter weight when use YUV strategy.
 // Inputs:
 //   filter_weight: Original filter weight.
 //   sum_square_diff: Sum of squared difference between input frame and
@@ -513,34 +479,21 @@ static const uint64_t highbd_filter_weight_adjustment_lookup_table_yuv[14] = {
 //                   `filter_weight_adjustment_lookup_table_yuv` and
 //                   `highbd_filter_weight_adjustment_lookup_table_yuv`.
 //   strength: Strength for filter weight adjustment.
-//   is_high_bitdepth: Whether apply temporal filter to high bie-depth video.
 // Returns:
 //   Adjusted filter weight which will finally be used for filtering.
 static INLINE int adjust_filter_weight_yuv(const int filter_weight,
                                            const uint64_t sum_square_diff,
                                            const int num_ref_pixels,
-                                           const int strength,
-                                           const int is_high_bitdepth) {
-  assert(TF_YUV_FILTER_WINDOW_LENGTH == 3);
-  assert(num_ref_pixels >= 0 && num_ref_pixels <= 13);
-
-  const uint64_t multiplier =
-      is_high_bitdepth
-          ? highbd_filter_weight_adjustment_lookup_table_yuv[num_ref_pixels]
-          : filter_weight_adjustment_lookup_table_yuv[num_ref_pixels];
-  assert(multiplier != 0);
-
-  const uint32_t max_value = is_high_bitdepth ? UINT32_MAX : UINT16_MAX;
-  const int shift = is_high_bitdepth ? 32 : 16;
+                                           const int strength) {
   int modifier =
-      (int)((AOMMIN(sum_square_diff, max_value) * multiplier) >> shift);
-
+      (int)(AOMMIN(sum_square_diff * TF_YUV_FILTER_WEIGHT_SCALE, INT32_MAX)) /
+      num_ref_pixels;
   const int rounding = (1 << strength) >> 1;
   modifier = (modifier + rounding) >> strength;
   return (modifier >= 16) ? 0 : (16 - modifier) * filter_weight;
 }
 
-// Applies temporal filter to YUV planes.
+// Applies temporal filter with YUV strategy.
 // Inputs:
 //   frame_to_filter: Pointer to the frame to be filtered, which is used as
 //                    reference to compute squared differece from the predictor.
@@ -549,6 +502,7 @@ static INLINE int adjust_filter_weight_yuv(const int filter_weight,
 //   block_size: Size of the block.
 //   mb_row: Row index of the block in the entire frame.
 //   mb_col: Column index of the block in the entire frame.
+//   num_planes: Number of planes in the frame.
 //   strength: Strength for filter weight adjustment.
 //   use_subblock: Whether to use 4 sub-blocks to replace the original block.
 //   subblock_filter_weights: The filter weights for each sub-block (row-major
@@ -560,14 +514,14 @@ static INLINE int adjust_filter_weight_yuv(const int filter_weight,
 // Returns:
 //   Nothing will be returned. But the content to which `accum` and `pred`
 //   point will be modified.
-void av1_apply_temporal_filter_yuv_c(const YV12_BUFFER_CONFIG *frame_to_filter,
-                                     const MACROBLOCKD *mbd,
-                                     const BLOCK_SIZE block_size,
-                                     const int mb_row, const int mb_col,
-                                     const int strength, const int use_subblock,
-                                     const int *subblock_filter_weights,
-                                     const uint8_t *pred, uint32_t *accum,
-                                     uint16_t *count) {
+void av1_apply_temporal_filter_yuv_c(
+    const YV12_BUFFER_CONFIG *frame_to_filter, const MACROBLOCKD *mbd,
+    const BLOCK_SIZE block_size, const int mb_row, const int mb_col,
+    const int num_planes, const int strength, const int use_subblock,
+    const int *subblock_filter_weights, const uint8_t *pred, uint32_t *accum,
+    uint16_t *count) {
+  assert(num_planes >= 1 && num_planes <= MAX_MB_PLANE);
+
   // Block information.
   const int mb_height = block_size_high[block_size];
   const int mb_width = block_size_wide[block_size];
@@ -575,14 +529,14 @@ void av1_apply_temporal_filter_yuv_c(const YV12_BUFFER_CONFIG *frame_to_filter,
   const int is_high_bitdepth = is_frame_high_bitdepth(frame_to_filter);
   const uint16_t *pred16 = CONVERT_TO_SHORTPTR(pred);
 
-  // Allocate memory for pixel-wise squared differences for Y, U, V planes. All
-  // planes, regardless of the subsampling, are assigned with memory of size
-  // `mb_pels`.
-  uint32_t *square_diff = aom_memalign(16, 3 * mb_pels * sizeof(uint32_t));
-  memset(square_diff, 0, 3 * mb_pels * sizeof(square_diff[0]));
+  // Allocate memory for pixel-wise squared differences for all planes. They,
+  // regardless of the subsampling, are assigned with memory of size `mb_pels`.
+  uint32_t *square_diff =
+      aom_memalign(16, num_planes * mb_pels * sizeof(uint32_t));
+  memset(square_diff, 0, num_planes * mb_pels * sizeof(square_diff[0]));
 
   int plane_offset = 0;
-  for (int plane = 0; plane < 3; ++plane) {
+  for (int plane = 0; plane < num_planes; ++plane) {
     // Locate pixel on reference frame.
     const int plane_h = mb_height >> mbd->plane[plane].subsampling_y;
     const int plane_w = mb_width >> mbd->plane[plane].subsampling_x;
@@ -599,14 +553,11 @@ void av1_apply_temporal_filter_yuv_c(const YV12_BUFFER_CONFIG *frame_to_filter,
   assert(TF_YUV_FILTER_WINDOW_LENGTH % 2 == 1);
   const int half_window = TF_YUV_FILTER_WINDOW_LENGTH >> 1;
 
-  // Handle Y-plane, U-plane, V-plane in sequence.
+  // Handle planes in sequence.
   plane_offset = 0;
-  for (int plane = 0; plane < 3; ++plane) {
+  for (int plane = 0; plane < num_planes; ++plane) {
     const int subsampling_y = mbd->plane[plane].subsampling_y;
     const int subsampling_x = mbd->plane[plane].subsampling_x;
-    // Only 0 and 1 are supported for filter weight adjustment.
-    assert(subsampling_y == 0 || subsampling_y == 1);
-    assert(subsampling_x == 0 || subsampling_x == 1);
     const int h = mb_height >> subsampling_y;  // Plane height.
     const int w = mb_width >> subsampling_x;   // Plane width.
 
@@ -614,10 +565,6 @@ void av1_apply_temporal_filter_yuv_c(const YV12_BUFFER_CONFIG *frame_to_filter,
     int pred_idx = 0;
     for (int i = 0; i < h; ++i) {
       for (int j = 0; j < w; ++j) {
-        const int subblock_idx =
-            use_subblock ? (i >= h / 2) * 2 + (j >= w / 2) : 0;
-        const int filter_weight = subblock_filter_weights[subblock_idx];
-
         // non-local mean approach
         uint64_t sum_square_diff = 0;
         int num_ref_pixels = 0;
@@ -634,7 +581,7 @@ void av1_apply_temporal_filter_yuv_c(const YV12_BUFFER_CONFIG *frame_to_filter,
         }
 
         if (plane == 0) {  // Filter Y-plane using both U-plane and V-plane.
-          for (int p = 1; p < 3; ++p) {
+          for (int p = 1; p < num_planes; ++p) {
             const int ss_y_shift = mbd->plane[p].subsampling_y - subsampling_y;
             const int ss_x_shift = mbd->plane[p].subsampling_x - subsampling_x;
             const int yy = i >> ss_y_shift;  // Y-coord on UV-plane.
@@ -657,11 +604,15 @@ void av1_apply_temporal_filter_yuv_c(const YV12_BUFFER_CONFIG *frame_to_filter,
           }
         }
 
+        // Base filter weight estimated by motion search error.
+        const int subblock_idx =
+            use_subblock ? (i >= h / 2) * 2 + (j >= w / 2) : 0;
+        const int filter_weight = subblock_filter_weights[subblock_idx];
+
         const int idx = plane_offset + pred_idx;  // Index with plane shift.
         const int pred_value = is_high_bitdepth ? pred16[idx] : pred[idx];
         const int adjusted_weight = adjust_filter_weight_yuv(
-            filter_weight, sum_square_diff, num_ref_pixels, strength,
-            is_high_bitdepth);
+            filter_weight, sum_square_diff, num_ref_pixels, strength);
         accum[idx] += adjusted_weight * pred_value;
         count[idx] += adjusted_weight;
 
@@ -674,128 +625,9 @@ void av1_apply_temporal_filter_yuv_c(const YV12_BUFFER_CONFIG *frame_to_filter,
   aom_free(square_diff);
 }
 
-// Function to adjust the filter weight when applying filter to Y-plane only.
-// Inputs:
-//   filter_weight: Original filter weight.
-//   sum_square_diff: Sum of squared difference between input frame and
-//                    prediction. This field is computed pixel by pixel, and
-//                    is used as a reference for the filter weight adjustment.
-//   num_ref_pixels: Number of pixels used to compute the `sum_square_diff`.
-//   strength: Strength for filter weight adjustment.
-// Returns:
-//   Adjusted filter weight which will finally be used for filtering.
-static INLINE int adjust_filter_weight_yonly(const int filter_weight,
-                                             const uint64_t sum_square_diff,
-                                             const int num_ref_pixels,
-                                             const int strength) {
-  assert(TF_YONLY_FILTER_WINDOW_LENGTH == 3);
-
-  int modifier = (int)(AOMMIN(sum_square_diff * 3, INT32_MAX));
-  modifier /= num_ref_pixels;
-
-  const int rounding = (1 << strength) >> 1;
-  modifier = (modifier + rounding) >> strength;
-  return (modifier >= 16) ? 0 : (16 - modifier) * filter_weight;
-}
-
-// Applies temporal filter to Y-plane ONLY.
-// Different from the function `av1_apply_temporal_filter_yuv_c()`, this
-// function only applies temporal filter to Y-plane. This should be used when
-// the input video frame only has one plane.
-// Inputs:
-//   frame_to_filter: Pointer to the frame to be filtered, which is used as
-//                    reference to compute squared differece from the predictor.
-//   mbd: Pointer to the block for filtering, which is ONLY used to get
-//        subsampling information of Y-plane.
-//   block_size: Size of the block.
-//   mb_row: Row index of the block in the entire frame.
-//   mb_col: Column index of the block in the entire frame.
-//   strength: Strength for filter weight adjustment.
-//   use_subblock: Whether to use 4 sub-blocks to replace the original block.
-//   subblock_filter_weights: The filter weights for each sub-block (row-major
-//                            order). If `use_subblock` is set as 0, the first
-//                            weight will be applied to the entire block.
-//   pred: Pointer to the well-built predictors.
-//   accum: Pointer to the pixel-wise accumulator for filtering.
-//   count: Pointer to the pixel-wise counter fot filtering.
-// Returns:
-//   Nothing will be returned. But the content to which `accum` and `pred`
-//   point will be modified.
-void av1_apply_temporal_filter_yonly(const YV12_BUFFER_CONFIG *frame_to_filter,
-                                     const MACROBLOCKD *mbd,
-                                     const BLOCK_SIZE block_size,
-                                     const int mb_row, const int mb_col,
-                                     const int strength, const int use_subblock,
-                                     const int *subblock_filter_weights,
-                                     const uint8_t *pred, uint32_t *accum,
-                                     uint16_t *count) {
-  // Block information.
-  const int mb_height = block_size_high[block_size];
-  const int mb_width = block_size_wide[block_size];
-  const int mb_pels = mb_height * mb_width;
-  const int is_high_bitdepth = is_frame_high_bitdepth(frame_to_filter);
-  const uint16_t *pred16 = CONVERT_TO_SHORTPTR(pred);
-
-  // Y-plane information.
-  const int subsampling_y = mbd->plane[0].subsampling_y;
-  const int subsampling_x = mbd->plane[0].subsampling_x;
-  const int h = mb_height >> subsampling_y;
-  const int w = mb_width >> subsampling_x;
-
-  // Pre-compute squared difference before filtering.
-  const int frame_stride = frame_to_filter->y_stride;
-  const int frame_offset = mb_row * h * frame_stride + mb_col * w;
-  const uint8_t *ref = frame_to_filter->y_buffer;
-  uint32_t *square_diff = aom_memalign(16, mb_pels * sizeof(uint32_t));
-  memset(square_diff, 0, mb_pels * sizeof(square_diff[0]));
-  compute_square_diff(ref, frame_offset, frame_stride, pred, 0, w, h, w,
-                      is_high_bitdepth, square_diff);
-
-  // Get window size for pixel-wise filtering.
-  assert(TF_YONLY_FILTER_WINDOW_LENGTH % 2 == 1);
-  const int half_window = TF_YONLY_FILTER_WINDOW_LENGTH >> 1;
-
-  // Perform filtering.
-  int idx = 0;
-  for (int i = 0; i < h; ++i) {
-    for (int j = 0; j < w; ++j) {
-      const int subblock_idx =
-          use_subblock ? (i >= h / 2) * 2 + (j >= w / 2) : 0;
-      const int filter_weight = subblock_filter_weights[subblock_idx];
-
-      // non-local mean approach
-      uint64_t sum_square_diff = 0;
-      int num_ref_pixels = 0;
-
-      for (int wi = -half_window; wi <= half_window; ++wi) {
-        for (int wj = -half_window; wj <= half_window; ++wj) {
-          const int y = i + wi;  // Y-coord on the current plane.
-          const int x = j + wj;  // X-coord on the current plane.
-          if (y >= 0 && y < h && x >= 0 && x < w) {
-            sum_square_diff += square_diff[y * w + x];
-            ++num_ref_pixels;
-          }
-        }
-      }
-
-      const int pred_value = is_high_bitdepth ? pred16[idx] : pred[idx];
-      const int adjusted_weight = adjust_filter_weight_yonly(
-          filter_weight, sum_square_diff, num_ref_pixels, strength);
-      accum[idx] += adjusted_weight * pred_value;
-      count[idx] += adjusted_weight;
-
-      ++idx;
-    }
-  }
-
-  aom_free(square_diff);
-}
-
-// Applies temporal filter plane by plane.
-// Different from the function `av1_apply_temporal_filter_yuv_c()` and the
-// function `av1_apply_temporal_filter_yonly()`, this function applies temporal
-// filter to each plane independently. Besides, the strategy of filter weight
-// adjustment is different from the other two functions.
+// Applies temporal filter with plane-wise strategy.
+// The strategy of filter weight adjustment is different from the function
+// `av1_apply_temporal_filter_yuv_c()`.
 // Inputs:
 //   frame_to_filter: Pointer to the frame to be filtered, which is used as
 //                    reference to compute squared differece from the predictor.
@@ -933,20 +765,17 @@ void av1_apply_temporal_filter_planewise_c(
 //   mb_row: Row index of the block in the entire frame.
 //   mb_col: Column index of the block in the entire frame.
 //   num_planes: Number of planes in the frame.
-//   use_planewise_strategy: Whether to use plane-wise temporal filtering
-//                           strategy. If set as 0, YUV or YONLY filtering will
-//                           be used (depending on number of planes).
-//   strength: Strength for filter weight adjustment. (Used in YUV filtering and
-//             YONLY filtering)
+//   use_planewise_strategy: Whether to use plane-wise strategy or YUV strategy.
+//   strength: Strength for filter weight adjustment. (Used in YUV strategy)
 //   use_subblock: Whether to use 4 sub-blocks to replace the original block.
-//                 (Used in YUV filtering and YONLY filtering)
+//                 (Used in YUV strategy)
 //   subblock_filter_weights: The filter weights for each sub-block (row-major
 //                            order). If `use_subblock` is set as 0, the first
 //                            weight will be applied to the entire block. (Used
-//                            in YUV filtering and YONLY filtering)
+//                            in YUV strategy)
 //   noise_levels: Pointer to the noise levels of the to-filter frame, estimated
 //                 with each plane (in Y, U, V order). (Used in plane-wise
-//                 filtering)
+//                 strategy)
 //   pred: Pointer to the well-built predictors.
 //   accum: Pointer to the pixel-wise accumulator for filtering.
 //   count: Pointer to the pixel-wise counter fot filtering.
@@ -975,16 +804,18 @@ void av1_apply_temporal_filter_others(
     }
   } else {  // Commonly used for low-resolution video.
     const int adj_strength = strength + 2 * (mbd->bd - 8);
-    if (num_planes == 1) {
-      av1_apply_temporal_filter_yonly(
-          frame_to_filter, mbd, block_size, mb_row, mb_col, adj_strength,
-          use_subblock, subblock_filter_weights, pred, accum, count);
-    } else if (num_planes == 3) {
-      av1_apply_temporal_filter_yuv(
-          frame_to_filter, mbd, block_size, mb_row, mb_col, adj_strength,
-          use_subblock, subblock_filter_weights, pred, accum, count);
+    if (num_planes == 3 && TF_YUV_FILTER_WEIGHT_SCALE == 3) {
+      av1_apply_temporal_filter_yuv(frame_to_filter, mbd, block_size, mb_row,
+                                    mb_col, num_planes, adj_strength,
+                                    use_subblock, subblock_filter_weights, pred,
+                                    accum, count);
     } else {
-      assert(0 && "Only support Y-plane and YUV-plane modes.");
+      // TODO(any): sse4 version should be changed to align with C function
+      // before using.
+      av1_apply_temporal_filter_yuv_c(frame_to_filter, mbd, block_size, mb_row,
+                                      mb_col, num_planes, adj_strength,
+                                      use_subblock, subblock_filter_weights,
+                                      pred, accum, count);
     }
   }
 }
@@ -1284,8 +1115,8 @@ double av1_estimate_noise_from_single_plane(const YV12_BUFFER_CONFIG *frame,
 }
 
 // Estimates the strength for filter weight adjustment, which is used in YUV
-// filtering and YONLY filtering. This estimation is based on the pre-estimated
-// noise level of the to-filter frame.
+// strategy. This estimation is based on the pre-estimated noise level of the
+// to-filter frame.
 // Inputs:
 //   cpi: Pointer to the composed information of input video.
 //   noise_level: Noise level of the to-filter frame, estimated with Y-plane.

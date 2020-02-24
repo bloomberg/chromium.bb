@@ -2025,10 +2025,13 @@ static void highbd_apply_temporal_filter_yuv(
 void av1_apply_temporal_filter_yuv_sse4_1(
     const YV12_BUFFER_CONFIG *ref_frame, const MACROBLOCKD *mbd,
     const BLOCK_SIZE block_size, const int mb_row, const int mb_col,
-    const int strength, const int use_subblock,
+    const int num_planes, const int strength, const int use_subblock,
     const int *subblock_filter_weights, const uint8_t *pred, uint32_t *accum,
     uint16_t *count) {
   const int is_high_bitdepth = ref_frame->flags & YV12_FLAG_HIGHBITDEPTH;
+  // TODO(any): Need to support when `num_planes != 3`, like C implementation.
+  assert(num_planes == 3);
+  (void)num_planes;
   if (is_high_bitdepth) {
     highbd_apply_temporal_filter_yuv(
         ref_frame, mbd, block_size, mb_row, mb_col, strength, use_subblock,

@@ -284,7 +284,7 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   add_proto qw/int av1_full_range_search/, "const struct macroblock *x, const struct search_site_config *cfg, MV *ref_mv, MV *best_mv, int search_param, int sad_per_bit, int *num00, const struct aom_variance_vtable *fn_ptr, const MV *center_mv";
 
   if (aom_config("CONFIG_REALTIME_ONLY") ne "yes") {
-    add_proto qw/void av1_apply_temporal_filter_yuv/, "const struct yv12_buffer_config *ref_frame, const struct macroblockd *mbd, const BLOCK_SIZE block_size, const int mb_row, const int mb_col, const int strength, const int use_subblock, const int *subblock_filter_weights, const uint8_t *pred, uint32_t *accum, uint16_t *count";
+    add_proto qw/void av1_apply_temporal_filter_yuv/, "const struct yv12_buffer_config *ref_frame, const struct macroblockd *mbd, const BLOCK_SIZE block_size, const int mb_row, const int mb_col, const int num_planes, const int strength, const int use_subblock, const int *subblock_filter_weights, const uint8_t *pred, uint32_t *accum, uint16_t *count";
     specialize qw/av1_apply_temporal_filter_yuv sse4_1/;
   }
 

@@ -29,8 +29,8 @@ const int MAX_HEIGHT = 32;
 typedef void (*TemporalFilterYUVFunc)(
     const YV12_BUFFER_CONFIG *ref_frame, const MACROBLOCKD *mbd,
     const BLOCK_SIZE block_size, const int mb_row, const int mb_col,
-    const int strength, const int use_subblock, const int *blk_fw,
-    const uint8_t *pred, uint32_t *accum, uint16_t *count);
+    const int num_planes, const int strength, const int use_subblock,
+    const int *blk_fw, const uint8_t *pred, uint32_t *accum, uint16_t *count);
 
 struct TemporalFilterWithBd {
   TemporalFilterWithBd(TemporalFilterYUVFunc func, int bitdepth)
@@ -414,6 +414,7 @@ void TemporalFilterYUVTest::ApplyTestFilter<uint8_t>(
   assert(block_width == MAX_WIDTH && MAX_WIDTH == 32);
   assert(block_height == MAX_HEIGHT && MAX_HEIGHT == 32);
   const BLOCK_SIZE block_size = BLOCK_32X32;
+  const int num_planes = 3;
   const int mb_pels = MAX_WIDTH * MAX_HEIGHT;
   const int mb_row = 0;
   const int mb_col = 0;
@@ -455,9 +456,9 @@ void TemporalFilterYUVTest::ApplyTestFilter<uint8_t>(
   memcpy(count + 1 * mb_pels, u_count, mb_pels * sizeof(uint16_t));
   memcpy(count + 2 * mb_pels, v_count, mb_pels * sizeof(uint16_t));
 
-  ASM_REGISTER_STATE_CHECK(filter_func_(ref_frame, mbd, block_size, mb_row,
-                                        mb_col, strength, use_subblock, blk_fw,
-                                        pred, accum, count));
+  ASM_REGISTER_STATE_CHECK(
+      filter_func_(ref_frame, mbd, block_size, mb_row, mb_col, num_planes,
+                   strength, use_subblock, blk_fw, pred, accum, count));
 
   memcpy(y_accum, accum + 0 * mb_pels, mb_pels * sizeof(uint32_t));
   memcpy(u_accum, accum + 1 * mb_pels, mb_pels * sizeof(uint32_t));
@@ -487,6 +488,7 @@ void TemporalFilterYUVTest::ApplyTestFilter<uint16_t>(
   assert(block_width == MAX_WIDTH && MAX_WIDTH == 32);
   assert(block_height == MAX_HEIGHT && MAX_HEIGHT == 32);
   const BLOCK_SIZE block_size = BLOCK_32X32;
+  const int num_planes = 3;
   const int mb_pels = MAX_WIDTH * MAX_HEIGHT;
   const int mb_row = 0;
   const int mb_col = 0;
@@ -529,9 +531,9 @@ void TemporalFilterYUVTest::ApplyTestFilter<uint16_t>(
   memcpy(count + 2 * mb_pels, v_count, mb_pels * sizeof(uint16_t));
   const uint8_t *pred = CONVERT_TO_BYTEPTR(pred16);
 
-  ASM_REGISTER_STATE_CHECK(filter_func_(ref_frame, mbd, block_size, mb_row,
-                                        mb_col, strength, use_subblock, blk_fw,
-                                        pred, accum, count));
+  ASM_REGISTER_STATE_CHECK(
+      filter_func_(ref_frame, mbd, block_size, mb_row, mb_col, num_planes,
+                   strength, use_subblock, blk_fw, pred, accum, count));
 
   memcpy(y_accum, accum + 0 * mb_pels, mb_pels * sizeof(uint32_t));
   memcpy(u_accum, accum + 1 * mb_pels, mb_pels * sizeof(uint32_t));
