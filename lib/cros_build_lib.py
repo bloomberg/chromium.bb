@@ -498,16 +498,16 @@ def _KillChildProcess(proc, int_timeout, kill_timeout, cmd, original_handler,
   # the Popen instance was created, but no process was generated.
   if proc.returncode is None and proc.pid is not None:
     try:
-      while proc.poll() is None and int_timeout >= 0:
+      while proc.poll_lock_breaker() is None and int_timeout >= 0:
         time.sleep(0.1)
         int_timeout -= 0.1
 
       proc.terminate()
-      while proc.poll() is None and kill_timeout >= 0:
+      while proc.poll_lock_breaker() is None and kill_timeout >= 0:
         time.sleep(0.1)
         kill_timeout -= 0.1
 
-      if proc.poll() is None:
+      if proc.poll_lock_breaker() is None:
         # Still doesn't want to die.  Too bad, so sad, time to die.
         proc.kill()
     except EnvironmentError as e:
@@ -515,7 +515,11 @@ def _KillChildProcess(proc, int_timeout, kill_timeout, cmd, original_handler,
                       e)
 
     # Ensure our child process has been reaped.
-    proc.wait()
+    kwargs = {}
+    if sys.version_info.major >= 3:
+      # ... but don't wait forever.
+      kwargs['timeout'] = 60
+    proc.wait_lock_breaker(**kwargs)
 
   if not signals.RelaySignal(original_handler, signum, frame):
     # Mock up our own, matching exit code for signaling.
@@ -570,6 +574,31 @@ class _Popen(subprocess.Popen):
         self.poll()
       else:
         raise
+
+  def _lock_breaker(self, func, *args, **kwargs):
+    """Helper to manage the waitpid lock.
+
+    Workaround https://bugs.python.org/issue25960.
+    """
+    # If the lock doesn't exist, or is not locked, call the func directly.
+    lock = getattr(self, '_waitpid_lock', None)
+    if lock is not None and lock.locked():
+      try:
+        lock.release()
+        return func(*args, **kwargs)
+      finally:
+        if not lock.locked():
+          lock.acquire()
+    else:
+      return func(*args, **kwargs)
+
+  def poll_lock_breaker(self, *args, **kwargs):
+    """Wrapper around poll() to break locks if needed."""
+    return self._lock_breaker(self.poll, *args, **kwargs)
+
+  def wait_lock_breaker(self, *args, **kwargs):
+    """Wrapper around wait() to break locks if needed."""
+    return self._lock_breaker(self.wait, *args, **kwargs)
 
 
 # pylint: disable=redefined-builtin
