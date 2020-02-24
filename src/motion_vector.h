@@ -44,10 +44,8 @@ constexpr bool IsGlobalMvBlock(PredictionMode mode,
 void FindMvStack(
     const Tile::Block& block, bool is_compound,
     const std::array<bool, kNumReferenceFrameTypes>& reference_frame_sign_bias,
-    const TemporalMotionField& motion_field,
-    CandidateMotionVector ref_mv_stack[kMaxRefMvStackSize], int* num_mv_found,
-    MvContexts* contexts,
-    MotionVector global_mv[2]);  // 7.10.2
+    const TemporalMotionField& motion_field, MvContexts* contexts,
+    PredictionParameters* prediction_parameters);  // 7.10.2
 
 void FindWarpSamples(const Tile::Block& block, int* num_warp_samples,
                      int* num_samples_scanned,

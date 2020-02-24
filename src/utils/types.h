@@ -105,6 +105,14 @@ struct PredictionParameters : public Allocable {
   MotionMode motion_mode;
   CompoundPredictionType compound_prediction_type;
   CandidateMotionVector ref_mv_stack[kMaxRefMvStackSize];
+  // In the spec, the weights of all the nearest mvs are incremented by a bonus
+  // weight which is larger than any natural weight, and later the weights of
+  // the mvs are compared with this bonus weight to determine their contexts. We
+  // replace this procedure by introducing |nearest_mv_count|, which records the
+  // count of the nearest mvs. Since all the nearest mvs are in the beginning of
+  // |ref_mv_stack|, the index of a mv in |ref_mv_stack| can be compared with
+  // |nearest_mv_count| to get that mv's context.
+  int nearest_mv_count;
   int ref_mv_count;
   int ref_mv_index;
   MotionVector global_mv[2];

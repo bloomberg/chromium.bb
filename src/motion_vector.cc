@@ -695,57 +695,59 @@ bool MotionFieldProjection(
 void FindMvStack(
     const Tile::Block& block, bool is_compound,
     const std::array<bool, kNumReferenceFrameTypes>& reference_frame_sign_bias,
-    const TemporalMotionField& motion_field,
-    CandidateMotionVector ref_mv_stack[kMaxRefMvStackSize],
-    int* const num_mv_found, MvContexts* const contexts,
-    MotionVector global_mv[2]) {
+    const TemporalMotionField& motion_field, MvContexts* const contexts,
+    PredictionParameters* const prediction_parameters) {
+  assert(prediction_parameters != nullptr);
+  CandidateMotionVector* const ref_mv_stack =
+      prediction_parameters->ref_mv_stack;
+  int num_mv_found = 0;
+  MotionVector* const global_mv = prediction_parameters->global_mv;
   SetupGlobalMv(block, 0, &global_mv[0]);
   if (is_compound) SetupGlobalMv(block, 1, &global_mv[1]);
   bool found_new_mv = false;
   bool found_row_match = false;
-  *num_mv_found = 0;
   ScanRow(block, -1, is_compound, global_mv, &found_new_mv, &found_row_match,
-          num_mv_found, ref_mv_stack);
+          &num_mv_found, ref_mv_stack);
   bool found_column_match = false;
   ScanColumn(block, -1, is_compound, global_mv, &found_new_mv,
-             &found_column_match, num_mv_found, ref_mv_stack);
+             &found_column_match, &num_mv_found, ref_mv_stack);
   if (std::max(block.width4x4, block.height4x4) <= 16) {
     ScanPoint(block, -1, block.width4x4, is_compound, global_mv, &found_new_mv,
-              &found_row_match, num_mv_found, ref_mv_stack);
+              &found_row_match, &num_mv_found, ref_mv_stack);
   }
   const int nearest_matches =
       static_cast<int>(found_row_match) + static_cast<int>(found_column_match);
-  const int nearest_mv_count = *num_mv_found;
-  for (int i = 0; i < nearest_mv_count; ++i) {
-    ref_mv_stack[i].weight += kExtraWeightForNearestMvs;
-  }
+  prediction_parameters->nearest_mv_count = num_mv_found;
   if (contexts != nullptr) contexts->zero_mv = 0;
   if (block.tile.frame_header().use_ref_frame_mvs) {
     TemporalScan(block, is_compound, global_mv, motion_field,
                  (contexts != nullptr) ? &contexts->zero_mv : nullptr,
-                 num_mv_found, ref_mv_stack);
+                 &num_mv_found, ref_mv_stack);
   }
   bool dummy_bool = false;
   ScanPoint(block, -1, -1, is_compound, global_mv, &dummy_bool,
-            &found_row_match, num_mv_found, ref_mv_stack);
+            &found_row_match, &num_mv_found, ref_mv_stack);
   static constexpr int deltas[2] = {-3, -5};
   for (int i = 0; i < 2; ++i) {
     if (i == 0 || block.height4x4 > 1) {
       ScanRow(block, deltas[i], is_compound, global_mv, &dummy_bool,
-              &found_row_match, num_mv_found, ref_mv_stack);
+              &found_row_match, &num_mv_found, ref_mv_stack);
     }
     if (i == 0 || block.width4x4 > 1) {
       ScanColumn(block, deltas[i], is_compound, global_mv, &dummy_bool,
-                 &found_column_match, num_mv_found, ref_mv_stack);
+                 &found_column_match, &num_mv_found, ref_mv_stack);
     }
   }
-  std::stable_sort(&ref_mv_stack[0], &ref_mv_stack[nearest_mv_count],
-                   CompareCandidateMotionVectors);
-  std::stable_sort(&ref_mv_stack[nearest_mv_count],
-                   &ref_mv_stack[*num_mv_found], CompareCandidateMotionVectors);
-  if (*num_mv_found < 2) {
+  if (num_mv_found < 2) {
     ExtraSearch(block, is_compound, global_mv, reference_frame_sign_bias,
-                num_mv_found, ref_mv_stack);
+                &num_mv_found, ref_mv_stack);
+  } else {
+    std::stable_sort(&ref_mv_stack[0],
+                     &ref_mv_stack[prediction_parameters->nearest_mv_count],
+                     CompareCandidateMotionVectors);
+    std::stable_sort(&ref_mv_stack[prediction_parameters->nearest_mv_count],
+                     &ref_mv_stack[num_mv_found],
+                     CompareCandidateMotionVectors);
   }
   const int total_matches =
       static_cast<int>(found_row_match) + static_cast<int>(found_column_match);
@@ -753,7 +755,8 @@ void FindMvStack(
     ComputeContexts(found_new_mv, nearest_matches, total_matches,
                     &contexts->new_mv, &contexts->reference_mv);
   }
-  ClampMotionVectors(block, is_compound, *num_mv_found, ref_mv_stack);
+  ClampMotionVectors(block, is_compound, num_mv_found, ref_mv_stack);
+  prediction_parameters->ref_mv_count = num_mv_found;
 }
 
 void FindWarpSamples(const Tile::Block& block, int* const num_warp_samples,

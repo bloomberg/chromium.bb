@@ -90,7 +90,6 @@ enum {
   kMinBottomBorderPixels = 13,
   kWarpedModelPrecisionBits = 16,
   kMaxRefMvStackSize = 8,
-  kExtraWeightForNearestMvs = 640,
   kMaxLeastSquaresSamples = 8,
   kMaxSuperBlockSizeInPixels = 128,
   kMaxScaledSuperBlockSizeInPixels = 128 * 2,

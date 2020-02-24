@@ -109,23 +109,21 @@ int DecodeSegmentId(int diff, int reference, int max) {
 }
 
 // This is called DrlCtxStack in section 7.10.2.14 of the spec.
-int GetRefMvIndexContext(
-    const CandidateMotionVector ref_mv_stack[kMaxRefMvStackSize], int count,
-    int index) {
-  if (index + 1 >= count ||
-      (ref_mv_stack[index].weight >= kExtraWeightForNearestMvs &&
-       ref_mv_stack[index + 1].weight >= kExtraWeightForNearestMvs)) {
+// In the spec, the weights of all the nearest mvs are incremented by a bonus
+// weight which is larger than any natural weight, and the weights of the mvs
+// are compared with this bonus weight to determine their contexts. We replace
+// this procedure by introducing |nearest_mv_count| in PredictionParameters,
+// which records the count of the nearest mvs. Since all the nearest mvs are in
+// the beginning of the mv stack, the |index| of a mv in the mv stack can be
+// compared with |nearest_mv_count| to get that mv's context.
+int GetRefMvIndexContext(int count, int nearest_mv_count, int index) {
+  if (index + 1 >= count || index + 1 < nearest_mv_count) {
     return 0;
   }
-  if (ref_mv_stack[index].weight >= kExtraWeightForNearestMvs &&
-      ref_mv_stack[index + 1].weight < kExtraWeightForNearestMvs) {
+  if (index + 1 == nearest_mv_count) {
     return 1;
   }
-  if (ref_mv_stack[index].weight < kExtraWeightForNearestMvs &&
-      ref_mv_stack[index + 1].weight < kExtraWeightForNearestMvs) {
-    return 2;
-  }
-  return 0;
+  return 2;
 }
 
 // Returns true if both the width and height of the block is less than 64.
@@ -532,9 +530,7 @@ bool Tile::DecodeIntraModeInfo(const Block& block) {
     bp.interpolation_filter[0] = kInterpolationFilterBilinear;
     bp.interpolation_filter[1] = kInterpolationFilterBilinear;
     FindMvStack(block, /*is_compound=*/false, reference_frame_sign_bias_,
-                motion_field_, prediction_parameters.ref_mv_stack,
-                &prediction_parameters.ref_mv_count, /*contexts=*/nullptr,
-                prediction_parameters.global_mv);
+                motion_field_, /*contexts=*/nullptr, &prediction_parameters);
     return AssignMv(block, /*is_compound=*/false);
   }
   bp.is_inter = false;
@@ -987,8 +983,8 @@ void Tile::ReadRefMvIndex(const Block& block) {
     // drl_mode in the spec.
     const bool ref_mv_index_bit = reader_.ReadSymbol(
         symbol_decoder_context_.ref_mv_index_cdf[GetRefMvIndexContext(
-            prediction_parameters.ref_mv_stack,
-            prediction_parameters.ref_mv_count, i)]);
+            prediction_parameters.ref_mv_count,
+            prediction_parameters.nearest_mv_count, i)]);
     prediction_parameters.ref_mv_index = i + static_cast<int>(ref_mv_index_bit);
     if (!ref_mv_index_bit) return;
   }
@@ -1276,9 +1272,7 @@ bool Tile::ReadInterBlockModeInfo(const Block& block) {
       *block.bp->prediction_parameters;
   MvContexts mode_contexts;
   FindMvStack(block, is_compound, reference_frame_sign_bias_, motion_field_,
-              prediction_parameters.ref_mv_stack,
-              &prediction_parameters.ref_mv_count, &mode_contexts,
-              prediction_parameters.global_mv);
+              &mode_contexts, &prediction_parameters);
   ReadInterPredictionModeY(block, mode_contexts);
   ReadRefMvIndex(block);
   if (!AssignMv(block, is_compound)) return false;
