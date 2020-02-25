@@ -1678,9 +1678,6 @@ static void iadst4_new_sse2(const __m128i *input, __m128i *output,
   }
 }
 
-// TODO(binpengsmail@gmail.com):
-// To explore the reuse of VP9 versions of corresponding SSE2 functions and
-// evaluate whether there is a possibility for further speedup.
 static void iadst4_w4_new_sse2(const __m128i *input, __m128i *output,
                                int8_t cos_bit) {
   (void)cos_bit;

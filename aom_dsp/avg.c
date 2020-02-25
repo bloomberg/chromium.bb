@@ -86,7 +86,7 @@ void aom_highbd_minmax_8x8_c(const uint8_t *s8, int p, const uint8_t *d8,
     }
   }
 }
-#endif  // CONFIG_VP9_HIGHBITDEPTH
+#endif  // CONFIG_AV1_HIGHBITDEPTH
 
 // src_diff: first pass, 9 bit, dynamic range [-255, 255]
 //           second pass, 12 bit, dynamic range [-2040, 2040]

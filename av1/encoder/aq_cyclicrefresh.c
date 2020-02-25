@@ -389,7 +389,7 @@ void av1_cyclic_refresh_update_parameters(AV1_COMP *const cpi) {
   // Weight for segment prior to encoding: take the average of the target
   // number for the frame to be encoded and the actual from the previous frame.
   // Use the target if its less. To be used for setting the base qp for the
-  // frame in vp9_rc_regulate_q.
+  // frame in av1_rc_regulate_q.
   target_refresh = cr->percent_refresh * cm->mi_rows * cm->mi_cols / 100;
   weight_segment_target = (double)(target_refresh) / num4x4bl;
   weight_segment = (double)((target_refresh + cr->actual_num_seg1_blocks +

@@ -117,8 +117,7 @@ static uint32_t variance_ref(const uint8_t *src, const uint8_t *ref, int l2w,
 /* The subpel reference functions differ from the codec version in one aspect:
  * they calculate the bilinear factors directly instead of using a lookup table
  * and therefore upshift xoff and yoff by 1. Only every other calculated value
- * is used so the codec version shrinks the table to save space and maintain
- * compatibility with vp8.
+ * is used so the codec version shrinks the table to save space.
  */
 static uint32_t subpel_variance_ref(const uint8_t *ref, const uint8_t *src,
                                     int l2w, int l2h, int xoff, int yoff,
