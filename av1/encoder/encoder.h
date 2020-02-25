@@ -1636,6 +1636,12 @@ static AOM_INLINE void enforce_max_ref_frames(AV1_COMP *cpi,
 // field.
 aom_fixed_buf_t *av1_get_global_headers(AV1_COMP *cpi);
 
+#define MAX_GFUBOOST_FACTOR 10.0
+#define MIN_GFUBOOST_FACTOR 4.0
+double av1_get_gfu_boost_projection_factor(double min_factor, double max_factor,
+                                           int frame_count);
+double av1_get_kf_boost_projection_factor(int frame_count);
+
 #define ENABLE_KF_TPL 1
 #define MAX_PYR_LEVEL_FROMTOP_DELTAQ 0
 
