@@ -756,9 +756,10 @@ def ArchiveVMFiles(buildroot, test_results_dir, archive_path):
 def RunCrosVMTest(buildroot, board, image_dir):
   """Runs cros_vm_test script to verify cros commands work."""
   image_path = os.path.join(image_dir, constants.TEST_IMAGE_BIN)
+  script = os.path.join(buildroot, 'chromite', 'cli', 'cros', 'tests',
+                        'cros_vm_test')
   commands.RunBuildScript(
-      buildroot, ['cros_vm_test', '--board', board, '--image_path', image_path],
-      chromite_cmd=True)
+      buildroot, [script, '--board', board, '--image_path', image_path])
 
 
 def RunDevModeTest(buildroot, board, image_dir):
