@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/css/properties/longhands/bb_lcd_background_color.h"
+#include "third_party/blink/renderer/core/css/properties/longhands.h"
 
 #include "third_party/blink/renderer/core/css/css_color_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
 #include "third_party/blink/renderer/core/css/resolver/style_builder_converter.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
@@ -27,7 +28,6 @@ const CSSValue* BbLcdBackgroundColor::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    Node*,
     bool allow_visited_style) const {
   blink::Color color = style.BbLcdBackgroundColor();
   return cssvalue::CSSColorValue::Create(color.Rgb());

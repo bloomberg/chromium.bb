@@ -1549,17 +1549,13 @@ void CompositedLayerMapping::UpdateLCDBackgroundColor(
   }
 
   // Apply lcdBackgroundColor to relevant GraphicsLayers:
-  if (ancestor_clipping_layer_) {
-    ancestor_clipping_layer_->setDefaultLCDBackgroundColor(lcdBackgroundColor);
-  }
-
   graphics_layer_->setDefaultLCDBackgroundColor(lcdBackgroundColor);
 
-  if (child_containment_layer_) {
-    child_containment_layer_->setDefaultLCDBackgroundColor(lcdBackgroundColor);
+  if (layer_for_horizontal_scrollbar_) {
+    layer_for_horizontal_scrollbar_->setDefaultLCDBackgroundColor(lcdBackgroundColor);
   }
-  if (child_transform_layer_) {
-    child_transform_layer_->setDefaultLCDBackgroundColor(lcdBackgroundColor);
+  if (layer_for_vertical_scrollbar_) {
+    layer_for_vertical_scrollbar_->setDefaultLCDBackgroundColor(lcdBackgroundColor);
   }
   if (scrolling_layer_) {
     scrolling_layer_->setDefaultLCDBackgroundColor(lcdBackgroundColor);
@@ -1573,14 +1569,20 @@ void CompositedLayerMapping::UpdateLCDBackgroundColor(
   if (foreground_layer_) {
     foreground_layer_->setDefaultLCDBackgroundColor(lcdBackgroundColor);
   }
-  if (squashing_layer_) {
-    squashing_layer_->setDefaultLCDBackgroundColor(lcdBackgroundColor);
+  if (layer_for_scroll_corner_) {
+    layer_for_scroll_corner_->setDefaultLCDBackgroundColor(lcdBackgroundColor);
   }
-  if (overflow_controls_ancestor_clipping_layer_) {
-    overflow_controls_ancestor_clipping_layer_->setDefaultLCDBackgroundColor(lcdBackgroundColor);
+  if (overflow_controls_host_layer_) {
+    overflow_controls_host_layer_->setDefaultLCDBackgroundColor(lcdBackgroundColor);
   }
   if (squashing_containment_layer_) {
     squashing_containment_layer_->setDefaultLCDBackgroundColor(lcdBackgroundColor);
+  }
+  if (decoration_outline_layer_) {
+    decoration_outline_layer_->setDefaultLCDBackgroundColor(lcdBackgroundColor);
+  }
+  if (squashing_layer_) {
+    squashing_layer_->setDefaultLCDBackgroundColor(lcdBackgroundColor);
   }
 }
 
