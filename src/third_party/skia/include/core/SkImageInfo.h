@@ -731,8 +731,6 @@ public:
     /** Asserts if internal values are illegal or inconsistent. Only available if
         SK_DEBUG is defined at compile time.
     */
-    SkColor defaultLCDBackgroundColor() const { return fDefaultLCDBackgroundColor; }
-
     SkDEBUGCODE(void validate() const;)
 
 private:
