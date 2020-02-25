@@ -468,51 +468,61 @@ static AOM_INLINE void set_low_temp_var_flag(
         xd->mi[0]->mv[0].as_mv.col > -mv_thr &&
         xd->mi[0]->mv[0].as_mv.row < mv_thr &&
         xd->mi[0]->mv[0].as_mv.row > -mv_thr))) {
-    if (xd->mi[0]->sb_type == BLOCK_128X128 ||
-        xd->mi[0]->sb_type == BLOCK_64X128 ||
-        xd->mi[0]->sb_type == BLOCK_128X64) {
-      if ((vt->part_variances).none.variance < (thresholds[0] >> 1))
+    if (xd->mi[0]->sb_type == BLOCK_128X128) {
+      if (vt->part_variances.none.variance < (thresholds[0] >> 1))
         x->variance_low[0] = 1;
+    } else if (xd->mi[0]->sb_type == BLOCK_128X64) {
+      for (i = 0; i < 2; i++) {
+        if (vt->part_variances.horz[i].variance < (thresholds[0] >> 2))
+          x->variance_low[i + 1] = 1;
+      }
+    } else if (xd->mi[0]->sb_type == BLOCK_64X128) {
+      for (i = 0; i < 2; i++) {
+        if (vt->part_variances.vert[i].variance < (thresholds[0] >> 2))
+          x->variance_low[i + 3] = 1;
+      }
     } else {
       for (i = 0; i < 4; i++) {
         const int idx[4][2] = { { 0, 0 }, { 0, 16 }, { 16, 0 }, { 16, 16 } };
         const int idx_str =
             cm->mi_stride * (mi_row + idx[i][0]) + mi_col + idx[i][1];
         MB_MODE_INFO **mi_64 = cm->mi_grid_base + idx_str;
-
+        if (*mi_64 == NULL) continue;
         if (cm->mi_cols <= mi_col + idx[i][1] ||
             cm->mi_rows <= mi_row + idx[i][0])
           continue;
-
-        if ((*mi_64)->sb_type == BLOCK_64X64 ||
-            (*mi_64)->sb_type == BLOCK_64X32 ||
-            (*mi_64)->sb_type == BLOCK_32X64) {
-          int64_t threshold_64x64 =
-              (cpi->sf.rt_sf.short_circuit_low_temp_var == 1 ||
-               cpi->sf.rt_sf.short_circuit_low_temp_var == 3)
-                  ? ((5 * thresholds[1]) >> 3)
-                  : (thresholds[1] >> 1);
+        const int64_t threshold_64x64 = (5 * thresholds[1]) >> 3;
+        if ((*mi_64)->sb_type == BLOCK_64X64) {
           if (vt->split[i].part_variances.none.variance < threshold_64x64)
-            x->variance_low[1 + i] = 1;
+            x->variance_low[5 + i] = 1;
+        } else if ((*mi_64)->sb_type == BLOCK_64X32) {
+          for (j = 0; j < 2; j++)
+            if (vt->split[i].part_variances.horz[j].variance <
+                (threshold_64x64 >> 1))
+              x->variance_low[9 + (i << 1) + j] = 1;
+        } else if ((*mi_64)->sb_type == BLOCK_32X64) {
+          for (j = 0; j < 2; j++)
+            if (vt->split[i].part_variances.vert[j].variance <
+                (threshold_64x64 >> 1))
+              x->variance_low[17 + (i << 1) + j] = 1;
         } else {
           for (k = 0; k < 4; k++) {
             const int idx1[4][2] = { { 0, 0 }, { 0, 8 }, { 8, 0 }, { 8, 8 } };
             const int idx_str1 = cm->mi_stride * idx1[k][0] + idx1[k][1];
             MB_MODE_INFO **mi_32 = cm->mi_grid_base + idx_str + idx_str1;
+            if (*mi_32 == NULL) continue;
 
             if (cm->mi_cols <= mi_col + idx[i][1] + idx1[k][1] ||
                 cm->mi_rows <= mi_row + idx[i][0] + idx1[k][0])
               continue;
+            const int64_t threshold_32x32 = (5 * thresholds[2]) >> 3;
             if ((*mi_32)->sb_type == BLOCK_32X32) {
-              int64_t threshold_32x32 =
-                  (cpi->sf.rt_sf.short_circuit_low_temp_var == 1 ||
-                   cpi->sf.rt_sf.short_circuit_low_temp_var == 3)
-                      ? ((5 * thresholds[2]) >> 3)
-                      : (thresholds[2] >> 1);
               if (vt->split[i].split[k].part_variances.none.variance <
                   threshold_32x32)
-                x->variance_low[5 + (i << 2) + k] = 1;
-            } else if (cpi->sf.rt_sf.short_circuit_low_temp_var >= 2) {
+                x->variance_low[25 + (i << 2) + k] = 1;
+            } else {
+              // For 32x16 and 16x32 blocks, the flag is set on each 16x16 block
+              // inside.
               if ((*mi_32)->sb_type == BLOCK_16X16 ||
                   (*mi_32)->sb_type == BLOCK_32X16 ||
                   (*mi_32)->sb_type == BLOCK_16X32) {
@@ -521,7 +531,7 @@ static AOM_INLINE void set_low_temp_var_flag(
                           .split[k]
                           .split[j]
                           .part_variances.none.variance < (thresholds[3] >> 8))
-                    x->variance_low[21 + (i << 4) + (k << 2) + j] = 1;
+                    x->variance_low[41 + (i << 4) + (k << 2) + j] = 1;
                 }
               }
             }

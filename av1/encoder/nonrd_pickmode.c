@@ -1170,51 +1170,70 @@ static INLINE int get_force_skip_low_temp_var(uint8_t *variance_low, int mi_row,
                                               int mi_col, BLOCK_SIZE bsize) {
   int force_skip_low_temp_var = 0;
   int x, y;
+  x = (mi_col & 0x1F) >> 4;
+  // y = (mi_row & 0x1F) >> 4;
+  // const int idx64 = (y << 1) + x;
+  y = (mi_row & 0x17) >> 3;
+  const int idx64 = y + x;
+
+  x = (mi_col & 0xF) >> 3;
+  // y = (mi_row & 0xF) >> 3;
+  // const int idx32 = (y << 1) + x;
+  y = (mi_row & 0xB) >> 2;
+  const int idx32 = y + x;
+
+  x = (mi_col & 0x7) >> 2;
+  // y = (mi_row & 0x7) >> 2;
+  // const int idx16 = (y << 1) + x;
+  y = (mi_row & 0x5) >> 1;
+  const int idx16 = y + x;
   // Set force_skip_low_temp_var based on the block size and block offset.
   switch (bsize) {
     case BLOCK_128X128: force_skip_low_temp_var = variance_low[0]; break;
+    case BLOCK_128X64:
+      assert((mi_col & 0x1F) == 0);
+      force_skip_low_temp_var = variance_low[1 + ((mi_row & 0x1F) != 0)];
+      break;
+    case BLOCK_64X128:
+      assert((mi_row & 0x1F) == 0);
+      force_skip_low_temp_var = variance_low[3 + ((mi_col & 0x1F) != 0)];
+      break;
     case BLOCK_64X64:
+      // Location of this 64x64 block inside the 128x128 superblock
+      force_skip_low_temp_var = variance_low[5 + idx64];
+      break;
+    case BLOCK_64X32:
+      x = (mi_col & 0x1F) >> 4;
+      y = (mi_row & 0x1F) >> 3;
+      /*
+      .---------------.---------------.
+      | x=0,y=0,idx=0 | x=0,y=0,idx=2 |
+      :---------------+---------------:
+      | x=0,y=1,idx=1 | x=1,y=1,idx=3 |
+      :---------------+---------------:
+      | x=0,y=2,idx=4 | x=1,y=2,idx=6 |
+      :---------------+---------------:
+      | x=0,y=3,idx=5 | x=1,y=3,idx=7 |
+      '---------------'---------------'
+      */
+      const int idx64x32 = (x << 1) + (y % 2) + ((y >> 1) << 2);
+      force_skip_low_temp_var = variance_low[9 + idx64x32];
+      break;
+    case BLOCK_32X64:
+      x = (mi_col & 0x1F) >> 3;
+      y = (mi_row & 0x1F) >> 4;
+      const int idx32x64 = (y << 2) + x;
+      force_skip_low_temp_var = variance_low[17 + idx32x64];
+      break;
     case BLOCK_32X32:
+      force_skip_low_temp_var = variance_low[25 + (idx64 << 2) + idx32];
+      break;
+    case BLOCK_32X16:
+    case BLOCK_16X32:
     case BLOCK_16X16:
-      x = mi_col % 32;
-      y = mi_row % 32;
-      if (bsize == BLOCK_64X64) {
-        assert((x == 0 || x == 16) && (y == 0 || y == 16));
-      }
-      x >>= 4;
-      y >>= 4;
-      const int idx64 = y * 2 + x;
-      if (bsize == BLOCK_64X64) {
-        force_skip_low_temp_var = variance_low[1 + idx64];
-        break;
-      }
-
-      x = mi_col % 16;
-      y = mi_row % 16;
-      if (bsize == BLOCK_32X32) {
-        assert((x == 0 || x == 8) && (y == 0 || y == 8));
-      }
-      x >>= 3;
-      y >>= 3;
-      const int idx32 = y * 2 + x;
-      if (bsize == BLOCK_32X32) {
-        force_skip_low_temp_var = variance_low[5 + (idx64 << 2) + idx32];
-        break;
-      }
-
-      x = mi_col % 8;
-      y = mi_row % 8;
-      if (bsize == BLOCK_16X16) {
-        assert((x == 0 || x == 4) && (y == 0 || y == 4));
-      }
-      x >>= 2;
-      y >>= 2;
-      const int idx16 = y * 2 + x;
-      if (bsize == BLOCK_16X16) {
-        force_skip_low_temp_var =
-            variance_low[21 + (idx64 << 4) + (idx32 << 2) + idx16];
-        break;
-      }
+      force_skip_low_temp_var =
+          variance_low[41 + (idx64 << 4) + (idx32 << 2) + idx16];
+      break;
     default: break;
   }
   return force_skip_low_temp_var;
@@ -1542,15 +1561,13 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
   const int mi_row = xd->mi_row;
   const int mi_col = xd->mi_col;
-  if (cpi->sf.rt_sf.short_circuit_low_temp_var &&
+  const int is_small_sb = (cm->seq_params.sb_size == BLOCK_64X64);
+  if (!is_small_sb && cpi->sf.rt_sf.short_circuit_low_temp_var &&
       x->nonrd_prune_ref_frame_search) {
     force_skip_low_temp_var =
         get_force_skip_low_temp_var(&x->variance_low[0], mi_row, mi_col, bsize);
-    // If force_skip_low_temp_var is set, and for short circuit mode = 1 and 3,
-    // skip golden reference.
-    if ((cpi->sf.rt_sf.short_circuit_low_temp_var == 1 ||
-         cpi->sf.rt_sf.short_circuit_low_temp_var == 3) &&
-        force_skip_low_temp_var) {
+    // If force_skip_low_temp_var is set, skip golden reference.
+    if (force_skip_low_temp_var) {
       usable_ref_frame = LAST_FRAME;
     }
   }

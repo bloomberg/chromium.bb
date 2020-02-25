@@ -443,6 +443,14 @@ struct macroblock {
   float log_q;
 #endif
   int thresh_freq_fact[BLOCK_SIZES_ALL][MAX_MODES];
+  // 0 - 128x128
+  // 1-2 - 128x64
+  // 3-4 - 64x128
+  // 5-8 - 64x64
+  // 9-16 - 64x32
+  // 17-24 - 32x64
+  // 25-40 - 32x32
+  // 41-104 - 16x16
   uint8_t variance_low[105];
   uint8_t content_state_sb;
   // Strong color activity detection. Used in REALTIME coding mode to enhance
