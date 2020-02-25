@@ -17,6 +17,9 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/vector2d.h"
 
+#undef IPC_MESSAGE_EXPORT
+#define IPC_MESSAGE_EXPORT CONTENT_EXPORT
+
 #define IPC_MESSAGE_START DragMsgStart
 
 // Messages sent from the browser to the renderer.
