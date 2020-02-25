@@ -26,7 +26,6 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import osutils
-from chromite.lib import path_util
 from chromite.lib import portage_util
 from chromite.lib import replication_lib
 from chromite.lib import uprev_lib
@@ -358,10 +357,9 @@ def uprev_sludge(build_targets, refs, chroot):
   del build_targets, refs
 
   package = 'chromeos-dtc-vm'
-  path = os.path.join('src', 'private-overlays', 'project-wilco-private',
-                      'chromeos-base', package)
-  package_path = os.path.join(constants.SOURCE_ROOT, path)
-  version_pin_path = os.path.join(constants.SOURCE_ROOT, path, 'VERSION-PIN')
+  package_path = os.path.join('src', 'private-overlays',
+                              'project-wilco-private', 'chromeos-base', package)
+  version_pin_path = os.path.join(package_path, 'VERSION-PIN')
 
   return uprev_ebuild_from_pin(package_path, version_pin_path, chroot)
 
@@ -372,8 +370,8 @@ def uprev_ebuild_from_pin(package_path, version_pin_path, chroot):
   Args:
     package_path: The path of the package relative to the src root. This path
       should contain a single ebuild with the same name as the package.
-    version_pin_path: The path of the version_pin file that contains only only
-      a version string. The ebuild's version will be directly set to this
+    version_pin_path: The path of the version_pin file that contains only a
+      version string. The ebuild's version will be directly set to this
       number.
     chroot (chroot_lib.Chroot): specify a chroot to enter.
 
@@ -381,7 +379,9 @@ def uprev_ebuild_from_pin(package_path, version_pin_path, chroot):
     UprevVersionedPackageResult: The result.
   """
   package = os.path.basename(package_path)
-  ebuild_paths = list(portage_util.EBuild.List(package_path))
+
+  package_src_path = os.path.join(constants.SOURCE_ROOT, package_path)
+  ebuild_paths = list(portage_util.EBuild.List(package_src_path))
   if not ebuild_paths:
     raise UprevError('No ebuilds found for %s' % package)
   elif len(ebuild_paths) > 1:
@@ -389,20 +389,23 @@ def uprev_ebuild_from_pin(package_path, version_pin_path, chroot):
   else:
     ebuild_path = ebuild_paths[0]
 
-  version = osutils.ReadFile(version_pin_path).strip()
+  version_pin_src_path = os.path.join(constants.SOURCE_ROOT, version_pin_path)
+  version = osutils.ReadFile(version_pin_src_path).strip()
   new_ebuild_path = os.path.join(package_path,
                                  '%s-%s-r1.ebuild' % (package, version))
-  os.rename(ebuild_path, new_ebuild_path)
+  new_ebuild_src_path = os.path.join(constants.SOURCE_ROOT, new_ebuild_path)
+  os.rename(ebuild_path, new_ebuild_src_path)
+  new_ebuild_chroot_path = os.path.join(constants.CHROOT_SOURCE_ROOT,
+                                        new_ebuild_path)
 
   try:
-    chroot_manifest_path = path_util.ToChrootPath(new_ebuild_path)
-    portage_util.UpdateEbuildManifest(chroot_manifest_path, chroot=chroot)
+    portage_util.UpdateEbuildManifest(new_ebuild_chroot_path, chroot=chroot)
   except cros_build_lib.RunCommandError as e:
-    raise UprevError(
+    raise EbuildManifestError(
         'Unable to update manifest for %s: %s' % (package, e.stderr))
 
   result = UprevVersionedPackageResult()
-  result.add_result(version, [new_ebuild_path, ebuild_path])
+  result.add_result(version, [new_ebuild_src_path, ebuild_path])
   return result
 
 
