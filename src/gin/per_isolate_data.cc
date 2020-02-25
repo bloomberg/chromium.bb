@@ -28,7 +28,8 @@ PerIsolateData::PerIsolateData(
     ArrayBuffer::Allocator* allocator,
     IsolateHolder::AccessMode access_mode,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : isolate_(isolate), allocator_(allocator) {
+    : isolate_(isolate), allocator_(allocator),
+      heap_tracer_() {
   isolate_->SetData(kEmbedderNativeGin, this);
 
   DCHECK(task_runner);
@@ -41,6 +42,7 @@ PerIsolateData::PerIsolateData(
 }
 
 PerIsolateData::~PerIsolateData() {
+  isolate_->SetEmbedderHeapTracer(nullptr);
   isolate_->SetData(kEmbedderNativeGin, NULL);
 }
 
