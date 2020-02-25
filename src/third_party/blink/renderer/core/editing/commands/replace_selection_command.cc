@@ -1142,7 +1142,7 @@ void ReplaceSelectionCommand::InsertParagraphSeparatorIfNeeds(
     // command would have deleted the end of the paragraph separator.  If we are inserting
     // in nested mode, then we should add back a paragraph separator.
     if (insert_nested && selection_start_was_start_of_paragraph && selection_end_was_end_of_paragraph && !selection_end_was_end_of_block &&
-        (selection_end_was_start_of_block || !IsHTMLBRElement(EndingSelection().Start().AnchorNode())) &&
+        (selection_end_was_start_of_block || !IsA<HTMLBRElement>(*EndingSelection().Start().AnchorNode())) &&
             // ^ Do not add new line if the selection ends at the end of a textnode whose nextSibling is <br>
         PreviousPositionOf(visible_end).DeepEquivalent().ComputeContainerNode() != visible_end.DeepEquivalent().ComputeContainerNode()
             // ^ Do not add new line if the selection is followed by a '\n'
