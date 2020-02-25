@@ -475,6 +475,12 @@ def _CreateParser():
                           dest='cbb_snapshot_revision', default=None,
                           help='Snapshot manifest revision to sync to '
                                'for building.')
+  group.add_remote_option(
+      '--no-publish-prebuilt-confs',
+      dest='publish',
+      action='store_false',
+      default=True,
+      help="Don't publish git commits to prebuilt.conf or sdk_version.conf")
 
   parser.add_argument_group(group)
 

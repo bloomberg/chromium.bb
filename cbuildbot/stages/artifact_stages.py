@@ -631,7 +631,7 @@ class UploadPrebuiltsStage(generic_stages.BoardSpecificBuilderStage):
     if version is not None:
       generated_args.extend(['--set-version', version])
 
-    if self._run.config.git_sync:
+    if self._run.config.git_sync and self._run.options.publish:
       # Git sync should never be set for pfq type builds.
       assert not config_lib.IsPFQType(self._prebuilt_type)
       generated_args.extend(['--git-sync'])

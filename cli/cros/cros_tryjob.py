@@ -595,6 +595,12 @@ List Examples:
     how_group.add_argument(
         '--debug-cidb', dest='passthrough', action='append_option',
         help='Force Debug CIDB to be used.')
+    how_group.add_argument(
+        '--no-publish-prebuilt-confs',
+        dest='passthrough',
+        action='append_option',
+        help='Force the tryjob to not publish commits to prebuilt.conf or '
+             'sdk_version.conf, even if run in production.')
 
     # Overrides for the build configs testing behaviors.
     test_group = parser.add_argument_group(
