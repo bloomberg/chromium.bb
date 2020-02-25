@@ -1809,7 +1809,7 @@ static const EditorInternalCommand* InternalCommand(
 
 
       // patch section: insert HTML nested
-      {WebEditingCommandType::kInsertHTMLNested, InsertCommands::ExecuteInsertHTMLNested,
+      {EditingCommandType::kInsertHTMLNested, InsertCommands::ExecuteInsertHTMLNested,
        Supported, EnabledInEditableText, StateNone, ValueStateOrNull,
        kNotTextInsertion, CanNotExecuteWhenDisabled },
 
