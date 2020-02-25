@@ -962,7 +962,7 @@ int determine_high_err_gf(double *errs, int *is_high, double *si, int len,
 #define RC_FACTOR_MAX 1.25
 #endif  // GROUP_ADAPTIVE_MAXQ
 #define MIN_FWD_KF_INTERVAL 8
-#define MIN_SHRINK_LEN 8      // the minimum length of gf if we are shrinking
+#define MIN_SHRINK_LEN 6      // the minimum length of gf if we are shrinking
 #define SI_HIGH AVG_SI_THRES  // high quality classification
 #define SI_LOW 0.3            // very unsure classification
 // this function finds an low error frame previously to the current last frame
@@ -1049,7 +1049,8 @@ void set_last_prev_low_err(int *cur_start_ptr, int *cur_last_ptr, int *cut_pos,
 
 // This function decides the gf group length of future frames in batch
 // rc->gf_intervals is modified to store the group lengths
-static void calculate_gf_length(AV1_COMP *cpi, int max_gop_length) {
+static void calculate_gf_length(AV1_COMP *cpi, int max_gop_length,
+                                int max_intervals) {
   RATE_CONTROL *const rc = &cpi->rc;
   TWO_PASS *const twopass = &cpi->twopass;
   FIRSTPASS_STATS next_frame;
@@ -1072,11 +1073,11 @@ static void calculate_gf_length(AV1_COMP *cpi, int max_gop_length) {
   av1_zero(next_frame);
 
   if (has_no_stats_stage(cpi)) {
-    for (i = 0; i < NUM_GF_INTERVALS; i++) {
+    for (i = 0; i < MAX_NUM_GF_INTERVALS; i++) {
       rc->gf_intervals[i] = MAX_GF_INTERVAL;
     }
     rc->cur_gf_index = 0;
-    rc->intervals_till_gf_calculate_due = NUM_GF_INTERVALS;
+    rc->intervals_till_gf_calculate_due = MAX_NUM_GF_INTERVALS;
     return;
   }
 
@@ -1086,8 +1087,8 @@ static void calculate_gf_length(AV1_COMP *cpi, int max_gop_length) {
       AOMMIN(rc->max_gf_interval, max_gop_length);
 
   i = 0;
-  const int max_intervals = cpi->lap_enabled ? 1 : NUM_GF_INTERVALS;
-  int cut_pos[NUM_GF_INTERVALS + 1] = { 0 };
+  max_intervals = cpi->lap_enabled ? 1 : max_intervals;
+  int cut_pos[MAX_NUM_GF_INTERVALS + 1] = { 0 };
   int count_cuts = 1;
   int cur_start = 0, cur_last;
   int cut_here;
@@ -1150,7 +1151,8 @@ static void calculate_gf_length(AV1_COMP *cpi, int max_gop_length) {
         int is_high[MAX_GF_INTERVAL + 1 + MAX_PAD_GF_CHECK * 2] = { 0 };
         double errs[MAX_GF_INTERVAL + 1 + MAX_PAD_GF_CHECK * 2] = { 0 };
         double si[MAX_GF_INTERVAL + 1 + MAX_PAD_GF_CHECK * 2] = { 0 };
-        int before_pad = AOMMIN(MAX_PAD_GF_CHECK, cur_start - (cur_start == 0));
+        int before_pad =
+            AOMMIN(MAX_PAD_GF_CHECK, rc->frames_since_key - 1 + cur_start);
         int after_pad =
             AOMMIN(MAX_PAD_GF_CHECK, rc->frames_to_key - cur_last - 1);
         for (n = cur_start - before_pad; n <= cur_last + after_pad; n++) {
@@ -1170,7 +1172,7 @@ static void calculate_gf_length(AV1_COMP *cpi, int max_gop_length) {
         // count how many trailing lower error frames we have in this decided
         // gf group
         prev_lows = 0;
-        for (n = cur_last; n > cur_start; n--) {
+        for (n = cur_last - 1; n > cur_start + MIN_SHRINK_LEN; n--) {
           if (is_high[n - cur_start + before_pad] == 0 &&
               (si[n - cur_start + before_pad] > SI_HIGH || reset)) {
             prev_lows++;
@@ -1436,8 +1438,10 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
     }
     *this_frame = next_frame;
   }
-  rc->intervals_till_gf_calculate_due--;
-  rc->cur_gf_index++;
+  if (is_final_pass) {
+    rc->intervals_till_gf_calculate_due--;
+    rc->cur_gf_index++;
+  }
 
   // Was the group length constrained by the requirement for a new KF?
   rc->constrained_gf_group = (i >= rc->frames_to_key) ? 1 : 0;
@@ -1561,7 +1565,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
       if (i - roll_back >= active_min_gf_interval + 1) {
         alt_offset = -roll_back;
         i -= roll_back;
-        rc->intervals_till_gf_calculate_due = 0;
+        if (is_final_pass) rc->intervals_till_gf_calculate_due = 0;
       }
     }
   }
@@ -1601,12 +1605,12 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
       // if possible, merge the last two gf groups
       if (rc->frames_to_key <= active_max_gf_interval) {
         rc->baseline_gf_interval = rc->frames_to_key;
-        rc->intervals_till_gf_calculate_due = 0;
+        if (is_final_pass) rc->intervals_till_gf_calculate_due = 0;
         // if merging the last two gf groups creates a group that is too long,
         // split them and force the last gf group to be the MIN_FWD_KF_INTERVAL
       } else {
         rc->baseline_gf_interval = rc->frames_to_key - MIN_FWD_KF_INTERVAL;
-        rc->intervals_till_gf_calculate_due = 0;
+        if (is_final_pass) rc->intervals_till_gf_calculate_due = 0;
       }
     } else {
       rc->baseline_gf_interval = i - rc->source_alt_ref_pending;
@@ -1619,7 +1623,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   // the next gf group.
   // TODO(bohanli): should incorporate the usage of alt_ref into
   // calculate_gf_length
-  if (rc->source_alt_ref_pending == 0 &&
+  if (is_final_pass && rc->source_alt_ref_pending == 0 &&
       rc->intervals_till_gf_calculate_due > 0) {
     rc->gf_intervals[rc->cur_gf_index]--;
   }
@@ -2323,18 +2327,29 @@ void av1_get_second_pass_params(AV1_COMP *cpi,
   if (rc->frames_till_gf_update_due == 0) {
     assert(cpi->common.current_frame.frame_number == 0 ||
            gf_group->index == gf_group->size);
-    int max_gop_length = MAX_GF_INTERVAL;
-    // TODO(jingning): Remove redundant computations here.
-    if (cpi->oxcf.lag_in_frames >= 32) {
-      calculate_gf_length(cpi, max_gop_length);
-      define_gf_group(cpi, &this_frame, frame_params, max_gop_length, 0);
-
-      if (!av1_tpl_setup_stats(cpi, 1, frame_params, frame_input))
-        max_gop_length = 16;
-    } else {
-      max_gop_length = 16;
+    int max_gop_length = (cpi->oxcf.lag_in_frames >= 32) ? MAX_GF_INTERVAL : 16;
+    if (rc->intervals_till_gf_calculate_due == 0) {
+      calculate_gf_length(cpi, max_gop_length, MAX_NUM_GF_INTERVALS);
     }
-    calculate_gf_length(cpi, max_gop_length);
+
+    if (max_gop_length > 16) {
+      if (rc->gf_intervals[rc->cur_gf_index] - 1 > 16) {
+        // The calculate_gf_length function is previously used with
+        // max_gop_length = 32 with look-ahead gf intervals.
+        define_gf_group(cpi, &this_frame, frame_params, max_gop_length, 0);
+        if (!av1_tpl_setup_stats(cpi, 1, frame_params, frame_input)) {
+          // Tpl decides that a shorter gf interval is better.
+          // TODO(jingning): Remove redundant computations here.
+          max_gop_length = 16;
+          calculate_gf_length(cpi, max_gop_length, 1);
+        }
+      } else {
+        // Even based on 32 we still decide to use a short gf interval.
+        // Better to re-decide based on 16 then
+        max_gop_length = 16;
+        calculate_gf_length(cpi, max_gop_length, 1);
+      }
+    }
     define_gf_group(cpi, &this_frame, frame_params, max_gop_length, 1);
 
     rc->frames_till_gf_update_due = rc->baseline_gf_interval;
