@@ -389,6 +389,9 @@ TEST_P(SSETest, DISABLED_Speed) {
 #if HAVE_NEON
 TestSSEFuncs sse_neon[] = {
   TestSSEFuncs(&aom_sse_c, &aom_sse_neon),
+#if CONFIG_AV1_HIGHBITDEPTH
+  TestSSEFuncs(&aom_highbd_sse_c, &aom_highbd_sse_neon)
+#endif
 };
 INSTANTIATE_TEST_SUITE_P(NEON, SSETest,
                          Combine(ValuesIn(sse_neon), Range(4, 129, 4)));

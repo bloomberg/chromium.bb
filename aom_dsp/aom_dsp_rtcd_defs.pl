@@ -608,7 +608,7 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
     specialize qw/aom_highbd_subtract_block sse2/;
 
     add_proto qw/int64_t/, "aom_highbd_sse", "const uint8_t *a8, int a_stride, const uint8_t *b8,int b_stride, int width, int height";
-    specialize qw/aom_highbd_sse  sse4_1 avx2/;
+    specialize qw/aom_highbd_sse  sse4_1 avx2 neon/;
   }
 
   if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
