@@ -668,38 +668,39 @@ def GetReviewers(host, change):
   return FetchUrlJson(host, path)
 
 
-def AddReviewers(host, change, add=None):
+def AddReviewers(host, change, add=None, notify=None):
   """Add reviewers to a change."""
   if not add:
     return
   if isinstance(add, six.string_types):
     add = (add,)
+  body = {}
+  if notify:
+    body['notify'] = notify
   path = '%s/reviewers' % _GetChangePath(change)
   for r in add:
-    body = {'reviewer': r}
+    body['reviewer'] = r
     jmsg = FetchUrlJson(host, path, reqtype='POST', body=body, ignore_404=False)
   return jmsg
 
 
-def RemoveReviewers(host, change, remove=None):
+def RemoveReviewers(host, change, remove=None, notify=None):
   """Remove reveiewers from a change."""
   if not remove:
     return
   if isinstance(remove, six.string_types):
     remove = (remove,)
+  body = {}
+  if notify:
+    body['notify'] = notify
   for r in remove:
-    path = '%s/reviewers/%s' % (_GetChangePath(change), r)
+    path = '%s/reviewers/%s/delete' % (_GetChangePath(change), r)
     try:
-      FetchUrl(host, path, reqtype='DELETE', ignore_404=False)
+      FetchUrl(host, path, reqtype='POST', body=body, ignore_204=True)
     except GOBError as e:
       # On success, gerrit returns status 204; anything else is an error.
       if e.http_status != 204:
         raise
-    else:
-      raise GOBError(
-          http_status=200,
-          reason='Unexpectedly received a 200 http status while deleting'
-                 ' reviewer "%s" from change %s' % (r, change))
 
 
 def SetReview(host, change, revision=None, msg=None, labels=None, notify=None):

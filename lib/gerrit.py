@@ -112,7 +112,7 @@ class GerritHelper(object):
       else:
         gob_util.MarkNotPrivate(self.host, change)
 
-  def SetReviewers(self, change, add=(), remove=(), dryrun=False):
+  def SetReviewers(self, change, add=(), remove=(), dryrun=False, notify='ALL'):
     """Modify the list of reviewers on a gerrit change.
 
     Args:
@@ -120,17 +120,18 @@ class GerritHelper(object):
       add: Sequence of email addresses of reviewers to add.
       remove: Sequence of email addresses of reviewers to remove.
       dryrun: If True, only print what would have been done.
+      notify: A string, parameter controlling gerrit's email generation.
     """
     if add:
       if dryrun:
         logging.info('Would have added %s to "%s"', add, change)
       else:
-        gob_util.AddReviewers(self.host, change, add)
+        gob_util.AddReviewers(self.host, change, add, notify=notify)
     if remove:
       if dryrun:
         logging.info('Would have removed %s to "%s"', remove, change)
       else:
-        gob_util.RemoveReviewers(self.host, change, remove)
+        gob_util.RemoveReviewers(self.host, change, remove, notify=notify)
 
   def GetChangeDetail(self, change_num, verbose=False):
     """Return detailed information about a gerrit change.

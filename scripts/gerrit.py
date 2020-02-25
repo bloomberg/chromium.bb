@@ -471,7 +471,7 @@ def UserActReviewers(opts, cl, *args):
   if add_list or remove_list:
     helper, cl = GetGerrit(opts, cl)
     helper.SetReviewers(cl, add=add_list, remove=remove_list,
-                        dryrun=opts.dryrun)
+                        dryrun=opts.dryrun, notify=opts.notify)
 UserActReviewers.usage = '<CL> <emails...>'
 
 
