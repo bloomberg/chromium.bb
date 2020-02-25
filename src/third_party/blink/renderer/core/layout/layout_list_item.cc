@@ -296,7 +296,10 @@ bool LayoutListItem::UpdateMarkerLocation() {
 
     marker_->Remove();
     if (fontsAreDifferent) {
-      marker_->MutableStyle()->SetFontDescription(firstText->Style()->GetFontDescription());
+      scoped_refptr<ComputedStyle> style = ComputedStyle::Clone(marker_->StyleRef());
+      style->SetFontDescription(firstText->Style()->GetFontDescription());
+      marker_->SetStyle(style, ApplyStyleChanges::kYes);
+
       marker_->Style()->GetFont().Update(marker_->Style()->GetFont().GetFontSelector());
     }
     line_box_parent->AddChild(marker_, firstNonMarker);
