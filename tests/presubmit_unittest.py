@@ -648,7 +648,6 @@ def CheckChangeOnCommit(input_api, output_api):
             'long_text': fake_warning_long_text
           }
         ],
-        'should_continue': False,
         'more_cc': ['me@example.com'],
     }
 

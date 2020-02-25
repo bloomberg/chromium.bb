@@ -33,8 +33,8 @@ import metrics
 # We have to disable monitoring before importing git_cl.
 metrics.DISABLE_METRICS_COLLECTION = True
 
-import contextlib
 import clang_format
+import contextlib
 import gclient_utils
 import gerrit_util
 import git_cl
@@ -80,16 +80,6 @@ class ChangelistMock(object):
     return ChangelistMock.desc
   def UpdateDescription(self, desc, force=False):
     ChangelistMock.desc = desc
-
-
-class PresubmitMock(object):
-  def __init__(self, *args, **kwargs):
-    self.reviewers = []
-    self.more_cc = ['chromium-reviews+test-more-cc@chromium.org']
-
-  @staticmethod
-  def should_continue():
-    return True
 
 
 class GitMocks(object):
@@ -657,7 +647,8 @@ class TestGitCl(unittest.TestCase):
         'git_cl.write_json',
         lambda *a: self._mocked_call('write_json', *a)).start()
     mock.patch(
-        'git_cl.presubmit_support.DoPresubmitChecks', PresubmitMock).start()
+        'git_cl.Changelist.RunHook',
+        return_value={'more_cc': ['test-more-cc@chromium.org']}).start()
     mock.patch('git_cl.watchlists.Watchlists', WatchlistsMock).start()
     mock.patch('git_cl.auth.Authenticator', AuthenticatorMock).start()
     mock.patch('gerrit_util.GetChangeDetail').start()
@@ -819,13 +810,6 @@ class TestGitCl(unittest.TestCase):
     ]
 
     calls += [
-      (('time.time',), 1000,),
-      (('time.time',), 3000,),
-      (('add_repeated', 'sub_commands', {
-          'execution_time': 2000,
-          'command': 'presubmit',
-          'exit_code': 0
-      }), None,),
       ((['git', 'diff', '--no-ext-diff', '--stat', '-l100000', '-C50'] +
          ([custom_cl_base] if custom_cl_base else
           [ancestor_revision, 'HEAD']),),
@@ -959,7 +943,7 @@ class TestGitCl(unittest.TestCase):
         ref_suffix += ',r=%s' % r
         metrics_arguments.append('r')
       if issue is None:
-        cc += ['chromium-reviews+test-more-cc@chromium.org', 'joe@example.com']
+        cc += ['test-more-cc@chromium.org', 'joe@example.com']
       for c in sorted(cc):
         ref_suffix += ',cc=%s' % c
         metrics_arguments.append('cc')
@@ -969,7 +953,7 @@ class TestGitCl(unittest.TestCase):
       calls += [
         (('ValidAccounts', '%s-review.googlesource.com' % short_hostname,
           sorted(reviewers) + ['joe@example.com',
-          'chromium-reviews+test-more-cc@chromium.org'] + cc),
+          'test-more-cc@chromium.org'] + cc),
          {
            e: {'email': e}
            for e in (reviewers + ['joe@example.com'] + cc)
@@ -1106,7 +1090,7 @@ class TestGitCl(unittest.TestCase):
           (('AddReviewers',
             'chromium-review.googlesource.com', 'my%2Frepo~123456',
             sorted(reviewers),
-            cc + ['chromium-reviews+test-more-cc@chromium.org'],
+            cc + ['test-more-cc@chromium.org'],
             notify),
            ''),
       ]
@@ -2779,6 +2763,25 @@ class TestGitCl(unittest.TestCase):
 
 
 class ChangelistTest(unittest.TestCase):
+  def setUp(self):
+    super(ChangelistTest, self).setUp()
+    mock.patch('gclient_utils.FileRead').start()
+    mock.patch('gclient_utils.FileWrite').start()
+    mock.patch('gclient_utils.temporary_file', TemporaryFileMock()).start()
+    mock.patch(
+        'git_cl.Changelist.GetCodereviewServer',
+        return_value='https://chromium-review.googlesource.com').start()
+    mock.patch('git_cl.Changelist.GetAuthor', return_value='author').start()
+    mock.patch('git_cl.Changelist.GetIssue', return_value=123456).start()
+    mock.patch('git_cl.Changelist.GetPatchset', return_value=7).start()
+    mock.patch('git_cl.PRESUBMIT_SUPPORT', 'PRESUBMIT_SUPPORT').start()
+    mock.patch('git_cl.Settings.GetRoot', return_value='root').start()
+    mock.patch('git_cl.time_time').start()
+    mock.patch('metrics.collector').start()
+    mock.patch('subprocess2.Popen').start()
+    self.addCleanup(mock.patch.stopall)
+    self.temp_count = 0
+
   @mock.patch('git_cl.RunGitWithCode')
   def testGetLocalDescription(self, _mock):
     git_cl.RunGitWithCode.return_value = (0, 'description')
@@ -2787,6 +2790,72 @@ class ChangelistTest(unittest.TestCase):
     self.assertEqual('description', cl.GetLocalDescription('branch'))
     git_cl.RunGitWithCode.assert_called_once_with(
         ['log', '--pretty=format:%s%n%n%b', 'branch...'])
+
+  def testRunHook(self):
+    expected_results = {
+        'more_cc': ['more@example.com', 'cc@example.com'],
+        'should_continue': True,
+    }
+    gclient_utils.FileRead.return_value = json.dumps(expected_results)
+    git_cl.time_time.side_effect = [100, 200]
+    mockProcess = mock.Mock()
+    mockProcess.wait.return_value = 0
+    subprocess2.Popen.return_value = mockProcess
+
+    cl = git_cl.Changelist()
+    results = cl.RunHook(
+        committing=True,
+        may_prompt=True,
+        verbose=2,
+        parallel=True,
+        upstream='upstream',
+        description='description',
+        all_files=True)
+
+    self.assertEqual(expected_results, results)
+    subprocess2.Popen.assert_called_once_with([
+        'vpython', 'PRESUBMIT_SUPPORT',
+        '--commit',
+        '--author', 'author',
+        '--root', 'root',
+        '--upstream', 'upstream',
+        '--verbose', '--verbose',
+        '--issue', '123456',
+        '--patchset', '7',
+        '--gerrit_url', 'https://chromium-review.googlesource.com',
+        '--may_prompt',
+        '--parallel',
+        '--all_files',
+        '--json_output', '/tmp/fake-temp2',
+        '--description_file', '/tmp/fake-temp1',
+    ])
+    gclient_utils.FileWrite.assert_called_once_with(
+        '/tmp/fake-temp1', b'description', mode='wb')
+    metrics.collector.add_repeated('sub_commands', {
+      'command': 'presubmit',
+      'execution_time': 100,
+      'exit_code': 0,
+    })
+
+  @mock.patch('sys.exit', side_effect=SystemExitMock)
+  def testRunHook_Failure(self, _mock):
+    git_cl.time_time.side_effect = [100, 200]
+    mockProcess = mock.Mock()
+    mockProcess.wait.return_value = 2
+    subprocess2.Popen.return_value = mockProcess
+
+    cl = git_cl.Changelist()
+    with self.assertRaises(SystemExitMock):
+      cl.RunHook(
+          committing=True,
+          may_prompt=True,
+          verbose=2,
+          parallel=True,
+          upstream='upstream',
+          description='description',
+          all_files=True)
+
+    sys.exit.assert_called_once_with(2)
 
 
 class CMDTestCaseBase(unittest.TestCase):

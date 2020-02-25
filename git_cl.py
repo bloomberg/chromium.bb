@@ -68,6 +68,7 @@ __version__ = '2.0'
 # depot_tools checkout.
 DEPOT_TOOLS = os.path.dirname(os.path.abspath(__file__))
 TRACES_DIR = os.path.join(DEPOT_TOOLS, 'traces')
+PRESUBMIT_SUPPORT = os.path.join(DEPOT_TOOLS, 'presubmit_support.py')
 
 # When collecting traces, Git hashes will be reduced to 6 characters to reduce
 # the size after compression.
@@ -1422,23 +1423,57 @@ class Changelist(object):
 
     self.description = description
 
-  def RunHook(self, committing, may_prompt, verbose, change, parallel):
+  def RunHook(
+      self, committing, may_prompt, verbose, parallel, upstream, description,
+      all_files):
     """Calls sys.exit() if the hook fails; returns a HookResults otherwise."""
-    try:
-      start = time_time()
-      result = presubmit_support.DoPresubmitChecks(change, committing,
-          verbose=verbose, output_stream=sys.stdout, input_stream=sys.stdin,
-          default_presubmit=None, may_prompt=may_prompt,
-          gerrit_obj=self.GetGerritObjForPresubmit(),
-          parallel=parallel)
-      metrics.collector.add_repeated('sub_commands', {
-        'command': 'presubmit',
-        'execution_time': time_time() - start,
-        'exit_code': 0 if result.should_continue() else 1,
-      })
-      return result
-    except presubmit_support.PresubmitFailure as e:
-      DieWithError('%s\nMaybe your depot_tools is out of date?' % e)
+    args = [
+        '--commit' if committing else '--upload',
+        '--author', self.GetAuthor(),
+        '--root', settings.GetRoot(),
+        '--upstream', upstream,
+    ]
+
+    args.extend(['--verbose'] * verbose)
+
+    issue = self.GetIssue()
+    patchset = self.GetPatchset()
+    gerrit_url = self.GetCodereviewServer()
+    if issue:
+      args.extend(['--issue', str(issue)])
+    if patchset:
+      args.extend(['--patchset', str(patchset)])
+    if gerrit_url:
+      args.extend(['--gerrit_url', gerrit_url])
+
+    if may_prompt:
+      args.append('--may_prompt')
+    if parallel:
+      args.append('--parallel')
+    if all_files:
+      args.append('--all_files')
+
+    with gclient_utils.temporary_file() as description_file:
+      with gclient_utils.temporary_file() as json_output:
+        gclient_utils.FileWrite(
+            description_file, description.encode('utf-8'), mode='wb')
+        args.extend(['--json_output', json_output])
+        args.extend(['--description_file', description_file])
+
+        start = time_time()
+        p = subprocess2.Popen(['vpython', PRESUBMIT_SUPPORT] + args)
+        exit_code = p.wait()
+        metrics.collector.add_repeated('sub_commands', {
+          'command': 'presubmit',
+          'execution_time': time_time() - start,
+          'exit_code': exit_code,
+        })
+
+        if exit_code:
+          sys.exit(exit_code)
+
+        json_results = gclient_utils.FileRead(json_output)
+        return json.loads(json_results)
 
   def CMDUpload(self, options, git_diff_args, orig_args):
     """Uploads a change to codereview."""
@@ -1467,21 +1502,23 @@ class Changelist(object):
       self.ExtendCC(watchlist.GetWatchersForPaths(files))
 
     if not options.bypass_hooks:
+      description = change.FullDescriptionText()
       if options.reviewers or options.tbrs or options.add_owners_to:
         # Set the reviewer list now so that presubmit checks can access it.
-        change_description = ChangeDescription(change.FullDescriptionText())
+        change_description = ChangeDescription(description)
         change_description.update_reviewers(options.reviewers,
                                             options.tbrs,
                                             options.add_owners_to,
                                             change)
-        change.SetDescriptionText(change_description.description)
+        description = change_description.description
       hook_results = self.RunHook(committing=False,
                                   may_prompt=not options.force,
                                   verbose=options.verbose,
-                                  change=change, parallel=options.parallel)
-      if not hook_results.should_continue():
-        return 1
-      self.ExtendCC(hook_results.more_cc)
+                                  parallel=options.parallel,
+                                  upstream=base_branch,
+                                  description=description,
+                                  all_files=False)
+      self.ExtendCC(hook_results['more_cc'])
 
     print_stats(git_diff_args)
     ret = self.CMDUploadChange(options, git_diff_args, custom_cl_base, change)
@@ -1982,14 +2019,19 @@ class Changelist(object):
             action='submit')
       print('WARNING: Bypassing hooks and submitting latest uploaded patchset.')
     elif not bypass_hooks:
-      hook_results = self.RunHook(
+      upstream = self.GetCommonAncestorWithUpstream()
+      if self.GetIssue():
+        description = self.FetchDescription()
+      else:
+        description = self.GetDescription(upstream)
+      self.RunHook(
           committing=True,
           may_prompt=not force,
           verbose=verbose,
-          change=self.GetChange(self.GetCommonAncestorWithUpstream()),
-          parallel=parallel)
-      if not hook_results.should_continue():
-        return 1
+          parallel=parallel,
+          upstream=upstream,
+          description=description,
+          all_files=False)
 
     self.SubmitIssue(wait_for_merge=True)
     print('Issue %s has been submitted.' % self.GetIssueURL())
@@ -4085,27 +4127,19 @@ def CMDpresubmit(parser, args):
     # Default to diffing against the common ancestor of the upstream branch.
     base_branch = cl.GetCommonAncestorWithUpstream()
 
-  if options.all:
-    base_change = cl.GetChange(base_branch)
-    files = [('M', f) for f in base_change.AllFiles()]
-    change = presubmit_support.GitChange(
-        base_change.Name(),
-        base_change.FullDescriptionText(),
-        base_change.RepositoryRoot(),
-        files,
-        base_change.issue,
-        base_change.patchset,
-        base_change.author_email,
-        base_change._upstream)
+  if self.GetIssue():
+    description = self.FetchDescription()
   else:
-    change = cl.GetChange(base_branch)
+    description = self.GetDescription(base_branch)
 
   cl.RunHook(
       committing=not options.upload,
       may_prompt=False,
       verbose=options.verbose,
-      change=change,
-      parallel=options.parallel)
+      parallel=options.parallel,
+      upstream=base_branch,
+      description=description,
+      all_files=options.all)
   return 0
 
 

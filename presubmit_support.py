@@ -1706,7 +1706,6 @@ def DoPresubmitChecks(change,
         'warnings': [
             warning.json_format() for warning in warnings
         ],
-        'should_continue': output.should_continue(),
         'more_cc': output.more_cc,
       }
 
@@ -1850,7 +1849,10 @@ def main(argv=None):
                       help='Use 2 times for more debug info.')
   parser.add_argument('--name', default='no name')
   parser.add_argument('--author')
-  parser.add_argument('--description', default='')
+  desc = parser.add_mutually_exclusive_group()
+  desc.add_argument('--description', default='', help='The change description.')
+  desc.add_argument('--description_file',
+                    help='File to read change description from.')
   parser.add_argument('--issue', type=int, default=0)
   parser.add_argument('--patchset', type=int, default=0)
   parser.add_argument('--root', default=os.getcwd(),
@@ -1892,6 +1894,8 @@ def main(argv=None):
   else:
     logging.basicConfig(level=logging.ERROR)
 
+  if options.description_file:
+    options.description = gclient_utils.FileRead(options.description_file)
   gerrit_obj = _parse_gerrit_options(parser, options)
   change = _parse_change(parser, options)
 
