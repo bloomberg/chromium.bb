@@ -878,11 +878,8 @@ static AOM_INLINE void pick_sb_modes(AV1_COMP *const cpi,
   }
 
   // Examine the resulting rate and for AQ mode 2 make a segment choice.
-  if ((rd_cost->rate != INT_MAX) && (aq_mode == COMPLEXITY_AQ) &&
-      (bsize >= BLOCK_16X16) &&
-      (cm->current_frame.frame_type == KEY_FRAME ||
-       cpi->refresh_alt_ref_frame || cpi->refresh_bwd_ref_frame ||
-       (cpi->refresh_golden_frame && !cpi->rc.is_src_frame_alt_ref))) {
+  if (rd_cost->rate != INT_MAX && aq_mode == COMPLEXITY_AQ &&
+      bsize >= BLOCK_16X16) {
     av1_caq_select_segment(cpi, x, bsize, mi_row, mi_col, rd_cost->rate);
   }
 

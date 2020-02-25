@@ -45,6 +45,20 @@ static int get_aq_c_strength(int q_index, aom_bit_depth_t bit_depth) {
   return (base_quant > 10) + (base_quant > 25);
 }
 
+static bool is_frame_aq_enabled(const AV1_COMP *const cpi) {
+  const AV1_COMMON *const cm = &cpi->common;
+
+  return frame_is_intra_only(cm) || cm->error_resilient_mode ||
+         cpi->refresh_alt_ref_frame ||
+         (cpi->refresh_golden_frame && !cpi->rc.is_src_frame_alt_ref);
+}
+
+// Segmentation only makes sense if the target bits per SB is above a threshold.
+// Below this the overheads will usually outweigh any benefit.
+static bool is_sb_aq_enabled(const AV1_COMP *const cpi) {
+  return cpi->rc.sb64_target_rate >= 256;
+}
+
 void av1_setup_in_frame_q_adj(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   struct segmentation *const seg = &cm->seg;
@@ -62,9 +76,7 @@ void av1_setup_in_frame_q_adj(AV1_COMP *cpi) {
     return;
   }
 
-  if (frame_is_intra_only(cm) || cm->error_resilient_mode ||
-      cpi->refresh_alt_ref_frame ||
-      (cpi->refresh_golden_frame && !cpi->rc.is_src_frame_alt_ref)) {
+  if (is_frame_aq_enabled(cpi)) {
     int segment;
     const int aq_strength =
         get_aq_c_strength(cm->base_qindex, cm->seq_params.bit_depth);
@@ -74,9 +86,7 @@ void av1_setup_in_frame_q_adj(AV1_COMP *cpi) {
 
     av1_clearall_segfeatures(seg);
 
-    // Segmentation only makes sense if the target bits per SB is above a
-    // threshold. Below this the overheads will usually outweigh any benefit.
-    if (cpi->rc.sb64_target_rate < 256) {
+    if (!is_sb_aq_enabled(cpi)) {
       av1_disable_segmentation(seg);
       return;
     }
@@ -118,6 +128,7 @@ void av1_setup_in_frame_q_adj(AV1_COMP *cpi) {
 // bits for the block vs a target average and its spatial complexity.
 void av1_caq_select_segment(const AV1_COMP *cpi, MACROBLOCK *mb, BLOCK_SIZE bs,
                             int mi_row, int mi_col, int projected_rate) {
+  if ((!is_frame_aq_enabled(cpi)) || (!is_sb_aq_enabled(cpi))) return;
   const AV1_COMMON *const cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
 
