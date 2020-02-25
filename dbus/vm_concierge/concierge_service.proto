@@ -477,8 +477,8 @@ message ResizeDiskImageRequest {
   // The cryptohome id for the user's encrypted storage.
   string cryptohome_id = 1;
 
-  // The path to the disk image. This must be a relative path.
-  string disk_path = 2;
+  // The name of the vm image.
+  string vm_name = 2;
 
   // The desired logical size of the disk image, in bytes.
   uint64 disk_size = 3;
