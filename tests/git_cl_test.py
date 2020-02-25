@@ -192,7 +192,6 @@ class TestGitClBasic(unittest.TestCase):
   def test_fetch_description(self):
     cl = git_cl.Changelist(issue=1, codereview_host='host')
     cl.description = 'x'
-    cl.has_description = True
     self.assertEqual(cl.FetchDescription(), 'x')
 
   @mock.patch('git_cl.Changelist.EnsureAuthenticated')
@@ -819,15 +818,7 @@ class TestGitCl(unittest.TestCase):
       ((['git', 'rev-parse', 'HEAD'],), '12345'),
     ]
 
-    if not issue:
-      calls += [
-        ((['git', 'log', '--pretty=format:%s%n%n%b',
-           ancestor_revision + '...'],),
-         'foo'),
-      ]
-
     calls += [
-      ((['git', 'config', 'user.email'],), 'me@example.com'),
       (('time.time',), 1000,),
       (('time.time',), 3000,),
       (('add_repeated', 'sub_commands', {
@@ -1194,12 +1185,15 @@ class TestGitCl(unittest.TestCase):
     mock.patch('os.path.isfile',
               lambda path: self._mocked_call(['os.path.isfile', path])).start()
     mock.patch('git_cl.Changelist.GitSanityChecks', return_value=True).start()
+    mock.patch(
+        'git_cl.Changelist.GetLocalDescription', return_value='foo').start()
 
     self.mockGit.config['gerrit.host'] = 'true'
     self.mockGit.config['branch.master.gerritissue'] = (
         str(issue) if issue else None)
     self.mockGit.config['remote.origin.url'] = (
         'https://%s.googlesource.com/my/repo' % short_hostname)
+    self.mockGit.config['user.email'] = 'me@example.com'
 
     self.calls = self._gerrit_base_calls(
         issue=issue,
@@ -2782,6 +2776,17 @@ class TestGitCl(unittest.TestCase):
     ]
     cl = git_cl.Changelist(issue=123456)
     self.assertEqual(cl._GerritChangeIdentifier(), '123456')
+
+
+class ChangelistTest(unittest.TestCase):
+  @mock.patch('git_cl.RunGitWithCode')
+  def testGetLocalDescription(self, _mock):
+    git_cl.RunGitWithCode.return_value = (0, 'description')
+    cl = git_cl.Changelist()
+    self.assertEqual('description', cl.GetLocalDescription('branch'))
+    self.assertEqual('description', cl.GetLocalDescription('branch'))
+    git_cl.RunGitWithCode.assert_called_once_with(
+        ['log', '--pretty=format:%s%n%n%b', 'branch...'])
 
 
 class CMDTestCaseBase(unittest.TestCase):

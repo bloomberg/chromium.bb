@@ -1031,8 +1031,8 @@ class Changelist(object):
     self.upstream_branch = None
     self.lookedup_issue = False
     self.issue = issue or None
-    self.has_description = False
     self.description = None
+    self.local_description = None
     self.lookedup_patchset = False
     self.patchset = None
     self.cc = None
@@ -1284,17 +1284,18 @@ class Changelist(object):
 
   def GetLocalDescription(self, upstream_branch):
     """Return the log messages of all commits up to the branch point."""
-    args = ['log', '--pretty=format:%s%n%n%b', '%s...' % (upstream_branch)]
-    return RunGitWithCode(args)[1].strip()
+    if self.local_description is None:
+      args = ['log', '--pretty=format:%s%n%n%b', '%s...' % (upstream_branch)]
+      self.local_description = RunGitWithCode(args)[1].strip()
+    return self.local_description
 
   def FetchDescription(self, pretty=False):
     assert self.GetIssue(), 'issue is required to query Gerrit'
 
-    if not self.has_description:
+    if self.description is None:
       data = self._GetChangeDetail(['CURRENT_REVISION', 'CURRENT_COMMIT'])
       current_rev = data['current_revision']
       self.description = data['revisions'][current_rev]['commit']['message']
-      self.has_description = True
 
     if not pretty:
       return self.description
@@ -1313,6 +1314,9 @@ class Changelist(object):
         self.patchset = int(self.patchset)
       self.lookedup_patchset = True
     return self.patchset
+
+  def GetAuthor(self):
+    return scm.GIT.GetConfig(settings.GetRoot(), 'user.email')
 
   def SetPatchset(self, patchset):
     """Set this branch's patchset. If patchset=0, clears the patchset."""
@@ -1388,7 +1392,7 @@ class Changelist(object):
       # with these log messages.
       description = self.GetLocalDescription(upstream_branch)
 
-    author = RunGit(['config', 'user.email']).strip() or None
+    author = self.GetAuthor()
     return presubmit_support.GitChange(
         name,
         description,
@@ -1417,7 +1421,6 @@ class Changelist(object):
         description, notify='NONE')
 
     self.description = description
-    self.has_description = True
 
   def RunHook(self, committing, may_prompt, verbose, change, parallel):
     """Calls sys.exit() if the hook fails; returns a HookResults otherwise."""
