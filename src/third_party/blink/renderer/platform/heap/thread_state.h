@@ -312,6 +312,10 @@ class PLATFORM_EXPORT ThreadState final {
     return in_atomic_pause() && IsSweepingInProgress();
   }
 
+  gin::MultiHeapTracer* GetMultiHeapTracer() {
+    return &multi_heap_tracer_;
+  }
+
   bool IsIncrementalMarking() const { return incremental_marking_; }
   void SetIncrementalMarking(bool value) { incremental_marking_ = value; }
 
@@ -603,6 +607,9 @@ class PLATFORM_EXPORT ThreadState final {
   size_t concurrently_marked_bytes_ = 0;
 
   std::unique_ptr<CancelableTaskScheduler> sweeper_scheduler_;
+
+  gin::MultiHeapTracer multi_heap_tracer_;
+  int multi_heap_tracer_id_ = 0;
 
   friend class BlinkGCObserver;
   friend class incremental_marking_test::IncrementalMarkingScope;
