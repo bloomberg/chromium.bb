@@ -1174,13 +1174,16 @@ static void tf_setup_filtering_buffer(const AV1_COMP *cpi,
                                       int *filter_frame_idx) {
   int num_frames = 0;          // Number of frames used for filtering.
   int num_frames_before = -1;  // Number of frames before the to-filter frame.
+  int filter_frame_offset;
 
   if (filter_frame_lookahead_idx == -1) {  // Key frame.
     num_frames = TF_NUM_FILTERING_FRAMES_FOR_KEY_FRAME;
     num_frames_before = 0;
+    filter_frame_offset = filter_frame_lookahead_idx;
   } else if (filter_frame_lookahead_idx < -1) {  // Key frame in one-pass mode.
     num_frames = TF_NUM_FILTERING_FRAMES_FOR_KEY_FRAME;
     num_frames_before = num_frames - 1;
+    filter_frame_offset = -filter_frame_lookahead_idx;
   } else {
     num_frames = cpi->oxcf.arnr_max_frames;
     if (is_second_arf) {  // Only use 2 neighbours for the second ARF.
@@ -1197,14 +1200,14 @@ static void tf_setup_filtering_buffer(const AV1_COMP *cpi,
         AOMMIN((num_frames - 1) >> 1,
                lookahead_depth - filter_frame_lookahead_idx - 1);
     num_frames = num_frames_before + 1 + num_frames_after;
+    filter_frame_offset = filter_frame_lookahead_idx;
   }
   *num_frames_for_filtering = num_frames;
   *filter_frame_idx = num_frames_before;
 
   // Setup the frame buffer.
   for (int frame = 0; frame < num_frames; ++frame) {
-    const int lookahead_idx =
-        frame - num_frames_before + filter_frame_lookahead_idx;
+    const int lookahead_idx = frame - num_frames_before + filter_frame_offset;
     struct lookahead_entry *buf = av1_lookahead_peek(
         cpi->lookahead, lookahead_idx, cpi->compressor_stage);
     frames[frame] = (buf == NULL) ? NULL : &buf->img;
