@@ -398,7 +398,7 @@ def UploadSymbolFile(upload_url, symbol, api_key):
       ExecRequest('put',
                   upload['uploadUrl'], timeout,
                   api_key=api_key,
-                  data=fp)
+                  data=fp.read())
     ExecRequest('post',
                 '%s/uploads/%s:complete' % (
                     upload_url, upload['uploadKey']),
