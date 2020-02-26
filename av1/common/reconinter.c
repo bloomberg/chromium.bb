@@ -233,6 +233,10 @@ DECLARE_ALIGNED(
 DECLARE_ALIGNED(16, static uint8_t,
                 wedge_mask_buf[2 * MAX_WEDGE_TYPES * 4 * MAX_WEDGE_SQUARE]);
 
+DECLARE_ALIGNED(16, static uint8_t,
+                smooth_interintra_mask_buf[INTERINTRA_MODES][BLOCK_SIZES_ALL]
+                                          [MAX_WEDGE_SQUARE]);
+
 static wedge_masks_type wedge_masks[BLOCK_SIZES_ALL][2];
 
 static const wedge_code_type wedge_codebook_16_hgtw[16] = {
@@ -554,10 +558,81 @@ static AOM_INLINE void init_wedge_masks() {
   }
 }
 
+/* clang-format off */
+static const uint8_t ii_weights1d[MAX_SB_SIZE] = {
+  60, 58, 56, 54, 52, 50, 48, 47, 45, 44, 42, 41, 39, 38, 37, 35, 34, 33, 32,
+  31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 22, 21, 20, 19, 19, 18, 18, 17, 16,
+  16, 15, 15, 14, 14, 13, 13, 12, 12, 12, 11, 11, 10, 10, 10,  9,  9,  9,  8,
+  8,  8,  8,  7,  7,  7,  7,  6,  6,  6,  6,  6,  5,  5,  5,  5,  5,  4,  4,
+  4,  4,  4,  4,  4,  4,  3,  3,  3,  3,  3,  3,  3,  3,  3,  2,  2,  2,  2,
+  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  1,  1,  1,  1,  1,  1,  1,  1,
+  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1
+};
+static uint8_t ii_size_scales[BLOCK_SIZES_ALL] = {
+    32, 16, 16, 16, 8, 8, 8, 4,
+    4,  4,  2,  2,  2, 1, 1, 1,
+    8,  8,  4,  4,  2, 2
+};
+/* clang-format on */
+
+static AOM_INLINE void build_smooth_interintra_mask(uint8_t *mask, int stride,
+                                                    BLOCK_SIZE plane_bsize,
+                                                    INTERINTRA_MODE mode) {
+  int i, j;
+  const int bw = block_size_wide[plane_bsize];
+  const int bh = block_size_high[plane_bsize];
+  const int size_scale = ii_size_scales[plane_bsize];
+
+  switch (mode) {
+    case II_V_PRED:
+      for (i = 0; i < bh; ++i) {
+        memset(mask, ii_weights1d[i * size_scale], bw * sizeof(mask[0]));
+        mask += stride;
+      }
+      break;
+
+    case II_H_PRED:
+      for (i = 0; i < bh; ++i) {
+        for (j = 0; j < bw; ++j) mask[j] = ii_weights1d[j * size_scale];
+        mask += stride;
+      }
+      break;
+
+    case II_SMOOTH_PRED:
+      for (i = 0; i < bh; ++i) {
+        for (j = 0; j < bw; ++j)
+          mask[j] = ii_weights1d[(i < j ? i : j) * size_scale];
+        mask += stride;
+      }
+      break;
+
+    case II_DC_PRED:
+    default:
+      for (i = 0; i < bh; ++i) {
+        memset(mask, 32, bw * sizeof(mask[0]));
+        mask += stride;
+      }
+      break;
+  }
+}
+
+static AOM_INLINE void init_smooth_interintra_masks() {
+  for (int m = 0; m < INTERINTRA_MODES; ++m) {
+    for (int bs = 0; bs < BLOCK_SIZES_ALL; ++bs) {
+      const int bw = block_size_wide[bs];
+      const int bh = block_size_high[bs];
+      if (bw > MAX_WEDGE_SIZE || bh > MAX_WEDGE_SIZE) continue;
+      build_smooth_interintra_mask(smooth_interintra_mask_buf[m][bs], bw, bs,
+                                   m);
+    }
+  }
+}
+
 // Equation of line: f(x, y) = a[0]*(x - a[2]*w/8) + a[1]*(y - a[3]*h/8) = 0
 void av1_init_wedge_masks() {
   init_wedge_master_masks();
   init_wedge_masks();
+  init_smooth_interintra_masks();
 }
 
 static AOM_INLINE void build_masked_compound_no_round(
@@ -1019,64 +1094,6 @@ void av1_setup_build_prediction_by_left_pred(MACROBLOCKD *xd, int rel_mi_row,
       GET_MV_SUBPEL((xd->n4_h - rel_mi_row - left_mi_height) * MI_SIZE);
 }
 
-/* clang-format off */
-static const uint8_t ii_weights1d[MAX_SB_SIZE] = {
-  60, 58, 56, 54, 52, 50, 48, 47, 45, 44, 42, 41, 39, 38, 37, 35, 34, 33, 32,
-  31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 22, 21, 20, 19, 19, 18, 18, 17, 16,
-  16, 15, 15, 14, 14, 13, 13, 12, 12, 12, 11, 11, 10, 10, 10,  9,  9,  9,  8,
-  8,  8,  8,  7,  7,  7,  7,  6,  6,  6,  6,  6,  5,  5,  5,  5,  5,  4,  4,
-  4,  4,  4,  4,  4,  4,  3,  3,  3,  3,  3,  3,  3,  3,  3,  2,  2,  2,  2,
-  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  1,  1,  1,  1,  1,  1,  1,  1,
-  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1
-};
-static uint8_t ii_size_scales[BLOCK_SIZES_ALL] = {
-    32, 16, 16, 16, 8, 8, 8, 4,
-    4,  4,  2,  2,  2, 1, 1, 1,
-    8,  8,  4,  4,  2, 2
-};
-/* clang-format on */
-
-static AOM_INLINE void build_smooth_interintra_mask(uint8_t *mask, int stride,
-                                                    BLOCK_SIZE plane_bsize,
-                                                    INTERINTRA_MODE mode) {
-  int i, j;
-  const int bw = block_size_wide[plane_bsize];
-  const int bh = block_size_high[plane_bsize];
-  const int size_scale = ii_size_scales[plane_bsize];
-
-  switch (mode) {
-    case II_V_PRED:
-      for (i = 0; i < bh; ++i) {
-        memset(mask, ii_weights1d[i * size_scale], bw * sizeof(mask[0]));
-        mask += stride;
-      }
-      break;
-
-    case II_H_PRED:
-      for (i = 0; i < bh; ++i) {
-        for (j = 0; j < bw; ++j) mask[j] = ii_weights1d[j * size_scale];
-        mask += stride;
-      }
-      break;
-
-    case II_SMOOTH_PRED:
-      for (i = 0; i < bh; ++i) {
-        for (j = 0; j < bw; ++j)
-          mask[j] = ii_weights1d[(i < j ? i : j) * size_scale];
-        mask += stride;
-      }
-      break;
-
-    case II_DC_PRED:
-    default:
-      for (i = 0; i < bh; ++i) {
-        memset(mask, 32, bw * sizeof(mask[0]));
-        mask += stride;
-      }
-      break;
-  }
-}
-
 static AOM_INLINE void combine_interintra(
     INTERINTRA_MODE mode, int8_t use_wedge_interintra, int8_t wedge_index,
     int8_t wedge_sign, BLOCK_SIZE bsize, BLOCK_SIZE plane_bsize,
@@ -1098,8 +1115,7 @@ static AOM_INLINE void combine_interintra(
     return;
   }
 
-  uint8_t mask[MAX_SB_SQUARE];
-  build_smooth_interintra_mask(mask, bw, plane_bsize, mode);
+  const uint8_t *mask = smooth_interintra_mask_buf[mode][plane_bsize];
   aom_blend_a64_mask(comppred, compstride, intrapred, intrastride, interpred,
                      interstride, mask, bw, bw, bh, 0, 0);
 }
