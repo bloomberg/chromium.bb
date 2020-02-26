@@ -10,12 +10,12 @@
 prodcertstatus 1>/dev/null 2>/dev/null || prodaccess
 
 when="last3days"
-string_data=""
 count_data=""
 limit=30
 field_limit=80
 verbose=0
 only_stdout=0
+string_data_array=()
 
 print_usage() {
   cat  <<HELP_USAGE
@@ -28,6 +28,10 @@ Usage:  $0 -c|--count <search_string> OR -s|--string <search_string>
      If -c is specified, count the occurrences of the search string.
      If -s is specified, display the matching occurences based on the other
        arguments (-l, --field_limit, etc).
+     Multiple -s arguments can be supplied, which allows an AND query,
+     so that
+       query_build_logs -s "String1" -s "String2" -s "String3"
+     returns run where the output contains all 3 search strings.
 
      search_string : What to search for in build_cmd logs.
      when_string   : Which dremel table, such as last7days, last1days, etc.
@@ -44,7 +48,7 @@ HELP_USAGE
 while (( "$#" )); do
   case "$1" in
     -s|--string)
-      string_data=$2
+      string_data_array=( "${string_data_array[@]}" "$2" )
       shift 2
       ;;
     -c|--count)
@@ -82,7 +86,9 @@ while (( "$#" )); do
   esac
 done
 
-if [[ ! -z ${string_data} ]] && [[ ! -z ${count_data} ]]; then
+string_data_arraylen=${#string_data_array[@]}
+
+if [[ $string_data_arraylen -ne 0 ]] && [[ ! -z ${count_data} ]]; then
   echo "Specifying both -s and -c is not allowed."
   print_usage
 fi
@@ -101,31 +107,47 @@ if [[ ! -z ${count_data} ]]; then
   exit 0
 fi
 
-if [[ -z "${string_data}" ]]
+if [[ $string_data_arraylen -eq 0 ]]
 then
   echo "No search string specified. -s|--string <search_string> is required."
   print_usage
 fi
 
-if [ -z "${field_limit}" ]
-then
-  select_field="stdout"
-else
+
+select_fields=""
+for (( index=0; index < $string_data_arraylen; index++ ))
+do
+  string_data=${string_data_array[$index]}
+
+  # Field_limit is always set (even w/o cmd line arg), so set select_field
+  # based on array and field_limit.
   select_field="SUBSTR(stdout, STRPOS(stdout, \"${string_data}\"),"
-  select_field="${select_field} ${field_limit})"
-fi
+  select_field="${select_field} ${field_limit}) AS Stdout$index,"
+  select_fields="$select_fields $select_field"
+done
 
 if [ "${only_stdout}" -eq 1 ]; then
-  query="SELECT ${select_field} AS Stdout,
+  query="SELECT ${select_fields}
   DATETIME(TIMESTAMP_SECONDS(request_time.seconds)) AS DateTime"
 else
-  query="SELECT ${select_field} AS Stdout,
+  query="SELECT ${select_fields}
   CONCAT('https://ci.chromium.org/b/', CAST(build_id AS STRING)) as BuildId,step_name,
   DATETIME(TIMESTAMP_SECONDS(request_time.seconds)) AS DateTime"
 fi
 
-query="$query FROM chromeos_ci_eng.analysis_event_log.${when}
-WHERE stdout LIKE \"%${string_data}%\" ORDER BY DateTime DESC LIMIT ${limit};"
+query="$query FROM chromeos_ci_eng.analysis_event_log.${when}"
+
+for (( index=0; index < $string_data_arraylen; index++ ))
+do
+  string_data=${string_data_array[$index]}
+  if [[ $index -eq 0 ]]; then
+    query="$query WHERE stdout LIKE \"%${string_data}%\""
+  else
+    query="$query AND stdout LIKE \"%${string_data}%\""
+  fi
+done
+
+query="$query ORDER BY DateTime DESC LIMIT ${limit};"
 
 if [ "${verbose}" -eq 1 ]; then
   echo "QUERY: ${query}"
