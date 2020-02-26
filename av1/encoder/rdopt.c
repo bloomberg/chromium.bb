@@ -70,6 +70,37 @@
 
 #define LAST_NEW_MV_INDEX 6
 
+// Mode_threshold multiplication factor table for prune_inter_modes_if_skippable
+// The values are kept in Q12 format and equation used to derive is
+// (2.5 - ((float)x->qindex / MAXQ) * 1.5)
+#define MODE_THRESH_QBITS 12
+static const int mode_threshold_mul_factor[QINDEX_RANGE] = {
+  10240, 10216, 10192, 10168, 10144, 10120, 10095, 10071, 10047, 10023, 9999,
+  9975,  9951,  9927,  9903,  9879,  9854,  9830,  9806,  9782,  9758,  9734,
+  9710,  9686,  9662,  9638,  9614,  9589,  9565,  9541,  9517,  9493,  9469,
+  9445,  9421,  9397,  9373,  9349,  9324,  9300,  9276,  9252,  9228,  9204,
+  9180,  9156,  9132,  9108,  9083,  9059,  9035,  9011,  8987,  8963,  8939,
+  8915,  8891,  8867,  8843,  8818,  8794,  8770,  8746,  8722,  8698,  8674,
+  8650,  8626,  8602,  8578,  8553,  8529,  8505,  8481,  8457,  8433,  8409,
+  8385,  8361,  8337,  8312,  8288,  8264,  8240,  8216,  8192,  8168,  8144,
+  8120,  8096,  8072,  8047,  8023,  7999,  7975,  7951,  7927,  7903,  7879,
+  7855,  7831,  7806,  7782,  7758,  7734,  7710,  7686,  7662,  7638,  7614,
+  7590,  7566,  7541,  7517,  7493,  7469,  7445,  7421,  7397,  7373,  7349,
+  7325,  7301,  7276,  7252,  7228,  7204,  7180,  7156,  7132,  7108,  7084,
+  7060,  7035,  7011,  6987,  6963,  6939,  6915,  6891,  6867,  6843,  6819,
+  6795,  6770,  6746,  6722,  6698,  6674,  6650,  6626,  6602,  6578,  6554,
+  6530,  6505,  6481,  6457,  6433,  6409,  6385,  6361,  6337,  6313,  6289,
+  6264,  6240,  6216,  6192,  6168,  6144,  6120,  6096,  6072,  6048,  6024,
+  5999,  5975,  5951,  5927,  5903,  5879,  5855,  5831,  5807,  5783,  5758,
+  5734,  5710,  5686,  5662,  5638,  5614,  5590,  5566,  5542,  5518,  5493,
+  5469,  5445,  5421,  5397,  5373,  5349,  5325,  5301,  5277,  5253,  5228,
+  5204,  5180,  5156,  5132,  5108,  5084,  5060,  5036,  5012,  4987,  4963,
+  4939,  4915,  4891,  4867,  4843,  4819,  4795,  4771,  4747,  4722,  4698,
+  4674,  4650,  4626,  4602,  4578,  4554,  4530,  4506,  4482,  4457,  4433,
+  4409,  4385,  4361,  4337,  4313,  4289,  4265,  4241,  4216,  4192,  4168,
+  4144,  4120,  4096
+};
+
 static const THR_MODES av1_default_mode_order[MAX_MODES] = {
   THR_NEARESTMV,
   THR_NEARESTL2,
@@ -4105,6 +4136,12 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       best_rd_so_far, cpi->sf.winner_mode_sf.enable_multiwinner_mode_process,
       0);
 
+  int mode_thresh_mul_fact = (1 << MODE_THRESH_QBITS);
+  if (sf->inter_sf.prune_inter_modes_if_skippable) {
+    // Higher multiplication factor values for lower quantizers.
+    mode_thresh_mul_fact = mode_threshold_mul_factor[x->qindex];
+  }
+
   // Here midx is just an iterator index that should not be used by itself
   // except to keep track of the number of modes searched. It should be used
   // with av1_default_mode_order to get the enum that defines the mode, which
@@ -4158,7 +4195,14 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     x->force_skip = 0;
     set_ref_ptrs(cm, xd, ref_frame, second_ref_frame);
 
-    if (search_state.best_rd < search_state.mode_threshold[mode_enum]) continue;
+    // Prune aggressively when best mode is skippable.
+    int mul_fact = search_state.best_mode_skippable ? mode_thresh_mul_fact
+                                                    : (1 << MODE_THRESH_QBITS);
+    int64_t mode_threshold =
+        (search_state.mode_threshold[mode_enum] * mul_fact) >>
+        MODE_THRESH_QBITS;
+
+    if (search_state.best_rd < mode_threshold) continue;
 
     if (sf->inter_sf.prune_comp_search_by_single_result > 0 && comp_pred) {
       if (compound_skip_by_single_states(cpi, &search_state, this_mode,
