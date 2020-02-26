@@ -4319,7 +4319,7 @@
       "models": [
         {
           "board_name": "zork",
-          "name": "Dalboz",
+          "name": "dalboz",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
           "board_id": 381,
@@ -4327,7 +4327,7 @@
         },
         {
           "board_name": "zork",
-          "name": "Morphius",
+          "name": "morphius",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
           "board_id": 381,
@@ -4335,7 +4335,7 @@
         },
         {
           "board_name": "zork",
-          "name": "Trembyle",
+          "name": "trembyle",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
           "board_id": 381,

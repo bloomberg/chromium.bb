@@ -34833,9 +34833,9 @@
         "hw_tests_disabled_bug": "https://crbug.com/1011171",
         "hw_tests_override": [],
         "models": [
-            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"zork\",\n    \"name\": \"Dalboz\",\n    \"test_suites\": []\n}",
-            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"zork\",\n    \"name\": \"Morphius\",\n    \"test_suites\": []\n}",
-            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"zork\",\n    \"name\": \"Trembyle\",\n    \"test_suites\": []\n}"
+            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"zork\",\n    \"name\": \"dalboz\",\n    \"test_suites\": []\n}",
+            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"zork\",\n    \"name\": \"morphius\",\n    \"test_suites\": []\n}",
+            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"zork\",\n    \"name\": \"trembyle\",\n    \"test_suites\": []\n}"
         ],
         "sign_types": [
             "recovery",
@@ -34857,9 +34857,9 @@
         "hw_tests_override": null,
         "luci_builder": "Try",
         "models": [
-            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"zork\",\n    \"name\": \"Dalboz\",\n    \"test_suites\": []\n}",
-            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"zork\",\n    \"name\": \"Morphius\",\n    \"test_suites\": []\n}",
-            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"zork\",\n    \"name\": \"Trembyle\",\n    \"test_suites\": []\n}"
+            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"zork\",\n    \"name\": \"dalboz\",\n    \"test_suites\": []\n}",
+            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"zork\",\n    \"name\": \"morphius\",\n    \"test_suites\": []\n}",
+            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"zork\",\n    \"name\": \"trembyle\",\n    \"test_suites\": []\n}"
         ],
         "paygen": false,
         "push_image": false,
