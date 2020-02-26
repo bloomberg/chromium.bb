@@ -731,9 +731,12 @@ static int pattern_search(
       calc_int_cost_list(x, ref_mv, vfp, &full_best_mv, cost_list);
     }
   }
-  x->best_mv.as_mv.row = br;
-  x->best_mv.as_mv.col = bc;
-  return bestsad;
+  x->best_mv.as_fullmv.row = br;
+  x->best_mv.as_fullmv.col = bc;
+
+  const int var_cost =
+      av1_get_mvpred_var(x, &x->best_mv.as_fullmv, ref_mv, vfp);
+  return var_cost;
 }
 #undef CHECK_BETTER
 
