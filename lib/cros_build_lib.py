@@ -939,12 +939,6 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
 # pylint: enable=redefined-builtin
 
 
-def RunCommand(cmd, **kwargs):
-  """Backwards compat API."""
-  logging.warning('RunCommand() has been renamed to run()')
-  return run(cmd, **kwargs)
-
-
 # Convenience run methods.
 #
 # We don't use functools.partial because it binds the methods at import time,
