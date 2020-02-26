@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CAST_COMMON_DISCOVERY_TESTING_DISCOVERY_UTILS_H_
-#define CAST_COMMON_DISCOVERY_TESTING_DISCOVERY_UTILS_H_
+#ifndef CAST_COMMON_PUBLIC_TESTING_DISCOVERY_UTILS_H_
+#define CAST_COMMON_PUBLIC_TESTING_DISCOVERY_UTILS_H_
 
-#include "cast/common/discovery/service_info.h"
+#include "cast/common/public/service_info.h"
 #include "discovery/dnssd/public/dns_sd_txt_record.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -44,4 +44,4 @@ void CompareTxtInt(const discovery::DnsSdTxtRecord& txt,
 }  // namespace cast
 }  // namespace openscreen
 
-#endif  // CAST_COMMON_DISCOVERY_TESTING_DISCOVERY_UTILS_H_
+#endif  // CAST_COMMON_PUBLIC_TESTING_DISCOVERY_UTILS_H_

@@ -17,6 +17,8 @@ absl::optional<int> MaybeGetInt(const Json::Value& message,
                                 const char* first,
                                 const char* last);
 
+absl::optional<absl::string_view> MaybeGetString(const Json::Value& message);
+
 absl::optional<absl::string_view> MaybeGetString(const Json::Value& message,
                                                  const char* first,
                                                  const char* last);

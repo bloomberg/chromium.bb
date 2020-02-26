@@ -60,10 +60,10 @@ source_set("channel") {
   ]
 }
 
-source_set("discovery") {
+source_set("public") {
   sources = [
-    "discovery/service_info.cc",
-    "discovery/service_info.h",
+    "public/service_info.cc",
+    "public/service_info.h",
   ]
 
   deps = [
@@ -83,7 +83,7 @@ if (!build_with_chromium) {
     ]
 
     deps = [
-      ":discovery",
+      ":public",
       "../../discovery:dnssd",
       "../../discovery:public",
       "../../third_party/googletest:gtest",
@@ -100,13 +100,13 @@ source_set("test_helpers") {
     "channel/testing/fake_cast_socket.h",
     "channel/testing/mock_cast_message_handler.h",
     "channel/testing/mock_socket_error_handler.h",
-    "discovery/testing/discovery_utils.cc",
-    "discovery/testing/discovery_utils.h",
+    "public/testing/discovery_utils.cc",
+    "public/testing/discovery_utils.h",
   ]
   public_deps = [
     ":certificate",
     ":channel",
-    ":discovery",
+    ":public",
     "../../platform:test",
     "../../third_party/abseil",
     "../../third_party/boringssl",
@@ -129,13 +129,13 @@ source_set("unittests") {
     "channel/namespace_router_unittest.cc",
     "channel/virtual_connection_manager_unittest.cc",
     "channel/virtual_connection_router_unittest.cc",
-    "discovery/service_info_unittest.cc",
+    "public/service_info_unittest.cc",
   ]
 
   deps = [
     ":certificate",
     ":channel",
-    ":discovery",
+    ":public",
     ":test_helpers",
     "../../platform",
     "../../testing/util",

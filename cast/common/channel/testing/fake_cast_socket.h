@@ -29,15 +29,17 @@ class MockCastSocketClient final : public CastSocket::Client {
 struct FakeCastSocket {
   FakeCastSocket()
       : FakeCastSocket({{10, 0, 1, 7}, 1234}, {{10, 0, 1, 9}, 4321}) {}
-  FakeCastSocket(const IPEndpoint& local, const IPEndpoint& remote)
-      : local(local),
-        remote(remote),
-        moved_connection(std::make_unique<MockTlsConnection>(local, remote)),
+  FakeCastSocket(const IPEndpoint& local_endpoint,
+                 const IPEndpoint& remote_endpoint)
+      : local_endpoint(local_endpoint),
+        remote_endpoint(remote_endpoint),
+        moved_connection(std::make_unique<MockTlsConnection>(local_endpoint,
+                                                             remote_endpoint)),
         connection(moved_connection.get()),
         socket(std::move(moved_connection), &mock_client) {}
 
-  IPEndpoint local;
-  IPEndpoint remote;
+  IPEndpoint local_endpoint;
+  IPEndpoint remote_endpoint;
   std::unique_ptr<MockTlsConnection> moved_connection;
   MockTlsConnection* connection;
   MockCastSocketClient mock_client;
@@ -49,18 +51,24 @@ struct FakeCastSocket {
 // OnMessage callback on |mock_peer_client| and vice versa for |peer_socket| and
 // |mock_client|.
 struct FakeCastSocketPair {
-  FakeCastSocketPair() {
+  FakeCastSocketPair()
+      : FakeCastSocketPair({{10, 0, 1, 7}, 1234}, {{10, 0, 1, 9}, 4321}) {}
+
+  FakeCastSocketPair(const IPEndpoint& local_endpoint,
+                     const IPEndpoint& remote_endpoint)
+      : local_endpoint(local_endpoint), remote_endpoint(remote_endpoint) {
     using ::testing::_;
     using ::testing::Invoke;
 
     auto moved_connection =
-        std::make_unique<::testing::NiceMock<MockTlsConnection>>(local, remote);
+        std::make_unique<::testing::NiceMock<MockTlsConnection>>(
+            local_endpoint, remote_endpoint);
     connection = moved_connection.get();
     socket =
         std::make_unique<CastSocket>(std::move(moved_connection), &mock_client);
 
-    auto moved_peer =
-        std::make_unique<::testing::NiceMock<MockTlsConnection>>(remote, local);
+    auto moved_peer = std::make_unique<::testing::NiceMock<MockTlsConnection>>(
+        remote_endpoint, local_endpoint);
     peer_connection = moved_peer.get();
     peer_socket =
         std::make_unique<CastSocket>(std::move(moved_peer), &mock_peer_client);
@@ -82,8 +90,8 @@ struct FakeCastSocketPair {
   }
   ~FakeCastSocketPair() = default;
 
-  IPEndpoint local{{10, 0, 1, 7}, 1234};
-  IPEndpoint remote{{10, 0, 1, 9}, 4321};
+  IPEndpoint local_endpoint;
+  IPEndpoint remote_endpoint;
 
   ::testing::NiceMock<MockTlsConnection>* connection;
   MockCastSocketClient mock_client;

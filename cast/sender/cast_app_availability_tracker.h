@@ -45,6 +45,7 @@ namespace cast {
 //
 // (5b): At any time, the caller may call |GetAvailableDevices()| (even before
 // the source is registered) to determine if there are cached results available.
+// TODO(crbug.com/openscreen/112): Device -> Receiver renaming.
 class CastAppAvailabilityTracker {
  public:
   // The result of an app availability request and the time when it is obtained.

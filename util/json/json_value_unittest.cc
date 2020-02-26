@@ -29,7 +29,8 @@ TEST(JsonValueTest, GetInt) {
 }
 
 TEST(JsonValueTest, GetString) {
-  absl::string_view obj(R"!({"key1": 17, "key2": 32.3, "key3": "asdf"})!");
+  absl::string_view obj(
+      R"!({"key1": 17, "key2": 32.3, "key3": "asdf", "key4": ""})!");
   ErrorOr<Json::Value> value_or_error = json::Parse(obj);
   ASSERT_TRUE(value_or_error);
   Json::Value& value = value_or_error.value();
@@ -39,12 +40,16 @@ TEST(JsonValueTest, GetString) {
       MaybeGetString(value, JSON_EXPAND_FIND_CONSTANT_ARGS("key2"));
   absl::optional<absl::string_view> result3 =
       MaybeGetString(value, JSON_EXPAND_FIND_CONSTANT_ARGS("key42"));
+  absl::optional<absl::string_view> result4 =
+      MaybeGetString(value, JSON_EXPAND_FIND_CONSTANT_ARGS("key4"));
 
   EXPECT_FALSE(result2);
   EXPECT_FALSE(result3);
 
   ASSERT_TRUE(result1);
   EXPECT_EQ(result1.value(), "asdf");
+  ASSERT_TRUE(result4);
+  EXPECT_EQ(result4.value(), "");
 }
 
 }  // namespace openscreen

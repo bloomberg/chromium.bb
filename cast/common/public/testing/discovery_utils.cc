@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cast/common/discovery/testing/discovery_utils.h"
+#include "cast/common/public/testing/discovery_utils.h"
 
 #include <sstream>
 

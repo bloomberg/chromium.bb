@@ -17,19 +17,25 @@ absl::optional<int> MaybeGetInt(const Json::Value& message,
   return result;
 }
 
+absl::optional<absl::string_view> MaybeGetString(const Json::Value& message) {
+  if (message.isString()) {
+    const char* begin = nullptr;
+    const char* end = nullptr;
+    message.getString(&begin, &end);
+    if (begin && end >= begin) {
+      return absl::string_view(begin, end - begin);
+    }
+  }
+  return absl::nullopt;
+}
+
 absl::optional<absl::string_view> MaybeGetString(const Json::Value& message,
                                                  const char* first,
                                                  const char* last) {
   const Json::Value* value = message.find(first, last);
   absl::optional<absl::string_view> result;
   if (value && value->isString()) {
-    const char* begin;
-    const char* end;
-    begin = end = nullptr;
-    value->getString(&begin, &end);
-    if (end >= begin) {
-      result = absl::string_view(begin, end - begin);
-    }
+    return MaybeGetString(*value);
   }
   return result;
 }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cast/common/discovery/service_info.h"
+#include "cast/common/public/service_info.h"
 
 #include <cctype>
 #include <memory>

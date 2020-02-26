@@ -46,11 +46,70 @@ static constexpr char kMessageKeySenderInfo[] = "senderInfo";
 static constexpr char kMessageKeyProtocolVersion[] = "protocolVersion";
 static constexpr char kMessageKeyProtocolVersionList[] = "protocolVersionList";
 static constexpr char kMessageKeyReasonCode[] = "reasonCode";
+static constexpr char kMessageKeyAppId[] = "appId";
+static constexpr char kMessageKeyRequestId[] = "requestId";
+static constexpr char kMessageKeyAvailability[] = "availability";
 
 // JSON message field values.
 static constexpr char kMessageTypeConnect[] = "CONNECT";
 static constexpr char kMessageTypeClose[] = "CLOSE";
 static constexpr char kMessageTypeConnected[] = "CONNECTED";
+static constexpr char kMessageValueAppAvailable[] = "APP_AVAILABLE";
+static constexpr char kMessageValueAppUnavailable[] = "APP_UNAVAILABLE";
+
+// TODO(crbug.com/openscreen/111): Add validation that each message type is
+// received on the correct namespace.  This will probably involve creating a
+// data structure for mapping between type and namespace.
+enum class CastMessageType {
+  // Heartbeat messages.
+  kPing,
+  kPong,
+
+  // RPC control/status messages used by Media Remoting. These occur at high
+  // frequency, up to dozens per second at times, and should not be logged.
+  kRpc,
+
+  kGetAppAvailability,
+  kGetStatus,
+
+  // Virtual connection request.
+  kConnect,
+
+  // Close virtual connection.
+  kCloseConnection,
+
+  // Application broadcast / precache.
+  kBroadcast,
+
+  // Session launch request.
+  kLaunch,
+
+  // Session stop request.
+  kStop,
+
+  kReceiverStatus,
+  kMediaStatus,
+
+  // Error from receiver.
+  kLaunchError,
+
+  kOffer,
+  kAnswer,
+  kCapabilitiesResponse,
+  kStatusResponse,
+
+  // The following values are part of the protocol but are not currently used.
+  kMultizoneStatus,
+  kInvalidPlayerState,
+  kLoadFailed,
+  kLoadCancelled,
+  kInvalidRequest,
+  kPresentation,
+  kGetCapabilities,
+
+  kOther,  // Add new types above |kOther|.
+  kMaxValue = kOther,
+};
 
 enum class AppAvailabilityResult {
   kAvailable,
@@ -59,6 +118,65 @@ enum class AppAvailabilityResult {
 };
 
 std::string ToString(AppAvailabilityResult availability);
+
+// TODO(crbug.com/openscreen/111): When this and/or other enums need the
+// string->enum mapping, import EnumTable from Chromium's
+// //components/cast_channel/enum_table.h.
+inline constexpr const char* CastMessageTypeToString(CastMessageType type) {
+  switch (type) {
+    case CastMessageType::kPing:
+      return "PING";
+    case CastMessageType::kPong:
+      return "PONG";
+    case CastMessageType::kRpc:
+      return "RPC";
+    case CastMessageType::kGetAppAvailability:
+      return "GET_APP_AVAILABILITY";
+    case CastMessageType::kGetStatus:
+      return "GET_STATUS";
+    case CastMessageType::kConnect:
+      return "CONNECT";
+    case CastMessageType::kCloseConnection:
+      return "CLOSE";
+    case CastMessageType::kBroadcast:
+      return "APPLICATION_BROADCAST";
+    case CastMessageType::kLaunch:
+      return "LAUNCH";
+    case CastMessageType::kStop:
+      return "STOP";
+    case CastMessageType::kReceiverStatus:
+      return "RECEIVER_STATUS";
+    case CastMessageType::kMediaStatus:
+      return "MEDIA_STATUS";
+    case CastMessageType::kLaunchError:
+      return "LAUNCH_ERROR";
+    case CastMessageType::kOffer:
+      return "OFFER";
+    case CastMessageType::kAnswer:
+      return "ANSWER";
+    case CastMessageType::kCapabilitiesResponse:
+      return "CAPABILITIES_RESPONSE";
+    case CastMessageType::kStatusResponse:
+      return "STATUS_RESPONSE";
+    case CastMessageType::kMultizoneStatus:
+      return "MULTIZONE_STATUS";
+    case CastMessageType::kInvalidPlayerState:
+      return "INVALID_PLAYER_STATE";
+    case CastMessageType::kLoadFailed:
+      return "LOAD_FAILED";
+    case CastMessageType::kLoadCancelled:
+      return "LOAD_CANCELLED";
+    case CastMessageType::kInvalidRequest:
+      return "INVALID_REQUEST";
+    case CastMessageType::kPresentation:
+      return "PRESENTATION";
+    case CastMessageType::kGetCapabilities:
+      return "GET_CAPABILITIES";
+    case CastMessageType::kOther:
+    default:
+      return "OTHER";
+  }
+}
 
 inline bool IsAuthMessage(const ::cast::channel::CastMessage& message) {
   return message.namespace_() == kAuthNamespace;

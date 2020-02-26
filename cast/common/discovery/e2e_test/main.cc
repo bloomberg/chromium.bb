@@ -7,7 +7,7 @@
 #include <iostream>
 #include <map>
 
-#include "cast/common/discovery/service_info.h"
+#include "cast/common/public/service_info.h"
 #include "discovery/common/config.h"
 #include "discovery/common/reporting_client.h"
 #include "discovery/dnssd/public/dns_sd_publisher.h"

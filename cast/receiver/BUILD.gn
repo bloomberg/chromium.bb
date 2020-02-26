@@ -6,6 +6,8 @@ source_set("channel") {
   sources = [
     "channel/device_auth_namespace_handler.cc",
     "channel/device_auth_namespace_handler.h",
+    "channel/message_util.cc",
+    "channel/message_util.h",
     "channel/receiver_socket_factory.cc",
     "channel/receiver_socket_factory.h",
   ]
@@ -15,12 +17,12 @@ source_set("channel") {
     "../../third_party/abseil",
     "../../third_party/boringssl",
     "../common:channel",
+    "../common/channel/proto:channel_proto",
   ]
 
   deps = [
     "../../util",
     "../common:certificate",
-    "../common/channel/proto:channel_proto",
   ]
 }
 
