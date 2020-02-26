@@ -126,8 +126,8 @@ static int tf_motion_search(AV1_COMP *cpi,
   mb->mv_cost_type = mv_cost_type;
   av1_full_pixel_search(cpi, mb, block_size, start_mv, step_param,
                         full_search_method, 1, sadperbit16,
-                        cond_cost_list(cpi, cost_list), &baseline_mv, 0, 0,
-                        mb_x, mb_y, 0, &ss_cfg, 0);
+                        cond_cost_list(cpi, cost_list), &baseline_mv, mb_x,
+                        mb_y, 0, &ss_cfg, 0);
   // Since we are merely refining the result from full pixel search, we don't
   // need regularization for subpel search
   mb->mv_cost_type = MV_COST_NONE;
@@ -168,8 +168,8 @@ static int tf_motion_search(AV1_COMP *cpi,
         mb->mv_cost_type = mv_cost_type;
         av1_full_pixel_search(cpi, mb, subblock_size, start_mv, step_param,
                               full_search_method, 1, sadperbit16,
-                              cond_cost_list(cpi, cost_list), &baseline_mv, 0,
-                              0, mb_x, mb_y, 0, &ss_cfg, 0);
+                              cond_cost_list(cpi, cost_list), &baseline_mv,
+                              mb_x, mb_y, 0, &ss_cfg, 0);
         // Since we are merely refining the result from full pixel search, we
         // don't need regularization for subpel search
         mb->mv_cost_type = MV_COST_NONE;

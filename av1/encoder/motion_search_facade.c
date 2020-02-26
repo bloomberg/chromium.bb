@@ -130,14 +130,12 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
     case SIMPLE_TRANSLATION:
       bestsme = av1_full_pixel_search(
           cpi, x, bsize, start_mv, step_param, cpi->sf.mv_sf.search_method, 0,
-          sadpb, cond_cost_list(cpi, cost_list), &ref_mv, INT_MAX, 1,
-          (MI_SIZE * mi_col), (MI_SIZE * mi_row), 0, &cpi->ss_cfg[SS_CFG_SRC],
-          0);
+          sadpb, cond_cost_list(cpi, cost_list), &ref_mv, (MI_SIZE * mi_col),
+          (MI_SIZE * mi_row), 0, &cpi->ss_cfg[SS_CFG_SRC], 0);
       break;
     case OBMC_CAUSAL:
       bestsme = av1_obmc_full_pixel_search(
-          cpi, x, start_mv, step_param, sadpb,
-          MAX_MVSEARCH_STEPS - 1 - step_param, 1, &cpi->fn_ptr[bsize], &ref_mv,
+          cpi, x, start_mv, step_param, sadpb, &cpi->fn_ptr[bsize], &ref_mv,
           &(x->best_mv.as_fullmv), &cpi->ss_cfg[SS_CFG_SRC]);
       break;
     default: assert(0 && "Invalid motion mode!\n");
@@ -668,8 +666,8 @@ void av1_simple_motion_search(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
   av1_set_mv_search_range(&x->mv_limits, &ref_mv);
   var = av1_full_pixel_search(
       cpi, x, bsize, start_mv, step_param, search_methods, do_mesh_search,
-      sadpb, cond_cost_list(cpi, cost_list), &ref_mv, INT_MAX, 1,
-      mi_col * MI_SIZE, mi_row * MI_SIZE, 0, &cpi->ss_cfg[SS_CFG_SRC], 0);
+      sadpb, cond_cost_list(cpi, cost_list), &ref_mv, mi_col * MI_SIZE,
+      mi_row * MI_SIZE, 0, &cpi->ss_cfg[SS_CFG_SRC], 0);
   // Restore
   x->mv_limits = tmp_mv_limits;
 
