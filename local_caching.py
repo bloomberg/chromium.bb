@@ -988,9 +988,9 @@ class NamedCache(Cache):
     # This is not thread-safe.
     return self._lru.__iter__()
 
-  def __contains__(self, digest):
+  def __contains__(self, name):
     with self._lock:
-      return digest in self._lru
+      return name in self._lru
 
   @property
   def total_size(self):
@@ -1014,6 +1014,13 @@ class NamedCache(Cache):
   def save(self):
     with self._lock:
       return self._save()
+
+  def touch(self, *names):
+    with self._lock:
+      for name in names:
+        if name in self._lru:
+          self._lru.touch(name)
+      self._save()
 
   def trim(self):
     evicted = []

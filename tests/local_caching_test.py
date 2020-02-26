@@ -652,6 +652,17 @@ class NamedCacheTest(TestCase, CacheTestMixin):
     # causes an implicit save(). See uninstall() comments for more details.
     self.assertEqual(new_content, old_content)
 
+  def test_touch(self):
+    cache = self.get_cache(_get_policies())
+    caches_to_touch = []
+    caches_to_touch.append(self._add_one_item(cache, 1))
+    caches_to_touch.append(self._add_one_item(cache, 2))
+    self._add_one_item(cache, 3)
+    cache.touch(*caches_to_touch)
+    cache.remove_oldest()
+    self.assertEqual(len(cache), 2)
+    self.assertEqual(sorted(caches_to_touch), sorted(cache))
+
   def test_trim(self):
     cache = self.get_cache(_get_policies(max_items=2))
     item_count = 12

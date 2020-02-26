@@ -1287,7 +1287,11 @@ def process_named_cache_options(parser, options, time_fn=None):
         max_items=50,
         max_age_secs=MAX_AGE_SECS)
     root_dir = six.text_type(os.path.abspath(options.named_cache_root))
-    return local_caching.NamedCache(root_dir, policies, time_fn=time_fn)
+    cache = local_caching.NamedCache(root_dir, policies, time_fn=time_fn)
+    # Touch any named caches we're going to use to minimize thrashing
+    # between tasks that request some (but not all) of the same named caches.
+    cache.touch(name for name, _, _ in options.named_caches)
+    return cache
   return None
 
 
