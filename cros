@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -14,6 +14,13 @@ It is intended to used strictly outside of the chroot.
 
 import os
 import sys
+
+
+# Min version of Python that we *want*.  We warn for older versions.
+MIN_PYTHON_VER_SOFT = (3, 6)
+# Min version of Python that we *require*.  We abort for older versions.
+# TODO(vapier): Hard require Python 3.6 by end of 2020.
+MIN_PYTHON_VER_HARD = (3, 4)
 
 
 def _FindChromite(path):
@@ -46,7 +53,27 @@ and retry.  If you need to setup a Chromium OS source tree, see
   return 127
 
 
+def _CheckPythonVersion():
+  """Verify active Python is new enough."""
+  if sys.version_info >= MIN_PYTHON_VER_SOFT:
+    return
+
+  progname = os.path.basename(sys.argv[0])
+  print('%s: Chrome OS requires Python-%s+, but found "%s"' %
+        (progname, '.'.join(str(x) for x in MIN_PYTHON_VER_SOFT),
+         sys.version.replace('\n', ' ')), file=sys.stderr)
+  if sys.version_info < MIN_PYTHON_VER_HARD:
+    print('%s: fatal: giving up since Python is too old.' % (progname,),
+          file=sys.stderr)
+    sys.exit(1)
+
+  print('warning: temporarily continuing anyways; you must upgrade soon to '
+        'maintain support.', file=sys.stderr)
+
+
 def main():
+  _CheckPythonVersion()
+
   chromite_dir = _FindChromite(os.getcwd())
   target = os.path.basename(sys.argv[0])
   if chromite_dir is None:
