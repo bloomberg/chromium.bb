@@ -102,6 +102,20 @@ void av1_init_motion_fpf(search_site_config *cfg, int stride);
 // Sets up configs for all other types of motion search
 void av1_init3smotion_compensation(search_site_config *cfg, int stride);
 
+// Set up limit values for MV components.
+// Mv beyond the range do not produce new/different prediction block.
+static INLINE void av1_set_mv_limits(const AV1_COMMON *const cm,
+                                     FullMvLimits *mv_limits, int mi_row,
+                                     int mi_col, int mi_height, int mi_width,
+                                     int border) {
+  mv_limits->row_min = -(mi_row * MI_SIZE + border - 2 * AOM_INTERP_EXTEND);
+  mv_limits->col_min = -(mi_col * MI_SIZE + border - 2 * AOM_INTERP_EXTEND);
+  mv_limits->row_max = (cm->mi_rows - mi_row - mi_height) * MI_SIZE + border -
+                       2 * AOM_INTERP_EXTEND;
+  mv_limits->col_max = (cm->mi_cols - mi_col - mi_width) * MI_SIZE + border -
+                       2 * AOM_INTERP_EXTEND;
+}
+
 void av1_set_mv_search_range(FullMvLimits *mv_limits, const MV *mv);
 
 int av1_init_search_range(int size);

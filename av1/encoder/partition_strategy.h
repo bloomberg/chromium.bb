@@ -153,11 +153,8 @@ static INLINE void set_offsets_for_motion_search(const AV1_COMP *const cpi,
 
   // Set up limit values for MV components.
   // Mv beyond the range do not produce new/different prediction block.
-  x->mv_limits.row_min =
-      -(((mi_row + mi_height) * MI_SIZE) + AOM_INTERP_EXTEND);
-  x->mv_limits.col_min = -(((mi_col + mi_width) * MI_SIZE) + AOM_INTERP_EXTEND);
-  x->mv_limits.row_max = (cm->mi_rows - mi_row) * MI_SIZE + AOM_INTERP_EXTEND;
-  x->mv_limits.col_max = (cm->mi_cols - mi_col) * MI_SIZE + AOM_INTERP_EXTEND;
+  av1_set_mv_limits(cm, &x->mv_limits, mi_row, mi_col, mi_height, mi_width,
+                    cpi->oxcf.border_in_pixels);
 
   set_plane_n4(xd, mi_width, mi_height, num_planes);
 
