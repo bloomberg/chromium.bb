@@ -910,9 +910,6 @@ typedef struct REAL_TIME_SPEED_FEATURES {
   // Forces TX search off for RDCost calulation.
   int force_tx_search_off;
 
-  // For nonrd: use block_yrd for rd cost in interpolation filter search.
-  int nonrd_use_blockyrd_interp_filter;
-
   // Use interpolation filter search in non-RD mode decision.
   int use_nonrd_filter_search;
 
