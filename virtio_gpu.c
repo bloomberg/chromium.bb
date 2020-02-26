@@ -378,7 +378,8 @@ static int virtio_gpu_bo_invalidate(struct bo *bo, struct mapping *mapping)
 		return 0;
 
 	// Invalidate is only necessary if the host writes to the buffer.
-	if ((bo->meta.use_flags & BO_USE_RENDERING) == 0)
+	if ((bo->meta.use_flags & (BO_USE_RENDERING | BO_USE_CAMERA_WRITE |
+				   BO_USE_HW_VIDEO_ENCODER | BO_USE_HW_VIDEO_DECODER)) == 0)
 		return 0;
 
 	memset(&xfer, 0, sizeof(xfer));
@@ -389,8 +390,16 @@ static int virtio_gpu_bo_invalidate(struct bo *bo, struct mapping *mapping)
 	xfer.box.h = mapping->rect.height;
 	xfer.box.d = 1;
 
-	// TODO(b/145993887): Send also stride when the patches are landed
-	// When BO_USE_RENDERING is set, the level=stride hack is not needed
+	if ((bo->meta.use_flags & BO_USE_RENDERING) == 0) {
+		// Unfortunately, the kernel doesn't actually pass the guest layer_stride and
+		// guest stride to the host (compare virtio_gpu.h and virtgpu_drm.h). For gbm
+		// based resources, we can work around this by using the level field to pass
+		// the stride to virglrenderer's gbm transfer code. However, we need to avoid
+		// doing this for resources which don't rely on that transfer code, which is
+		// resources with the BO_USE_RENDERING flag set.
+		// TODO(b/145993887): Send also stride when the patches are landed
+		xfer.level = bo->meta.strides[0];
+	}
 
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_VIRTGPU_TRANSFER_FROM_HOST, &xfer);
 	if (ret) {
@@ -417,6 +426,7 @@ static int virtio_gpu_bo_flush(struct bo *bo, struct mapping *mapping)
 	int ret;
 	struct drm_virtgpu_3d_transfer_to_host xfer;
 	struct virtio_gpu_priv *priv = (struct virtio_gpu_priv *)bo->drv->priv;
+	struct drm_virtgpu_3d_wait waitcmd;
 
 	if (!priv->has_3d)
 		return 0;
@@ -441,6 +451,21 @@ static int virtio_gpu_bo_flush(struct bo *bo, struct mapping *mapping)
 	if (ret) {
 		drv_log("DRM_IOCTL_VIRTGPU_TRANSFER_TO_HOST failed with %s\n", strerror(errno));
 		return -errno;
+	}
+
+	// If the buffer is only accessed by the host GPU, then the flush is ordered
+	// with subsequent commands. However, if other host hardware can access the
+	// buffer, we need to wait for the transfer to complete for consistency.
+	// TODO(b/136733358): Support returning fences from transfers
+	if (bo->meta.use_flags & BO_USE_NON_GPU_HW) {
+		memset(&waitcmd, 0, sizeof(waitcmd));
+		waitcmd.handle = mapping->vma->handle;
+
+		ret = drmIoctl(bo->drv->fd, DRM_IOCTL_VIRTGPU_WAIT, &waitcmd);
+		if (ret) {
+			drv_log("DRM_IOCTL_VIRTGPU_WAIT failed with %s\n", strerror(errno));
+			return -errno;
+		}
 	}
 
 	return 0;
