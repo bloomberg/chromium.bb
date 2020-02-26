@@ -1757,48 +1757,59 @@ bool Tile::IsMvValid(const Block& block, bool is_compound) const {
                                       wavefront_offset;
 }
 
-bool Tile::AssignMv(const Block& block, bool is_compound) {
-  MotionVector predicted_mv[2] = {};
+bool Tile::AssignInterMv(const Block& block, bool is_compound) {
   BlockParameters& bp = *block.bp;
+  const PredictionParameters& prediction_parameters = *bp.prediction_parameters;
+  const CandidateMotionVector* const ref_mv_stack =
+      prediction_parameters.ref_mv_stack;
   for (int i = 0; i < 1 + static_cast<int>(is_compound); ++i) {
-    const PredictionParameters& prediction_parameters =
-        *block.bp->prediction_parameters;
-    const PredictionMode mode = prediction_parameters.use_intra_block_copy
-                                    ? kPredictionModeNewMv
-                                    : GetSinglePredictionMode(i, bp.y_mode);
-    if (prediction_parameters.use_intra_block_copy) {
-      predicted_mv[0] = prediction_parameters.ref_mv_stack[0].mv[0];
-      if (predicted_mv[0].mv32 == 0) {
-        predicted_mv[0] = prediction_parameters.ref_mv_stack[1].mv[0];
-      }
-      if (predicted_mv[0].mv32 == 0) {
-        const int super_block_size4x4 = kNum4x4BlocksHigh[SuperBlockSize()];
-        if (block.row4x4 - super_block_size4x4 < row4x4_start_) {
-          predicted_mv[0].mv[1] = -MultiplyBy8(
-              MultiplyBy4(super_block_size4x4) + kIntraBlockCopyDelayPixels);
-        } else {
-          predicted_mv[0].mv[0] = -MultiplyBy32(super_block_size4x4);
-        }
-      }
-    } else if (mode == kPredictionModeGlobalMv) {
-      predicted_mv[i] = prediction_parameters.global_mv[i];
+    const PredictionMode mode = GetSinglePredictionMode(i, bp.y_mode);
+    MotionVector predicted_mv;
+    if (mode == kPredictionModeGlobalMv) {
+      predicted_mv = prediction_parameters.global_mv[i];
     } else {
       const int ref_mv_index = (mode == kPredictionModeNearestMv ||
                                 (mode == kPredictionModeNewMv &&
                                  prediction_parameters.ref_mv_count <= 1))
                                    ? 0
                                    : prediction_parameters.ref_mv_index;
-      predicted_mv[i] = prediction_parameters.ref_mv_stack[ref_mv_index].mv[i];
+      predicted_mv = ref_mv_stack[ref_mv_index].mv[i];
     }
     if (mode == kPredictionModeNewMv) {
       ReadMotionVector(block, i);
-      bp.mv[i].mv[0] += predicted_mv[i].mv[0];
-      bp.mv[i].mv[1] += predicted_mv[i].mv[1];
+      bp.mv[i].mv[0] += predicted_mv.mv[0];
+      bp.mv[i].mv[1] += predicted_mv.mv[1];
     } else {
-      bp.mv[i] = predicted_mv[i];
+      bp.mv[i] = predicted_mv;
     }
   }
   return IsMvValid(block, is_compound);
+}
+
+bool Tile::AssignIntraMv(const Block& block) {
+  BlockParameters& bp = *block.bp;
+  const PredictionParameters& prediction_parameters = *bp.prediction_parameters;
+  const CandidateMotionVector* const ref_mv_stack =
+      prediction_parameters.ref_mv_stack;
+  ReadMotionVector(block, 0);
+  if (ref_mv_stack[0].mv[0].mv32 == 0) {
+    if (ref_mv_stack[1].mv[0].mv32 == 0) {
+      const int super_block_size4x4 = kNum4x4BlocksHigh[SuperBlockSize()];
+      if (block.row4x4 - super_block_size4x4 < row4x4_start_) {
+        bp.mv[0].mv[1] -= MultiplyBy32(super_block_size4x4);
+        bp.mv[0].mv[1] -= MultiplyBy8(kIntraBlockCopyDelayPixels);
+      } else {
+        bp.mv[0].mv[0] -= MultiplyBy32(super_block_size4x4);
+      }
+    } else {
+      bp.mv[0].mv[0] += ref_mv_stack[1].mv[0].mv[0];
+      bp.mv[0].mv[1] += ref_mv_stack[1].mv[0].mv[1];
+    }
+  } else {
+    bp.mv[0].mv[0] += ref_mv_stack[0].mv[0].mv[0];
+    bp.mv[0].mv[1] += ref_mv_stack[0].mv[0].mv[1];
+  }
+  return IsMvValid(block, /*is_compound=*/false);
 }
 
 void Tile::ResetEntropyContext(const Block& block) {

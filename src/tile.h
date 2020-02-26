@@ -329,7 +329,8 @@ class Tile : public Allocable {
   bool DecodeInterModeInfo(const Block& block);                // 5.11.18.
   bool DecodeModeInfo(const Block& block);                     // 5.11.6.
   bool IsMvValid(const Block& block, bool is_compound) const;  // 6.10.25.
-  bool AssignMv(const Block& block, bool is_compound);         // 5.11.26.
+  bool AssignInterMv(const Block& block, bool is_compound);    // 5.11.26.
+  bool AssignIntraMv(const Block& block);                      // 5.11.26.
   int GetTopTransformWidth(const Block& block, int row4x4, int column4x4,
                            bool ignore_skip);
   int GetLeftTransformHeight(const Block& block, int row4x4, int column4x4,

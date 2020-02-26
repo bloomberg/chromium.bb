@@ -531,7 +531,7 @@ bool Tile::DecodeIntraModeInfo(const Block& block) {
     bp.interpolation_filter[1] = kInterpolationFilterBilinear;
     FindMvStack(block, /*is_compound=*/false, reference_frame_sign_bias_,
                 motion_field_, /*contexts=*/nullptr, &prediction_parameters);
-    return AssignMv(block, /*is_compound=*/false);
+    return AssignIntraMv(block);
   }
   bp.is_inter = false;
   return ReadIntraBlockModeInfo(block, /*intra_y_mode=*/true);
@@ -1275,7 +1275,7 @@ bool Tile::ReadInterBlockModeInfo(const Block& block) {
               &mode_contexts, &prediction_parameters);
   ReadInterPredictionModeY(block, mode_contexts);
   ReadRefMvIndex(block);
-  if (!AssignMv(block, is_compound)) return false;
+  if (!AssignInterMv(block, is_compound)) return false;
   ReadInterIntraMode(block, is_compound);
   ReadMotionMode(block, is_compound);
   ReadCompoundType(block, is_compound);
