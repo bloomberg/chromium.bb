@@ -363,6 +363,7 @@ const char kSetPlayerPlaybackStatus[] = "SetPlayerPlaybackStatus";
 const char kSetPlayerIdentity[] = "SetPlayerIdentity";
 const char kSetPlayerPosition[] = "SetPlayerPosition";
 const char kSetPlayerMetadata[] = "SetPlayerMetadata";
+const char kNextHandsfreeProfile[] = "NextHandsfreeProfile";
 
 // Names of properties returned by GetNodes()
 const char kIsInputProperty[] = "IsInput";
