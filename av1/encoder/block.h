@@ -445,6 +445,7 @@ struct macroblock {
 #endif
   int thresh_freq_fact[BLOCK_SIZES_ALL][MAX_MODES];
   uint8_t variance_low[105];
+  uint8_t content_state_sb;
   // Strong color activity detection. Used in REALTIME coding mode to enhance
   // the visual quality at the boundary of moving color objects.
   uint8_t color_sensitivity[2];

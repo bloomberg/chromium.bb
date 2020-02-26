@@ -922,6 +922,9 @@ typedef struct REAL_TIME_SPEED_FEATURES {
   // Use hybrid (rd for bsize < 16x16, otherwise nonrd) intra search for intra
   // only frames.
   int hybrid_intra_pickmode;
+
+  // Compute variance/sse on source difference, prior to encoding superblock.
+  int source_metrics_sb_nonrd;
 } REAL_TIME_SPEED_FEATURES;
 
 typedef struct SPEED_FEATURES {

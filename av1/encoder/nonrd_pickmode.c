@@ -1603,7 +1603,9 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
   if (cpi->sf.rt_sf.use_modeled_non_rd_cost && cm->base_qindex > 140 &&
       bsize < BLOCK_32X32 && x->source_variance > 100 &&
-      !cyclic_refresh_segment_id_boosted(xd->mi[0]->segment_id))
+      !cyclic_refresh_segment_id_boosted(xd->mi[0]->segment_id) &&
+      x->content_state_sb != kLowVarHighSumdiff &&
+      x->content_state_sb != kHighSad)
     use_modeled_non_rd_cost = 1;
 
   for (int idx = 0; idx < num_inter_modes; ++idx) {

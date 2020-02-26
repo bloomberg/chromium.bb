@@ -4238,6 +4238,35 @@ static AOM_INLINE void adjust_rdmult_tpl_model(AV1_COMP *cpi, MACROBLOCK *x,
 }
 #endif
 
+static void source_content_sb(AV1_COMP *cpi, MACROBLOCK *x, int shift) {
+  unsigned int tmp_sse;
+  unsigned int tmp_variance;
+  const BLOCK_SIZE bsize = BLOCK_64X64;
+  uint8_t *src_y = cpi->source->y_buffer;
+  int src_ystride = cpi->source->y_stride;
+  uint8_t *last_src_y = cpi->last_source->y_buffer;
+  int last_src_ystride = cpi->last_source->y_stride;
+  uint64_t avg_source_sse_threshold = 100000;       // ~5*5*(64*64)
+  uint64_t avg_source_sse_threshold_high = 800000;  // ~14*14*(64*64)
+  uint64_t sum_sq_thresh = 10000;  // sum = sqrt(thresh / 64*64)) ~1.5
+#if CONFIG_AV1_HIGHBITDEPTH
+  MACROBLOCKD *xd = &x->e_mbd;
+  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) return;
+#endif
+  src_y += shift;
+  last_src_y += shift;
+  tmp_variance = cpi->fn_ptr[bsize].vf(src_y, src_ystride, last_src_y,
+                                       last_src_ystride, &tmp_sse);
+  // Note: tmp_sse - tmp_variance = ((sum * sum) >> 12)
+  // Detect large lighting change.
+  if (tmp_variance < (tmp_sse >> 2) && (tmp_sse - tmp_variance) > sum_sq_thresh)
+    x->content_state_sb = kLowVarHighSumdiff;
+  else if (tmp_sse < avg_source_sse_threshold)
+    x->content_state_sb = kLowSad;
+  else if (tmp_sse > avg_source_sse_threshold_high)
+    x->content_state_sb = kHighSad;
+}
+
 static AOM_INLINE void encode_nonrd_sb(AV1_COMP *cpi, ThreadData *td,
                                        TileDataEnc *tile_data,
                                        PC_TREE *const pc_root, TOKENEXTRA **tp,
@@ -4249,6 +4278,11 @@ static AOM_INLINE void encode_nonrd_sb(AV1_COMP *cpi, ThreadData *td,
   const TileInfo *const tile_info = &tile_data->tile_info;
   MB_MODE_INFO **mi = cm->mi_grid_base + get_mi_grid_idx(cm, mi_row, mi_col);
   const BLOCK_SIZE sb_size = cm->seq_params.sb_size;
+  if (sf->rt_sf.source_metrics_sb_nonrd && sb_size == BLOCK_64X64 &&
+      cm->current_frame.frame_type != KEY_FRAME) {
+    int shift = cpi->source->y_stride * (mi_row << 2) + (mi_col << 2);
+    source_content_sb(cpi, x, shift);
+  }
   if (sf->part_sf.partition_search_type == FIXED_PARTITION || seg_skip) {
     set_offsets(cpi, tile_info, x, mi_row, mi_col, sb_size);
     const BLOCK_SIZE bsize =
@@ -4634,6 +4668,7 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
 
     x->color_sensitivity[0] = 0;
     x->color_sensitivity[1] = 0;
+    x->content_state_sb = 0;
 
     PC_TREE *const pc_root = td->pc_root[mib_size_log2 - MIN_MIB_SIZE_LOG2];
     pc_root->index = 0;
