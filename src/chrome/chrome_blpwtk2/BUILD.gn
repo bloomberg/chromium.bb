@@ -39,6 +39,20 @@ static_library("chrome_blpwtk2") {
     "//chrome/common/pref_names.h",
     "//chrome/utility/chrome_content_utility_client.cc",
     "//chrome/utility/chrome_content_utility_client.h",
+
+    # required by //blpwtk2:blpwtk2 (for spellchecking)
+    "//chrome/browser/spellchecker/spell_check_host_chrome_impl.cc",
+    "//chrome/browser/spellchecker/spell_check_host_chrome_impl.h",
+    "//chrome/browser/spellchecker/spell_check_host_chrome_impl_mac.cc",
+    "//chrome/browser/spellchecker/spellcheck_factory.cc",
+    "//chrome/browser/spellchecker/spellcheck_factory.h",
+    "//chrome/browser/spellchecker/spellcheck_hunspell_dictionary.cc",
+    "//chrome/browser/spellchecker/spellcheck_hunspell_dictionary.h",
+    "//chrome/browser/spellchecker/spellcheck_language_policy_handler.cc",
+    "//chrome/browser/spellchecker/spellcheck_language_policy_handler.h",
+    "//chrome/browser/spellchecker/spellcheck_service.cc",
+    "//chrome/browser/spellchecker/spellcheck_service.h",
+
     # required by //chrome/common/chrome_content_client.cc
     "//chrome/common/chrome_switches.cc",
     "//chrome/common/chrome_switches.h",
