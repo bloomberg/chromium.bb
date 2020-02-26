@@ -22603,7 +22603,7 @@
     "master-pi-android-pfq": {
         "_template": "pi_android_pfq",
         "boards": [],
-        "build_timeout": 25200,
+        "build_timeout": 36000,
         "master": true,
         "push_overlays": "both",
         "schedule": "with 60m interval",
@@ -22620,7 +22620,7 @@
     "master-pi-android-pfq-tryjob": {
         "_template": "pi_android_pfq",
         "boards": [],
-        "build_timeout": 25200,
+        "build_timeout": 36000,
         "debug": true,
         "debug_cidb": true,
         "display_label": "tryjob",

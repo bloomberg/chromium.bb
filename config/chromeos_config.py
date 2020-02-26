@@ -1364,7 +1364,7 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       constants.PI_ANDROID_PFQ_MASTER,
       site_config.templates.pi_android_pfq,
       site_config.templates.master_android_pfq_mixin,
-      build_timeout=7 * 60 * 60,
+      build_timeout=10 * 60 * 60,
       schedule='with 60m interval',
   )
 
