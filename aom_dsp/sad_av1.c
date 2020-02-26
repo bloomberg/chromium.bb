@@ -49,6 +49,21 @@ static INLINE unsigned int masked_sad(const uint8_t *src, int src_stride,
     else                                                                       \
       return masked_sad(src, src_stride, second_pred, m, ref, ref_stride, msk, \
                         msk_stride, m, n);                                     \
+  }                                                                            \
+  void aom_masked_sad##m##x##n##x4d_c(                                         \
+      const uint8_t *src, int src_stride, const uint8_t *ref[],                \
+      int ref_stride, const uint8_t *second_pred, const uint8_t *msk,          \
+      int msk_stride, int invert_mask, unsigned sads[]) {                      \
+    if (!invert_mask)                                                          \
+      for (int i = 0; i < 4; i++) {                                            \
+        sads[i] = masked_sad(src, src_stride, ref[i], ref_stride, second_pred, \
+                             m, msk, msk_stride, m, n);                        \
+      }                                                                        \
+    else                                                                       \
+      for (int i = 0; i < 4; i++) {                                            \
+        sads[i] = masked_sad(src, src_stride, second_pred, m, ref[i],          \
+                             ref_stride, msk, msk_stride, m, n);               \
+      }                                                                        \
   }
 
 /* clang-format off */

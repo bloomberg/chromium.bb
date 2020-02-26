@@ -824,6 +824,7 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
     ($w, $h) = @$_;
     add_proto qw/void/, "aom_sad${w}x${h}x4d", "const uint8_t *src_ptr, int src_stride, const uint8_t * const ref_ptr[], int ref_stride, uint32_t *sad_array";
     add_proto qw/void/, "aom_sad${w}x${h}x4d_avg", "const uint8_t *src_ptr, int src_stride, const uint8_t * const ref_ptr[], int ref_stride, const uint8_t *second_pred, uint32_t *sad_array";
+    add_proto qw/void/, "aom_masked_sad${w}x${h}x4d", "const uint8_t *src, int src_stride, const uint8_t *ref[], int ref_stride, const uint8_t *second_pred, const uint8_t *msk, int msk_stride, int invert_mask, unsigned sads[]";
   }
 
   specialize qw/aom_sad128x128x4d avx2          sse2/;
@@ -883,6 +884,35 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   specialize qw/aom_sad8x32x4d_avg    sse2/;
   specialize qw/aom_sad32x8x4d_avg    sse2/;
   specialize qw/aom_sad64x16x4d_avg   sse2/;
+
+  specialize qw/aom_masked_sad128x128x4d  ssse3/;
+  specialize qw/aom_masked_sad128x64x4d   ssse3/;
+  specialize qw/aom_masked_sad64x128x4d   ssse3/;
+  specialize qw/aom_masked_sad64x64x4d    ssse3/;
+  specialize qw/aom_masked_sad64x32x4d    ssse3/;
+  specialize qw/aom_masked_sad64x16x4d    ssse3/;
+  specialize qw/aom_masked_sad32x64x4d    ssse3/;
+  specialize qw/aom_masked_sad32x32x4d    ssse3/;
+  specialize qw/aom_masked_sad32x16x4d    ssse3/;
+  specialize qw/aom_masked_sad32x8x4d     ssse3/;
+  specialize qw/aom_masked_sad16x64x4d    ssse3/;
+  specialize qw/aom_masked_sad16x32x4d    ssse3/;
+  specialize qw/aom_masked_sad16x16x4d    ssse3/;
+  specialize qw/aom_masked_sad16x8x4d     ssse3/;
+
+  specialize qw/aom_masked_sad8x16x4d     ssse3/;
+  specialize qw/aom_masked_sad8x8x4d      ssse3/;
+  specialize qw/aom_masked_sad8x4x4d      ssse3/;
+  specialize qw/aom_masked_sad4x16x4d     ssse3/;
+  specialize qw/aom_masked_sad4x8x4d      ssse3/;
+  specialize qw/aom_masked_sad4x4x4d      ssse3/;
+
+  specialize qw/aom_masked_sad4x32x4d     ssse3/;
+  specialize qw/aom_masked_sad4x16x4d     ssse3/;
+  specialize qw/aom_masked_sad16x4x4d     ssse3/;
+  specialize qw/aom_masked_sad8x32x4d     ssse3/;
+  specialize qw/aom_masked_sad32x8x4d     ssse3/;
+  specialize qw/aom_masked_sad64x16x4d    ssse3/;
   #
   # Multi-block SAD, comparing a reference to N independent blocks
   #
