@@ -347,6 +347,10 @@ static INLINE int check_bounds(const FullMvLimits *mv_limits, int row, int col,
 // Calculates and returns a sad+mvcost list around an integer best pel during
 // fullpixel motion search. The resulting list can be used to speed up subpel
 // motion search later.
+#define USE_SAD_COSTLIST 1
+
+// calc_int_cost_list uses var to populate the costlist, which is more accurate
+// than sad but slightly slower.
 static INLINE void calc_int_cost_list(const MACROBLOCK *x,
                                       const MV *const ref_mv,
                                       const aom_variance_fn_ptr_t *fn_ptr,
@@ -401,11 +405,13 @@ static INLINE void calc_int_cost_list(const MACROBLOCK *x,
   }
 }
 
+// calc_int_cost_list uses sad to populate the costlist, which is less accurate
+// than var but faster.
 static INLINE void calc_int_sad_list(const MACROBLOCK *x,
                                      const MV *const ref_mv, int sadpb,
                                      const aom_variance_fn_ptr_t *fn_ptr,
                                      const FULLPEL_MV *best_mv, int *cost_list,
-                                     const int bestsad) {
+                                     int costlist_has_sad) {
   static const FULLPEL_MV neighbors[4] = {
     { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 }
   };
@@ -415,9 +421,13 @@ static INLINE void calc_int_sad_list(const MACROBLOCK *x,
   const int bc = best_mv->col;
   const FULLPEL_MV full_ref_mv = get_fullmv_from_mv(ref_mv);
 
-  if (cost_list[0] == INT_MAX) {
-    cost_list[0] = bestsad;
-    cost_list[0] += mvsad_err_cost(x, best_mv, &full_ref_mv, sadpb);
+  assert(av1_is_fullmv_in_range(&x->mv_limits, *best_mv));
+
+  // Refresh the costlist it does not contain valid sad
+  if (!costlist_has_sad) {
+    cost_list[0] =
+        fn_ptr->sdf(what->buf, what->stride, get_buf_from_mv(in_what, best_mv),
+                    in_what->stride);
 
     if (check_bounds(&x->mv_limits, br, bc, 1)) {
       for (int i = 0; i < 4; i++) {
@@ -426,7 +436,6 @@ static INLINE void calc_int_sad_list(const MACROBLOCK *x,
         cost_list[i + 1] =
             fn_ptr->sdf(what->buf, what->stride,
                         get_buf_from_mv(in_what, &this_mv), in_what->stride);
-        cost_list[i + 1] += mvsad_err_cost(x, &this_mv, &full_ref_mv, sadpb);
       }
     } else {
       for (int i = 0; i < 4; i++) {
@@ -438,21 +447,18 @@ static INLINE void calc_int_sad_list(const MACROBLOCK *x,
           cost_list[i + 1] =
               fn_ptr->sdf(what->buf, what->stride,
                           get_buf_from_mv(in_what, &this_mv), in_what->stride);
-          cost_list[i + 1] += mvsad_err_cost(x, &this_mv, &full_ref_mv, sadpb);
         }
       }
     }
-  } else {
-    if (x->mv_cost_type != MV_COST_NONE) {
-      cost_list[0] += mvsad_err_cost(x, best_mv, &full_ref_mv, sadpb);
+  }
 
-      for (int i = 0; i < 4; i++) {
-        const FULLPEL_MV this_mv = { br + neighbors[i].row,
-                                     bc + neighbors[i].col };
-        if (cost_list[i + 1] != INT_MAX) {
-          cost_list[i + 1] += mvsad_err_cost(x, &this_mv, &full_ref_mv, sadpb);
-        }
-      }
+  cost_list[0] += mvsad_err_cost(x, best_mv, &full_ref_mv, sadpb);
+
+  for (int idx = 0; idx < 4; idx++) {
+    if (cost_list[idx + 1] != INT_MAX) {
+      const FULLPEL_MV this_mv = { br + neighbors[idx].row,
+                                   bc + neighbors[idx].col };
+      cost_list[idx + 1] += mvsad_err_cost(x, &this_mv, &full_ref_mv, sadpb);
     }
   }
 }
@@ -502,6 +508,7 @@ static int pattern_search(
     cost_list[0] = cost_list[1] = cost_list[2] = cost_list[3] = cost_list[4] =
         INT_MAX;
   }
+  int costlist_has_sad = 0;
 
   // Work out the start point for the search
   raw_bestsad = vfp->sdf(what->buf, what->stride,
@@ -633,6 +640,7 @@ static int pattern_search(
     // Note: If we enter the if below, then cost_list must be non-NULL.
     if (s == 0) {
       cost_list[0] = raw_bestsad;
+      costlist_has_sad = 1;
       if (!do_init_search || s != best_init_s) {
         if (check_bounds(&x->mv_limits, br, bc, 1 << s)) {
           for (i = 0; i < num_candidates[s]; i++) {
@@ -715,12 +723,12 @@ static int pattern_search(
   // cost_list[3]: cost/sad at delta { 0, 1} (right)  from the best integer pel
   // cost_list[4]: cost/sad at delta {-1, 0} (top)    from the best integer pel
   if (cost_list) {
-    const FULLPEL_MV best_int_mv = { br, bc };
-    if (last_is_4) {
-      calc_int_sad_list(x, ref_mv, sad_per_bit, vfp, &best_int_mv, cost_list,
-                        bestsad);
+    const FULLPEL_MV full_best_mv = { br, bc };
+    if (USE_SAD_COSTLIST) {
+      calc_int_sad_list(x, ref_mv, sad_per_bit, vfp, &full_best_mv, cost_list,
+                        costlist_has_sad);
     } else {
-      calc_int_cost_list(x, ref_mv, vfp, &best_int_mv, cost_list);
+      calc_int_cost_list(x, ref_mv, vfp, &full_best_mv, cost_list);
     }
   }
   x->best_mv.as_mv.row = br;
@@ -1169,7 +1177,13 @@ static int full_pixel_diamond(MACROBLOCK *x, FULLPEL_MV *start_mv,
 
   // Return cost list.
   if (cost_list) {
-    calc_int_cost_list(x, ref_mv, fn_ptr, &x->best_mv.as_fullmv, cost_list);
+    if (USE_SAD_COSTLIST) {
+      const int costlist_has_sad = 0;
+      calc_int_sad_list(x, ref_mv, sadpb, fn_ptr, &x->best_mv.as_fullmv,
+                        cost_list, costlist_has_sad);
+    } else {
+      calc_int_cost_list(x, ref_mv, fn_ptr, &x->best_mv.as_fullmv, cost_list);
+    }
   }
   return bestsme;
 }
@@ -1227,7 +1241,13 @@ static int full_pixel_exhaustive(
 
   // Return cost list.
   if (cost_list) {
-    calc_int_cost_list(x, ref_mv, fn_ptr, best_mv, cost_list);
+    if (USE_SAD_COSTLIST) {
+      const int costlist_has_sad = 0;
+      calc_int_sad_list(x, ref_mv, sadpb, fn_ptr, &x->best_mv.as_fullmv,
+                        cost_list, costlist_has_sad);
+    } else {
+      calc_int_cost_list(x, ref_mv, fn_ptr, &x->best_mv.as_fullmv, cost_list);
+    }
   }
   return bestsme;
 }
