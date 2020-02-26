@@ -38,6 +38,7 @@ static const uint32_t texture_source_formats[] = { DRM_FORMAT_NV12, DRM_FORMAT_R
 
 struct virtio_gpu_priv {
 	int has_3d;
+	int caps_is_v2;
 	union virgl_caps caps;
 };
 
@@ -89,16 +90,21 @@ static void virtio_gpu_add_combination(struct driver *drv, uint32_t drm_format,
 	struct virtio_gpu_priv *priv = (struct virtio_gpu_priv *)drv->priv;
 
 	if (priv->has_3d) {
-		if ((use_flags & BO_USE_RENDERING) != 0 &&
+		if ((use_flags & BO_USE_RENDERING) &&
 		    !virtio_gpu_supports_format(&priv->caps.v1.render, drm_format)) {
 			drv_log("Skipping unsupported render format: %d\n", drm_format);
 			return;
 		}
 
-		if ((use_flags & BO_USE_TEXTURE) != 0 &&
+		if ((use_flags & BO_USE_TEXTURE) &&
 		    !virtio_gpu_supports_format(&priv->caps.v1.sampler, drm_format)) {
 			drv_log("Skipping unsupported texture format: %d\n", drm_format);
 			return;
+		}
+		if ((use_flags & BO_USE_SCANOUT) && priv->caps_is_v2 &&
+		    !virtio_gpu_supports_format(&priv->caps.v2.scanout, drm_format)) {
+			drv_log("Unsupported scanout format: %d\n", drm_format);
+			use_flags &= ~BO_USE_SCANOUT;
 		}
 	}
 
@@ -229,7 +235,7 @@ static void *virtio_virgl_bo_map(struct bo *bo, struct vma *vma, size_t plane, u
 		    gem_map.offset);
 }
 
-static int virtio_gpu_get_caps(struct driver *drv, union virgl_caps *caps)
+static int virtio_gpu_get_caps(struct driver *drv, union virgl_caps *caps, int *caps_is_v2)
 {
 	int ret;
 	struct drm_virtgpu_get_caps cap_args;
@@ -244,9 +250,11 @@ static int virtio_gpu_get_caps(struct driver *drv, union virgl_caps *caps)
 		drv_log("DRM_IOCTL_VIRTGPU_GETPARAM failed with %s\n", strerror(errno));
 	}
 
+	*caps_is_v2 = 0;
 	memset(&cap_args, 0, sizeof(cap_args));
 	cap_args.addr = (unsigned long long)caps;
 	if (can_query_v2) {
+		*caps_is_v2 = 1;
 		cap_args.cap_set_id = 2;
 		cap_args.size = sizeof(union virgl_caps);
 	} else {
@@ -257,6 +265,7 @@ static int virtio_gpu_get_caps(struct driver *drv, union virgl_caps *caps)
 	ret = drmIoctl(drv->fd, DRM_IOCTL_VIRTGPU_GET_CAPS, &cap_args);
 	if (ret) {
 		drv_log("DRM_IOCTL_VIRTGPU_GET_CAPS failed with %s\n", strerror(errno));
+		*caps_is_v2 = 0;
 
 		// Fallback to v1
 		cap_args.cap_set_id = 1;
@@ -291,7 +300,7 @@ static int virtio_gpu_init(struct driver *drv)
 	}
 
 	if (priv->has_3d) {
-		virtio_gpu_get_caps(drv, &priv->caps);
+		virtio_gpu_get_caps(drv, &priv->caps, &priv->caps_is_v2);
 
 		/* This doesn't mean host can scanout everything, it just means host
 		 * hypervisor can show it. */
