@@ -14,6 +14,7 @@ from __future__ import print_function
 import collections
 import errno
 import fnmatch
+import io
 import itertools
 import mimetypes
 import os
@@ -25,7 +26,6 @@ from elftools.elf import elffile
 from elftools.common import exceptions
 import lddtree
 import magic  # pylint: disable=import-error
-from six.moves import StringIO
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -351,8 +351,8 @@ class SymbolsTest(image_test_lib.ImageTestCase):
     if file_name in self._known_symtabs:
       return self._known_symtabs[file_name]
 
-    # We use StringIO here to obviate fseek/fread time in pyelftools.
-    stream = StringIO(osutils.ReadFile(file_name, mode='rb'))
+    # We use BytesIO here to obviate fseek/fread time in pyelftools.
+    stream = io.BytesIO(osutils.ReadFile(file_name, mode='rb'))
 
     try:
       elf = elffile.ELFFile(stream)
@@ -408,9 +408,11 @@ class SymbolsTest(image_test_lib.ImageTestCase):
           exported.update(exp)
 
     known_unsatisfieds = {
-        'libthread_db-1.0.so': set([
-            'ps_pdwrite', 'ps_pdread', 'ps_lgetfpregs', 'ps_lsetregs',
-            'ps_lgetregs', 'ps_lsetfpregs', 'ps_pglobal_lookup', 'ps_getpid']),
+        'libthread_db-1.0.so': {
+            b'ps_pdwrite', b'ps_pdread', b'ps_lgetfpregs', b'ps_lsetregs',
+            b'ps_lgetregs', b'ps_lsetfpregs', b'ps_pglobal_lookup',
+            b'ps_getpid',
+        },
     }
 
     excluded_files = set([
