@@ -279,4 +279,42 @@ TEST(IPAddressTest, IPEndpointBoolOperator) {
   }
 }
 
+TEST(IPAddressTest, IPEndpointParse) {
+  IPEndpoint expected{IPAddress(std::array<uint8_t, 4>{{1, 2, 3, 4}}), 5678};
+  ErrorOr<IPEndpoint> result = IPEndpoint::Parse("1.2.3.4:5678");
+  ASSERT_TRUE(result.is_value()) << result.error();
+  EXPECT_EQ(expected, result.value());
+
+  expected = IPEndpoint{
+      IPAddress(std::array<uint16_t, 8>{{0xabcd, 0, 0, 0, 0, 0, 0, 1}}), 99};
+  result = IPEndpoint::Parse("[abcd::1]:99");
+  ASSERT_TRUE(result.is_value()) << result.error();
+  EXPECT_EQ(expected, result.value());
+
+  expected = IPEndpoint{
+      IPAddress(std::array<uint16_t, 8>{{0, 0, 0, 0, 0, 0, 0, 0}}), 5791};
+  result = IPEndpoint::Parse("[::]:5791");
+  ASSERT_TRUE(result.is_value()) << result.error();
+  EXPECT_EQ(expected, result.value());
+
+  EXPECT_FALSE(IPEndpoint::Parse(""));              // Empty string.
+  EXPECT_FALSE(IPEndpoint::Parse("beef"));          // Random word.
+  EXPECT_FALSE(IPEndpoint::Parse("localhost:99"));  // We don't do DNS.
+  EXPECT_FALSE(IPEndpoint::Parse(":80"));           // Missing address.
+  EXPECT_FALSE(IPEndpoint::Parse("[]:22"));         // Missing address.
+  EXPECT_FALSE(IPEndpoint::Parse("1.2.3.4"));       // Missing port after IPv4.
+  EXPECT_FALSE(IPEndpoint::Parse("[abcd::1]"));     // Missing port after IPv6.
+  EXPECT_FALSE(IPEndpoint::Parse("abcd::1:8080"));  // Missing square brackets.
+
+  // No extra whitespace is allowed.
+  EXPECT_FALSE(IPEndpoint::Parse(" 1.2.3.4:5678"));
+  EXPECT_FALSE(IPEndpoint::Parse("1.2.3.4 :5678"));
+  EXPECT_FALSE(IPEndpoint::Parse("1.2.3.4: 5678"));
+  EXPECT_FALSE(IPEndpoint::Parse("1.2.3.4:5678 "));
+  EXPECT_FALSE(IPEndpoint::Parse(" [abcd::1]:99"));
+  EXPECT_FALSE(IPEndpoint::Parse("[abcd::1] :99"));
+  EXPECT_FALSE(IPEndpoint::Parse("[abcd::1]: 99"));
+  EXPECT_FALSE(IPEndpoint::Parse("[abcd::1]:99 "));
+}
+
 }  // namespace openscreen
