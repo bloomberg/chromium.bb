@@ -10,6 +10,8 @@ package vm_tools.apps;
 // Corresponds to a .desktop file from the Desktop Entry Spec:
 // https://www.freedesktop.org/wiki/Specifications/desktop-entry-spec/
 // with some additional parameters to support broader compatibility.
+// This message is replicated in vm_tools/proto/container_host.proto, and the
+// two definitions should be kept in sync.
 message App {
   // A "localestring". Entries with a locale should set the |locale| field to
   // the value inside the [] and the default entry should leave it empty. The
