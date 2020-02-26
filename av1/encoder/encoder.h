@@ -916,9 +916,6 @@ typedef struct AV1_COMP {
   // number of show frames encoded in current gf_group
   int num_gf_group_show_frames;
 
-  // Number of gf_group frames for tpl stats
-  int tpl_gf_group_frames;
-
   TWO_PASS twopass;
 
   GF_GROUP gf_group;

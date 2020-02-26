@@ -1000,9 +1000,9 @@ int av1_tpl_setup_stats(AV1_COMP *cpi, int gop_eval,
   }
 
   int pframe_qindex;
+  int tpl_gf_group_frames;
   init_gop_frames_for_tpl(cpi, frame_params, gf_group, gop_eval,
-                          &cpi->tpl_gf_group_frames, frame_input,
-                          &pframe_qindex);
+                          &tpl_gf_group_frames, frame_input, &pframe_qindex);
 
   cpi->rc.base_layer_qp = pframe_qindex;
 
@@ -1010,7 +1010,7 @@ int av1_tpl_setup_stats(AV1_COMP *cpi, int gop_eval,
 
   if (cpi->oxcf.enable_tpl_model == 1) {
     // Backward propagation from tpl_group_frames to 1.
-    for (int frame_idx = gf_group->index; frame_idx < cpi->tpl_gf_group_frames;
+    for (int frame_idx = gf_group->index; frame_idx < tpl_gf_group_frames;
          ++frame_idx) {
       if (gf_group->update_type[frame_idx] == INTNL_OVERLAY_UPDATE ||
           gf_group->update_type[frame_idx] == OVERLAY_UPDATE)
@@ -1022,8 +1022,8 @@ int av1_tpl_setup_stats(AV1_COMP *cpi, int gop_eval,
                                av1_num_planes(cm));
     }
 
-    for (int frame_idx = cpi->tpl_gf_group_frames - 1;
-         frame_idx >= gf_group->index; --frame_idx) {
+    for (int frame_idx = tpl_gf_group_frames - 1; frame_idx >= gf_group->index;
+         --frame_idx) {
       if (gf_group->update_type[frame_idx] == INTNL_OVERLAY_UPDATE ||
           gf_group->update_type[frame_idx] == OVERLAY_UPDATE)
         continue;
@@ -1041,7 +1041,7 @@ int av1_tpl_setup_stats(AV1_COMP *cpi, int gop_eval,
   if (gf_group->max_layer_depth_allowed == 0) return 1;
 
   double beta[2] = { 0.0 };
-  for (int frame_idx = 1; frame_idx <= AOMMIN(cpi->tpl_gf_group_frames - 1, 2);
+  for (int frame_idx = 1; frame_idx <= AOMMIN(tpl_gf_group_frames - 1, 2);
        ++frame_idx) {
     TplDepFrame *tpl_frame = &cpi->tpl_frame[frame_idx];
     TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
