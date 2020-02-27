@@ -2923,6 +2923,67 @@ class CMDTestCaseBase(unittest.TestCase):
     self.addCleanup(mock.patch.stopall)
 
 
+class CMDPresubmitTestCase(CMDTestCaseBase):
+  def setUp(self):
+    super(CMDPresubmitTestCase, self).setUp()
+    mock.patch(
+       'git_cl.Changelist.GetCommonAncestorWithUpstream',
+       return_value='upstream').start()
+    mock.patch(
+        'git_cl.Changelist.FetchDescription',
+        return_value='fetch description').start()
+    mock.patch(
+        'git_cl.Changelist.GetLocalDescription',
+        return_value='get description').start()
+    mock.patch('git_cl.Changelist.RunHook').start()
+
+  def testDefaultCase(self):
+    self.assertEqual(0, git_cl.main(['presubmit']))
+    git_cl.Changelist.RunHook.assert_called_once_with(
+        committing=True,
+        may_prompt=False,
+        verbose=0,
+        parallel=None,
+        upstream='upstream',
+        description='fetch description',
+        all_files=None)
+
+  def testNoIssue(self):
+    git_cl.Changelist.GetIssue.return_value = None
+    self.assertEqual(0, git_cl.main(['presubmit']))
+    git_cl.Changelist.RunHook.assert_called_once_with(
+        committing=True,
+        may_prompt=False,
+        verbose=0,
+        parallel=None,
+        upstream='upstream',
+        description='get description',
+        all_files=None)
+
+  def testCustomBranch(self):
+    self.assertEqual(0, git_cl.main(['presubmit', 'custom_branch']))
+    git_cl.Changelist.RunHook.assert_called_once_with(
+        committing=True,
+        may_prompt=False,
+        verbose=0,
+        parallel=None,
+        upstream='custom_branch',
+        description='fetch description',
+        all_files=None)
+
+  def testOptions(self):
+    self.assertEqual(
+        0, git_cl.main(['presubmit', '-v', '-v', '--all', '--parallel', '-u']))
+    git_cl.Changelist.RunHook.assert_called_once_with(
+        committing=False,
+        may_prompt=False,
+        verbose=2,
+        parallel=True,
+        upstream='upstream',
+        description='fetch description',
+        all_files=True)
+
+
 class CMDTryResultsTestCase(CMDTestCaseBase):
   _DEFAULT_REQUEST = {
       'predicate': {
