@@ -1389,10 +1389,9 @@ float PictureLayerImpl::MaximumContentsScale() const {
   // have tilings that would become larger than the max_texture_size since they
   // use a single tile for the entire tiling. Other layers can have tilings such
   // that dimension * scale does not overflow.
-  float max_dimension =
-      static_cast<float>(mask_type_ == Layer::LayerMaskType::SINGLE_TEXTURE_MASK
-                             ? layer_tree_impl()->max_texture_size()
-                             : std::numeric_limits<int>::max());
+  float max_dimension = static_cast<float>(
+      is_backdrop_filter_mask_ ? layer_tree_impl()->max_texture_size()
+                               : std::numeric_limits<int>::max());
 
   int bounds[2] = {this->bounds().width(), this->bounds().height()};
   int max_axis = bounds[1] > bounds[0];
