@@ -269,19 +269,25 @@ bool operator!=(const IPEndpoint& a, const IPEndpoint& b) {
   return !(a == b);
 }
 
+bool IPAddressComparator::operator()(const IPAddress& a,
+                                     const IPAddress& b) const {
+  if (a.version() != b.version()) {
+    return a.version() < b.version();
+  }
+
+  if (a.IsV4()) {
+    return memcmp(a.bytes_.data(), b.bytes_.data(), 4) < 0;
+  } else {
+    return memcmp(a.bytes_.data(), b.bytes_.data(), 16) < 0;
+  }
+}
+
 bool IPEndpointComparator::operator()(const IPEndpoint& a,
                                       const IPEndpoint& b) const {
-  if (a.address.version() != b.address.version())
-    return a.address.version() < b.address.version();
-  if (a.address.IsV4()) {
-    int ret = memcmp(a.address.bytes_.data(), b.address.bytes_.data(), 4);
-    if (ret != 0)
-      return ret < 0;
-  } else {
-    int ret = memcmp(a.address.bytes_.data(), b.address.bytes_.data(), 16);
-    if (ret != 0)
-      return ret < 0;
+  if (a.address != b.address) {
+    return IPAddressComparator()(a.address, b.address);
   }
+
   return a.port < b.port;
 }
 
