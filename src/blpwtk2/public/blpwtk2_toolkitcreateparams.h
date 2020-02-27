@@ -273,8 +273,7 @@ class ToolkitCreateParams
 
 
     // patch section: renderer ui
-
-
+    BLPWTK2_EXPORT void setRendererUIEnabled(bool rendererUIEnabled);
 
     BLPWTK2_EXPORT void setLogThrottleType(LogThrottleType throttleType);
 
@@ -318,7 +317,7 @@ class ToolkitCreateParams
 
 
     // patch section: renderer ui
-
+    bool rendererUIEnabled() const;
 
 
 };

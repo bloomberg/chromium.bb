@@ -75,8 +75,7 @@ struct ToolkitCreateParamsImpl final
 
 
     // patch section: renderer ui
-
-
+    bool d_rendererUIEnabled;
 
     ToolkitCreateParams::LogThrottleType d_logThrottleType {ToolkitCreateParams::LogThrottleType::kWarningThrottle};
 
@@ -116,9 +115,7 @@ ToolkitCreateParamsImpl::ToolkitCreateParamsImpl()
 
 
     // patch section: renderer ui
-
-
-
+    , d_rendererUIEnabled(false)
 {
 }
 
@@ -318,8 +315,10 @@ void ToolkitCreateParams::setBrowserV8Enabled(bool browserV8Enabled)
 
 
 // patch section: renderer ui
-
-
+void ToolkitCreateParams::setRendererUIEnabled(bool rendererUIEnabled)
+{
+    d_impl->d_rendererUIEnabled = rendererUIEnabled;
+}
 
 void ToolkitCreateParams::setLogThrottleType(LogThrottleType throttleType)
 {
@@ -488,8 +487,10 @@ bool ToolkitCreateParams::browserV8Enabled() const
 
 
 // patch section: renderer ui
-
-
+bool ToolkitCreateParams::rendererUIEnabled() const
+{
+    return d_impl->d_rendererUIEnabled;
+}
 
 ToolkitCreateParams::LogThrottleType ToolkitCreateParams::logThrottleType() const
 {

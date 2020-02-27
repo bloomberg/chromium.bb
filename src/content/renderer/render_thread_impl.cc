@@ -806,7 +806,10 @@ void RenderThreadImpl::Init() {
   needs_to_record_first_active_paint_ = false;
   was_backgrounded_time_ = base::TimeTicks::Min();
 
-  BindHostReceiver(frame_sink_provider_.BindNewPipeAndPassReceiver());
+  if (!GetContentClient()->renderer()->BindFrameSinkProvider(
+      mojo::MakeRequest(&frame_sink_provider_))) {
+    BindHostReceiver(frame_sink_provider_.BindNewPipeAndPassReceiver());
+  }
 
   if (!is_gpu_compositing_disabled_) {
     BindHostReceiver(compositing_mode_reporter_.BindNewPipeAndPassReceiver());
@@ -887,7 +890,8 @@ bool RenderThreadImpl::Send(IPC::Message* msg) {
     page_pauser_handle = blink::WebScopedPagePauser::Create();
   }
 
-  return ChildThreadImpl::Send(msg);
+  return GetContentClient()->renderer()->Dispatch(msg) ||
+         ChildThreadImpl::Send(msg);
 }
 
 IPC::SyncChannel* RenderThreadImpl::GetChannel() {

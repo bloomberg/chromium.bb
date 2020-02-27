@@ -669,6 +669,36 @@ bool OSExchangeDataProviderWin::GetCustomData(
   return success;
 }
 
+void OSExchangeDataProviderWin::EnumerateCustomData(
+    std::vector<FORMATETC>* formats) const {
+  DCHECK(formats);
+  IEnumFORMATETC *penumFormatEtc = NULL;
+  if (SUCCEEDED(source_object_->EnumFormatEtc(DATADIR_GET, &penumFormatEtc))) {
+    FORMATETC format;
+    while (penumFormatEtc->Next(1, &format, NULL) == S_OK) {
+      formats->push_back(format);
+    }
+  }
+}
+
+bool OSExchangeDataProviderWin::GetCustomData(
+    const FORMATETC& format,
+    base::string16* data) const {
+  DCHECK(data);
+  bool success = false;
+  STGMEDIUM medium;
+  FORMATETC format_etc = format;
+  if (SUCCEEDED(source_object_->GetData(&format_etc, &medium))) {
+    if (medium.tymed & TYMED_HGLOBAL) {
+      base::win::ScopedHGlobal<char*> scoped(medium.hGlobal);
+      base::UTF8ToUTF16(scoped.get(), scoped.Size(), data);
+      success = true;
+    }
+    ReleaseStgMedium(&medium);
+  }
+  return success;
+}
+
 bool OSExchangeDataProviderWin::GetFileContents(
     base::FilePath* filename,
     std::string* file_contents) const {
