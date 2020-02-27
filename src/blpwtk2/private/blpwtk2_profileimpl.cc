@@ -41,6 +41,7 @@
 #include <mojo/public/cpp/bindings/strong_binding.h>
 #include <services/service_manager/public/cpp/connector.h>
 #include <third_party/blink/renderer/core/page/bb_window_hooks.h>
+#include <third_party/blink/public/platform/web_cache.h>
 
 namespace blpwtk2 {
 
@@ -474,6 +475,10 @@ void ProfileImpl::setIPCDelegate(ProcessClientDelegate *delegate)
 
 
 // patch section: web cache
+void ProfileImpl::clearWebCache()
+{
+    blink::WebCache::Clear();
+}
 
 
 

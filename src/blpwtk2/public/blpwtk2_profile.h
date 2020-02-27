@@ -184,6 +184,7 @@ class Profile
 
 
     // patch section: web cache
+    virtual void clearWebCache() = 0;
 
 
 
