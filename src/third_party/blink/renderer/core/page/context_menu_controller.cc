@@ -511,28 +511,31 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
 
 static void ExposeInt(v8::Isolate* isolate, const v8::Handle<v8::Object>& obj, const char* name, int value)
 {
-  obj->Set(v8::String::NewFromUtf8(isolate, name).ToLocalChecked(), v8::Integer::New(isolate, value));
+  obj->Set(obj->CreationContext(), v8::String::NewFromUtf8(isolate, name).ToLocalChecked(), v8::Integer::New(isolate, value)).Check();
 }
 
 static void ExposeBool(v8::Isolate* isolate, const v8::Handle<v8::Object>& obj, const char* name, bool value)
 {
-  obj->Set(v8::String::NewFromUtf8(isolate, name).ToLocalChecked(), v8::Boolean::New(isolate, value));
+  obj->Set(obj->CreationContext(), v8::String::NewFromUtf8(isolate, name).ToLocalChecked(), v8::Boolean::New(isolate, value)).Check();
 }
 
 static void ExposeString(v8::Isolate* isolate, const v8::Handle<v8::Object>& obj, const char* name, const std::string& value)
 {
-  obj->Set(v8::String::NewFromUtf8(isolate, name).ToLocalChecked(),
-           v8::String::NewFromUtf8(isolate, value.data(), v8::NewStringType::kNormal, value.length()).ToLocalChecked());
+  obj->Set(obj->CreationContext(),
+           v8::String::NewFromUtf8(isolate, name).ToLocalChecked(),
+           v8::String::NewFromUtf8(isolate, value.data(), v8::NewStringType::kNormal, value.length()).ToLocalChecked()).Check();
 }
 
 static void ExposeStringVector(v8::Isolate* isolate, const v8::Handle<v8::Object>& obj, const char* name, const blink::WebVector<blink::WebString>& value)
 {
   v8::Handle<v8::Array> array = v8::Array::New(isolate);
+  v8::Handle<v8::Context> context = obj->CreationContext();
+
   for (unsigned i = 0; i < value.size(); ++i) {
     std::string item = value[i].Utf8();
-    array->Set(i, v8::String::NewFromUtf8(isolate, item.data(), v8::NewStringType::kNormal, item.length()).ToLocalChecked());
+    array->Set(context, i, v8::String::NewFromUtf8(isolate, item.data(), v8::NewStringType::kNormal, item.length()).ToLocalChecked()).Check();
   }
-  obj->Set(v8::String::NewFromUtf8(isolate, name).ToLocalChecked(), array);
+  obj->Set(context, v8::String::NewFromUtf8(isolate, name).ToLocalChecked(), array).Check();
 }
 
 static bool FireBbContextMenuEvent(const HitTestResult& hitTestResult, const WebContextMenuData& data)
@@ -547,16 +550,16 @@ static bool FireBbContextMenuEvent(const HitTestResult& hitTestResult, const Web
   v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New(isolate);
   v8::Handle<v8::Object> detail_obj = templ->NewInstance(context).ToLocalChecked();
 
-  ExposeBool(isolate, detail_obj, "canUndo", data.edit_flags & WebContextMenuData::kCanUndo);
-  ExposeBool(isolate, detail_obj, "canRedo", data.edit_flags & WebContextMenuData::kCanRedo);
-  ExposeBool(isolate, detail_obj, "canCut", data.edit_flags & WebContextMenuData::kCanCut);
-  ExposeBool(isolate, detail_obj, "canCopy", data.edit_flags & WebContextMenuData::kCanCopy);
-  ExposeBool(isolate, detail_obj, "canPaste", data.edit_flags & WebContextMenuData::kCanPaste);
-  ExposeBool(isolate, detail_obj, "canDelete", data.edit_flags & WebContextMenuData::kCanDelete);
-  ExposeBool(isolate, detail_obj, "canSelectAll", data.edit_flags & WebContextMenuData::kCanSelectAll);
-  ExposeBool(isolate, detail_obj, "canTranslate", data.edit_flags & WebContextMenuData::kCanTranslate);
+  ExposeBool(isolate, detail_obj, "canUndo", data.edit_flags & kCanUndo);
+  ExposeBool(isolate, detail_obj, "canRedo", data.edit_flags & kCanRedo);
+  ExposeBool(isolate, detail_obj, "canCut", data.edit_flags & kCanCut);
+  ExposeBool(isolate, detail_obj, "canCopy", data.edit_flags & kCanCopy);
+  ExposeBool(isolate, detail_obj, "canPaste", data.edit_flags & kCanPaste);
+  ExposeBool(isolate, detail_obj, "canDelete", data.edit_flags & kCanDelete);
+  ExposeBool(isolate, detail_obj, "canSelectAll", data.edit_flags & kCanSelectAll);
+  ExposeBool(isolate, detail_obj, "canTranslate", data.edit_flags & kCanTranslate);
 
-  ExposeInt(isolate, detail_obj, "mediaType", data.media_type);
+  ExposeInt(isolate, detail_obj, "mediaType", static_cast<int>(data.media_type));
   ExposeString(isolate, detail_obj, "misspelledWord", data.misspelled_word.Utf8());
   ExposeBool(isolate, detail_obj, "isSpellCheckingEnabled", data.is_spell_checking_enabled);
   ExposeStringVector(isolate, detail_obj, "dictionarySuggestions", data.dictionary_suggestions);
@@ -577,7 +580,7 @@ static bool FireBbContextMenuEvent(const HitTestResult& hitTestResult, const Web
                          "bbContextMenu",
                          true,
                          true,
-                         ScriptValue(script_state, detail_obj));
+                         ScriptValue(isolate, detail_obj));
   hitTestResult.InnerNodeOrImageMapImage()->DispatchEvent(*event);
   return event->defaultPrevented();
 }
