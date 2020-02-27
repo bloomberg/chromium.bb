@@ -52,5 +52,33 @@ std::pair<absl::Span<uint8_t>, StatusReportId> SenderReportBuilder::BuildPacket(
       ToStatusReportId(ntp_timestamp));
 }
 
+Clock::time_point SenderReportBuilder::GetRecentReportTime(
+    StatusReportId report_id,
+    Clock::time_point on_or_before) const {
+  // Assumption: The |report_id| is the middle 32 bits of a 64-bit NtpTimestamp.
+  static_assert(ToStatusReportId(NtpTimestamp{0x0192a3b4c5d6e7f8}) ==
+                    StatusReportId{0xa3b4c5d6},
+                "FIXME: ToStatusReportId() implementation changed.");
+
+  // Compute the maximum possible NtpTimestamp. Then, use its uppermost 16 bits
+  // and the 32 bits from the report_id to produce a reconstructed NtpTimestamp.
+  const NtpTimestamp max_timestamp =
+      session_->ntp_converter().ToNtpTimestamp(on_or_before);
+  // max_timestamp: HH......
+  //     report_id:     LLLL
+  //                ↓↓ ↙↙↙↙
+  // reconstructed: HHLLLL00
+  NtpTimestamp reconstructed = (max_timestamp & (uint64_t{0xffff} << 48)) |
+                               (static_cast<uint64_t>(report_id) << 16);
+  //  If the reconstructed timestamp is greater than the maximum one, rollover
+  //  of the lower 48 bits occurred. Subtract one from the upper 16 bits to
+  //  rectify that.
+  if (reconstructed > max_timestamp) {
+    reconstructed -= uint64_t{1} << 48;
+  }
+
+  return session_->ntp_converter().ToLocalTime(reconstructed);
+}
+
 }  // namespace cast
 }  // namespace openscreen

@@ -13,6 +13,8 @@ namespace openscreen {
 namespace cast {
 namespace {
 
+using openscreen::operator<<;
+
 constexpr Ssrc kSenderSsrc{1};
 constexpr Ssrc kReceiverSsrc{2};
 
@@ -157,6 +159,32 @@ TEST_F(SenderReportTest, BuildPackets) {
       EXPECT_EQ(original.report_block->ssrc, parsed->report_block->ssrc);
       // Note: RtcpReportBlock serialization/parsing is unit-tested elsewhere.
     }
+  }
+}
+
+TEST_F(SenderReportTest, ComputesTimePointsFromReportIds) {
+  // Note: The time_points can be off by up to 16 µs because of the loss of
+  // precision caused by truncating the NtpTimestamps into StatusReportIds.
+  constexpr std::chrono::microseconds kEpsilon{16};
+
+  // Test a sampling of time points over the last 65536 seconds to confirm the
+  // rollover correction logic is working.
+  Clock::time_point on_or_before = Clock::now() + std::chrono::seconds(65536);
+  constexpr int kNumIterations = 16;
+  constexpr int kSecondsPerStep = 4096;
+  for (int i = 0; i < kNumIterations; ++i) {
+    const Clock::time_point expected_time =
+        on_or_before - std::chrono::seconds(i * kSecondsPerStep);
+    const auto report_id =
+        ToStatusReportId(ntp_converter().ToNtpTimestamp(expected_time));
+    const Clock::time_point report_time =
+        builder()->GetRecentReportTime(report_id, on_or_before);
+    EXPECT_GE(on_or_before, report_time);
+    const auto absolute_difference = (expected_time < report_time)
+                                         ? (report_time - expected_time)
+                                         : (expected_time - report_time);
+    EXPECT_LE(absolute_difference, kEpsilon)
+        << expected_time << " vs " << report_time;
   }
 }
 

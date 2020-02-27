@@ -13,6 +13,7 @@
 #include "cast/streaming/rtcp_common.h"
 #include "cast/streaming/rtcp_session.h"
 #include "cast/streaming/rtp_defines.h"
+#include "platform/api/time.h"
 
 namespace openscreen {
 namespace cast {
@@ -30,6 +31,11 @@ class SenderReportBuilder {
   std::pair<absl::Span<uint8_t>, StatusReportId> BuildPacket(
       const RtcpSenderReport& sender_report,
       absl::Span<uint8_t> buffer) const;
+
+  // Returns the approximate reference time from a recently-built Sender Report,
+  // based on the given |report_id| and maximum possible reference time.
+  Clock::time_point GetRecentReportTime(StatusReportId report_id,
+                                        Clock::time_point on_or_before) const;
 
   // The required size (in bytes) of the buffer passed to BuildPacket().
   static constexpr int kRequiredBufferSize =
