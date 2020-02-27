@@ -2815,7 +2815,6 @@ class ChangelistTest(unittest.TestCase):
     self.assertEqual(expected_results, results)
     subprocess2.Popen.assert_called_once_with([
         'vpython', 'PRESUBMIT_SUPPORT',
-        '--commit',
         '--author', 'author',
         '--root', 'root',
         '--upstream', 'upstream',
@@ -2823,6 +2822,7 @@ class ChangelistTest(unittest.TestCase):
         '--issue', '123456',
         '--patchset', '7',
         '--gerrit_url', 'https://chromium-review.googlesource.com',
+        '--commit',
         '--may_prompt',
         '--parallel',
         '--all_files',
@@ -2856,6 +2856,25 @@ class ChangelistTest(unittest.TestCase):
           all_files=True)
 
     sys.exit.assert_called_once_with(2)
+
+  def testRunPostUploadHook(self):
+    cl = git_cl.Changelist()
+    cl.RunPostUploadHook(2, 'upstream', 'description')
+
+    subprocess2.Popen.assert_called_once_with([
+        'vpython', 'PRESUBMIT_SUPPORT',
+        '--author', 'author',
+        '--root', 'root',
+        '--upstream', 'upstream',
+        '--verbose', '--verbose',
+        '--issue', '123456',
+        '--patchset', '7',
+        '--gerrit_url', 'https://chromium-review.googlesource.com',
+        '--post_upload',
+        '--description_file', '/tmp/fake-temp1',
+    ])
+    gclient_utils.FileWrite.assert_called_once_with(
+        '/tmp/fake-temp1', b'description', mode='wb')
 
 
 class CMDTestCaseBase(unittest.TestCase):

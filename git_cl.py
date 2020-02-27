@@ -1427,12 +1427,8 @@ class Changelist(object):
 
     self.description = description
 
-  def RunHook(
-      self, committing, may_prompt, verbose, parallel, upstream, description,
-      all_files):
-    """Calls sys.exit() if the hook fails; returns a HookResults otherwise."""
+  def _GetCommonPresubmitArgs(self, verbose, upstream):
     args = [
-        '--commit' if committing else '--upload',
         '--author', self.GetAuthor(),
         '--root', settings.GetRoot(),
         '--upstream', upstream,
@@ -1450,6 +1446,14 @@ class Changelist(object):
     if gerrit_url:
       args.extend(['--gerrit_url', gerrit_url])
 
+    return args
+
+  def RunHook(
+      self, committing, may_prompt, verbose, parallel, upstream, description,
+      all_files):
+    """Calls sys.exit() if the hook fails; returns a HookResults otherwise."""
+    args = self._GetCommonPresubmitArgs(verbose, upstream)
+    args.append('--commit' if committing else '--upload')
     if may_prompt:
       args.append('--may_prompt')
     if parallel:
@@ -1479,6 +1483,17 @@ class Changelist(object):
         json_results = gclient_utils.FileRead(json_output)
         return json.loads(json_results)
 
+  def RunPostUploadHook(self, verbose, upstream, description):
+    args = self._GetCommonPresubmitArgs(verbose, upstream)
+    args.append('--post_upload')
+
+    with gclient_utils.temporary_file() as description_file:
+      gclient_utils.FileWrite(
+          description_file, description.encode('utf-8'), mode='wb')
+      args.extend(['--description_file', description_file])
+      p = subprocess2.Popen(['vpython', PRESUBMIT_SUPPORT] + args)
+      p.wait()
+
   def CMDUpload(self, options, git_diff_args, orig_args):
     """Uploads a change to codereview."""
     custom_cl_base = None
@@ -1505,16 +1520,17 @@ class Changelist(object):
     if not options.bypass_watchlists:
       self.ExtendCC(watchlist.GetWatchersForPaths(files))
 
+    description = change.FullDescriptionText()
+    if options.reviewers or options.tbrs or options.add_owners_to:
+      # Set the reviewer list now so that presubmit checks can access it.
+      change_description = ChangeDescription(description)
+      change_description.update_reviewers(options.reviewers,
+                                          options.tbrs,
+                                          options.add_owners_to,
+                                          change)
+      description = change_description.description
+
     if not options.bypass_hooks:
-      description = change.FullDescriptionText()
-      if options.reviewers or options.tbrs or options.add_owners_to:
-        # Set the reviewer list now so that presubmit checks can access it.
-        change_description = ChangeDescription(description)
-        change_description.update_reviewers(options.reviewers,
-                                            options.tbrs,
-                                            options.add_owners_to,
-                                            change)
-        description = change_description.description
       hook_results = self.RunHook(committing=False,
                                   may_prompt=not options.force,
                                   verbose=options.verbose,
@@ -1531,10 +1547,7 @@ class Changelist(object):
           'last-upload-hash', RunGit(['rev-parse', 'HEAD']).strip())
       # Run post upload hooks, if specified.
       if settings.GetRunPostUploadHook():
-        presubmit_support.DoPostUploadExecuter(
-            change,
-            self.GetGerritObjForPresubmit(),
-            options.verbose)
+        self.RunPostUploadHook(options.verbose, base_branch, description)
 
       # Upload all dependencies if specified.
       if options.dependencies:

@@ -1809,6 +1809,8 @@ def main(argv=None):
                      help='Use commit instead of upload checks.')
   hooks.add_argument('-u', '--upload', action='store_false', dest='commit',
                      help='Use upload instead of commit checks.')
+  hooks.add_argument('--post_upload', action='store_true',
+                     help='Run post-upload commit hooks.')
   parser.add_argument('-r', '--recursive', action='store_true',
                       help='Act recursively.')
   parser.add_argument('-v', '--verbose', action='count', default=0,
@@ -1866,6 +1868,11 @@ def main(argv=None):
   change = _parse_change(parser, options)
 
   try:
+    if options.post_upload:
+      return DoPostUploadExecuter(
+          change,
+          gerrit_obj,
+          options.verbose)
     with canned_check_filter(options.skip_canned):
       return DoPresubmitChecks(
           change,

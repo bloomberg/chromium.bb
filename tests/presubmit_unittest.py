@@ -936,6 +936,19 @@ def CheckChangeOnCommit(input_api, output_api):
                                                self.fake_root_dir, None, None,
                                                False, output))
 
+  def testMainPostUpload(self):
+    os.path.isfile.side_effect = lambda f: 'PRESUBMIT.py' in f
+    os.listdir.return_value = ['PRESUBMIT.py']
+    gclient_utils.FileRead.return_value = (
+        'def PostUploadHook(gerrit, change, output_api):\n'
+        '  return ()\n')
+    scm.determine_scm.return_value = None
+    presubmit._parse_files.return_value = [('M', 'random_file.txt')]
+    self.assertEqual(
+        0,
+        presubmit.main(
+            ['--root', self.fake_root_dir, 'random_file.txt', '--post_upload']))
+
   @mock.patch(
       'presubmit_support.ListRelevantPresubmitFiles',
       return_value=['PRESUBMIT.py'])
