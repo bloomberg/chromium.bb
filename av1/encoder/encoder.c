@@ -3162,6 +3162,7 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf, BufferPool *const pool,
 #endif
 
   set_tpl_stats_block_size(cpi);
+
   for (int frame = 0; frame < MAX_LENGTH_TPL_FRAME_STATS; ++frame) {
     const int mi_cols = ALIGN_POWER_OF_TWO(cm->mi_cols, MAX_MIB_SIZE_LOG2);
     const int mi_rows = ALIGN_POWER_OF_TWO(cm->mi_rows, MAX_MIB_SIZE_LOG2);
@@ -3174,21 +3175,23 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf, BufferPool *const pool,
     cpi->tpl_stats_buffer[frame].stride = cpi->tpl_stats_buffer[frame].width;
     cpi->tpl_stats_buffer[frame].mi_rows = cm->mi_rows;
     cpi->tpl_stats_buffer[frame].mi_cols = cm->mi_cols;
+  }
 
+  for (int frame = 0; frame < MAX_LAG_BUFFERS; ++frame) {
     CHECK_MEM_ERROR(
-        cm, cpi->tpl_stats_buffer[frame].tpl_stats_ptr,
+        cm, cpi->tpl_stats_pool[frame],
         aom_calloc(cpi->tpl_stats_buffer[frame].width *
                        cpi->tpl_stats_buffer[frame].height,
                    sizeof(*cpi->tpl_stats_buffer[frame].tpl_stats_ptr)));
-
-    if (aom_alloc_frame_buffer(
-            &cpi->tpl_stats_buffer[frame].rec_picture_buf, cm->width,
-            cm->height, cm->seq_params.subsampling_x,
-            cm->seq_params.subsampling_y, cm->seq_params.use_highbitdepth,
-            AOM_ENC_NO_SCALE_BORDER, cm->byte_alignment))
+    if (aom_alloc_frame_buffer(&cpi->tpl_rec_pool[frame], cm->width, cm->height,
+                               cm->seq_params.subsampling_x,
+                               cm->seq_params.subsampling_y,
+                               cm->seq_params.use_highbitdepth,
+                               AOM_ENC_NO_SCALE_BORDER, cm->byte_alignment))
       aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                          "Failed to allocate frame buffer");
   }
+
   cpi->tpl_frame = &cpi->tpl_stats_buffer[REF_FRAMES + 1];
 
 #if CONFIG_COLLECT_PARTITION_STATS == 2
@@ -3530,12 +3533,9 @@ void av1_remove_compressor(AV1_COMP *cpi) {
 #endif
   }
 
-  for (int frame = 0; frame < MAX_LENGTH_TPL_FRAME_STATS; ++frame) {
-    aom_free(cpi->tpl_stats_buffer[frame].tpl_stats_ptr);
-    cpi->tpl_stats_buffer[frame].is_valid = 0;
-
-    aom_free_frame_buffer(&cpi->tpl_stats_buffer[frame].rec_picture_buf);
-    cpi->tpl_stats_buffer[frame].rec_picture = NULL;
+  for (int frame = 0; frame < MAX_LAG_BUFFERS; ++frame) {
+    aom_free(cpi->tpl_stats_pool[frame]);
+    aom_free_frame_buffer(&cpi->tpl_rec_pool[frame]);
   }
 
   for (t = cpi->num_workers - 1; t >= 0; --t) {

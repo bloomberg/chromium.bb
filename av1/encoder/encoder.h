@@ -810,6 +810,8 @@ typedef struct AV1_COMP {
 
   uint8_t tpl_stats_block_mis_log2;  // block granularity of tpl score storage
   TplDepFrame tpl_stats_buffer[MAX_LENGTH_TPL_FRAME_STATS];
+  TplDepStats *tpl_stats_pool[MAX_LAG_BUFFERS];
+  YV12_BUFFER_CONFIG tpl_rec_pool[MAX_LAG_BUFFERS];
   TplDepFrame *tpl_frame;
 
   // For a still frame, this flag is set to 1 to skip partition search.

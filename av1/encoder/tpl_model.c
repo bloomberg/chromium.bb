@@ -549,6 +549,8 @@ static AOM_INLINE void tpl_model_update_b(AV1_COMP *cpi, TplDepFrame *tpl_frame,
       &tpl_frame[tpl_frame[frame_idx].ref_map_index[ref_frame_index]];
   TplDepStats *ref_stats_ptr = ref_tpl_frame->tpl_stats_ptr;
 
+  if (tpl_frame[frame_idx].ref_map_index[ref_frame_index] < 0) return;
+
   const FULLPEL_MV full_mv =
       get_fullmv_from_mv(&tpl_stats_ptr->mv[ref_frame_index].as_mv);
   const int ref_pos_row = mi_row * MI_SIZE + full_mv.row;
@@ -838,6 +840,7 @@ static AOM_INLINE void init_gop_frames_for_tpl(
   int gf_index;
   int use_arf = gf_group->update_type[1] == ARF_UPDATE;
   int anc_frame_offset = gf_group->cur_frame_idx[cur_frame_idx] + 1;
+  int process_frame_count = 0;
   const int gop_length =
       AOMMIN(gf_group->size - 1 + use_arf, MAX_LENGTH_TPL_FRAME_STATS - 1);
   for (gf_index = cur_frame_idx; gf_index <= gop_length; ++gf_index) {
@@ -876,7 +879,13 @@ static AOM_INLINE void init_gop_frames_for_tpl(
       tpl_frame->frame_display_index =
           frame_display_index + cpi->common.current_frame.display_order_hint;
     }
-    tpl_frame->rec_picture = &tpl_frame->rec_picture_buf;
+
+    if (frame_update_type != OVERLAY_UPDATE &&
+        frame_update_type != INTNL_OVERLAY_UPDATE) {
+      tpl_frame->rec_picture = &cpi->tpl_rec_pool[process_frame_count];
+      tpl_frame->tpl_stats_ptr = cpi->tpl_stats_pool[process_frame_count];
+      ++process_frame_count;
+    }
 
     av1_get_ref_frames(cpi, &ref_buffer_stack);
     int refresh_mask = av1_get_refresh_frame_flags(
@@ -922,7 +931,9 @@ static AOM_INLINE void init_gop_frames_for_tpl(
     if (buf == NULL) break;
 
     tpl_frame->gf_picture = &buf->img;
-    tpl_frame->rec_picture = &tpl_frame->rec_picture_buf;
+    tpl_frame->rec_picture = &cpi->tpl_rec_pool[process_frame_count];
+    tpl_frame->tpl_stats_ptr = cpi->tpl_stats_pool[process_frame_count];
+    ++process_frame_count;
 
     // frame display index = frame offset within the gf group + start frame of
     // the gf group
@@ -960,9 +971,9 @@ static AOM_INLINE void init_gop_frames_for_tpl(
 }
 
 static AOM_INLINE void init_tpl_stats(AV1_COMP *cpi) {
-  for (int frame_idx = 0; frame_idx < MAX_LENGTH_TPL_FRAME_STATS; ++frame_idx) {
+  for (int frame_idx = 0; frame_idx < MAX_LAG_BUFFERS; ++frame_idx) {
     TplDepFrame *tpl_frame = &cpi->tpl_stats_buffer[frame_idx];
-    memset(tpl_frame->tpl_stats_ptr, 0,
+    memset(cpi->tpl_stats_pool[frame_idx], 0,
            tpl_frame->height * tpl_frame->width *
                sizeof(*tpl_frame->tpl_stats_ptr));
     tpl_frame->is_valid = 0;
