@@ -16,7 +16,6 @@ import importlib
 import os
 import sys
 
-from google.protobuf import json_format
 from google.protobuf import symbol_database
 
 from chromite.api import controller
@@ -49,18 +48,6 @@ class Error(Exception):
   """Base error class for the module."""
 
 
-class InvalidInputFileError(Error):
-  """Raised when the input file cannot be read."""
-
-
-class InvalidInputFormatError(Error):
-  """Raised when the passed input protobuf can't be parsed."""
-
-
-class InvalidOutputFileError(Error):
-  """Raised when the output file cannot be written."""
-
-
 class CrosSdkNotRunError(Error):
   """Raised when the cros_sdk command could not be run to enter the chroot."""
 
@@ -90,9 +77,9 @@ class MethodNotFoundError(Error):
 class Router(object):
   """Encapsulates the request dispatching logic."""
 
-  REEXEC_INPUT_FILE = 'input.json'
-  REEXEC_OUTPUT_FILE = 'output.json'
-  REEXEC_CONFIG_FILE = 'config.json'
+  REEXEC_INPUT_FILE = 'input_proto'
+  REEXEC_OUTPUT_FILE = 'output_proto'
+  REEXEC_CONFIG_FILE = 'config_proto'
 
   def __init__(self):
     self._services = {}
@@ -183,15 +170,18 @@ class Router(object):
 
     return sorted(services)
 
-  def Route(self, service_name, method_name, input_path, output_path, config):
+  def Route(self, service_name, method_name, config, input_handler,
+            output_handlers, config_handler):
     """Dispatch the request.
 
     Args:
       service_name (str): The fully qualified service name.
       method_name (str): The name of the method being called.
-      input_path (str): The path to the input message file.
-      output_path (str): The path where the output message should be written.
-      config (api_config.ApiConfig): The optional call configs.
+      config (api_config.ApiConfig): The call configs.
+      input_handler (message_util.MessageHandler): The request message handler.
+      output_handlers (list[message_util.MessageHandler]): The response message
+        handlers.
+      config_handler (message_util.MessageHandler): The config message handler.
 
     Returns:
       int: The return code.
@@ -202,16 +192,8 @@ class Router(object):
       ServiceModuleNotFoundError when the service module cannot be imported.
       MethodNotFoundError when the method cannot be retrieved from the module.
     """
-    try:
-      input_json = osutils.ReadFile(input_path).strip()
-    except IOError as e:
-      raise InvalidInputFileError('Unable to read input file: %s' % e)
-
     input_msg = self._get_input_message_instance(service_name, method_name)
-    try:
-      json_format.Parse(input_json, input_msg, ignore_unknown_fields=True)
-    except json_format.ParseError as e:
-      raise InvalidInputFormatError('Unable to parse the input json: %s' % e)
+    input_handler.read_into(input_msg)
 
     # Get an empty output message instance.
     output_msg = self._get_output_message_instance(service_name, method_name)
@@ -224,8 +206,9 @@ class Router(object):
     if self._ChrootCheck(service_options, method_options):
       # Run inside the chroot instead.
       logging.info('Re-executing the endpoint inside the chroot.')
-      return self._ReexecuteInside(input_msg, output_msg, output_path,
-                                   service_name, method_name, config)
+      return self._ReexecuteInside(input_msg, output_msg, config, input_handler,
+                                   output_handlers, config_handler,
+                                   service_name, method_name)
 
     # Allow proto-based method name override.
     if method_options.HasField('implementation_name'):
@@ -242,10 +225,8 @@ class Router(object):
     if return_code is None:
       return_code = controller.RETURN_CODE_SUCCESS
 
-    try:
-      osutils.WriteFile(output_path, json_format.MessageToJson(output_msg))
-    except IOError as e:
-      raise InvalidOutputFileError('Cannot write output file: %s' % e)
+    for h in output_handlers:
+      h.write_from(output_msg)
 
     return return_code
 
@@ -278,17 +259,20 @@ class Router(object):
 
     return False
 
-  def _ReexecuteInside(self, input_msg, output_msg, output_path, service_name,
-                       method_name, config):
+  def _ReexecuteInside(self, input_msg, output_msg, config, input_handler,
+                       output_handlers, config_handler, service_name,
+                       method_name):
     """Re-execute the service inside the chroot.
 
     Args:
       input_msg (Message): The parsed input message.
       output_msg (Message): The empty output message instance.
-      output_path (str): The path for the serialized output.
+      config (api_config.ApiConfig): The call configs.
+      input_handler (MessageHandler): Input message handler.
+      output_handlers (list[MessageHandler]): Output message handlers.
+      config_handler (MessageHandler): Config message handler.
       service_name (str): The name of the service to run.
       method_name (str): The name of the method to run.
-      config (api_config.ApiConfig): The optional call configs.
     """
     # Parse the chroot and clear the chroot field in the input message.
     chroot = field_handler.handle_chroot(input_msg)
@@ -319,16 +303,26 @@ class Router(object):
       chroot_config = '/%s' % os.path.relpath(new_config, chroot.path)
 
       logging.info('Writing input message to: %s', new_input)
-      osutils.WriteFile(new_input, json_format.MessageToJson(input_msg))
+      input_handler.write_from(input_msg, path=new_input)
       osutils.Touch(new_output)
       logging.info('Writing config message to: %s', new_config)
-      osutils.WriteFile(new_config,
-                        json_format.MessageToJson(config.get_proto()))
+      config_handler.write_from(config.get_proto(), path=new_config)
 
-      cmd = ['build_api', '%s/%s' % (service_name, method_name),
-             '--input-json', chroot_input,
-             '--output-json', chroot_output,
-             '--config-json', chroot_config]
+      # We can use a single output to write the rest of them. Use the
+      # first one as the reexec output and just translate its output in
+      # the rest of the handlers after.
+      output_handler = output_handlers[0]
+
+      cmd = [
+          'build_api',
+          '%s/%s' % (service_name, method_name),
+          input_handler.input_arg,
+          chroot_input,
+          output_handler.output_arg,
+          chroot_output,
+          config_handler.config_arg,
+          chroot_config,
+      ]
 
       try:
         result = cros_build_lib.run(
@@ -348,12 +342,12 @@ class Router(object):
                    result.returncode)
 
       # Transfer result files out of the chroot.
-      output_content = osutils.ReadFile(new_output)
-      if output_content:
-        json_format.Parse(output_content, output_msg)
-        field_handler.extract_results(input_msg, output_msg, chroot)
+      output_handler.read_into(output_msg, path=new_output)
+      field_handler.extract_results(input_msg, output_msg, chroot)
 
-      osutils.WriteFile(output_path, json_format.MessageToJson(output_msg))
+      # Write out all of the response formats.
+      for handler in output_handlers:
+        handler.write_from(output_msg)
 
       return result.returncode
 

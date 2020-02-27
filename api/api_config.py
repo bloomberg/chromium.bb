@@ -133,7 +133,7 @@ class ApiConfigMixin(object):
   """Mixin to add an API Config factory properties.
 
   This is meant to be used for tests to make these configs more uniform across
-  all of the tests since there's very little to change anyway.
+  all the tests since there's very little to change anyway.
   """
 
   @property

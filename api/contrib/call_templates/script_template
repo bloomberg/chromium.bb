@@ -5,31 +5,32 @@
 # found in the LICENSE file.
 
 WD=$(pwd)
-cd "$(dirname "$(realpath "${0}")")"
+cd "$(dirname "$(realpath "${0}")")" || exit
 
 ENDPOINT="chromite.api.%(SERVICE)s/%(METHOD)s"
 INPUT="./$(basename "${0}")_input.json"
 OUTPUT="./$(basename "${0}")_output.json"
+OUTPUT_BIN="./$(basename "${0}")_output.bin"
 
-if [ ! -e ${INTPUT} ]; then
+if [ ! -e "${INPUT}" ]; then
   echo "Input file not found: ${INPUT}."
   exit 1
 fi;
 
-echo "" > ${OUTPUT}
+echo "" > "${OUTPUT}"
 echo "Running ${ENDPOINT}"
-../../../bin/build_api "${ENDPOINT}" --input-json "${INPUT}" --output-json "${OUTPUT}"
+../../../bin/build_api "${ENDPOINT}" --input-json "${INPUT}" --output-json "${OUTPUT}" --output-binary "${OUTPUT_BIN}"
 RESULT=$?
 
 echo "Completed ${ENDPOINT}"
 
-if [ ${RESULT} -eq 0 ]; then
+if [ "${RESULT}" -eq 0 ]; then
   echo "Success!"
 fi;
 
 echo "Return Code: ${RESULT}"
 echo "Result:"
-cat ${OUTPUT}
+cat "${OUTPUT}"
 echo ""
 
-cd "$WD"
+cd "${WD}" || exit
