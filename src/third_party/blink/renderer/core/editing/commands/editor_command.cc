@@ -1831,10 +1831,10 @@ static const EditorInternalCommand* InternalCommand(
 
 
       // patch section: indent-block/outdent-block
-      {WebEditingCommandType::kIndentBlock, ExecuteIndentBlock, Supported,
+      {EditingCommandType::kIndentBlock, ExecuteIndentBlock, Supported,
        EnabledInRichlyEditableText, StateNone, ValueStateOrNull,
        kNotTextInsertion, CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kOutdentBlock, ExecuteOutdentBlock, Supported,
+      {EditingCommandType::kOutdentBlock, ExecuteOutdentBlock, Supported,
        EnabledInRichlyEditableText, StateNone, ValueStateOrNull,
        kNotTextInsertion, CanNotExecuteWhenDisabled},
 

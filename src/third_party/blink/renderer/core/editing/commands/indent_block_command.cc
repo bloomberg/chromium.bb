@@ -35,9 +35,9 @@ namespace blink {
 
 static const HTMLQualifiedName& getBlockQuoteName(const Node* parent)
 {
-    if (IsHTMLUListElement(parent))
+    if (IsA<HTMLUListElement>(*parent))
         return html_names::kUlTag;
-    else if (IsHTMLOListElement(parent))
+    else if (IsA<HTMLOListElement>(*parent))
         return html_names::kOlTag;
     else
         return html_names::kBlockquoteTag;
