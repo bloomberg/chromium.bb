@@ -20,7 +20,7 @@
  * IN THE SOFTWARE.
  */
 
-#include "third_party/blink/renderer/core/css/properties/longhands/bb_suppress_needs_compositing_input_update.h"
+#include "third_party/blink/renderer/core/css/properties/longhands.h"
 
 #include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 
@@ -38,9 +38,8 @@ const CSSValue* BbSuppressNeedsCompositingInputUpdate::CSSValueFromComputedStyle
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    Node*,
     bool allow_visited_style) const {
-  return CSSPrimitiveValue::Create(
+  return CSSNumericLiteralValue::Create(
     style.BBSuppressNeedsCompositingInputUpdate(),
     CSSPrimitiveValue::UnitType::kInteger);
 }
