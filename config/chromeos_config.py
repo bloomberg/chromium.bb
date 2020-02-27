@@ -3031,6 +3031,22 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       archive_build_debug=True,
   )
 
+  # Loon release builder; no signed images nor testing
+  # Associated with Rapid releases, triggered from Rapid.
+  site_config.Add(
+      'lasilla-ground-rapid',
+      site_config.templates.release,
+      site_config.templates.loonix,
+      display_label=config_lib.DISPLAY_LABEL_UTILITY,
+      luci_builder=config_lib.LUCI_BUILDER_INFORMATIONAL,
+      boards=['lasilla-ground'],
+      debug=True,
+      hwqual=False,
+      push_image=False,
+      suite_scheduling=False,
+      description='Create unsigned release image for ingestion into build tool',
+  )
+
   # Pre-R80 branches still need this builder to generate AFDO profiles.
   # TODO: Use chell-chrome-no-afdo-uprev-pre-flight-branch for branch after R79
   site_config.Add(

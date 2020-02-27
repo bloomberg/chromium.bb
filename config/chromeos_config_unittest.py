@@ -1084,6 +1084,10 @@ class TemplateTest(ChromeosConfigTestBase):
   def testConfigNamesMatchTemplate(self):
     """Test that all configs have names that match their templates."""
     for name, config in self.site_config.items():
+      # Rapid builders are special snowflakes that are release-tryjobs but
+      # scheduled as a priority builder.
+      if name.endswith('-rapid'):
+        return
       # Tryjob configs should be tested based on what they are mirrored from.
       if name.endswith('-tryjob'):
         name = name[:-len('-tryjob')]

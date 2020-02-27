@@ -1334,6 +1334,7 @@
   lasilla-ground-full-tryjob
   lasilla-ground-llvm-next-toolchain-tryjob
   lasilla-ground-llvm-toolchain-tryjob
+  lasilla-ground-rapid-tryjob
   lasilla-ground-release-tryjob
   lasilla-ground-unittest-stress
   littlejoe-full-tryjob
