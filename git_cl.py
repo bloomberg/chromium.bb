@@ -2023,7 +2023,7 @@ class Changelist(object):
       if self.GetIssue():
         description = self.FetchDescription()
       else:
-        description = self.GetDescription(upstream)
+        description = self.GetLocalDescription(upstream)
       self.RunHook(
           committing=True,
           may_prompt=not force,
@@ -4127,10 +4127,10 @@ def CMDpresubmit(parser, args):
     # Default to diffing against the common ancestor of the upstream branch.
     base_branch = cl.GetCommonAncestorWithUpstream()
 
-  if self.GetIssue():
-    description = self.FetchDescription()
+  if cl.GetIssue():
+    description = cl.FetchDescription()
   else:
-    description = self.GetDescription(base_branch)
+    description = cl.GetLocalDescription(base_branch)
 
   cl.RunHook(
       committing=not options.upload,
