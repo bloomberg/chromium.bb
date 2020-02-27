@@ -29,8 +29,6 @@
 namespace libgav1 {
 namespace {
 
-constexpr int kMvBorder = 128;
-
 // Entry at index i is computed as:
 // Clip3(std::max(kBlockWidthPixels[i], kBlockHeightPixels[i], 16, 112)).
 constexpr int kWarpValidThreshold[kMaxBlockSizes] = {
@@ -558,33 +556,6 @@ void ExtraSearch(
   }
 }
 
-// 7.10.2.14 (part 1). (also contains implementations of 5.11.53 and 5.11.54).
-void ClampMotionVectors(
-    const Tile::Block& block, bool is_compound, int num_mv_found,
-    CandidateMotionVector ref_mv_stack[kMaxRefMvStackSize]) {
-  const int row_border = kMvBorder + MultiplyBy32(block.height4x4);
-  const int column_border = kMvBorder + MultiplyBy32(block.width4x4);
-  const int macroblocks_to_top_edge = -MultiplyBy32(block.row4x4);
-  const int macroblocks_to_bottom_edge = MultiplyBy32(
-      block.tile.frame_header().rows4x4 - block.height4x4 - block.row4x4);
-  const int macroblocks_to_left_edge = -MultiplyBy32(block.column4x4);
-  const int macroblocks_to_right_edge = MultiplyBy32(
-      block.tile.frame_header().columns4x4 - block.width4x4 - block.column4x4);
-  const int min[2] = {macroblocks_to_top_edge - row_border,
-                      macroblocks_to_left_edge - column_border};
-  const int max[2] = {macroblocks_to_bottom_edge + row_border,
-                      macroblocks_to_right_edge + column_border};
-  for (int i = 0; i < num_mv_found; ++i) {
-    for (int mv_index = 0; mv_index < 1 + static_cast<int>(is_compound);
-         ++mv_index) {
-      for (int j = 0; j < 2; ++j) {
-        ref_mv_stack[i].mv[mv_index].mv[j] =
-            Clip3(ref_mv_stack[i].mv[mv_index].mv[j], min[j], max[j]);
-      }
-    }
-  }
-}
-
 // 7.10.2.14 (part 2).
 void ComputeContexts(bool found_new_mv, int nearest_matches, int total_matches,
                      int* new_mv_context, int* reference_mv_context) {
@@ -755,8 +726,9 @@ void FindMvStack(
     ComputeContexts(found_new_mv, nearest_matches, total_matches,
                     &contexts->new_mv, &contexts->reference_mv);
   }
-  ClampMotionVectors(block, is_compound, num_mv_found, ref_mv_stack);
   prediction_parameters->ref_mv_count = num_mv_found;
+  // The |ref_mv_stack| clamping process is in Tile::AssignIntraMv() and
+  // Tile::AssignInterMv(), and only up to two mvs are clamped.
 }
 
 void FindWarpSamples(const Tile::Block& block, int* const num_warp_samples,

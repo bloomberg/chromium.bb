@@ -354,6 +354,24 @@ void MoveCoefficientsForTxWidth64(int clamped_tx_height, int tx_width,
   memset(src + 32, 0, 32 * sizeof(src[0]));
 }
 
+void GetClampParameters(const Tile::Block& block, int min[2], int max[2]) {
+  // 7.10.2.14 (part 1). (also contains implementations of 5.11.53
+  // and 5.11.54).
+  constexpr int kMvBorder4x4 = 4;
+  const int row_border = kMvBorder4x4 + block.height4x4;
+  const int column_border = kMvBorder4x4 + block.width4x4;
+  const int macroblocks_to_top_edge = -block.row4x4;
+  const int macroblocks_to_bottom_edge =
+      block.tile.frame_header().rows4x4 - block.height4x4 - block.row4x4;
+  const int macroblocks_to_left_edge = -block.column4x4;
+  const int macroblocks_to_right_edge =
+      block.tile.frame_header().columns4x4 - block.width4x4 - block.column4x4;
+  min[0] = MultiplyBy32(macroblocks_to_top_edge - row_border);
+  min[1] = MultiplyBy32(macroblocks_to_left_edge - column_border);
+  max[0] = MultiplyBy32(macroblocks_to_bottom_edge + row_border);
+  max[1] = MultiplyBy32(macroblocks_to_right_edge + column_border);
+}
+
 }  // namespace
 
 Tile::Tile(
@@ -1772,6 +1790,8 @@ bool Tile::IsMvValid(const Block& block, bool is_compound) const {
 }
 
 bool Tile::AssignInterMv(const Block& block, bool is_compound) {
+  int min[2], max[2];
+  GetClampParameters(block, min, max);
   BlockParameters& bp = *block.bp;
   const PredictionParameters& prediction_parameters = *bp.prediction_parameters;
   const CandidateMotionVector* const ref_mv_stack =
@@ -1788,6 +1808,10 @@ bool Tile::AssignInterMv(const Block& block, bool is_compound) {
                                    ? 0
                                    : prediction_parameters.ref_mv_index;
       predicted_mv = ref_mv_stack[ref_mv_index].mv[i];
+      if (ref_mv_index < prediction_parameters.ref_mv_count) {
+        predicted_mv.mv[0] = Clip3(predicted_mv.mv[0], min[0], max[0]);
+        predicted_mv.mv[1] = Clip3(predicted_mv.mv[1], min[1], max[1]);
+      }
     }
     if (mode == kPredictionModeNewMv) {
       ReadMotionVector(block, i);
@@ -1801,6 +1825,9 @@ bool Tile::AssignInterMv(const Block& block, bool is_compound) {
 }
 
 bool Tile::AssignIntraMv(const Block& block) {
+  // TODO(linfengz): Check if the clamping process is necessary.
+  int min[2], max[2];
+  GetClampParameters(block, min, max);
   BlockParameters& bp = *block.bp;
   const PredictionParameters& prediction_parameters = *bp.prediction_parameters;
   const CandidateMotionVector* const ref_mv_stack =
@@ -1816,12 +1843,12 @@ bool Tile::AssignIntraMv(const Block& block) {
         bp.mv[0].mv[0] -= MultiplyBy32(super_block_size4x4);
       }
     } else {
-      bp.mv[0].mv[0] += ref_mv_stack[1].mv[0].mv[0];
-      bp.mv[0].mv[1] += ref_mv_stack[1].mv[0].mv[1];
+      bp.mv[0].mv[0] += Clip3(ref_mv_stack[1].mv[0].mv[0], min[0], max[0]);
+      bp.mv[0].mv[1] += Clip3(ref_mv_stack[1].mv[0].mv[1], min[0], max[0]);
     }
   } else {
-    bp.mv[0].mv[0] += ref_mv_stack[0].mv[0].mv[0];
-    bp.mv[0].mv[1] += ref_mv_stack[0].mv[0].mv[1];
+    bp.mv[0].mv[0] += Clip3(ref_mv_stack[0].mv[0].mv[0], min[0], max[0]);
+    bp.mv[0].mv[1] += Clip3(ref_mv_stack[0].mv[0].mv[1], min[1], max[1]);
   }
   return IsMvValid(block, /*is_compound=*/false);
 }
