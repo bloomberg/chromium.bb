@@ -32,6 +32,7 @@
 #include <blpwtk2_utility.h>
 #include <blpwtk2_webviewhostimpl.h>
 #include <blpwtk2_webviewhostobserver.h>
+#include <blpwtk2_processhostdelegate.h>
 
 #include <content/browser/renderer_host/render_process_host_impl.h>
 #include <mojo/core/embedder/embedder.h>
@@ -205,6 +206,8 @@ bool ProcessHostImpl::Impl::onRenderLaunched(
 std::map<base::ProcessId, scoped_refptr<ProcessHostImpl::Impl>>
     ProcessHostImpl::s_unboundHosts;
 static std::set<ProcessHostImpl*> g_instances;
+static ProcessHostDelegate *g_ipcDelegate;
+static std::unordered_map<base::ProcessId, ProcessHostImpl*> s_boundedHosts;
 
 ProcessHostImpl::ProcessHostImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& runner)
@@ -217,6 +220,11 @@ ProcessHostImpl::ProcessHostImpl(
 
 ProcessHostImpl::~ProcessHostImpl() {
   g_instances.erase(this);
+
+  if (d_impl && d_impl->processId()) {
+    int pid = d_impl->processId();
+    s_boundedHosts.erase(pid);
+  }
 }
 
 int ProcessHostImpl::createPipeHandleForChild(base::ProcessId processId,
@@ -332,12 +340,35 @@ void ProcessHostImpl::getHostId(int* hostId,
 }
 
 // static
+void ProcessHostImpl::opaqueMessageToRendererAsync(int pid, const StringRef &message)
+{
+  auto it = s_boundedHosts.find(pid);
+
+  if (s_boundedHosts.end() != it) {
+    ProcessHostImpl *instance = it->second;
+    instance->processClientPtr->opaqueMessageToRendererAsync(
+                std::string(message.data(), message.size()));
+
+  }
+  else {
+    LOG(ERROR) << "No processhost is bounded with this pid";
+  }
+}
+
+// static
+void ProcessHostImpl::setIPCDelegate(ProcessHostDelegate *delegate)
+{
+  g_ipcDelegate = delegate;
+}
+
+// static
 void ProcessHostImpl::releaseAll() {
   for (ProcessHostImpl* instance : g_instances) {
     instance->d_impl = nullptr;
   }
 
   s_unboundHosts.clear();
+  s_boundedHosts.clear();
 }
 
 // mojom::ProcessHost overrides
@@ -353,7 +384,9 @@ void ProcessHostImpl::createHostChannel(unsigned int pid,
                                             isolated, profileDir, runner));
 }
 
-void ProcessHostImpl::bindProcess(unsigned int pid, bool launchDevToolsServer) {
+void ProcessHostImpl::bindProcess(unsigned int pid,
+                                  bool launchDevToolsServer,
+                                  bindProcessCallback callback) {
   auto it = s_unboundHosts.find(static_cast<base::ProcessId>(pid));
   DCHECK(s_unboundHosts.end() != it);
 
@@ -388,6 +421,9 @@ void ProcessHostImpl::bindProcess(unsigned int pid, bool launchDevToolsServer) {
       LOG(ERROR) << "Couldn't locate process host for pid: " << pid;
     }
   }
+
+  std::move(callback).Run(mojo::MakeRequest(&processClientPtr));
+  s_boundedHosts[pid] = this;
 }
 
 void ProcessHostImpl::createWebView(mojom::WebViewHostRequest hostRequest,
@@ -529,6 +565,35 @@ void ProcessHostImpl::setDefaultPrinter(const std::string& name)
 
 
 // patch section: embedder ipc
+void ProcessHostImpl::opaqueMessageToBrowserAsync(const std::string& msg)
+{
+    if (g_ipcDelegate) {
+      int pid = d_impl->processId();
+
+      g_ipcDelegate->onBrowserReceivedAsync(pid, StringRef(msg.data(), msg.size()));
+    }
+    else {
+      LOG(ERROR) << "Message handler is missing for MSG: " << msg;
+    }
+}
+
+void ProcessHostImpl::opaqueMessageToBrowserSync(const std::string&                 msg,
+                                                 opaqueMessageToBrowserSyncCallback callback)
+{
+    if (g_ipcDelegate) {
+      int pid = d_impl->processId();
+
+      String result =
+        g_ipcDelegate->onBrowserReceivedSync(pid, StringRef(msg.data(), msg.size()));
+
+      std::move(callback).Run(std::string(result.data(), result.size()));
+    }
+    else {
+      LOG(ERROR) << "Message handler is missing for MSG: " << msg;
+      std::move(callback).Run("");
+    }
+
+}
 
 
 // patch section: renderer ui
