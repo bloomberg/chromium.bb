@@ -954,10 +954,10 @@ class EBuild(object):
     try:
       main_pv = int(main_pv)
     except ValueError:
-      raise ValueError('PV returned is invalid: %s' % output)
+      raise ValueError('%s: PV returned is invalid: %s' % (vers_script, output))
     if main_pv >= int(WORKON_EBUILD_VERSION):
-      raise ValueError('cros-workon packages must have a PV < %s; not %s'
-                       % (WORKON_EBUILD_VERSION, output))
+      raise ValueError('%s: cros-workon packages must have a PV < %s; not %s'
+                       % (vers_script, WORKON_EBUILD_VERSION, output))
 
     # Sanity check: We should be able to parse a CPV string with the produced
     # version number.
@@ -1007,13 +1007,17 @@ class EBuild(object):
       OSError: Error occurred while creating a new ebuild.
       IOError: Error occurred while writing to the new revved ebuild file.
     """
-
     if self.is_stable:
-      stable_version_no_rev = self.GetVersion(srcroot, manifest,
-                                              self.version_no_rev)
+      starting_pv = self.version_no_rev
     else:
       # If given unstable ebuild, use preferred version rather than 9999.
-      stable_version_no_rev = self.GetVersion(srcroot, manifest, '0.0.1')
+      starting_pv = '0.0.1'
+
+    try:
+      stable_version_no_rev = self.GetVersion(srcroot, manifest, starting_pv)
+    except Exception as e:
+      logging.critical('%s: uprev failed: %s', self.ebuild_path, e)
+      raise
 
     old_version = '%s-r%d' % (
         stable_version_no_rev, self.current_revision)
