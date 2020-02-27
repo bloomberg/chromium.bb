@@ -196,6 +196,28 @@ class DecoderImpl : public Allocable {
                          const DecoderState& state,
                          FrameScratchBuffer* frame_scratch_buffer,
                          RefCountedBuffer* current_frame);
+  // Helper functions used by DecodeTiles().
+  StatusCode DecodeTilesNonFrameParallel(
+      const ObuSequenceHeader& sequence_header,
+      const ObuFrameHeader& frame_header,
+      const Vector<std::unique_ptr<Tile>>& tiles,
+      FrameScratchBuffer* frame_scratch_buffer, PostFilter* post_filter);
+  StatusCode DecodeTilesThreadedNonFrameParallel(
+      const ObuSequenceHeader& sequence_header,
+      const ObuFrameHeader& frame_header,
+      const Vector<std::unique_ptr<Tile>>& tiles,
+      const Vector<ObuTileGroup>& tile_groups,
+      const BlockParametersHolder& block_parameters_holder,
+      FrameScratchBuffer* frame_scratch_buffer, PostFilter* post_filter,
+      BlockingCounterWithStatus* pending_tiles);
+  StatusCode DecodeTilesFrameParallel(
+      const ObuSequenceHeader& sequence_header,
+      const ObuFrameHeader& frame_header,
+      const Vector<std::unique_ptr<Tile>>& tiles,
+      const SymbolDecoderContext& saved_symbol_decoder_context,
+      const SegmentationMap* prev_segment_ids, const DecoderState& state,
+      FrameScratchBuffer* frame_scratch_buffer, PostFilter* post_filter,
+      RefCountedBuffer* current_frame);
   // Sets the current frame's segmentation map for two cases. The third case
   // is handled in Tile::DecodeBlock().
   void SetCurrentFrameSegmentationMap(const ObuFrameHeader& frame_header,
