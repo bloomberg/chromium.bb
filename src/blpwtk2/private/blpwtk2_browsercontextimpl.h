@@ -158,6 +158,7 @@ class BrowserContextImpl final : public base::RefCounted<BrowserContextImpl>
     content::SSLHostStateDelegate* GetSSLHostStateDelegate() override;
     content::PermissionControllerDelegate* GetPermissionControllerDelegate() override;
     content::ClientHintsControllerDelegate* GetClientHintsControllerDelegate() override;
+    bool AllowDictionaryDownloads() override;
     content::BackgroundFetchDelegate* GetBackgroundFetchDelegate() override;
     content::BackgroundSyncController *GetBackgroundSyncController() override;
     content::BrowsingDataRemoverDelegate* GetBrowsingDataRemoverDelegate()

@@ -562,6 +562,11 @@ content::ClientHintsControllerDelegate* BrowserContextImpl::GetClientHintsContro
     return nullptr;
 }
 
+bool BrowserContextImpl::AllowDictionaryDownloads()
+{
+    return false;
+}
+
 content::BackgroundFetchDelegate* BrowserContextImpl::GetBackgroundFetchDelegate()
 {
     return nullptr;
