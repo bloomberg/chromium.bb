@@ -61,6 +61,7 @@
 #include <third_party/blink/public/web/web_view.h>
 #include <ui/base/win/hidden_window.h>
 #include <ui/aura/window.h>
+#include <imm.h>
 #include <errno.h>
 namespace blpwtk2 {
 
@@ -74,6 +75,20 @@ static const blink::MediaStreamDevice *findDeviceById(
         }
     }
     return 0;
+}
+
+static bool is_asian_langid(LANGID kl)
+{
+    WORD primary_lang = PRIMARYLANGID(kl);
+    if (primary_lang == LANG_JAPANESE || primary_lang == LANG_CHINESE || primary_lang == LANG_KOREAN || primary_lang == LANG_THAI) return true;
+    return false;
+}
+
+static bool is_english_langid(LANGID kl)
+{
+    WORD primary_lang = PRIMARYLANGID(kl);
+    if (primary_lang == LANG_ENGLISH) return true;
+    return false;
 }
 
 static std::set<WebViewImpl*> g_instances;
@@ -321,6 +336,53 @@ void WebViewImpl::setRegion(NativeRegion region)
     if (d_widget) {
         d_widget->setRegion(region);
     }
+}
+
+void WebViewImpl::activateKeyboardLayout(unsigned int hkl)
+{
+    HKL currentKL = ::GetKeyboardLayout(0);
+    if (is_english_langid(LANGID(hkl)) && !is_asian_langid(LANGID(currentKL))) {
+        // user might expecting any of the eropean keyboard layout, 
+        // so keep current layout unchanged if it is not an asian IME.
+        return;
+    }
+
+    blpwtk2::NativeView hwnd = d_widget->getNativeWidgetView();
+    HIMC hImeContext = ImmGetContext(hwnd);
+    LANGID currentLangId = (WORD)((DWORD)currentKL & 0xffff);
+    LANGID newLangId = (WORD)(hkl & 0xffff);
+
+    DWORD dwConversion=0, dwSentence=0;
+    ::ImmGetConversionStatus(hImeContext, &dwConversion, &dwSentence);
+
+    // Only change input mode to alpha-numeric if new language is English,
+    // don't change IME.
+    if (newLangId == MAKELANGID(LANG_ENGLISH, SUBLANG_DEFAULT)) {
+        dwConversion = IME_CMODE_ALPHANUMERIC;
+        ::ImmSetConversionStatus(hImeContext, dwConversion, dwSentence);
+        ImmSetOpenStatus(hImeContext, false);
+        ImmReleaseContext(hwnd, hImeContext);
+        return;
+    }
+    
+    // new input language is not English, switch IME first.
+    if (newLangId != currentLangId) {
+        ::ActivateKeyboardLayout((HKL)hkl, KLF_SETFORPROCESS);
+    }
+    
+    ImmSetOpenStatus(hImeContext, true);
+
+    // set input mode to none alpha-numeric
+    if (newLangId == MAKELANGID(LANG_JAPANESE, SUBLANG_DEFAULT)) {                
+        dwConversion = IME_CMODE_NATIVE | IME_CMODE_FULLSHAPE | IME_CMODE_ROMAN; // hiragana
+    }else if (newLangId == MAKELANGID(LANG_KOREAN, SUBLANG_DEFAULT)) {
+        dwConversion = IME_CMODE_NATIVE;
+    }else if (newLangId == MAKELANGID(LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED)) {
+        dwConversion = IME_CMODE_NATIVE;
+    }
+    ::ImmSetConversionStatus(hImeContext, dwConversion, dwSentence);
+    
+    ImmReleaseContext(hwnd, hImeContext);
 }
 
 void WebViewImpl::clearTooltip()
