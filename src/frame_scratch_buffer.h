@@ -28,6 +28,7 @@
 #include "src/threading_strategy.h"
 #include "src/tile_scratch_buffer.h"
 #include "src/utils/array_2d.h"
+#include "src/utils/constants.h"
 #include "src/utils/memory.h"
 #include "src/utils/stack.h"
 #include "src/utils/types.h"
@@ -82,10 +83,9 @@ class FrameScratchBufferPool {
 
  private:
   std::mutex mutex_;
-  // TODO(vigneshv): The size of this stack will have to be updated when frame
-  // parallel decoding is enabled. For now, we use a stack of size 1 since we
-  // will only ever need one FrameScratchBuffer at a time.
-  Stack<std::unique_ptr<FrameScratchBuffer>, 1> buffers_
+  // TODO(b/142583029): The size of this stack is set to kMaxThreads. This may
+  // have to be revisited as we iterate over the frame parallel design.
+  Stack<std::unique_ptr<FrameScratchBuffer>, kMaxThreads> buffers_
       LIBGAV1_GUARDED_BY(mutex_);
 };
 

@@ -85,7 +85,7 @@ class Tile : public Allocable {
        ThreadPool* thread_pool, ResidualBufferPool* residual_buffer_pool,
        TileScratchBufferPool* tile_scratch_buffer_pool,
        Array2D<SuperBlockState>* superblock_state,
-       BlockingCounterWithStatus* pending_tiles);
+       BlockingCounterWithStatus* pending_tiles, bool frame_parallel);
 
   // Move only.
   Tile(Tile&& tile) noexcept;

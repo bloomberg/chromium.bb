@@ -96,9 +96,6 @@ StatusCode DecoderImpl::Create(const DecoderSettings* settings,
                    "frame_parallel is true.");
       return kStatusInvalidArgument;
     }
-    LIBGAV1_DLOG(ERROR,
-                 "Frame parallel decoding is not implemented, ignoring"
-                 " setting.");
   }
   std::unique_ptr<DecoderImpl> impl(new (std::nothrow) DecoderImpl(settings));
   if (impl == nullptr) {
@@ -129,6 +126,30 @@ DecoderImpl::~DecoderImpl() {
 }
 
 StatusCode DecoderImpl::Init() {
+  if (settings_.frame_parallel) {
+#if defined(ENABLE_FRAME_PARALLEL)
+    if (settings_.threads > 1) {
+      frame_threads_ = settings_.threads;
+      frame_thread_pool_ = ThreadPool::Create(frame_threads_);
+      if (frame_thread_pool_ == nullptr) {
+        LIBGAV1_DLOG(ERROR,
+                     "Failed to create frame thread pool with %d threads.",
+                     frame_threads_);
+        return kStatusOutOfMemory;
+      }
+      // TODO(b/142583029): Frame parallel decoding with in-frame
+      // multi-threading is not yet implemented. Until then, we force
+      // settings_.threads to 1 when frame parallel decoding is enabled.
+      settings_.threads = 1;
+    } else {
+      frame_threads_ = 1;
+    }
+#else
+    LIBGAV1_DLOG(
+        ERROR, "Frame parallel decoding is not implemented, ignoring setting.");
+    frame_threads_ = 1;
+#endif  // defined(ENABLE_FRAME_PARALLEL)
+  }
   const int max_allowed_frames = GetMaxAllowedFrames();
   assert(max_allowed_frames > 0);
   if (!temporal_units_.Init(max_allowed_frames)) {
@@ -147,11 +168,12 @@ StatusCode DecoderImpl::EnqueueFrame(const uint8_t* data, size_t size,
                                      void* buffer_private_data) {
   if (data == nullptr || size == 0) return kStatusInvalidArgument;
   if (temporal_units_.Full()) {
-    return kStatusResourceExhausted;
+    return kStatusTryAgain;
   }
-  temporal_units_.Push(
-      TemporalUnit(data, size, user_private_data, buffer_private_data));
-  return kStatusOk;
+  TemporalUnit temporal_unit(data, size, user_private_data,
+                             buffer_private_data);
+  temporal_units_.Push(std::move(temporal_unit));
+  return FrameParallel() ? ParseAndEnqueue() : kStatusOk;
 }
 
 // DequeueFrame() follows the following policy to avoid holding unnecessary
@@ -171,13 +193,202 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
     return kStatusOk;
   }
   const TemporalUnit& temporal_unit = temporal_units_.Front();
-  const StatusCode status = DecodeTemporalUnit(temporal_unit, out_ptr);
+  if (!FrameParallel()) {
+    // DequeueFrame() is a blocking call in this case. Just decode the next
+    // available temporal unit and return.
+    const StatusCode status = DecodeTemporalUnit(temporal_unit, out_ptr);
+    if (settings_.release_input_buffer != nullptr) {
+      settings_.release_input_buffer(settings_.callback_private_data,
+                                     temporal_unit.buffer_private_data);
+    }
+    temporal_units_.Pop();
+    return status;
+  }
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (!temporal_unit.decoded) return kStatusTryAgain;
+  }
   if (settings_.release_input_buffer != nullptr) {
     settings_.release_input_buffer(settings_.callback_private_data,
                                    temporal_unit.buffer_private_data);
   }
+  if (temporal_unit.status != kStatusOk) {
+    temporal_units_.Pop();
+    return temporal_unit.status;
+  }
+  if (!temporal_unit.has_displayable_frame) {
+    *out_ptr = nullptr;
+    temporal_units_.Pop();
+    return kStatusOk;
+  }
+  StatusCode status = CopyFrameToOutputBuffer(temporal_unit.output_frame);
+  if (status != kStatusOk) {
+    temporal_units_.Pop();
+    return status;
+  }
+  buffer_.user_private_data = temporal_unit.user_private_data;
+  *out_ptr = &buffer_;
   temporal_units_.Pop();
-  return status;
+  return kStatusOk;
+}
+
+StatusCode DecoderImpl::ParseAndEnqueue() {
+  TemporalUnit& temporal_unit = temporal_units_.Back();
+  std::unique_ptr<ObuParser> obu(new (std::nothrow) ObuParser(
+      temporal_unit.data, temporal_unit.size, &buffer_pool_, &state_));
+  if (obu == nullptr) {
+    LIBGAV1_DLOG(ERROR, "Failed to allocate OBU parser.");
+    return kStatusOutOfMemory;
+  }
+  if (has_sequence_header_) {
+    obu->set_sequence_header(sequence_header_);
+  }
+  StatusCode status;
+  int position_in_temporal_unit = 0;
+  while (obu->HasData()) {
+    RefCountedBufferPtr current_frame;
+    status = obu->ParseOneFrame(&current_frame);
+    if (status != kStatusOk) {
+      LIBGAV1_DLOG(ERROR, "Failed to parse OBU.");
+      return status;
+    }
+    if (std::find_if(obu->obu_headers().begin(), obu->obu_headers().end(),
+                     [](const ObuHeader& obu_header) {
+                       return obu_header.type == kObuSequenceHeader;
+                     }) != obu->obu_headers().end()) {
+      const ObuSequenceHeader& sequence_header = obu->sequence_header();
+      if (!has_sequence_header_ ||
+          sequence_header_.color_config.bitdepth !=
+              sequence_header.color_config.bitdepth ||
+          sequence_header_.color_config.is_monochrome !=
+              sequence_header.color_config.is_monochrome ||
+          sequence_header_.color_config.subsampling_x !=
+              sequence_header.color_config.subsampling_x ||
+          sequence_header_.color_config.subsampling_y !=
+              sequence_header.color_config.subsampling_y ||
+          sequence_header_.max_frame_width != sequence_header.max_frame_width ||
+          sequence_header_.max_frame_height !=
+              sequence_header.max_frame_height) {
+        const Libgav1ImageFormat image_format =
+            ComposeImageFormat(sequence_header.color_config.is_monochrome,
+                               sequence_header.color_config.subsampling_x,
+                               sequence_header.color_config.subsampling_y);
+        const int max_bottom_border =
+            GetBottomBorderPixels(/*do_cdef=*/true, /*do_restoration=*/true);
+        // TODO(vigneshv): This may not be the right place to call this callback
+        // for the frame parallel case. Investigate and fix it.
+        if (!buffer_pool_.OnFrameBufferSizeChanged(
+                sequence_header.color_config.bitdepth, image_format,
+                sequence_header.max_frame_width,
+                sequence_header.max_frame_height, kBorderPixels, kBorderPixels,
+                kBorderPixels, max_bottom_border)) {
+          LIBGAV1_DLOG(ERROR, "buffer_pool_.OnFrameBufferSizeChanged failed.");
+          return kStatusUnknownError;
+        }
+      }
+      sequence_header_ = sequence_header;
+      has_sequence_header_ = true;
+    }
+    // This can happen when there are multiple spatial/temporal layers and if
+    // all the layers are outside the current operating point.
+    if (current_frame == nullptr) {
+      continue;
+    }
+    if (!temporal_unit.frames.emplace_back(obu.get(), state_, &temporal_unit,
+                                           current_frame,
+                                           position_in_temporal_unit++)) {
+      LIBGAV1_DLOG(ERROR, "temporal_unit.frames.emplace_back failed.");
+      return kStatusOutOfMemory;
+    }
+    state_.UpdateReferenceFrames(current_frame,
+                                 obu->frame_header().refresh_frame_flags);
+  }
+  if (temporal_unit.frames.empty()) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    temporal_unit.has_displayable_frame = false;
+    temporal_unit.decoded = true;
+    return kStatusOk;
+  }
+  for (auto& frame : temporal_unit.frames) {
+    EncodedFrame* const encoded_frame = &frame;
+    frame_thread_pool_->Schedule([this, encoded_frame]() {
+      const StatusCode status = DecodeFrame(encoded_frame);
+      encoded_frame->state = {};
+      encoded_frame->frame = nullptr;
+      // TODO(vigneshv): Implement error handling.
+      TemporalUnit& temporal_unit = encoded_frame->temporal_unit;
+      std::lock_guard<std::mutex> lock(mutex_);
+      temporal_unit.status = status;
+      if (++temporal_unit.decoded_count == temporal_unit.frames.size()) {
+        temporal_unit.decoded = true;
+      }
+    });
+  }
+  return kStatusOk;
+}
+
+StatusCode DecoderImpl::DecodeFrame(EncodedFrame* const encoded_frame) {
+  const ObuSequenceHeader& sequence_header = encoded_frame->sequence_header;
+  const ObuFrameHeader& frame_header = encoded_frame->frame_header;
+  const Vector<ObuTileGroup>& tile_groups = encoded_frame->tile_groups;
+  RefCountedBufferPtr current_frame = std::move(encoded_frame->frame);
+
+  StatusCode status;
+  if (!frame_header.show_existing_frame) {
+    if (tile_groups.empty()) {
+      // This means that the last call to ParseOneFrame() did not actually
+      // have any tile groups. This could happen in rare cases (for example,
+      // if there is a Metadata OBU after the TileGroup OBU). We currently do
+      // not have a reason to handle those cases, so we simply continue.
+      return kStatusOk;
+    }
+    std::unique_ptr<FrameScratchBuffer> frame_scratch_buffer =
+        frame_scratch_buffer_pool_.Get();
+    if (frame_scratch_buffer == nullptr) {
+      LIBGAV1_DLOG(ERROR, "Error when getting FrameScratchBuffer.");
+      return kStatusOutOfMemory;
+    }
+    status = DecodeTiles(sequence_header, frame_header, tile_groups,
+                         encoded_frame->state, frame_scratch_buffer.get(),
+                         current_frame.get());
+    frame_scratch_buffer_pool_.Release(std::move(frame_scratch_buffer));
+    if (status != kStatusOk) {
+      return status;
+    }
+    // Mark frame as decoded.
+    current_frame->SetFrameState(kFrameStateDecoded);
+  } else {
+    current_frame->WaitUntilDecoded();
+  }
+  if (!frame_header.show_frame && !frame_header.show_existing_frame) {
+    // This frame is not displayable. Not an error.
+    return kStatusOk;
+  }
+  RefCountedBufferPtr film_grain_frame;
+  status = ApplyFilmGrain(sequence_header, frame_header, current_frame,
+                          &film_grain_frame);
+  if (status != kStatusOk) {
+    return status;
+  }
+  current_frame = std::move(film_grain_frame);
+  TemporalUnit& temporal_unit = encoded_frame->temporal_unit;
+  std::lock_guard<std::mutex> lock(mutex_);
+  if (temporal_unit.has_displayable_frame &&
+      temporal_unit.output_frame_position >
+          encoded_frame->position_in_temporal_unit) {
+    // A displayable frame was already found and its position in the temporal
+    // unit is greater than the current frame's position.  This can happen if
+    // there are multiple spatial/temporal layers. We don't care about it for
+    // now, so simply return the last displayable frame.
+    // TODO(b/129153372): Add support for outputting multiple spatial/temporal
+    // layers.
+    return kStatusOk;
+  }
+  temporal_unit.has_displayable_frame = true;
+  temporal_unit.output_frame = std::move(current_frame);
+  temporal_unit.output_frame_position =
+      encoded_frame->position_in_temporal_unit;
+  return kStatusOk;
 }
 
 StatusCode DecoderImpl::DecodeTemporalUnit(const TemporalUnit& temporal_unit,
@@ -185,7 +396,7 @@ StatusCode DecoderImpl::DecodeTemporalUnit(const TemporalUnit& temporal_unit,
   std::unique_ptr<ObuParser> obu(new (std::nothrow) ObuParser(
       temporal_unit.data, temporal_unit.size, &buffer_pool_, &state_));
   if (obu == nullptr) {
-    LIBGAV1_DLOG(ERROR, "Failed to initialize OBU parser.");
+    LIBGAV1_DLOG(ERROR, "Failed to allocate OBU parser.");
     return kStatusOutOfMemory;
   }
   if (has_sequence_header_) {
@@ -249,8 +460,9 @@ StatusCode DecoderImpl::DecodeTemporalUnit(const TemporalUnit& temporal_unit,
         LIBGAV1_DLOG(ERROR, "Error when getting FrameScratchBuffer.");
         return kStatusOutOfMemory;
       }
-      status = DecodeTiles(obu.get(), frame_scratch_buffer.get(),
-                           current_frame.get());
+      status = DecodeTiles(obu->sequence_header(), obu->frame_header(),
+                           obu->tile_groups(), state_,
+                           frame_scratch_buffer.get(), current_frame.get());
       frame_scratch_buffer_pool_.Release(std::move(frame_scratch_buffer));
       if (status != kStatusOk) {
         return status;
@@ -293,10 +505,10 @@ StatusCode DecoderImpl::DecodeTemporalUnit(const TemporalUnit& temporal_unit,
 }
 
 bool DecoderImpl::AllocateCurrentFrame(RefCountedBuffer* const current_frame,
+                                       const ColorConfig& color_config,
                                        const ObuFrameHeader& frame_header,
                                        int left_border, int right_border,
                                        int top_border, int bottom_border) {
-  const ColorConfig& color_config = sequence_header_.color_config;
   current_frame->set_chroma_sample_position(
       color_config.chroma_sample_position);
   return current_frame->Realloc(
@@ -366,12 +578,22 @@ void DecoderImpl::ReleaseOutputFrame() {
 }
 
 StatusCode DecoderImpl::DecodeTiles(
-    const ObuParser* obu, FrameScratchBuffer* const frame_scratch_buffer,
+    const ObuSequenceHeader& sequence_header,
+    const ObuFrameHeader& frame_header, const Vector<ObuTileGroup>& tile_groups,
+    const DecoderState& state, FrameScratchBuffer* const frame_scratch_buffer,
     RefCountedBuffer* const current_frame) {
-  const ObuSequenceHeader& sequence_header = obu->sequence_header();
-  const ObuFrameHeader& frame_header = obu->frame_header();
   frame_scratch_buffer->tile_scratch_buffer_pool.Reset(
       sequence_header.color_config.bitdepth);
+  if (FrameParallel()) {
+    // We can parse the current frame if all the reference frames have been
+    // parsed.
+    for (int i = 0; i < kNumReferenceFrameTypes; ++i) {
+      if (!state.reference_valid[i] || state.reference_frame[i] == nullptr) {
+        continue;
+      }
+      state.reference_frame[i]->WaitUntilParsed();
+    }
+  }
   if (PostFilter::DoDeblock(frame_header, settings_.post_filter_mask)) {
     if (kDeblockFilterBitMask && !frame_scratch_buffer->loop_filter_mask.Reset(
                                      frame_header.width, frame_header.height)) {
@@ -398,8 +620,9 @@ StatusCode DecoderImpl::DecodeTiles(
   // Use kBorderPixels for the left, right, and top borders. Only the bottom
   // border may need to be bigger.
   const int bottom_border = GetBottomBorderPixels(do_cdef, do_restoration);
-  if (!AllocateCurrentFrame(current_frame, frame_header, kBorderPixels,
-                            kBorderPixels, kBorderPixels, bottom_border)) {
+  if (!AllocateCurrentFrame(current_frame, sequence_header.color_config,
+                            frame_header, kBorderPixels, kBorderPixels,
+                            kBorderPixels, bottom_border)) {
     LIBGAV1_DLOG(ERROR, "Failed to allocate memory for the decoder buffer.");
     return kStatusOutOfMemory;
   }
@@ -474,7 +697,7 @@ StatusCode DecoderImpl::DecodeTiles(
     const int index =
         frame_header
             .reference_frame_index[frame_header.primary_reference_frame];
-    const RefCountedBuffer* prev_frame = state_.reference_frame[index].get();
+    const RefCountedBuffer* prev_frame = state.reference_frame[index].get();
     frame_scratch_buffer->symbol_decoder_context = prev_frame->FrameContext();
     if (frame_header.segmentation.enabled &&
         prev_frame->columns4x4() == frame_header.columns4x4 &&
@@ -484,7 +707,7 @@ StatusCode DecoderImpl::DecodeTiles(
   }
 
   const uint8_t tile_size_bytes = frame_header.tile_info.tile_size_bytes;
-  const int tile_count = obu->tile_groups().back().end + 1;
+  const int tile_count = tile_groups.back().end + 1;
   assert(tile_count >= 1);
   Vector<std::unique_ptr<Tile>> tiles;
   if (!tiles.reserve(tile_count)) {
@@ -495,7 +718,7 @@ StatusCode DecoderImpl::DecodeTiles(
     return kStatusOutOfMemory;
   }
 
-  if (threading_strategy_.row_thread_pool(0) != nullptr) {
+  if (threading_strategy_.row_thread_pool(0) != nullptr || FrameParallel()) {
     const int block_width4x4_minus_one =
         sequence_header.use_128x128_superblock ? 31 : 15;
     const int block_width4x4_log2 =
@@ -640,7 +863,7 @@ StatusCode DecoderImpl::DecodeTiles(
   SymbolDecoderContext saved_symbol_decoder_context;
   int tile_index = 0;
   BlockingCounterWithStatus pending_tiles(tile_count);
-  for (const auto& tile_group : obu->tile_groups()) {
+  for (const auto& tile_group : tile_groups) {
     size_t bytes_left = tile_group.data_size;
     size_t byte_offset = 0;
     // The for loop in 5.11.1.
@@ -669,8 +892,8 @@ StatusCode DecoderImpl::DecodeTiles(
       std::unique_ptr<Tile> tile(new (std::nothrow) Tile(
           tile_number, tile_group.data + byte_offset, tile_size,
           sequence_header, frame_header, current_frame,
-          state_.reference_frame_sign_bias, state_.reference_frame,
-          &frame_scratch_buffer->motion_field, state_.reference_order_hint,
+          state.reference_frame_sign_bias, state.reference_frame,
+          &frame_scratch_buffer->motion_field, state.reference_order_hint,
           wedge_masks_, frame_scratch_buffer->symbol_decoder_context,
           &saved_symbol_decoder_context, prev_segment_ids, &post_filter,
           &block_parameters_holder, &frame_scratch_buffer->cdef_index,
@@ -678,7 +901,8 @@ StatusCode DecoderImpl::DecodeTiles(
           threading_strategy_.row_thread_pool(tile_index++),
           frame_scratch_buffer->residual_buffer_pool.get(),
           &frame_scratch_buffer->tile_scratch_buffer_pool,
-          &frame_scratch_buffer->superblock_state, &pending_tiles));
+          &frame_scratch_buffer->superblock_state, &pending_tiles,
+          FrameParallel()));
       if (tile == nullptr) {
         LIBGAV1_DLOG(ERROR, "Failed to allocate tile.");
         return kStatusOutOfMemory;
@@ -690,6 +914,68 @@ StatusCode DecoderImpl::DecodeTiles(
     }
   }
   assert(tiles.size() == static_cast<size_t>(tile_count));
+  if (FrameParallel()) {
+    // Parse the frame.
+    const int block_width4x4 = sequence_header.use_128x128_superblock ? 32 : 16;
+    std::unique_ptr<TileScratchBuffer> tile_scratch_buffer =
+        frame_scratch_buffer->tile_scratch_buffer_pool.Get();
+    if (tile_scratch_buffer == nullptr) {
+      return kStatusOutOfMemory;
+    }
+    for (int row4x4 = 0; row4x4 < frame_header.rows4x4;
+         row4x4 += block_width4x4) {
+      for (const auto& tile_ptr : tiles) {
+        if (!tile_ptr->ProcessSuperBlockRow<kProcessingModeParseOnly, true>(
+                row4x4, tile_scratch_buffer.get())) {
+          LIBGAV1_DLOG(ERROR, "Failed to parse tile number: %d\n",
+                       tile_ptr->number());
+          return kStatusUnknownError;
+        }
+      }
+    }
+    if (frame_header.enable_frame_end_update_cdf) {
+      frame_scratch_buffer->symbol_decoder_context =
+          saved_symbol_decoder_context;
+    }
+    current_frame->SetFrameContext(
+        frame_scratch_buffer->symbol_decoder_context);
+    SetCurrentFrameSegmentationMap(frame_header, prev_segment_ids,
+                                   current_frame);
+    // Mark frame as parsed.
+    current_frame->SetFrameState(kFrameStateParsed);
+
+    // We can decode the current frame if all the reference frames have been
+    // decoded.
+    for (int i = 0; i < kNumReferenceFrameTypes; ++i) {
+      if (!state.reference_valid[i] || state.reference_frame[i] == nullptr) {
+        continue;
+      }
+      // Wait for this reference frame to be decoded.
+      state.reference_frame[i]->WaitUntilDecoded();
+    }
+    // Decode in superblock row order.
+    int row4x4;
+    for (row4x4 = 0; row4x4 < frame_header.rows4x4; row4x4 += block_width4x4) {
+      for (const auto& tile_ptr : tiles) {
+        if (!tile_ptr->ProcessSuperBlockRow<kProcessingModeDecodeOnly, false>(
+                row4x4, tile_scratch_buffer.get())) {
+          LIBGAV1_DLOG(ERROR, "Failed to decode tile number: %d\n",
+                       tile_ptr->number());
+          return kStatusUnknownError;
+        }
+      }
+      // Apply post filters for the row above the current row.
+      post_filter.ApplyFilteringForOneSuperBlockRow(row4x4 - block_width4x4,
+                                                    block_width4x4, false);
+    }
+    // Apply post filters for the last row.
+    post_filter.ApplyFilteringForOneSuperBlockRow(row4x4 - block_width4x4,
+                                                  block_width4x4, true);
+    frame_scratch_buffer->tile_scratch_buffer_pool.Release(
+        std::move(tile_scratch_buffer));
+    return kStatusOk;
+  }
+  assert(!FrameParallel());
   bool tile_decoding_failed = false;
   if (settings_.threads == 1) {
     bool ok = true;
@@ -785,8 +1071,8 @@ StatusCode DecoderImpl::DecodeTiles(
   current_frame->SetFrameContext(frame_scratch_buffer->symbol_decoder_context);
   if (post_filter.DoDeblock() && kDeblockFilterBitMask) {
     frame_scratch_buffer->loop_filter_mask.Build(
-        sequence_header, frame_header, obu->tile_groups().front().start,
-        obu->tile_groups().back().end, block_parameters_holder,
+        sequence_header, frame_header, tile_groups.front().start,
+        tile_groups.back().end, block_parameters_holder,
         frame_scratch_buffer->inter_transform_sizes);
   }
   if (threading_strategy_.post_filter_thread_pool() != nullptr) {
@@ -826,7 +1112,10 @@ StatusCode DecoderImpl::ApplyFilmGrain(
     return kStatusOk;
   }
   if (!frame_header.show_existing_frame &&
-      frame_header.refresh_frame_flags == 0) {
+      frame_header.refresh_frame_flags == 0 &&
+      // TODO(vigneshv): In frame parallel mode, we never do film grain in
+      // place. Revisit this and see if this constraint need to be enforced.
+      !FrameParallel()) {
     // If show_existing_frame is true, then the current frame is a previously
     // saved reference frame. If refresh_frame_flags is nonzero, then the
     // state_.UpdateReferenceFrames() call above has saved the current frame as

@@ -19,8 +19,10 @@
 
 #include <array>
 #include <cassert>
+#include <condition_variable>  // NOLINT (unapproved c++11 header)
 #include <cstdint>
 #include <cstring>
+#include <mutex>  // NOLINT (unapproved c++11 header)
 
 #include "src/dsp/common.h"
 #include "src/gav1/decoder_buffer.h"
@@ -40,6 +42,13 @@ namespace libgav1 {
 
 class BufferPool;
 
+enum FrameState : uint8_t {
+  kFrameStateUnknown,
+  kFrameStateStarted,
+  kFrameStateParsed,
+  kFrameStateDecoded
+};
+
 // A reference-counted frame buffer. Clients should access it via
 // RefCountedBufferPtr, which manages reference counting transparently.
 class RefCountedBuffer {
@@ -49,7 +58,11 @@ class RefCountedBuffer {
   RefCountedBuffer& operator=(const RefCountedBuffer&) = delete;
 
   // Allocates the YUV buffer. Returns true on success. Returns false on
-  // failure.
+  // failure. This function ensures the thread safety of the |get_frame_buffer_|
+  // call (i.e.) only one |get_frame_buffer_| call will happen at a given time.
+  // TODO(b/142583029): In frame parallel mode, we can require the callbacks to
+  // be thread safe so that we can remove the thread safety of this function and
+  // applications can have fine grained locks.
   //
   // * |width| and |height| are the image dimensions in pixels.
   // * |subsampling_x| and |subsampling_y| (either 0 or 1) specify the
@@ -192,6 +205,36 @@ class RefCountedBuffer {
     film_grain_params_ = params;
   }
 
+  void SetFrameState(FrameState frame_state) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    frame_state_ = frame_state;
+    if (frame_state == kFrameStateParsed) {
+      parsed_condvar_.notify_all();
+    } else if (frame_state == kFrameStateDecoded) {
+      decoded_condvar_.notify_all();
+    }
+  }
+
+  void MarkFrameAsStarted() {
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (frame_state_ != kFrameStateUnknown) return;
+    frame_state_ = kFrameStateStarted;
+  }
+
+  void WaitUntilParsed() {
+    std::unique_lock<std::mutex> lock(mutex_);
+    while (frame_state_ < kFrameStateParsed) {
+      parsed_condvar_.wait(lock);
+    }
+  }
+
+  void WaitUntilDecoded() {
+    std::unique_lock<std::mutex> lock(mutex_);
+    while (frame_state_ != kFrameStateDecoded) {
+      decoded_condvar_.wait(lock);
+    }
+  }
+
  private:
   friend class BufferPool;
 
@@ -206,6 +249,13 @@ class RefCountedBuffer {
   void* buffer_private_data_ = nullptr;
   YuvBuffer yuv_buffer_;
   bool in_use_ = false;  // Only used by BufferPool.
+
+  std::mutex mutex_;
+  FrameState frame_state_ = kFrameStateUnknown LIBGAV1_GUARDED_BY(mutex_);
+  // Signaled when the frame state is set to kFrameStateParsed.
+  std::condition_variable parsed_condvar_;
+  // Signaled when the frame state is set to kFrameStateDecoded.
+  std::condition_variable decoded_condvar_;
 
   FrameType frame_type_ = kFrameKey;
   ChromaSamplePosition chroma_sample_position_ = kChromaSamplePositionUnknown;
@@ -273,21 +323,26 @@ class BufferPool {
       int bitdepth, Libgav1ImageFormat image_format, int width, int height,
       int left_border, int right_border, int top_border, int bottom_border);
 
-  // Finds a free buffer in the buffer pool and returns a reference to the
-  // free buffer. If there is no free buffer, returns a null pointer.
+  // Finds a free buffer in the buffer pool and returns a reference to the free
+  // buffer. If there is no free buffer, returns a null pointer. This function
+  // is thread safe.
   RefCountedBufferPtr GetFreeBuffer();
 
  private:
   friend class RefCountedBuffer;
 
   // Returns an unused buffer to the buffer pool. Called by RefCountedBuffer
-  // only.
+  // only. This function is thread safe.
   void ReturnUnusedBuffer(RefCountedBuffer* buffer);
+
+  // Used to make the following functions thread safe: GetFreeBuffer(),
+  // ReturnUnusedBuffer(), RefCountedBuffer::Realloc().
+  std::mutex mutex_;
 
   // Storing a RefCountedBuffer object in a Vector is complicated because of the
   // copy/move semantics. So the simplest way around that is to store a list of
   // pointers in the vector.
-  Vector<RefCountedBuffer*> buffers_;
+  Vector<RefCountedBuffer*> buffers_ LIBGAV1_GUARDED_BY(mutex_);
   InternalFrameBufferList internal_frame_buffers_;
 
   // Frame buffer callbacks.

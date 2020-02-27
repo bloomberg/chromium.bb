@@ -376,7 +376,7 @@ Tile::Tile(
     ResidualBufferPool* const residual_buffer_pool,
     TileScratchBufferPool* const tile_scratch_buffer_pool,
     Array2D<SuperBlockState>* const superblock_state,
-    BlockingCounterWithStatus* const pending_tiles)
+    BlockingCounterWithStatus* const pending_tiles, bool frame_parallel)
     : number_(tile_number),
       data_(data),
       size_(size),
@@ -431,10 +431,16 @@ Tile::Tile(
   superblock_columns_ =
       (column4x4_end_ - column4x4_start_ + block_width4x4 - 1) >>
       block_width4x4_log2;
-  // Enable multi-threading within a tile only if there are at least as many
-  // superblock columns as |intra_block_copy_lag_|.
-  split_parse_and_decode_ =
-      thread_pool_ != nullptr && superblock_columns_ > intra_block_copy_lag_;
+  // If |split_parse_and_decode_| is true, we do the necessary setup for
+  // splitting the parsing and the decoding steps. This is done in the following
+  // two cases:
+  //  1) If there is multi-threading within a tile (this is done if
+  //     |thread_pool_| is not nullptr and if there are at least as many
+  //     superblock columns as |intra_block_copy_lag_|).
+  //  2) If |frame_parallel| is true.
+  split_parse_and_decode_ = (thread_pool_ != nullptr &&
+                             superblock_columns_ > intra_block_copy_lag_) ||
+                            frame_parallel;
   memset(delta_lf_, 0, sizeof(delta_lf_));
   delta_lf_all_zero_ = true;
   YuvBuffer* const buffer = current_frame->buffer();
@@ -559,6 +565,14 @@ bool Tile::ProcessSuperBlockRow(int row4x4,
   return true;
 }
 
+// Used in frame parallel mode. The symbol decoder context has to be saved
+// when the parsing is complete.
+template bool Tile::ProcessSuperBlockRow<kProcessingModeParseOnly, true>(
+    int row4x4, TileScratchBuffer* scratch_buffer);
+// Used in frame parallel mode. The symbol decoder context need not be saved in
+// this case since it was done when parsing was complete.
+template bool Tile::ProcessSuperBlockRow<kProcessingModeDecodeOnly, false>(
+    int row4x4, TileScratchBuffer* scratch_buffer);
 // Used in non frame parallel mode.
 template bool Tile::ProcessSuperBlockRow<kProcessingModeParseAndDecode, true>(
     int row4x4, TileScratchBuffer* scratch_buffer);

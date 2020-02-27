@@ -36,6 +36,7 @@
 #include "src/tile.h"
 #include "src/utils/array_2d.h"
 #include "src/utils/block_parameters_holder.h"
+#include "src/utils/compiler_attributes.h"
 #include "src/utils/constants.h"
 #include "src/utils/memory.h"
 #include "src/utils/queue.h"
@@ -43,24 +44,6 @@
 #include "src/utils/types.h"
 
 namespace libgav1 {
-
-struct TemporalUnit : public Allocable {
-  // The default constructor is invoked by the Queue<TemporalUnit>::Init()
-  // method. Queue<> does not use the default-constructed elements, so it is
-  // safe for the default constructor to not initialize the members.
-  TemporalUnit() = default;
-  TemporalUnit(const uint8_t* data, size_t size, int64_t user_private_data,
-               void* buffer_private_data)
-      : data(data),
-        size(size),
-        user_private_data(user_private_data),
-        buffer_private_data(buffer_private_data) {}
-
-  const uint8_t* data;
-  size_t size;
-  int64_t user_private_data;
-  void* buffer_private_data;
-};
 
 struct DecoderState {
   // Section 7.20. Updates frames in the reference_frame array with
@@ -104,6 +87,62 @@ struct DecoderState {
   std::array<RefCountedBufferPtr, kNumReferenceFrameTypes> reference_frame;
 };
 
+struct TemporalUnit;
+
+struct EncodedFrame {
+  EncodedFrame(ObuParser* const obu, const DecoderState& state,
+               TemporalUnit* const temporal_unit,
+               const RefCountedBufferPtr& frame, int position_in_temporal_unit)
+      : sequence_header(obu->sequence_header()),
+        frame_header(obu->frame_header()),
+        state(state),
+        temporal_unit(*temporal_unit),
+        frame(frame),
+        position_in_temporal_unit(position_in_temporal_unit) {
+    obu->MoveTileGroups(&tile_groups);
+    frame->MarkFrameAsStarted();
+  }
+
+  const ObuSequenceHeader sequence_header;
+  const ObuFrameHeader frame_header;
+  Vector<ObuTileGroup> tile_groups;
+  DecoderState state;
+  TemporalUnit& temporal_unit;
+  RefCountedBufferPtr frame;
+  const int position_in_temporal_unit;
+};
+
+struct TemporalUnit : public Allocable {
+  // The default constructor is invoked by the Queue<TemporalUnit>::Init()
+  // method. Queue<> does not use the default-constructed elements, so it is
+  // safe for the default constructor to not initialize the members.
+  TemporalUnit() = default;
+  TemporalUnit(const uint8_t* data, size_t size, int64_t user_private_data,
+               void* buffer_private_data)
+      : data(data),
+        size(size),
+        user_private_data(user_private_data),
+        buffer_private_data(buffer_private_data),
+        decoded(false),
+        status(kStatusOk),
+        has_displayable_frame(false),
+        decoded_count(0) {}
+
+  const uint8_t* data;
+  size_t size;
+  int64_t user_private_data;
+  void* buffer_private_data;
+
+  // The following members are used only in frame parallel mode.
+  bool decoded;
+  StatusCode status;
+  bool has_displayable_frame;
+  RefCountedBufferPtr output_frame;
+  int output_frame_position;
+  Vector<EncodedFrame> frames;
+  size_t decoded_count;
+};
+
 class DecoderImpl : public Allocable {
  public:
   // The constructor saves a const reference to |*settings|. Therefore
@@ -116,9 +155,7 @@ class DecoderImpl : public Allocable {
   StatusCode EnqueueFrame(const uint8_t* data, size_t size,
                           int64_t user_private_data, void* buffer_private_data);
   StatusCode DequeueFrame(const DecoderBuffer** out_ptr);
-  int GetMaxAllowedFrames() const {
-    return settings_.frame_parallel ? settings_.threads : 1;
-  }
+  int GetMaxAllowedFrames() const { return frame_threads_; }
   static constexpr int GetMaxBitdepth() {
     static_assert(LIBGAV1_MAX_BITDEPTH == 8 || LIBGAV1_MAX_BITDEPTH == 10,
                   "LIBGAV1_MAX_BITDEPTH must be 8 or 10.");
@@ -128,19 +165,35 @@ class DecoderImpl : public Allocable {
  private:
   explicit DecoderImpl(const DecoderSettings* settings);
   StatusCode Init();
+
   bool AllocateCurrentFrame(RefCountedBuffer* current_frame,
+                            const ColorConfig& color_config,
                             const ObuFrameHeader& frame_header, int left_border,
                             int right_border, int top_border,
                             int bottom_border);
   void ReleaseOutputFrame();
-  // Decodes all the frames contained in the given temporal unit. Blocks until
-  // all the frames are decoded.
+
+  // Decodes all the frames contained in the given temporal unit. Used only in
+  // non frame parallel mode.
   StatusCode DecodeTemporalUnit(const TemporalUnit& temporal_unit,
                                 const DecoderBuffer** out_ptr);
-  // Populates buffer_ with values from |frame|. Adds a reference to |frame|
-  // in output_frame_.
+  // Used only in frame parallel mode. EnqueueFrame pushes the last enqueued
+  // temporal unit into |temporal_units_| and this function will do the OBU
+  // parsing for the last temporal unit that was pushed into the queue and
+  // enqueue the frames for decoding.
+  StatusCode ParseAndEnqueue();
+  // Decodes the |encoded_frame| and updates the
+  // |encoded_frame->temporal_unit|'s parameters if the decoded frame is a
+  // displayable frame. Used only in frame parallel mode.
+  StatusCode DecodeFrame(EncodedFrame* encoded_frame);
+
+  // Populates |buffer_| with values from |frame|. Adds a reference to |frame|
+  // in |output_frame_|.
   StatusCode CopyFrameToOutputBuffer(const RefCountedBufferPtr& frame);
-  StatusCode DecodeTiles(const ObuParser* obu,
+  StatusCode DecodeTiles(const ObuSequenceHeader& sequence_header,
+                         const ObuFrameHeader& frame_header,
+                         const Vector<ObuTileGroup>& tile_groups,
+                         const DecoderState& state,
                          FrameScratchBuffer* frame_scratch_buffer,
                          RefCountedBuffer* current_frame);
   // Sets the current frame's segmentation map for two cases. The third case
@@ -155,12 +208,12 @@ class DecoderImpl : public Allocable {
                             const RefCountedBufferPtr& displayable_frame,
                             RefCountedBufferPtr* film_grain_frame);
 
+  bool FrameParallel() const { return frame_threads_ > 1; }
+
   Queue<TemporalUnit> temporal_units_;
   DecoderState state_;
   ThreadingStrategy threading_strategy_;
 
-  // TODO(vigneshv): Only support one buffer for now. Eventually this has to be
-  // a vector or an array.
   DecoderBuffer buffer_ = {};
   // output_frame_ holds a reference to the output frame on behalf of buffer_.
   RefCountedBufferPtr output_frame_;
@@ -168,12 +221,24 @@ class DecoderImpl : public Allocable {
   BufferPool buffer_pool_;
   WedgeMaskArray wedge_masks_;
   FrameScratchBufferPool frame_scratch_buffer_pool_;
+  int frame_threads_ = 1;
+
+  // Used to synchronize the accesses into |temporal_units_| in order to update
+  // the "decoded" state of an temporal unit.
+  std::mutex mutex_;
+  std::unique_ptr<ThreadPool> frame_thread_pool_;
 
   ObuSequenceHeader sequence_header_ = {};
   // If true, sequence_header is valid.
   bool has_sequence_header_ = false;
 
+#if defined(ENABLE_FRAME_PARALLEL)
+  // TODO(b/142583029): A copy of the DecoderSettings is made to facilitate the
+  // development of frame parallel mode behind a compile time flag.
+  DecoderSettings settings_;
+#else
   const DecoderSettings& settings_;
+#endif
 };
 
 }  // namespace libgav1

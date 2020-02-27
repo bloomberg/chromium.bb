@@ -44,6 +44,10 @@ bool RefCountedBuffer::Realloc(int bitdepth, bool is_monochrome, int width,
                                int height, int subsampling_x, int subsampling_y,
                                int left_border, int right_border,
                                int top_border, int bottom_border) {
+  // The YuvBuffer::Realloc() could call the get frame buffer callback which
+  // will need to be thread safe. So we ensure that we only call Realloc() once
+  // at any given time.
+  std::lock_guard<std::mutex> lock(pool_->mutex_);
   assert(!buffer_private_data_valid_);
   if (!yuv_buffer_.Realloc(
           bitdepth, is_monochrome, width, height, subsampling_x, subsampling_y,
@@ -165,9 +169,18 @@ bool BufferPool::OnFrameBufferSizeChanged(int bitdepth,
 }
 
 RefCountedBufferPtr BufferPool::GetFreeBuffer() {
+  // In frame parallel mode, the GetFreeBuffer() calls from ObuParser all happen
+  // from the same thread serially, but the GetFreeBuffer() call in
+  // DecoderImpl::ApplyFilmGrain can happen from multiple threads at the same
+  // time. So this function has to be thread safe.
+  // TODO(b/142583029): Investigate if the GetFreeBuffer() call in
+  // DecoderImpl::GetFreeBuffer() call can be serialized so that this function
+  // need not be thread safe.
+  std::lock_guard<std::mutex> lock(mutex_);
   for (auto buffer : buffers_) {
     if (!buffer->in_use_) {
       buffer->in_use_ = true;
+      buffer->SetFrameState(kFrameStateUnknown);
       return RefCountedBufferPtr(buffer, RefCountedBuffer::ReturnToBufferPool);
     }
   }
@@ -185,10 +198,12 @@ RefCountedBufferPtr BufferPool::GetFreeBuffer() {
   }
   buffer->SetBufferPool(this);
   buffer->in_use_ = true;
+  buffer->SetFrameState(kFrameStateUnknown);
   return RefCountedBufferPtr(buffer, RefCountedBuffer::ReturnToBufferPool);
 }
 
 void BufferPool::ReturnUnusedBuffer(RefCountedBuffer* buffer) {
+  std::lock_guard<std::mutex> lock(mutex_);
   assert(buffer->in_use_);
   buffer->in_use_ = false;
   if (buffer->buffer_private_data_valid_) {

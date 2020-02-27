@@ -289,6 +289,11 @@ class ObuParser : public Allocable {
     has_sequence_header_ = true;
   }
 
+  // Moves |tile_groups_| into |tile_groups|.
+  void MoveTileGroups(Vector<ObuTileGroup>* tile_groups) {
+    *tile_groups = std::move(tile_groups_);
+  }
+
  private:
   // Initializes the bit reader. This is a function of its own to make unit
   // testing of private functions simpler.
