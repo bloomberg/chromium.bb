@@ -421,9 +421,6 @@ static AOM_INLINE void set_offsets_without_segment_id(
 
   // required by av1_append_sub8x8_mvs_for_idx() and av1_find_best_ref_mvs()
   xd->tile = *tile;
-
-  xd->cfl.mi_row = mi_row;
-  xd->cfl.mi_col = mi_col;
 }
 
 static AOM_INLINE void set_offsets(const AV1_COMP *const cpi,

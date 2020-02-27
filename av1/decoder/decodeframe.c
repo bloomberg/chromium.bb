@@ -345,8 +345,6 @@ static AOM_INLINE void set_offsets(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   xd->mi[0]->mi_row = mi_row;
   xd->mi[0]->mi_col = mi_col;
 #endif
-  xd->cfl.mi_row = mi_row;
-  xd->cfl.mi_col = mi_col;
 
   assert(x_mis && y_mis);
   for (int x = 1; x < x_mis; ++x) xd->mi[x] = xd->mi[0];
@@ -1511,8 +1509,6 @@ static AOM_INLINE void set_offsets_for_pred_and_recon(AV1Decoder *const pbi,
   xd->mi = cm->mi_grid_base + offset;
   xd->tx_type_map = &cm->tx_type_map[mi_row * cm->mi_stride + mi_col];
   xd->tx_type_map_stride = cm->mi_stride;
-  xd->cfl.mi_row = mi_row;
-  xd->cfl.mi_col = mi_col;
 
   set_plane_n4(xd, bw, bh, num_planes);
 

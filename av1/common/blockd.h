@@ -459,8 +459,6 @@ typedef struct cfl_ctx {
   // Chroma subsampling
   int subsampling_x, subsampling_y;
 
-  int mi_row, mi_col;
-
   // Whether the reconstructed luma pixels need to be stored
   int store_y;
 
