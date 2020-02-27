@@ -11,6 +11,7 @@ registration.
 
 from __future__ import print_function
 
+import collections
 import importlib
 import os
 import sys
@@ -36,7 +37,10 @@ from chromite.api.gen.chromite.api import toolchain_pb2
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
+from chromite.utils import memoize
 
+MethodData = collections.namedtuple(
+    'MethodData', ('service_descriptor', 'module_name', 'method_descriptor'))
 
 assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
@@ -67,7 +71,7 @@ class UnknownServiceError(Error):
 
 
 class ControllerModuleNotDefinedError(Error):
-  """Error class for when no controller is defined for a service."""
+  """Error class for when no controller has been defined for a service."""
 
 
 class ServiceControllerNotFoundError(Error):
@@ -76,7 +80,7 @@ class ServiceControllerNotFoundError(Error):
 
 # API Method Errors.
 class UnknownMethodError(Error):
-  """The service is defined in the proto but the method is not."""
+  """The service has been defined in the proto, but the method has not."""
 
 
 class MethodNotFoundError(Error):
@@ -96,16 +100,64 @@ class Router(object):
     # All imported generated messages get added to this symbol db.
     self._sym_db = symbol_database.Default()
 
+    # Save the service and method extension info for looking up
+    # configured extension data.
     extensions = build_api_pb2.DESCRIPTOR.extensions_by_name
-    self._service_options = extensions['service_options']
-    self._method_options = extensions['method_options']
+    self._svc_options_ext = extensions['service_options']
+    self._method_options_ext = extensions['method_options']
+
+  @memoize.Memoize
+  def _get_method_data(self, service_name, method_name):
+    """Get the descriptors and module name for the given Service/Method."""
+    try:
+      svc, module_name = self._services[service_name]
+    except KeyError:
+      raise UnknownServiceError(
+          'The %s service has not been registered.' % service_name)
+
+    try:
+      method_desc = svc.methods_by_name[method_name]
+    except KeyError:
+      raise UnknownMethodError('The %s method has not been defined in the %s '
+                               'service.' % (method_name, service_name))
+
+    return MethodData(
+        service_descriptor=svc,
+        module_name=module_name,
+        method_descriptor=method_desc)
+
+  def _get_input_message_instance(self, service_name, method_name):
+    """Get an empty input message instance for the specified method."""
+    method_data = self._get_method_data(service_name, method_name)
+    return self._sym_db.GetPrototype(method_data.method_descriptor.input_type)()
+
+  def _get_output_message_instance(self, service_name, method_name):
+    """Get an empty output message instance for the specified method."""
+    method_data = self._get_method_data(service_name, method_name)
+    return self._sym_db.GetPrototype(
+        method_data.method_descriptor.output_type)()
+
+  def _get_module_name(self, service_name, method_name):
+    """Get the name of the module containing the endpoint implementation."""
+    return self._get_method_data(service_name, method_name).module_name
+
+  def _get_service_options(self, service_name, method_name):
+    """Get the configured service options for the endpoint."""
+    method_data = self._get_method_data(service_name, method_name)
+    svc_extensions = method_data.service_descriptor.GetOptions().Extensions
+    return svc_extensions[self._svc_options_ext]
+
+  def _get_method_options(self, service_name, method_name):
+    """Get the configured method options for the endpoint."""
+    method_data = self._get_method_data(service_name, method_name)
+    method_extensions = method_data.method_descriptor.GetOptions().Extensions
+    return method_extensions[self._method_options_ext]
 
   def Register(self, proto_module):
     """Register the services from a generated proto module.
 
     Args:
-      proto_module (module): The generated proto module whose service is being
-        registered.
+      proto_module (module): The generated proto module to register.
 
     Raises:
       ServiceModuleNotDefinedError when the service cannot be found in the
@@ -113,7 +165,7 @@ class Router(object):
     """
     services = proto_module.DESCRIPTOR.services_by_name
     for service_name, svc in services.items():
-      module_name = svc.GetOptions().Extensions[self._service_options].module
+      module_name = svc.GetOptions().Extensions[self._svc_options_ext].module
 
       if not module_name:
         raise ControllerModuleNotDefinedError(
@@ -155,33 +207,20 @@ class Router(object):
     except IOError as e:
       raise InvalidInputFileError('Unable to read input file: %s' % e)
 
-    try:
-      svc, module_name = self._services[service_name]
-    except KeyError:
-      raise UnknownServiceError('The %s service has not been registered.'
-                                % service_name)
-
-    try:
-      method_desc = svc.methods_by_name[method_name]
-    except KeyError:
-      raise UnknownMethodError('The %s method has not been defined in the %s '
-                               'service.' % (method_name, service_name))
-
-    # Parse the input file to build an instance of the input message.
-    input_msg = self._sym_db.GetPrototype(method_desc.input_type)()
+    input_msg = self._get_input_message_instance(service_name, method_name)
     try:
       json_format.Parse(input_json, input_msg, ignore_unknown_fields=True)
     except json_format.ParseError as e:
       raise InvalidInputFormatError('Unable to parse the input json: %s' % e)
 
     # Get an empty output message instance.
-    output_msg = self._sym_db.GetPrototype(method_desc.output_type)()
+    output_msg = self._get_output_message_instance(service_name, method_name)
 
     # Fetch the method options for chroot and method name overrides.
-    method_options = method_desc.GetOptions().Extensions[self._method_options]
+    method_options = self._get_method_options(service_name, method_name)
 
     # Check the chroot settings before running.
-    service_options = svc.GetOptions().Extensions[self._service_options]
+    service_options = self._get_service_options(service_name, method_name)
     if self._ChrootCheck(service_options, method_options):
       # Run inside the chroot instead.
       logging.info('Re-executing the endpoint inside the chroot.')
@@ -190,10 +229,13 @@ class Router(object):
 
     # Allow proto-based method name override.
     if method_options.HasField('implementation_name'):
-      method_name = method_options.implementation_name
+      implementation_name = method_options.implementation_name
+    else:
+      implementation_name = method_name
 
     # Import the module and get the method.
-    method_impl = self._GetMethod(module_name, method_name)
+    module_name = self._get_module_name(service_name, method_name)
+    method_impl = self._GetMethod(module_name, implementation_name)
 
     # Successfully located; call and return.
     return_code = method_impl(input_msg, output_msg, config)
@@ -258,11 +300,14 @@ class Router(object):
       tempdir = stack.Add(chroot.tempdir).tempdir
       sync_tempdir = stack.Add(chroot.tempdir).tempdir
       # The copy-paths-in context manager to handle Path messages.
-      stack.Add(field_handler.copy_paths_in, input_msg, chroot.tmp,
-                prefix=chroot.path)
+      stack.Add(
+          field_handler.copy_paths_in,
+          input_msg,
+          chroot.tmp,
+          prefix=chroot.path)
       # The sync-directories context manager to handle SyncedDir messages.
-      stack.Add(field_handler.sync_dirs, input_msg, sync_tempdir,
-                prefix=chroot.path)
+      stack.Add(
+          field_handler.sync_dirs, input_msg, sync_tempdir, prefix=chroot.path)
 
       chroot.goma = field_handler.handle_goma(input_msg, chroot.path)
 
