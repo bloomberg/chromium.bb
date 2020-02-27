@@ -216,8 +216,6 @@ void CflSubsampler444_NEON(
       row = Load4<0>(src, row);
       row = Load4<1>(src + stride, row);
       if (y < (max_luma_height - 1)) {
-        // TODO(johannkoenig): Use this as the for() condition and add a second
-        // loop to finalize |running_sum|.
         src += stride << 1;
       }
 
