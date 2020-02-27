@@ -327,23 +327,47 @@ class LabTransfer(Transfer):
     self._staging_server = staging_server
     super(LabTransfer, self).__init__(*args, **kwargs)
 
+  def _RemoteDevserverCall(self, cmd):
+    """Runs a command on a remote devserver by sshing into it.
+
+    Raises cros_build_lib.RunCommandError() if the command could not be run
+    successfully.
+
+    Args:
+      cmd: (list) the command to be run.
+    """
+    ip = urllib.parse.urlparse(self._staging_server).hostname
+    try:
+      return cros_build_lib.run(['ssh', ip] + cmd, log_output=True)
+    except cros_build_lib.RunCommandError:
+      logging.error('Remote devserver call failed.')
+      raise
+
   def _CheckPayloads(self, payload_name):
     """Runs the curl command that checks if payloads have been staged."""
     payload_url = self._GetStagedUrl(staged_filename=payload_name,
                                      build_id=self._payload_dir)
+    cmd = ['curl', '-I', payload_url, '--fail']
     try:
-      # TODO(crbug.com/1033187): Remove log_output parameter passed to
-      # retry_util.RunCurl after the bug is fixed. The log_output=True option
-      # has been added to correct what seems to be a timing issue in
-      # retry_util.RunCurl. The error ((23) Failed writing body) is usually
-      # observed when a piped program closes the read pipe before the curl
-      # command has finished writing. log_output forces the read pipe to stay
-      # open, thus avoiding the failure.
-      retry_util.RunCurl(curl_args=['-I', payload_url, '--fail'],
-                         log_output=True)
-    except retry_util.DownloadError as e:
-      raise ChromiumOSTransferError('Payload %s does not exist at %s: %s' %
-                                    (payload_name, payload_url, e))
+      self._RemoteDevserverCall(cmd)
+    except cros_build_lib.RunCommandError as e:
+      logging.error('Could not verify if %s was staged at %s. Received '
+                    'exception: %s', payload_name, payload_url, e)
+      # TODO(crbug.com/1059008): The following code blck is a fallback. It
+      # should be removed once _RemoteDevserverCall has been proven to be
+      # reliable.
+      try:
+        # TODO(crbug.com/1033187): Remove log_output parameter passed to
+        # retry_util.RunCurl after the bug is fixed. The log_output=True option
+        # has been added to correct what seems to be a timing issue in
+        # retry_util.RunCurl. The error ((23) Failed writing body) is usually
+        # observed when a piped program closes the read pipe before the curl
+        # command has finished writing. log_output forces the read pipe to stay
+        # open, thus avoiding the failure.
+        retry_util.RunCurl(curl_args=cmd[1:], log_output=True)
+      except retry_util.DownloadError as e:
+        raise ChromiumOSTransferError('Payload %s does not exist at %s: %s' %
+                                      (payload_name, payload_url, e))
 
   def CheckPayloads(self):
     """Verify that all required payloads are staged on staging server."""

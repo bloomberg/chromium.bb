@@ -641,11 +641,43 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
     transfer_stateful_update are both set to True.
     """
     with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      lab_xfer = auto_updater_transfer.LabTransfer
       CrOS_LabTransfer = CreateLabTransferInstance(
           device, payload_name='test_update.gz',
           payload_dir='board-release/12345.6.7')
       self.PatchObject(auto_updater_transfer, 'STATEFUL_FILENAME',
                        'test_stateful.tgz')
+      self.PatchObject(lab_xfer, '_RemoteDevserverCall')
+
+      expected = [
+          ['curl', '-I', 'http://0.0.0.0:8000/static/board-release/12345.6.7/'
+                         'test_update.gz', '--fail'],
+          ['curl', '-I', 'http://0.0.0.0:8000/static/board-release/12345.6.7/'
+                         'test_update.gz.json', '--fail'],
+          ['curl', '-I', 'http://0.0.0.0:8000/static/board-release/12345.6.7/'
+                         'test_stateful.tgz', '--fail']]
+
+      CrOS_LabTransfer.CheckPayloads()
+      self.assertListEqual(lab_xfer._RemoteDevserverCall.call_args_list,
+                           [mock.call(x) for x in expected])
+
+  def testCheckPayloadsAllInRemoteDevserverCallError(self):
+    """Test auto_updater_transfer.CheckPayloads.
+
+    Test CheckPayloads() method's fallback when transfer_rootfs_update and
+    transfer_stateful_update are both set to True and
+    LabTransfer._RemoteDevserver() throws an error.
+    """
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      CrOS_LabTransfer = CreateLabTransferInstance(
+          device, payload_name='test_update.gz',
+          payload_dir='board-release/12345.6.7')
+
+      self.PatchObject(auto_updater_transfer, 'STATEFUL_FILENAME',
+                       'test_stateful.tgz')
+      self.PatchObject(auto_updater_transfer.LabTransfer,
+                       '_RemoteDevserverCall',
+                       side_effect=cros_build_lib.RunCommandError(msg=''))
       self.PatchObject(retry_util, 'RunCurl')
 
       expected = [
@@ -670,10 +702,38 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
     transfer_stateful_update is set to False.
     """
     with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      lab_xfer = auto_updater_transfer.LabTransfer
       CrOS_LabTransfer = CreateLabTransferInstance(
           device, payload_name='test_update.gz',
           payload_dir='board-release/12345.6.7',
           transfer_stateful_update=False)
+
+      self.PatchObject(lab_xfer, '_RemoteDevserverCall')
+
+      expected = [['curl', '-I', 'http://0.0.0.0:8000/static/board-release/'
+                                 '12345.6.7/test_update.gz', '--fail'],
+                  ['curl', '-I', 'http://0.0.0.0:8000/static/board-release/'
+                                 '12345.6.7/test_update.gz.json', '--fail']]
+
+      CrOS_LabTransfer.CheckPayloads()
+      self.assertListEqual(lab_xfer._RemoteDevserverCall.call_args_list,
+                           [mock.call(x) for x in expected])
+
+  def testCheckPayloadsNoStatefulTransferRemoteDevserverCallError(self):
+    """Test auto_updater_transfer.CheckPayloads.
+
+    Test CheckPayloads() method's fallback when transfer_rootfs_update is True
+    and transfer_stateful_update is set to False and
+    LabTransfer._RemoteDevserver() throws an error.
+    """
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      CrOS_LabTransfer = CreateLabTransferInstance(
+          device, payload_name='test_update.gz',
+          payload_dir='board-release/12345.6.7',
+          transfer_stateful_update=False)
+      self.PatchObject(auto_updater_transfer.LabTransfer,
+                       '_RemoteDevserverCall',
+                       side_effect=cros_build_lib.RunCommandError(msg=''))
       self.PatchObject(retry_util, 'RunCurl')
 
       expected = [
@@ -695,11 +755,36 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
     transfer_stateful_update is set to True.
     """
     with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      lab_xfer = auto_updater_transfer.LabTransfer
       CrOS_LabTransfer = CreateLabTransferInstance(
           device, payload_dir='board-release/12345.6.7',
           transfer_rootfs_update=False)
       self.PatchObject(auto_updater_transfer, 'STATEFUL_FILENAME',
                        'test_stateful.tgz')
+      self.PatchObject(lab_xfer, '_RemoteDevserverCall')
+
+      expected = [['curl', '-I', 'http://0.0.0.0:8000/static/board-release/'
+                                 '12345.6.7/test_stateful.tgz', '--fail']]
+      CrOS_LabTransfer.CheckPayloads()
+      self.assertListEqual(lab_xfer._RemoteDevserverCall.call_args_list,
+                           [mock.call(x) for x in expected])
+
+  def testCheckPayloadsNoRootfsTransferRemoteDevserverCallError(self):
+    """Test auto_updater_transfer.CheckPayloads.
+
+    Test CheckPayloads() method's fallback when transfer_rootfs_update is False
+    and transfer_stateful_update is set to True and
+    LabTransfer._RemoteDevserver() throws an error.
+    """
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      CrOS_LabTransfer = CreateLabTransferInstance(
+          device, payload_dir='board-release/12345.6.7',
+          transfer_rootfs_update=False)
+      self.PatchObject(auto_updater_transfer, 'STATEFUL_FILENAME',
+                       'test_stateful.tgz')
+      self.PatchObject(auto_updater_transfer.LabTransfer,
+                       '_RemoteDevserverCall',
+                       side_effect=cros_build_lib.RunCommandError(msg=''))
       self.PatchObject(retry_util, 'RunCurl')
 
       expected = [
@@ -711,7 +796,7 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
       self.assertListEqual(retry_util.RunCurl.call_args_list,
                            [mock.call(**x) for x in expected])
 
-  def testCheckPayloadsDownloadError(self):
+  def testCheckPayloadsNoPayloadError(self):
     """Test auto_updater_transfer.CheckPayloads.
 
     Test CheckPayloads() for exceptions raised when payloads are not available
@@ -720,6 +805,9 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
     with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
       CrOS_LabTransfer = CreateLabTransferInstance(device)
 
+      self.PatchObject(auto_updater_transfer.LabTransfer,
+                       '_RemoteDevserverCall',
+                       side_effect=cros_build_lib.RunCommandError(msg=''))
       self.PatchObject(retry_util, 'RunCurl',
                        side_effect=retry_util.DownloadError())
 
@@ -841,3 +929,31 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
           device, payload_dir='/wrong/format/will/fail')
       self.PatchObject(auto_updater_transfer.LabTransfer, '_GetPayloadSize')
       self.assertRaises(ValueError, CrOS_LabTransfer.GetPayloadProps)
+
+  def test_RemoteDevserverCall(self):
+    """Test LabTransfer._RemoteDevserverCall()."""
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      CrOS_LabTransfer = CreateLabTransferInstance(device)
+
+      self.PatchObject(cros_build_lib, 'run')
+      cmd = ['test', 'command']
+
+      CrOS_LabTransfer._RemoteDevserverCall(cmd=cmd)
+      self.assertListEqual(
+          cros_build_lib.run.call_args_list,
+          [mock.call(['ssh', '0.0.0.0'] + cmd, log_output=True)])
+
+  def test_RemoteDevserverCallError(self):
+    """Test LabTransfer._RemoteDevserverCall().
+
+    Test method when error is thrown by cros_build_lib.run() method.
+    """
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      CrOS_LabTransfer = CreateLabTransferInstance(device)
+
+      self.PatchObject(cros_build_lib, 'run',
+                       side_effect=cros_build_lib.RunCommandError(msg=''))
+
+      self.assertRaises(cros_build_lib.RunCommandError,
+                        CrOS_LabTransfer._RemoteDevserverCall,
+                        cmd=['test', 'command'])
