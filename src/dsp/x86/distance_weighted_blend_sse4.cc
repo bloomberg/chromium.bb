@@ -59,7 +59,7 @@ inline void DistanceWeightedBlend4xH_SSE4_1(
   const __m128i weights = _mm_set1_epi32(weight_0 | (weight_1 << 16));
 
   for (int y = 0; y < height; y += 4) {
-    // TODO(johannkoenig): Use larger loads.
+    // TODO(b/150326556): Use larger loads.
     const __m128i src_00 = LoadLo8(pred_0);
     const __m128i src_10 = LoadLo8(pred_1);
     pred_0 += 4;

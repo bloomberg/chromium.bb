@@ -80,7 +80,7 @@ void AverageBlend_SSE4_1(const void* prediction_0, const void* prediction_1,
 
   if (width == 4) {
     do {
-      // TODO(johannkoenig): |prediction_[01]| values are packed. It is possible
+      // TODO(b/150326556): |prediction_[01]| values are packed. It is possible
       // to load 8 values at a time.
       AverageBlend4Row(pred_0, pred_1, dst);
       dst += dest_stride;

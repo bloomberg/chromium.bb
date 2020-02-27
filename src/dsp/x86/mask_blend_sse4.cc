@@ -288,7 +288,7 @@ inline void InterIntraWriteMaskBlendLine8bpp4x2(const uint8_t* const pred_0,
 
   __m128i pred_val_0 = Load4(pred_0);
   pred_val_0 = _mm_or_si128(_mm_slli_si128(Load4(pred_0 + 4), 4), pred_val_0);
-  // TODO(johannkoenig): One load.
+  // TODO(b/150326556): One load.
   __m128i pred_val_1 = Load4(pred_1);
   pred_val_1 = _mm_or_si128(_mm_slli_si128(Load4(pred_1 + pred_stride_1), 4),
                             pred_val_1);
