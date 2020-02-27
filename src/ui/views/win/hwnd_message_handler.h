@@ -196,6 +196,10 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   }
   bool using_wm_input() { return using_wm_input_; }
 
+  void set_reroute_mouse_wheel_to_any_related_window(bool reroute_mouse_wheel_to_any_related_window) {
+    reroute_mouse_wheel_to_any_related_window_ = reroute_mouse_wheel_to_any_related_window;
+  }
+
  private:
   friend class ::views::test::DesktopWindowTreeHostWinTestApi;
 
@@ -812,6 +816,8 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
 
   // Populated if the cursor position is being mocked for testing purposes.
   base::Optional<gfx::Point> mock_cursor_position_;
+
+  bool reroute_mouse_wheel_to_any_related_window_ = false;
 
   // The WeakPtrFactories below (one inside the
   // CR_MSG_MAP_CLASS_DECLARATIONS macro and autohide_factory_) must
