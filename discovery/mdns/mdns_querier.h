@@ -74,7 +74,11 @@ class MdnsQuerier : public MdnsReceiver::ResponseClient {
   // Callback passed to owned MdnsRecordTrackers
   void OnRecordExpired(MdnsRecordTracker* tracker, const MdnsRecord& record);
 
-  void ProcessRecords(const std::vector<MdnsRecord>& records);
+  // Determines whether a record received by this querier should be processed
+  // or dropped.
+  bool ShouldAnswerRecordBeProcessed(const MdnsRecord& answer);
+
+  void ProcessRecord(const MdnsRecord& records);
   void ProcessSharedRecord(const MdnsRecord& record, DnsType type);
   void ProcessUniqueRecord(const MdnsRecord& record, DnsType type);
   void ProcessCallbacks(const MdnsRecord& record, RecordChangedEvent event);
