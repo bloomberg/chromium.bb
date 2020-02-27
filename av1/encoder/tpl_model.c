@@ -1008,28 +1008,26 @@ int av1_tpl_setup_stats(AV1_COMP *cpi, int gop_eval,
 
   init_tpl_stats(cpi);
 
-  if (cpi->oxcf.enable_tpl_model == 1) {
-    // Backward propagation from tpl_group_frames to 1.
-    for (int frame_idx = gf_group->index; frame_idx < tpl_gf_group_frames;
-         ++frame_idx) {
-      if (gf_group->update_type[frame_idx] == INTNL_OVERLAY_UPDATE ||
-          gf_group->update_type[frame_idx] == OVERLAY_UPDATE)
-        continue;
+  // Backward propagation from tpl_group_frames to 1.
+  for (int frame_idx = gf_group->index; frame_idx < tpl_gf_group_frames;
+       ++frame_idx) {
+    if (gf_group->update_type[frame_idx] == INTNL_OVERLAY_UPDATE ||
+        gf_group->update_type[frame_idx] == OVERLAY_UPDATE)
+      continue;
 
-      mc_flow_dispenser(cpi, frame_idx, pframe_qindex);
+    mc_flow_dispenser(cpi, frame_idx, pframe_qindex);
 
-      aom_extend_frame_borders(cpi->tpl_frame[frame_idx].rec_picture,
-                               av1_num_planes(cm));
-    }
+    aom_extend_frame_borders(cpi->tpl_frame[frame_idx].rec_picture,
+                             av1_num_planes(cm));
+  }
 
-    for (int frame_idx = tpl_gf_group_frames - 1; frame_idx >= gf_group->index;
-         --frame_idx) {
-      if (gf_group->update_type[frame_idx] == INTNL_OVERLAY_UPDATE ||
-          gf_group->update_type[frame_idx] == OVERLAY_UPDATE)
-        continue;
+  for (int frame_idx = tpl_gf_group_frames - 1; frame_idx >= gf_group->index;
+       --frame_idx) {
+    if (gf_group->update_type[frame_idx] == INTNL_OVERLAY_UPDATE ||
+        gf_group->update_type[frame_idx] == OVERLAY_UPDATE)
+      continue;
 
-      mc_flow_synthesizer(cpi, frame_idx);
-    }
+    mc_flow_synthesizer(cpi, frame_idx);
   }
 
   av1_configure_buffer_updates(cpi, &this_frame_params,
