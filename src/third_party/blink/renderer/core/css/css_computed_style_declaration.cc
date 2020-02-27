@@ -218,7 +218,6 @@ const CSSPropertyID kComputedPropertyArray[] = {
 
     CSSPropertyID::kLineBreak};
 
->>>>>>> origin/feature/composited-lcd-text
 CSSValueID CssIdentifierForFontSizeKeyword(int keyword_size) {
   DCHECK_NE(keyword_size, 0);
   DCHECK_LE(keyword_size, 8);
