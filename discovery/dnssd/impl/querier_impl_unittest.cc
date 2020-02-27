@@ -168,6 +168,7 @@ class DnsSdQuerierImplTest : public testing::Test {
         .Times(1);
     querier.StartQuery(service, &callback);
     EXPECT_TRUE(querier.IsQueryRunning(service));
+    testing::Mock::VerifyAndClearExpectations(querier.service());
 
     EXPECT_CALL(*querier.service(),
                 StartQuery(_, DnsType::kPTR, DnsClass::kANY, _))
@@ -216,6 +217,9 @@ TEST_F(DnsSdQuerierImplTest, TestStopQueryClearsRecords) {
   EXPECT_CALL(*querier.service(),
               StopQuery(_, DnsType::kPTR, DnsClass::kANY, _))
       .Times(1);
+  EXPECT_CALL(*querier.service(),
+              StopQuery(_, DnsType::kANY, DnsClass::kANY, _))
+      .Times(1);
   querier.StopQuery(service, &callback);
   EXPECT_FALSE(querier.GetDnsData(instance, service, domain).has_value());
 }
@@ -236,6 +240,7 @@ TEST_F(DnsSdQuerierImplTest, TestCreateDeletePtrRecord) {
               StartQuery(_, DnsType::kANY, DnsClass::kANY, _))
       .Times(1);
   querier.OnRecordChanged(ptr, RecordChangedEvent::kCreated);
+  testing::Mock::VerifyAndClearExpectations(querier.service());
 
   EXPECT_CALL(*querier.service(),
               StopQuery(_, DnsType::kANY, DnsClass::kANY, _))
@@ -245,17 +250,18 @@ TEST_F(DnsSdQuerierImplTest, TestCreateDeletePtrRecord) {
 
 TEST_F(DnsSdQuerierImplTest, CallbackCalledWhenPtrDeleted) {
   auto ptr = CreatePtrRecord(instance, service, domain);
+  EXPECT_CALL(*querier.service(),
+              StartQuery(_, DnsType::kANY, DnsClass::kANY, _))
+      .Times(1);
+  querier.OnRecordChanged(ptr, RecordChangedEvent::kCreated);
+  testing::Mock::VerifyAndClearExpectations(querier.service());
+
   DnsDataAccessor dns_data = querier.CreateDnsData(instance, service, domain);
   dns_data.set_srv(CreateSrvRecord());
   dns_data.set_txt(MakeTxtRecord({}));
   dns_data.set_a(CreateARecord());
   dns_data.set_aaaa(CreateAAAARecord());
   ASSERT_TRUE(dns_data.CanCreateInstance());
-
-  EXPECT_CALL(*querier.service(),
-              StartQuery(_, DnsType::kANY, DnsClass::kANY, _))
-      .Times(1);
-  querier.OnRecordChanged(ptr, RecordChangedEvent::kCreated);
 
   EXPECT_CALL(callback, OnInstanceDeleted(_)).Times(1);
   EXPECT_CALL(*querier.service(),
@@ -291,9 +297,11 @@ TEST_F(DnsSdQuerierImplTest, BothNewAndOldValidRecords) {
 
   EXPECT_CALL(callback, OnInstanceUpdated(_)).Times(1);
   querier.OnRecordChanged(a_record, RecordChangedEvent::kCreated);
+  testing::Mock::VerifyAndClearExpectations(&callback);
 
   EXPECT_CALL(callback, OnInstanceUpdated(_)).Times(1);
   querier.OnRecordChanged(a_record, RecordChangedEvent::kUpdated);
+  testing::Mock::VerifyAndClearExpectations(&callback);
 
   auto aaaa_rdata = CreateAAAARecord();
   MdnsRecord aaaa_record(kDomainName, DnsType::kAAAA, DnsClass::kIN,
@@ -302,9 +310,11 @@ TEST_F(DnsSdQuerierImplTest, BothNewAndOldValidRecords) {
 
   EXPECT_CALL(callback, OnInstanceUpdated(_)).Times(1);
   querier.OnRecordChanged(aaaa_record, RecordChangedEvent::kUpdated);
+  testing::Mock::VerifyAndClearExpectations(&callback);
 
   EXPECT_CALL(callback, OnInstanceUpdated(_)).Times(1);
   querier.OnRecordChanged(a_record, RecordChangedEvent::kExpired);
+  testing::Mock::VerifyAndClearExpectations(&callback);
 }
 
 TEST_F(DnsSdQuerierImplTest, OnlyNewRecordValid) {
@@ -354,8 +364,9 @@ TEST_F(DnsSdQuerierImplTest, HardRefresh) {
   const DomainName ptr_domain{"_service", "_udp", "local"};
   const DomainName instance_domain{"instance", "_service", "_udp", "local"};
   EXPECT_CALL(*querier.service(), ReinitializeQueries(ptr_domain));
-  EXPECT_CALL(*querier.service(), ReinitializeQueries(instance_domain));
+  EXPECT_CALL(*querier.service(), StopQuery(instance_domain, _, _, _));
   querier.ReinitializeQueries(service);
+  testing::Mock::VerifyAndClearExpectations(querier.service());
 
   absl::optional<DnsDataAccessor> data =
       querier.GetDnsData(instance, service, domain);

@@ -40,8 +40,6 @@ class QuerierImpl : public DnsSdQuerier, public MdnsRecordChangedCallback {
   void ReinitializeQueries(const std::string& service) override;
 
   // MdnsRecordChangedCallback overrides.
-  // TODO(rwkeane): Ensure this is run on the TaskRunner thread once the
-  // underlying mDNS implementation can be overridden.
   void OnRecordChanged(const MdnsRecord& record,
                        RecordChangedEvent event) override;
 
@@ -60,12 +58,10 @@ class QuerierImpl : public DnsSdQuerier, public MdnsRecordChangedCallback {
   }
 
   // Initiates or terminates queries on the mdns_querier_ object.
-  void StartDnsQuery(const DnsQueryInfo& query);
-  void StopDnsQuery(const DnsQueryInfo& query);
-
-  // Erases all instance records describing services matching the provided key
-  // and informs all callbacks associated with the given key of their deletion.
-  void EraseInstancesOf(const ServiceKey& service);
+  void StartDnsQuery(InstanceKey key);
+  void StartDnsQuery(ServiceKey key);
+  void StopDnsQuery(InstanceKey key, bool should_inform_callbacks = true);
+  void StopDnsQuery(ServiceKey key);
 
   // Calls the appropriate callback method based on the provided Instance Record
   // values.
@@ -73,12 +69,12 @@ class QuerierImpl : public DnsSdQuerier, public MdnsRecordChangedCallback {
                        const ErrorOr<DnsSdInstanceRecord>& old_record,
                        const ErrorOr<DnsSdInstanceRecord>& new_record);
 
-  // Returns all InstanceKeys received so far which represent instances of
-  // the service described by the provided ServiceKey.
-  std::vector<InstanceKey> GetMatchingInstances(const ServiceKey& key);
-
   // Map from a specific service instance to the data received so far about
-  // that instance.
+  // that instance. The keys in this map are the instances for which an
+  // associated PTR record has been received, and the values are the set of
+  // non-PTR records received which describe that service (if any). Note that,
+  // with this definition, it is possible for a InstanceKey to be mapped to an
+  // empty DnsData if the instance has no associated records yet.
   std::unordered_map<InstanceKey, DnsData, absl::Hash<InstanceKey>>
       received_records_;
 
