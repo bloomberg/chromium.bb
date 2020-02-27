@@ -5,12 +5,7 @@ apolito@google.com
 dpranke@chromium.org
 ehmaldonado@chromium.org
 ehmaldonado@google.com
-iannucci@chromium.org
 jochen@chromium.org
-maruel@chromium.org
-nodir@chromium.org
-tandrii@chromium.org
-tandrii@google.com
 
 per-file ninja*=thakis@chromium.org
 per-file ninja*=scottmg@chromium.org
@@ -29,5 +24,13 @@ per-file repo=file://CROS_OWNERS
 
 # for the Goma client update
 per-file cipd_manifest.*=file://GOMA_OWNERS
+
+# LUCI related tooling
+per-file bb.*=file://LUCI_OWNERS
+per-file cipd.*=file://LUCI_OWNERS
+per-file cit.*=file://LUCI_OWNERS
+per-file led.*=file://LUCI_OWNERS
+per-file luci.*=file://LUCI_OWNERS
+per-file vpython.*=file://LUCI_OWNERS
 
 # COMPONENT: Infra>SDK
