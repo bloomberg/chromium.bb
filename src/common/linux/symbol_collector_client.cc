@@ -102,7 +102,8 @@ CompleteUploadResult SymbolCollectorClient::CompleteUpload(
     const string& api_key,
     const string& upload_key,
     const string& debug_file,
-    const string& debug_id) {
+    const string& debug_id,
+    const string& type) {
   string header, response;
   long response_code;
 
@@ -113,7 +114,8 @@ CompleteUploadResult SymbolCollectorClient::CompleteUpload(
   string body =
       "{ symbol_id: {"
       "debug_file: \"" + debug_file + "\", "
-      "debug_id: \"" + debug_id + "\" } }";
+      "debug_id: \"" + debug_id + "\" }, "
+      "symbol_upload_type: \"" + type + "\" }";
 
   if (!libcurl_wrapper->SendSimplePostRequest(url,
                                               body,

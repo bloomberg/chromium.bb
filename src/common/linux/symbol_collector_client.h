@@ -71,7 +71,8 @@ class SymbolCollectorClient {
       const string& api_key,
       const string& upload_key,
       const string& debug_file,
-      const string& debug_id);
+      const string& debug_id,
+      const string& type);
 
   static SymbolStatus CheckSymbolStatus(
       LibcurlWrapper* libcurl_wrapper,

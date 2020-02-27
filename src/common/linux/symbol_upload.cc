@@ -155,17 +155,15 @@ bool SymUploadV1Start(
 }
 
 // |options| describes the current sym_upload options.
-// |module_parts| contains the strings parsed from the MODULE entry of the
-// Breakpad symbol file being uploaded.
-// |compacted_id| is the debug_id from the MODULE entry of the Breakpad symbol
-// file being uploaded, with all hyphens removed.
+// |code_id| is the basename of the module for which symbols are being
+// uploaded.
+// |debug_id| is the debug_id of the module for which symbols are being
+// uploaded.
 bool SymUploadV2Start(
     const Options& options,
-    std::vector<string> module_parts,
-    const string& compacted_id) {
-  string debug_file = module_parts[4];
-  string debug_id = compacted_id;
-
+    const string& code_file,
+    const string& debug_id,
+    const string& type) {
   google_breakpad::LibcurlWrapper libcurl_wrapper;
   if (!libcurl_wrapper.Init()) {
     printf("Failed to init google_breakpad::LibcurlWrapper.\n");
@@ -177,7 +175,7 @@ bool SymUploadV2Start(
         &libcurl_wrapper,
         options.uploadURLStr,
         options.api_key,
-        debug_file,
+        code_file,
         debug_id);
     if (symbolStatus == SymbolStatus::Found) {
       printf("Symbol file already exists, upload aborted."
@@ -230,8 +228,9 @@ bool SymUploadV2Start(
                                             options.uploadURLStr,
                                             options.api_key,
                                             upload_key,
-                                            debug_file,
-                                            debug_id);
+                                            code_file,
+                                            debug_id,
+                                            type);
   if (completeUploadResult == CompleteUploadResult::Error) {
     printf("Failed to complete upload.\n");
     return false;
@@ -247,17 +246,36 @@ bool SymUploadV2Start(
 
 //=============================================================================
 void Start(Options* options) {
-  std::vector<string> module_parts;
-  if (!ModuleDataForSymbolFile(options->symbolsPath, &module_parts)) {
-    fprintf(stderr, "Failed to parse symbol file!\n");
-    return;
-  }
-
-  const string compacted_id = CompactIdentifier(module_parts[3]);
-
   if (options->upload_protocol == UploadProtocol::SYM_UPLOAD_V2) {
-    options->success = SymUploadV2Start(*options, module_parts, compacted_id);
+    string code_file;
+    string debug_id;
+    string type;
+
+    if (options->type.empty() || options->type == kBreakpadSymbolType) {
+      // Breakpad upload so read these from input file.
+      std::vector<string> module_parts;
+      if (!ModuleDataForSymbolFile(options->symbolsPath, &module_parts)) {
+        fprintf(stderr, "Failed to parse symbol file!\n");
+        return;
+      }
+      code_file = module_parts[4];
+      debug_id = CompactIdentifier(module_parts[3]);
+      type = kBreakpadSymbolType;
+    } else {
+      // Native upload so these must be explicitly set.
+      code_file = options->code_file;
+      debug_id = options->debug_id;
+      type = options->type;
+    }
+
+    options->success = SymUploadV2Start(*options, code_file, debug_id, type);
   } else {
+    std::vector<string> module_parts;
+    if (!ModuleDataForSymbolFile(options->symbolsPath, &module_parts)) {
+      fprintf(stderr, "Failed to parse symbol file!\n");
+      return;
+    }
+    const string compacted_id = CompactIdentifier(module_parts[3]);
     options->success = SymUploadV1Start(*options, module_parts, compacted_id);
   }
 }

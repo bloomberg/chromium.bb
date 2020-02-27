@@ -44,10 +44,22 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <locale>
+
 #include "common/linux/symbol_upload.h"
 
 using google_breakpad::sym_upload::UploadProtocol;
 using google_breakpad::sym_upload::Options;
+
+static void StrToUpper(std::string* str) {
+  if (str == nullptr) {
+    fprintf(stderr, "nullptr passed to StrToUpper.\n");
+    exit(1);
+  }
+  for (size_t i = 0; i < str->length(); i++) {
+    (*str)[i] = std::toupper((*str)[i], std::locale::classic());
+  }
+}
 
 //=============================================================================
 static void
@@ -61,22 +73,38 @@ Usage(int argc, const char *argv[]) {
   fprintf(stderr, "<upload-URL> is the destination for the upload\n");
   fprintf(stderr, "-p:\t <protocol> One of ['sym-upload-v1',"
     " 'sym-upload-v2'], defaults to 'sym-upload-v1'.\n");
-  fprintf(stderr, "-k:\t <API-key> A secret used to authenticate with the"
-      " API [Only supported when using 'sym-upload-v2' protocol].\n");
-  fprintf(stderr, "-f:\t Force symbol upload if already exists [Only"
-      " supported when using 'sym-upload-v2' protocol].\n");
   fprintf(stderr, "-v:\t Version information (e.g., 1.2.3.4)\n");
   fprintf(stderr, "-x:\t <host[:port]> Use HTTP proxy on given port\n");
   fprintf(stderr, "-u:\t <user[:password]> Set proxy user and password\n");
   fprintf(stderr, "-h:\t Usage\n");
   fprintf(stderr, "-?:\t Usage\n");
   fprintf(stderr, "\n");
+  fprintf(stderr, "These options only work with 'sym-upload-v2' protocol:\n");
+  fprintf(stderr, "-k:\t <API-key> A secret used to authenticate with the"
+      " API.\n");
+  fprintf(stderr, "-f:\t Force symbol upload if already exists.\n");
+  fprintf(stderr, "-t:\t <symbol-type> Explicitly set symbol upload type ("
+      "default is 'breakpad').\n"
+      "\t One of ['breakpad', 'elf', 'pe', 'macho', 'debug_only', 'dwp', "
+      "'dsym', 'pdb'].\n"
+      "\t Note: When this flag is set to anything other than 'breakpad', then "
+      "the '-c' and '-i' flags must also be set.\n");
+  fprintf(stderr, "-c:\t <code-file> Explicitly set 'code_file' for symbol "
+      "upload (basename of executable).\n");
+  fprintf(stderr, "-i:\t <debug-id> Explicitly set 'debug_id' for symbol "
+      "upload (typically build ID of executable).\n");
+  fprintf(stderr, "\n");
   fprintf(stderr, "Examples:\n");
   fprintf(stderr, "  With 'sym-upload-v1':\n");
   fprintf(stderr, "    %s path/to/symbol_file http://myuploadserver\n",
       argv[0]);
   fprintf(stderr, "  With 'sym-upload-v2':\n");
+  fprintf(stderr, "    [Defaulting to symbol type 'BREAKPAD']\n");
   fprintf(stderr, "    %s -p sym-upload-v2 -k mysecret123! "
+      "path/to/symbol_file http://myuploadserver\n", argv[0]);
+  fprintf(stderr, "    [Explicitly set symbol type to 'elf']\n");
+  fprintf(stderr, "    %s -p sym-upload-v2 -k mysecret123! -t elf "
+      "-c app -i 11111111BBBB3333DDDD555555555555F "
       "path/to/symbol_file http://myuploadserver\n", argv[0]);
 }
 
@@ -85,8 +113,9 @@ static void
 SetupOptions(int argc, const char *argv[], Options *options) {
   extern int optind;
   int ch;
+  constexpr char flag_pattern[] = "u:v:x:p:k:t:c:i:hf?";
 
-  while ((ch = getopt(argc, (char * const *)argv, "u:v:x:p:k:hf?")) != -1) {
+  while ((ch = getopt(argc, (char * const *)argv, flag_pattern)) != -1) {
     switch (ch) {
       case 'h':
       case '?':
@@ -116,6 +145,19 @@ SetupOptions(int argc, const char *argv[], Options *options) {
       case 'k':
         options->api_key = optarg;
         break;
+      case 't': {
+        // This is really an enum, so treat as upper-case for consistency with
+        // enum naming convention on server-side.
+        options->type = optarg;
+        StrToUpper(&(options->type));
+        break;
+      }
+      case 'c':
+        options->code_file = optarg;
+        break;
+      case 'i':
+        options->debug_id = optarg;
+        break;
       case 'f':
         options->force = true;
         break;
@@ -130,6 +172,27 @@ SetupOptions(int argc, const char *argv[], Options *options) {
 
   if ((argc - optind) != 2) {
     fprintf(stderr, "%s: Missing symbols file and/or upload-URL\n", argv[0]);
+    Usage(argc, argv);
+    exit(1);
+  }
+
+  bool is_breakpad_upload = options->type.empty() ||
+      options->type == google_breakpad::sym_upload::kBreakpadSymbolType;
+  bool has_code_file = !options->code_file.empty();
+  bool has_debug_id = !options->debug_id.empty();
+  if (is_breakpad_upload && (has_code_file || has_debug_id)) {
+    fprintf(stderr, "\n");
+    fprintf(stderr, "%s: -c and -i should only be specified for non-breakpad "
+        "symbol upload types.\n", argv[0]);
+    fprintf(stderr, "\n");
+    Usage(argc, argv);
+    exit(1);
+  }
+  if (!is_breakpad_upload && (!has_code_file || !has_debug_id)) {
+    fprintf(stderr, "\n");
+    fprintf(stderr, "%s: -c and -i must be specified for non-breakpad "
+        "symbol upload types.\n", argv[0]);
+    fprintf(stderr, "\n");
     Usage(argc, argv);
     exit(1);
   }
