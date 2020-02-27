@@ -2601,6 +2601,12 @@ def ApplyCustomOverrides(site_config):
           'hw_tests_disabled_bug': 'https://crbug.com/998427',
       },
 
+      'heli-release': {
+          'hw_tests': [],
+          'hw_tests_override': [],
+          'hw_tests_disabled_bug': 'http://b/148950027',
+      },
+
       'novato-release': {
           'hw_tests': [],
           'hw_tests_override': [],
