@@ -292,36 +292,10 @@ def _RightHandSideLinesImpl(affected_files):
       yield (af, line[0], line[1])
 
 
-class PresubmitOutput(object):
-  def __init__(self, input_stream=None, output_stream=None):
-    self.input_stream = input_stream
-    self.output_stream = output_stream
-    self.more_cc = []
-    self.written_output = []
-    self.error_count = 0
-
-  def prompt_yes_no(self, prompt_string):
-    self.write(prompt_string)
-    if self.input_stream:
-      response = self.input_stream.readline().strip().lower()
-      if response not in ('y', 'yes'):
-        self.fail()
-    else:
-      self.fail()
-
-  def fail(self):
-    self.error_count += 1
-
-  def should_continue(self):
-    return not self.error_count
-
-  def write(self, s):
-    self.written_output.append(s)
-    if self.output_stream:
-      self.output_stream.write(s)
-
-  def getvalue(self):
-    return ''.join(self.written_output)
+def prompt_should_continue(prompt_string):
+  sys.stdout.write(prompt_string)
+  response = sys.stdin.readline().strip().lower()
+  return response in ('y', 'yes')
 
 
 # Top level object so multiprocessing can pickle
@@ -341,23 +315,21 @@ class _PresubmitResult(object):
     self._items = items or []
     self._long_text = long_text.rstrip()
 
-  def handle(self, output):
-    output.write(self._message)
-    output.write('\n')
+  def handle(self):
+    sys.stdout.write(self._message)
+    sys.stdout.write('\n')
     for index, item in enumerate(self._items):
-      output.write('  ')
+      sys.stdout.write('  ')
       # Write separately in case it's unicode.
-      output.write(str(item))
+      sys.stdout.write(str(item))
       if index < len(self._items) - 1:
-        output.write(' \\')
-      output.write('\n')
+        sys.stdout.write(' \\')
+      sys.stdout.write('\n')
     if self._long_text:
-      output.write('\n***************\n')
+      sys.stdout.write('\n***************\n')
       # Write separately in case it's unicode.
-      output.write(self._long_text)
-      output.write('\n***************\n')
-    if self.fatal:
-      output.fail()
+      sys.stdout.write(self._long_text)
+      sys.stdout.write('\n***************\n')
 
   def json_format(self):
     return {
@@ -1459,22 +1431,18 @@ def DoGetTryMasters(change,
 
 def DoPostUploadExecuter(change,
                          gerrit_obj,
-                         repository_root,
-                         verbose,
-                         output_stream):
+                         verbose):
   """Execute the post upload hook.
 
   Args:
     change: The Change object.
     gerrit_obj: The GerritAccessor object.
-    repository_root: The repository root.
     verbose: Prints debug info.
-    output_stream: A stream to write debug output to.
   """
   presubmit_files = ListRelevantPresubmitFiles(
-      change.LocalPaths(), repository_root)
+      change.LocalPaths(), change.RepositoryRoot())
   if not presubmit_files and verbose:
-    output_stream.write('Warning, no PRESUBMIT.py found.\n')
+    sys.stdout.write('Warning, no PRESUBMIT.py found.\n')
   results = []
   executer = GetPostUploadExecuter()
   # The root presubmit file should be executed after the ones in subdirectories.
@@ -1485,19 +1453,26 @@ def DoPostUploadExecuter(change,
   for filename in presubmit_files:
     filename = os.path.abspath(filename)
     if verbose:
-      output_stream.write('Running %s\n' % filename)
+      sys.stdout.write('Running %s\n' % filename)
     # Accept CRLF presubmit script.
     presubmit_script = gclient_utils.FileRead(filename, 'rU')
     results.extend(executer.ExecPresubmitScript(
         presubmit_script, filename, gerrit_obj, change))
-  output_stream.write('\n')
-  if results:
-    output_stream.write('** Post Upload Hook Messages **\n')
-  for result in results:
-    result.handle(output_stream)
-    output_stream.write('\n')
 
-  return results
+  if not results:
+    return 0
+
+  sys.stdout.write('\n')
+  sys.stdout.write('** Post Upload Hook Messages **\n')
+
+  exit_code = 0
+  for result in results:
+    if result.fatal:
+      exit_code = 1
+    result.handle()
+    sys.stdout.write('\n')
+
+  return exit_code
 
 
 class PresubmitExecuter(object):
@@ -1584,8 +1559,6 @@ class PresubmitExecuter(object):
 def DoPresubmitChecks(change,
                       committing,
                       verbose,
-                      output_stream,
-                      input_stream,
                       default_presubmit,
                       may_prompt,
                       gerrit_obj,
@@ -1605,8 +1578,6 @@ def DoPresubmitChecks(change,
     change: The Change object.
     committing: True if 'git cl land' is running, False if 'git cl upload' is.
     verbose: Prints debug info.
-    output_stream: A stream to write output from presubmit tests to.
-    input_stream: A stream to read input from the user.
     default_presubmit: A default presubmit script to execute in any case.
     may_prompt: Enable (y/n) questions on warning or error. If False,
                 any questions are answered with yes by default.
@@ -1615,13 +1586,8 @@ def DoPresubmitChecks(change,
     parallel: if true, all tests specified by input_api.RunTests in all
               PRESUBMIT files will be run in parallel.
 
-  Warning:
-    If may_prompt is true, output_stream SHOULD be sys.stdout and input_stream
-    SHOULD be sys.stdin.
-
   Return:
-    A PresubmitOutput object. Use output.should_continue() to figure out
-    if there were errors or warnings and the caller should abort.
+    1 if presubmit checks failed or 0 otherwise.
   """
   old_environ = os.environ
   try:
@@ -1629,84 +1595,83 @@ def DoPresubmitChecks(change,
     os.environ = os.environ.copy()
     os.environ['PYTHONDONTWRITEBYTECODE'] = '1'
 
-    output = PresubmitOutput(input_stream, output_stream)
-
     if committing:
-      output.write('Running presubmit commit checks ...\n')
+      sys.stdout.write('Running presubmit commit checks ...\n')
     else:
-      output.write('Running presubmit upload checks ...\n')
+      sys.stdout.write('Running presubmit upload checks ...\n')
     start_time = time_time()
     presubmit_files = ListRelevantPresubmitFiles(
         change.AbsoluteLocalPaths(), change.RepositoryRoot())
     if not presubmit_files and verbose:
-      output.write('Warning, no PRESUBMIT.py found.\n')
+      sys.stdout.write('Warning, no PRESUBMIT.py found.\n')
     results = []
     thread_pool = ThreadPool()
     executer = PresubmitExecuter(change, committing, verbose, gerrit_obj,
                                  dry_run, thread_pool, parallel)
     if default_presubmit:
       if verbose:
-        output.write('Running default presubmit script.\n')
+        sys.stdout.write('Running default presubmit script.\n')
       fake_path = os.path.join(change.RepositoryRoot(), 'PRESUBMIT.py')
       results += executer.ExecPresubmitScript(default_presubmit, fake_path)
     for filename in presubmit_files:
       filename = os.path.abspath(filename)
       if verbose:
-        output.write('Running %s\n' % filename)
+        sys.stdout.write('Running %s\n' % filename)
       # Accept CRLF presubmit script.
       presubmit_script = gclient_utils.FileRead(filename, 'rU')
       results += executer.ExecPresubmitScript(presubmit_script, filename)
 
     results += thread_pool.RunAsync()
 
-    output.more_cc.extend(executer.more_cc)
-    errors = []
-    notifications = []
-    warnings = []
+    messages = {}
+    should_prompt = False
+    presubmits_failed = False
     for result in results:
       if result.fatal:
-        errors.append(result)
+        presubmits_failed = True
+        messages.setdefault('ERRORS', []).append(result)
       elif result.should_prompt:
-        warnings.append(result)
+        should_prompt = True
+        messages.setdefault('Warnings', []).append(result)
       else:
-        notifications.append(result)
+        messages.setdefault('Messages', []).append(result)
 
-    output.write('\n')
-    for name, items in (('Messages', notifications),
-                        ('Warnings', warnings),
-                        ('ERRORS', errors)):
-      if items:
-        output.write('** Presubmit %s **\n' % name)
-        for item in items:
-          item.handle(output)
-          output.write('\n')
+    sys.stdout.write('\n')
+    for name, items in messages.items():
+      sys.stdout.write('** Presubmit %s **\n' % name)
+      for item in items:
+        item.handle()
+        sys.stdout.write('\n')
 
     total_time = time_time() - start_time
     if total_time > 1.0:
-      output.write('Presubmit checks took %.1fs to calculate.\n\n' % total_time)
+      sys.stdout.write(
+          'Presubmit checks took %.1fs to calculate.\n\n' % total_time)
 
-    if errors:
-      output.fail()
-    elif warnings:
-      output.write('There were presubmit warnings. ')
+    if not should_prompt and not presubmits_failed:
+      sys.stdout.write('Presubmit checks passed.\n')
+    elif should_prompt:
+      sys.stdout.write('There were presubmit warnings. ')
       if may_prompt:
-        output.prompt_yes_no('Are you sure you wish to continue? (y/N): ')
-    else:
-      output.write('Presubmit checks passed.\n')
+        presubmits_failed = not prompt_should_continue(
+            'Are you sure you wish to continue? (y/N): ')
 
     if json_output:
       # Write the presubmit results to json output
       presubmit_results = {
         'errors': [
-            error.json_format() for error in errors
+            error.json_format()
+            for error in messages.get('ERRORS', [])
         ],
         'notifications': [
-            notification.json_format() for notification in notifications
+            notification.json_format()
+            for notification in messages.get('Messages', [])
         ],
         'warnings': [
-            warning.json_format() for warning in warnings
+            warning.json_format()
+            for warning in messages.get('Warnings', [])
         ],
-        'more_cc': output.more_cc,
+        'more_cc': executer.more_cc,
       }
 
       gclient_utils.FileWrite(
@@ -1715,12 +1680,13 @@ def DoPresubmitChecks(change,
     global _ASKED_FOR_FEEDBACK
     # Ask for feedback one time out of 5.
     if (len(results) and random.randint(0, 4) == 0 and not _ASKED_FOR_FEEDBACK):
-      output.write(
+      sys.stdout.write(
           'Was the presubmit check useful? If not, run "git cl presubmit -v"\n'
           'to figure out which PRESUBMIT.py was run, then run git blame\n'
           'on the file to figure out who to ask for help.\n')
       _ASKED_FOR_FEEDBACK = True
-    return output
+
+    return 1 if presubmits_failed else 0
   finally:
     os.environ = old_environ
 
@@ -1901,19 +1867,16 @@ def main(argv=None):
 
   try:
     with canned_check_filter(options.skip_canned):
-      results = DoPresubmitChecks(
+      return DoPresubmitChecks(
           change,
           options.commit,
           options.verbose,
-          sys.stdout,
-          sys.stdin,
           options.default_presubmit,
           options.may_prompt,
           gerrit_obj,
           options.dry_run,
           options.parallel,
           options.json_output)
-    return not results.should_continue()
   except PresubmitFailure as e:
     print(e, file=sys.stderr)
     print('Maybe your depot_tools is out of date?', file=sys.stderr)
