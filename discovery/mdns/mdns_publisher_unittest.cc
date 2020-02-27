@@ -23,8 +23,7 @@ namespace openscreen {
 namespace discovery {
 namespace {
 
-constexpr Clock::duration kAnnounceGoodbyeDelay =
-    std::chrono::duration_cast<Clock::duration>(std::chrono::milliseconds(25));
+constexpr Clock::duration kAnnounceGoodbyeDelay = std::chrono::milliseconds(25);
 
 bool ContainsRecord(const std::vector<MdnsRecord::ConstRef>& records,
                     MdnsRecord record) {
@@ -387,6 +386,7 @@ TEST_F(MdnsPublisherTest, RegistrationAnnouncesEightTimes) {
 
   // Fourth announce, at 8 seconds.
   clock_.Advance(kOneSecond * 3);
+  clock_.Advance(kAnnounceGoodbyeDelay);
   EXPECT_CALL(sender_, SendMulticast(_))
       .WillOnce([this, &record](const MdnsMessage& message) -> Error {
         return IsAnnounced(record, message);
@@ -397,6 +397,7 @@ TEST_F(MdnsPublisherTest, RegistrationAnnouncesEightTimes) {
 
   // Fifth announce, at 16 seconds.
   clock_.Advance(kOneSecond * 7);
+  clock_.Advance(kAnnounceGoodbyeDelay);
   EXPECT_CALL(sender_, SendMulticast(_))
       .WillOnce([this, &record](const MdnsMessage& message) -> Error {
         return IsAnnounced(record, message);
@@ -407,6 +408,7 @@ TEST_F(MdnsPublisherTest, RegistrationAnnouncesEightTimes) {
 
   // Sixth announce, at 32 seconds.
   clock_.Advance(kOneSecond * 15);
+  clock_.Advance(kAnnounceGoodbyeDelay);
   EXPECT_CALL(sender_, SendMulticast(_))
       .WillOnce([this, &record](const MdnsMessage& message) -> Error {
         return IsAnnounced(record, message);
@@ -417,6 +419,7 @@ TEST_F(MdnsPublisherTest, RegistrationAnnouncesEightTimes) {
 
   // Seventh announce, at 64 seconds.
   clock_.Advance(kOneSecond * 31);
+  clock_.Advance(kAnnounceGoodbyeDelay);
   EXPECT_CALL(sender_, SendMulticast(_))
       .WillOnce([this, &record](const MdnsMessage& message) -> Error {
         return IsAnnounced(record, message);
@@ -427,6 +430,7 @@ TEST_F(MdnsPublisherTest, RegistrationAnnouncesEightTimes) {
 
   // Eighth announce, at 128 seconds.
   clock_.Advance(kOneSecond * 63);
+  clock_.Advance(kAnnounceGoodbyeDelay);
   EXPECT_CALL(sender_, SendMulticast(_))
       .WillOnce([this, &record](const MdnsMessage& message) -> Error {
         return IsAnnounced(record, message);

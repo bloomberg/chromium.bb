@@ -142,8 +142,8 @@ MdnsRecordTracker::MdnsRecordTracker(
       record_(std::move(record)),
       dns_type_(dns_type),
       start_time_(now_function_()),
-      record_expired_callback_(record_expired_callback) {
-  OSP_DCHECK(record_expired_callback);
+      record_expired_callback_(std::move(record_expired_callback)) {
+  OSP_DCHECK(record_expired_callback_);
 
   // RecordTrackers cannot be created for tracking NSEC types or ANY types.
   OSP_DCHECK(dns_type_ != DnsType::kNSEC);
@@ -152,7 +152,7 @@ MdnsRecordTracker::MdnsRecordTracker(
   // Validate that, if the provided |record| is an NSEC record, then it provides
   // a negative response for |dns_type|.
   OSP_DCHECK(record_.dns_type() != DnsType::kNSEC ||
-             IsNegativeResponseForType(record_, dns_type));
+             IsNegativeResponseForType(record_, dns_type_));
 
   ScheduleFollowUpQuery();
 }
@@ -174,25 +174,19 @@ ErrorOr<MdnsRecordTracker::UpdateType> MdnsRecordTracker::Update(
     return Error::Code::kParameterInvalid;
   }
 
+  // New response record must correspond to the correct type.
+  if ((!new_is_negative_response && new_record.dns_type() != dns_type_) ||
+      (new_is_negative_response &&
+       !IsNegativeResponseForType(new_record, dns_type_))) {
+    // The new record has been passed to a wrong tracker.
+    return Error::Code::kParameterInvalid;
+  }
+
   // Goodbye records must have the same RDATA but TTL of 0.
   // RFC 6762 Section 10.1.
   // https://tools.ietf.org/html/rfc6762#section-10.1
-  if ((!new_is_negative_response && !current_is_negative_response) &&
-      ((record_.dns_type() != new_record.dns_type()) ||
-       (IsGoodbyeRecord(new_record) && !has_same_rdata))) {
-    // The new record has been passed to a wrong tracker.
-    return Error::Code::kParameterInvalid;
-  }
-
-  if (!new_is_negative_response && current_is_negative_response &&
-      new_record.dns_type() != dns_type_) {
-    // The new record has been passed to a wrong tracker.
-    return Error::Code::kParameterInvalid;
-  }
-
-  // New NSEC records must represent the DnsType used to create this tracker.
-  if (new_is_negative_response &&
-      !IsNegativeResponseForType(new_record, dns_type_)) {
+  if (!new_is_negative_response && !current_is_negative_response &&
+      IsGoodbyeRecord(new_record) && !has_same_rdata) {
     // The new record has been passed to a wrong tracker.
     return Error::Code::kParameterInvalid;
   }

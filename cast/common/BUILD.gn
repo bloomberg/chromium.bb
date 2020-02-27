@@ -79,7 +79,7 @@ if (!build_with_chromium) {
     testonly = true
 
     sources = [
-      "discovery/e2e_test/main.cc",
+      "discovery/e2e_test/tests.cc",
     ]
 
     deps = [

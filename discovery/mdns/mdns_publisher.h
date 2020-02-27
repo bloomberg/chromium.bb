@@ -183,7 +183,7 @@ class MdnsPublisher : public MdnsResponder::RecordHandler {
   const int max_announcement_attempts_;
 
   // The queue for announce and goodbye records to be sent periodically.
-  static std::vector<MdnsRecord>* records_to_send_;
+  std::vector<MdnsRecord> records_to_send_;
 
   // Stores mDNS records that have been published. The keys here are domain
   // names for valid mDNS Records, and the values are the RecordAnnouncer
