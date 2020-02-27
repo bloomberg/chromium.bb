@@ -622,16 +622,11 @@ void av1_encode_sb(const struct AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
                                cpi->optimize_seg_arr[mbmi->segment_id] };
   const AV1_COMMON *const cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
-  const int mi_row = xd->mi_row;
-  const int mi_col = xd->mi_col;
   for (int plane = 0; plane < num_planes; ++plane) {
     const struct macroblockd_plane *const pd = &xd->plane[plane];
     const int subsampling_x = pd->subsampling_x;
     const int subsampling_y = pd->subsampling_y;
-    if (plane && !is_chroma_reference(mi_row, mi_col, bsize, subsampling_x,
-                                      subsampling_y)) {
-      continue;
-    }
+    if (plane && !xd->is_chroma_ref) break;
     const BLOCK_SIZE plane_bsize =
         get_plane_block_size(bsize, subsampling_x, subsampling_y);
     assert(plane_bsize < BLOCK_SIZES_ALL);
@@ -794,14 +789,11 @@ void av1_encode_intra_block_plane(const struct AV1_COMP *cpi, MACROBLOCK *x,
                                   int enable_optimize_b) {
   assert(bsize < BLOCK_SIZES_ALL);
   const MACROBLOCKD *const xd = &x->e_mbd;
+  if (plane && !xd->is_chroma_ref) return;
+
   const struct macroblockd_plane *const pd = &xd->plane[plane];
   const int ss_x = pd->subsampling_x;
   const int ss_y = pd->subsampling_y;
-  if (plane &&
-      !is_chroma_reference(xd->mi_row, xd->mi_col, bsize, ss_x, ss_y)) {
-    return;
-  }
-
   ENTROPY_CONTEXT ta[MAX_MIB_SIZE] = { 0 };
   ENTROPY_CONTEXT tl[MAX_MIB_SIZE] = { 0 };
   struct encode_b_args arg = {

@@ -199,12 +199,10 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td,
   }
 
   for (int plane = 0; plane < num_planes; ++plane) {
+    if (plane && !xd->is_chroma_ref) break;
     const struct macroblockd_plane *const pd = &xd->plane[plane];
     const int ss_x = pd->subsampling_x;
     const int ss_y = pd->subsampling_y;
-    if (!is_chroma_reference(mi_row, mi_col, bsize, ss_x, ss_y)) {
-      continue;
-    }
     const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, ss_x, ss_y);
     assert(plane_bsize < BLOCK_SIZES_ALL);
     const int mi_width = mi_size_wide[plane_bsize];

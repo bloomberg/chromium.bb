@@ -850,20 +850,15 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
 }
 
 static AOM_INLINE void dec_build_inter_predictors_for_planes(
-    const AV1_COMMON *cm, MACROBLOCKD *xd, BLOCK_SIZE bsize, int mi_row,
-    int mi_col, int plane_from, int plane_to) {
-  int plane;
+    const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
+    int plane_from, int plane_to) {
   const int mi_x = mi_col * MI_SIZE;
   const int mi_y = mi_row * MI_SIZE;
-  for (plane = plane_from; plane <= plane_to; ++plane) {
+  for (int plane = plane_from; plane <= plane_to; ++plane) {
+    if (plane && !xd->is_chroma_ref) break;
     const struct macroblockd_plane *pd = &xd->plane[plane];
     const int bw = pd->width;
     const int bh = pd->height;
-
-    if (!is_chroma_reference(mi_row, mi_col, bsize, pd->subsampling_x,
-                             pd->subsampling_y))
-      continue;
-
     dec_build_inter_predictors(cm, xd, plane, xd->mi[0], 0, bw, bh, mi_x, mi_y);
   }
 }
@@ -873,7 +868,7 @@ static AOM_INLINE void dec_build_inter_predictors_sby(const AV1_COMMON *cm,
                                                       int mi_row, int mi_col,
                                                       const BUFFER_SET *ctx,
                                                       BLOCK_SIZE bsize) {
-  dec_build_inter_predictors_for_planes(cm, xd, bsize, mi_row, mi_col, 0, 0);
+  dec_build_inter_predictors_for_planes(cm, xd, mi_row, mi_col, 0, 0);
 
   if (is_interintra_pred(xd->mi[0])) {
     BUFFER_SET default_ctx = { { xd->plane[0].dst.buf, NULL, NULL },
@@ -889,7 +884,7 @@ static AOM_INLINE void dec_build_inter_predictors_sbuv(const AV1_COMMON *cm,
                                                        int mi_row, int mi_col,
                                                        const BUFFER_SET *ctx,
                                                        BLOCK_SIZE bsize) {
-  dec_build_inter_predictors_for_planes(cm, xd, bsize, mi_row, mi_col, 1,
+  dec_build_inter_predictors_for_planes(cm, xd, mi_row, mi_col, 1,
                                         MAX_MB_PLANE - 1);
 
   if (is_interintra_pred(xd->mi[0])) {
@@ -1155,10 +1150,7 @@ static AOM_INLINE void decode_token_recon_block(AV1Decoder *const pbi,
   const int num_planes = av1_num_planes(cm);
   MB_MODE_INFO *mbmi = xd->mi[0];
   CFL_CTX *const cfl = &xd->cfl;
-  const int mi_row = xd->mi_row;
-  const int mi_col = xd->mi_col;
-  cfl->is_chroma_reference = is_chroma_reference(
-      mi_row, mi_col, bsize, cfl->subsampling_x, cfl->subsampling_y);
+  cfl->is_chroma_reference = xd->is_chroma_ref;
 
   if (!is_inter_block(mbmi)) {
     int row, col;
@@ -1175,11 +1167,8 @@ static AOM_INLINE void decode_token_recon_block(AV1Decoder *const pbi,
     for (row = 0; row < max_blocks_high; row += mu_blocks_high) {
       for (col = 0; col < max_blocks_wide; col += mu_blocks_wide) {
         for (int plane = 0; plane < num_planes; ++plane) {
+          if (plane && !xd->is_chroma_ref) break;
           const struct macroblockd_plane *const pd = &xd->plane[plane];
-          if (!is_chroma_reference(mi_row, mi_col, bsize, pd->subsampling_x,
-                                   pd->subsampling_y))
-            continue;
-
           const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
           const int stepr = tx_size_high_unit[tx_size];
           const int stepc = tx_size_wide_unit[tx_size];
@@ -1226,11 +1215,10 @@ static AOM_INLINE void decode_token_recon_block(AV1Decoder *const pbi,
       for (row = 0; row < max_blocks_high; row += mu_blocks_high) {
         for (col = 0; col < max_blocks_wide; col += mu_blocks_wide) {
           for (int plane = 0; plane < num_planes; ++plane) {
+            if (plane && !xd->is_chroma_ref) break;
             const struct macroblockd_plane *const pd = &xd->plane[plane];
             const int ss_x = pd->subsampling_x;
             const int ss_y = pd->subsampling_y;
-            if (!is_chroma_reference(mi_row, mi_col, bsize, ss_x, ss_y))
-              continue;
             const BLOCK_SIZE plane_bsize =
                 get_plane_block_size(bsize, ss_x, ss_y);
             const TX_SIZE max_tx_size =
@@ -1263,7 +1251,7 @@ static AOM_INLINE void decode_token_recon_block(AV1Decoder *const pbi,
     td->cfl_store_inter_block_visit(cm, xd);
   }
 
-  av1_visit_palette(pbi, xd, r, bsize, set_color_index_map_offset);
+  av1_visit_palette(pbi, xd, r, set_color_index_map_offset);
 }
 
 static AOM_INLINE void set_inter_tx_size(MB_MODE_INFO *mbmi, int stride_log2,
@@ -1414,7 +1402,7 @@ static AOM_INLINE void parse_decode_block(AV1Decoder *const pbi,
   MACROBLOCKD *const xd = &td->xd;
   decode_mbmi_block(pbi, xd, mi_row, mi_col, r, partition, bsize);
 
-  av1_visit_palette(pbi, xd, r, bsize, av1_decode_palette_tokens);
+  av1_visit_palette(pbi, xd, r, av1_decode_palette_tokens);
 
   AV1_COMMON *cm = &pbi->common;
   const int num_planes = av1_num_planes(cm);

@@ -561,10 +561,7 @@ static void read_palette_mode_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
       read_palette_colors_y(xd, cm->seq_params.bit_depth, pmi, r);
     }
   }
-  if (num_planes > 1 && mbmi->uv_mode == UV_DC_PRED &&
-      is_chroma_reference(xd->mi_row, xd->mi_col, bsize,
-                          xd->plane[1].subsampling_x,
-                          xd->plane[1].subsampling_y)) {
+  if (num_planes > 1 && mbmi->uv_mode == UV_DC_PRED && xd->is_chroma_ref) {
     const int palette_uv_mode_ctx = (pmi->palette_size[0] > 0);
     const int modev = aom_read_symbol(
         r, xd->tile_ctx->palette_uv_mode_cdf[palette_uv_mode_ctx], 2, ACCT_STR);
@@ -794,9 +791,7 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
           ? read_angle_delta(r, ec_ctx->angle_delta_cdf[mbmi->mode - V_PRED])
           : 0;
 
-  if (!cm->seq_params.monochrome &&
-      is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
-                          xd->plane[1].subsampling_y)) {
+  if (!cm->seq_params.monochrome && xd->is_chroma_ref) {
     xd->cfl.is_chroma_reference = 1;
     mbmi->uv_mode =
         read_intra_mode_uv(ec_ctx, r, is_cfl_allowed(xd), mbmi->mode);
@@ -1057,9 +1052,7 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm,
       use_angle_delta && av1_is_directional_mode(mbmi->mode)
           ? read_angle_delta(r, ec_ctx->angle_delta_cdf[mbmi->mode - V_PRED])
           : 0;
-  const int has_chroma = is_chroma_reference(xd->mi_row, xd->mi_col, bsize,
-                                             xd->plane[1].subsampling_x,
-                                             xd->plane[1].subsampling_y);
+  const int has_chroma = xd->is_chroma_ref;
   xd->cfl.is_chroma_reference = has_chroma;
   if (!cm->seq_params.monochrome && has_chroma) {
     mbmi->uv_mode =
@@ -1478,9 +1471,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
     }
   }
 
-  xd->cfl.is_chroma_reference =
-      is_chroma_reference(mi_row, mi_col, bsize, cm->seq_params.subsampling_x,
-                          cm->seq_params.subsampling_y);
+  xd->cfl.is_chroma_reference = xd->is_chroma_ref;
   xd->cfl.store_y = store_cfl_required(cm, xd);
 
 #if DEC_MISMATCH_DEBUG

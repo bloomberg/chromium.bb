@@ -665,15 +665,12 @@ void av1_write_coeffs_mb(const AV1_COMMON *const cm, MACROBLOCK *x,
   for (row = 0; row < max_blocks_high; row += mu_blocks_high) {
     for (col = 0; col < max_blocks_wide; col += mu_blocks_wide) {
       for (int plane = 0; plane < num_planes; ++plane) {
-        const struct macroblockd_plane *const pd = &xd->plane[plane];
-        if (!is_chroma_reference(xd->mi_row, xd->mi_col, bsize,
-                                 pd->subsampling_x, pd->subsampling_y))
-          continue;
+        if (plane && !xd->is_chroma_ref) break;
         const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
         const int stepr = tx_size_high_unit[tx_size];
         const int stepc = tx_size_wide_unit[tx_size];
         const int step = stepr * stepc;
-
+        const struct macroblockd_plane *const pd = &xd->plane[plane];
         const int unit_height = ROUND_POWER_OF_TWO(
             AOMMIN(mu_blocks_high + row, max_blocks_high), pd->subsampling_y);
         const int unit_width = ROUND_POWER_OF_TWO(
@@ -2246,13 +2243,10 @@ void av1_update_txb_context(const AV1_COMP *cpi, ThreadData *td,
   }
 
   for (int plane = 0; plane < num_planes; ++plane) {
+    if (plane && !xd->is_chroma_ref) break;
     const struct macroblockd_plane *const pd = &xd->plane[plane];
     const int ss_x = pd->subsampling_x;
     const int ss_y = pd->subsampling_y;
-    if (plane &&
-        !is_chroma_reference(xd->mi_row, xd->mi_col, bsize, ss_x, ss_y)) {
-      continue;
-    }
     const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, ss_x, ss_y);
     av1_foreach_transformed_block_in_plane(
         xd, plane_bsize, plane, av1_update_and_record_txb_context, &arg);

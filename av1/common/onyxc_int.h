@@ -874,6 +874,7 @@ static INLINE void set_mi_row_col(MACROBLOCKD *xd, const TileInfo *const tile,
 
   const int chroma_ref = ((mi_row & 0x01) || !(bh & 0x01) || !ss_y) &&
                          ((mi_col & 0x01) || !(bw & 0x01) || !ss_x);
+  xd->is_chroma_ref = chroma_ref;
   if (chroma_ref) {
     // To help calculate the "above" and "left" chroma blocks, note that the
     // current block may cover multiple luma blocks (eg, if partitioned into

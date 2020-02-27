@@ -784,9 +784,7 @@ static AOM_INLINE void pick_sb_modes(AV1_COMP *const cpi,
   mbmi->skip = 0;
   // Reset skip mode flag.
   mbmi->skip_mode = 0;
-  x->skip_chroma_rd =
-      !is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
-                           xd->plane[1].subsampling_y);
+  x->skip_chroma_rd = !xd->is_chroma_ref;
 
   if (is_cur_buf_hbd(xd)) {
     x->source_variance = av1_high_get_sby_perpixel_variance(
@@ -984,8 +982,7 @@ static AOM_INLINE void sum_intra_stats(const AV1_COMMON *const cm,
                                        const MB_MODE_INFO *const mbmi,
                                        const MB_MODE_INFO *above_mi,
                                        const MB_MODE_INFO *left_mi,
-                                       const int intraonly, const int mi_row,
-                                       const int mi_col) {
+                                       const int intraonly) {
   FRAME_CONTEXT *fc = xd->tile_ctx;
   const PREDICTION_MODE y_mode = mbmi->mode;
   (void)counts;
@@ -1034,10 +1031,7 @@ static AOM_INLINE void sum_intra_stats(const AV1_COMMON *const cm,
                2 * MAX_ANGLE_DELTA + 1);
   }
 
-  if (!is_chroma_reference(mi_row, mi_col, bsize,
-                           xd->plane[AOM_PLANE_U].subsampling_x,
-                           xd->plane[AOM_PLANE_U].subsampling_y))
-    return;
+  if (!xd->is_chroma_ref) return;
 
   const UV_PREDICTION_MODE uv_mode = mbmi->uv_mode;
   const CFL_ALLOWED_TYPE cfl_allowed = is_cfl_allowed(xd);
@@ -1086,8 +1080,8 @@ static AOM_INLINE void sum_intra_stats(const AV1_COMMON *const cm,
   }
 }
 
-static AOM_INLINE void update_stats(const AV1_COMMON *const cm, ThreadData *td,
-                                    int mi_row, int mi_col) {
+static AOM_INLINE void update_stats(const AV1_COMMON *const cm,
+                                    ThreadData *td) {
   MACROBLOCK *x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
   const MB_MODE_INFO *const mbmi = xd->mi[0];
@@ -1118,8 +1112,8 @@ static AOM_INLINE void update_stats(const AV1_COMMON *const cm, ThreadData *td,
 #if CONFIG_ENTROPY_STATS
   // delta quant applies to both intra and inter
   const int super_block_upper_left =
-      ((mi_row & (cm->seq_params.mib_size - 1)) == 0) &&
-      ((mi_col & (cm->seq_params.mib_size - 1)) == 0);
+      ((xd->mi_row & (cm->seq_params.mib_size - 1)) == 0) &&
+      ((xd->mi_col & (cm->seq_params.mib_size - 1)) == 0);
   const DeltaQInfo *const delta_q_info = &cm->delta_q_info;
   if (delta_q_info->delta_q_present_flag &&
       (bsize != cm->seq_params.sb_size || !mbmi->skip) &&
@@ -1162,7 +1156,7 @@ static AOM_INLINE void update_stats(const AV1_COMMON *const cm, ThreadData *td,
 
   if (!is_inter_block(mbmi)) {
     sum_intra_stats(cm, td->counts, xd, mbmi, xd->above_mbmi, xd->left_mbmi,
-                    frame_is_intra_only(cm), mi_row, mi_col);
+                    frame_is_intra_only(cm));
   }
 
   if (av1_allow_intrabc(cm)) {
@@ -1654,9 +1648,7 @@ static AOM_INLINE void encode_b(const AV1_COMP *const cpi,
       }
     }
 
-    if (tile_data->allow_update_cdf) {
-      update_stats(&cpi->common, td, mi_row, mi_col);
-    }
+    if (tile_data->allow_update_cdf) update_stats(&cpi->common, td);
 
     // Gather obmc and warped motion count to update the probability.
     if ((!cpi->sf.inter_sf.disable_obmc &&
@@ -5977,9 +5969,7 @@ static AOM_INLINE void encode_superblock(const AV1_COMP *const cpi,
   const int mi_row = xd->mi_row;
   const int mi_col = xd->mi_col;
   if (!is_inter) {
-    xd->cfl.is_chroma_reference =
-        is_chroma_reference(mi_row, mi_col, bsize, cm->seq_params.subsampling_x,
-                            cm->seq_params.subsampling_y);
+    xd->cfl.is_chroma_reference = xd->is_chroma_ref;
     xd->cfl.store_y = store_cfl_required(cm, xd);
     mbmi->skip = 1;
     for (int plane = 0; plane < num_planes; ++plane) {
@@ -6126,11 +6116,8 @@ static AOM_INLINE void encode_superblock(const AV1_COMP *const cpi,
     set_txfm_ctxs(tx_size, xd->n4_w, xd->n4_h,
                   (mbmi->skip || seg_skip) && is_inter_block(mbmi), xd);
   }
-  CFL_CTX *const cfl = &xd->cfl;
-  if (is_inter_block(mbmi) &&
-      !is_chroma_reference(mi_row, mi_col, bsize, cfl->subsampling_x,
-                           cfl->subsampling_y) &&
-      is_cfl_allowed(xd)) {
+
+  if (is_inter_block(mbmi) && !xd->is_chroma_ref && is_cfl_allowed(xd)) {
     cfl_store_block(xd, mbmi->sb_type, mbmi->tx_size);
   }
 }

@@ -302,15 +302,12 @@ static INLINE int av1_is_dv_valid(const MV dv, const AV1_COMMON *cm,
 
   // Special case for sub 8x8 chroma cases, to prevent referring to chroma
   // pixels outside current tile.
-  for (int plane = 1; plane < av1_num_planes(cm); ++plane) {
-    const struct macroblockd_plane *const pd = &xd->plane[plane];
-    if (is_chroma_reference(mi_row, mi_col, bsize, pd->subsampling_x,
-                            pd->subsampling_y)) {
-      if (bw < 8 && pd->subsampling_x)
-        if (src_left_edge < tile_left_edge + 4 * SCALE_PX_TO_MV) return 0;
-      if (bh < 8 && pd->subsampling_y)
-        if (src_top_edge < tile_top_edge + 4 * SCALE_PX_TO_MV) return 0;
-    }
+  if (xd->is_chroma_ref && av1_num_planes(cm) > 1) {
+    const struct macroblockd_plane *const pd = &xd->plane[1];
+    if (bw < 8 && pd->subsampling_x)
+      if (src_left_edge < tile_left_edge + 4 * SCALE_PX_TO_MV) return 0;
+    if (bh < 8 && pd->subsampling_y)
+      if (src_top_edge < tile_top_edge + 4 * SCALE_PX_TO_MV) return 0;
   }
 
   // Is the bottom right within an already coded SB? Also consider additional

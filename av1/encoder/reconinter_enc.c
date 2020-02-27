@@ -174,11 +174,9 @@ static void build_inter_predictors_for_plane(const AV1_COMMON *cm,
                                              MACROBLOCKD *xd, int mi_row,
                                              int mi_col, const BUFFER_SET *ctx,
                                              BLOCK_SIZE bsize, int plane_idx) {
-  const struct macroblockd_plane *pd = &xd->plane[plane_idx];
-  if (!is_chroma_reference(mi_row, mi_col, bsize, pd->subsampling_x,
-                           pd->subsampling_y))
-    return;
+  if (plane_idx && !xd->is_chroma_ref) return;
 
+  const struct macroblockd_plane *pd = &xd->plane[plane_idx];
   const int mi_x = mi_col * MI_SIZE;
   const int mi_y = mi_row * MI_SIZE;
   build_inter_predictors(cm, xd, plane_idx, xd->mi[0], pd->width, pd->height,
