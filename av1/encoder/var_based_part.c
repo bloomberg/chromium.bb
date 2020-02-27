@@ -729,12 +729,12 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
       mi->mv[0].as_int = 0;
       y_sad = y_sad_g;
       ref_frame_partition = GOLDEN_FRAME;
-      x->nonrd_reduce_golden_mode_search = 0;
+      x->nonrd_prune_ref_frame_search = 0;
     } else {
       x->pred_mv[LAST_FRAME] = mi->mv[0].as_mv;
       ref_frame_partition = LAST_FRAME;
-      x->nonrd_reduce_golden_mode_search =
-          cpi->sf.rt_sf.nonrd_reduce_golden_mode_search;
+      x->nonrd_prune_ref_frame_search =
+          cpi->sf.rt_sf.nonrd_prune_ref_frame_search;
     }
 
     set_ref_ptrs(cm, xd, mi->ref_frame[0], mi->ref_frame[1]);

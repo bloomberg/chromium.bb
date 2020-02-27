@@ -625,7 +625,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
   sf->rt_sf.check_intra_pred_nonrd = 1;
   sf->rt_sf.estimate_motion_for_var_based_partition = 1;
   sf->rt_sf.hybrid_intra_pickmode = 0;
-  sf->rt_sf.nonrd_reduce_golden_mode_search = 0;
+  sf->rt_sf.nonrd_prune_ref_frame_search = 0;
   sf->rt_sf.reuse_inter_pred_nonrd = 0;
   sf->rt_sf.use_comp_ref_nonrd = 1;
   sf->rt_sf.use_nonrd_filter_search = 1;
@@ -840,7 +840,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->lpf_sf.lpf_pick = LPF_PICK_FROM_Q;
 
     sf->rt_sf.mode_search_skip_flags |= FLAG_SKIP_INTRA_DIRMISMATCH;
-    sf->rt_sf.nonrd_reduce_golden_mode_search = 0;
+    sf->rt_sf.nonrd_prune_ref_frame_search = 1;
     sf->rt_sf.reuse_inter_pred_nonrd = 0;
     sf->rt_sf.short_circuit_low_temp_var = 0;
     sf->rt_sf.skip_interp_filter_search = 0;
@@ -857,7 +857,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->rt_sf.short_circuit_low_temp_var = 1;
     sf->rt_sf.reuse_inter_pred_nonrd = 1;
     sf->rt_sf.use_nonrd_altref_frame = 0;
-    sf->rt_sf.nonrd_reduce_golden_mode_search = 1;
+    sf->rt_sf.nonrd_prune_ref_frame_search = 2;
     sf->rt_sf.nonrd_check_partition_merge_mode = 0;
     sf->rt_sf.nonrd_check_partition_split = 0;
     sf->rt_sf.use_modeled_non_rd_cost = 0;

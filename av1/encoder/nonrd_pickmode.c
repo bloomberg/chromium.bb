@@ -1546,7 +1546,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   const int mi_row = xd->mi_row;
   const int mi_col = xd->mi_col;
   if (cpi->sf.rt_sf.short_circuit_low_temp_var &&
-      x->nonrd_reduce_golden_mode_search) {
+      x->nonrd_prune_ref_frame_search) {
     force_skip_low_temp_var =
         get_force_skip_low_temp_var(&x->variance_low[0], mi_row, mi_col, bsize);
     // If force_skip_low_temp_var is set, and for short circuit mode = 1 and 3,
@@ -1659,9 +1659,9 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
     if (const_motion[ref_frame] && this_mode == NEARMV) continue;
 
-    // Skip testing golden if this flag is set.
-    if (x->nonrd_reduce_golden_mode_search) {
-      if (ref_frame != LAST_FRAME &&
+    // Skip testing non-LAST if this flag is set.
+    if (x->nonrd_prune_ref_frame_search) {
+      if (x->nonrd_prune_ref_frame_search > 1 && ref_frame != LAST_FRAME &&
           (bsize > BLOCK_64X64 || (bsize > BLOCK_16X16 && this_mode == NEWMV)))
         continue;
 
@@ -1799,7 +1799,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 #endif
     if (cpi->sf.rt_sf.use_nonrd_filter_search &&
         ((mi->mv[0].as_mv.row & 0x07) || (mi->mv[0].as_mv.col & 0x07)) &&
-        (ref_frame == LAST_FRAME || !x->nonrd_reduce_golden_mode_search)) {
+        (ref_frame == LAST_FRAME || !x->nonrd_prune_ref_frame_search)) {
       search_filter_ref(cpi, x, &this_rdc, mi_row, mi_col, tmp, bsize,
                         reuse_inter_pred, &this_mode_pred, &var_y, &sse_y,
                         &this_early_term, use_model_yrd_large, &this_sse);
@@ -1945,7 +1945,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   // Adjust thresholds to make intra mode likely tested if the other
   // references (golden, alt) are skipped/not checked.
   if (cpi->sf.rt_sf.use_nonrd_altref_frame == 0 &&
-      cpi->sf.rt_sf.nonrd_reduce_golden_mode_search == 1) {
+      cpi->sf.rt_sf.nonrd_prune_ref_frame_search > 0) {
     spatial_var_thresh = 150;
     motion_thresh = 0;
   }

@@ -879,8 +879,11 @@ typedef struct REAL_TIME_SPEED_FEATURES {
   // defined in the MODE_SEARCH_SKIP_HEURISTICS enum
   unsigned int mode_search_skip_flags;
 
-  // For nonrd: Reduces golden mode search/testing in nonrd pickmode.
-  int nonrd_reduce_golden_mode_search;
+  // For nonrd: Reduces ref frame search.
+  // 0 - low level of search prune in non last frames
+  // 1 - pruned search in non last frames
+  // 2 - more pruned search in non last frames
+  int nonrd_prune_ref_frame_search;
 
   // This flag controls the use of non-RD mode decision.
   int use_nonrd_pick_mode;
