@@ -63,8 +63,8 @@ def _ParseArguments(argv):
   parser.add_argument('--app_id', default=None,
                       help='The APP_ID to install.')
   parser.add_argument('--board', help='The board name.', required=True)
-  parser.add_argument('--models',
-                      help='Models supported by this board, space-separated')
+  parser.add_argument('--unibuild', action='store_true', default=False,
+                      help='Set if board has chromeos-config.')
   parser.add_argument('--sysroot', required=True, type='path',
                       help='The sysroot to install the lsb-release file into.')
   parser.add_argument('--version_string', required=True,
@@ -207,7 +207,7 @@ def main(argv):
       LSB_KEY_VERSION: opts.version_string,
       LSB_KEY_GOOGLE_RELEASE: opts.version_string,
   })
-  if opts.models:
+  if opts.unibuild:
     fields[LSB_KEY_UNIBUILD] = '1'
 
   image_lib.WriteLsbRelease(opts.sysroot, fields)
