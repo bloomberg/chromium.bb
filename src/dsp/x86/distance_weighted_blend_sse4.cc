@@ -37,6 +37,7 @@ constexpr int kInterPostRoundBit = 4;
 inline __m128i ComputeWeightedAverage8(const __m128i& pred0,
                                        const __m128i& pred1,
                                        const __m128i& weights) {
+  // TODO(https://issuetracker.google.com/issues/150325685): Investigate range.
   const __m128i preds_lo = _mm_unpacklo_epi16(pred0, pred1);
   const __m128i mult_lo = _mm_madd_epi16(preds_lo, weights);
   const __m128i result_lo =
