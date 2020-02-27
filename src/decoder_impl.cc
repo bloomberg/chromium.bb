@@ -173,7 +173,7 @@ StatusCode DecoderImpl::EnqueueFrame(const uint8_t* data, size_t size,
   TemporalUnit temporal_unit(data, size, user_private_data,
                              buffer_private_data);
   temporal_units_.Push(std::move(temporal_unit));
-  return FrameParallel() ? ParseAndEnqueue() : kStatusOk;
+  return IsFrameParallel() ? ParseAndEnqueue() : kStatusOk;
 }
 
 // DequeueFrame() follows the following policy to avoid holding unnecessary
@@ -193,7 +193,7 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
     return kStatusOk;
   }
   const TemporalUnit& temporal_unit = temporal_units_.Front();
-  if (!FrameParallel()) {
+  if (!IsFrameParallel()) {
     // DequeueFrame() is a blocking call in this case. Just decode the next
     // available temporal unit and return.
     const StatusCode status = DecodeTemporalUnit(temporal_unit, out_ptr);
@@ -252,42 +252,23 @@ StatusCode DecoderImpl::ParseAndEnqueue() {
       LIBGAV1_DLOG(ERROR, "Failed to parse OBU.");
       return status;
     }
-    if (std::find_if(obu->obu_headers().begin(), obu->obu_headers().end(),
-                     [](const ObuHeader& obu_header) {
-                       return obu_header.type == kObuSequenceHeader;
-                     }) != obu->obu_headers().end()) {
+    if (IsNewSequenceHeader(*obu)) {
       const ObuSequenceHeader& sequence_header = obu->sequence_header();
-      if (!has_sequence_header_ ||
-          sequence_header_.color_config.bitdepth !=
-              sequence_header.color_config.bitdepth ||
-          sequence_header_.color_config.is_monochrome !=
-              sequence_header.color_config.is_monochrome ||
-          sequence_header_.color_config.subsampling_x !=
-              sequence_header.color_config.subsampling_x ||
-          sequence_header_.color_config.subsampling_y !=
-              sequence_header.color_config.subsampling_y ||
-          sequence_header_.max_frame_width != sequence_header.max_frame_width ||
-          sequence_header_.max_frame_height !=
-              sequence_header.max_frame_height) {
-        const Libgav1ImageFormat image_format =
-            ComposeImageFormat(sequence_header.color_config.is_monochrome,
-                               sequence_header.color_config.subsampling_x,
-                               sequence_header.color_config.subsampling_y);
-        const int max_bottom_border =
-            GetBottomBorderPixels(/*do_cdef=*/true, /*do_restoration=*/true);
-        // TODO(vigneshv): This may not be the right place to call this callback
-        // for the frame parallel case. Investigate and fix it.
-        if (!buffer_pool_.OnFrameBufferSizeChanged(
-                sequence_header.color_config.bitdepth, image_format,
-                sequence_header.max_frame_width,
-                sequence_header.max_frame_height, kBorderPixels, kBorderPixels,
-                kBorderPixels, max_bottom_border)) {
-          LIBGAV1_DLOG(ERROR, "buffer_pool_.OnFrameBufferSizeChanged failed.");
-          return kStatusUnknownError;
-        }
+      const Libgav1ImageFormat image_format =
+          ComposeImageFormat(sequence_header.color_config.is_monochrome,
+                             sequence_header.color_config.subsampling_x,
+                             sequence_header.color_config.subsampling_y);
+      const int max_bottom_border =
+          GetBottomBorderPixels(/*do_cdef=*/true, /*do_restoration=*/true);
+      // TODO(vigneshv): This may not be the right place to call this callback
+      // for the frame parallel case. Investigate and fix it.
+      if (!buffer_pool_.OnFrameBufferSizeChanged(
+              sequence_header.color_config.bitdepth, image_format,
+              sequence_header.max_frame_width, sequence_header.max_frame_height,
+              kBorderPixels, kBorderPixels, kBorderPixels, max_bottom_border)) {
+        LIBGAV1_DLOG(ERROR, "buffer_pool_.OnFrameBufferSizeChanged failed.");
+        return kStatusUnknownError;
       }
-      sequence_header_ = sequence_header;
-      has_sequence_header_ = true;
     }
     // This can happen when there are multiple spatial/temporal layers and if
     // all the layers are outside the current operating point.
@@ -411,40 +392,21 @@ StatusCode DecoderImpl::DecodeTemporalUnit(const TemporalUnit& temporal_unit,
       LIBGAV1_DLOG(ERROR, "Failed to parse OBU.");
       return status;
     }
-    if (std::find_if(obu->obu_headers().begin(), obu->obu_headers().end(),
-                     [](const ObuHeader& obu_header) {
-                       return obu_header.type == kObuSequenceHeader;
-                     }) != obu->obu_headers().end()) {
+    if (IsNewSequenceHeader(*obu)) {
       const ObuSequenceHeader& sequence_header = obu->sequence_header();
-      if (!has_sequence_header_ ||
-          sequence_header_.color_config.bitdepth !=
-              sequence_header.color_config.bitdepth ||
-          sequence_header_.color_config.is_monochrome !=
-              sequence_header.color_config.is_monochrome ||
-          sequence_header_.color_config.subsampling_x !=
-              sequence_header.color_config.subsampling_x ||
-          sequence_header_.color_config.subsampling_y !=
-              sequence_header.color_config.subsampling_y ||
-          sequence_header_.max_frame_width != sequence_header.max_frame_width ||
-          sequence_header_.max_frame_height !=
-              sequence_header.max_frame_height) {
-        const Libgav1ImageFormat image_format =
-            ComposeImageFormat(sequence_header.color_config.is_monochrome,
-                               sequence_header.color_config.subsampling_x,
-                               sequence_header.color_config.subsampling_y);
-        const int max_bottom_border =
-            GetBottomBorderPixels(/*do_cdef=*/true, /*do_restoration=*/true);
-        if (!buffer_pool_.OnFrameBufferSizeChanged(
-                sequence_header.color_config.bitdepth, image_format,
-                sequence_header.max_frame_width,
-                sequence_header.max_frame_height, kBorderPixels, kBorderPixels,
-                kBorderPixels, max_bottom_border)) {
-          LIBGAV1_DLOG(ERROR, "buffer_pool_.OnFrameBufferSizeChanged failed.");
-          return kStatusUnknownError;
-        }
+      const Libgav1ImageFormat image_format =
+          ComposeImageFormat(sequence_header.color_config.is_monochrome,
+                             sequence_header.color_config.subsampling_x,
+                             sequence_header.color_config.subsampling_y);
+      const int max_bottom_border =
+          GetBottomBorderPixels(/*do_cdef=*/true, /*do_restoration=*/true);
+      if (!buffer_pool_.OnFrameBufferSizeChanged(
+              sequence_header.color_config.bitdepth, image_format,
+              sequence_header.max_frame_width, sequence_header.max_frame_height,
+              kBorderPixels, kBorderPixels, kBorderPixels, max_bottom_border)) {
+        LIBGAV1_DLOG(ERROR, "buffer_pool_.OnFrameBufferSizeChanged failed.");
+        return kStatusUnknownError;
       }
-      sequence_header_ = sequence_header;
-      has_sequence_header_ = true;
     }
     if (!obu->frame_header().show_existing_frame) {
       if (obu->tile_groups().empty()) {
@@ -584,7 +546,7 @@ StatusCode DecoderImpl::DecodeTiles(
     RefCountedBuffer* const current_frame) {
   frame_scratch_buffer->tile_scratch_buffer_pool.Reset(
       sequence_header.color_config.bitdepth);
-  if (FrameParallel()) {
+  if (IsFrameParallel()) {
     // We can parse the current frame if all the reference frames have been
     // parsed.
     for (int i = 0; i < kNumReferenceFrameTypes; ++i) {
@@ -718,7 +680,7 @@ StatusCode DecoderImpl::DecodeTiles(
     return kStatusOutOfMemory;
   }
 
-  if (threading_strategy_.row_thread_pool(0) != nullptr || FrameParallel()) {
+  if (threading_strategy_.row_thread_pool(0) != nullptr || IsFrameParallel()) {
     const int block_width4x4_minus_one =
         sequence_header.use_128x128_superblock ? 31 : 15;
     const int block_width4x4_log2 =
@@ -902,7 +864,7 @@ StatusCode DecoderImpl::DecodeTiles(
           frame_scratch_buffer->residual_buffer_pool.get(),
           &frame_scratch_buffer->tile_scratch_buffer_pool,
           &frame_scratch_buffer->superblock_state, &pending_tiles,
-          FrameParallel()));
+          IsFrameParallel()));
       if (tile == nullptr) {
         LIBGAV1_DLOG(ERROR, "Failed to allocate tile.");
         return kStatusOutOfMemory;
@@ -914,7 +876,7 @@ StatusCode DecoderImpl::DecodeTiles(
     }
   }
   assert(tiles.size() == static_cast<size_t>(tile_count));
-  if (FrameParallel()) {
+  if (IsFrameParallel()) {
     return DecodeTilesFrameParallel(
         sequence_header, frame_header, tiles, saved_symbol_decoder_context,
         prev_segment_ids, state, frame_scratch_buffer, &post_filter,
@@ -1138,7 +1100,7 @@ StatusCode DecoderImpl::ApplyFilmGrain(
       frame_header.refresh_frame_flags == 0 &&
       // TODO(vigneshv): In frame parallel mode, we never do film grain in
       // place. Revisit this and see if this constraint need to be enforced.
-      !FrameParallel()) {
+      !IsFrameParallel()) {
     // If show_existing_frame is true, then the current frame is a previously
     // saved reference frame. If refresh_frame_flags is nonzero, then the
     // state_.UpdateReferenceFrames() call above has saved the current frame as
@@ -1222,6 +1184,31 @@ StatusCode DecoderImpl::ApplyFilmGrain(
     return kStatusOutOfMemory;
   }
   return kStatusOk;
+}
+
+bool DecoderImpl::IsNewSequenceHeader(const ObuParser& obu) {
+  if (std::find_if(obu.obu_headers().begin(), obu.obu_headers().end(),
+                   [](const ObuHeader& obu_header) {
+                     return obu_header.type == kObuSequenceHeader;
+                   }) == obu.obu_headers().end()) {
+    return false;
+  }
+  const ObuSequenceHeader sequence_header = obu.sequence_header();
+  const bool sequence_header_changed =
+      !has_sequence_header_ ||
+      sequence_header_.color_config.bitdepth !=
+          sequence_header.color_config.bitdepth ||
+      sequence_header_.color_config.is_monochrome !=
+          sequence_header.color_config.is_monochrome ||
+      sequence_header_.color_config.subsampling_x !=
+          sequence_header.color_config.subsampling_x ||
+      sequence_header_.color_config.subsampling_y !=
+          sequence_header.color_config.subsampling_y ||
+      sequence_header_.max_frame_width != sequence_header.max_frame_width ||
+      sequence_header_.max_frame_height != sequence_header.max_frame_height;
+  sequence_header_ = sequence_header;
+  has_sequence_header_ = true;
+  return sequence_header_changed;
 }
 
 }  // namespace libgav1

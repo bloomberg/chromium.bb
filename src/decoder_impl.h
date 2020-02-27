@@ -21,6 +21,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <mutex>  // NOLINT (unapproved c++11 header)
 
 #include "src/buffer_pool.h"
 #include "src/dsp/constants.h"
@@ -230,7 +231,8 @@ class DecoderImpl : public Allocable {
                             const RefCountedBufferPtr& displayable_frame,
                             RefCountedBufferPtr* film_grain_frame);
 
-  bool FrameParallel() const { return frame_threads_ > 1; }
+  bool IsNewSequenceHeader(const ObuParser& obu);
+  bool IsFrameParallel() const { return frame_threads_ > 1; }
 
   Queue<TemporalUnit> temporal_units_;
   DecoderState state_;
