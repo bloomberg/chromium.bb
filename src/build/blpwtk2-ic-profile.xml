@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <Profile FormatVersion="1">
   <Tools>
-    <Tool Filename="python" AllowIntercept="true" AllowRemote="false"/>
+    <Tool Filename="python" AllowIntercept="false" AllowRemote="false"/>
     <Tool Filename="rc" AllowIntercept="false" AllowRemote="false"/>
     <Tool Filename="as" AllowIntercept="true" DistinctStdErr="true"/>
     <Tool Filename="cl" AllowRemote="true" DeriveCaptionFrom="lastparam" VCCompiler="true" VCCompilerUnbatch="false" DistinctStdErr="true"/>
