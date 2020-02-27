@@ -745,6 +745,13 @@ void WebViewProxy::devToolsAgentHostDetached()
     }
 }
 
+void WebViewProxy::didInterceptMessage()
+{
+    if (d_delegate) {
+        d_delegate->didInterceptMessage(this);
+    }
+}
+
 }  // close namespace blpwtk2
 
 // vim: ts=4 et
