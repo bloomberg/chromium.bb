@@ -72,6 +72,8 @@ class DefaultFormatter(Formatter):
 gerrit_instances = [
   {
     'url': 'android-review.googlesource.com',
+    'shorturl': 'r.android.com',
+    'short_url_protocol': 'https',
   },
   {
     'url': 'chrome-internal-review.googlesource.com',
