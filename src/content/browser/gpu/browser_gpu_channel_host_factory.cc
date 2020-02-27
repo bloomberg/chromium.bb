@@ -135,7 +135,10 @@ void BrowserGpuChannelHostFactory::EstablishRequest::RestartTimeout() {
 void BrowserGpuChannelHostFactory::EstablishRequest::EstablishOnIO() {
   GpuProcessHost* host = GpuProcessHost::Get();
   if (!host) {
-    LOG(ERROR) << "Failed to launch GPU process.";
+    // This will happen when using some problematic graphic card.
+    // Make this warning for now to supress ddsh record.
+    // Will change back to error once our gpu blacklist is updated properly.
+    LOG(WARNING) << "Failed to launch GPU process.";
     FinishOnIO();
     return;
   }
