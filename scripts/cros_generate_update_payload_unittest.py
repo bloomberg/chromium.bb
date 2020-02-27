@@ -7,6 +7,8 @@
 
 from __future__ import print_function
 
+import sys
+
 from chromite.lib import cros_test_lib
 from chromite.lib import partial_mock
 
@@ -14,6 +16,9 @@ from chromite.lib.paygen import partition_lib
 from chromite.lib.paygen import paygen_payload_lib
 
 from chromite.scripts import cros_generate_update_payload
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class CrOSGenerateUpdatePayloadTest(cros_test_lib.MockTestCase):

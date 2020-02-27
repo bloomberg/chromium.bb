@@ -24,10 +24,14 @@ Note: The --image argument can be a path or a basename. When a basename is
 from __future__ import print_function
 
 import re
+import sys
 
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import image_lib
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 def GetParser():
