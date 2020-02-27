@@ -783,6 +783,7 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
             '--sysroot=' + os.path.join(
                 CHROMIUM_ROOT_DIR, 'build/linux/debian_sid_mips64el-sysroot'),
             '--enable-mips64r2',
+            '--disable-mips32r6',
             '--disable-mips64r6',
             '--disable-msa',
             '--extra-cflags=-mcpu=mips64r2',
