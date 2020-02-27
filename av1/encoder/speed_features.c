@@ -335,11 +335,11 @@ static void set_good_speed_features_framesize_independent(
     // speed feature accordingly
     sf->part_sf.simple_motion_search_split = allow_screen_content_tools ? 1 : 2;
 
-    sf->mv_sf.use_accurate_subpel_search = USE_4_TAPS;
     sf->mv_sf.exhaustive_searches_thresh <<= 1;
+    sf->mv_sf.obmc_full_pixel_search_level = 1;
+    sf->mv_sf.use_accurate_subpel_search = USE_4_TAPS;
 
     sf->inter_sf.disable_interinter_wedge_newmv_search = boosted ? 0 : 1;
-    sf->inter_sf.obmc_full_pixel_search_level = 1;
     sf->inter_sf.prune_comp_search_by_single_result = boosted ? 2 : 1;
     sf->inter_sf.prune_comp_type_by_comp_avg = 1;
     sf->inter_sf.prune_comp_type_by_model_rd = boosted ? 0 : 1;
@@ -645,9 +645,9 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->part_sf.prune_ext_partition_types_search_level = 2;
     sf->part_sf.simple_motion_search_prune_rect = 1;
 
+    sf->mv_sf.obmc_full_pixel_search_level = 1;
     sf->mv_sf.use_accurate_subpel_search = USE_4_TAPS;
 
-    sf->inter_sf.obmc_full_pixel_search_level = 1;
     sf->inter_sf.prune_comp_search_by_single_result = 1;
     sf->inter_sf.reuse_inter_intra_mode = 1;
     sf->inter_sf.selective_ref_frame = 2;
@@ -933,16 +933,17 @@ static AOM_INLINE void init_part_sf(PARTITION_SPEED_FEATURES *part_sf) {
 }
 
 static AOM_INLINE void init_mv_sf(MV_SPEED_FEATURES *mv_sf) {
-  mv_sf->search_method = NSTEP;
-  mv_sf->subpel_search_method = SUBPEL_TREE;
-  mv_sf->subpel_iters_per_step = 2;
-  mv_sf->subpel_force_stop = EIGHTH_PEL;
-  mv_sf->auto_mv_step_size = 0;
   mv_sf->adaptive_motion_search = 0;
-  mv_sf->use_accurate_subpel_search = USE_8_TAPS;
-  mv_sf->reduce_search_range = 0;
-  mv_sf->prune_mesh_search = 0;
+  mv_sf->auto_mv_step_size = 0;
   mv_sf->exhaustive_searches_thresh = 0;
+  mv_sf->obmc_full_pixel_search_level = 0;
+  mv_sf->prune_mesh_search = 0;
+  mv_sf->reduce_search_range = 0;
+  mv_sf->search_method = NSTEP;
+  mv_sf->subpel_force_stop = EIGHTH_PEL;
+  mv_sf->subpel_iters_per_step = 2;
+  mv_sf->subpel_search_method = SUBPEL_TREE;
+  mv_sf->use_accurate_subpel_search = USE_8_TAPS;
   mv_sf->use_fullpel_costlist = 0;
 }
 
@@ -973,7 +974,6 @@ static AOM_INLINE void init_inter_sf(INTER_MODE_SPEED_FEATURES *inter_sf) {
   inter_sf->prune_compound_using_single_ref = 0;
   inter_sf->disable_onesided_comp = 0;
   inter_sf->prune_mode_search_simple_translation = 0;
-  inter_sf->obmc_full_pixel_search_level = 0;
   inter_sf->prune_comp_type_by_comp_avg = 0;
   inter_sf->disable_interinter_wedge_newmv_search = 0;
   inter_sf->enable_interinter_diffwtd_newmv_search = 0;

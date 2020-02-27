@@ -125,7 +125,6 @@ static int combined_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
   MB_MODE_INFO *mi = xd->mi[0];
   struct buf_2d backup_yv12[MAX_MB_PLANE] = { { 0, 0, 0, 0, 0 } };
   int step_param = cpi->mv_step_param;
-  const int sadpb = x->sadperbit;
   FULLPEL_MV start_mv;
   const int ref = mi->ref_frame[0];
   const MV ref_mv = av1_get_ref_mv(x, mi->ref_mv_idx).as_mv;
@@ -156,10 +155,14 @@ static int combined_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
   else
     center_mv = tmp_mv->as_mv;
 
-  av1_full_pixel_search(cpi, x, bsize, start_mv, step_param,
-                        cpi->sf.mv_sf.search_method, 0, sadpb,
-                        cond_cost_list(cpi, cost_list), &center_mv, 0,
-                        &cpi->ss_cfg[SS_CFG_SRC], &x->best_mv.as_fullmv, NULL);
+  const search_site_config *src_search_sites = &cpi->ss_cfg[SS_CFG_SRC];
+  FULLPEL_MOTION_SEARCH_PARAMS full_ms_params;
+  av1_make_default_fullpel_ms_params(&full_ms_params, cpi, x, bsize, &center_mv,
+                                     src_search_sites);
+
+  av1_full_pixel_search(start_mv, &full_ms_params, step_param,
+                        cond_cost_list(cpi, cost_list), &x->best_mv.as_fullmv,
+                        NULL);
 
   x->mv_limits = tmp_mv_limits;
   *tmp_mv = x->best_mv;

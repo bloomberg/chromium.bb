@@ -124,16 +124,6 @@ enum {
 } UENUM1BYTE(DEV_SPEED_FEATURES);
 
 enum {
-  DIAMOND = 0,
-  NSTEP = 1,
-  HEX = 2,
-  BIGDIA = 3,
-  SQUARE = 4,
-  FAST_HEX = 5,
-  FAST_DIAMOND = 6
-} UENUM1BYTE(SEARCH_METHODS);
-
-enum {
   // No recode.
   DISALLOW_RECODE = 0,
   // Allow recode for KF and exceeding maximum frame bandwidth.
@@ -482,6 +472,11 @@ typedef struct MV_SPEED_FEATURES {
 
   // Use the rd cost around the best FULLPEL_MV to speed up subpel search
   int use_fullpel_costlist;
+
+  // Set the full pixel search level of obmc
+  // 0: obmc_full_pixel_diamond
+  // 1: obmc_refining_search_sad (faster)
+  int obmc_full_pixel_search_level;
 } MV_SPEED_FEATURES;
 
 typedef struct INTER_MODE_SPEED_FEATURES {
@@ -593,11 +588,6 @@ typedef struct INTER_MODE_SPEED_FEATURES {
   // Values are 0 (not used) , 1 - 3 with progressively increasing
   // aggressiveness
   int prune_motion_mode_level;
-
-  // Set the full pixel search level of obmc
-  // 0: obmc_full_pixel_diamond
-  // 1: obmc_refining_search_sad (faster)
-  int obmc_full_pixel_search_level;
 
   // Prune obmc search using previous frame stats.
   int prune_obmc_prob_thresh;

@@ -229,12 +229,16 @@ static AOM_INLINE void first_pass_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
   aom_variance_fn_ptr_t v_fn_ptr = cpi->fn_ptr[bsize];
   const int new_mv_mode_penalty = NEW_MV_MODE_PENALTY;
   const int sr = get_search_range(cpi);
-  int step_param = 3 + sr;
+  const int step_param = 3 + sr;
   int cost_list[5];
 
-  tmp_err = av1_full_pixel_search(cpi, x, bsize, start_mv, step_param, NSTEP, 0,
-                                  x->sadperbit, cond_cost_list(cpi, cost_list),
-                                  ref_mv, 0, &cpi->ss_cfg[SS_CFG_FPF],
+  const search_site_config *first_pass_search_sites = &cpi->ss_cfg[SS_CFG_FPF];
+  FULLPEL_MOTION_SEARCH_PARAMS ms_params;
+  av1_make_default_fullpel_ms_params(&ms_params, cpi, x, bsize, ref_mv,
+                                     first_pass_search_sites);
+  ms_params.search_method = NSTEP;
+
+  tmp_err = av1_full_pixel_search(start_mv, &ms_params, step_param, cost_list,
                                   &x->best_mv.as_fullmv, NULL);
 
   if (tmp_err < INT_MAX) {

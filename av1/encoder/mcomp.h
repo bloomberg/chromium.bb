@@ -62,9 +62,11 @@ struct SPEED_FEATURES;
 // =============================================================================
 typedef struct {
   const MV *ref_mv;
+  FULLPEL_MV full_ref_mv;
   const int *mvjcost;
   const int *mvcost[2];
   int error_per_bit;
+  int sad_per_bit;
   MV_COST_TYPE mv_cost_type;
 } MV_COST_PARAMS;
 
@@ -92,6 +94,56 @@ unsigned int av1_compute_motion_cost(const struct AV1_COMP *cpi,
 // =============================================================================
 //  Fullpixel Motion Search
 // =============================================================================
+enum {
+  DIAMOND = 0,
+  NSTEP = 1,
+  HEX = 2,
+  BIGDIA = 3,
+  SQUARE = 4,
+  FAST_HEX = 5,
+  FAST_DIAMOND = 6
+} UENUM1BYTE(SEARCH_METHODS);
+
+// This struct holds fullpixel motion search parameters that should be constant
+// during the search
+typedef struct {
+  BLOCK_SIZE bsize;
+  const aom_variance_fn_ptr_t *vfp;
+
+  SEARCH_METHODS search_method;
+  const search_site_config *search_sites;
+  FullMvLimits mv_limits;
+
+  int run_mesh_search;    // Sets mesh search unless it got pruned by
+                          // prune_mesh_search.
+  int prune_mesh_search;  // Disables mesh search if the best_mv after a normal
+                          // search if close to the start_mv.
+  int force_mesh_thresh;  // Forces mesh search if the residue variance is
+                          // higher than the threshold.
+  const struct MESH_PATTERN *mesh_patterns[2];
+
+  int is_intra_mode;
+
+  const struct buf_2d *src;
+  const struct buf_2d *ref;
+
+  const uint8_t *second_pred;
+  const uint8_t *mask;
+  int mask_stride;
+  int inv_mask;
+
+  int fast_obmc_search;
+
+  // For calculating mv cost
+  MV_COST_PARAMS mv_cost_params;
+} FULLPEL_MOTION_SEARCH_PARAMS;
+
+void av1_make_default_fullpel_ms_params(FULLPEL_MOTION_SEARCH_PARAMS *ms_params,
+                                        const struct AV1_COMP *cpi,
+                                        const MACROBLOCK *x, BLOCK_SIZE bsize,
+                                        const MV *ref_mv,
+                                        const search_site_config *search_sites);
+
 // Sets up configs for fullpixel diamond search
 void av1_init_dsmotion_compensation(search_site_config *cfg, int stride);
 // Sets up configs for firstpass motion search
@@ -150,22 +202,18 @@ int av1_refining_search_8p_c(MACROBLOCK *x, int error_per_bit, int search_range,
                              const struct buf_2d *src,
                              const struct buf_2d *pre);
 
-int av1_full_pixel_search(const struct AV1_COMP *cpi, const MACROBLOCK *x,
-                          BLOCK_SIZE bsize, const FULLPEL_MV start_mv,
-                          int step_param, int method, int run_mesh_search,
-                          int error_per_bit, int *cost_list, const MV *ref_mv,
-                          int is_intra_mode, const search_site_config *cfg,
+int av1_full_pixel_search(const FULLPEL_MV start_mv,
+                          const FULLPEL_MOTION_SEARCH_PARAMS *ms_params,
+                          const int step_param, int *cost_list,
                           FULLPEL_MV *best_mv, FULLPEL_MV *second_best_mv);
 
 void av1_intrabc_hash_search(const struct AV1_COMP *cpi, MACROBLOCK *x,
                              BLOCK_SIZE bsize, const MV *ref_mv, int *bestsme,
                              FULLPEL_MV *best_mv);
 
-int av1_obmc_full_pixel_search(const struct AV1_COMP *cpi, const MACROBLOCK *x,
-                               const FULLPEL_MV start_mv, int step_param,
-                               int sadpb, const aom_variance_fn_ptr_t *fn_ptr,
-                               const MV *ref_mv, FULLPEL_MV *best_mv,
-                               const search_site_config *cfg);
+int av1_obmc_full_pixel_search(const MACROBLOCK *x, const FULLPEL_MV start_mv,
+                               const FULLPEL_MOTION_SEARCH_PARAMS *ms_params,
+                               const int step_param, FULLPEL_MV *best_mv);
 
 unsigned int av1_refine_warped_mv(const struct AV1_COMP *cpi,
                                   MACROBLOCK *const x, BLOCK_SIZE bsize,

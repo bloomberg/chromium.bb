@@ -87,9 +87,9 @@ static int tf_motion_search(AV1_COMP *cpi,
   const int mask_stride = 0;
   const int invert_mask = 0;
   const int do_reset_fractional_mv = 1;
+  FULLPEL_MOTION_SEARCH_PARAMS full_ms_params;
   SUBPEL_MOTION_SEARCH_PARAMS ms_params;
 
-  const int sadperbit = mb->sadperbit;
   const search_site_config ss_cfg = cpi->ss_cfg[SS_CFG_LOOKAHEAD];
   const SEARCH_METHODS full_search_method = NSTEP;
   const int step_param = av1_init_search_range(
@@ -122,10 +122,15 @@ static int tf_motion_search(AV1_COMP *cpi,
   // searched result will be stored in `mb->best_mv`.
   int block_error = INT_MAX;
   mb->mv_cost_type = mv_cost_type;
-  av1_full_pixel_search(cpi, mb, block_size, start_mv, step_param,
-                        full_search_method, 1, sadperbit,
-                        cond_cost_list(cpi, cost_list), &baseline_mv, 0,
-                        &ss_cfg, &mb->best_mv.as_fullmv, NULL);
+
+  av1_make_default_fullpel_ms_params(&full_ms_params, cpi, mb, block_size,
+                                     &baseline_mv, &ss_cfg);
+  full_ms_params.run_mesh_search = 1;
+  full_ms_params.search_method = full_search_method;
+  av1_full_pixel_search(start_mv, &full_ms_params, step_param,
+                        cond_cost_list(cpi, cost_list), &mb->best_mv.as_fullmv,
+                        NULL);
+
   // Since we are merely refining the result from full pixel search, we don't
   // need regularization for subpel search
   mb->mv_cost_type = MV_COST_NONE;
@@ -164,10 +169,15 @@ static int tf_motion_search(AV1_COMP *cpi,
         mbd->plane[0].pre[0].buf = ref_frame->y_buffer + y_offset + offset;
         av1_set_mv_search_range(&mb->mv_limits, &baseline_mv);
         mb->mv_cost_type = mv_cost_type;
-        av1_full_pixel_search(cpi, mb, subblock_size, start_mv, step_param,
-                              full_search_method, 1, sadperbit,
-                              cond_cost_list(cpi, cost_list), &baseline_mv, 0,
-                              &ss_cfg, &mb->best_mv.as_fullmv, NULL);
+
+        av1_make_default_fullpel_ms_params(
+            &full_ms_params, cpi, mb, subblock_size, &baseline_mv, &ss_cfg);
+        full_ms_params.run_mesh_search = 1;
+        full_ms_params.search_method = full_search_method;
+        av1_full_pixel_search(start_mv, &full_ms_params, step_param,
+                              cond_cost_list(cpi, cost_list),
+                              &mb->best_mv.as_fullmv, NULL);
+
         // Since we are merely refining the result from full pixel search, we
         // don't need regularization for subpel search
         mb->mv_cost_type = MV_COST_NONE;

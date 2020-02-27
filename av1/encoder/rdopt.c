@@ -2732,14 +2732,19 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
       continue;
     }
 
-    int step_param = cpi->mv_step_param;
-    FULLPEL_MV start_mv = get_fullmv_from_mv(&dv_ref.as_mv);
-    const int sadpb = x->sadperbit;
+    const int step_param = cpi->mv_step_param;
+    const FULLPEL_MV start_mv = get_fullmv_from_mv(&dv_ref.as_mv);
+    const search_site_config *lookahead_search_sites =
+        &cpi->ss_cfg[SS_CFG_LOOKAHEAD];
+    FULLPEL_MOTION_SEARCH_PARAMS full_ms_params;
+    av1_make_default_fullpel_ms_params(&full_ms_params, cpi, x, bsize,
+                                       &dv_ref.as_mv, lookahead_search_sites);
+    full_ms_params.is_intra_mode = 1;
     int cost_list[5];
-    int bestsme = av1_full_pixel_search(
-        cpi, x, bsize, start_mv, step_param, cpi->sf.mv_sf.search_method, 0,
-        sadpb, cond_cost_list(cpi, cost_list), &dv_ref.as_mv, 1,
-        &cpi->ss_cfg[SS_CFG_LOOKAHEAD], &x->best_mv.as_fullmv, NULL);
+
+    int bestsme = av1_full_pixel_search(start_mv, &full_ms_params, step_param,
+                                        cond_cost_list(cpi, cost_list),
+                                        &x->best_mv.as_fullmv, NULL);
     av1_intrabc_hash_search(cpi, x, bsize, &dv_ref.as_mv, &bestsme,
                             &x->best_mv.as_fullmv);
 
