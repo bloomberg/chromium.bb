@@ -180,6 +180,7 @@ Toolkit* ToolkitFactory::create(const ToolkitCreateParams& params)
 
 
     // patch section: tooltip
+    views::corewm::TooltipWin::SetTooltipStyle(params.tooltipFont());
 
 
 
