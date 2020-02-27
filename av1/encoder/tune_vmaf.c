@@ -18,6 +18,25 @@
 #include "av1/encoder/rdopt.h"
 
 // TODO(sdeng): Add the SIMD implementation.
+static AOM_INLINE void highbd_unsharp_rect(const uint16_t *source,
+                                           int source_stride,
+                                           const uint16_t *blurred,
+                                           int blurred_stride, uint16_t *dst,
+                                           int dst_stride, int w, int h,
+                                           double amount, int bit_depth) {
+  const int max_value = (1 << bit_depth) - 1;
+  for (int i = 0; i < h; ++i) {
+    for (int j = 0; j < w; ++j) {
+      const double val =
+          (double)source[j] + amount * ((double)source[j] - (double)blurred[j]);
+      dst[j] = (uint16_t)clamp((int)(val + 0.5), 0, max_value);
+    }
+    source += source_stride;
+    blurred += blurred_stride;
+    dst += dst_stride;
+  }
+}
+
 static AOM_INLINE void unsharp_rect(const uint8_t *source, int source_stride,
                                     const uint8_t *blurred, int blurred_stride,
                                     uint8_t *dst, int dst_stride, int w, int h,
@@ -34,12 +53,22 @@ static AOM_INLINE void unsharp_rect(const uint8_t *source, int source_stride,
   }
 }
 
-static AOM_INLINE void unsharp(const YV12_BUFFER_CONFIG *source,
+static AOM_INLINE void unsharp(const AV1_COMP *const cpi,
+                               const YV12_BUFFER_CONFIG *source,
                                const YV12_BUFFER_CONFIG *blurred,
                                const YV12_BUFFER_CONFIG *dst, double amount) {
-  unsharp_rect(source->y_buffer, source->y_stride, blurred->y_buffer,
-               blurred->y_stride, dst->y_buffer, dst->y_stride, source->y_width,
-               source->y_height, amount);
+  const int bit_depth = cpi->td.mb.e_mbd.bd;
+  if (bit_depth > 8) {
+    highbd_unsharp_rect(CONVERT_TO_SHORTPTR(source->y_buffer), source->y_stride,
+                        CONVERT_TO_SHORTPTR(blurred->y_buffer),
+                        blurred->y_stride, CONVERT_TO_SHORTPTR(dst->y_buffer),
+                        dst->y_stride, source->y_width, source->y_height,
+                        amount, bit_depth);
+  } else {
+    unsharp_rect(source->y_buffer, source->y_stride, blurred->y_buffer,
+                 blurred->y_stride, dst->y_buffer, dst->y_stride,
+                 source->y_width, source->y_height, amount);
+  }
 }
 
 // 8-tap Gaussian convolution filter with sigma = 1.0, sums to 128,
@@ -100,7 +129,7 @@ static double frame_average_variance(const AV1_COMP *const cpi,
   const int block_w = mi_size_wide[block_size] * 4;
   const int block_h = mi_size_high[block_size] * 4;
   int row, col;
-  const int use_hbd = frame->flags & YV12_FLAG_HIGHBITDEPTH;
+  const int bit_depth = cpi->td.mb.e_mbd.bd;
   double var = 0.0, var_count = 0.0;
 
   // Loop through each block.
@@ -113,9 +142,9 @@ static double frame_average_variance(const AV1_COMP *const cpi,
       buf.buf = (uint8_t *)y_buffer + row_offset_y * y_stride + col_offset_y;
       buf.stride = y_stride;
 
-      if (use_hbd) {
+      if (bit_depth > 8) {
         var += av1_high_get_sby_perpixel_variance(cpi, &buf, block_size,
-                                                  frame->bit_depth);
+                                                  bit_depth);
       } else {
         var += av1_get_sby_perpixel_variance(cpi, &buf, block_size);
       }
@@ -135,6 +164,7 @@ static double find_best_frame_unsharp_amount(const AV1_COMP *const cpi,
   const AV1_COMMON *const cm = &cpi->common;
   const int width = source->y_width;
   const int height = source->y_height;
+  const int bit_depth = cpi->td.mb.e_mbd.bd;
 
   YV12_BUFFER_CONFIG sharpened;
   memset(&sharpened, 0, sizeof(sharpened));
@@ -150,8 +180,9 @@ static double find_best_frame_unsharp_amount(const AV1_COMP *const cpi,
   do {
     best_vmaf = approx_vmaf;
     unsharp_amount += step_size;
-    unsharp(source, blurred, &sharpened, unsharp_amount);
-    aom_calc_vmaf(cpi->oxcf.vmaf_model_path, source, &sharpened, 8, &new_vmaf);
+    unsharp(cpi, source, blurred, &sharpened, unsharp_amount);
+    aom_calc_vmaf(cpi->oxcf.vmaf_model_path, source, &sharpened, bit_depth,
+                  &new_vmaf);
     const double sharpened_var = frame_average_variance(cpi, &sharpened);
     approx_vmaf =
         baseline_variance / sharpened_var * (new_vmaf - baseline_vmaf);
@@ -165,14 +196,6 @@ static double find_best_frame_unsharp_amount(const AV1_COMP *const cpi,
 
 void av1_vmaf_frame_preprocessing(const AV1_COMP *const cpi,
                                   YV12_BUFFER_CONFIG *const source) {
-  const int use_hbd = source->flags & YV12_FLAG_HIGHBITDEPTH;
-  // TODO(sdeng): Add high bit depth support.
-  if (use_hbd) {
-    printf(
-        "VMAF preprocessing for high bit depth videos is unsupported yet.\n");
-    exit(0);
-  }
-
   aom_clear_system_state();
   const AV1_COMMON *const cm = &cpi->common;
   const int width = source->y_width;
@@ -195,7 +218,7 @@ void av1_vmaf_frame_preprocessing(const AV1_COMP *const cpi,
   const double best_frame_unsharp_amount =
       find_best_frame_unsharp_amount(cpi, source, &blurred, 0.0, 0.05, 20);
 
-  unsharp(source, &blurred, source, best_frame_unsharp_amount);
+  unsharp(cpi, source, &blurred, source, best_frame_unsharp_amount);
   aom_free_frame_buffer(&blurred);
   aom_clear_system_state();
 }
