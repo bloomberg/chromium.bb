@@ -76,6 +76,9 @@ gerrit_instances = [
     'short_url_protocol': 'https',
   },
   {
+    'url': 'gerrit-review.googlesource.com',
+  },
+  {
     'url': 'chrome-internal-review.googlesource.com',
     'shorturl': 'crrev.com/i',
     'short_url_protocol': 'https',
