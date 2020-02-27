@@ -1100,7 +1100,7 @@ int av1_frame_type_qdelta(const AV1_COMP *cpi, int q) {
 
   rate_factor = rate_factor_deltas[rf_lvl];
   if (rf_lvl == GF_ARF_LOW) {
-    rate_factor -= (cpi->gf_group.layer_depth[cpi->gf_group.index] - 2) * 0.2;
+    rate_factor -= (cpi->gf_group.layer_depth[cpi->gf_group.index] - 2) * 0.1;
     rate_factor = AOMMAX(rate_factor, 1.0);
   }
   return av1_compute_qdelta_by_rate(&cpi->rc, frame_type, q, rate_factor,
