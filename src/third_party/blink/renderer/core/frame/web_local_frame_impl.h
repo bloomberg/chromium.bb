@@ -456,6 +456,8 @@ class CORE_EXPORT WebLocalFrameImpl final
   void AddMessageToConsoleImpl(const WebConsoleMessage&,
                                bool discard_duplicates) override;
 
+  bool IsPrintAllowed() const override;
+
  private:
   friend LocalFrameClientImpl;
 
