@@ -666,10 +666,10 @@ static const arg_def_t max_gf_interval = ARG_DEF(
     "max gf/arf frame interval (default 0, indicating in-built behavior)");
 static const arg_def_t gf_min_pyr_height =
     ARG_DEF(NULL, "gf-min-pyr-height", 1,
-            "Min height for GF group pyramid structure (0 (default) to 4)");
+            "Min height for GF group pyramid structure (0 (default) to 5)");
 static const arg_def_t gf_max_pyr_height =
     ARG_DEF(NULL, "gf-max-pyr-height", 1,
-            "maximum height for GF group pyramid structure (0 to 4 (default))");
+            "maximum height for GF group pyramid structure (0 to 5 (default))");
 static const arg_def_t max_reference_frames = ARG_DEF(
     NULL, "max-reference-frames", 1,
     "maximum number of reference frames allowed per frame (3 to 7 (default))");

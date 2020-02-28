@@ -169,7 +169,7 @@ static struct av1_extracfg default_extra_cfg = {
   0,              // min_gf_interval; 0 -> default decision
   0,              // max_gf_interval; 0 -> default decision
   0,              // gf_min_pyr_height
-  4,              // gf_max_pyr_height
+  5,              // gf_max_pyr_height
   AOM_TUNE_PSNR,  // tuning
   "/usr/local/share/model/vmaf_v0.6.1.pkl",  // VMAF model path
   10,                                        // cq_level
@@ -395,8 +395,8 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
     RANGE_CHECK(extra_cfg, max_gf_interval,
                 AOMMAX(2, extra_cfg->min_gf_interval), (MAX_LAG_BUFFERS - 1));
   }
-  RANGE_CHECK_HI(extra_cfg, gf_min_pyr_height, 4);
-  RANGE_CHECK_HI(extra_cfg, gf_max_pyr_height, 4);
+  RANGE_CHECK_HI(extra_cfg, gf_min_pyr_height, 5);
+  RANGE_CHECK_HI(extra_cfg, gf_max_pyr_height, 5);
   if (extra_cfg->gf_min_pyr_height > extra_cfg->gf_max_pyr_height) {
     ERROR(
         "gf_min_pyr_height must be less than or equal to "

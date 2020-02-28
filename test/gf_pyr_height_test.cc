@@ -30,20 +30,27 @@ static const struct GFPyrHeightTestParam {
   { 0, 2, 34.00 },
   { 0, 3, 34.20 },
   { 0, 4, 34.30 },
+  { 0, 5, 34.40 },
   // gf_min_pyr_height = 1
   { 1, 1, 34.50 },
   { 1, 2, 34.00 },
   { 1, 3, 34.20 },
   { 1, 4, 34.30 },
+  { 1, 5, 34.40 },
   // gf_min_pyr_height = 2
   { 2, 2, 34.00 },
   { 2, 3, 34.20 },
   { 2, 4, 34.30 },
+  { 2, 5, 34.40 },
   // gf_min_pyr_height = 3
   { 3, 3, 34.20 },
   { 3, 4, 34.30 },
+  { 3, 5, 34.40 },
   // gf_min_pyr_height = 4
   { 4, 4, 34.30 },
+  { 4, 5, 34.40 },
+  // gf_min_pyr_height = 5
+  { 5, 5, 34.40 },
 };
 
 // Compiler may decide to add some padding to the struct above for alignment,
