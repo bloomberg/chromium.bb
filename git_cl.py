@@ -133,6 +133,10 @@ _IS_BEING_TESTED = False
 def DieWithError(message, change_desc=None):
   if change_desc:
     SaveDescriptionBackup(change_desc)
+    print('\n ** Content of CL description **\n' +
+          '='*72 +  '\n' +
+          change_desc.description + '\n' +
+          '='*72 + '\n')
 
   print(message, file=sys.stderr)
   sys.exit(1)

@@ -179,6 +179,28 @@ class SystemExitMock(Exception):
 
 
 class TestGitClBasic(unittest.TestCase):
+  def setUp(self):
+    mock.patch('sys.exit', side_effect=SystemExitMock).start()
+    mock.patch('sys.stdout', StringIO()).start()
+    mock.patch('sys.stderr', StringIO()).start()
+    self.addCleanup(mock.patch.stopall)
+
+  def test_die_with_error(self):
+    with self.assertRaises(SystemExitMock):
+      git_cl.DieWithError('foo', git_cl.ChangeDescription('lorem ipsum'))
+    self.assertEqual(sys.stderr.getvalue(), 'foo\n')
+    self.assertTrue('saving CL description' in sys.stdout.getvalue())
+    self.assertTrue('Content of CL description' in sys.stdout.getvalue())
+    self.assertTrue('lorem ipsum' in sys.stdout.getvalue())
+    sys.exit.assert_called_once_with(1)
+
+  def test_die_with_error_no_desc(self):
+    with self.assertRaises(SystemExitMock):
+      git_cl.DieWithError('foo')
+    self.assertEqual(sys.stderr.getvalue(), 'foo\n')
+    self.assertEqual(sys.stdout.getvalue(), '')
+    sys.exit.assert_called_once_with(1)
+
   def test_fetch_description(self):
     cl = git_cl.Changelist(issue=1, codereview_host='host')
     cl.description = 'x'
