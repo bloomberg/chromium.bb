@@ -3031,8 +3031,22 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       archive_build_debug=True,
   )
 
-  # Loon release builder; no signed images nor testing
+  # Loon release builders; no signed images nor testing
   # Associated with Rapid releases, triggered from Rapid.
+  site_config.Add(
+      'capri-rapid',
+      site_config.templates.release,
+      site_config.templates.loonix,
+      display_label=config_lib.DISPLAY_LABEL_UTILITY,
+      luci_builder=config_lib.LUCI_BUILDER_INFORMATIONAL,
+      boards=['capri'],
+      debug=True,
+      hwqual=False,
+      push_image=False,
+      suite_scheduling=False,
+      description='Create unsigned release image for ingestion into build tool',
+  )
+
   site_config.Add(
       'lasilla-ground-rapid',
       site_config.templates.release,
@@ -3040,6 +3054,48 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       display_label=config_lib.DISPLAY_LABEL_UTILITY,
       luci_builder=config_lib.LUCI_BUILDER_INFORMATIONAL,
       boards=['lasilla-ground'],
+      debug=True,
+      hwqual=False,
+      push_image=False,
+      suite_scheduling=False,
+      description='Create unsigned release image for ingestion into build tool',
+  )
+
+  site_config.Add(
+      'octavius-rapid',
+      site_config.templates.release,
+      site_config.templates.loonix,
+      display_label=config_lib.DISPLAY_LABEL_UTILITY,
+      luci_builder=config_lib.LUCI_BUILDER_INFORMATIONAL,
+      boards=['octavius'],
+      debug=True,
+      hwqual=False,
+      push_image=False,
+      suite_scheduling=False,
+      description='Create unsigned release image for ingestion into build tool',
+  )
+
+  site_config.Add(
+      'romer-rapid',
+      site_config.templates.release,
+      site_config.templates.loonix,
+      display_label=config_lib.DISPLAY_LABEL_UTILITY,
+      luci_builder=config_lib.LUCI_BUILDER_INFORMATIONAL,
+      boards=['romer'],
+      debug=True,
+      hwqual=False,
+      push_image=False,
+      suite_scheduling=False,
+      description='Create unsigned release image for ingestion into build tool',
+  )
+
+  site_config.Add(
+      'wooten-rapid',
+      site_config.templates.release,
+      site_config.templates.loonix,
+      display_label=config_lib.DISPLAY_LABEL_UTILITY,
+      luci_builder=config_lib.LUCI_BUILDER_INFORMATIONAL,
+      boards=['wooten'],
       debug=True,
       hwqual=False,
       push_image=False,

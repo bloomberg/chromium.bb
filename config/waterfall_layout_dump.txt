@@ -636,6 +636,7 @@
   capri-full-tryjob
   capri-llvm-next-toolchain-tryjob
   capri-llvm-toolchain-tryjob
+  capri-rapid-tryjob
   capri-release-tryjob
   capri-unittest-stress
   capri-zfpga-full-tryjob
@@ -1660,6 +1661,7 @@
   octavius-full-tryjob
   octavius-llvm-next-toolchain-tryjob
   octavius-llvm-toolchain-tryjob
+  octavius-rapid-tryjob
   octavius-release-tryjob
   octavius-unittest-stress
   octopus-factory-octopus-11512.B-factorybranch-tryjob
@@ -1750,6 +1752,7 @@
   romer-full-tryjob
   romer-llvm-next-toolchain-tryjob
   romer-llvm-toolchain-tryjob
+  romer-rapid-tryjob
   romer-release-tryjob
   romer-unittest-stress
   samus-full-tryjob
@@ -1997,6 +2000,7 @@
   wooten-full-tryjob
   wooten-llvm-next-toolchain-tryjob
   wooten-llvm-toolchain-tryjob
+  wooten-rapid-tryjob
   wooten-release-tryjob
   wooten-unittest-stress
   wristpin-full-tryjob

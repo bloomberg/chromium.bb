@@ -5878,6 +5878,62 @@
         "sync_chrome": false,
         "upload_hw_test_artifacts": false
     },
+    "capri-rapid": {
+        "_template": "release",
+        "boards": [
+            "capri"
+        ],
+        "chrome_sdk": false,
+        "debug": true,
+        "description": "Create unsigned release image for ingestion into build tool",
+        "dev_installer_prebuilts": false,
+        "display_label": "utility",
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "hwqual": false,
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "luci_builder": "Informational",
+        "paygen": false,
+        "push_image": false,
+        "signer_tests": false,
+        "suite_scheduling": false,
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "capri-rapid-tryjob": {
+        "_template": "release",
+        "boards": [
+            "capri"
+        ],
+        "chrome_sdk": false,
+        "debug": true,
+        "description": "Create unsigned release image for ingestion into build tool",
+        "dev_installer_prebuilts": false,
+        "display_label": "tryjob",
+        "hw_tests": [],
+        "hw_tests_override": null,
+        "hwqual": false,
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "luci_builder": "Try",
+        "paygen": false,
+        "push_image": false,
+        "signer_tests": false,
+        "suite_scheduling": false,
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
     "capri-release": {
         "_template": "release",
         "boards": [
@@ -25430,6 +25486,62 @@
         "sync_chrome": false,
         "upload_hw_test_artifacts": false
     },
+    "octavius-rapid": {
+        "_template": "release",
+        "boards": [
+            "octavius"
+        ],
+        "chrome_sdk": false,
+        "debug": true,
+        "description": "Create unsigned release image for ingestion into build tool",
+        "dev_installer_prebuilts": false,
+        "display_label": "utility",
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "hwqual": false,
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "luci_builder": "Informational",
+        "paygen": false,
+        "push_image": false,
+        "signer_tests": false,
+        "suite_scheduling": false,
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "octavius-rapid-tryjob": {
+        "_template": "release",
+        "boards": [
+            "octavius"
+        ],
+        "chrome_sdk": false,
+        "debug": true,
+        "description": "Create unsigned release image for ingestion into build tool",
+        "dev_installer_prebuilts": false,
+        "display_label": "tryjob",
+        "hw_tests": [],
+        "hw_tests_override": null,
+        "hwqual": false,
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "luci_builder": "Try",
+        "paygen": false,
+        "push_image": false,
+        "signer_tests": false,
+        "suite_scheduling": false,
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
     "octavius-release": {
         "_template": "release",
         "boards": [
@@ -27725,6 +27837,62 @@
         "luci_builder": "Try",
         "sync_chrome": false,
         "upload_hw_test_artifacts": false
+    },
+    "romer-rapid": {
+        "_template": "release",
+        "boards": [
+            "romer"
+        ],
+        "chrome_sdk": false,
+        "debug": true,
+        "description": "Create unsigned release image for ingestion into build tool",
+        "dev_installer_prebuilts": false,
+        "display_label": "utility",
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "hwqual": false,
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "luci_builder": "Informational",
+        "paygen": false,
+        "push_image": false,
+        "signer_tests": false,
+        "suite_scheduling": false,
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "romer-rapid-tryjob": {
+        "_template": "release",
+        "boards": [
+            "romer"
+        ],
+        "chrome_sdk": false,
+        "debug": true,
+        "description": "Create unsigned release image for ingestion into build tool",
+        "dev_installer_prebuilts": false,
+        "display_label": "tryjob",
+        "hw_tests": [],
+        "hw_tests_override": null,
+        "hwqual": false,
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "luci_builder": "Try",
+        "paygen": false,
+        "push_image": false,
+        "signer_tests": false,
+        "suite_scheduling": false,
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "romer-release": {
         "_template": "release",
@@ -34317,6 +34485,62 @@
         "luci_builder": "Try",
         "sync_chrome": false,
         "upload_hw_test_artifacts": false
+    },
+    "wooten-rapid": {
+        "_template": "release",
+        "boards": [
+            "wooten"
+        ],
+        "chrome_sdk": false,
+        "debug": true,
+        "description": "Create unsigned release image for ingestion into build tool",
+        "dev_installer_prebuilts": false,
+        "display_label": "utility",
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "hwqual": false,
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "luci_builder": "Informational",
+        "paygen": false,
+        "push_image": false,
+        "signer_tests": false,
+        "suite_scheduling": false,
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "wooten-rapid-tryjob": {
+        "_template": "release",
+        "boards": [
+            "wooten"
+        ],
+        "chrome_sdk": false,
+        "debug": true,
+        "description": "Create unsigned release image for ingestion into build tool",
+        "dev_installer_prebuilts": false,
+        "display_label": "tryjob",
+        "hw_tests": [],
+        "hw_tests_override": null,
+        "hwqual": false,
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "luci_builder": "Try",
+        "paygen": false,
+        "push_image": false,
+        "signer_tests": false,
+        "suite_scheduling": false,
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "wooten-release": {
         "_template": "release",
