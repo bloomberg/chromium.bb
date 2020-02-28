@@ -329,7 +329,6 @@
     kefka-kernelnext-release
     kefka-release
     kevin-arc64-release
-    kevin-arcnext-release
     kevin-release
     kevin64-release
     kip-release
@@ -1248,11 +1247,6 @@
   kevin-arc64-payloads-tryjob
   kevin-arc64-release-tryjob
   kevin-arc64-unittest-stress
-  kevin-arcnext-full-tryjob
-  kevin-arcnext-llvm-next-toolchain-tryjob
-  kevin-arcnext-llvm-toolchain-tryjob
-  kevin-arcnext-release-tryjob
-  kevin-arcnext-unittest-stress
   kevin-factory-gru-8652.B-factorybranch-tryjob
   kevin-full-tryjob
   kevin-llvm-next-toolchain-tryjob
@@ -1485,7 +1479,6 @@
     kefka-kernelnext-release-tryjob
     kefka-release-tryjob
     kevin-arc64-release-tryjob
-    kevin-arcnext-release-tryjob
     kevin-release-tryjob
     kevin64-release-tryjob
     kip-release-tryjob
