@@ -113,24 +113,6 @@ class YuvBuffer {
   // Returns the alignment of frame buffer row in bytes.
   int alignment() const { return 16; }
 
-  // Shifts the |plane| buffer horizontally by |horizontal_shift| pixels and
-  // vertically by |vertical_shift| pixels. There must be enough border for the
-  // shifts to be successful.
-  void ShiftBuffer(int plane, int horizontal_shift, int vertical_shift) {
-    assert(ValidHorizontalShift(plane, horizontal_shift));
-    assert(ValidVerticalShift(plane, vertical_shift));
-    left_border_[plane] += horizontal_shift;
-    right_border_[plane] -= horizontal_shift;
-    top_border_[plane] += vertical_shift;
-    bottom_border_[plane] -= vertical_shift;
-    const int pixel_size =
-        static_cast<int>((bitdepth_ == 8) ? sizeof(uint8_t) : sizeof(uint16_t));
-    // The 16-byte alignment of buffer_[plane] must be preserved.
-    assert((horizontal_shift * pixel_size) % 16 == 0);
-    buffer_[plane] +=
-        vertical_shift * stride_[plane] + horizontal_shift * pixel_size;
-  }
-
   // Backup the current set of warnings and disable -Warray-bounds for the
   // following three functions as the compiler cannot, in all cases, determine
   // whether |plane| is within [0, kMaxPlanes), e.g., with a variable based for
@@ -163,20 +145,6 @@ class YuvBuffer {
 #endif
 
  private:
-  // |shift| is in pixels.
-  // Positive vertical shift is a down shift. Negative vertical shift is an
-  // up shift.
-  bool ValidVerticalShift(int plane, int shift) const {
-    return (shift >= 0) ? bottom_border_[plane] >= shift
-                        : top_border_[plane] + shift >= 0;
-  }
-  // Positive horizontal shift is a right shift. Negative horizontal shift is
-  // a left shift.
-  bool ValidHorizontalShift(int plane, int shift) const {
-    return (shift >= 0) ? right_border_[plane] >= shift
-                        : left_border_[plane] + shift >= 0;
-  }
-
   int bitdepth_ = 0;
   bool is_monochrome_ = false;
 

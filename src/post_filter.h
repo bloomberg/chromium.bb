@@ -59,16 +59,11 @@ class PostFilter {
   // This class does not take ownership of the masks/restoration_info, but it
   // may change their values.
   //
-  // IMPORTANT: The PostFilter constructor may shift |source_buffer|.
-  // Therefore the PostFilter constructor must be called after |source_buffer|
-  // has been allocated but before a reconstructed frame is stored into
-  // |source_buffer|.
-  //
   // The overall flow of data in this class (for both single and multi-threaded
   // cases) is as follows:
-  //   -> Input: |source_buffer_|.
-  //   -> Initialize |cdef_buffer_| and |loop_restoration_buffer_|.
-  //   -> Shift |source_buffer_| forward.
+  //   -> Input: |yuv_buffer_|.
+  //   -> Initialize |source_buffer_|, |cdef_buffer_| and
+  //      |loop_restoration_buffer_|.
   //   -> Deblocking:
   //      * Input: |source_buffer_|
   //      * Output: |source_buffer_|
@@ -81,15 +76,14 @@ class PostFilter {
   //   -> Loop Restoration:
   //      * Input: |cdef_buffer_|
   //      * Output: |loop_restoration_buffer_|.
-  //   -> Shift |source_buffer_| backward.
-  //   -> Now |source_buffer_| contains the filtered frame (without any changes
+  //   -> Now |yuv_buffer_| contains the filtered frame (without any changes
   //      to the plane pointers that were passed into the class).
   PostFilter(const ObuFrameHeader& frame_header,
              const ObuSequenceHeader& sequence_header, LoopFilterMask* masks,
              const Array2D<int16_t>& cdef_index,
              const Array2D<TransformSize>& inter_transform_sizes,
              LoopRestorationInfo* restoration_info,
-             BlockParametersHolder* block_parameters, YuvBuffer* source_buffer,
+             BlockParametersHolder* block_parameters, YuvBuffer* yuv_buffer,
              YuvBuffer* deblock_buffer, const dsp::Dsp* dsp,
              ThreadPool* thread_pool, uint8_t* threaded_window_buffer,
              uint8_t* superres_line_buffer, int do_post_filter_mask);
@@ -112,9 +106,9 @@ class PostFilter {
   //              |                                 |
   //              -----------> super resolution -----
   // * Any of these filters could be present or absent.
-  // * |source_buffer_| points to the decoded frame buffer. When
-  //   ApplyFilteringThreaded() is called, |source_buffer_| is modified by each
-  //   of the filters as described below.
+  // * |yuv_buffer_| points to the decoded frame buffer. When
+  //   ApplyFilteringThreaded() is called, |yuv_buffer_| is modified by each of
+  //   the filters as described below.
   // Filter behavior (multi-threaded):
   // * Deblock: In-place filtering. The output is written to |source_buffer_|.
   //            If cdef and loop restoration are both on, then 4 rows (as
@@ -190,6 +184,13 @@ class PostFilter {
   // and mask.
   static bool DoRestoration(const LoopRestoration& loop_restoration,
                             uint8_t do_post_filter_mask, int num_planes);
+
+  // Returns a pointer to the unfiltered buffer. This is used by the Tile class
+  // to determine where to write the output of the tile decoding process taking
+  // in-place filtering offsets into consideration.
+  uint8_t* GetUnfilteredBuffer(int plane) { return source_buffer_[plane]; }
+  const YuvBuffer& yuv_buffer() const { return *yuv_buffer_; }
+
   // Returns true if SuperRes will be performed for the given frame header and
   // mask.
   static bool DoSuperRes(const ObuFrameHeader& frame_header,
@@ -210,9 +211,8 @@ class PostFilter {
                pixel_size_;
   }
   uint8_t* GetSourceBuffer(Plane plane, int row4x4, int column4x4) const {
-    return GetBufferOffset(source_buffer_->data(plane),
-                           source_buffer_->stride(plane), plane, row4x4,
-                           column4x4);
+    return GetBufferOffset(source_buffer_[plane], yuv_buffer_->stride(plane),
+                           plane, row4x4, column4x4);
   }
 
   // Extends frame, sets border pixel values to its closest frame boundary.
@@ -439,6 +439,16 @@ class PostFilter {
   // frame will be saved as a reference frame.
   void ExtendBordersForReferenceFrame();
 
+  // This function prepares the input source block for cdef filtering. The input
+  // source block contains a 12x12 block, with the inner 8x8 as the desired
+  // filter region. It pads the block if the 12x12 block includes out of frame
+  // pixels with a large value. This achieves the required behavior defined in
+  // section 5.11.52 of the spec.
+  template <typename Pixel>
+  void PrepareCdefBlock(int block_width4x4, int block_height4x4, int row_64x64,
+                        int column_64x64, uint16_t* cdef_source,
+                        ptrdiff_t cdef_stride);
+
   const ObuFrameHeader& frame_header_;
   const LoopRestoration& loop_restoration_;
   const dsp::Dsp& dsp_;
@@ -451,11 +461,6 @@ class PostFilter {
   const int8_t subsampling_y_;
   const int8_t planes_;
   const int pixel_size_;
-  // The shifts applied to the |source_buffer_| in the constructor. Once the
-  // post filtering process is complete, all the shifts will be reversed so that
-  // the buffer offsets are the same as when they were passed into this class.
-  int horizontal_shift_[kMaxPlanes];
-  int vertical_shift_[kMaxPlanes];
   // This class does not take ownership of the masks/restoration_info, but it
   // could change their values.
   LoopFilterMask* const masks_;
@@ -493,15 +498,15 @@ class PostFilter {
   const BlockParametersHolder& block_parameters_;
   // Frame buffer to hold cdef filtered frame.
   YuvBuffer cdef_filtered_buffer_;
-  // Input frame buffer. The constructor of this class shifts the
-  // |source_buffer_| plane pointers to do in-place Loop Restoration and CDEF if
-  // necessary. Once filtering is complete, the plane pointers are restored back
-  // to their original positions.
-  YuvBuffer* const source_buffer_;
-  // A view into |source_buffer_| that points to the output of the CDEF filtered
+  // Input frame buffer.
+  YuvBuffer* const yuv_buffer_;
+  // A view into |yuv_buffer_| that points to the input and output of the
+  // deblocking process.
+  uint8_t* source_buffer_[kMaxPlanes];
+  // A view into |yuv_buffer_| that points to the output of the CDEF filtered
   // planes (to facilitate in-place CDEF filtering).
   uint8_t* cdef_buffer_[kMaxPlanes];
-  // A view into |source_buffer_| that points to the output of the Loop Restored
+  // A view into |yuv_buffer_| that points to the output of the Loop Restored
   // planes (to facilitate in-place Loop Restoration).
   uint8_t* loop_restoration_buffer_[kMaxPlanes];
   // Buffer used to store the deblocked pixels that are necessary for loop
@@ -601,104 +606,6 @@ void PrepareLoopRestorationBlock(const bool do_cdef, const uint8_t* cdef_buffer,
       cdef_ptr += cdef_stride;
     }
     dst += dest_stride;
-  }
-}
-
-template <typename Pixel>
-void CopyRows(const Pixel* src, const ptrdiff_t src_stride,
-              const int block_width, const int unit_width,
-              const bool is_frame_top, const bool is_frame_bottom,
-              const bool is_frame_left, const bool is_frame_right,
-              const bool copy_top, const int num_rows, uint16_t* dst,
-              const ptrdiff_t dst_stride) {
-  if (is_frame_top || is_frame_bottom) {
-    if (is_frame_bottom) dst -= kCdefBorder;
-    for (int y = 0; y < num_rows; ++y) {
-      Memset(dst, PostFilter::kCdefLargeValue, unit_width + 2 * kCdefBorder);
-      dst += dst_stride;
-    }
-  } else {
-    if (copy_top) {
-      src -= kCdefBorder * src_stride;
-      dst += kCdefBorder;
-    }
-    for (int y = 0; y < num_rows; ++y) {
-      for (int x = -kCdefBorder; x < 0; ++x) {
-        dst[x] = is_frame_left ? PostFilter::kCdefLargeValue : src[x];
-      }
-      for (int x = 0; x < block_width; ++x) {
-        dst[x] = src[x];
-      }
-      for (int x = block_width; x < unit_width + kCdefBorder; ++x) {
-        dst[x] = is_frame_right ? PostFilter::kCdefLargeValue : src[x];
-      }
-      dst += dst_stride;
-      src += src_stride;
-    }
-  }
-}
-
-// This function prepares the input source block for cdef filtering.
-// The input source block contains a 12x12 block, with the inner 8x8 as the
-// desired filter region.
-// It pads the block if the 12x12 block includes out of frame pixels with
-// a large value.
-// This achieves the required behavior defined in section 5.11.52 of the spec.
-template <typename Pixel>
-void PrepareCdefBlock(const YuvBuffer* const source_buffer, const int planes,
-                      const int subsampling_x, const int subsampling_y,
-                      const int frame_width, const int frame_height,
-                      const int block_width4x4, const int block_height4x4,
-                      const int row_64x64, const int column_64x64,
-                      uint16_t* cdef_source, const ptrdiff_t cdef_stride) {
-  for (int plane = kPlaneY; plane < planes; ++plane) {
-    uint16_t* cdef_src =
-        cdef_source + plane * kRestorationProcessingUnitSizeWithBorders *
-                          kRestorationProcessingUnitSizeWithBorders;
-    const int plane_subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x;
-    const int plane_subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y;
-    const int start_x = MultiplyBy4(column_64x64) >> plane_subsampling_x;
-    const int start_y = MultiplyBy4(row_64x64) >> plane_subsampling_y;
-    const int plane_width =
-        RightShiftWithRounding(frame_width, plane_subsampling_x);
-    const int plane_height =
-        RightShiftWithRounding(frame_height, plane_subsampling_y);
-    const int block_width = MultiplyBy4(block_width4x4) >> plane_subsampling_x;
-    const int block_height =
-        MultiplyBy4(block_height4x4) >> plane_subsampling_y;
-    // unit_width, unit_height are the same as block_width, block_height unless
-    // it reaches the frame boundary, where block_width < 64 or
-    // block_height < 64. unit_width, unit_height guarantee we build blocks on
-    // a multiple of 8.
-    const int unit_width =
-        Align(block_width, (plane_subsampling_x > 0) ? 4 : 8);
-    const int unit_height =
-        Align(block_height, (plane_subsampling_y > 0) ? 4 : 8);
-    const bool is_frame_left = column_64x64 == 0;
-    const bool is_frame_right = start_x + block_width >= plane_width;
-    const bool is_frame_top = row_64x64 == 0;
-    const bool is_frame_bottom = start_y + block_height >= plane_height;
-    const int src_stride = source_buffer->stride(plane) / sizeof(Pixel);
-    const Pixel* src_buffer =
-        reinterpret_cast<const Pixel*>(source_buffer->data(plane)) +
-        start_y * src_stride + start_x;
-    // Copy to the top 2 rows.
-    CopyRows(src_buffer, src_stride, block_width, unit_width, is_frame_top,
-             false, is_frame_left, is_frame_right, true, kCdefBorder, cdef_src,
-             cdef_stride);
-    cdef_src += kCdefBorder * cdef_stride + kCdefBorder;
-
-    // Copy the body.
-    CopyRows(src_buffer, src_stride, block_width, unit_width, false, false,
-             is_frame_left, is_frame_right, false, block_height, cdef_src,
-             cdef_stride);
-    src_buffer += block_height * src_stride;
-    cdef_src += block_height * cdef_stride;
-
-    // Copy to bottom rows.
-    CopyRows(src_buffer, src_stride, block_width, unit_width, false,
-             is_frame_bottom, is_frame_left, is_frame_right, false,
-             kCdefBorder + unit_height - block_height, cdef_src, cdef_stride);
   }
 }
 

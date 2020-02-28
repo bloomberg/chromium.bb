@@ -461,7 +461,7 @@ Tile::Tile(
                             frame_parallel;
   memset(delta_lf_, 0, sizeof(delta_lf_));
   delta_lf_all_zero_ = true;
-  YuvBuffer* const buffer = current_frame->buffer();
+  const YuvBuffer& buffer = post_filter_.yuv_buffer();
   for (int plane = 0; plane < PlaneCount(); ++plane) {
     // Verify that the borders are big enough for Reconstruct(). max_tx_length
     // is the maximum value of tx_width and tx_height for the plane.
@@ -471,19 +471,24 @@ Tile::Tile(
     // row is followed in memory by the left border of the next row, the
     // number of extra pixels to the right of a row is at least the sum of the
     // left and right borders.
-    assert(buffer->left_border(plane) + buffer->right_border(plane) >=
+    assert(buffer.left_border(plane) + buffer.right_border(plane) >=
            max_tx_length - 1);
     // Reconstruct() may overwrite on the bottom. We need an extra border row
     // on the bottom because we need the left border of that row.
-    assert(buffer->bottom_border(plane) >= max_tx_length);
+    assert(buffer.bottom_border(plane) >= max_tx_length);
     // In AV1, a transform block of height H starts at a y coordinate that is
     // a multiple of H. If a transform block at the bottom of the frame has
     // height H, then Reconstruct() will write up to the row with index
-    // Align(buffer->height(plane), H) - 1. Therefore the maximum number of
+    // Align(buffer.height(plane), H) - 1. Therefore the maximum number of
     // rows Reconstruct() may write to is
-    // Align(buffer->height(plane), max_tx_length).
-    buffer_[plane].Reset(Align(buffer->height(plane), max_tx_length),
-                         buffer->stride(plane), buffer->data(plane));
+    // Align(buffer.height(plane), max_tx_length).
+
+    // Note that it is safe to use the post_filter_.GetUnfilteredBuffer(plane)
+    // in case of intra_block_copy since all the post filters are disabled when
+    // intra_block_copy is on).
+    buffer_[plane].Reset(Align(buffer.height(plane), max_tx_length),
+                         buffer.stride(plane),
+                         post_filter_.GetUnfilteredBuffer(plane));
     const int plane_height =
         RightShiftWithRounding(frame_header_.height, subsampling_y_[plane]);
     deblock_row_limit_[plane] =
