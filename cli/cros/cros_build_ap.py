@@ -24,14 +24,16 @@ class BuildApCommand(command.CliCommand):
   """Build the AP Firmware for the requested build target."""
 
   EPILOG = """
-  To build the AP Firmware for foo:
-    cros build-ap -b foo
-  """
+To build the AP Firmware for foo:
+  cros build-ap -b foo
+
+To build the AP Firmware only for foo-variant:
+  cros build-ap -b foo --fw-name foo-variant
+"""
 
   def __init__(self, options):
     super(BuildApCommand, self).__init__(options)
-    target_name = self.options.build_target or cros_build_lib.GetDefaultBoard()
-    self.build_target = build_target_util.BuildTarget(target_name)
+    self.build_target = build_target_util.BuildTarget(self.options.build_target)
 
   @classmethod
   def AddParser(cls, parser):
@@ -39,19 +41,26 @@ class BuildApCommand(command.CliCommand):
 
     parser.add_argument(
         '-b',
-        '--board',
         '--build-target',
         dest='build_target',
-        help='The build target whose AP firmware should be built.'
-    )
+        default=cros_build_lib.GetDefaultBoard(),
+        required=not bool(cros_build_lib.GetDefaultBoard()),
+        help='The build target whose AP firmware should be built.')
+
+    parser.add_argument(
+        '--fw-name',
+        '--variant',
+        dest='fw_name',
+        help='Sets the FW_NAME environment variable. Set to build only the '
+             "specified variant's firmware.")
 
   def Run(self):
-    """Run cros build."""
+    """Run cros build-ap."""
     self.options.Freeze()
 
     commandline.RunInsideChroot(self)
 
     try:
-      ap_firmware.build(self.build_target)
+      ap_firmware.build(self.build_target, self.options.fw_name)
     except ap_firmware.Error as e:
       cros_build_lib.Die(e)

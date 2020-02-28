@@ -44,11 +44,13 @@ class InvalidConfigError(Error):
   """The config does not contain the required information for the operation."""
 
 
-def build(build_target):
+def build(build_target, fw_name=None):
   """Build the AP Firmware.
 
   Args:
     build_target (BuildTarget): The build target (board) being built.
+    fw_name (str|None): Optionally set the FW_NAME envvar to allow building
+      the firmware for only a specific variant.
   """
   workon = workon_helper.WorkonHelper(build_target.root, build_target.name)
   config = _get_build_config(build_target)
@@ -65,10 +67,13 @@ def build(build_target):
   else:
     stop_packages = []
 
+  extra_env = {'FW_NAME': fw_name} if fw_name else None
   # Run the emerge command to build the packages. Don't raise an exception here
   # if it fails so we can cros workon stop afterwords.
   result = cros_build_lib.run(
-      [build_target.get_command('emerge')] + list(config.build), check=False)
+      [build_target.get_command('emerge')] + list(config.build),
+      check=False,
+      extra_env=extra_env)
 
   # Reset the environment.
   if stop_packages:
@@ -126,8 +131,9 @@ def _get_build_config(build_target):
 
   if not build_pkgs:
     raise InvalidConfigError(
-        'No packages specified to build in the configs for %s.' %
-        build_target.name)
+        'No packages specified to build in the configs for %s. Check the '
+        'configs in chromite/lib/firmware/ap_firmware_config/%s.py.' %
+        (build_target.name, build_target.name))
 
   return BuildConfig(workon=workon_pkgs, build=build_pkgs)
 

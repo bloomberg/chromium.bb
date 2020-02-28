@@ -88,11 +88,13 @@ class BuildTest(cros_test_lib.RunCommandTestCase):
     self.PatchObject(
         ap_firmware, '_get_build_config', return_value=build_config)
 
-    ap_firmware.build(build_target)
+    ap_firmware.build(build_target, 'board-variant')
 
     # Verify the workon packages. Should be starting all the required workon
     # packages, but only stopping the ones that we started in the command.
     start_patch.assert_called_once_with(workon_pkgs)
     stop_patch.assert_called_once_with(expected_workon_stop)
-    # Verify we try to build all the build packages.
-    self.rc.assertCommandContains(list(build_pkgs))
+    # Verify we try to build all the build packages, and that the FW_NAME envvar
+    # has been set.
+    self.rc.assertCommandContains(
+        list(build_pkgs), extra_env={'FW_NAME': 'board-variant'})
