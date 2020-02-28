@@ -33,6 +33,7 @@ namespace dsp {
 namespace low_bitdepth {
 namespace {
 
+// TODO(b/150461164): Consider combining with GetInterIntraMask4x2().
 // Compound predictors use int16_t values and need to multiply long because the
 // Convolve range * 64 is 20 bits. Unfortunately there is no multiply int16_t by
 // int8_t and accumulate into int32_t instruction.
@@ -60,7 +61,6 @@ inline int16x8_t GetMask4x2(const uint8_t* mask, ptrdiff_t mask_stride) {
   const uint8x8_t mask_val0 = Load4(mask);
   const uint8x8_t mask_val =
       Load4<1>(mask + (mask_stride << subsampling_y), mask_val0);
-  // TODO(johannkoenig): Remove vmovl().
   return vreinterpretq_s16_u16(vmovl_u8(mask_val));
 }
 
@@ -121,7 +121,7 @@ inline void MaskBlending4x4_NEON(const int16_t* pred_0, const int16_t* pred_1,
   int16x8_t pred_mask_1 = vsubq_s16(mask_inverter, pred_mask_0);
   WriteMaskBlendLine4x2(pred_0, pred_1, pred_mask_0, pred_mask_1, dst,
                         dst_stride);
-  // TODO(johannkoenig): Arm tends to do better with load(val); val += stride
+  // TODO(b/150461164): Arm tends to do better with load(val); val += stride
   // It may be possible to turn this into a loop with a templated height.
   pred_0 += 4 << 1;
   pred_1 += 4 << 1;
@@ -247,7 +247,7 @@ inline void MaskBlend_NEON(const void* prediction_0, const void* prediction_1,
   } while (++y < height);
 }
 
-// TODO(johannkoenig): This is much faster for inter_intra (input is Pixel
+// TODO(b/150461164): This is much faster for inter_intra (input is Pixel
 // values) but regresses compound versions (input is int16_t). Try to
 // consolidate these.
 template <int subsampling_x, int subsampling_y>
@@ -272,9 +272,9 @@ inline uint8x8_t GetInterIntraMask4x2(const uint8_t* mask,
 
   assert(subsampling_y == 0 && subsampling_x == 0);
   const uint8x8_t mask_val0 = Load4(mask);
-  // TODO(johannkoenig): Investigate the source of |mask| and see if the stride
+  // TODO(b/150461164): Investigate the source of |mask| and see if the stride
   // can be removed.
-  // TODO(johannkoenig): The unit tests start at 8x8. Does this get run?
+  // TODO(b/150461164): The unit tests start at 8x8. Does this get run?
   return Load4<1>(mask + (mask_stride << subsampling_y), mask_val0);
 }
 
@@ -389,7 +389,7 @@ inline void InterIntraMaskBlend8bpp_NEON(const uint8_t* prediction_0,
   do {
     int x = 0;
     do {
-      // TODO(johannkoenig): Consider a 16 wide specialization (at least for the
+      // TODO(b/150461164): Consider a 16 wide specialization (at least for the
       // unsampled version) to take advantage of vld1q_u8().
       const uint8x8_t pred_mask_1 =
           GetInterIntraMask8<subsampling_x, subsampling_y>(
