@@ -53,6 +53,12 @@ class ChromiumOSDeviceFake(object):
   def RunCommand(self, cmd, **_kwargs):
     self.cmds.append(cmd)
 
+  def run(self, cmd, **_kwargs):
+    self.cmds.append(cmd)
+
+  def CopyToDevice(self, _src, _dest, _mode='rsync', **_kwargs):
+    return True
+
 
 class ChromiumOSDeviceHandlerFake(object):
   """Fake for chromite.lib.remote_access.ChomiumOSDeviceHandler."""

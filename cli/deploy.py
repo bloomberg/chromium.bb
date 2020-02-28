@@ -26,6 +26,7 @@ from chromite.lib import operation
 from chromite.lib import osutils
 from chromite.lib import portage_util
 from chromite.lib import remote_access
+from chromite.scripts import build_dlc
 try:
   import portage
 except ImportError:
@@ -831,7 +832,7 @@ def _Emerge(device, pkg_path, root, extra_args=None):
 
 
 def _RestoreSELinuxContext(device, pkgpath, root):
-  """Restore SELinux context for files in a given pacakge.
+  """Restore SELinux context for files in a given package.
 
   This reads the tarball from pkgpath, and calls restorecon on device to
   restore SELinux context for files listed in the tarball, assuming those files
@@ -950,14 +951,21 @@ def _ConfirmDeploy(num_updates):
 
 
 def _EmergePackages(pkgs, device, strip, sysroot, root, emerge_args):
-  """Call _Emerge for each packge in pkgs."""
+  """Call _Emerge for each package in pkgs."""
   dlc_deployed = False
   for pkg_path in _GetPackagesPaths(pkgs, strip, sysroot):
     _Emerge(device, pkg_path, root, extra_args=emerge_args)
     if device.IsSELinuxAvailable():
       _RestoreSELinuxContext(device, pkg_path, root)
-    if _DeployDLCImage(device, pkg_path):
+
+    dlc_id, dlc_package = _GetDLCInfo(device, pkg_path, from_dut=False)
+    if dlc_id and dlc_package:
+      _DeployDLCImage(device, sysroot, dlc_id, dlc_package)
       dlc_deployed = True
+      # Clean up directories created by emerging DLCs.
+      device.run(['rm', '-rf', '/build/rootfs/dlc'])
+      device.run(['rmdir', '--ignore-fail-on-non-empty', '/build/rootfs',
+                  '/build'])
 
   # Restart dlcservice so it picks up the newly installed DLC modules (in case
   # we installed new DLC images).
@@ -993,33 +1001,40 @@ def _UninstallDLCImage(device, pkg_attrs):
     return False
 
 
-def _DeployDLCImage(device, pkg_path):
+def _DeployDLCImage(device, sysroot, dlc_id, dlc_package):
   """Deploy (install and mount) a DLC image."""
-  dlc_id, dlc_package = _GetDLCInfo(device, pkg_path, from_dut=False)
-  if dlc_id and dlc_package:
-    logging.notice('Deploy a DLC image for %s', dlc_id)
 
-    dlc_path_src = os.path.join('/build/rootfs/dlc', dlc_id, dlc_package,
-                                'dlc.img')
-    dlc_path = os.path.join(_DLC_INSTALL_ROOT, dlc_id, dlc_package)
-    dlc_path_a = os.path.join(dlc_path, 'dlc_a')
-    dlc_path_b = os.path.join(dlc_path, 'dlc_b')
-    # Create folders for DLC images.
-    device.RunCommand(['mkdir', '-p', dlc_path_a, dlc_path_b])
-    # Copy images to the destination folders.
-    device.RunCommand(['cp', dlc_path_src,
-                       os.path.join(dlc_path_a, 'dlc.img')])
-    device.RunCommand(['cp', dlc_path_src,
-                       os.path.join(dlc_path_b, 'dlc.img')])
+  logging.debug('Uninstall DLC %s if it is installed.', dlc_id)
+  try:
+    device.run(['dlcservice_util', '--dlc_ids=%s' % dlc_id, '--uninstall'])
+  except cros_build_lib.RunCommandError as e:
+    logging.info('Failed to uninstall DLC:%s. Continue anyway.',
+                 e.result.error)
+  except Exception:
+    logging.error('Failed to uninstall DLC.')
+    raise
 
-    # Set the proper perms and ownership so dlcservice can access the image.
-    device.RunCommand(['chmod', '-R', '0755', _DLC_INSTALL_ROOT])
-    device.RunCommand(['chown', '-R', 'dlcservice:dlcservice',
-                       _DLC_INSTALL_ROOT])
-    return True
-  else:
-    logging.debug('DLC_ID not found in package')
-    return False
+  # TODO(andrewlassalle): Copy the DLC image to the preload location instead
+  # of to dlc_a and dlc_b, and let dlcserive install the images to their final
+  # location.
+  logging.notice('Deploy the DLC image for %s', dlc_id)
+  dlc_img_path_src = os.path.join(sysroot, build_dlc.DLC_IMAGE_DIR, dlc_id,
+                                  dlc_package, build_dlc.DLC_IMAGE)
+  dlc_img_path = os.path.join(_DLC_INSTALL_ROOT, dlc_id, dlc_package)
+  dlc_img_path_a = os.path.join(dlc_img_path, 'dlc_a')
+  dlc_img_path_b = os.path.join(dlc_img_path, 'dlc_b')
+  # Create directories for DLC images.
+  device.run(['mkdir', '-p', dlc_img_path_a, dlc_img_path_b])
+  # Copy images to the destination directories.
+  device.CopyToDevice(dlc_img_path_src, os.path.join(dlc_img_path_a,
+                                                     build_dlc.DLC_IMAGE),
+                      mode='rsync')
+  device.run(['cp', os.path.join(dlc_img_path_a, build_dlc.DLC_IMAGE),
+              os.path.join(dlc_img_path_b, build_dlc.DLC_IMAGE)])
+
+  # Set the proper perms and ownership so dlcservice can access the image.
+  device.run(['chmod', '-R', 'u+rwX,go+rX,go-w', _DLC_INSTALL_ROOT])
+  device.run(['chown', '-R', 'dlcservice:dlcservice', _DLC_INSTALL_ROOT])
 
 
 def _GetDLCInfo(device, pkg_path, from_dut):
