@@ -60,7 +60,7 @@ Libgav1DecoderSignalEOS(Libgav1Decoder* decoder);
 LIBGAV1_PUBLIC int Libgav1DecoderGetMaxAllowedFrames(
     const Libgav1Decoder* decoder);
 
-LIBGAV1_PUBLIC int Libgav1DecoderGetMaxBitdepth();
+LIBGAV1_PUBLIC int Libgav1DecoderGetMaxBitdepth(void);
 
 #if defined(__cplusplus)
 }  // extern "C"

@@ -36,15 +36,15 @@ extern "C" {
 
 // Returns the library's version number, packed in an int using 8 bits for
 // each of major/minor/patch. e.g, 1.2.3 is 0x010203.
-LIBGAV1_PUBLIC int Libgav1GetVersion();
+LIBGAV1_PUBLIC int Libgav1GetVersion(void);
 
 // Returns the library's version number as a string in the format
 // 'MAJOR.MINOR.PATCH'. Always returns a valid (non-NULL) string.
-LIBGAV1_PUBLIC const char* Libgav1GetVersionString();
+LIBGAV1_PUBLIC const char* Libgav1GetVersionString(void);
 
 // Returns the build configuration used to produce the library. Always returns
 // a valid (non-NULL) string.
-LIBGAV1_PUBLIC const char* Libgav1GetBuildConfiguration();
+LIBGAV1_PUBLIC const char* Libgav1GetBuildConfiguration(void);
 
 #if defined(__cplusplus)
 }  // extern "C"
