@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython3
+#!/usr/bin/env vpython
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -46,8 +46,6 @@ import gerrit_util
 
 
 if sys.version_info.major == 2:
-  logging.warning(
-      'Python 2 is deprecated. Run my_activity.py using vpython3.')
   import urllib as urllib_parse
 else:
   import urllib.parse as urllib_parse
