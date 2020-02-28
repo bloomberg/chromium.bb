@@ -395,6 +395,7 @@ def uprev_ebuild_from_pin(package_path, version_pin_path, chroot):
                                  '%s-%s-r1.ebuild' % (package, version))
   new_ebuild_src_path = os.path.join(constants.SOURCE_ROOT, new_ebuild_path)
   os.rename(ebuild_path, new_ebuild_src_path)
+  manifest_src_path = os.path.join(package_src_path, 'Manifest')
   new_ebuild_chroot_path = os.path.join(constants.CHROOT_SOURCE_ROOT,
                                         new_ebuild_path)
 
@@ -405,7 +406,8 @@ def uprev_ebuild_from_pin(package_path, version_pin_path, chroot):
         'Unable to update manifest for %s: %s' % (package, e.stderr))
 
   result = UprevVersionedPackageResult()
-  result.add_result(version, [new_ebuild_src_path, ebuild_path])
+  result.add_result(version,
+                    [new_ebuild_src_path, ebuild_path, manifest_src_path])
   return result
 
 
