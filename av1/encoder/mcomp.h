@@ -29,9 +29,6 @@ extern "C" {
 #define MAX_FULL_PEL_VAL ((1 << (MAX_MVSEARCH_STEPS - 1)) - 1)
 // Maximum size of the first step in full pel units
 #define MAX_FIRST_STEP (1 << (MAX_MVSEARCH_STEPS - 1))
-// Allowed motion vector pixel distance outside image border
-// for Block_16x16
-#define BORDER_MV_PIXELS_B16 (16 + AOM_INTERP_EXTEND)
 
 #define SEARCH_RANGE_8P 3
 #define SEARCH_GRID_STRIDE_8P (2 * SEARCH_RANGE_8P + 1)

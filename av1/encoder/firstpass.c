@@ -424,9 +424,8 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
 
     // Set up limit values for motion vectors to prevent them extending
     // outside the UMV borders.
-    x->mv_limits.row_min = -((mb_row * 16) + BORDER_MV_PIXELS_B16);
-    x->mv_limits.row_max =
-        ((cm->mb_rows - 1 - mb_row) * 16) + BORDER_MV_PIXELS_B16;
+    av1_set_mv_row_limits(cm, &x->mv_limits, (mb_row << 2),
+                          (16 >> MI_SIZE_LOG2), cpi->oxcf.border_in_pixels);
 
     for (mb_col = 0; mb_col < cm->mb_cols; ++mb_col) {
       int this_intra_error;
@@ -525,9 +524,8 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
 
       // Set up limit values for motion vectors to prevent them extending
       // outside the UMV borders.
-      x->mv_limits.col_min = -((mb_col * 16) + BORDER_MV_PIXELS_B16);
-      x->mv_limits.col_max =
-          ((cm->mb_cols - 1 - mb_col) * 16) + BORDER_MV_PIXELS_B16;
+      av1_set_mv_col_limits(cm, &x->mv_limits, (mb_col << 2),
+                            (16 >> MI_SIZE_LOG2), cpi->oxcf.border_in_pixels);
 
       if (!frame_is_intra_only(cm)) {  // Do a motion search
         int tmp_err, motion_error, raw_motion_error;
