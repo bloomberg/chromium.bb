@@ -7,6 +7,20 @@
 
 from __future__ import print_function
 
+BUILD_WORKON_PACKAGES = (
+    'chromeos-ec',
+    'coreboot',
+    'depthcharge',
+    'libpayload',
+    'vboot_reference',
+)
+
+BUILD_PACKAGES = BUILD_WORKON_PACKAGES + (
+    'chromeos-bootimage',
+    'coreboot-private-files',
+    'intel-jslfsp',
+)
+
 
 def is_fast_required(_use_futility, _servo):
   """Returns true if --fast is necessary to flash successfully.
