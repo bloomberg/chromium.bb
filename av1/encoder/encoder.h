@@ -76,16 +76,6 @@ typedef struct {
 } CODING_CONTEXT;
 
 enum {
-  REGULAR_FRAME,       // regular inter frame
-  ARF_FRAME,           // alternate reference frame
-  OVERLAY_FRAME,       // overlay frame
-  GLD_FRAME,           // golden frame
-  BRF_FRAME,           // backward reference frame
-  INTERNAL_ARF_FRAME,  // internal alternate reference frame
-  FRAME_CONTEXT_INDEXES
-} UENUM1BYTE(FRAME_CONTEXT_INDEX);
-
-enum {
   NORMAL = 0,
   FOURFIVE = 1,
   THREEFIVE = 2,

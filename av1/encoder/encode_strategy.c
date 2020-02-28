@@ -250,8 +250,7 @@ static int choose_primary_ref_frame(
 
   // Find the most recent reference frame with the same reference type as the
   // current frame
-  FRAME_CONTEXT_INDEX current_ref_type =
-      get_current_frame_ref_type(cpi, frame_params);
+  const int current_ref_type = get_current_frame_ref_type(cpi, frame_params);
   int wanted_fb = cpi->fb_of_context_type[current_ref_type];
 
   int primary_ref_frame = PRIMARY_REF_NONE;
