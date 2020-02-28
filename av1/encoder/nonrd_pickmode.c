@@ -1607,8 +1607,17 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     use_modeled_non_rd_cost = 1;
 
   if (cpi->sf.rt_sf.use_nonrd_filter_search) {
-    if (x->source_variance > cpi->sf.interp_sf.disable_filter_search_var_thresh)
-      enable_filter_search = 1;
+    enable_filter_search = 1;
+    if (cpi->sf.interp_sf.cb_pred_filter_search) {
+      const int bsl = mi_size_wide_log2[bsize];
+      enable_filter_search =
+          (((mi_row + mi_col) >> bsl) +
+           get_chessboard_index(cm->current_frame.frame_number)) &
+          0x1;
+    }
+    if (x->source_variance <=
+        cpi->sf.interp_sf.disable_filter_search_var_thresh)
+      enable_filter_search = 0;
   }
 
   for (int idx = 0; idx < num_inter_modes; ++idx) {
