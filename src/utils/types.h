@@ -44,17 +44,9 @@ struct MotionVector : public Allocable {
   };
 };
 
-union MotionVector64 {
+union CandidateMotionVector {
   MotionVector mv[2];
   int64_t mv64;
-};
-
-struct CandidateMotionVector {
-  union {
-    MotionVector mv[2];
-    int64_t mv64;
-  };
-  int weight;
 };
 
 // Stores the motion information used for motion field estimation.
@@ -88,6 +80,20 @@ struct PaletteModeInfo {
 // the block itself (for example, some of the variables in BlockParameters are
 // used to compute the context for reading elements in the subsequent blocks).
 struct PredictionParameters : public Allocable {
+  // Restore the index in the unsorted |ref_mv_stack| from the least 3 bits of
+  // sorted |weight_index_stack|.
+  const MotionVector& reference_mv(int stack_index, int mv_index) const {
+    return ref_mv_stack[7 - (weight_index_stack[stack_index] & 7)].mv[mv_index];
+  }
+
+  void IncreaseWeight(ptrdiff_t index, int weight) {
+    weight_index_stack[index] += weight << 3;
+  }
+
+  void SetWeightIndexStackEntry(int index, int weight) {
+    weight_index_stack[index] = (weight << 3) + 7 - index;
+  }
+
   bool use_filter_intra;
   FilterIntraPredictor filter_intra_mode;
   int angle_delta[kNumPlaneTypes];
@@ -104,7 +110,15 @@ struct PredictionParameters : public Allocable {
   bool mask_is_inverse;
   MotionMode motion_mode;
   CompoundPredictionType compound_prediction_type;
+  // |ref_mv_stack| is not sorted after construction. reference_mv() must be
+  // called to get the correct element.
   CandidateMotionVector ref_mv_stack[kMaxRefMvStackSize];
+  // The least 3 bits of |weight_index_stack| store the index information, and
+  // the other bits store the weight. The index information is actually 7 -
+  // index to make the descending order sort stable (preserves the original
+  // order for elements with the same weight). Sorting an int16_t array is much
+  // faster than sorting a struct array with weight and index stored separately.
+  int16_t weight_index_stack[kMaxRefMvStackSize];
   // In the spec, the weights of all the nearest mvs are incremented by a bonus
   // weight which is larger than any natural weight, and later the weights of
   // the mvs are compared with this bonus weight to determine their contexts. We

@@ -1799,8 +1799,6 @@ bool Tile::AssignInterMv(const Block& block, bool is_compound) {
   GetClampParameters(block, min, max);
   BlockParameters& bp = *block.bp;
   const PredictionParameters& prediction_parameters = *bp.prediction_parameters;
-  const CandidateMotionVector* const ref_mv_stack =
-      prediction_parameters.ref_mv_stack;
   for (int i = 0; i < 1 + static_cast<int>(is_compound); ++i) {
     const PredictionMode mode = GetSinglePredictionMode(i, bp.y_mode);
     MotionVector predicted_mv;
@@ -1812,7 +1810,7 @@ bool Tile::AssignInterMv(const Block& block, bool is_compound) {
                                  prediction_parameters.ref_mv_count <= 1))
                                    ? 0
                                    : prediction_parameters.ref_mv_index;
-      predicted_mv = ref_mv_stack[ref_mv_index].mv[i];
+      predicted_mv = prediction_parameters.reference_mv(ref_mv_index, i);
       if (ref_mv_index < prediction_parameters.ref_mv_count) {
         predicted_mv.mv[0] = Clip3(predicted_mv.mv[0], min[0], max[0]);
         predicted_mv.mv[1] = Clip3(predicted_mv.mv[1], min[1], max[1]);
@@ -1835,11 +1833,11 @@ bool Tile::AssignIntraMv(const Block& block) {
   GetClampParameters(block, min, max);
   BlockParameters& bp = *block.bp;
   const PredictionParameters& prediction_parameters = *bp.prediction_parameters;
-  const CandidateMotionVector* const ref_mv_stack =
-      prediction_parameters.ref_mv_stack;
+  const MotionVector& ref_mv_0 = prediction_parameters.reference_mv(0, 0);
   ReadMotionVector(block, 0);
-  if (ref_mv_stack[0].mv[0].mv32 == 0) {
-    if (ref_mv_stack[1].mv[0].mv32 == 0) {
+  if (ref_mv_0.mv32 == 0) {
+    const MotionVector& ref_mv_1 = prediction_parameters.reference_mv(1, 0);
+    if (ref_mv_1.mv32 == 0) {
       const int super_block_size4x4 = kNum4x4BlocksHigh[SuperBlockSize()];
       if (block.row4x4 - super_block_size4x4 < row4x4_start_) {
         bp.mv[0].mv[1] -= MultiplyBy32(super_block_size4x4);
@@ -1848,12 +1846,12 @@ bool Tile::AssignIntraMv(const Block& block) {
         bp.mv[0].mv[0] -= MultiplyBy32(super_block_size4x4);
       }
     } else {
-      bp.mv[0].mv[0] += Clip3(ref_mv_stack[1].mv[0].mv[0], min[0], max[0]);
-      bp.mv[0].mv[1] += Clip3(ref_mv_stack[1].mv[0].mv[1], min[0], max[0]);
+      bp.mv[0].mv[0] += Clip3(ref_mv_1.mv[0], min[0], max[0]);
+      bp.mv[0].mv[1] += Clip3(ref_mv_1.mv[1], min[0], max[0]);
     }
   } else {
-    bp.mv[0].mv[0] += Clip3(ref_mv_stack[0].mv[0].mv[0], min[0], max[0]);
-    bp.mv[0].mv[1] += Clip3(ref_mv_stack[0].mv[0].mv[1], min[1], max[1]);
+    bp.mv[0].mv[0] += Clip3(ref_mv_0.mv[0], min[0], max[0]);
+    bp.mv[0].mv[1] += Clip3(ref_mv_0.mv[1], min[1], max[1]);
   }
   return IsMvValid(block, /*is_compound=*/false);
 }
