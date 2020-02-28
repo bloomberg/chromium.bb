@@ -42,11 +42,12 @@ static INLINE int get_segment_id(const AV1_COMMON *const cm,
 
 static INLINE int av1_get_spatial_seg_pred(const AV1_COMMON *const cm,
                                            const MACROBLOCKD *const xd,
-                                           int mi_row, int mi_col,
                                            int *cdf_index) {
   int prev_ul = -1;  // top left segment_id
   int prev_l = -1;   // left segment_id
   int prev_u = -1;   // top segment_id
+  const int mi_row = xd->mi_row;
+  const int mi_col = xd->mi_col;
   if ((xd->up_available) && (xd->left_available)) {
     prev_ul = get_segment_id(cm, cm->cur_frame->seg_map, BLOCK_4X4, mi_row - 1,
                              mi_col - 1);

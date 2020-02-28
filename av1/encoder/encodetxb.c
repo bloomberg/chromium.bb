@@ -646,8 +646,8 @@ typedef struct encode_txb_args {
   aom_writer *w;
 } ENCODE_TXB_ARGS;
 
-void av1_write_coeffs_mb(const AV1_COMMON *const cm, MACROBLOCK *x, int mi_row,
-                         int mi_col, aom_writer *w, BLOCK_SIZE bsize) {
+void av1_write_coeffs_mb(const AV1_COMMON *const cm, MACROBLOCK *x,
+                         aom_writer *w, BLOCK_SIZE bsize) {
   MACROBLOCKD *xd = &x->e_mbd;
   const int num_planes = av1_num_planes(cm);
   int block[MAX_MB_PLANE] = { 0 };
@@ -666,8 +666,8 @@ void av1_write_coeffs_mb(const AV1_COMMON *const cm, MACROBLOCK *x, int mi_row,
     for (col = 0; col < max_blocks_wide; col += mu_blocks_wide) {
       for (int plane = 0; plane < num_planes; ++plane) {
         const struct macroblockd_plane *const pd = &xd->plane[plane];
-        if (!is_chroma_reference(mi_row, mi_col, bsize, pd->subsampling_x,
-                                 pd->subsampling_y))
+        if (!is_chroma_reference(xd->mi_row, xd->mi_col, bsize,
+                                 pd->subsampling_x, pd->subsampling_y))
           continue;
         const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
         const int stepr = tx_size_high_unit[tx_size];

@@ -439,18 +439,17 @@ int av1_neg_interleave(int x, int ref, int max) {
   }
 }
 
-static AOM_INLINE void write_segment_id(AV1_COMP *cpi,
-                                        const MB_MODE_INFO *const mbmi,
-                                        aom_writer *w,
-                                        const struct segmentation *seg,
-                                        struct segmentation_probs *segp,
-                                        int mi_row, int mi_col, int skip) {
+static AOM_INLINE void write_segment_id(
+    AV1_COMP *cpi, const MB_MODE_INFO *const mbmi, aom_writer *w,
+    const struct segmentation *seg, struct segmentation_probs *segp, int skip) {
   if (!seg->enabled || !seg->update_map) return;
 
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
   int cdf_num;
-  const int pred = av1_get_spatial_seg_pred(cm, xd, mi_row, mi_col, &cdf_num);
+  const int pred = av1_get_spatial_seg_pred(cm, xd, &cdf_num);
+  const int mi_row = xd->mi_row;
+  const int mi_col = xd->mi_col;
 
   if (skip) {
     // Still need to transmit tx size for intra blocks even if skip is
@@ -753,7 +752,6 @@ static AOM_INLINE void write_palette_colors_uv(
 static AOM_INLINE void write_palette_mode_info(const AV1_COMMON *cm,
                                                const MACROBLOCKD *xd,
                                                const MB_MODE_INFO *const mbmi,
-                                               int mi_row, int mi_col,
                                                aom_writer *w) {
   const int num_planes = av1_num_planes(cm);
   const BLOCK_SIZE bsize = mbmi->sb_type;
@@ -775,10 +773,10 @@ static AOM_INLINE void write_palette_mode_info(const AV1_COMMON *cm,
     }
   }
 
-  const int uv_dc_pred =
-      num_planes > 1 && mbmi->uv_mode == UV_DC_PRED &&
-      is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
-                          xd->plane[1].subsampling_y);
+  const int uv_dc_pred = num_planes > 1 && mbmi->uv_mode == UV_DC_PRED &&
+                         is_chroma_reference(xd->mi_row, xd->mi_col, bsize,
+                                             xd->plane[1].subsampling_x,
+                                             xd->plane[1].subsampling_y);
   if (uv_dc_pred) {
     const int n = pmi->palette_size[1];
     const int palette_uv_mode_ctx = (pmi->palette_size[0] > 0);
@@ -863,11 +861,12 @@ static AOM_INLINE void write_cfl_alphas(FRAME_CONTEXT *const ec_ctx,
 }
 
 static AOM_INLINE void write_cdef(AV1_COMMON *cm, MACROBLOCKD *const xd,
-                                  aom_writer *w, int skip, int mi_col,
-                                  int mi_row) {
+                                  aom_writer *w, int skip) {
   if (cm->coded_lossless || cm->allow_intrabc) return;
 
   const int m = ~((1 << (6 - MI_SIZE_LOG2)) - 1);
+  const int mi_row = xd->mi_row;
+  const int mi_col = xd->mi_col;
   const MB_MODE_INFO *mbmi =
       cm->mi_grid_base[(mi_row & m) * cm->mi_stride + (mi_col & m)];
   // Initialise when at top left part of the superblock
@@ -890,11 +889,12 @@ static AOM_INLINE void write_cdef(AV1_COMMON *cm, MACROBLOCKD *const xd,
 
 static AOM_INLINE void write_inter_segment_id(
     AV1_COMP *cpi, aom_writer *w, const struct segmentation *const seg,
-    struct segmentation_probs *const segp, int mi_row, int mi_col, int skip,
-    int preskip) {
+    struct segmentation_probs *const segp, int skip, int preskip) {
   MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
   AV1_COMMON *const cm = &cpi->common;
+  const int mi_row = xd->mi_row;
+  const int mi_col = xd->mi_col;
 
   if (seg->update_map) {
     if (preskip) {
@@ -902,7 +902,7 @@ static AOM_INLINE void write_inter_segment_id(
     } else {
       if (seg->segid_preskip) return;
       if (skip) {
-        write_segment_id(cpi, mbmi, w, seg, segp, mi_row, mi_col, 1);
+        write_segment_id(cpi, mbmi, w, seg, segp, 1);
         if (seg->temporal_update) mbmi->seg_id_predicted = 0;
         return;
       }
@@ -912,22 +912,21 @@ static AOM_INLINE void write_inter_segment_id(
       aom_cdf_prob *pred_cdf = av1_get_pred_cdf_seg_id(segp, xd);
       aom_write_symbol(w, pred_flag, pred_cdf, 2);
       if (!pred_flag) {
-        write_segment_id(cpi, mbmi, w, seg, segp, mi_row, mi_col, 0);
+        write_segment_id(cpi, mbmi, w, seg, segp, 0);
       }
       if (pred_flag) {
         set_spatial_segment_id(cm, cm->cur_frame->seg_map, mbmi->sb_type,
                                mi_row, mi_col, mbmi->segment_id);
       }
     } else {
-      write_segment_id(cpi, mbmi, w, seg, segp, mi_row, mi_col, 0);
+      write_segment_id(cpi, mbmi, w, seg, segp, 0);
     }
   }
 }
 
 // If delta q is present, writes delta_q index.
 // Also writes delta_q loop filter levels, if present.
-static AOM_INLINE void write_delta_q_params(AV1_COMP *cpi, const int mi_row,
-                                            const int mi_col, int skip,
+static AOM_INLINE void write_delta_q_params(AV1_COMP *cpi, int skip,
                                             aom_writer *w) {
   AV1_COMMON *const cm = &cpi->common;
   const DeltaQInfo *const delta_q_info = &cm->delta_q_info;
@@ -938,8 +937,8 @@ static AOM_INLINE void write_delta_q_params(AV1_COMP *cpi, const int mi_row,
     const MB_MODE_INFO *const mbmi = xd->mi[0];
     const BLOCK_SIZE bsize = mbmi->sb_type;
     const int super_block_upper_left =
-        ((mi_row & (cm->seq_params.mib_size - 1)) == 0) &&
-        ((mi_col & (cm->seq_params.mib_size - 1)) == 0);
+        ((xd->mi_row & (cm->seq_params.mib_size - 1)) == 0) &&
+        ((xd->mi_col & (cm->seq_params.mib_size - 1)) == 0);
 
     if ((bsize != cm->seq_params.sb_size || skip == 0) &&
         super_block_upper_left) {
@@ -973,8 +972,6 @@ static AOM_INLINE void write_delta_q_params(AV1_COMP *cpi, const int mi_row,
 }
 
 static AOM_INLINE void write_intra_prediction_modes(AV1_COMP *cpi,
-                                                    const int mi_row,
-                                                    const int mi_col,
                                                     int is_keyframe,
                                                     aom_writer *w) {
   const AV1_COMMON *const cm = &cpi->common;
@@ -1003,7 +1000,8 @@ static AOM_INLINE void write_intra_prediction_modes(AV1_COMP *cpi,
 
   // UV mode and UV angle delta.
   if (!cm->seq_params.monochrome &&
-      is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
+      is_chroma_reference(xd->mi_row, xd->mi_col, bsize,
+                          xd->plane[1].subsampling_x,
                           xd->plane[1].subsampling_y)) {
     const UV_PREDICTION_MODE uv_mode = mbmi->uv_mode;
     write_intra_uv_mode(ec_ctx, uv_mode, mode, is_cfl_allowed(xd), w);
@@ -1017,7 +1015,7 @@ static AOM_INLINE void write_intra_prediction_modes(AV1_COMP *cpi,
 
   // Palette.
   if (av1_allow_palette(cm->allow_screen_content_tools, bsize)) {
-    write_palette_mode_info(cm, xd, mbmi, mi_row, mi_col, w);
+    write_palette_mode_info(cm, xd, mbmi, w);
   }
 
   // Filter intra.
@@ -1066,8 +1064,7 @@ static INLINE int_mv get_ref_mv(const MACROBLOCK *x, int ref_idx) {
                                x->mbmi_ext_frame);
 }
 
-static AOM_INLINE void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
-                                           const int mi_col, aom_writer *w) {
+static AOM_INLINE void pack_inter_mode_mvs(AV1_COMP *cpi, aom_writer *w) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCK *const x = &cpi->td.mb;
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -1084,7 +1081,7 @@ static AOM_INLINE void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
   const int is_compound = has_second_ref(mbmi);
   int ref;
 
-  write_inter_segment_id(cpi, w, seg, segp, mi_row, mi_col, 0, 1);
+  write_inter_segment_id(cpi, w, seg, segp, 0, 1);
 
   write_skip_mode(cm, xd, segment_id, mbmi, w);
 
@@ -1092,18 +1089,18 @@ static AOM_INLINE void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
   const int skip =
       mbmi->skip_mode ? 1 : write_skip(cm, xd, segment_id, mbmi, w);
 
-  write_inter_segment_id(cpi, w, seg, segp, mi_row, mi_col, skip, 0);
+  write_inter_segment_id(cpi, w, seg, segp, skip, 0);
 
-  write_cdef(cm, xd, w, skip, mi_col, mi_row);
+  write_cdef(cm, xd, w, skip);
 
-  write_delta_q_params(cpi, mi_row, mi_col, skip, w);
+  write_delta_q_params(cpi, skip, w);
 
   if (!mbmi->skip_mode) write_is_inter(cm, xd, mbmi->segment_id, w, is_inter);
 
   if (mbmi->skip_mode) return;
 
   if (!is_inter) {
-    write_intra_prediction_modes(cpi, mi_row, mi_col, 0, w);
+    write_intra_prediction_modes(cpi, 0, w);
   } else {
     int16_t mode_ctx;
 
@@ -1241,8 +1238,7 @@ static AOM_INLINE void write_intrabc_info(
 
 static AOM_INLINE void write_mb_modes_kf(
     AV1_COMP *cpi, MACROBLOCKD *xd,
-    const MB_MODE_INFO_EXT_FRAME *mbmi_ext_frame, const int mi_row,
-    const int mi_col, aom_writer *w) {
+    const MB_MODE_INFO_EXT_FRAME *mbmi_ext_frame, aom_writer *w) {
   AV1_COMMON *const cm = &cpi->common;
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   const struct segmentation *const seg = &cm->seg;
@@ -1250,23 +1246,23 @@ static AOM_INLINE void write_mb_modes_kf(
   const MB_MODE_INFO *const mbmi = xd->mi[0];
 
   if (seg->segid_preskip && seg->update_map)
-    write_segment_id(cpi, mbmi, w, seg, segp, mi_row, mi_col, 0);
+    write_segment_id(cpi, mbmi, w, seg, segp, 0);
 
   const int skip = write_skip(cm, xd, mbmi->segment_id, mbmi, w);
 
   if (!seg->segid_preskip && seg->update_map)
-    write_segment_id(cpi, mbmi, w, seg, segp, mi_row, mi_col, skip);
+    write_segment_id(cpi, mbmi, w, seg, segp, skip);
 
-  write_cdef(cm, xd, w, skip, mi_col, mi_row);
+  write_cdef(cm, xd, w, skip);
 
-  write_delta_q_params(cpi, mi_row, mi_col, skip, w);
+  write_delta_q_params(cpi, skip, w);
 
   if (av1_allow_intrabc(cm)) {
     write_intrabc_info(xd, mbmi_ext_frame, w);
     if (is_intrabc_block(mbmi)) return;
   }
 
-  write_intra_prediction_modes(cpi, mi_row, mi_col, 1, w);
+  write_intra_prediction_modes(cpi, 1, w);
 }
 
 #if CONFIG_RD_DEBUG
@@ -1359,14 +1355,13 @@ static AOM_INLINE void enc_dump_logs(AV1_COMP *cpi, int mi_row, int mi_col) {
 }
 #endif  // ENC_MISMATCH_DEBUG
 
-static AOM_INLINE void write_mbmi_b(AV1_COMP *cpi, aom_writer *w, int mi_row,
-                                    int mi_col) {
+static AOM_INLINE void write_mbmi_b(AV1_COMP *cpi, aom_writer *w) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
   MB_MODE_INFO *m = xd->mi[0];
 
   if (frame_is_intra_only(cm)) {
-    write_mb_modes_kf(cpi, xd, cpi->td.mb.mbmi_ext_frame, mi_row, mi_col, w);
+    write_mb_modes_kf(cpi, xd, cpi->td.mb.mbmi_ext_frame, w);
   } else {
     // has_subpel_mv_component needs the ref frame buffers set up to look
     // up if they are scaled. has_subpel_mv_component is in turn needed by
@@ -1374,10 +1369,10 @@ static AOM_INLINE void write_mbmi_b(AV1_COMP *cpi, aom_writer *w, int mi_row,
     set_ref_ptrs(cm, xd, m->ref_frame[0], m->ref_frame[1]);
 
 #if ENC_MISMATCH_DEBUG
-    enc_dump_logs(cpi, mi_row, mi_col);
+    enc_dump_logs(cpi, xd->mi_row, xd->mi_col);
 #endif  // ENC_MISMATCH_DEBUG
 
-    pack_inter_mode_mvs(cpi, mi_row, mi_col, w);
+    pack_inter_mode_mvs(cpi, w);
   }
 }
 
@@ -1419,8 +1414,7 @@ static AOM_INLINE void write_inter_txb_coeff(
 
 static AOM_INLINE void write_tokens_b(AV1_COMP *cpi, aom_writer *w,
                                       const TOKENEXTRA **tok,
-                                      const TOKENEXTRA *const tok_end,
-                                      int mi_row, int mi_col) {
+                                      const TOKENEXTRA *const tok_end) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCK *const x = &cpi->td.mb;
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -1431,7 +1425,7 @@ static AOM_INLINE void write_tokens_b(AV1_COMP *cpi, aom_writer *w,
 
   const int is_inter = is_inter_block(mbmi);
   if (!is_inter) {
-    av1_write_coeffs_mb(cm, x, mi_row, mi_col, w, bsize);
+    av1_write_coeffs_mb(cm, x, w, bsize);
   } else {
     int block[MAX_MB_PLANE] = { 0 };
     assert(bsize == get_plane_block_size(bsize, xd->plane[0].subsampling_x,
@@ -1455,8 +1449,8 @@ static AOM_INLINE void write_tokens_b(AV1_COMP *cpi, aom_writer *w,
       for (int col = 0; col < num_4x4_w; col += mu_blocks_wide) {
         for (int plane = 0; plane < num_planes; ++plane) {
           const struct macroblockd_plane *const pd = &xd->plane[plane];
-          if (!is_chroma_reference(mi_row, mi_col, bsize, pd->subsampling_x,
-                                   pd->subsampling_y)) {
+          if (!is_chroma_reference(xd->mi_row, xd->mi_col, bsize,
+                                   pd->subsampling_x, pd->subsampling_y)) {
             continue;
           }
           write_inter_txb_coeff(cm, x, mbmi, w, tok, tok_end, &token_stats, row,
@@ -1502,7 +1496,7 @@ static AOM_INLINE void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
   xd->left_txfm_context =
       xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
 
-  write_mbmi_b(cpi, w, mi_row, mi_col);
+  write_mbmi_b(cpi, w);
 
   for (int plane = 0; plane < AOMMIN(2, av1_num_planes(cm)); ++plane) {
     const uint8_t palette_size_plane =
@@ -1544,7 +1538,7 @@ static AOM_INLINE void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
   }
 
   if (!mbmi->skip) {
-    write_tokens_b(cpi, w, tok, tok_end, mi_row, mi_col);
+    write_tokens_b(cpi, w, tok, tok_end);
   }
 }
 

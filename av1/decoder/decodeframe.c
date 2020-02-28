@@ -382,7 +382,7 @@ static AOM_INLINE void decode_mbmi_block(AV1Decoder *const pbi,
 #endif
   set_offsets(cm, xd, bsize, mi_row, mi_col, bw, bh, x_mis, y_mis);
   xd->mi[0]->partition = partition;
-  av1_read_mode_info(pbi, xd, mi_row, mi_col, r, x_mis, y_mis);
+  av1_read_mode_info(pbi, xd, r, x_mis, y_mis);
   if (bsize >= BLOCK_8X8 &&
       (seq_params->subsampling_x || seq_params->subsampling_y)) {
     const BLOCK_SIZE uv_subsize =
@@ -1148,15 +1148,15 @@ static AOM_INLINE void set_color_index_map_offset(MACROBLOCKD *const xd,
 
 static AOM_INLINE void decode_token_recon_block(AV1Decoder *const pbi,
                                                 ThreadData *const td,
-                                                int mi_row, int mi_col,
                                                 aom_reader *r,
                                                 BLOCK_SIZE bsize) {
   AV1_COMMON *const cm = &pbi->common;
   MACROBLOCKD *const xd = &td->xd;
   const int num_planes = av1_num_planes(cm);
-
   MB_MODE_INFO *mbmi = xd->mi[0];
   CFL_CTX *const cfl = &xd->cfl;
+  const int mi_row = xd->mi_row;
+  const int mi_col = xd->mi_col;
   cfl->is_chroma_reference = is_chroma_reference(
       mi_row, mi_col, bsize, cfl->subsampling_x, cfl->subsampling_y);
 
@@ -1490,7 +1490,7 @@ static AOM_INLINE void parse_decode_block(AV1Decoder *const pbi,
   }
   if (mbmi->skip) av1_reset_skip_context(xd, bsize, num_planes);
 
-  decode_token_recon_block(pbi, td, mi_row, mi_col, r, bsize);
+  decode_token_recon_block(pbi, td, r, bsize);
 }
 
 static AOM_INLINE void set_offsets_for_pred_and_recon(AV1Decoder *const pbi,
@@ -1526,7 +1526,7 @@ static AOM_INLINE void decode_block(AV1Decoder *const pbi, ThreadData *const td,
                                     BLOCK_SIZE bsize) {
   (void)partition;
   set_offsets_for_pred_and_recon(pbi, td, mi_row, mi_col, bsize);
-  decode_token_recon_block(pbi, td, mi_row, mi_col, r, bsize);
+  decode_token_recon_block(pbi, td, r, bsize);
 }
 
 static PARTITION_TYPE read_partition(MACROBLOCKD *xd, int mi_row, int mi_col,
