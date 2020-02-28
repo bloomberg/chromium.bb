@@ -10,7 +10,12 @@ base_dir=$(dirname "$0")
 PATH=$PATH:$base_dir
 
 if [[ $GCLIENT_PY3 == 1 ]]; then
+  # Explicitly run on Python 3
   PYTHONDONTWRITEBYTECODE=1 exec vpython3 "$base_dir/fetch.py" "$@"
+elif [[ $GCLIENT_PY3 == 0 ]]; then
+  # Explicitly run on Python 2
+  PYTHONDONTWRITEBYTECODE=1 exec vpython "$base_dir/fetch.py" "$@"
 else
+  # Run on Python 2 for now, allows default to be flipped.
   PYTHONDONTWRITEBYTECODE=1 exec vpython "$base_dir/fetch.py" "$@"
 fi
