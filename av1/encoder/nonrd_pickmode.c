@@ -1247,11 +1247,7 @@ static void search_filter_ref(AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *this_rdc,
   InterpFilter filters[FILTER_SEARCH_SIZE] = { EIGHTTAP_REGULAR,
                                                EIGHTTAP_SMOOTH };
   int i;
-  const int filter_search_size =
-      x->source_variance > cpi->sf.interp_sf.disable_filter_search_var_thresh
-          ? FILTER_SEARCH_SIZE
-          : 1;
-  for (i = 0; i < filter_search_size; ++i) {
+  for (i = 0; i < FILTER_SEARCH_SIZE; ++i) {
     int64_t cost;
     InterpFilter filter = filters[i];
     mi->interp_filters = av1_broadcast_interp_filter(filter);
@@ -1298,7 +1294,7 @@ static void search_filter_ref(AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *this_rdc,
   if (reuse_inter_pred) {
     pd->dst.buf = (*this_mode_pred)->data;
     pd->dst.stride = (*this_mode_pred)->stride;
-  } else if (best_filter_index < filter_search_size - 1) {
+  } else if (best_filter_index < FILTER_SEARCH_SIZE - 1) {
     av1_enc_build_inter_predictor_y(xd, mi_row, mi_col);
   }
 }
@@ -1479,6 +1475,8 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   int64_t inter_mode_thresh = RDCOST(x->rdmult, intra_cost_penalty, 0);
   const int perform_intra_pred = cpi->sf.rt_sf.check_intra_pred_nonrd;
   int use_modeled_non_rd_cost = 0;
+  int enable_filter_search = 0;
+  InterpFilter default_interp_filter = EIGHTTAP_REGULAR;
 
   (void)best_rd_so_far;
 
@@ -1607,6 +1605,11 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       x->content_state_sb != kLowVarHighSumdiff &&
       x->content_state_sb != kHighSad)
     use_modeled_non_rd_cost = 1;
+
+  if (cpi->sf.rt_sf.use_nonrd_filter_search) {
+    if (x->source_variance > cpi->sf.interp_sf.disable_filter_search_var_thresh)
+      enable_filter_search = 1;
+  }
 
   for (int idx = 0; idx < num_inter_modes; ++idx) {
     int rate_mv = 0;
@@ -1797,16 +1800,17 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 #if COLLECT_PICK_MODE_STAT
     ms_stat.num_nonskipped_searches[bsize][this_mode]++;
 #endif
-    if (cpi->sf.rt_sf.use_nonrd_filter_search &&
+    if (enable_filter_search &&
         ((mi->mv[0].as_mv.row & 0x07) || (mi->mv[0].as_mv.col & 0x07)) &&
         (ref_frame == LAST_FRAME || !x->nonrd_prune_ref_frame_search)) {
       search_filter_ref(cpi, x, &this_rdc, mi_row, mi_col, tmp, bsize,
                         reuse_inter_pred, &this_mode_pred, &var_y, &sse_y,
                         &this_early_term, use_model_yrd_large, &this_sse);
     } else {
-      mi->interp_filters = (filter_ref == SWITCHABLE)
-                               ? av1_broadcast_interp_filter(EIGHTTAP_REGULAR)
-                               : av1_broadcast_interp_filter(filter_ref);
+      mi->interp_filters =
+          (filter_ref == SWITCHABLE)
+              ? av1_broadcast_interp_filter(default_interp_filter)
+              : av1_broadcast_interp_filter(filter_ref);
       av1_enc_build_inter_predictor_y(xd, mi_row, mi_col);
       if (use_model_yrd_large) {
         model_skip_for_sb_y_large(cpi, bsize, mi_row, mi_col, x, xd, NULL, NULL,
