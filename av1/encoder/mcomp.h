@@ -104,16 +104,36 @@ void av1_init3smotion_compensation(search_site_config *cfg, int stride);
 
 // Set up limit values for MV components.
 // Mv beyond the range do not produce new/different prediction block.
+static INLINE void av1_set_mv_row_limits(const AV1_COMMON *const cm,
+                                         FullMvLimits *mv_limits, int mi_row,
+                                         int mi_height, int border) {
+  const int min1 = -(mi_row * MI_SIZE + border - 2 * AOM_INTERP_EXTEND);
+  const int min2 = -(((mi_row + mi_height) * MI_SIZE) + 2 * AOM_INTERP_EXTEND);
+  mv_limits->row_min = AOMMAX(min1, min2);
+  const int max1 = (cm->mi_rows - mi_row - mi_height) * MI_SIZE + border -
+                   2 * AOM_INTERP_EXTEND;
+  const int max2 = (cm->mi_rows - mi_row) * MI_SIZE + 2 * AOM_INTERP_EXTEND;
+  mv_limits->row_max = AOMMIN(max1, max2);
+}
+
+static INLINE void av1_set_mv_col_limits(const AV1_COMMON *const cm,
+                                         FullMvLimits *mv_limits, int mi_col,
+                                         int mi_width, int border) {
+  const int min1 = -(mi_col * MI_SIZE + border - 2 * AOM_INTERP_EXTEND);
+  const int min2 = -(((mi_col + mi_width) * MI_SIZE) + 2 * AOM_INTERP_EXTEND);
+  mv_limits->col_min = AOMMAX(min1, min2);
+  const int max1 = (cm->mi_cols - mi_col - mi_width) * MI_SIZE + border -
+                   2 * AOM_INTERP_EXTEND;
+  const int max2 = (cm->mi_cols - mi_col) * MI_SIZE + 2 * AOM_INTERP_EXTEND;
+  mv_limits->col_max = AOMMIN(max1, max2);
+}
+
 static INLINE void av1_set_mv_limits(const AV1_COMMON *const cm,
                                      FullMvLimits *mv_limits, int mi_row,
                                      int mi_col, int mi_height, int mi_width,
                                      int border) {
-  mv_limits->row_min = -(mi_row * MI_SIZE + border - 2 * AOM_INTERP_EXTEND);
-  mv_limits->col_min = -(mi_col * MI_SIZE + border - 2 * AOM_INTERP_EXTEND);
-  mv_limits->row_max = (cm->mi_rows - mi_row - mi_height) * MI_SIZE + border -
-                       2 * AOM_INTERP_EXTEND;
-  mv_limits->col_max = (cm->mi_cols - mi_col - mi_width) * MI_SIZE + border -
-                       2 * AOM_INTERP_EXTEND;
+  av1_set_mv_row_limits(cm, mv_limits, mi_row, mi_height, border);
+  av1_set_mv_col_limits(cm, mv_limits, mi_col, mi_width, border);
 }
 
 void av1_set_mv_search_range(FullMvLimits *mv_limits, const MV *mv);

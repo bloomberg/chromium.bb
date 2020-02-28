@@ -881,29 +881,6 @@ static INLINE int get_num_blocks(const int frame_length, const int mb_length) {
   return (frame_length + mb_length - 1) / mb_length;
 }
 
-// Helper function to get motion search range, or say limit of motion vector, on
-// either side of the frame.
-// TODO(chengchen): Figure out how this function works.
-// Previous comments: """
-//     Source frames are extended to 16 pixels. This is different than
-//      L/A/G reference frames that have a border of 32 (AV1ENCBORDERINPIXELS)
-//     A 6/8 tap filter is used for motion search.  This requires 2 pixels
-//      before and 3 pixels after.  So the largest Y mv on a border would
-//      then be 16 - AOM_INTERP_EXTEND. The UV blocks are half the size of the
-//      Y and therefore only extended by 8.  The largest mv that a UV block
-//      can support is 8 - AOM_INTERP_EXTEND.  A UV mv is half of a Y mv.
-//      (16 - AOM_INTERP_EXTEND) >> 1 which is greater than
-//      8 - AOM_INTERP_EXTEND.
-//     To keep the mv in play for both Y and UV planes the max that it
-//      can be on a border is therefore 16 - (2*AOM_INTERP_EXTEND+1).
-// """
-static INLINE int get_min_mv(const int block_idx, const int mb_length) {
-  return -((block_idx * mb_length) + (17 - 2 * AOM_INTERP_EXTEND));
-}
-static INLINE int get_max_mv(const int block_reverse_idx, const int mb_length) {
-  return (block_reverse_idx * mb_length) + (17 - 2 * AOM_INTERP_EXTEND);
-}
-
 typedef struct {
   int64_t sum;
   int64_t sse;
@@ -940,6 +917,8 @@ static FRAME_DIFF tf_do_filtering(
   const int mb_rows = get_num_blocks(frame_height, mb_height);
   const int mb_cols = get_num_blocks(frame_width, mb_width);
   const int num_planes = av1_num_planes(&cpi->common);
+  const int mi_h = mi_size_high_log2[block_size];
+  const int mi_w = mi_size_wide_log2[block_size];
   assert(num_planes >= 1 && num_planes <= MAX_MB_PLANE);
   const int is_high_bitdepth = is_frame_high_bitdepth(frame_to_filter);
 
@@ -975,11 +954,13 @@ static FRAME_DIFF tf_do_filtering(
       TF_ENABLE_PLANEWISE_STRATEGY && AOMMIN(frame_height, frame_width) >= 480;
   // Perform temporal filtering block by block.
   for (int mb_row = 0; mb_row < mb_rows; mb_row++) {
-    mb->mv_limits.row_min = get_min_mv(mb_row, mb_height);
-    mb->mv_limits.row_max = get_max_mv(mb_rows - 1 - mb_row, mb_height);
+    av1_set_mv_row_limits(&cpi->common, &mb->mv_limits, (mb_row << mi_h),
+                          (mb_height >> MI_SIZE_LOG2),
+                          cpi->oxcf.border_in_pixels);
     for (int mb_col = 0; mb_col < mb_cols; mb_col++) {
-      mb->mv_limits.col_min = get_min_mv(mb_col, mb_width);
-      mb->mv_limits.col_max = get_max_mv(mb_cols - 1 - mb_col, mb_width);
+      av1_set_mv_col_limits(&cpi->common, &mb->mv_limits, (mb_col << mi_w),
+                            (mb_width >> MI_SIZE_LOG2),
+                            cpi->oxcf.border_in_pixels);
       memset(accum, 0, num_planes * mb_pels * sizeof(accum[0]));
       memset(count, 0, num_planes * mb_pels * sizeof(count[0]));
       MV ref_mv = kZeroMv;  // Reference motion vector passed down along frames.

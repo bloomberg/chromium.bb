@@ -758,9 +758,8 @@ static AOM_INLINE void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx,
 
   for (mi_row = 0; mi_row < cm->mi_rows; mi_row += mi_height) {
     // Motion estimation row boundary
-    x->mv_limits.row_min = -((mi_row * MI_SIZE) + (17 - 2 * AOM_INTERP_EXTEND));
-    x->mv_limits.row_max = (cm->mi_rows - mi_height - mi_row) * MI_SIZE +
-                           (17 - 2 * AOM_INTERP_EXTEND);
+    av1_set_mv_row_limits(cm, &x->mv_limits, mi_row, mi_height,
+                          cpi->oxcf.border_in_pixels);
     xd->mb_to_top_edge = -GET_MV_SUBPEL(mi_row * MI_SIZE);
     xd->mb_to_bottom_edge =
         GET_MV_SUBPEL((cm->mi_rows - mi_height - mi_row) * MI_SIZE);
@@ -768,10 +767,8 @@ static AOM_INLINE void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx,
       TplDepStats tpl_stats;
 
       // Motion estimation column boundary
-      x->mv_limits.col_min =
-          -((mi_col * MI_SIZE) + (17 - 2 * AOM_INTERP_EXTEND));
-      x->mv_limits.col_max = ((cm->mi_cols - mi_width - mi_col) * MI_SIZE) +
-                             (17 - 2 * AOM_INTERP_EXTEND);
+      av1_set_mv_col_limits(cm, &x->mv_limits, mi_col, mi_width,
+                            cpi->oxcf.border_in_pixels);
       xd->mb_to_left_edge = -GET_MV_SUBPEL(mi_col * MI_SIZE);
       xd->mb_to_right_edge = GET_MV_SUBPEL(cm->mi_cols - mi_width - mi_col);
       mode_estimation(cpi, x, xd, &sf, frame_idx, mi_row, mi_col, bsize,
