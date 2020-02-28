@@ -876,9 +876,6 @@ class CBuildBotTest(cros_test_lib.RunCommandTempDirTestCase):
     kwargs.setdefault('usepkg', default)
     kwargs.setdefault('skip_chroot_upgrade', default)
 
-    kwargs.setdefault('event_file',
-                      os.path.join(self._buildroot, 'events',
-                                   'build-test-events.json'))
     commands.Build(buildroot=self._buildroot, board='amd64-generic', **kwargs)
     self.assertCommandContains(['./build_packages'])
 

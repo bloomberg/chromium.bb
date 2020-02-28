@@ -94,13 +94,12 @@ class SetupBoardRunConfig(object):
 class BuildPackagesRunConfig(object):
   """Value object to hold build packages run configs."""
 
-  def __init__(self, event_file=None, usepkg=True, install_debug_symbols=False,
+  def __init__(self, usepkg=True, install_debug_symbols=False,
                packages=None, use_flags=None, use_goma=False,
                incremental_build=True):
     """Init method.
 
     Args:
-      event_file (str): The event file location, enables events.
       usepkg (bool): Whether to use binpkgs or build from source. False
         currently triggers a local build, which will enable local reuse.
       install_debug_symbols (bool): Whether to include the debug symbols for all
@@ -114,7 +113,6 @@ class BuildPackagesRunConfig(object):
         safe, but certain operations can be faster when we know we are doing
         a fresh build.
     """
-    self.event_file = event_file
     self.usepkg = usepkg
     self.install_debug_symbols = install_debug_symbols
     self.packages = packages
@@ -133,10 +131,6 @@ class BuildPackagesRunConfig(object):
         '--skip_chroot_upgrade',
         '--nouse_any_chrome',
     ]
-
-    if self.event_file:
-      args.append('--withevents')
-      args.extend(['--eventfile', self.event_file])
 
     if not self.usepkg:
       args.append('--nousepkg')

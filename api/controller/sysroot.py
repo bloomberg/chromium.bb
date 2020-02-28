@@ -152,7 +152,6 @@ def InstallPackages(input_proto, output_proto, _config):
   """Install packages into a sysroot, building as necessary and permitted."""
   compile_source = (
       input_proto.flags.compile_source or input_proto.flags.toolchain_changed)
-  event_file = input_proto.flags.event_file
   # A new toolchain version will not yet have goma support, so goma must be
   # disabled when we are testing toolchain changes.
   use_goma = (
@@ -171,7 +170,6 @@ def InstallPackages(input_proto, output_proto, _config):
 
   use_flags = [u.flag for u in input_proto.use_flags]
   build_packages_config = sysroot.BuildPackagesRunConfig(
-      event_file=event_file,
       usepkg=not compile_source,
       install_debug_symbols=True,
       packages=packages,

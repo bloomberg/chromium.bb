@@ -269,15 +269,12 @@ class BuildPackagesRunConfigTest(cros_test_lib.TestCase):
   def testGetBuildPackagesDefaultArgs(self):
     """Test the build_packages args building for empty/false/0 values."""
     # Test False/None/0 values.
-    instance = sysroot.BuildPackagesRunConfig(event_file=None, usepkg=False,
+    instance = sysroot.BuildPackagesRunConfig(usepkg=False,
                                               install_debug_symbols=False,
                                               packages=None)
 
     args = instance.GetBuildPackagesArgs()
     self.AssertHasRequiredArgs(args)
-    # Events not included.
-    self.assertNotIn('--withevents', args)
-    self.assertNotIn('--eventfile', args)
     # Debug symbols not included.
     self.assertNotIn('--withdebugsymbols', args)
     # Source used.
@@ -287,19 +284,13 @@ class BuildPackagesRunConfigTest(cros_test_lib.TestCase):
 
   def testGetBuildPackagesArgs(self):
     """Test the build_packages args building for non-empty values."""
-    event_file = '/event/file.txt'
     packages = ['cat/pkg', 'cat2/pkg2']
-    instance = sysroot.BuildPackagesRunConfig(event_file=event_file,
-                                              usepkg=True,
+    instance = sysroot.BuildPackagesRunConfig(usepkg=True,
                                               install_debug_symbols=True,
                                               packages=packages)
 
     args = instance.GetBuildPackagesArgs()
     self.AssertHasRequiredArgs(args)
-    # Events included.
-    self.assertIn('--withevents', args)
-    self.assertIn('--eventfile', args)
-    self.assertIn(event_file, args)
     # Local build not used.
     self.assertNotIn('--nousepkg', args)
     self.assertNotIn('--reuse_pkgs_from_local_boards', args)

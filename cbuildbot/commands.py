@@ -559,7 +559,6 @@ def Build(buildroot,
           chrome_root=None,
           noretry=False,
           chroot_args=None,
-          event_file=None,
           run_goma=False,
           build_all_with_goma=False,
           disable_revdep_logic=False):
@@ -578,7 +577,6 @@ def Build(buildroot,
     chrome_root: The directory where chrome is stored.
     noretry: Do not retry package failures.
     chroot_args: The args to the chroot.
-    event_file: File name that events will be logged to.
     build_all_with_goma: Use goma to build all board packages.
     run_goma: Set ./build_package --run_goma option, which starts and stops
       goma server in chroot while building packages.
@@ -616,10 +614,6 @@ def Build(buildroot,
 
   if chrome_root:
     chroot_args.append('--chrome_root=%s' % chrome_root)
-
-  if event_file:
-    cmd.append('--withevents')
-    cmd.append('--eventfile=%s' % event_file)
 
   cmd.extend(packages)
   RunBuildScript(
