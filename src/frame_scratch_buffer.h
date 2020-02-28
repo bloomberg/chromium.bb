@@ -61,6 +61,10 @@ struct FrameScratchBuffer {
   // adjusting the offsets.
   YuvBuffer deblock_buffer;
   TileScratchBufferPool tile_scratch_buffer_pool;
+  // TODO(vigneshv): This is part of the frame scratch buffer for now. This will
+  // have to change or move to DecoderImpl when frame parallel mode with
+  // in-frame multi-theading is implemented.
+  ThreadingStrategy threading_strategy;
 };
 
 class FrameScratchBufferPool {

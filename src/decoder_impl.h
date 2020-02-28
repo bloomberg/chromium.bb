@@ -33,7 +33,6 @@
 #include "src/obu_parser.h"
 #include "src/residual_buffer_pool.h"
 #include "src/symbol_decoder_context.h"
-#include "src/threading_strategy.h"
 #include "src/tile.h"
 #include "src/utils/array_2d.h"
 #include "src/utils/block_parameters_holder.h"
@@ -236,7 +235,6 @@ class DecoderImpl : public Allocable {
 
   Queue<TemporalUnit> temporal_units_;
   DecoderState state_;
-  ThreadingStrategy threading_strategy_;
 
   DecoderBuffer buffer_ = {};
   // output_frame_ holds a reference to the output frame on behalf of buffer_.

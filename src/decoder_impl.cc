@@ -33,6 +33,7 @@
 #include "src/post_filter.h"
 #include "src/prediction_mask.h"
 #include "src/quantizer.h"
+#include "src/threading_strategy.h"
 #include "src/utils/blocking_counter.h"
 #include "src/utils/common.h"
 #include "src/utils/logging.h"
@@ -676,11 +677,13 @@ StatusCode DecoderImpl::DecodeTiles(
     LIBGAV1_DLOG(ERROR, "tiles.reserve(%d) failed.\n", tile_count);
     return kStatusOutOfMemory;
   }
-  if (!threading_strategy_.Reset(frame_header, settings_.threads)) {
+  ThreadingStrategy& threading_strategy =
+      frame_scratch_buffer->threading_strategy;
+  if (!threading_strategy.Reset(frame_header, settings_.threads)) {
     return kStatusOutOfMemory;
   }
 
-  if (threading_strategy_.row_thread_pool(0) != nullptr || IsFrameParallel()) {
+  if (threading_strategy.row_thread_pool(0) != nullptr || IsFrameParallel()) {
     const int block_width4x4_minus_one =
         sequence_header.use_128x128_superblock ? 31 : 15;
     const int block_width4x4_log2 =
@@ -718,14 +721,14 @@ StatusCode DecoderImpl::DecodeTiles(
     }
   }
 
-  if (threading_strategy_.post_filter_thread_pool() != nullptr &&
+  if (threading_strategy.post_filter_thread_pool() != nullptr &&
       (do_cdef || do_restoration)) {
     const int window_buffer_width = PostFilter::GetWindowBufferWidth(
-        threading_strategy_.post_filter_thread_pool(), frame_header);
+        threading_strategy.post_filter_thread_pool(), frame_header);
     size_t threaded_window_buffer_size =
         window_buffer_width *
         PostFilter::GetWindowBufferHeight(
-            threading_strategy_.post_filter_thread_pool(), frame_header) *
+            threading_strategy.post_filter_thread_pool(), frame_header) *
         (sequence_header.color_config.bitdepth == 8 ? sizeof(uint8_t)
                                                     : sizeof(uint16_t));
     if (do_cdef) {
@@ -789,10 +792,9 @@ StatusCode DecoderImpl::DecodeTiles(
 
   if (PostFilter::DoSuperRes(frame_header, settings_.post_filter_mask)) {
     const int num_threads =
-        1 +
-        ((threading_strategy_.post_filter_thread_pool() == nullptr)
-             ? 0
-             : threading_strategy_.post_filter_thread_pool()->num_threads());
+        1 + ((threading_strategy.post_filter_thread_pool() == nullptr)
+                 ? 0
+                 : threading_strategy.post_filter_thread_pool()->num_threads());
     const size_t superres_line_buffer_size =
         num_threads *
         ((MultiplyBy4(frame_header.columns4x4) + MultiplyBy2(kSuperResBorder)) *
@@ -818,7 +820,7 @@ StatusCode DecoderImpl::DecodeTiles(
       frame_scratch_buffer->inter_transform_sizes,
       &frame_scratch_buffer->loop_restoration_info, &block_parameters_holder,
       current_frame->buffer(), &frame_scratch_buffer->deblock_buffer, dsp,
-      threading_strategy_.post_filter_thread_pool(),
+      threading_strategy.post_filter_thread_pool(),
       frame_scratch_buffer->threaded_window_buffer.get(),
       frame_scratch_buffer->superres_line_buffer.get(),
       settings_.post_filter_mask);
@@ -860,7 +862,7 @@ StatusCode DecoderImpl::DecodeTiles(
           &saved_symbol_decoder_context, prev_segment_ids, &post_filter,
           &block_parameters_holder, &frame_scratch_buffer->cdef_index,
           &frame_scratch_buffer->inter_transform_sizes, dsp,
-          threading_strategy_.row_thread_pool(tile_index++),
+          threading_strategy.row_thread_pool(tile_index++),
           frame_scratch_buffer->residual_buffer_pool.get(),
           &frame_scratch_buffer->tile_scratch_buffer_pool,
           &frame_scratch_buffer->superblock_state, &pending_tiles,
@@ -941,17 +943,19 @@ StatusCode DecoderImpl::DecodeTilesThreadedNonFrameParallel(
     FrameScratchBuffer* const frame_scratch_buffer,
     PostFilter* const post_filter,
     BlockingCounterWithStatus* const pending_tiles) {
-  const int num_workers = threading_strategy_.tile_thread_count();
+  ThreadingStrategy& threading_strategy =
+      frame_scratch_buffer->threading_strategy;
+  const int num_workers = threading_strategy.tile_thread_count();
   BlockingCounterWithStatus pending_workers(num_workers);
   std::atomic<int> tile_counter(0);
   const int tile_count = static_cast<int>(tiles.size());
   bool tile_decoding_failed = false;
   // Submit tile decoding jobs to the thread pool.
   for (int i = 0; i < num_workers; ++i) {
-    threading_strategy_.tile_thread_pool()->Schedule([&tiles, tile_count,
-                                                      &tile_counter,
-                                                      &pending_workers,
-                                                      &pending_tiles]() {
+    threading_strategy.tile_thread_pool()->Schedule([&tiles, tile_count,
+                                                     &tile_counter,
+                                                     &pending_workers,
+                                                     &pending_tiles]() {
       bool failed = false;
       int index;
       while ((index = tile_counter.fetch_add(1, std::memory_order_relaxed)) <
@@ -995,7 +999,7 @@ StatusCode DecoderImpl::DecodeTilesThreadedNonFrameParallel(
         tile_groups.back().end, block_parameters_holder,
         frame_scratch_buffer->inter_transform_sizes);
   }
-  if (threading_strategy_.post_filter_thread_pool() != nullptr) {
+  if (threading_strategy.post_filter_thread_pool() != nullptr) {
     post_filter->ApplyFilteringThreaded();
   }
   return kStatusOk;
