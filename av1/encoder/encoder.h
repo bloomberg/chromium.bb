@@ -173,7 +173,6 @@ typedef struct TplDepFrame {
   uint8_t is_valid;
   TplDepStats *tpl_stats_ptr;
   const YV12_BUFFER_CONFIG *gf_picture;
-  YV12_BUFFER_CONFIG rec_picture_buf;
   YV12_BUFFER_CONFIG *rec_picture;
   int ref_map_index[REF_FRAMES];
   int stride;
