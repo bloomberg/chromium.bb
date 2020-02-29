@@ -158,6 +158,13 @@
     ]
   },
   {
+    "cmd": [],
+    "name": "TRYJOB DO NOT RETRY",
+    "~followup_annotations": [
+      "@@@SET_BUILD_PROPERTY@do_not_retry@true@@@"
+    ]
+  },
+  {
     "cmd": [
       "python",
       "-u",

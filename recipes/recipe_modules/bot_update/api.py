@@ -379,6 +379,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
             else:
               # This is actual patch failure.
               self.m.tryserver.set_patch_failure_tryjob_result()
+              self.m.cq.set_do_not_retry_build()
               self.m.python.failing_step(
                   'Patch failure', 'See attached log. Try rebasing?')
           except self.m.step.StepFailure as e:
