@@ -2696,62 +2696,68 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
   uint8_t best_tx_type_map[MAX_MIB_SIZE * MAX_MIB_SIZE];
   av1_copy_array(best_tx_type_map, xd->tx_type_map, ctx->num_4x4_blk);
 
+  FULLPEL_MOTION_SEARCH_PARAMS fullms_params;
+  const search_site_config *lookahead_search_sites =
+      &cpi->ss_cfg[SS_CFG_LOOKAHEAD];
+  av1_make_default_fullpel_ms_params(&fullms_params, cpi, x, bsize,
+                                     &dv_ref.as_mv, lookahead_search_sites);
+  fullms_params.is_intra_mode = 1;
+
   for (enum IntrabcMotionDirection dir = IBC_MOTION_ABOVE;
        dir < IBC_MOTION_DIRECTIONS; ++dir) {
-    const FullMvLimits tmp_mv_limits = x->mv_limits;
     switch (dir) {
       case IBC_MOTION_ABOVE:
-        x->mv_limits.col_min = (tile->mi_col_start - mi_col) * MI_SIZE;
-        x->mv_limits.col_max = (tile->mi_col_end - mi_col) * MI_SIZE - w;
-        x->mv_limits.row_min = (tile->mi_row_start - mi_row) * MI_SIZE;
-        x->mv_limits.row_max =
+        fullms_params.mv_limits.col_min =
+            (tile->mi_col_start - mi_col) * MI_SIZE;
+        fullms_params.mv_limits.col_max =
+            (tile->mi_col_end - mi_col) * MI_SIZE - w;
+        fullms_params.mv_limits.row_min =
+            (tile->mi_row_start - mi_row) * MI_SIZE;
+        fullms_params.mv_limits.row_max =
             (sb_row * cm->seq_params.mib_size - mi_row) * MI_SIZE - h;
         break;
       case IBC_MOTION_LEFT:
-        x->mv_limits.col_min = (tile->mi_col_start - mi_col) * MI_SIZE;
-        x->mv_limits.col_max =
+        fullms_params.mv_limits.col_min =
+            (tile->mi_col_start - mi_col) * MI_SIZE;
+        fullms_params.mv_limits.col_max =
             (sb_col * cm->seq_params.mib_size - mi_col) * MI_SIZE - w;
         // TODO(aconverse@google.com): Minimize the overlap between above and
         // left areas.
-        x->mv_limits.row_min = (tile->mi_row_start - mi_row) * MI_SIZE;
+        fullms_params.mv_limits.row_min =
+            (tile->mi_row_start - mi_row) * MI_SIZE;
         int bottom_coded_mi_edge =
             AOMMIN((sb_row + 1) * cm->seq_params.mib_size, tile->mi_row_end);
-        x->mv_limits.row_max = (bottom_coded_mi_edge - mi_row) * MI_SIZE - h;
+        fullms_params.mv_limits.row_max =
+            (bottom_coded_mi_edge - mi_row) * MI_SIZE - h;
         break;
       default: assert(0);
     }
-    assert(x->mv_limits.col_min >= tmp_mv_limits.col_min);
-    assert(x->mv_limits.col_max <= tmp_mv_limits.col_max);
-    assert(x->mv_limits.row_min >= tmp_mv_limits.row_min);
-    assert(x->mv_limits.row_max <= tmp_mv_limits.row_max);
-    av1_set_mv_search_range(&x->mv_limits, &dv_ref.as_mv);
+    assert(fullms_params.mv_limits.col_min >= fullms_params.mv_limits.col_min);
+    assert(fullms_params.mv_limits.col_max <= fullms_params.mv_limits.col_max);
+    assert(fullms_params.mv_limits.row_min >= fullms_params.mv_limits.row_min);
+    assert(fullms_params.mv_limits.row_max <= fullms_params.mv_limits.row_max);
 
-    if (x->mv_limits.col_max < x->mv_limits.col_min ||
-        x->mv_limits.row_max < x->mv_limits.row_min) {
-      x->mv_limits = tmp_mv_limits;
+    av1_set_mv_search_range(&fullms_params.mv_limits, &dv_ref.as_mv);
+
+    if (fullms_params.mv_limits.col_max < fullms_params.mv_limits.col_min ||
+        fullms_params.mv_limits.row_max < fullms_params.mv_limits.row_min) {
       continue;
     }
 
     const int step_param = cpi->mv_step_param;
     const FULLPEL_MV start_mv = get_fullmv_from_mv(&dv_ref.as_mv);
-    const search_site_config *lookahead_search_sites =
-        &cpi->ss_cfg[SS_CFG_LOOKAHEAD];
-    FULLPEL_MOTION_SEARCH_PARAMS full_ms_params;
-    av1_make_default_fullpel_ms_params(&full_ms_params, cpi, x, bsize,
-                                       &dv_ref.as_mv, lookahead_search_sites);
-    full_ms_params.is_intra_mode = 1;
     int cost_list[5];
 
-    int bestsme = av1_full_pixel_search(start_mv, &full_ms_params, step_param,
+    int bestsme = av1_full_pixel_search(start_mv, &fullms_params, step_param,
                                         cond_cost_list(cpi, cost_list),
                                         &x->best_mv.as_fullmv, NULL);
     av1_intrabc_hash_search(cpi, x, bsize, &dv_ref.as_mv, &bestsme,
                             &x->best_mv.as_fullmv);
 
-    x->mv_limits = tmp_mv_limits;
     if (bestsme == INT_MAX) continue;
     const MV dv = get_mv_from_fullmv(&x->best_mv.as_fullmv);
-    if (!av1_is_fullmv_in_range(&x->mv_limits, get_fullmv_from_mv(&dv)))
+    if (!av1_is_fullmv_in_range(&fullms_params.mv_limits,
+                                get_fullmv_from_mv(&dv)))
       continue;
     if (!av1_is_dv_valid(dv, cm, xd, mi_row, mi_col, bsize,
                          cm->seq_params.mib_size_log2))

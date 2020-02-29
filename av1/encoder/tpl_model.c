@@ -131,7 +131,6 @@ static uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
   int distortion;
   uint32_t sse;
   int cost_list[5];
-  const FullMvLimits tmp_mv_limits = x->mv_limits;
   FULLPEL_MV start_mv = get_fullmv_from_mv(&center_mv);
 
   // Setup frame pointers
@@ -142,8 +141,6 @@ static uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
 
   step_param = tpl_sf->reduce_first_step_size;
   step_param = AOMMIN(step_param, MAX_MVSEARCH_STEPS - 2);
-
-  av1_set_mv_search_range(&x->mv_limits, &center_mv);
 
   search_site_config *ss_cfg = &cpi->ss_cfg[SS_CFG_SRC];
   if (ss_cfg->stride != stride_ref) ss_cfg = &cpi->ss_cfg[SS_CFG_LOOKAHEAD];
@@ -157,9 +154,6 @@ static uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
   av1_full_pixel_search(start_mv, &full_ms_params, step_param,
                         cond_cost_list(cpi, cost_list), &x->best_mv.as_fullmv,
                         NULL);
-
-  /* restore UMV window */
-  x->mv_limits = tmp_mv_limits;
 
   const uint8_t *second_pred = NULL;
   const uint8_t *mask = NULL;

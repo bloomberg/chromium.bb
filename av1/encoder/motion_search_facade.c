@@ -29,7 +29,6 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
   struct buf_2d backup_yv12[MAX_MB_PLANE] = { { 0, 0, 0, 0, 0 } };
   int bestsme = INT_MAX;
   const int ref = mbmi->ref_frame[ref_idx];
-  FullMvLimits tmp_mv_limits = x->mv_limits;
   const YV12_BUFFER_CONFIG *scaled_ref_frame =
       av1_get_scaled_ref_frame(cpi, ref);
   const int mi_row = xd->mi_row;
@@ -114,10 +113,6 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
     }
   }
 
-  // Note: MV limits are modified here. Always restore the original values
-  // after full-pixel motion search.
-  av1_set_mv_search_range(&x->mv_limits, &ref_mv);
-
   FULLPEL_MV start_mv;
   if (mbmi->motion_mode != SIMPLE_TRANSLATION)
     start_mv = get_fullmv_from_mv(&mbmi->mv[0].as_mv);
@@ -152,8 +147,6 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
       xd->plane[i].pre[ref_idx] = backup_yv12[i];
     }
   }
-
-  x->mv_limits = tmp_mv_limits;
 
   // Terminate search with the current ref_idx if we have already encountered
   // another ref_mv in the drl such that:
@@ -692,7 +685,6 @@ void av1_simple_motion_search(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
   // ref_mv is used to calculate the cost of the motion vector
   const MV ref_mv = kZeroMv;
   const int step_param = cpi->mv_step_param;
-  const FullMvLimits tmp_mv_limits = x->mv_limits;
   const search_site_config *src_search_sites = &cpi->ss_cfg[SS_CFG_SRC];
   int cost_list[5];
   const int ref_idx = 0;
@@ -711,14 +703,9 @@ void av1_simple_motion_search(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
   av1_make_default_fullpel_ms_params(&full_ms_params, cpi, x, bsize, &ref_mv,
                                      src_search_sites);
 
-  // This overwrites the mv_limits so we will need to restore it later.
-  av1_set_mv_search_range(&x->mv_limits, &ref_mv);
   var = av1_full_pixel_search(start_mv, &full_ms_params, step_param,
                               cond_cost_list(cpi, cost_list),
                               &x->best_mv.as_fullmv, NULL);
-
-  // Restore
-  x->mv_limits = tmp_mv_limits;
 
   const int use_subpel_search =
       var < INT_MAX && !cpi->common.features.cur_frame_force_integer_mv &&

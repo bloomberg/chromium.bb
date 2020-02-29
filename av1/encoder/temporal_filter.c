@@ -78,7 +78,6 @@ static int tf_motion_search(AV1_COMP *cpi,
   MACROBLOCKD *const mbd = &mb->e_mbd;
   const struct buf_2d ori_src_buf = mb->plane[0].src;
   const struct buf_2d ori_pre_buf = mbd->plane[0].pre[0];
-  const FullMvLimits ori_mv_limits = mb->mv_limits;
   const MV_COST_TYPE ori_mv_cost_type = mb->mv_cost_type;
 
   // Parameters used for motion search.
@@ -111,7 +110,6 @@ static int tf_motion_search(AV1_COMP *cpi,
   mb->plane[0].src.stride = y_stride;
   mbd->plane[0].pre[0].buf = ref_frame->y_buffer + y_offset;
   mbd->plane[0].pre[0].stride = y_stride;
-  av1_set_mv_search_range(&mb->mv_limits, &baseline_mv);
   // Unused intermediate results for motion search.
   unsigned int sse;
   int distortion;
@@ -167,7 +165,6 @@ static int tf_motion_search(AV1_COMP *cpi,
         const int offset = i * y_stride + j;
         mb->plane[0].src.buf = frame_to_filter->y_buffer + y_offset + offset;
         mbd->plane[0].pre[0].buf = ref_frame->y_buffer + y_offset + offset;
-        av1_set_mv_search_range(&mb->mv_limits, &baseline_mv);
         mb->mv_cost_type = mv_cost_type;
 
         av1_make_default_fullpel_ms_params(
@@ -199,7 +196,6 @@ static int tf_motion_search(AV1_COMP *cpi,
   // Restore input state.
   mb->plane[0].src = ori_src_buf;
   mbd->plane[0].pre[0] = ori_pre_buf;
-  mb->mv_limits = ori_mv_limits;
   mb->mv_cost_type = ori_mv_cost_type;
 
   return block_error;

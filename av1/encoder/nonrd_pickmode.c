@@ -130,7 +130,6 @@ static int combined_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
   const MV ref_mv = av1_get_ref_mv(x, mi->ref_mv_idx).as_mv;
   MV center_mv;
   int dis;
-  const FullMvLimits tmp_mv_limits = x->mv_limits;
   int rv = 0;
   int cost_list[5];
   int search_subpel = 1;
@@ -146,7 +145,6 @@ static int combined_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
     av1_setup_pre_planes(xd, 0, scaled_ref_frame, mi_row, mi_col, NULL,
                          num_planes);
   }
-  av1_set_mv_search_range(&x->mv_limits, &ref_mv);
 
   start_mv = get_fullmv_from_mv(&ref_mv);
 
@@ -164,7 +162,6 @@ static int combined_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
                         cond_cost_list(cpi, cost_list), &x->best_mv.as_fullmv,
                         NULL);
 
-  x->mv_limits = tmp_mv_limits;
   *tmp_mv = x->best_mv;
   // calculate the bit cost on motion vector
   MV mvp_full = get_mv_from_fullmv(&tmp_mv->as_fullmv);
