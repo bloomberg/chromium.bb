@@ -6307,7 +6307,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 
 #if CONFIG_TUNE_VMAF
   if (oxcf->tuning == AOM_TUNE_VMAF_WITHOUT_PREPROCESSING ||
-      oxcf->tuning == AOM_TUNE_VMAF_WITH_PREPROCESSING ||
       oxcf->tuning == AOM_TUNE_VMAF_MAX_GAIN) {
     av1_set_mb_vmaf_rdmult_scaling(cpi);
   }
