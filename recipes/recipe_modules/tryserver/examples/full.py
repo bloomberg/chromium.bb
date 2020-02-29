@@ -53,8 +53,6 @@ def RunSteps(api):
 
 
 def GenTests(api):
-  description_step = api.override_step_data(
-      'git_cl description', stdout=api.raw_io.output_text('foobar'))
   # The 'test_patch_root' property used below is just so that these
   # tests can avoid using the gclient module to calculate the
   # patch root. Normal users would use gclient.get_gerrit_patch_root().
