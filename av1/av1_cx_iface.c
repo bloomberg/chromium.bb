@@ -685,7 +685,7 @@ static double get_modeled_qp_offset(int cq_level, int level, int bit_depth) {
   // 80% for keyframe was derived empirically.
   // 40% similar to rc_pick_q_and_bounds_one_pass_vbr() for Q mode ARF.
   // Rest derived similar to rc_pick_q_and_bounds_two_pass()
-  static const int percents[FIXED_QP_OFFSET_COUNT] = { 80, 60, 30, 15, 8 };
+  static const int percents[FIXED_QP_OFFSET_COUNT] = { 76, 60, 30, 15, 8 };
   const double q_val = av1_convert_qindex_to_q(cq_level, bit_depth);
   return q_val * percents[level] / 100;
 }
