@@ -854,22 +854,6 @@ class _GitDiffCache(_DiffCache):
     return scm.GIT.GetOldContents(local_root, path, branch=self._upstream)
 
 
-def _ParseDiffHeader(line):
-  """Searches |line| for diff headers and returns a tuple
-  (header, old_line, old_size, new_line, new_size), or None if line doesn't
-  contain a diff header.
-
-  This relies on the scm diff output describing each changed code section
-  with a line of the form
-
-  ^@@ <old line num>,<old size> <new line num>,<new size> @@$
-  """
-  m = re.match(r'^@@ \-([0-9]+)\,([0-9]+) \+([0-9]+)\,([0-9]+) @@', line)
-  if m:
-    return (m.group(0), int(m.group(1)), int(m.group(2)), int(m.group(3)),
-            int(m.group(4)))
-
-
 class AffectedFile(object):
   """Representation of a file in a change."""
 
@@ -883,7 +867,6 @@ class AffectedFile(object):
     self._local_root = repository_root
     self._is_directory = None
     self._cached_changed_contents = None
-    self._cached_change_size_in_bytes = None
     self._cached_new_contents = None
     self._diff_cache = diff_cache
     logging.debug('%s(%s)', self.__class__.__name__, self._path)
@@ -960,34 +943,15 @@ class AffectedFile(object):
     line_num = 0
 
     for line in self.GenerateScmDiff().splitlines():
-      h = _ParseDiffHeader(line)
-      if h:
-        line_num = h[3]
+      m = re.match(r'^@@ [0-9\,\+\-]+ \+([0-9]+)\,[0-9]+ @@', line)
+      if m:
+        line_num = int(m.groups(1)[0])
         continue
       if line.startswith('+') and not line.startswith('++'):
         self._cached_changed_contents.append((line_num, line[1:]))
       if not line.startswith('-'):
         line_num += 1
     return self._cached_changed_contents[:]
-
-  def ChangeSizeInBytes(self):
-    """Returns a list of tuples (deleted bytes, added bytes) of all changes
-    in this file.
-
-     This relies on the scm diff output describing each changed code section
-     with a line of the form
-
-     ^@@ <old line num>,<old size> <new line num>,<new size> @@$
-    """
-    if self._cached_change_size_in_bytes is not None:
-      return self._cached_change_size_in_bytes[:]
-    self._cached_change_size_in_bytes = []
-
-    for line in self.GenerateScmDiff().splitlines():
-      h = _ParseDiffHeader(line)
-      if h:
-        self._cached_change_size_in_bytes.append((h[2], h[4]))
-    return self._cached_change_size_in_bytes[:]
 
   def __str__(self):
     return self.LocalPath()
