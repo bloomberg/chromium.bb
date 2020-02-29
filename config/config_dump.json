@@ -34999,6 +34999,7 @@
         "hw_tests_override": [],
         "models": [
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"zork\",\n    \"name\": \"dalboz\",\n    \"test_suites\": []\n}",
+            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"zork\",\n    \"name\": \"ezkinil\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"zork\",\n    \"name\": \"morphius\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"zork\",\n    \"name\": \"trembyle\",\n    \"test_suites\": []\n}"
         ],
@@ -35023,6 +35024,7 @@
         "luci_builder": "Try",
         "models": [
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"zork\",\n    \"name\": \"dalboz\",\n    \"test_suites\": []\n}",
+            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"zork\",\n    \"name\": \"ezkinil\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"zork\",\n    \"name\": \"morphius\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"zork\",\n    \"name\": \"trembyle\",\n    \"test_suites\": []\n}"
         ],
