@@ -571,6 +571,39 @@ void ExtraSearch(
   }
 }
 
+void DescendingOrderTwo(int* const a, int* const b) {
+  if (*a < *b) {
+    std::swap(*a, *b);
+  }
+}
+
+// Comparator used for sorting candidate motion vectors in descending order of
+// their weights (as specified in 7.10.2.11).
+bool CompareCandidateMotionVectors(const int16_t& lhs, const int16_t& rhs) {
+  return lhs > rhs;
+}
+
+void SortWeightIndexStack(const int size, int16_t* const weight_index_stack) {
+  if (size <= 1) return;
+  if (size <= 3) {
+    // Specialize small sort sizes to speed up.
+    int weight_index_0 = weight_index_stack[0];
+    int weight_index_1 = weight_index_stack[1];
+    DescendingOrderTwo(&weight_index_0, &weight_index_1);
+    if (size == 3) {
+      int weight_index_2 = weight_index_stack[2];
+      DescendingOrderTwo(&weight_index_1, &weight_index_2);
+      DescendingOrderTwo(&weight_index_0, &weight_index_1);
+      weight_index_stack[2] = weight_index_2;
+    }
+    weight_index_stack[0] = weight_index_0;
+    weight_index_stack[1] = weight_index_1;
+  } else {
+    std::sort(&weight_index_stack[0], &weight_index_stack[size],
+              CompareCandidateMotionVectors);
+  }
+}
+
 // 7.10.2.14 (part 2).
 void ComputeContexts(bool found_new_mv, int nearest_matches, int total_matches,
                      int* new_mv_context, int* reference_mv_context) {
@@ -633,12 +666,6 @@ void AddSample(const Tile::Block& block, int delta_row, int delta_column,
   candidates[*num_warp_samples][3] =
       MultiplyBy8(mid_x) + candidate_bp.mv[0].mv[1];
   if (is_valid) ++*num_warp_samples;
-}
-
-// Comparator used for sorting candidate motion vectors in descending order of
-// their weights (as specified in 7.10.2.11).
-bool CompareCandidateMotionVectors(const int16_t& lhs, const int16_t& rhs) {
-  return lhs > rhs;
 }
 
 // 7.9.2.
@@ -725,13 +752,11 @@ void FindMvStack(
     ExtraSearch(block, is_compound, global_mv, reference_frame_sign_bias,
                 &num_mv_found, prediction_parameters);
   } else {
-    int16_t* const weight_index_stack =
-        prediction_parameters->weight_index_stack;
-    std::sort(&weight_index_stack[0],
-              &weight_index_stack[prediction_parameters->nearest_mv_count],
-              CompareCandidateMotionVectors);
-    std::sort(&weight_index_stack[prediction_parameters->nearest_mv_count],
-              &weight_index_stack[num_mv_found], CompareCandidateMotionVectors);
+    SortWeightIndexStack(prediction_parameters->nearest_mv_count,
+                         prediction_parameters->weight_index_stack);
+    SortWeightIndexStack(num_mv_found - prediction_parameters->nearest_mv_count,
+                         prediction_parameters->weight_index_stack +
+                             prediction_parameters->nearest_mv_count);
   }
   const int total_matches =
       static_cast<int>(found_row_match) + static_cast<int>(found_column_match);
@@ -740,6 +765,9 @@ void FindMvStack(
                     &contexts->new_mv, &contexts->reference_mv);
   }
   prediction_parameters->ref_mv_count = num_mv_found;
+  // The sort of |weight_index_stack| could be moved to Tile::AssignIntraMv()
+  // and Tile::AssignInterMv(), and only do a partial sort to the max index we
+  // need. However, the speed gain is trivial.
   // The |ref_mv_stack| clamping process is in Tile::AssignIntraMv() and
   // Tile::AssignInterMv(), and only up to two mvs are clamped.
 }
