@@ -120,7 +120,7 @@ class CompoundRtcpBuilder {
   RtcpSession* const session_;
 
   // Data to include in the next built RTCP packet.
-  FrameId checkpoint_frame_id_ = FrameId::first() - 1;
+  FrameId checkpoint_frame_id_ = FrameId::leader();
   std::chrono::milliseconds playout_delay_ = kDefaultTargetPlayoutDelay;
   absl::optional<RtcpReportBlock> receiver_report_for_next_packet_;
   std::vector<PacketNack> nacks_for_next_packet_;

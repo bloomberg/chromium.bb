@@ -47,6 +47,15 @@ class RtpPacketizer {
   // packetized.
   int ComputeNumberOfPackets(const EncryptedFrame& frame) const;
 
+  // See rtp_defines.h for wire-format diagram.
+  static constexpr int kBaseRtpHeaderSize =
+      // Plus one byte, because this implementation always includes the 8-bit
+      // Reference Frame ID field.
+      kRtpPacketMinValidSize + 1;
+  static constexpr int kAdaptiveLatencyHeaderSize = 4;
+  static constexpr int kMaxRtpHeaderSize =
+      kBaseRtpHeaderSize + kAdaptiveLatencyHeaderSize;
+
  private:
   int max_payload_size() const {
     // Start with the configured max packet size, then subtract reserved space
@@ -64,15 +73,6 @@ class RtpPacketizer {
   // re-transmitted, must have different sequence numbers (within wrap-around
   // concerns) per the RTP spec.
   uint16_t sequence_number_;
-
-  // See rtp_defines.h for wire-format diagram.
-  static constexpr int kBaseRtpHeaderSize =
-      // Plus one byte, because this implementation always includes the 8-bit
-      // Reference Frame ID field.
-      kRtpPacketMinValidSize + 1;
-  static constexpr int kAdaptiveLatencyHeaderSize = 4;
-  static constexpr int kMaxRtpHeaderSize =
-      kBaseRtpHeaderSize + kAdaptiveLatencyHeaderSize;
 };
 
 }  // namespace cast

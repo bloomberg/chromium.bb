@@ -62,7 +62,9 @@ class SenderPacketRouter : public Environment::PacketConsumer {
         absl::Span<uint8_t> buffer) = 0;
 
     // Returns the point-in-time at which RTP sending should resume, or kNever
-    // if it should be suspended until an explicit call to RequestRtpSend().
+    // if it should be suspended until an explicit call to RequestRtpSend(). The
+    // implementation may return a value on or before "now" to indicate an
+    // immediate resume is desired.
     virtual Clock::time_point GetRtpResumeTime() = 0;
 
    protected:

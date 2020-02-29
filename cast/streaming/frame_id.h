@@ -94,6 +94,16 @@ class FrameId : public ExpandedValueBase<int64_t, FrameId> {
   // The identifier for the first frame in a stream.
   static constexpr FrameId first() { return FrameId(0); }
 
+  // A virtual identifier, representing the frame before the first. There should
+  // never actually be a frame streamed with this identifier. Instead, this is
+  // used in various components to represent a "not yet seen/processed the first
+  // frame" state.
+  //
+  // The name "leader" comes from the terminology used in tape reels, which
+  // refers to the non-data-carrying segment of tape before the recording
+  // begins.
+  static constexpr FrameId leader() { return FrameId(-1); }
+
  private:
   friend class ExpandedValueBase<int64_t, FrameId>;
   friend std::ostream& operator<<(std::ostream& out, const FrameId rhs);

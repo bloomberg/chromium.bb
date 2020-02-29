@@ -24,7 +24,6 @@
 #include "cast/streaming/rtcp_session.h"
 #include "cast/streaming/rtp_packet_parser.h"
 #include "cast/streaming/sender_report_parser.h"
-#include "cast/streaming/session_config.h"
 #include "cast/streaming/ssrc.h"
 #include "platform/api/time.h"
 #include "util/alarm.h"
@@ -34,6 +33,7 @@ namespace cast {
 
 struct EncodedFrame;
 class ReceiverPacketRouter;
+struct SessionConfig;
 
 // The Cast Streaming Receiver, a peer corresponding to some Cast Streaming
 // Sender at the other end of a network link.
@@ -289,12 +289,12 @@ class Receiver {
 
   // The ID of the latest frame whose existence is known to this Receiver. This
   // value must always be greater than or equal to |checkpoint_frame()|.
-  FrameId latest_frame_expected_ = FrameId::first() - 1;
+  FrameId latest_frame_expected_ = FrameId::leader();
 
   // The ID of the last frame consumed. This value must always be less than or
   // equal to |checkpoint_frame()|, since it's impossible to consume incomplete
   // frames!
-  FrameId last_frame_consumed_ = FrameId::first() - 1;
+  FrameId last_frame_consumed_ = FrameId::leader();
 
   // The ID of the latest key frame known to be in-flight. This is used by
   // RequestKeyFrame() to ensure the PLI condition doesn't get set again until
@@ -335,6 +335,9 @@ class Receiver {
 
   // The interval between sending ACK/NACK feedback RTCP messages while
   // incomplete frames exist in the queue.
+  //
+  // TODO(miu): This should be a function of the current target playout delay,
+  // similar to the Sender's kickstart interval logic.
   static constexpr std::chrono::milliseconds kNackFeedbackInterval{30};
 };
 

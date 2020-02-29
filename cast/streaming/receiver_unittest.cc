@@ -314,7 +314,7 @@ class ReceiverTest : public testing::Test {
         kOneWayNetworkDelay);  // Transmit report to Receiver.
     // The Receiver will immediately reply with a Receiver Report.
     EXPECT_CALL(sender_,
-                OnReceiverCheckpoint(FrameId::first() - 1, kTargetPlayoutDelay))
+                OnReceiverCheckpoint(FrameId::leader(), kTargetPlayoutDelay))
         .Times(1);
     AdvanceClockAndRunTasks(kOneWayNetworkDelay);  // Transmit reply to Sender.
     testing::Mock::VerifyAndClearExpectations(&sender_);
@@ -377,7 +377,7 @@ TEST_F(ReceiverTest, ReceivesAndSendsRtcpPackets) {
   EXPECT_CALL(*sender(), OnReceiverReport(_))
       .WillOnce(SaveArg<0>(&receiver_report));
   EXPECT_CALL(*sender(),
-              OnReceiverCheckpoint(FrameId::first() - 1, kTargetPlayoutDelay))
+              OnReceiverCheckpoint(FrameId::leader(), kTargetPlayoutDelay))
       .Times(1);
 
   // Have the MockSender send a Sender Report with lip-sync timing information.
@@ -485,7 +485,7 @@ TEST_F(ReceiverTest, ReceivesFramesOutOfOrder) {
       case 3: {
         // Note that frame 4 will not yet be known to the Receiver, and so it
         // should not be mentioned in any of the feedback for this case.
-        EXPECT_CALL(*sender(), OnReceiverCheckpoint(FrameId::first() - 1,
+        EXPECT_CALL(*sender(), OnReceiverCheckpoint(FrameId::leader(),
                                                     kTargetPlayoutDelay))
             .Times(AtLeast(1));
         EXPECT_CALL(
@@ -504,7 +504,7 @@ TEST_F(ReceiverTest, ReceivesFramesOutOfOrder) {
       }
 
       case 4: {
-        EXPECT_CALL(*sender(), OnReceiverCheckpoint(FrameId::first() - 1,
+        EXPECT_CALL(*sender(), OnReceiverCheckpoint(FrameId::leader(),
                                                     kTargetPlayoutDelay))
             .Times(AtLeast(1));
         EXPECT_CALL(*sender(),
@@ -523,7 +523,7 @@ TEST_F(ReceiverTest, ReceivesFramesOutOfOrder) {
       }
 
       case 2: {
-        EXPECT_CALL(*sender(), OnReceiverCheckpoint(FrameId::first() - 1,
+        EXPECT_CALL(*sender(), OnReceiverCheckpoint(FrameId::leader(),
                                                     kTargetPlayoutDelay))
             .Times(AtLeast(1));
         EXPECT_CALL(*sender(), OnReceiverHasFrames(std::vector<FrameId>(

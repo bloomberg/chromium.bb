@@ -52,6 +52,14 @@ std::ostream& operator<<(std::ostream& os,
 std::ostream& operator<<(std::ostream& os,
                          const TrivialClockTraits::time_point& tp);
 
+// Logging (and gtest pretty-printing) for several commonly-used chrono types.
+std::ostream& operator<<(std::ostream& out, const std::chrono::hours&);
+std::ostream& operator<<(std::ostream& out, const std::chrono::minutes&);
+std::ostream& operator<<(std::ostream& out, const std::chrono::seconds&);
+std::ostream& operator<<(std::ostream& out, const std::chrono::milliseconds&);
+// Note: The ostream output operator for std::chrono::microseconds is handled by
+// the one for TrivialClockTraits::duration above since they are the same type.
+
 }  // namespace openscreen
 
 #endif  // PLATFORM_BASE_TRIVIAL_CLOCK_TRAITS_H_

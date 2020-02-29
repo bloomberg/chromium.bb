@@ -74,14 +74,14 @@ void SenderPacketRouter::OnSenderDestroyed(Ssrc receiver_ssrc) {
 void SenderPacketRouter::RequestRtcpSend(Ssrc receiver_ssrc) {
   const auto it = FindEntry(receiver_ssrc);
   OSP_DCHECK(it != senders_.end());
-  it->next_rtcp_send_time = environment_->now();
+  it->next_rtcp_send_time = Alarm::kImmediately;
   ScheduleNextBurst();
 }
 
 void SenderPacketRouter::RequestRtpSend(Ssrc receiver_ssrc) {
   const auto it = FindEntry(receiver_ssrc);
   OSP_DCHECK(it != senders_.end());
-  it->next_rtp_send_time = environment_->now();
+  it->next_rtp_send_time = Alarm::kImmediately;
   ScheduleNextBurst();
 }
 
