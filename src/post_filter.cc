@@ -308,6 +308,7 @@ void PostFilter::ApplyFilteringForOneSuperBlockRow(int row4x4, int sb4x4,
       CopyBorderForRestoration(previous_row4x4, sb4x4);
       ApplyLoopRestorationForOneSuperBlockRow(previous_row4x4, sb4x4);
     }
+    ExtendBordersForReferenceFrame(previous_row4x4, sb4x4);
   }
   if (is_last_row) {
     if (DoRestoration() && DoCdef()) {
@@ -326,7 +327,13 @@ void PostFilter::ApplyFilteringForOneSuperBlockRow(int row4x4, int sb4x4,
       // all the rows of the last superblock row.
       ApplyLoopRestorationForOneSuperBlockRow(row4x4 + sb4x4, 16);
     }
-    ExtendBordersForReferenceFrame();
+    ExtendBordersForReferenceFrame(row4x4, sb4x4);
+    if (DoRestoration()) {
+      ExtendBordersForReferenceFrame(row4x4 + sb4x4, 16);
+    }
+    if (!DoBorderExtensionInLoop()) {
+      ExtendBordersForReferenceFrame();
+    }
   }
 }
 
@@ -1042,6 +1049,53 @@ void PostFilter::CopyBorderForRestoration(int row4x4, int sb4x4) {
                          kRestorationBorder, kRestorationBorder,
                          (row == 0) ? kRestorationBorder : 0,
                          copy_bottom ? kRestorationBorder : 0);
+  }
+}
+
+void PostFilter::ExtendBordersForReferenceFrame(int row4x4, int sb4x4) {
+  if (frame_header_.refresh_frame_flags == 0 || !DoBorderExtensionInLoop()) {
+    return;
+  }
+  assert(row4x4 >= 0);
+  // Number of rows to be subtracted from the start position described by
+  // row4x4.
+  const int loop_restoration_row_offset =
+      DoRestoration() ? ((row4x4 == 0) ? 0 : 8) : 0;
+  // Number of rows to be subtracted from the height described by sb4x4.
+  const int loop_restoration_height_offset =
+      (DoRestoration() && row4x4 == 0) ? 8 : 0;
+  for (int plane = 0; plane < planes_; ++plane) {
+    const int subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y_;
+    const int subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
+    const int plane_width =
+        RightShiftWithRounding(upscaled_width_, subsampling_x);
+    const int plane_height = RightShiftWithRounding(height_, subsampling_y);
+    const int row =
+        (MultiplyBy4(row4x4) - loop_restoration_row_offset) >> subsampling_y;
+    assert(row >= 0);
+    if (row >= plane_height) break;
+    const int num_rows = std::min(
+        RightShiftWithRounding(
+            MultiplyBy4(sb4x4) - loop_restoration_height_offset, subsampling_y),
+        plane_height - row);
+    const bool copy_bottom = row + num_rows == plane_height;
+    const int stride = yuv_buffer_->stride(plane);
+    uint8_t* const start = yuv_buffer_->data(plane) + row * stride;
+#if LIBGAV1_MAX_BITDEPTH >= 10
+    if (bitdepth_ >= 10) {
+      ExtendFrame<uint16_t>(
+          start, plane_width, num_rows, stride, yuv_buffer_->left_border(plane),
+          yuv_buffer_->right_border(plane),
+          (row == 0) ? yuv_buffer_->top_border(plane) : 0,
+          copy_bottom ? yuv_buffer_->bottom_border(plane) : 0);
+      continue;
+    }
+#endif
+    ExtendFrame<uint8_t>(start, plane_width, num_rows, stride,
+                         yuv_buffer_->left_border(plane),
+                         yuv_buffer_->right_border(plane),
+                         (row == 0) ? yuv_buffer_->top_border(plane) : 0,
+                         copy_bottom ? yuv_buffer_->bottom_border(plane) : 0);
   }
 }
 

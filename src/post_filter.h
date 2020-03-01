@@ -438,6 +438,20 @@ class PostFilter {
   // Extend frame boundary for inter frame convolution and referencing if the
   // frame will be saved as a reference frame.
   void ExtendBordersForReferenceFrame();
+  // Same as above but does it only for the row starting at |row4x4| with a
+  // height of |sb4x4| (accounting for loop restoration offsets).
+  void ExtendBordersForReferenceFrame(int row4x4, int sb4x4);
+
+  // Returns true if we can perform border extension in loop (i.e.) without
+  // waiting until the entire frame is decoded. If intra_block_copy is true, we
+  // do in-loop border extension only if the upscaled_width is the same as 4 *
+  // columns4x4. Otherwise, we cannot do in loop border extension since those
+  // pixels may be used by intra block copy.
+  bool DoBorderExtensionInLoop() const {
+    return !frame_header_.allow_intrabc ||
+           frame_header_.upscaled_width ==
+               MultiplyBy4(frame_header_.columns4x4);
+  }
 
   // This function prepares the input source block for cdef filtering. The input
   // source block contains a 12x12 block, with the inner 8x8 as the desired
