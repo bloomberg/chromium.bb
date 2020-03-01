@@ -17,6 +17,8 @@
 #include "av1/encoder/extend.h"
 #include "av1/encoder/rdopt.h"
 
+static const double kBaselineVmaf = 97.42773;
+
 // TODO(sdeng): Add the SIMD implementation.
 static AOM_INLINE void highbd_unsharp_rect(const uint16_t *source,
                                            int source_stride,
@@ -173,7 +175,6 @@ static double find_best_frame_unsharp_amount(const AV1_COMP *const cpi,
                          cpi->oxcf.border_in_pixels, cm->byte_alignment);
 
   const double baseline_variance = frame_average_variance(cpi, source);
-  const double baseline_vmaf = 97.42773;
   int loop_count = 0;
   double approx_vmaf = 0.0;
   double best_vmaf, new_vmaf, unsharp_amount = unsharp_amount_start;
@@ -185,7 +186,7 @@ static double find_best_frame_unsharp_amount(const AV1_COMP *const cpi,
                   &new_vmaf);
     const double sharpened_var = frame_average_variance(cpi, &sharpened);
     approx_vmaf =
-        baseline_variance / sharpened_var * (new_vmaf - baseline_vmaf);
+        baseline_variance / sharpened_var * (new_vmaf - kBaselineVmaf);
 
     loop_count++;
   } while (approx_vmaf > best_vmaf && loop_count < max_loop_count);
@@ -419,11 +420,7 @@ static int update_frame(float *ref_data, float *main_data, float *temp_data,
       }
     }
   }
-  if (row < 0 && col < 0) {
-    frames->row = 0;
-    frames->col = 0;
-    return 0;
-  } else if (row < num_rows && col < num_cols) {
+  if (row < num_rows && col < num_cols) {
     // Set current block
     const int row_offset = row * block_h;
     const int col_offset = col * block_w;
@@ -488,8 +485,8 @@ void av1_set_mb_vmaf_rdmult_scaling(AV1_COMP *cpi) {
                          cpi->oxcf.border_in_pixels, cm->byte_alignment);
   gaussian_blur(cpi, cpi->source, &blurred);
 
-  double *scores = aom_malloc(sizeof(*scores) * (num_rows * num_cols + 1));
-  memset(scores, 0, sizeof(*scores) * (num_rows * num_cols + 1));
+  double *scores = aom_malloc(sizeof(*scores) * (num_rows * num_cols));
+  memset(scores, 0, sizeof(*scores) * (num_rows * num_cols));
   FrameData frame_data;
   frame_data.source = cpi->source;
   frame_data.blurred = &blurred;
@@ -497,12 +494,11 @@ void av1_set_mb_vmaf_rdmult_scaling(AV1_COMP *cpi) {
   frame_data.block_h = block_h;
   frame_data.num_rows = num_rows;
   frame_data.num_cols = num_cols;
-  frame_data.row = -1;
-  frame_data.col = -1;
+  frame_data.row = 0;
+  frame_data.col = 0;
   frame_data.bit_depth = bit_depth;
   aom_calc_vmaf_multi_frame(&frame_data, cpi->oxcf.vmaf_model_path,
                             update_frame, y_width, y_height, bit_depth, scores);
-  const double baseline_vmaf = scores[0];
 
   // Loop through each 'block_size' block.
   for (int row = 0; row < num_rows; ++row) {
@@ -518,8 +514,8 @@ void av1_set_mb_vmaf_rdmult_scaling(AV1_COMP *cpi) {
       uint8_t *const blurred_buf =
           blurred.y_buffer + row_offset_y * blurred.y_stride + col_offset_y;
 
-      const double vmaf = scores[index + 1];
-      const double dvmaf = baseline_vmaf - vmaf;
+      const double vmaf = scores[index];
+      const double dvmaf = kBaselineVmaf - vmaf;
       unsigned int sse;
       cpi->fn_ptr[block_size].vf(orig_buf, y_stride, blurred_buf,
                                  blurred.y_stride, &sse);
@@ -689,7 +685,7 @@ int av1_get_vmaf_base_qindex(const AV1_COMP *const cpi, int current_qindex) {
   const double approx_sse =
       cpi->last_frame_ysse /
       (double)((1 << (bit_depth - 8)) * (1 << (bit_depth - 8)));
-  const double approx_dvmaf = cpi->last_frame_bvmaf - cpi->last_frame_vmaf;
+  const double approx_dvmaf = kBaselineVmaf - cpi->last_frame_vmaf;
   const double sse_threshold =
       0.01 * cpi->source->y_width * cpi->source->y_height;
   const double vmaf_threshold = 0.01;
@@ -739,8 +735,6 @@ int av1_get_vmaf_base_qindex(const AV1_COMP *const cpi, int current_qindex) {
 void av1_update_vmaf_curve(AV1_COMP *cpi, YV12_BUFFER_CONFIG *source,
                            YV12_BUFFER_CONFIG *recon) {
   const int bit_depth = cpi->td.mb.e_mbd.bd;
-  aom_calc_vmaf(cpi->oxcf.vmaf_model_path, source, source, bit_depth,
-                &cpi->last_frame_bvmaf);
   aom_calc_vmaf(cpi->oxcf.vmaf_model_path, source, recon, bit_depth,
                 &cpi->last_frame_vmaf);
   if (bit_depth > 8) {
