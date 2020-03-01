@@ -362,6 +362,7 @@ const char kGetSystemAecGroupId[] = "GetSystemAecGroupId";
 const char kSetPlayerPlaybackStatus[] = "SetPlayerPlaybackStatus";
 const char kSetPlayerIdentity[] = "SetPlayerIdentity";
 const char kSetPlayerPosition[] = "SetPlayerPosition";
+const char kSetPlayerMetadata[] = "SetPlayerMetadata";
 
 // Names of properties returned by GetNodes()
 const char kIsInputProperty[] = "IsInput";
