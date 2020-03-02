@@ -160,7 +160,7 @@ static void msm_add_ubwc_combinations(struct driver *drv, const uint32_t *format
 static int msm_init(struct driver *drv)
 {
 	struct format_metadata metadata;
-	uint64_t render_use_flags = BO_USE_RENDER_MASK;
+	uint64_t render_use_flags = BO_USE_RENDER_MASK | BO_USE_SCANOUT;
 	uint64_t texture_use_flags = BO_USE_TEXTURE_MASK | BO_USE_HW_VIDEO_DECODER;
 	uint64_t sw_flags = (BO_USE_RENDERSCRIPT | BO_USE_SW_WRITE_OFTEN | BO_USE_SW_READ_OFTEN |
 			     BO_USE_LINEAR | BO_USE_PROTECTED);
@@ -180,7 +180,7 @@ static int msm_init(struct driver *drv)
 
 	/* The camera stack standardizes on NV12 for YUV buffers. */
 	drv_modify_combination(drv, DRM_FORMAT_NV12, &LINEAR_METADATA,
-			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
+			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE | BO_USE_SCANOUT);
 	/*
 	 * R8 format is used for Android's HAL_PIXEL_FORMAT_BLOB and is used for JPEG snapshots
 	 * from camera.
@@ -201,7 +201,7 @@ static int msm_init(struct driver *drv)
 	texture_use_flags &= ~sw_flags;
 
 	msm_add_ubwc_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
-				  &metadata, render_use_flags | BO_USE_SCANOUT);
+				  &metadata, render_use_flags);
 
 	msm_add_ubwc_combinations(drv, texture_source_formats, ARRAY_SIZE(texture_source_formats),
 				  &metadata, texture_use_flags);
