@@ -716,6 +716,84 @@ static int adjust_boost_bits_for_target_level(const AV1_COMP *const cpi,
   return bits_assigned;
 }
 
+// Compile time switch on alternate algorithm to allocate bits in ARF groups
+// #define ALT_ARF_ALLOCATION
+#ifdef ALT_ARF_ALLOCATION
+double layer_fraction[MAX_ARF_LAYERS + 1] = { 1.0,  0.70, 0.55, 0.60,
+                                              0.60, 1.0,  1.0 };
+static void allocate_gf_group_bits(GF_GROUP *gf_group, RATE_CONTROL *const rc,
+                                   int64_t gf_group_bits, int gf_arf_bits,
+                                   int key_frame, int use_arf) {
+  int64_t total_group_bits = gf_group_bits;
+  int base_frame_bits;
+  const int gf_group_size = gf_group->size;
+  int layer_frames[MAX_ARF_LAYERS + 1] = { 0 };
+
+  // Subtract the extra bits set aside for ARF frames from the Group Total
+  if (use_arf || !key_frame) total_group_bits -= gf_arf_bits;
+
+  if (rc->baseline_gf_interval)
+    base_frame_bits = (int)(total_group_bits / rc->baseline_gf_interval);
+  else
+    base_frame_bits = (int)1;
+
+  // For key frames the frame target rate is already set and it
+  // is also the golden frame.
+  // === [frame_index == 0] ===
+  int frame_index = 0;
+  if (!key_frame) {
+    if (rc->source_alt_ref_active)
+      gf_group->bit_allocation[frame_index] = 0;
+    else
+      gf_group->bit_allocation[frame_index] =
+          base_frame_bits + (int)(gf_arf_bits * layer_fraction[1]);
+  }
+  frame_index++;
+
+  // Check the number of frames in each layer in case we have a
+  // non standard group length.
+  int max_arf_layer = gf_group->max_layer_depth - 1;
+  for (int idx = frame_index; idx < gf_group_size; ++idx) {
+    if ((gf_group->update_type[idx] == ARF_UPDATE) ||
+        (gf_group->update_type[idx] == INTNL_ARF_UPDATE)) {
+      // max_arf_layer = AOMMAX(max_arf_layer, gf_group->layer_depth[idx]);
+      layer_frames[gf_group->layer_depth[idx]]++;
+    }
+  }
+
+  // Allocate extra bits to each ARF layer
+  int i;
+  int layer_extra_bits[MAX_ARF_LAYERS + 1] = { 0 };
+  for (i = 1; i <= max_arf_layer; ++i) {
+    double fraction = (i == max_arf_layer) ? 1.0 : layer_fraction[i];
+    layer_extra_bits[i] =
+        (int)((gf_arf_bits * fraction) / AOMMAX(1, layer_frames[i]));
+    gf_arf_bits -= (int)(gf_arf_bits * fraction);
+  }
+
+  // Now combine ARF layer and baseline bits to give total bits for each frame.
+  int arf_extra_bits;
+  for (int idx = frame_index; idx < gf_group_size; ++idx) {
+    switch (gf_group->update_type[idx]) {
+      case ARF_UPDATE:
+      case INTNL_ARF_UPDATE:
+        arf_extra_bits = layer_extra_bits[gf_group->layer_depth[idx]];
+        gf_group->bit_allocation[idx] = base_frame_bits + arf_extra_bits;
+        break;
+      case INTNL_OVERLAY_UPDATE:
+      case OVERLAY_UPDATE: gf_group->bit_allocation[idx] = 0; break;
+      default: gf_group->bit_allocation[idx] = base_frame_bits; break;
+    }
+  }
+
+  // Set the frame following the current GOP to 0 bit allocation. For ARF
+  // groups, this next frame will be overlay frame, which is the first frame
+  // in the next GOP. For GF group, next GOP will overwrite the rate allocation.
+  // Setting this frame to use 0 bit (of out the current GOP budget) will
+  // simplify logics in reference frame management.
+  gf_group->bit_allocation[gf_group_size] = 0;
+}
+#else
 static void allocate_gf_group_bits(GF_GROUP *gf_group, RATE_CONTROL *const rc,
                                    int64_t gf_group_bits, int gf_arf_bits,
                                    int key_frame, int use_arf) {
@@ -794,6 +872,7 @@ static void allocate_gf_group_bits(GF_GROUP *gf_group, RATE_CONTROL *const rc,
   // simplify logics in reference frame management.
   gf_group->bit_allocation[gf_group_size] = 0;
 }
+#endif
 
 // Returns true if KF group and GF group both are almost completely static.
 static INLINE int is_almost_static(double gf_zero_motion, int kf_zero_motion) {
@@ -1790,12 +1869,21 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
                          gf_group_bits);
 }
 
+// #define FIXED_ARF_BITS
+#ifdef FIXED_ARF_BITS
+#define ARF_BITS_FRACTION 0.75
+#endif
 void av1_gop_bit_allocation(const AV1_COMP *cpi, RATE_CONTROL *const rc,
                             GF_GROUP *gf_group, int is_key_frame, int use_arf,
                             int64_t gf_group_bits) {
   // Calculate the extra bits to be used for boosted frame(s)
+#ifdef FIXED_ARF_BITS
+  int gf_arf_bits = (int)(ARF_BITS_FRACTION * gf_group_bits);
+#else
   int gf_arf_bits = calculate_boost_bits(rc->baseline_gf_interval,
                                          rc->gfu_boost, gf_group_bits);
+#endif
+
   gf_arf_bits = adjust_boost_bits_for_target_level(cpi, rc, gf_arf_bits,
                                                    gf_group_bits, 1);
 
@@ -2639,6 +2727,20 @@ void av1_twopass_postencode_update(AV1_COMP *cpi) {
     rc->rate_error_estimate = clamp(rc->rate_error_estimate, -100, 100);
   } else {
     rc->rate_error_estimate = 0;
+  }
+
+  // Update the active best quality pyramid.
+  if (!rc->is_src_frame_alt_ref) {
+    const int pyramid_level = cpi->gf_group.layer_depth[cpi->gf_group.index];
+    int i;
+    for (i = pyramid_level; i <= MAX_ARF_LAYERS; ++i) {
+      rc->active_best_quality[i] = cpi->common.base_qindex;
+      // if (pyramid_level >= 2) {
+      //   rc->active_best_quality[pyramid_level] =
+      //     AOMMAX(rc->active_best_quality[pyramid_level],
+      //            cpi->common.base_qindex);
+      // }
+    }
   }
 
 #if 0

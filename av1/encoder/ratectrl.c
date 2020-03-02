@@ -1253,6 +1253,7 @@ static void adjust_active_best_and_worst_quality(const AV1_COMP *cpi,
   }
 
   aom_clear_system_state();
+#ifndef STRICT_RC
   // Static forced key frames Q restrictions dealt with elsewhere.
   if (!(frame_is_intra_only(cm)) || !rc->this_key_frame_forced ||
       (cpi->twopass.last_kfgroup_zeromotion_pct < STATIC_MOTION_THRESH)) {
@@ -1260,6 +1261,7 @@ static void adjust_active_best_and_worst_quality(const AV1_COMP *cpi,
     active_worst_quality =
         AOMMAX(active_worst_quality + qdelta, active_best_quality);
   }
+#endif
 
   // Modify active_best_quality for downscaled normal frames.
   if (av1_frame_scaled(cm) && !frame_is_kf_gf_arf(cpi)) {
@@ -1409,9 +1411,20 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
         cm->current_frame.frame_type == KEY_FRAME && cm->show_frame == 0;
     get_intra_q_and_bounds_two_pass(cpi, width, height, &active_best_quality,
                                     &active_worst_quality, cq_level, is_fwd_kf);
+#ifdef STRICT_RC
+    active_best_quality = 0;
+#endif
   } else {
+#ifdef STRICT_RC
+    //  Active best quality limited by previous layer.
+    const int pyramid_level = gf_group_pyramid_level(gf_group, gf_index);
+    active_best_quality =
+        rc->active_best_quality[pyramid_level - 1] +
+        AOMMAX((rc->active_best_quality[pyramid_level - 1] / 10), 5);
+#else
     active_best_quality =
         get_active_best_quality(cpi, active_worst_quality, cq_level, gf_index);
+#endif
 
     // For alt_ref and GF frames (including internal arf frames) adjust the
     // worst allowed quality as well. This insures that even on hard
@@ -1436,7 +1449,11 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
     active_worst_quality = q;
   }
 
+#ifdef STRICT_RC
+  *top_index = rc->worst_quality;
+#else
   *top_index = active_worst_quality;
+#endif
   *bottom_index = active_best_quality;
 
   assert(*top_index <= rc->worst_quality && *top_index >= rc->best_quality);

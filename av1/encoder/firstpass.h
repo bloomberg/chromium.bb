@@ -30,8 +30,6 @@ extern "C" {
 
 #define VLOW_MOTION_THRESHOLD 950
 
-#define MAX_ARF_LAYERS 6
-
 typedef struct {
   // Frame number in display order, if stats are for a single frame.
   // No real meaning for a collection of frames.
