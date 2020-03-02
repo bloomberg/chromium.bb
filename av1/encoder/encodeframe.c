@@ -5968,7 +5968,6 @@ static AOM_INLINE void encode_superblock(const AV1_COMP *const cpi,
   const int mi_row = xd->mi_row;
   const int mi_col = xd->mi_col;
   if (!is_inter) {
-    xd->cfl.is_chroma_reference = xd->is_chroma_ref;
     xd->cfl.store_y = store_cfl_required(cm, xd);
     mbmi->skip = 1;
     for (int plane = 0; plane < num_planes; ++plane) {

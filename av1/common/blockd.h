@@ -465,8 +465,6 @@ typedef struct cfl_ctx {
 #if CONFIG_DEBUG
   int rate;
 #endif  // CONFIG_DEBUG
-
-  int is_chroma_reference;
 } CFL_CTX;
 
 typedef struct dist_wtd_comp_params {

@@ -2645,7 +2645,6 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
   if (intra_yrd < best_rd) {
     // Only store reconstructed luma when there's chroma RDO. When there's no
     // chroma RDO, the reconstructed luma will be stored in encode_superblock().
-    xd->cfl.is_chroma_reference = xd->is_chroma_ref;
     xd->cfl.store_y = store_cfl_required_rdo(cm, x);
     if (xd->cfl.store_y) {
       // Restore reconstructed luma values.

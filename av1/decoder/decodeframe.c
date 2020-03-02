@@ -1149,8 +1149,6 @@ static AOM_INLINE void decode_token_recon_block(AV1Decoder *const pbi,
   MACROBLOCKD *const xd = &td->xd;
   const int num_planes = av1_num_planes(cm);
   MB_MODE_INFO *mbmi = xd->mi[0];
-  CFL_CTX *const cfl = &xd->cfl;
-  cfl->is_chroma_reference = xd->is_chroma_ref;
 
   if (!is_inter_block(mbmi)) {
     int row, col;
