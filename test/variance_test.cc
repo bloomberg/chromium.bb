@@ -2302,7 +2302,8 @@ INSTANTIATE_TEST_SUITE_P(NEON, AvxMseTest,
 
 INSTANTIATE_TEST_SUITE_P(
     NEON, AvxVarianceTest,
-    ::testing::Values(VarianceParams(6, 6, &aom_variance64x64_neon),
+    ::testing::Values(VarianceParams(7, 7, &aom_variance128x128_neon),
+                      VarianceParams(6, 6, &aom_variance64x64_neon),
                       VarianceParams(6, 5, &aom_variance64x32_neon),
                       VarianceParams(5, 6, &aom_variance32x64_neon),
                       VarianceParams(5, 5, &aom_variance32x32_neon),

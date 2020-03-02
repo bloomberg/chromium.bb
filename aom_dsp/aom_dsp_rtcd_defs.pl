@@ -1106,7 +1106,7 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
     add_proto qw/uint32_t/, "aom_sub_pixel_avg_variance${w}x${h}", "const uint8_t *src_ptr, int source_stride, int xoffset, int  yoffset, const uint8_t *ref_ptr, int ref_stride, uint32_t *sse, const uint8_t *second_pred";
     add_proto qw/uint32_t/, "aom_dist_wtd_sub_pixel_avg_variance${w}x${h}", "const uint8_t *src_ptr, int source_stride, int xoffset, int  yoffset, const uint8_t *ref_ptr, int ref_stride, uint32_t *sse, const uint8_t *second_pred, const DIST_WTD_COMP_PARAMS *jcp_param";
   }
-  specialize qw/aom_variance128x128   sse2 avx2         /;
+  specialize qw/aom_variance128x128   sse2 avx2 neon    /;
   specialize qw/aom_variance128x64    sse2 avx2         /;
   specialize qw/aom_variance64x128    sse2 avx2         /;
   specialize qw/aom_variance64x64     sse2 avx2 neon msa/;
