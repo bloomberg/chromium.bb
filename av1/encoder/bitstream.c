@@ -1496,6 +1496,7 @@ static AOM_INLINE void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
     if (palette_size_plane > 0) {
       assert(mbmi->use_intrabc == 0);
       assert(av1_allow_palette(cm->allow_screen_content_tools, mbmi->sb_type));
+      assert(!plane || xd->is_chroma_ref);
       int rows, cols;
       av1_get_block_dimensions(mbmi->sb_type, plane, xd, NULL, NULL, &rows,
                                &cols);
