@@ -1290,7 +1290,7 @@ def process_named_cache_options(parser, options, time_fn=None):
     cache = local_caching.NamedCache(root_dir, policies, time_fn=time_fn)
     # Touch any named caches we're going to use to minimize thrashing
     # between tasks that request some (but not all) of the same named caches.
-    cache.touch(name for name, _, _ in options.named_caches)
+    cache.touch(*[name for name, _, _ in options.named_caches])
     return cache
   return None
 
