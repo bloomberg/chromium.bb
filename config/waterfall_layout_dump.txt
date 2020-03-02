@@ -643,6 +643,7 @@
   capri-zfpga-full-tryjob
   capri-zfpga-llvm-next-toolchain-tryjob
   capri-zfpga-llvm-toolchain-tryjob
+  capri-zfpga-rapid-tryjob
   capri-zfpga-release-tryjob
   capri-zfpga-unittest-stress
   caroline-arc64-full-tryjob
@@ -718,6 +719,7 @@
   cobblepot-full-tryjob
   cobblepot-llvm-next-toolchain-tryjob
   cobblepot-llvm-toolchain-tryjob
+  cobblepot-rapid-tryjob
   cobblepot-release-tryjob
   cobblepot-unittest-stress
   config-updater-tryjob
@@ -1120,6 +1122,7 @@
   gonzo-full-tryjob
   gonzo-llvm-next-toolchain-tryjob
   gonzo-llvm-toolchain-tryjob
+  gonzo-rapid-tryjob
   gonzo-release-tryjob
   gonzo-unittest-stress
   gru-factory-gru-9017.B-factorybranch-tryjob
@@ -2008,6 +2011,7 @@
   wristpin-full-tryjob
   wristpin-llvm-next-toolchain-tryjob
   wristpin-llvm-toolchain-tryjob
+  wristpin-rapid-tryjob
   wristpin-release-tryjob
   wristpin-unittest-stress
   x32-generic-full-tryjob
