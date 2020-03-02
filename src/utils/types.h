@@ -31,6 +31,14 @@ struct MotionVector : public Allocable {
   static const int kRow = 0;
   static const int kColumn = 1;
 
+  MotionVector() = default;
+  MotionVector(const MotionVector& mv) = default;
+
+  MotionVector& operator=(const MotionVector& rhs) {
+    mv32 = rhs.mv32;
+    return *this;
+  }
+
   bool operator==(const MotionVector& rhs) const { return mv32 == rhs.mv32; }
 
   union {
@@ -39,14 +47,29 @@ struct MotionVector : public Allocable {
     // store motion vectors.
     int16_t mv[2];
     // A uint32_t view into the |mv| array. Useful for cases where both the
-    // motion vectors have to be compared with a single 32 bit instruction.
+    // motion vectors have to be copied or compared with a single 32 bit
+    // instruction.
     uint32_t mv32;
   };
 };
 
 union CandidateMotionVector {
+  CandidateMotionVector() = default;
+  CandidateMotionVector(const CandidateMotionVector& mv) = default;
+
+  CandidateMotionVector& operator=(const CandidateMotionVector& rhs) {
+    mv64 = rhs.mv64;
+    return *this;
+  }
+
+  bool operator==(const CandidateMotionVector& rhs) const {
+    return mv64 == rhs.mv64;
+  }
+
   MotionVector mv[2];
-  int64_t mv64;
+  // A uint64_t view into the |mv| array. Useful for cases where all the motion
+  // vectors have to be copied or compared with a single 64 bit instruction.
+  uint64_t mv64;
 };
 
 // Stores the motion information used for motion field estimation.

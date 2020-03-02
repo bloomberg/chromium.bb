@@ -166,7 +166,7 @@ void SearchStack(const Tile::Block& block, const BlockParameters& mv_bp,
   auto result =
       std::find_if(ref_mv_stack, ref_mv_stack + *num_mv_found,
                    [&candidate_mv](const CandidateMotionVector& ref_mv) {
-                     return is_compound ? ref_mv.mv64 == candidate_mv.mv64
+                     return is_compound ? ref_mv == candidate_mv
                                         : ref_mv.mv[0] == candidate_mv.mv[0];
                    });
   if (result != ref_mv_stack + *num_mv_found) {
@@ -175,7 +175,7 @@ void SearchStack(const Tile::Block& block, const BlockParameters& mv_bp,
     return;
   }
   if (*num_mv_found >= kMaxRefMvStackSize) return;
-  ref_mv_stack[*num_mv_found] = {{candidate_mv.mv[0], candidate_mv.mv[1]}};
+  ref_mv_stack[*num_mv_found] = candidate_mv;
   prediction_parameters->SetWeightIndexStackEntry(*num_mv_found, weight);
   ++*num_mv_found;
 }
@@ -339,7 +339,7 @@ void AddTemporalReferenceMvCandidate(
     auto result =
         std::find_if(ref_mv_stack, ref_mv_stack + *num_mv_found,
                      [&candidate_mv](const CandidateMotionVector& ref_mv) {
-                       return ref_mv.mv64 == candidate_mv.mv64;
+                       return ref_mv == candidate_mv;
                      });
     if (result != ref_mv_stack + *num_mv_found) {
       prediction_parameters->IncreaseWeight(std::distance(ref_mv_stack, result),
@@ -347,7 +347,7 @@ void AddTemporalReferenceMvCandidate(
       return;
     }
     if (*num_mv_found >= kMaxRefMvStackSize) return;
-    ref_mv_stack[*num_mv_found] = {{candidate_mv.mv[0], candidate_mv.mv[1]}};
+    ref_mv_stack[*num_mv_found] = candidate_mv;
     prediction_parameters->SetWeightIndexStackEntry(*num_mv_found, 2);
     ++*num_mv_found;
     return;
@@ -548,16 +548,16 @@ void ExtraSearch(
       }
     }
     if (*num_mv_found == 1) {
-      if (combined_mvs[0].mv64 == ref_mv_stack[0].mv64) {
-        ref_mv_stack[1] = {{combined_mvs[1].mv[0], combined_mvs[1].mv[1]}};
+      if (combined_mvs[0] == ref_mv_stack[0]) {
+        ref_mv_stack[1] = combined_mvs[1];
       } else {
-        ref_mv_stack[1] = {{combined_mvs[0].mv[0], combined_mvs[0].mv[1]}};
+        ref_mv_stack[1] = combined_mvs[0];
       }
       prediction_parameters->SetWeightIndexStackEntry(1, 0);
     } else {
       assert(*num_mv_found == 0);
       for (int i = 0; i < 2; ++i) {
-        ref_mv_stack[i] = {{combined_mvs[i].mv[0], combined_mvs[i].mv[1]}};
+        ref_mv_stack[i] = combined_mvs[i];
         prediction_parameters->SetWeightIndexStackEntry(i, 0);
       }
     }
