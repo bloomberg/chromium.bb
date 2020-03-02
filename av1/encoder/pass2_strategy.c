@@ -1156,6 +1156,11 @@ static void calculate_gf_length(AV1_COMP *cpi, int max_gop_length,
         int after_pad =
             AOMMIN(MAX_PAD_GF_CHECK, rc->frames_to_key - cur_last - 1);
         for (n = cur_start - before_pad; n <= cur_last + after_pad; n++) {
+          if (start_pos + n - 1 > twopass->stats_buf_ctx->stats_in_end) {
+            after_pad = n - cur_last - 1;
+            assert(after_pad >= 0);
+            break;
+          }
           errs[n + before_pad - cur_start] = (start_pos + n - 1)->coded_error;
         }
         const int len = before_pad + after_pad + cur_last - cur_start + 1;

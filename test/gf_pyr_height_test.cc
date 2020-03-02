@@ -26,13 +26,13 @@ static const struct GFPyrHeightTestParam {
 } kTestParams[] = {
   // gf_min_pyr_height = 0
   { 0, 0, 33.40 },
-  { 0, 1, 34.50 },
+  { 0, 1, 34.00 },
   { 0, 2, 34.00 },
   { 0, 3, 34.20 },
   { 0, 4, 34.30 },
   { 0, 5, 34.40 },
   // gf_min_pyr_height = 1
-  { 1, 1, 34.50 },
+  { 1, 1, 34.00 },
   { 1, 2, 34.00 },
   { 1, 3, 34.20 },
   { 1, 4, 34.30 },
@@ -140,7 +140,7 @@ class GFPyrHeightTest
   double psnr_;
 };
 
-TEST_P(GFPyrHeightTest, DISABLED_EncodeAndVerifyPSNR) {
+TEST_P(GFPyrHeightTest, EncodeAndVerifyPSNR) {
   libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                      cfg_.g_timebase.den, cfg_.g_timebase.num,
                                      0, 32);
