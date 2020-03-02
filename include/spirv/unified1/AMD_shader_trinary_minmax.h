@@ -47,7 +47,7 @@ enum AMD_shader_trinary_minmaxInstructions {
     AMD_shader_trinary_minmaxFMid3AMD = 7,
     AMD_shader_trinary_minmaxUMid3AMD = 8,
     AMD_shader_trinary_minmaxSMid3AMD = 9,
-    AMD_shader_trinary_minmaxInstructionsMax = 0x7ffffff
+    AMD_shader_trinary_minmaxInstructionsMax = 0x7fffffff
 };
 
 

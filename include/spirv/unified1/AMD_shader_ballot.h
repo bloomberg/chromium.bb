@@ -42,7 +42,7 @@ enum AMD_shader_ballotInstructions {
     AMD_shader_ballotSwizzleInvocationsMaskedAMD = 2,
     AMD_shader_ballotWriteInvocationAMD = 3,
     AMD_shader_ballotMbcntAMD = 4,
-    AMD_shader_ballotInstructionsMax = 0x7ffffff
+    AMD_shader_ballotInstructionsMax = 0x7fffffff
 };
 
 

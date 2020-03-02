@@ -73,7 +73,7 @@ enum DebugInfoInstructions {
     DebugInfoDebugExpression = 31,
     DebugInfoDebugMacroDef = 32,
     DebugInfoDebugMacroUndef = 33,
-    DebugInfoInstructionsMax = 0x7ffffff
+    DebugInfoInstructionsMax = 0x7fffffff
 };
 
 
@@ -93,7 +93,7 @@ enum DebugInfoDebugInfoFlags {
     DebugInfoFlagLValueReference = 0x800,
     DebugInfoFlagRValueReference = 0x1000,
     DebugInfoFlagIsOptimized = 0x2000,
-    DebugInfoDebugInfoFlagsMax = 0x7ffffff
+    DebugInfoDebugInfoFlagsMax = 0x7fffffff
 };
 
 enum DebugInfoDebugBaseTypeAttributeEncoding {
@@ -105,21 +105,21 @@ enum DebugInfoDebugBaseTypeAttributeEncoding {
     DebugInfoSignedChar = 6,
     DebugInfoUnsigned = 7,
     DebugInfoUnsignedChar = 8,
-    DebugInfoDebugBaseTypeAttributeEncodingMax = 0x7ffffff
+    DebugInfoDebugBaseTypeAttributeEncodingMax = 0x7fffffff
 };
 
 enum DebugInfoDebugCompositeType {
     DebugInfoClass = 0,
     DebugInfoStructure = 1,
     DebugInfoUnion = 2,
-    DebugInfoDebugCompositeTypeMax = 0x7ffffff
+    DebugInfoDebugCompositeTypeMax = 0x7fffffff
 };
 
 enum DebugInfoDebugTypeQualifier {
     DebugInfoConstType = 0,
     DebugInfoVolatileType = 1,
     DebugInfoRestrictType = 2,
-    DebugInfoDebugTypeQualifierMax = 0x7ffffff
+    DebugInfoDebugTypeQualifierMax = 0x7fffffff
 };
 
 enum DebugInfoDebugOperation {
@@ -132,7 +132,7 @@ enum DebugInfoDebugOperation {
     DebugInfoXderef = 6,
     DebugInfoStackValue = 7,
     DebugInfoConstu = 8,
-    DebugInfoDebugOperationMax = 0x7ffffff
+    DebugInfoDebugOperationMax = 0x7fffffff
 };
 
 

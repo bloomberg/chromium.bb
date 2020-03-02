@@ -39,7 +39,7 @@ enum {
 
 enum AMD_shader_explicit_vertex_parameterInstructions {
     AMD_shader_explicit_vertex_parameterInterpolateAtVertexAMD = 1,
-    AMD_shader_explicit_vertex_parameterInstructionsMax = 0x7ffffff
+    AMD_shader_explicit_vertex_parameterInstructionsMax = 0x7fffffff
 };
 
 
