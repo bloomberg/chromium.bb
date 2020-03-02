@@ -60,6 +60,12 @@ def time_sleep(seconds):
   return time.sleep(seconds)
 
 
+def time_time():
+  # Use this so that it can be mocked in tests without interfering with python
+  # system machinery.
+  return time.time()
+
+
 class GerritError(Exception):
   """Exception class for errors commuicating with the gerrit-on-borg service."""
   def __init__(self, http_status, message, *args, **kwargs):
@@ -286,22 +292,24 @@ class GceAuthenticator(Authenticator):
   @classmethod
   def _test_is_gce(cls):
     # Based on https://cloud.google.com/compute/docs/metadata#runninggce
-    try:
-      resp, _ = cls._get(cls._INFO_URL)
-    except (socket.error, httplib2.HttpLib2Error):
-      # Could not resolve URL.
+    resp, _ = cls._get(cls._INFO_URL)
+    if resp is None:
       return False
     return resp.get('metadata-flavor') == 'Google'
 
   @staticmethod
   def _get(url, **kwargs):
     next_delay_sec = 1
-    for i in xrange(TRY_LIMIT):
+    for i in range(TRY_LIMIT):
       p = urllib.parse.urlparse(url)
       if p.scheme not in ('http', 'https'):
         raise RuntimeError(
             "Don't know how to work with protocol '%s'" % protocol)
-      resp, contents = httplib2.Http().request(url, 'GET', **kwargs)
+      try:
+        resp, contents = httplib2.Http().request(url, 'GET', **kwargs)
+      except (socket.error, httplib2.HttpLib2Error) as e:
+        LOGGER.debug('GET [%s] raised %s', url, e)
+        return None, None
       LOGGER.debug('GET [%s] #%d/%d (%d)', url, i+1, TRY_LIMIT, resp.status)
       if resp.status < 500:
         return (resp, contents)
@@ -313,19 +321,19 @@ class GceAuthenticator(Authenticator):
                     next_delay_sec, TRY_LIMIT - i - 1)
         time_sleep(next_delay_sec)
         next_delay_sec *= 2
+    return None, None
 
   @classmethod
   def _get_token_dict(cls):
-    if cls._token_cache:
-      # If it expires within 25 seconds, refresh.
-      if cls._token_expiration < time.time() - 25:
-        return cls._token_cache
+    # If cached token is valid for at least 25 seconds, return it.
+    if cls._token_cache and time_time() + 25 < cls._token_expiration:
+      return cls._token_cache
 
     resp, contents = cls._get(cls._ACQUIRE_URL, headers=cls._ACQUIRE_HEADERS)
-    if resp.status != 200:
+    if resp is None or resp.status != 200:
       return None
     cls._token_cache = json.loads(contents)
-    cls._token_expiration = cls._token_cache['expires_in'] + time.time()
+    cls._token_expiration = cls._token_cache['expires_in'] + time_time()
     return cls._token_cache
 
   def get_auth_header(self, _host):

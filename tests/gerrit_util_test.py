@@ -9,6 +9,7 @@ from __future__ import unicode_literals
 
 
 import base64
+import httplib2
 import json
 import os
 import sys
@@ -173,6 +174,97 @@ class CookiesAuthenticatorTest(unittest.TestCase):
         'user@chromium.org',
         auth.get_auth_email('chromium-review.googlesource.com'))
     self.assertIsNone(auth.get_auth_email('some-review.example.com'))
+
+
+class GceAuthenticatorTest(unittest.TestCase):
+  def setUp(self):
+    super(GceAuthenticatorTest, self).setUp()
+    mock.patch('httplib2.Http').start()
+    mock.patch('os.getenv', return_value=None).start()
+    mock.patch('gerrit_util.time_sleep').start()
+    mock.patch('gerrit_util.time_time').start()
+    self.addCleanup(mock.patch.stopall)
+    # GceAuthenticator has class variables that cache the results. Build a new
+    # class for every test to avoid inter-test dependencies.
+    class GceAuthenticator(gerrit_util.GceAuthenticator):
+      pass
+    self.GceAuthenticator = GceAuthenticator
+
+  def testIsGce_EnvVarSkip(self, *_mocks):
+    os.getenv.return_value = '1'
+    self.assertFalse(self.GceAuthenticator.is_gce())
+    os.getenv.assert_called_once_with('SKIP_GCE_AUTH_FOR_GIT')
+
+  def testIsGce_Error(self):
+    httplib2.Http().request.side_effect = httplib2.HttpLib2Error
+    self.assertFalse(self.GceAuthenticator.is_gce())
+
+  def testIsGce_500(self):
+    httplib2.Http().request.return_value = (mock.Mock(status=500), None)
+    self.assertFalse(self.GceAuthenticator.is_gce())
+    self.assertEqual(
+        [mock.call(1), mock.call(2)], gerrit_util.time_sleep.mock_calls)
+
+  def testIsGce_FailsThenSucceeds(self):
+    response = mock.Mock(status=200)
+    response.get.return_value = 'Google'
+    httplib2.Http().request.side_effect = [
+        (mock.Mock(status=500), None),
+        (response, 'who cares'),
+    ]
+    self.assertTrue(self.GceAuthenticator.is_gce())
+
+  def testIsGce_MetadataFlavorIsNotGoogle(self):
+    response = mock.Mock(status=200)
+    response.get.return_value = None
+    httplib2.Http().request.return_value = (response, 'who cares')
+    self.assertFalse(self.GceAuthenticator.is_gce())
+    response.get.assert_called_once_with('metadata-flavor')
+
+  def testIsGce_ResultIsCached(self):
+    response = mock.Mock(status=200)
+    response.get.return_value = 'Google'
+    httplib2.Http().request.side_effect = [(response, 'who cares')]
+    self.assertTrue(self.GceAuthenticator.is_gce())
+    self.assertTrue(self.GceAuthenticator.is_gce())
+    httplib2.Http().request.assert_called_once()
+
+  def testGetAuthHeader_Error(self):
+    httplib2.Http().request.side_effect = httplib2.HttpLib2Error
+    self.assertIsNone(self.GceAuthenticator().get_auth_header(''))
+
+  def testGetAuthHeader_500(self):
+    httplib2.Http().request.return_value = (mock.Mock(status=500), None)
+    self.assertIsNone(self.GceAuthenticator().get_auth_header(''))
+
+  def testGetAuthHeader_Non200(self):
+    httplib2.Http().request.return_value = (mock.Mock(status=403), None)
+    self.assertIsNone(self.GceAuthenticator().get_auth_header(''))
+
+  def testGetAuthHeader_OK(self):
+    httplib2.Http().request.return_value = (
+        mock.Mock(status=200),
+        '{"expires_in": 125, "token_type": "TYPE", "access_token": "TOKEN"}')
+    gerrit_util.time_time.return_value = 0
+    self.assertEqual('TYPE TOKEN', self.GceAuthenticator().get_auth_header(''))
+
+  def testGetAuthHeader_Cache(self):
+    httplib2.Http().request.return_value = (
+        mock.Mock(status=200),
+        '{"expires_in": 125, "token_type": "TYPE", "access_token": "TOKEN"}')
+    gerrit_util.time_time.return_value = 0
+    self.assertEqual('TYPE TOKEN', self.GceAuthenticator().get_auth_header(''))
+    self.assertEqual('TYPE TOKEN', self.GceAuthenticator().get_auth_header(''))
+    httplib2.Http().request.assert_called_once()
+
+  def testGetAuthHeader_CacheOld(self):
+    httplib2.Http().request.return_value = (
+        mock.Mock(status=200),
+        '{"expires_in": 125, "token_type": "TYPE", "access_token": "TOKEN"}')
+    gerrit_util.time_time.side_effect = [0, 100, 200]
+    self.assertEqual('TYPE TOKEN', self.GceAuthenticator().get_auth_header(''))
+    self.assertEqual('TYPE TOKEN', self.GceAuthenticator().get_auth_header(''))
+    self.assertEqual(2, len(httplib2.Http().request.mock_calls))
 
 
 class GerritUtilTest(unittest.TestCase):
