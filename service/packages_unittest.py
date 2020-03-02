@@ -140,22 +140,15 @@ class UprevEbuildFromPinTest(cros_test_lib.RunCommandTempDirTestCase):
     mod = result.modified[0]
     self.assertEqual(mod.new_version, self.new_version,
                      'unexpected version number: %s' % mod.new_version)
-    self.assertEqual(len(mod.files), 3,
-                     'unexpected number of modified files: %s' % len(mod.files))
 
     old_ebuild_path = os.path.join(package_path,
                                    self.ebuild_template % self.version)
-    self.assertEqual(mod.files[1], old_ebuild_path,
-                     'unexpected deleted ebuild file: %s' % mod.files[0])
-
     new_ebuild_path = os.path.join(package_path,
                                    self.ebuild_template % self.new_version)
-    self.assertEqual(mod.files[0], new_ebuild_path,
-                     'unexpected updated ebuild file: %s' % mod.files[1])
-
     manifest_path = os.path.join(package_path, 'Manifest')
-    self.assertEqual(mod.files[2], manifest_path,
-                     'unexpected manifest file: %s' % mod.files[1])
+
+    expected_modified_files = [old_ebuild_path, new_ebuild_path, manifest_path]
+    self.assertCountEqual(mod.files, expected_modified_files)
 
     self.assertCommandContains(['ebuild', 'manifest'])
 
