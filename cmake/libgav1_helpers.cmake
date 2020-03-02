@@ -105,3 +105,30 @@ macro(libgav1_create_dummy_source_file)
     list(APPEND ${cdsf_LISTVAR} "${dummy_source_file}")
   endif()
 endmacro()
+
+# Loads the version components from $libgav1_source/gav1/version.h and sets the
+# corresponding CMake variables:
+# - LIBGAV1_MAJOR_VERSION
+# - LIBGAV1_MINOR_VERSION
+# - LIBGAV1_PATCH_VERSION
+# - LIBGAV1_VERSION, which is:
+#   - $LIBGAV1_MAJOR_VERSION.$LIBGAV1_MINOR_VERSION.$LIBGAV1_PATCH_VERSION
+macro(libgav1_load_version_info)
+  file(STRINGS "${libgav1_source}/gav1/version.h" version_file_strings)
+  foreach(str ${version_file_strings})
+    if(str MATCHES "#define LIBGAV1_")
+      if(str MATCHES "#define LIBGAV1_MAJOR_VERSION ")
+        string(REPLACE "#define LIBGAV1_MAJOR_VERSION " "" LIBGAV1_MAJOR_VERSION
+                       "${str}")
+      elseif(str MATCHES "#define LIBGAV1_MINOR_VERSION ")
+        string(REPLACE "#define LIBGAV1_MINOR_VERSION " "" LIBGAV1_MINOR_VERSION
+                       "${str}")
+      elseif(str MATCHES "#define LIBGAV1_PATCH_VERSION ")
+        string(REPLACE "#define LIBGAV1_PATCH_VERSION " "" LIBGAV1_PATCH_VERSION
+                       "${str}")
+      endif()
+    endif()
+  endforeach()
+  set(LIBGAV1_VERSION "${LIBGAV1_MAJOR_VERSION}.${LIBGAV1_MINOR_VERSION}")
+  set(LIBGAV1_VERSION "${LIBGAV1_VERSION}.${LIBGAV1_PATCH_VERSION}")
+endmacro()

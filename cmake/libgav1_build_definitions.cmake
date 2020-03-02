@@ -20,10 +20,7 @@ set(LIBGAV1_CMAKE_LIBGAV1_BUILD_DEFINITIONS_CMAKE_ 1)
 macro(libgav1_set_build_definitions)
   string(TOLOWER "${CMAKE_BUILD_TYPE}" build_type_lowercase)
 
-  # TODO(tomfinegan): Neither LIBGAV1_VERSION nor LIBGAV1_SOVERSION should be
-  # defined here. This data should come from outside the build system and be
-  # loaded by the build system when needed.
-  set(LIBGAV1_VERSION "0.10.1")
+  libgav1_load_version_info()
   set(LIBGAV1_SOVERSION 0)
 
   list(APPEND libgav1_include_paths "${libgav1_root}" "${libgav1_root}/src"
