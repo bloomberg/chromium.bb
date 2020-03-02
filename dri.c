@@ -65,29 +65,6 @@ static bool lookup_extension(const __DRIextension *const *extensions, const char
 }
 
 /*
- * The DRI GEM namespace may be different from the minigbm's driver GEM namespace. We have
- * to import into minigbm.
- */
-static int import_into_minigbm(struct dri_driver *dri, struct bo *bo)
-{
-	uint32_t handle;
-	int prime_fd, ret;
-
-	if (!dri->image_extension->queryImage(bo->priv, __DRI_IMAGE_ATTRIB_FD, &prime_fd))
-		return -errno;
-
-	ret = drmPrimeFDToHandle(bo->drv->fd, prime_fd, &handle);
-	if (ret) {
-		drv_log("drmPrimeFDToHandle failed with %s\n", strerror(errno));
-		return ret;
-	}
-
-	bo->handles[0].u32 = handle;
-	close(prime_fd);
-	return 0;
-}
-
-/*
  * Close Gem Handle
  */
 static void close_gem_handle(uint32_t handle, int fd)
@@ -100,6 +77,97 @@ static void close_gem_handle(uint32_t handle, int fd)
 	ret = drmIoctl(fd, DRM_IOCTL_GEM_CLOSE, &gem_close);
 	if (ret)
 		drv_log("DRM_IOCTL_GEM_CLOSE failed (handle=%x) error %d\n", handle, ret);
+}
+
+/*
+ * The DRI GEM namespace may be different from the minigbm's driver GEM namespace. We have
+ * to import into minigbm.
+ */
+static int import_into_minigbm(struct dri_driver *dri, struct bo *bo)
+{
+	uint32_t handle;
+	int ret, modifier_upper, modifier_lower, num_planes, i, j;
+	__DRIimage *plane_image = NULL;
+
+	if (dri->image_extension->queryImage(bo->priv, __DRI_IMAGE_ATTRIB_MODIFIER_UPPER,
+					     &modifier_upper) &&
+	    dri->image_extension->queryImage(bo->priv, __DRI_IMAGE_ATTRIB_MODIFIER_LOWER,
+					     &modifier_lower)) {
+		bo->meta.format_modifiers[0] =
+		    ((uint64_t)modifier_upper << 32) | (uint32_t)modifier_lower;
+	} else {
+		bo->meta.format_modifiers[0] = DRM_FORMAT_MOD_INVALID;
+	}
+
+	if (!dri->image_extension->queryImage(bo->priv, __DRI_IMAGE_ATTRIB_NUM_PLANES,
+					      &num_planes)) {
+		return -errno;
+	}
+
+	bo->meta.num_planes = num_planes;
+
+	for (i = 0; i < num_planes; ++i) {
+		int prime_fd, stride, offset;
+		plane_image = dri->image_extension->fromPlanar(bo->priv, i, NULL);
+		__DRIimage *image = plane_image ? plane_image : bo->priv;
+
+		if (i)
+			bo->meta.format_modifiers[i] = bo->meta.format_modifiers[0];
+
+		if (!dri->image_extension->queryImage(image, __DRI_IMAGE_ATTRIB_STRIDE, &stride) ||
+		    !dri->image_extension->queryImage(image, __DRI_IMAGE_ATTRIB_OFFSET, &offset)) {
+			ret = -errno;
+			goto cleanup;
+		}
+
+		if (!dri->image_extension->queryImage(image, __DRI_IMAGE_ATTRIB_FD, &prime_fd)) {
+			ret = -errno;
+			goto cleanup;
+		}
+
+		ret = drmPrimeFDToHandle(bo->drv->fd, prime_fd, &handle);
+
+		close(prime_fd);
+
+		if (ret) {
+			drv_log("drmPrimeFDToHandle failed with %s\n", strerror(errno));
+			goto cleanup;
+		}
+
+		bo->handles[i].u32 = handle;
+
+		bo->meta.strides[i] = stride;
+		bo->meta.offsets[i] = offset;
+
+		/* Not setting sizes[i] and total_size as these are not
+		 * provided by DRI. The best way to "approximate" would be
+		 * what drv_bo_import does, but I see nothing in the minigbm
+		 * core that needs it. */
+
+		if (plane_image)
+			dri->image_extension->destroyImage(plane_image);
+	}
+
+	return 0;
+
+cleanup:
+	if (plane_image)
+		dri->image_extension->destroyImage(plane_image);
+	while (--i >= 0) {
+		for (j = 0; j <= i; ++j)
+			if (bo->handles[j].u32 == bo->handles[i].u32)
+				break;
+
+		/* Multiple equivalent handles) */
+		if (i == j)
+			break;
+
+		/* This kind of goes horribly wrong when we already imported
+		 * the same handles earlier, as we should really reference
+		 * count handles. */
+		close_gem_handle(bo->handles[i].u32, bo->drv->fd);
+	}
+	return ret;
 }
 
 /*
@@ -190,11 +258,9 @@ int dri_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t forma
 		  uint64_t use_flags)
 {
 	unsigned int dri_use;
-	int ret, dri_format, stride, offset;
-	int modifier_upper, modifier_lower;
+	int ret, dri_format;
 	struct dri_driver *dri = bo->drv->priv;
 
-	assert(bo->meta.num_planes == 1);
 	dri_format = drm_format_to_dri_format(format);
 
 	/* Gallium drivers require shared to get the handle and stride. */
@@ -217,34 +283,38 @@ int dri_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t forma
 	if (ret)
 		goto free_image;
 
-	if (!dri->image_extension->queryImage(bo->priv, __DRI_IMAGE_ATTRIB_STRIDE, &stride)) {
-		ret = -errno;
-		goto close_handle;
-	}
-
-	if (!dri->image_extension->queryImage(bo->priv, __DRI_IMAGE_ATTRIB_OFFSET, &offset)) {
-		ret = -errno;
-		goto close_handle;
-	}
-
-	if (dri->image_extension->queryImage(bo->priv, __DRI_IMAGE_ATTRIB_MODIFIER_UPPER,
-					     &modifier_upper) &&
-	    dri->image_extension->queryImage(bo->priv, __DRI_IMAGE_ATTRIB_MODIFIER_LOWER,
-					     &modifier_lower)) {
-		bo->meta.format_modifiers[0] =
-		    ((uint64_t)modifier_upper << 32) | (uint32_t)modifier_lower;
-	} else {
-		bo->meta.format_modifiers[0] = DRM_FORMAT_MOD_INVALID;
-	}
-
-	bo->meta.strides[0] = stride;
-	bo->meta.sizes[0] = stride * height;
-	bo->meta.offsets[0] = offset;
-	bo->meta.total_size = offset + bo->meta.sizes[0];
 	return 0;
 
-close_handle:
-	close_gem_handle(bo->handles[0].u32, bo->drv->fd);
+free_image:
+	dri->image_extension->destroyImage(bo->priv);
+	return ret;
+}
+
+int dri_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
+				 const uint64_t *modifiers, uint32_t modifier_count)
+{
+	int ret, dri_format;
+	struct dri_driver *dri = bo->drv->priv;
+
+	if (!dri->image_extension->createImageWithModifiers) {
+		return -ENOENT;
+	}
+
+	dri_format = drm_format_to_dri_format(format);
+
+	bo->priv = dri->image_extension->createImageWithModifiers(
+	    dri->device, width, height, dri_format, modifiers, modifier_count, NULL);
+	if (!bo->priv) {
+		ret = -errno;
+		return ret;
+	}
+
+	ret = import_into_minigbm(dri, bo);
+	if (ret)
+		goto free_image;
+
+	return 0;
+
 free_image:
 	dri->image_extension->destroyImage(bo->priv);
 	return ret;
@@ -255,17 +325,41 @@ int dri_bo_import(struct bo *bo, struct drv_import_fd_data *data)
 	int ret;
 	struct dri_driver *dri = bo->drv->priv;
 
-	assert(bo->meta.num_planes == 1);
+	if (data->format_modifiers[0] != DRM_FORMAT_MOD_INVALID) {
+		unsigned error;
 
-	// clang-format off
-	bo->priv = dri->image_extension->createImageFromFds(dri->device, data->width, data->height,
-							    data->format, data->fds,
-							    bo->meta.num_planes,
-							    (int *)data->strides,
-							    (int *)data->offsets, NULL);
-	// clang-format on
-	if (!bo->priv)
-		return -errno;
+		if (!dri->image_extension->createImageFromDmaBufs2)
+			return -ENOSYS;
+
+		// clang-format off
+		bo->priv = dri->image_extension->createImageFromDmaBufs2(dri->device, data->width, data->height,
+									 data->format,
+									 data->format_modifiers[0],
+									 data->fds,
+									 bo->meta.num_planes,
+									 (int *)data->strides,
+									 (int *)data->offsets,
+									 __DRI_YUV_COLOR_SPACE_UNDEFINED,
+									 __DRI_YUV_RANGE_UNDEFINED,
+									 __DRI_YUV_CHROMA_SITING_UNDEFINED,
+									 __DRI_YUV_CHROMA_SITING_UNDEFINED,
+									 &error, NULL);
+		// clang-format on
+
+		/* Could translate the DRI error, but the Mesa GBM also returns ENOSYS. */
+		if (!bo->priv)
+			return -ENOSYS;
+	} else {
+		// clang-format off
+		bo->priv = dri->image_extension->createImageFromFds(dri->device, data->width, data->height,
+								    data->format, data->fds,
+								    bo->meta.num_planes,
+								    (int *)data->strides,
+								    (int *)data->offsets, NULL);
+		// clang-format on
+		if (!bo->priv)
+			return -errno;
+	}
 
 	ret = import_into_minigbm(dri, bo);
 	if (ret) {

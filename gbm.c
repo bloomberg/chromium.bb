@@ -210,6 +210,9 @@ PUBLIC struct gbm_bo *gbm_bo_import(struct gbm_device *gbm, uint32_t type, void 
 		drv_data.format = fd_data->format;
 		drv_data.fds[0] = fd_data->fd;
 		drv_data.strides[0] = fd_data->stride;
+
+		for (i = 0; i < GBM_MAX_PLANES; ++i)
+			drv_data.format_modifiers[i] = DRM_FORMAT_MOD_INVALID;
 		break;
 	case GBM_BO_IMPORT_FD_MODIFIER:
 		gbm_format = fd_modifier_data->format;

@@ -30,6 +30,8 @@ int dri_init(struct driver *drv, const char *dri_so_path, const char *driver_suf
 void dri_close(struct driver *drv);
 int dri_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
 		  uint64_t use_flags);
+int dri_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
+				 const uint64_t *modifiers, uint32_t modifier_count);
 int dri_bo_import(struct bo *bo, struct drv_import_fd_data *data);
 int dri_bo_destroy(struct bo *bo);
 void *dri_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_t map_flags);

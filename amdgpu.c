@@ -142,42 +142,12 @@ static void amdgpu_close(struct driver *drv)
 	drv->priv = NULL;
 }
 
-static int amdgpu_create_bo(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
-			    uint64_t use_flags)
+static int amdgpu_create_bo_linear(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
+				   uint64_t use_flags)
 {
 	int ret;
 	uint32_t plane, stride;
-	struct combination *combo;
 	union drm_amdgpu_gem_create gem_create;
-
-	combo = drv_get_combination(bo->drv, format, use_flags);
-	if (!combo)
-		return -EINVAL;
-
-	if (combo->metadata.tiling == TILE_TYPE_DRI) {
-		bool needs_alignment = false;
-#ifdef __ANDROID__
-		/*
-		 * Currently, the gralloc API doesn't differentiate between allocation time and map
-		 * time strides. A workaround for amdgpu DRI buffers is to always to align to 256 at
-		 * allocation time.
-		 *
-		 * See b/115946221,b/117942643
-		 */
-		if (use_flags & (BO_USE_SW_MASK))
-			needs_alignment = true;
-#endif
-		// See b/122049612
-		if (use_flags & (BO_USE_SCANOUT))
-			needs_alignment = true;
-
-		if (needs_alignment) {
-			uint32_t bytes_per_pixel = drv_bytes_per_pixel_from_format(format, 0);
-			width = ALIGN(width, 256 / bytes_per_pixel);
-		}
-
-		return dri_bo_create(bo, width, height, format, use_flags);
-	}
 
 	stride = drv_stride_from_format(format, width, 0);
 	stride = ALIGN(stride, 256);
@@ -210,14 +180,72 @@ static int amdgpu_create_bo(struct bo *bo, uint32_t width, uint32_t height, uint
 	return 0;
 }
 
-static int amdgpu_import_bo(struct bo *bo, struct drv_import_fd_data *data)
+static int amdgpu_create_bo(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
+			    uint64_t use_flags)
 {
 	struct combination *combo;
-	combo = drv_get_combination(bo->drv, data->format, data->use_flags);
+
+	combo = drv_get_combination(bo->drv, format, use_flags);
 	if (!combo)
 		return -EINVAL;
 
-	if (combo->metadata.tiling == TILE_TYPE_DRI)
+	if (combo->metadata.tiling == TILE_TYPE_DRI) {
+		bool needs_alignment = false;
+#ifdef __ANDROID__
+		/*
+		 * Currently, the gralloc API doesn't differentiate between allocation time and map
+		 * time strides. A workaround for amdgpu DRI buffers is to always to align to 256 at
+		 * allocation time.
+		 *
+		 * See b/115946221,b/117942643
+		 */
+		if (use_flags & (BO_USE_SW_MASK))
+			needs_alignment = true;
+#endif
+		// See b/122049612
+		if (use_flags & (BO_USE_SCANOUT))
+			needs_alignment = true;
+
+		if (needs_alignment) {
+			uint32_t bytes_per_pixel = drv_bytes_per_pixel_from_format(format, 0);
+			width = ALIGN(width, 256 / bytes_per_pixel);
+		}
+
+		return dri_bo_create(bo, width, height, format, use_flags);
+	}
+
+	return amdgpu_create_bo_linear(bo, width, height, format, use_flags);
+}
+
+static int amdgpu_create_bo_with_modifiers(struct bo *bo, uint32_t width, uint32_t height,
+					   uint32_t format, const uint64_t *modifiers,
+					   uint32_t count)
+{
+	bool only_use_linear = true;
+
+	for (uint32_t i = 0; i < count; ++i)
+		if (modifiers[i] != DRM_FORMAT_MOD_LINEAR)
+			only_use_linear = false;
+
+	if (only_use_linear)
+		return amdgpu_create_bo_linear(bo, width, height, format, BO_USE_SCANOUT);
+
+	return dri_bo_create_with_modifiers(bo, width, height, format, modifiers, count);
+}
+
+static int amdgpu_import_bo(struct bo *bo, struct drv_import_fd_data *data)
+{
+	bool dri_tiling = data->format_modifiers[0] != DRM_FORMAT_MOD_LINEAR;
+	if (data->format_modifiers[0] == DRM_FORMAT_MOD_INVALID) {
+		struct combination *combo;
+		combo = drv_get_combination(bo->drv, data->format, data->use_flags);
+		if (!combo)
+			return -EINVAL;
+
+		dri_tiling = combo->metadata.tiling == TILE_TYPE_DRI;
+	}
+
+	if (dri_tiling)
 		return dri_bo_import(bo, data);
 	else
 		return drv_prime_bo_import(bo, data);
@@ -309,6 +337,7 @@ const struct backend backend_amdgpu = {
 	.init = amdgpu_init,
 	.close = amdgpu_close,
 	.bo_create = amdgpu_create_bo,
+	.bo_create_with_modifiers = amdgpu_create_bo_with_modifiers,
 	.bo_destroy = amdgpu_destroy_bo,
 	.bo_import = amdgpu_import_bo,
 	.bo_map = amdgpu_map_bo,
