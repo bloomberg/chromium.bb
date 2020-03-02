@@ -18,9 +18,20 @@
 extern "C" {
 #endif
 
+typedef struct {
+  int64_t rd;
+  int drl_cost;
+
+  int rate_mv;
+  int_mv mv;
+
+  int_mv full_search_mv;
+  int full_mv_rate;
+} inter_mode_info;
+
 void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
                               BLOCK_SIZE bsize, int ref_idx, int *rate_mv,
-                              int search_range);
+                              int search_range, inter_mode_info *mode_info);
 
 void av1_joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
                              BLOCK_SIZE bsize, int_mv *cur_mv,

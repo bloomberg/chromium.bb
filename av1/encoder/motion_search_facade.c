@@ -20,7 +20,7 @@
 
 void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
                               BLOCK_SIZE bsize, int ref_idx, int *rate_mv,
-                              int search_range) {
+                              int search_range, inter_mode_info *mode_info) {
   MACROBLOCKD *xd = &x->e_mbd;
   const AV1_COMMON *cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
@@ -150,9 +150,50 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   x->mv_limits = tmp_mv_limits;
 
+  // Terminate search with the current ref_idx if we have already encountered
+  // another ref_mv in the drl such that:
+  //  1. The other drl has the same fullpel_mv during the SIMPLE_TRANSLATION
+  //     search process as the current fullpel_mv.
+  //  2. The rate needed to encode the current fullpel_mv is larger than that
+  //     for the other ref_mv.
+  if (cpi->sf.inter_sf.skip_repeated_full_newmv &&
+      mbmi->motion_mode == SIMPLE_TRANSLATION &&
+      x->best_mv.as_int != INVALID_MV) {
+    int_mv this_mv;
+    this_mv.as_mv = get_mv_from_fullmv(&x->best_mv.as_fullmv);
+    const int ref_mv_idx = mbmi->ref_mv_idx;
+    const int this_mv_rate =
+        av1_mv_bit_cost(&this_mv.as_mv, &ref_mv, x->nmv_vec_cost,
+                        x->mv_cost_stack, MV_COST_WEIGHT);
+    mode_info[ref_mv_idx].full_search_mv.as_int = this_mv.as_int;
+    mode_info[ref_mv_idx].full_mv_rate = this_mv_rate;
+
+    for (int prev_ref_idx = 0; prev_ref_idx < ref_mv_idx; ++prev_ref_idx) {
+      // Check if the motion search result same as previous results
+      if (this_mv.as_int == mode_info[prev_ref_idx].full_search_mv.as_int) {
+        // Compare the rate cost
+        const int prev_rate_cost = mode_info[prev_ref_idx].full_mv_rate +
+                                   mode_info[prev_ref_idx].drl_cost;
+        const int this_rate_cost =
+            this_mv_rate + mode_info[ref_mv_idx].drl_cost;
+
+        if (prev_rate_cost <= this_rate_cost) {
+          // If the current rate_cost is worse than the previous rate_cost, then
+          // we terminate the search. Since av1_single_motion_search is only
+          // called by handle_new_mv in SIMPLE_TRANSLATION mode, we set the
+          // best_mv to INVALID mv to signal that we wish to terminate search
+          // for the current mode.
+          x->best_mv.as_int = INVALID_MV;
+          return;
+        }
+      }
+    }
+  }
+
   if (cpi->common.cur_frame_force_integer_mv) {
     convert_fullmv_to_mv(&x->best_mv);
   }
+
   const int use_fractional_mv =
       bestsme < INT_MAX && cpi->common.cur_frame_force_integer_mv == 0;
   if (use_fractional_mv) {

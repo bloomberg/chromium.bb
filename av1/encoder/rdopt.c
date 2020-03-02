@@ -1055,8 +1055,8 @@ static INLINE void clamp_mv_in_range(MACROBLOCK *const x, int_mv *mv,
 
 static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
                             const BLOCK_SIZE bsize, int_mv *cur_mv,
-                            int *const rate_mv,
-                            HandleInterModeArgs *const args) {
+                            int *const rate_mv, HandleInterModeArgs *const args,
+                            inter_mode_info *mode_info) {
   const MACROBLOCKD *const xd = &x->e_mbd;
   const MB_MODE_INFO *const mbmi = xd->mi[0];
   const int is_comp_pred = has_second_ref(mbmi);
@@ -1165,7 +1165,8 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
       }
     }
 
-    av1_single_motion_search(cpi, x, bsize, ref_idx, rate_mv, search_range);
+    av1_single_motion_search(cpi, x, bsize, ref_idx, rate_mv, search_range,
+                             mode_info);
     if (x->best_mv.as_int == INVALID_MV) return INT64_MAX;
 
     args->single_newmv[ref_mv_idx][refs[0]] = x->best_mv;
@@ -1358,7 +1359,7 @@ static int64_t motion_mode_rd(
       const uint32_t cur_mv = mbmi->mv[0].as_int;
       assert(!is_comp_pred);
       if (have_newmv_in_inter_mode(this_mode)) {
-        av1_single_motion_search(cpi, x, bsize, 0, &tmp_rate_mv, INT_MAX);
+        av1_single_motion_search(cpi, x, bsize, 0, &tmp_rate_mv, INT_MAX, NULL);
         mbmi->mv[0].as_int = x->best_mv.as_int;
         tmp_rate2 = rate2_nocoeff - rate_mv0 + tmp_rate_mv;
       }
@@ -1890,13 +1891,6 @@ static bool ref_mv_idx_early_breakout(const AV1_COMP *const cpi, MACROBLOCK *x,
   return false;
 }
 
-typedef struct {
-  int64_t rd;
-  int drl_cost;
-  int rate_mv;
-  int_mv mv;
-} inter_mode_info;
-
 // Compute the estimated RD cost for the motion vector with simple translation.
 static int64_t simple_translation_pred_rd(
     AV1_COMP *const cpi, MACROBLOCK *x, RD_STATS *rd_stats,
@@ -2129,6 +2123,7 @@ static int64_t handle_inter_mode(
   const int base_rate =
       args->ref_frame_cost + args->single_comp_cost + ref_mv_cost;
   for (int ref_mv_idx = 0; ref_mv_idx < ref_set; ++ref_mv_idx) {
+    mode_info[ref_mv_idx].full_search_mv.as_int = INVALID_MV;
     mode_info[ref_mv_idx].mv.as_int = INVALID_MV;
     mode_info[ref_mv_idx].rd = INT64_MAX;
     if (!mask_check_bit(idx_mask, ref_mv_idx)) {
@@ -2175,7 +2170,8 @@ static int64_t handle_inter_mode(
         cur_mv[0] = args->single_newmv[ref_mv_idx][ref0];
         rate_mv = args->single_newmv_rate[ref_mv_idx][ref0];
       } else {
-        newmv_ret_val = handle_newmv(cpi, x, bsize, cur_mv, &rate_mv, args);
+        newmv_ret_val =
+            handle_newmv(cpi, x, bsize, cur_mv, &rate_mv, args, mode_info);
       }
 #if CONFIG_COLLECT_COMPONENT_TIMING
       end_timing(cpi, handle_newmv_time);

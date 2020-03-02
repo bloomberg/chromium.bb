@@ -523,6 +523,14 @@ typedef struct INTER_MODE_SPEED_FEATURES {
   // flag to skip NEWMV mode in drl if the motion search result is the same
   int skip_repeated_newmv;
 
+  // Skip the current ref_mv in NEW_MV mode if we have already encountered
+  // another ref_mv in the drl such that:
+  //  1. The other drl has the same fullpel_mv during the SIMPLE_TRANSLATION
+  //     search process as the current fullpel_mv.
+  //  2. The rate needed to encode the current fullpel_mv is larger than that
+  //     for the other ref_mv.
+  int skip_repeated_full_newmv;
+
   // This speed feature checks duplicate ref MVs among NEARESTMV, NEARMV,
   // GLOBALMV and skips NEARMV or GLOBALMV (in order) if a duplicate is found
   // TODO(any): Instead of skipping repeated ref mv, use the recalculated
