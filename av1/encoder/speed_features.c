@@ -836,7 +836,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
 
     sf->mv_sf.search_method = FAST_DIAMOND;
     sf->mv_sf.subpel_force_stop = QUARTER_PEL;
-    sf->mv_sf.subpel_search_method = SUBPEL_TREE;
+    sf->mv_sf.subpel_search_method = SUBPEL_TREE_PRUNED;
 
     sf->inter_sf.inter_mode_rd_model_estimation = 2;
 

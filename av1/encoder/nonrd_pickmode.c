@@ -1499,7 +1499,6 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   }
 
   av1_collect_neighbors_ref_counts(xd);
-  av1_count_overlappable_neighbors(cm, xd);
 
   estimate_single_ref_frame_costs(cm, xd, x, segment_id, ref_costs_single);
   if (cpi->sf.rt_sf.use_comp_ref_nonrd)
