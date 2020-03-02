@@ -14,7 +14,6 @@ import sys
 
 from chromite.cli.cros import cros_chrome_sdk
 from chromite.lib import commandline
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import remote_access
 from chromite.lib import retry_util
@@ -47,7 +46,7 @@ class Device(object):
     self.use_sudo = False
     self.cmd = opts.args[1:] if opts.cmd else None
     self.private_key = opts.private_key
-    self.dry_run = opts.dry_run
+    self.dryrun = opts.dryrun
     # log_level is only set if --log-level or --debug is specified.
     self.log_level = getattr(opts, 'log_level', None)
     self.InitRemote()
@@ -82,23 +81,6 @@ class Device(object):
     if result.returncode != 0:
       raise DeviceError('WaitForBoot failed: %s.' % result.error)
 
-  def run(self, cmd, **kwargs):
-    """Use sudo_run or run as necessary.
-
-    Args:
-      cmd: command to run.
-      kwargs: optional args to run.
-
-    Returns:
-      cros_build_lib.CommandResult object.
-    """
-    if self.dry_run:
-      return self._dry_run(cmd)
-    elif self.use_sudo:
-      return cros_build_lib.sudo_run(cmd, **kwargs)
-    else:
-      return cros_build_lib.run(cmd, **kwargs)
-
   def remote_run(self, cmd, stream_output=False, **kwargs):
     """Run a remote command.
 
@@ -110,29 +92,14 @@ class Device(object):
     Returns:
       cros_build_lib.CommandResult object.
     """
-    if self.dry_run:
-      return self._dry_run(cmd)
+    kwargs.setdefault('check', False)
+    if stream_output:
+      kwargs.setdefault('capture_output', False)
     else:
-      kwargs.setdefault('check', False)
-      if stream_output:
-        kwargs.setdefault('capture_output', False)
-      else:
-        kwargs.setdefault('stderr', subprocess.STDOUT)
-        kwargs.setdefault('log_output', True)
-      return self.remote.run(cmd, debug_level=logging.INFO, **kwargs)
-
-  def _dry_run(self, cmd):
-    """Print a command for dry_run.
-
-    Args:
-      cmd: command to print.
-
-    Returns:
-      cros_build_lib.CommandResult object.
-    """
-    assert self.dry_run, 'Use with --dry-run only'
-    logging.info('[DRY RUN] %s', cros_build_lib.CmdToStr(cmd))
-    return cros_build_lib.CommandResult(cmd, output='', returncode=0)
+      kwargs.setdefault('stderr', subprocess.STDOUT)
+      kwargs.setdefault('log_output', True)
+    return self.remote.run(cmd, dryrun=self.dryrun,
+                           debug_level=logging.INFO, **kwargs)
 
   def _ConnectSettings(self):
     """Increase ServerAliveCountMax and ServerAliveInterval.
@@ -176,8 +143,8 @@ class Device(object):
     sdk_board_env = os.environ.get(cros_chrome_sdk.SDKFetcher.SDK_BOARD_ENV)
     parser.add_argument('--board', default=sdk_board_env, help='Board to use.')
     parser.add_argument('--private-key', help='Path to ssh private key.')
-    parser.add_argument('--dry-run', action='store_true', default=False,
-                        help='dry run for debugging.')
+    parser.add_argument('--dry-run', dest='dryrun', action='store_true',
+                        default=False, help='dry run for debugging.')
     parser.add_argument('--cmd', action='store_true', default=False,
                         help='Run a command.')
     parser.add_argument('args', nargs=argparse.REMAINDER,

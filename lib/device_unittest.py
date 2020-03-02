@@ -66,26 +66,6 @@ class DeviceTester(cros_test_lib.RunCommandTestCase):
     self.assertRaises(device.DeviceError, self._device.WaitForBoot)
     boot_mock.assert_called()
 
-  def testRunCmd(self):
-    """Verify that a command is run via run."""
-    self._device.run(['/usr/local/autotest/bin/vm_sanity'])
-    self.assertCommandContains(['sudo'], expected=False)
-    self.assertCommandCalled(['/usr/local/autotest/bin/vm_sanity'])
-
-  def testRunCmdDryRun(self):
-    """Verify that a command is run while dry running for debugging."""
-    self._device.dry_run = True
-    # Look for dry run command in output.
-    with cros_test_lib.LoggingCapturer() as logs:
-      self._device.run(['echo', 'Hello'])
-    self.assertTrue(logs.LogsContain('[DRY RUN] echo Hello'))
-
-  def testRunCmdSudo(self):
-    """Verify that a command is run via sudo."""
-    self._device.use_sudo = True
-    self._device.run(['mount', '-o', 'remount,rw', '/'])
-    self.assertCommandCalled(['sudo', '--', 'mount', '-o', 'remount,rw', '/'])
-
   def testRemoteCmd(self):
     """Verify remote command runs correctly with default arguments."""
     self._device.remote_run(['/usr/local/autotest/bin/vm_sanity'])
@@ -109,9 +89,3 @@ class DeviceTester(cros_test_lib.RunCommandTestCase):
     self.CreateDevice('localhost', True)
     # Verify a Device is created when an IP is specified.
     self.CreateDevice('190.0.2.130', False)
-
-  def testDryRunError(self):
-    """Verify _dry_run can only be called when dry_run is True."""
-    self._device.dry_run = False
-    self.assertRaises(AssertionError, self._device._dry_run,
-                      cmd=['echo', 'Hello'])

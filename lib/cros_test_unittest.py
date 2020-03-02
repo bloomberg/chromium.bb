@@ -13,7 +13,6 @@ import sys
 import mock
 
 from chromite.lib import constants
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import partial_mock
@@ -222,7 +221,7 @@ class CrOSTesterMiscTests(CrOSTesterBase):
     # exception is not raised if it fails.
     self.assertCommandCalled(
         ['tast', 'run', 'localhost:9222', 'ui.ChromeLogin'],
-        check=False,
+        check=False, dryrun=False,
         extra_env={'CHROMIUM_OUTPUT_DIR': '/some/chromium/dir'})
     # Ensure that --host-cmd does not invoke ssh since it runs on the host.
     self.assertCommandContains(['ssh', 'tast'], expected=False)
@@ -268,7 +267,7 @@ class CrOSTesterAutotest(CrOSTesterBase):
          test_results_dir, '--ssh_private_key', testing_rsa_dir, '--debug',
          '--whitelist-chrome-crashes', '--no-quickmerge', '--ssh_options',
          '-F /dev/null -i /dev/null', '100.90.29.199', 'accessibility_Sanity'],
-        enter_chroot=not cros_build_lib.IsInsideChroot())
+        dryrun=False, enter_chroot=True)
 
   @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=True)
   def testInsideChrootAutotest(self, check_inside_chroot_mock):

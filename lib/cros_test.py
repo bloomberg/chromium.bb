@@ -37,6 +37,7 @@ class CrOSTest(object):
 
     self.start_vm = opts.start_vm
     self.cache_dir = opts.cache_dir
+    self.dryrun = opts.dryrun
 
     self.build = opts.build
     self.flash = opts.flash
@@ -129,7 +130,8 @@ class CrOSTest(object):
       return
 
     build_target = self.chrome_test_target or 'chromiumos_preflight'
-    self._device.run(['autoninja', '-C', self.build_dir, build_target])
+    cros_build_lib.run(['autoninja', '-C', self.build_dir, build_target],
+                       dryrun=self.dryrun)
 
   def _Flash(self):
     """Flash device."""
@@ -139,7 +141,8 @@ class CrOSTest(object):
     xbuddy = self.xbuddy
     if self._device.board:
       xbuddy = xbuddy.format(board=self._device.board)
-    self._device.run(['cros', 'flash', self._device.device, xbuddy])
+    cros_build_lib.run(['cros', 'flash', self._device.device, xbuddy],
+                       dryrun=self.dryrun)
 
   def _Deploy(self):
     """Deploy binary files to device."""
@@ -169,7 +172,7 @@ class CrOSTest(object):
       deploy_cmd += ['--nostrip']
     if self.mount:
       deploy_cmd += ['--mount']
-    self._device.run(deploy_cmd)
+    cros_build_lib.run(deploy_cmd, dryrun=self.dryrun)
     self._device.WaitForBoot()
 
   def _DeployChromeTest(self):
@@ -245,8 +248,7 @@ class CrOSTest(object):
     else:
       cmd += [self._device.device]
     cmd += self.autotest
-    return self._device.run(
-        cmd, enter_chroot=not cros_build_lib.IsInsideChroot())
+    return cros_build_lib.run(cmd, dryrun=self.dryrun, enter_chroot=True)
 
   def _RunTastTests(self):
     """Run Tast tests.
@@ -311,8 +313,9 @@ class CrOSTest(object):
     else:
       cmd += [self._device.device]
     cmd += self.tast
-    return self._device.run(
-        cmd, enter_chroot=need_chroot and not cros_build_lib.IsInsideChroot())
+    return cros_build_lib.run(
+        cmd, dryrun=self.dryrun,
+        enter_chroot=need_chroot and not cros_build_lib.IsInsideChroot())
 
   def _RunTests(self):
     """Run tests.
@@ -330,8 +333,8 @@ class CrOSTest(object):
       if self.build_dir:
         extra_env['CHROMIUM_OUTPUT_DIR'] = self.build_dir
       # Don't raise an exception if the command fails.
-      result = self._device.run(
-          self.args, check=False, extra_env=extra_env)
+      result = cros_build_lib.run(
+          self.args, check=False, dryrun=self.dryrun, extra_env=extra_env)
     elif self.catapult_tests:
       result = self._RunCatapultTests()
     elif self.autotest:

@@ -233,7 +233,7 @@ class VM(device.Device):
         '-o', 'backing_file=%s' % self.image_path,
         cow_image_path,
     ]
-    self.run(qemu_img_args)
+    cros_build_lib.run(qemu_img_args, dryrun=self.dryrun)
     logging.info('qcow2 image created at %s.', cow_image_path)
     self.image_path = cow_image_path
     self.image_format = 'qcow2'
@@ -249,8 +249,9 @@ class VM(device.Device):
     Returns:
       QEMU version.
     """
-    version_str = self.run([self.qemu_path, '--version'],
-                           capture_output=True, encoding='utf-8').stdout
+    version_str = cros_build_lib.run([self.qemu_path, '--version'],
+                                     capture_output=True, dryrun=self.dryrun,
+                                     encoding='utf-8').stdout
     # version string looks like one of these:
     # QEMU emulator version 2.0.0 (Debian 2.0.0+dfsg-2ubuntu1.36), Copyright (c)
     # 2003-2008 Fabrice Bellard
@@ -266,7 +267,7 @@ class VM(device.Device):
 
   def _CheckQemuMinVersion(self):
     """Ensure minimum QEMU version."""
-    if self.dry_run:
+    if self.dryrun:
       return
     min_qemu_version = '2.6.0'
     logging.info('QEMU version %s', self.QemuVersion())
@@ -456,7 +457,10 @@ class VM(device.Device):
     if not self.display:
       qemu_args += ['-display', 'none']
     logging.info('Pid file: %s', self.pidfile)
-    self.run(qemu_args)
+
+    # Add use_sudo support to cros_build_lib.run.
+    run = cros_build_lib.sudo_run if self.use_sudo else cros_build_lib.run
+    run(qemu_args, dryrun=self.dryrun)
     self.WaitForBoot()
 
   def _GetVMPid(self):
@@ -540,7 +544,9 @@ class VM(device.Device):
     """Kill the VM process."""
     pid = self._GetVMPid()
     if pid:
-      self.run(['kill', '-9', str(pid)], check=False)
+      # Add use_sudo support to cros_build_lib.run.
+      run = cros_build_lib.sudo_run if self.use_sudo else cros_build_lib.run
+      run(['kill', '-9', str(pid)], check=False, dryrun=self.dryrun)
 
   def _MaybeCopyVMImage(self):
     """Saves the VM image to a location on disk if previously told to."""
