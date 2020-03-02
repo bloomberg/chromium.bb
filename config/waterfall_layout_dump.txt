@@ -133,6 +133,7 @@
   firmware-cr50-guc-factory-9308.26.B-firmwarebranch
   firmware-cr50-mp-release-9308.87.B-firmwarebranch
   firmware-cyan-7287.57.B-firmwarebranch
+  firmware-drallion-12930.B-firmwarebranch
   firmware-edgar-7287.167.B-firmwarebranch
   firmware-enguarde-5216.201.B-firmwarebranch
   firmware-eve-9584.B-firmwarebranch
@@ -996,6 +997,7 @@
   firmware-cr50-guc-factory-9308.26.B-firmwarebranch-tryjob
   firmware-cr50-mp-release-9308.87.B-firmwarebranch-tryjob
   firmware-cyan-7287.57.B-firmwarebranch-tryjob
+  firmware-drallion-12930.B-firmwarebranch-tryjob
   firmware-edgar-7287.167.B-firmwarebranch-tryjob
   firmware-enguarde-5216.201.B-firmwarebranch-tryjob
   firmware-eve-9584.B-firmwarebranch-tryjob

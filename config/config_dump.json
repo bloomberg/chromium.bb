@@ -12656,6 +12656,26 @@
         "suite_scheduling": false,
         "workspace_branch": "firmware-cyan-7287.57.B"
     },
+    "firmware-drallion-12930.B-firmwarebranch": {
+        "_template": "firmwarebranch",
+        "boards": [
+            "drallion"
+        ],
+        "schedule": "with 24h interval",
+        "workspace_branch": "firmware-drallion-12930.B"
+    },
+    "firmware-drallion-12930.B-firmwarebranch-tryjob": {
+        "_template": "firmwarebranch",
+        "boards": [
+            "drallion"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "luci_builder": "Try",
+        "push_image": false,
+        "suite_scheduling": false,
+        "workspace_branch": "firmware-drallion-12930.B"
+    },
     "firmware-edgar-7287.167.B-firmwarebranch": {
         "_template": "firmwarebranch",
         "boards": [
