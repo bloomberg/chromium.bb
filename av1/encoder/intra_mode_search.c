@@ -1196,7 +1196,7 @@ static AOM_INLINE void choose_intra_uv_mode(
   // Use an estimated rd for uv_intra based on DC_PRED if the
   // appropriate speed flag is set.
   init_sbuv_mode(mbmi);
-  if (x->skip_chroma_rd) {
+  if (!xd->is_chroma_ref) {
     *rate_uv = 0;
     *rate_uv_tokenonly = 0;
     *dist_uv = 0;
@@ -1887,7 +1887,7 @@ int64_t av1_handle_intra_mode(IntraModeSearchState *intra_search_state,
     // not the tokenonly rate.
     rd_stats_y->rate -= tx_size_cost(x, bsize, mbmi->tx_size);
   }
-  if (num_planes > 1 && !x->skip_chroma_rd) {
+  if (num_planes > 1 && xd->is_chroma_ref) {
     const int uv_mode_cost =
         x->intra_uv_mode_cost[is_cfl_allowed(xd)][mode][mbmi->uv_mode];
     rd_stats->rate +=

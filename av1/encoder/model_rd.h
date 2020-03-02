@@ -163,6 +163,7 @@ static AOM_INLINE void model_rd_for_sb(
   assert(bsize < BLOCK_SIZES_ALL);
 
   for (plane = plane_from; plane <= plane_to; ++plane) {
+    if (plane && !xd->is_chroma_ref) break;
     struct macroblock_plane *const p = &x->plane[plane];
     struct macroblockd_plane *const pd = &xd->plane[plane];
     const BLOCK_SIZE plane_bsize =
@@ -173,8 +174,6 @@ static AOM_INLINE void model_rd_for_sb(
     int64_t sse;
     int rate;
     int64_t dist;
-
-    if (x->skip_chroma_rd && plane) continue;
 
     sse = calculate_sse(xd, p, pd, bw, bh);
 
@@ -213,14 +212,12 @@ static AOM_INLINE void model_rd_for_sb_with_curvfit(
   int64_t total_sse = 0;
 
   for (int plane = plane_from; plane <= plane_to; ++plane) {
+    if (plane && !xd->is_chroma_ref) break;
     struct macroblockd_plane *const pd = &xd->plane[plane];
     const BLOCK_SIZE plane_bsize =
         get_plane_block_size(bsize, pd->subsampling_x, pd->subsampling_y);
     int64_t dist, sse;
     int rate;
-
-    if (x->skip_chroma_rd && plane) continue;
-
     int bw, bh;
     const struct macroblock_plane *const p = &x->plane[plane];
     get_txb_dimensions(xd, plane, plane_bsize, 0, 0, plane_bsize, NULL, NULL,

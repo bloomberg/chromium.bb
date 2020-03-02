@@ -784,7 +784,6 @@ static AOM_INLINE void pick_sb_modes(AV1_COMP *const cpi,
   mbmi->skip = 0;
   // Reset skip mode flag.
   mbmi->skip_mode = 0;
-  x->skip_chroma_rd = !xd->is_chroma_ref;
 
   if (is_cur_buf_hbd(xd)) {
     x->source_variance = av1_high_get_sby_perpixel_variance(

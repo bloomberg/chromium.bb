@@ -324,7 +324,6 @@ struct macroblock {
 
   // Force the coding block to skip transform and quantization.
   int force_skip;
-  int skip_chroma_rd;
   int skip_cost[SKIP_CONTEXTS][2];
 
   int skip_mode;  // 0: off; 1: on

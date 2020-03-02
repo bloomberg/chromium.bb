@@ -616,13 +616,12 @@ static int64_t get_sse(const AV1_COMP *cpi, const MACROBLOCK *x) {
   const MB_MODE_INFO *mbmi = xd->mi[0];
   int64_t total_sse = 0;
   for (int plane = 0; plane < num_planes; ++plane) {
+    if (plane && !xd->is_chroma_ref) break;
     const struct macroblock_plane *const p = &x->plane[plane];
     const struct macroblockd_plane *const pd = &xd->plane[plane];
     const BLOCK_SIZE bs = get_plane_block_size(mbmi->sb_type, pd->subsampling_x,
                                                pd->subsampling_y);
     unsigned int sse;
-
-    if (x->skip_chroma_rd && plane) continue;
 
     cpi->fn_ptr[bs].vf(p->src.buf, p->src.stride, pd->dst.buf, pd->dst.stride,
                        &sse);
@@ -2628,7 +2627,6 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
   int rate_y = 0, rate_uv = 0, rate_y_tokenonly = 0, rate_uv_tokenonly = 0;
   int y_skip = 0, uv_skip = 0;
   int64_t dist_y = 0, dist_uv = 0;
-  TX_SIZE max_uv_tx_size;
 
   ctx->rd_stats.skip = 0;
   mbmi->ref_frame[0] = INTRA_FRAME;
@@ -2660,11 +2658,12 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
       xd->cfl.store_y = 0;
     }
     if (num_planes > 1) {
-      max_uv_tx_size = av1_get_tx_size(AOM_PLANE_U, xd);
       init_sbuv_mode(mbmi);
-      if (!x->skip_chroma_rd)
+      if (xd->is_chroma_ref) {
+        const TX_SIZE max_uv_tx_size = av1_get_tx_size(AOM_PLANE_U, xd);
         av1_rd_pick_intra_sbuv_mode(cpi, x, &rate_uv, &rate_uv_tokenonly,
                                     &dist_uv, &uv_skip, bsize, max_uv_tx_size);
+      }
     }
 
     // Intra block is always coded as non-skip

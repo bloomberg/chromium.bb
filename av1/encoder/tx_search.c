@@ -3347,7 +3347,7 @@ int av1_super_block_uvrd(const AV1_COMP *const cpi, MACROBLOCK *x,
   av1_init_rd_stats(rd_stats);
   int is_cost_valid = 1;
   if (ref_best_rd < 0) is_cost_valid = 0;
-  if (x->skip_chroma_rd || !is_cost_valid) return is_cost_valid;
+  if (!x->e_mbd.is_chroma_ref || !is_cost_valid) return is_cost_valid;
 
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
