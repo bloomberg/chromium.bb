@@ -26,7 +26,6 @@ from __future__ import print_function
 
 import os
 import re
-import sys
 import time
 import traceback
 
@@ -39,9 +38,6 @@ from chromite.lib import cros_update_logging
 from chromite.lib import cros_update_progress
 from chromite.lib import remote_access
 from chromite.lib import timeout_util
-
-
-assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # The build channel for recovering host's stateful partition.
