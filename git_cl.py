@@ -349,33 +349,6 @@ def _call_buildbucket(http, buildbucket_host, method, request):
   assert False, 'unreachable'
 
 
-def _get_bucket_map(changelist, options, option_parser):
-  """Returns a dict mapping bucket names to builders and tests,
-  for triggering tryjobs.
-  """
-  # If no bots are listed, we try to get a set of builders and tests based
-  # on GetPreferredTryMasters functions in PRESUBMIT.py files.
-  if not options.bot:
-    change = changelist.GetChange(changelist.GetCommonAncestorWithUpstream())
-    # Get try masters from PRESUBMIT.py files.
-    masters = presubmit_support.DoGetTryMasters(
-        change=change,
-        changed_files=change.LocalPaths(),
-        repository_root=settings.GetRoot(),
-        default_presubmit=None,
-        project=None,
-        verbose=options.verbose,
-        output_stream=sys.stdout)
-    if masters is None:
-      return None
-    return {m: b for m, b in masters.items()}
-
-  if options.bucket:
-    return {options.bucket: {b: [] for b in options.bot}}
-  option_parser.error(
-      'Please specify the bucket, e.g. "-B chromium/try".')
-
-
 def _parse_bucket(raw_bucket):
   legacy = True
   project = bucket = None
@@ -390,30 +363,27 @@ def _parse_bucket(raw_bucket):
     project = raw_bucket.split('.')[0]
     bucket = raw_bucket
   # Legacy buckets.
-  if legacy:
+  if legacy and project and bucket:
     print('WARNING Please use %s/%s to specify the bucket.' % (project, bucket))
   return project, bucket
 
 
-def _trigger_try_jobs(changelist, buckets, options, patchset):
+def _trigger_try_jobs(changelist, jobs, options, patchset):
   """Sends a request to Buildbucket to trigger tryjobs for a changelist.
 
   Args:
     changelist: Changelist that the tryjobs are associated with.
-    buckets: A nested dict mapping bucket names to builders to tests.
+    jobs: A list of (project, bucket, builder).
     options: Command-line options.
   """
   print('Scheduling jobs on:')
-  for bucket, builders_and_tests in sorted(buckets.items()):
-    print('Bucket:', bucket)
-    print('\n'.join(
-        '  %s: %s' % (builder, tests)
-        for builder, tests in sorted(builders_and_tests.items())))
+  for project, bucket, builder in jobs:
+    print('  %s/%s: %s' % (project, bucket, builder))
   print('To see results here, run:        git cl try-results')
   print('To see results in browser, run:  git cl web')
 
   requests = _make_try_job_schedule_requests(
-      changelist, buckets, options, patchset)
+      changelist, jobs, options, patchset)
   if not requests:
     return
 
@@ -434,7 +404,7 @@ def _trigger_try_jobs(changelist, buckets, options, patchset):
         'Failed to schedule builds for some bots:\n%s' % '\n'.join(errors))
 
 
-def _make_try_job_schedule_requests(changelist, buckets, options, patchset):
+def _make_try_job_schedule_requests(changelist, jobs, options, patchset):
   gerrit_changes = [changelist.GetGerritChange(patchset)]
   shared_properties = {'category': getattr(options, 'category', 'git_cl_try')}
   if getattr(options, 'clobber', False):
@@ -447,41 +417,33 @@ def _make_try_job_schedule_requests(changelist, buckets, options, patchset):
                         'value': '1'})
 
   requests = []
-  for raw_bucket, builders_and_tests in sorted(buckets.items()):
-    project, bucket = _parse_bucket(raw_bucket)
-    if not project or not bucket:
-      print('WARNING Could not parse bucket "%s". Skipping.' % raw_bucket)
-      continue
+  for (project, bucket, builder) in jobs:
+    properties = shared_properties.copy()
+    if 'presubmit' in builder.lower():
+      properties['dry_run'] = 'true'
 
-    for builder, tests in sorted(builders_and_tests.items()):
-      properties = shared_properties.copy()
-      if 'presubmit' in builder.lower():
-        properties['dry_run'] = 'true'
-      if tests:
-        properties['testfilter'] = tests
+    requests.append({
+        'scheduleBuild': {
+            'requestId': str(uuid.uuid4()),
+            'builder': {
+                'project': getattr(options, 'project', None) or project,
+                'bucket': bucket,
+                'builder': builder,
+            },
+            'gerritChanges': gerrit_changes,
+            'properties': properties,
+            'tags': [
+                {'key': 'builder', 'value': builder},
+            ] + shared_tags,
+        }
+    })
 
-      requests.append({
-          'scheduleBuild': {
-              'requestId': str(uuid.uuid4()),
-              'builder': {
-                  'project': getattr(options, 'project', None) or project,
-                  'bucket': bucket,
-                  'builder': builder,
-              },
-              'gerritChanges': gerrit_changes,
-              'properties': properties,
-              'tags': [
-                  {'key': 'builder', 'value': builder},
-              ] + shared_tags,
-          }
-      })
-
-      if options.revision:
-        requests[-1]['scheduleBuild']['gitilesCommit'] = {
-            'host': gerrit_changes[0]['host'],
-            'project': gerrit_changes[0]['project'],
-            'id': options.revision
-         }
+    if options.revision:
+      requests[-1]['scheduleBuild']['gitilesCommit'] = {
+          'host': gerrit_changes[0]['host'],
+          'project': gerrit_changes[0]['project'],
+          'id': options.revision
+       }
 
   return requests
 
@@ -511,6 +473,7 @@ def fetch_try_jobs(changelist, buildbucket_host, patchset=None):
 
   response = _call_buildbucket(http, buildbucket_host, 'SearchBuilds', request)
   return response.get('builds', [])
+
 
 def _fetch_latest_builds(changelist, buildbucket_host, latest_patchset=None):
   """Fetches builds from the latest patchset that has builds (within
@@ -553,33 +516,40 @@ def _filter_failed_for_retry(all_builds):
       info.
 
   Returns:
-    A dict of bucket to builder to tests (empty list). This is the same format
-    accepted by _trigger_try_jobs and returned by _get_bucket_map.
+    A dict {(proj, bucket): [builders]}. This is the same format accepted by
+    _trigger_try_jobs.
   """
-
-  def _builder_of(build):
+  grouped = {}
+  for build in all_builds:
     builder = build['builder']
-    return (builder['project'], builder['bucket'], builder['builder'])
+    key = (builder['project'], builder['bucket'], builder['builder'])
+    grouped.setdefault(key, []).append(build)
 
-  res = collections.defaultdict(dict)
-  ordered = sorted(all_builds, key=lambda b: (_builder_of(b), b['createTime']))
-  for (proj, buck, bldr), builds in itertools.groupby(ordered, key=_builder_of):
-    # If builder had several builds, retry only if the last one failed.
-    # This is a bit different from CQ, which would re-use *any* SUCCESS-full
-    # build, but in case of retrying failed jobs retrying a flaky one makes
-    # sense.
-    builds = list(builds)
-    if builds[-1]['status'] not in ('FAILURE', 'INFRA_FAILURE'):
-      continue
-    if any(t['key'] == 'cq_experimental' and t['value'] == 'true'
-           for t in builds[-1]['tags']):
-      # Don't retry experimental build previously triggered by CQ.
+  jobs = []
+  for (project, bucket, builder), builds in grouped.items():
+    if 'triggered' in builder:
+      print('WARNING: Not scheduling %s. Triggered bots require an initial job '
+            'from a parent. Please schedule a manual job for the parent '
+            'instead.')
       continue
     if any(b['status'] in ('STARTED', 'SCHEDULED') for b in builds):
       # Don't retry if any are running.
       continue
-    res[proj + '/' + buck][bldr] = []
-  return res
+    # If builder had several builds, retry only if the last one failed.
+    # This is a bit different from CQ, which would re-use *any* SUCCESS-full
+    # build, but in case of retrying failed jobs retrying a flaky one makes
+    # sense.
+    builds = sorted(builds, key=lambda b: b['createTime'])
+    if builds[-1]['status'] not in ('FAILURE', 'INFRA_FAILURE'):
+      continue
+    # Don't retry experimental build previously triggered by CQ.
+    if any(t['key'] == 'cq_experimental' and t['value'] == 'true'
+           for t in builds[-1]['tags']):
+      continue
+    jobs.append((project, bucket, builder))
+
+  # Sort the jobs to make testing easier.
+  return sorted(jobs)
 
 
 def print_try_jobs(options, builds):
@@ -4417,11 +4387,11 @@ def CMDupload(parser, args):
       return ret
     builds, _ = _fetch_latest_builds(
         cl, options.buildbucket_host, latest_patchset=patchset)
-    buckets = _filter_failed_for_retry(builds)
-    if len(buckets) == 0:
+    jobs = _filter_failed_for_retry(builds)
+    if len(jobs) == 0:
       print('No failed tryjobs, so --retry-failed has no effect.')
       return ret
-    _trigger_try_jobs(cl, buckets, options, patchset + 1)
+    _trigger_try_jobs(cl, jobs, options, patchset + 1)
 
   return ret
 
@@ -4695,49 +4665,49 @@ def CMDtry(parser, args):
   if error_message:
     parser.error('Can\'t trigger tryjobs: %s' % error_message)
 
-  if options.retry_failed:
-    if options.bot or options.bucket:
-      print('ERROR: The option --retry-failed is not compatible with '
-            '-B, -b, --bucket, or --bot.', file=sys.stderr)
-      return 1
+  if options.bot:
+    if options.retry_failed:
+      parser.error('--bot is not compatible with --retry-failed.')
+    if not options.bucket:
+      parser.error('A bucket (e.g. "chromium/try") is required.')
+
+    triggered = [b for b in options.bot if 'triggered' in b]
+    if triggered:
+      parser.error(
+          'Cannot schedule builds on triggered bots: %s.\n'
+          'This type of bot requires an initial job from a parent (usually a '
+          'builder). Schedule a job on the parent instead.\n' % triggered)
+
+    if options.bucket.startswith('.master'):
+      parser.error('Buildbot masters are not supported.')
+
+    project, bucket = _parse_bucket(options.bucket)
+    if project is None or bucket is None:
+      parser.error('Invalid bucket: %s.' % options.bucket)
+    jobs = sorted((project, bucket, bot) for bot in options.bot)
+  elif options.retry_failed:
     print('Searching for failed tryjobs...')
     builds, patchset = _fetch_latest_builds(cl, options.buildbucket_host)
     if options.verbose:
       print('Got %d builds in patchset #%d' % (len(builds), patchset))
-    buckets = _filter_failed_for_retry(builds)
-    if not buckets:
+    jobs = _filter_failed_for_retry(builds)
+    if not jobs:
       print('There are no failed jobs in the latest set of jobs '
             '(patchset #%d), doing nothing.' % patchset)
       return 0
-    num_builders = sum(map(len, buckets.values()))
+    num_builders = len(jobs)
     if num_builders > 10:
       confirm_or_exit('There are %d builders with failed builds.'
                       % num_builders, action='continue')
   else:
-    buckets = _get_bucket_map(cl, options, parser)
-    if buckets and any(b.startswith('master.') for b in buckets):
-      print('ERROR: Buildbot masters are not supported.')
-      return 1
-
-  # If no bots are listed and we couldn't get a list based on PRESUBMIT files,
-  # then we default to triggering a CQ dry run (see http://crbug.com/625697).
-  if not buckets:
     if options.verbose:
       print('git cl try with no bots now defaults to CQ dry run.')
     print('Scheduling CQ dry run on: %s' % cl.GetIssueURL())
     return cl.SetCQState(_CQState.DRY_RUN)
 
-  for builders in buckets.values():
-    if any('triggered' in b for b in builders):
-      print('ERROR You are trying to send a job to a triggered bot. This type '
-            'of bot requires an initial job from a parent (usually a builder). '
-            'Instead send your job to the parent.\n'
-            'Bot list: %s' % builders, file=sys.stderr)
-      return 1
-
   patchset = cl.GetMostRecentPatchset()
   try:
-    _trigger_try_jobs(cl, buckets, options, patchset)
+    _trigger_try_jobs(cl, jobs, options, patchset)
   except BuildbucketResponseException as ex:
     print('ERROR: %s' % ex)
     return 1

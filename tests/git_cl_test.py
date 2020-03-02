@@ -3104,13 +3104,13 @@ class CMDTryResultsTestCase(CMDTestCaseBase):
         'file.json', self._DEFAULT_RESPONSE['builds'])
 
   def test_filter_failed_for_one_simple(self):
-    self.assertEqual({}, git_cl._filter_failed_for_retry([]))
-    self.assertEqual({
-        'chromium/try': {
-            'bot_failure': [],
-            'bot_infra_failure': []
-        },
-    }, git_cl._filter_failed_for_retry(self._DEFAULT_RESPONSE['builds']))
+    self.assertEqual([], git_cl._filter_failed_for_retry([]))
+    self.assertEqual(
+        [
+            ('chromium', 'try', 'bot_failure'),
+            ('chromium', 'try', 'bot_infra_failure'),
+        ],
+        git_cl._filter_failed_for_retry(self._DEFAULT_RESPONSE['builds']))
 
   def test_filter_failed_for_retry_many_builds(self):
 
@@ -3149,19 +3149,18 @@ class CMDTryResultsTestCase(CMDTestCaseBase):
         _build('sometimes-experimental', 2, 'FAILURE', experimental=False),
     ]
     builds.sort(key=lambda b: b['status'])  # ~deterministic shuffle.
-    self.assertEqual({
-        'chromium/try': {
-            'flaky': [],
-            'sometimes-experimental': []
-        },
-    }, git_cl._filter_failed_for_retry(builds))
+    self.assertEqual(
+        [
+            ('chromium', 'try', 'flaky'),
+            ('chromium', 'try', 'sometimes-experimental'),
+        ],
+        git_cl._filter_failed_for_retry(builds))
 
 
 class CMDTryTestCase(CMDTestCaseBase):
 
   @mock.patch('git_cl.Changelist.SetCQState')
-  @mock.patch('git_cl._get_bucket_map', return_value={})
-  def testSetCQDryRunByDefault(self, _mockGetBucketMap, mockSetCQState):
+  def testSetCQDryRunByDefault(self, mockSetCQState):
     mockSetCQState.return_value = 0
     self.assertEqual(0, git_cl.main(['try']))
     git_cl.Changelist.SetCQState.assert_called_with(git_cl._CQState.DRY_RUN)
@@ -3178,7 +3177,8 @@ class CMDTryTestCase(CMDTestCaseBase):
         'try', '-B', 'luci.chromium.try', '-b', 'win',
         '-p', 'key=val', '-p', 'json=[{"a":1}, null]']))
     self.assertIn(
-        'Scheduling jobs on:\nBucket: luci.chromium.try',
+        'Scheduling jobs on:\n'
+        '  chromium/try: win',
         git_cl.sys.stdout.getvalue())
 
     expected_request = {
@@ -3220,7 +3220,9 @@ class CMDTryTestCase(CMDTestCaseBase):
         '-p', 'key=val', '-p', 'json=[{"a":1}, null]',
         '-r', 'beeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeef']))
     self.assertIn(
-        'Scheduling jobs on:\nBucket: luci.chromium.try',
+        'Scheduling jobs on:\n'
+        '  chromium/try: linux\n'
+        '  chromium/try: win',
         git_cl.sys.stdout.getvalue())
 
     expected_request = {
@@ -3288,13 +3290,15 @@ class CMDTryTestCase(CMDTestCaseBase):
     mockCallBuildbucket.assert_called_with(
         mock.ANY, 'cr-buildbucket.appspot.com', 'Batch', expected_request)
 
+  @mock.patch('sys.stderr', StringIO())
   def testScheduleOnBuildbucket_WrongBucket(self):
-    self.assertEqual(0, git_cl.main([
-        'try', '-B', 'not-a-bucket', '-b', 'win',
-        '-p', 'key=val', '-p', 'json=[{"a":1}, null]']))
+    with self.assertRaises(SystemExit):
+      git_cl.main([
+          'try', '-B', 'not-a-bucket', '-b', 'win',
+          '-p', 'key=val', '-p', 'json=[{"a":1}, null]'])
     self.assertIn(
-        'WARNING Could not parse bucket "not-a-bucket". Skipping.',
-        git_cl.sys.stdout.getvalue())
+        'Invalid bucket: not-a-bucket.',
+        sys.stderr.getvalue())
 
   @mock.patch('git_cl._call_buildbucket')
   @mock.patch('git_cl.fetch_try_jobs')
@@ -3316,7 +3320,8 @@ class CMDTryTestCase(CMDTestCaseBase):
 
     self.assertEqual(0, git_cl.main(['try', '--retry-failed']))
     self.assertIn(
-        'Scheduling jobs on:\nBucket: chromium/try',
+        'Scheduling jobs on:\n'
+        '  chromium/try: linux',
         git_cl.sys.stdout.getvalue())
 
     expected_request = {
@@ -3424,9 +3429,10 @@ class CMDUploadTestCase(CMDTestCaseBase):
         mock.call(mock.ANY, 'cr-buildbucket.appspot.com', patchset=7),
         mock.call(mock.ANY, 'cr-buildbucket.appspot.com', patchset=6),
     ], git_cl.fetch_try_jobs.mock_calls)
-    expected_buckets = {
-        'chromium/try': {'bot_failure': [], 'bot_infra_failure': []},
-    }
+    expected_buckets = [
+        ('chromium', 'try', 'bot_failure'),
+        ('chromium', 'try', 'bot_infra_failure'),
+    ]
     git_cl._trigger_try_jobs.assert_called_once_with(
         mock.ANY, expected_buckets, mock.ANY, 8)
 
