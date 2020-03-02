@@ -176,6 +176,20 @@ size_t drv_num_planes_from_format(uint32_t format)
 	return layout ? layout->num_planes : 0;
 }
 
+size_t drv_num_planes_from_modifier(struct driver *drv, uint32_t format, uint64_t modifier)
+{
+	size_t planes = drv_num_planes_from_format(format);
+
+	/* Disallow unsupported formats. */
+	if (!planes)
+		return 0;
+
+	if (drv->backend->num_planes_from_modifier && modifier != DRM_FORMAT_MOD_INVALID)
+		return drv->backend->num_planes_from_modifier(drv, format, modifier);
+
+	return planes;
+}
+
 uint32_t drv_height_from_format(uint32_t format, uint32_t height, size_t plane)
 {
 	const struct planar_layout *layout = layout_from_format(format);

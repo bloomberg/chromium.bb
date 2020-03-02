@@ -216,7 +216,8 @@ PUBLIC struct gbm_bo *gbm_bo_import(struct gbm_device *gbm, uint32_t type, void 
 		drv_data.width = fd_modifier_data->width;
 		drv_data.height = fd_modifier_data->height;
 		drv_data.format = fd_modifier_data->format;
-		num_planes = drv_num_planes_from_format(drv_data.format);
+		num_planes = drv_num_planes_from_modifier(gbm->drv, drv_data.format,
+							  fd_modifier_data->modifier);
 		assert(num_planes);
 
 		num_fds = fd_modifier_data->num_fds;

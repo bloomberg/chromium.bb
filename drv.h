@@ -175,6 +175,8 @@ uint32_t drv_resolve_format(struct driver *drv, uint32_t format, uint64_t use_fl
 
 size_t drv_num_planes_from_format(uint32_t format);
 
+size_t drv_num_planes_from_modifier(struct driver *drv, uint32_t format, uint64_t modifier);
+
 uint32_t drv_num_buffers_per_bo(struct bo *bo);
 
 #define drv_log(format, ...)                                                                       \

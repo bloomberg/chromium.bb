@@ -315,6 +315,7 @@ const struct backend backend_amdgpu = {
 	.bo_unmap = amdgpu_unmap_bo,
 	.bo_invalidate = amdgpu_bo_invalidate,
 	.resolve_format = amdgpu_resolve_format,
+	.num_planes_from_modifier = dri_num_planes_from_modifier,
 };
 
 #endif

@@ -79,6 +79,7 @@ struct backend {
 	int (*bo_invalidate)(struct bo *bo, struct mapping *mapping);
 	int (*bo_flush)(struct bo *bo, struct mapping *mapping);
 	uint32_t (*resolve_format)(struct driver *drv, uint32_t format, uint64_t use_flags);
+	size_t (*num_planes_from_modifier)(struct driver *drv, uint32_t format, uint64_t modifier);
 };
 
 // clang-format off
