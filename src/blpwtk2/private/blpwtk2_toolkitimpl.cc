@@ -79,6 +79,7 @@
 #include <third_party/blink/public/web/web_security_policy.h>
 #include <third_party/blink/public/web/web_script_bindings.h>
 #include <third_party/blink/public/web/web_script_controller.h>
+#include <third_party/blink/renderer/platform/heap/thread_state.h>
 #include <third_party/icu/source/common/unicode/locid.h>
 #include <third_party/icu/source/common/unicode/unistr.h>
 #include <third_party/icu/source/i18n/unicode/timezone.h>
@@ -882,7 +883,7 @@ v8::Platform *ToolkitImpl::getV8Platform()
 // patch section: multi-heap tracer
 int ToolkitImpl::addV8HeapTracer(EmbedderHeapTracer *tracer)
 {
-    auto *multiHeapTracer = gin::MultiHeapTracer::From(v8::Isolate::GetCurrent());
+    auto *multiHeapTracer = ThreadState::Current()->GetMultiHeapTracer();
 
     // As 'multiHeapTracer' never sees 'tracer' directly, we have to configure
     // its 'isolate' member manually.
@@ -907,7 +908,7 @@ int ToolkitImpl::addV8HeapTracer(EmbedderHeapTracer *tracer)
 
 void ToolkitImpl::removeV8HeapTracer(int embedder_id)
 {
-    auto *multiHeapTracer = gin::MultiHeapTracer::From(v8::Isolate::GetCurrent());
+    auto *multiHeapTracer = ThreadState::Current()->GetMultiHeapTracer();
     multiHeapTracer->RemoveHeapTracer(embedder_id);
 
     DCHECK(1 == d_heapTracers.count(embedder_id));
@@ -917,7 +918,7 @@ void ToolkitImpl::removeV8HeapTracer(int embedder_id)
 
 void ToolkitImpl::setIsolate(v8::EmbedderHeapTracer *tracer)
 {
-    auto *multiHeapTracer = gin::MultiHeapTracer::From(v8::Isolate::GetCurrent());
+    auto *multiHeapTracer = ThreadState::Current()->GetMultiHeapTracer();
     multiHeapTracer->SetIsolate(tracer);
 }
 
