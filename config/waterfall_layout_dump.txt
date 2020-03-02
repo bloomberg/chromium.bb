@@ -218,7 +218,6 @@
 == mst_android_pfq ==
   master-mst-android-pfq
     betty-arcmaster-mst-android-pfq
-    eve-arc-r-mst-android-pfq
 
 == pi_android_pfq ==
   master-pi-android-pfq
@@ -399,6 +398,9 @@
     wooten-release
     zork-release
 
+== rvc_android_pfq ==
+  master-rvc-android-pfq
+
 == toolchain ==
   amd64-pgo-generate-llvm-next-toolchain
   arm-pgo-generate-llvm-next-toolchain
@@ -432,6 +434,10 @@
 == vmpi_android_pfq ==
   master-vmpi-android-pfq
     eve-arcvm-mesa-virgl-next-vmpi-android-pfq
+
+== vmrvc_android_pfq ==
+  master-vmrvc-android-pfq
+    hatch-arc-r-vmrvc-android-pfq
 
 == tryjob ==
   amd64-generic-asan-tryjob
@@ -784,7 +790,6 @@
   eve-arc-r-full-tryjob
   eve-arc-r-llvm-next-toolchain-tryjob
   eve-arc-r-llvm-toolchain-tryjob
-  eve-arc-r-mst-android-pfq-tryjob
   eve-arc-r-payloads-tryjob
   eve-arc-r-release-tryjob
   eve-arc-r-unittest-stress
@@ -1177,6 +1182,7 @@
   hatch-arc-r-llvm-toolchain-tryjob
   hatch-arc-r-release-tryjob
   hatch-arc-r-unittest-stress
+  hatch-arc-r-vmrvc-android-pfq-tryjob
   hatch-diskswap-full-tryjob
   hatch-diskswap-llvm-next-toolchain-tryjob
   hatch-diskswap-llvm-toolchain-tryjob
@@ -1379,7 +1385,6 @@
   master-lakitu-release-tryjob
   master-mst-android-pfq-tryjob
     betty-arcmaster-mst-android-pfq-tryjob
-    eve-arc-r-mst-android-pfq-tryjob
   master-pi-android-pfq-tryjob
     betty-pi-arc-pi-android-pfq-tryjob
     caroline-pi-android-pfq-tryjob
@@ -1552,6 +1557,7 @@
     wizpig-release-tryjob
     wooten-release-tryjob
     zork-release-tryjob
+  master-rvc-android-pfq-tryjob
   master-toolchain-tryjob
     amd64-llvm-next-toolchain-tryjob
     arm-llvm-next-toolchain-tryjob
@@ -1560,6 +1566,8 @@
     betty-arcvm-master-vmmst-android-pfq-tryjob
   master-vmpi-android-pfq-tryjob
     eve-arcvm-mesa-virgl-next-vmpi-android-pfq-tryjob
+  master-vmrvc-android-pfq-tryjob
+    hatch-arc-r-vmrvc-android-pfq-tryjob
   mistral-factory-mistral-12361.B-factorybranch-tryjob
   mistral-full-tryjob
   mistral-llvm-next-toolchain-tryjob

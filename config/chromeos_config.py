@@ -1255,6 +1255,26 @@ def AndroidTemplates(site_config):
       android_import_branch=constants.ANDROID_QT_BUILD_BRANCH,
   )
 
+  # Template for Android Rvc.
+  site_config.AddTemplate(
+      'rvc_android_pfq',
+      site_config.templates.generic_android_pfq,
+      site_config.templates.internal,
+      display_label=config_lib.DISPLAY_LABEL_RVC_ANDROID_PFQ,
+      android_package='android-container-rvc',
+      android_import_branch=constants.ANDROID_RVC_BUILD_BRANCH,
+  )
+
+  # Template for Android VM Rvc.
+  site_config.AddTemplate(
+      'vmrvc_android_pfq',
+      site_config.templates.generic_android_pfq,
+      site_config.templates.internal,
+      display_label=config_lib.DISPLAY_LABEL_VMRVC_ANDROID_PFQ,
+      android_package='android-vm-rvc',
+      android_import_branch=constants.ANDROID_VMRVC_BUILD_BRANCH,
+  )
+
   # Template for Android Master.
   site_config.AddTemplate(
       'mst_android_pfq',
@@ -1308,9 +1328,7 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       schedule='with 150m interval',
   )
 
-  _mst_hwtest_boards = frozenset([
-      'eve-arc-r',
-  ])
+  _mst_hwtest_boards = frozenset([])
   _mst_hwtest_skylab_boards = frozenset([])
   _mst_no_hwtest_boards = frozenset([])
   _mst_no_hwtest_experimental_boards = frozenset([])
@@ -1397,6 +1415,37 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   _vmpi_hwtest_experimental_boards = frozenset([])
   _vmpi_vmtest_boards = frozenset([])
   _vmpi_vmtest_experimental_boards = frozenset([])
+
+  # Android RVC master.
+  rvc_master_config = site_config.Add(
+      constants.RVC_ANDROID_PFQ_MASTER,
+      site_config.templates.rvc_android_pfq,
+      site_config.templates.master_android_pfq_mixin,
+      schedule='with 150m interval',
+  )
+
+  _rvc_hwtest_boards = frozenset([])
+  _rvc_hwtest_skylab_boards = frozenset([])
+  _rvc_no_hwtest_boards = frozenset([])
+  _rvc_no_hwtest_experimental_boards = frozenset([])
+  _rvc_vmtest_boards = frozenset([])
+
+  # Android VM RVC master.
+  vmrvc_master_config = site_config.Add(
+      constants.VMRVC_ANDROID_PFQ_MASTER,
+      site_config.templates.vmrvc_android_pfq,
+      site_config.templates.master_android_pfq_mixin,
+      schedule='with 1440m interval',
+  )
+
+  _vmrvc_no_hwtest_boards = frozenset([])
+  _vmrvc_no_hwtest_experimental_boards = frozenset([])
+  _vmrvc_hwtest_boards = frozenset([
+      'hatch-arc-r',
+  ])
+  _vmrvc_hwtest_experimental_boards = frozenset([])
+  _vmrvc_vmtest_boards = frozenset([])
+  _vmrvc_vmtest_experimental_boards = frozenset([])
 
   # Android MST slaves.
   mst_master_config.AddSlaves(
@@ -1593,6 +1642,85 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
           board_configs,
           site_config.templates.vmpi_android_pfq,
           important=False,
+          vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
+                                            test_suite='smoke')],
+      )
+  )
+
+  # Android RVC slaves.
+  rvc_master_config.AddSlaves(
+      site_config.AddForBoards(
+          'rvc-android-pfq',
+          _rvc_hwtest_boards - _rvc_hwtest_skylab_boards,
+          board_configs,
+          site_config.templates.rvc_android_pfq,
+          hw_tests=hw_test_list.SharedPoolPFQ(),
+      ) +
+      site_config.AddForBoards(
+          'rvc-android-pfq',
+          _rvc_hwtest_skylab_boards,
+          board_configs,
+          site_config.templates.rvc_android_pfq,
+          enable_skylab_hw_tests=True,
+          hw_tests=hw_test_list.SharedPoolPFQ(),
+      ) +
+      site_config.AddForBoards(
+          'rvc-android-pfq',
+          _rvc_no_hwtest_boards,
+          board_configs,
+          site_config.templates.rvc_android_pfq,
+      ) +
+      site_config.AddForBoards(
+          'rvc-android-pfq',
+          _rvc_no_hwtest_experimental_boards,
+          board_configs,
+          site_config.templates.rvc_android_pfq,
+          important=False,
+      ) +
+      site_config.AddForBoards(
+          'rvc-android-pfq',
+          _rvc_vmtest_boards,
+          board_configs,
+          site_config.templates.rvc_android_pfq,
+          vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
+                                            test_suite='smoke')],
+      )
+  )
+
+  # Android VMRVC slaves.
+  vmrvc_master_config.AddSlaves(
+      site_config.AddForBoards(
+          'vmrvc-android-pfq',
+          _vmrvc_hwtest_boards,
+          board_configs,
+          site_config.templates.vmrvc_android_pfq,
+          hw_tests=hw_test_list.SharedPoolPFQ(),
+      ) +
+      site_config.AddForBoards(
+          'vmrvc-android-pfq',
+          _vmrvc_no_hwtest_boards,
+          board_configs,
+          site_config.templates.vmrvc_android_pfq,
+      ) +
+      site_config.AddForBoards(
+          'vmrvc-android-pfq',
+          _vmrvc_no_hwtest_experimental_boards,
+          board_configs,
+          site_config.templates.vmrvc_android_pfq,
+          important=False,
+      ) +
+      site_config.AddForBoards(
+          'vmrvc-android-pfq',
+          _vmrvc_no_hwtest_experimental_boards,
+          board_configs,
+          site_config.templates.vmrvc_android_pfq,
+          important=False,
+      ) +
+      site_config.AddForBoards(
+          'vmrvc-android-pfq',
+          _vmrvc_vmtest_boards,
+          board_configs,
+          site_config.templates.vmrvc_android_pfq,
           vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
                                             test_suite='smoke')],
       )
