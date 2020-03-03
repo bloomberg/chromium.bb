@@ -372,44 +372,10 @@ def Exec(content, filename='<unknown>', vars_override=None, builtin_vars=None):
     value = _gclient_eval(node, filename, vars_dict)
     local_scope.SetNode(name, value, node)
 
-  return _GCLIENT_SCHEMA.validate(local_scope)
-
-
-def ExecLegacy(content, filename='<unknown>', vars_override=None,
-               builtin_vars=None):
-  """Executes a DEPS file |content| using exec."""
-  local_scope = {}
-  global_scope = {'Var': lambda var_name: '{%s}' % var_name}
-
-  # If we use 'exec' directly, it complains that 'Parse' contains a nested
-  # function with free variables.
-  # This is because on versions of Python < 2.7.9, "exec(a, b, c)" not the same
-  # as "exec a in b, c" (See https://bugs.python.org/issue21591).
-  eval(compile(content, filename, 'exec'), global_scope, local_scope)
-
-  vars_dict = {}
-  vars_dict.update(local_scope.get('vars', {}))
-  if builtin_vars:
-    vars_dict.update(builtin_vars)
-  if vars_override:
-    vars_dict.update({k: v for k, v in vars_override.items() if k in vars_dict})
-
-  if not vars_dict:
-    return local_scope
-
-  def _DeepFormat(node):
-    if isinstance(node, basestring):
-      return node.format(**vars_dict)
-    elif isinstance(node, dict):
-      return {k.format(**vars_dict): _DeepFormat(v) for k, v in node.items()}
-    elif isinstance(node, list):
-      return [_DeepFormat(elem) for elem in node]
-    elif isinstance(node, tuple):
-      return tuple(_DeepFormat(elem) for elem in node)
-    else:
-      return node
-
-  return _DeepFormat(local_scope)
+  try:
+    return _GCLIENT_SCHEMA.validate(local_scope)
+  except schema.SchemaError as e:
+    raise gclient_utils.Error(str(e))
 
 
 def _StandardizeDeps(deps_dict, vars_dict):
@@ -477,8 +443,7 @@ def UpdateCondition(info_dict, op, new_condition):
     del info_dict['condition']
 
 
-def Parse(content, validate_syntax, filename, vars_override=None,
-          builtin_vars=None):
+def Parse(content, filename, vars_override=None, builtin_vars=None):
   """Parses DEPS strings.
 
   Executes the Python-like string stored in content, resulting in a Python
@@ -487,8 +452,6 @@ def Parse(content, validate_syntax, filename, vars_override=None,
 
   Args:
     content: str. DEPS file stored as a string.
-    validate_syntax: bool. Whether syntax should be validated using the schema
-      defined above.
     filename: str. The name of the DEPS file, or a string describing the source
       of the content, e.g. '<string>', '<unknown>'.
     vars_override: dict, optional. A dictionary with overrides for the variables
@@ -500,10 +463,7 @@ def Parse(content, validate_syntax, filename, vars_override=None,
     A Python dict with the parsed contents of the DEPS file, as specified by the
     schema above.
   """
-  if validate_syntax:
-    result = Exec(content, filename, vars_override, builtin_vars)
-  else:
-    result = ExecLegacy(content, filename, vars_override, builtin_vars)
+  result = Exec(content, filename, vars_override, builtin_vars)
 
   vars_dict = result.get('vars', {})
   if 'deps' in result:

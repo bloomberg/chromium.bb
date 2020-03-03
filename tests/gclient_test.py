@@ -1002,7 +1002,6 @@ class GclientTest(trial_dir.TestCase):
         '}')
     options, _ = gclient.OptionParser().parse_args([])
     options.ignore_dep_type = 'git'
-    options.validate_syntax = True
     obj = gclient.GClient.LoadCurrentConfig(options)
 
     self.assertEqual(1, len(obj.dependencies))
@@ -1132,7 +1131,7 @@ class GclientTest(trial_dir.TestCase):
       obj.RunOnDeps('None', [])
       self.fail()
     except gclient_utils.Error as e:
-      self.assertIn('allowed_hosts must be', str(e))
+      self.assertIn('Key \'allowed_hosts\' error:', str(e))
     finally:
       self._get_processed()
 
@@ -1160,7 +1159,6 @@ class GclientTest(trial_dir.TestCase):
         '  }\n'
         '}')
     options, _ = gclient.OptionParser().parse_args([])
-    options.validate_syntax = True
     obj = gclient.GClient.LoadCurrentConfig(options)
 
     self.assertEqual(1, len(obj.dependencies))
@@ -1202,7 +1200,6 @@ class GclientTest(trial_dir.TestCase):
         '}')
     options, _ = gclient.OptionParser().parse_args([])
     options.ignore_dep_type = 'cipd'
-    options.validate_syntax = True
     obj = gclient.GClient.LoadCurrentConfig(options)
 
     self.assertEqual(1, len(obj.dependencies))

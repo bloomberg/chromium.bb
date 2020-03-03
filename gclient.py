@@ -716,8 +716,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     if deps_content:
       try:
         local_scope = gclient_eval.Parse(
-            deps_content, self._get_option('validate_syntax', False),
-            filepath, self.get_vars(), self.get_builtin_vars())
+            deps_content, filepath, self.get_vars(), self.get_builtin_vars())
       except SyntaxError as e:
         gclient_utils.SyntaxErrorToError(filepath, e)
 
@@ -2698,12 +2697,6 @@ def CMDsync(parser, args):
                     help='DEPRECATED: This is a no-op.')
   parser.add_option('-m', '--manually_grab_svn_rev', action='store_true',
                     help='DEPRECATED: This is a no-op.')
-  # TODO(phajdan.jr): Remove validation options once default (crbug/570091).
-  parser.add_option('--validate-syntax', action='store_true', default=True,
-                    help='Validate the .gclient and DEPS syntax')
-  parser.add_option('--disable-syntax-validation', action='store_false',
-                    dest='validate_syntax',
-                    help='Disable validation of .gclient and DEPS syntax.')
   parser.add_option('--no-rebase-patch-ref', action='store_false',
                     dest='rebase_patch_ref', default=True,
                     help='Bypass rebase of the patch ref after checkout.')
@@ -2745,7 +2738,6 @@ CMDupdate = CMDsync
 def CMDvalidate(parser, args):
   """Validates the .gclient and DEPS syntax."""
   options, args = parser.parse_args(args)
-  options.validate_syntax = True
   client = GClient.LoadCurrentConfig(options)
   rv = client.RunOnDeps('validate', args)
   if rv == 0:
