@@ -30,13 +30,10 @@
 
 namespace libgav1 {
 
-constexpr bool IsGlobalMvBlock(PredictionMode mode,
-                               GlobalMotionTransformationType type,
-                               BlockSize size) {
-  return (mode == kPredictionModeGlobalMv ||
-          mode == kPredictionModeGlobalGlobalMv) &&
-         type > kGlobalMotionTransformationTypeTranslation &&
-         !IsBlockDimension4(size);
+constexpr bool IsGlobalMvBlock(bool is_global_mv_block,
+                               GlobalMotionTransformationType type) {
+  return is_global_mv_block &&
+         type > kGlobalMotionTransformationTypeTranslation;
 }
 
 // The |contexts| output parameter may be null. If the caller does not need

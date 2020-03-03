@@ -162,31 +162,31 @@ struct PredictionParameters : public Allocable {
 // their types are large enough.
 struct BlockParameters : public Allocable {
   BlockSize size;
-  // segment_id is in the range [0, 7].
-  int8_t segment_id;
-  bool use_predicted_segment_id;  // only valid with temporal update enabled.
   bool skip;
   // True means that this block will use some default settings (that
   // correspond to compound prediction) and so most of the mode info is
   // skipped. False means that the mode info is not skipped.
   bool skip_mode;
   bool is_inter;
+  bool is_explicit_compound_type;  // comp_group_idx in the spec.
+  bool is_compound_type_average;   // compound_idx in the spec.
+  bool is_global_mv_block;
+  bool use_predicted_segment_id;  // only valid with temporal update enabled.
+  int8_t segment_id;              // segment_id is in the range [0, 7].
   PredictionMode y_mode;
   PredictionMode uv_mode;
   TransformSize transform_size;
   TransformSize uv_transform_size;
-  PaletteModeInfo palette_mode_info;
-  ReferenceFrameType reference_frame[2];
-  CandidateMotionVector mv;
-  bool is_explicit_compound_type;  // comp_group_idx in the spec.
-  bool is_compound_type_average;   // compound_idx in the spec.
   InterpolationFilter interpolation_filter[2];
+  ReferenceFrameType reference_frame[2];
   // The index of this array is as follows:
   //  0 - Y plane vertical filtering.
   //  1 - Y plane horizontal filtering.
   //  2 - U plane (both directions).
   //  3 - V plane (both directions).
   uint8_t deblock_filter_level[kFrameLfCount];
+  CandidateMotionVector mv;
+  PaletteModeInfo palette_mode_info;
   // When |Tile::split_parse_and_decode_| is true, each block gets its own
   // instance of |prediction_parameters|. When it is false, all the blocks point
   // to |Tile::prediction_parameters_|. This field is valid only as long as the

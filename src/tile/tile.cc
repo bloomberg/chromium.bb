@@ -2023,6 +2023,9 @@ bool Tile::ProcessBlock(int row4x4, int column4x4, BlockSize block_size,
                               : std::move(prediction_parameters_);
   if (bp.prediction_parameters == nullptr) return false;
   if (!DecodeModeInfo(block)) return false;
+  bp.is_global_mv_block = (bp.y_mode == kPredictionModeGlobalMv ||
+                           bp.y_mode == kPredictionModeGlobalGlobalMv) &&
+                          !IsBlockDimension4(bp.size);
   PopulateDeblockFilterLevel(block);
   if (!ReadPaletteTokens(block)) return false;
   DecodeTransformSize(block);
