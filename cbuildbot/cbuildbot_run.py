@@ -27,6 +27,7 @@ import functools
 import os
 import pickle
 import re
+import sys
 import types
 
 from six.moves import queue as Queue
@@ -41,6 +42,9 @@ from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import portage_util
 from chromite.lib import uri_lib
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class RunAttributesError(Exception):

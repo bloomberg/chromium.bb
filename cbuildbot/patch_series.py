@@ -21,6 +21,9 @@ from chromite.lib import parallel
 from chromite.lib import patch as cros_patch
 
 
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
 MAX_PLAN_RECURSION = 150
 
 

@@ -10,6 +10,7 @@ from __future__ import print_function
 import codecs
 import os
 import re
+import sys
 from xml.dom import minidom
 
 from chromite.lib import config_lib
@@ -18,6 +19,9 @@ from chromite.cbuildbot import manifest_version
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # Paladin constants for manifest names.

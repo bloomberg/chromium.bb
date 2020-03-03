@@ -74,8 +74,6 @@ SKIP = 'skip'
 SPECIAL_TESTS = {
     # Tests that need to run inside the chroot.
     'api/controller/dependency_unittest': INSIDE,
-    'cbuildbot/stages/sync_stages_unittest': INSIDE,
-    'cbuildbot/stages/test_stages_unittest': INSIDE,
     'cli/cros/cros_build_unittest': INSIDE,
     'cli/cros/cros_chroot_unittest': INSIDE,
     'cli/cros/cros_debug_unittest': INSIDE,
