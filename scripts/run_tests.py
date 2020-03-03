@@ -16,6 +16,7 @@ from __future__ import print_function
 import errno
 import glob
 import json
+import math
 import multiprocessing
 import os
 import signal
@@ -254,7 +255,7 @@ def SortTests(tests, jobs=1, timing_cache_file=None):
   # (2) If there is common code that is broken, we get quicker feedback if we
   #     churn through the fast tests.
   # Worse case, this interleaving doesn't slow things down overall.
-  fast = ret[:int(round(len(ret) / 2.0)) - 1:-1]
+  fast = ret[:int(math.ceil(len(ret) / 2.0)) - 1:-1]
   slow = ret[:-len(fast)]
   ret[::2] = slow
   ret[1::2] = fast
