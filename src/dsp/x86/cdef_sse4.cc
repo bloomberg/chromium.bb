@@ -150,7 +150,7 @@ inline void AddPartial(const __m128i source, __m128i dest_lo[8],
 
 inline uint32_t SumVector_S32(__m128i a) {
   a = _mm_hadd_epi32(a, a);
-  a = _mm_hadd_epi32(a, a);
+  a = _mm_add_epi32(a, _mm_srli_si128(a, 4));
   return _mm_cvtsi128_si32(a);
 }
 
