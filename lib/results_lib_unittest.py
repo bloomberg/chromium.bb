@@ -21,7 +21,6 @@ from chromite.lib import results_lib
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot.builders import simple_builders
 from chromite.cbuildbot.stages import generic_stages
-from chromite.cbuildbot.stages import sync_stages
 from chromite.lib import cidb
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -47,11 +46,6 @@ class FailStage(generic_stages.BuilderStage):
   def PerformStage(self):
     """Throw the exception to make us fail."""
     raise self.FAIL_EXCEPTION
-
-
-class SkipStage(generic_stages.BuilderStage):
-  """SkipStage is skipped."""
-  config_name = 'signer_tests'
 
 
 class SneakyFailStage(generic_stages.BuilderStage):
@@ -376,8 +370,6 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
   def testStagesReportSuccess(self):
     """Tests Stage reporting."""
 
-    sync_stages.ManifestVersionedSyncStage.manifest_manager = None
-
     # Store off a known set of results and generate a report
     results_lib.Results.Record('Sync', results_lib.Results.SUCCESS, time=1)
     results_lib.Results.Record('Build', results_lib.Results.SUCCESS, time=2)
@@ -418,8 +410,6 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
 
   def testStagesReportError(self):
     """Tests Stage reporting with exceptions."""
-
-    sync_stages.ManifestVersionedSyncStage.manifest_manager = None
 
     # Store off a known set of results and generate a report
     results_lib.Results.Record('Sync', results_lib.Results.SUCCESS, time=1)
