@@ -77,6 +77,10 @@ EnumValues ScopeParams;
 EnumValues KernelEnqueueFlagsParams;
 EnumValues KernelProfilingInfoParams;
 EnumValues CapabilityParams;
+EnumValues RayFlagsParams;
+EnumValues RayQueryIntersectionParams;
+EnumValues RayQueryCommittedIntersectionTypeParams;
+EnumValues RayQueryCandidateIntersectionTypeParams;
 
 std::pair<bool, std::string> ReadFile(const std::string& path)
 {
@@ -203,6 +207,14 @@ ClassOptionality ToOperandClassAndOptionality(const std::string& operandKind, co
             type = OperandFunction;
         } else if (operandKind == "MemoryAccess") {
             type = OperandMemoryOperands;
+        } else if (operandKind == "RayFlags") {
+            type = OperandRayFlags;
+        } else if (operandKind == "RayQueryIntersection") {
+            type = OperandRayQueryIntersection;
+        } else if (operandKind == "RayQueryCommittedIntersectionType") {
+            type = OperandRayQueryCommittedIntersectionType;
+        } else if (operandKind == "RayQueryCandidateIntersectionType") {
+            type = OperandRayQueryCandidateIntersectionType;
         }
 
         if (type == OperandNone) {
@@ -463,6 +475,14 @@ void jsonToSpirv(const std::string& jsonPath, bool buildingHeaders)
             establishOperandClass(enumName, OperandKernelEnqueueFlags, &KernelEnqueueFlagsParams, operandEnum, category);
         } else if (enumName == "KernelProfilingInfo") {
             establishOperandClass(enumName, OperandKernelProfilingInfo, &KernelProfilingInfoParams, operandEnum, category);
+        } else if (enumName == "RayFlags") {
+            establishOperandClass(enumName, OperandRayFlags, &RayFlagsParams, operandEnum, category);
+        } else if (enumName == "RayQueryIntersection") {
+            establishOperandClass(enumName, OperandRayQueryIntersection, &RayQueryIntersectionParams, operandEnum, category);
+        } else if (enumName == "RayQueryCommittedIntersectionType") {
+            establishOperandClass(enumName, OperandRayQueryCommittedIntersectionType, &RayQueryCommittedIntersectionTypeParams, operandEnum, category);
+        } else if (enumName == "RayQueryCandidateIntersectionType") {
+            establishOperandClass(enumName, OperandRayQueryCandidateIntersectionType, &RayQueryCandidateIntersectionTypeParams, operandEnum, category);
         }
     }
 }

@@ -867,6 +867,8 @@ enum Capability : uint
     SignedZeroInfNanPreserve = 4466,
     RoundingModeRTE = 4467,
     RoundingModeRTZ = 4468,
+    RayQueryProvisionalKHR = 4471,
+    RayTraversalPrimitiveCullingProvisionalKHR = 4478,
     Float16ImageAMD = 5008,
     ImageGatherBiasLodAMD = 5009,
     FragmentMaskAMD = 5010,
@@ -935,6 +937,54 @@ enum Capability : uint
     SubgroupAvcMotionEstimationINTEL = 5696,
     SubgroupAvcMotionEstimationIntraINTEL = 5697,
     SubgroupAvcMotionEstimationChromaINTEL = 5698,
+}
+
+enum RayFlagsShift : uint
+{
+    OpaqueKHR = 0,
+    NoOpaqueKHR = 1,
+    TerminateOnFirstHitKHR = 2,
+    SkipClosestHitShaderKHR = 3,
+    CullBackFacingTrianglesKHR = 4,
+    CullFrontFacingTrianglesKHR = 5,
+    CullOpaqueKHR = 6,
+    CullNoOpaqueKHR = 7,
+    SkipTrianglesKHR = 8,
+    SkipAABBsKHR = 9,
+}
+
+enum RayFlagsMask : uint
+{
+    MaskNone = 0,
+    OpaqueKHR = 0x00000001,
+    NoOpaqueKHR = 0x00000002,
+    TerminateOnFirstHitKHR = 0x00000004,
+    SkipClosestHitShaderKHR = 0x00000008,
+    CullBackFacingTrianglesKHR = 0x00000010,
+    CullFrontFacingTrianglesKHR = 0x00000020,
+    CullOpaqueKHR = 0x00000040,
+    CullNoOpaqueKHR = 0x00000080,
+    SkipTrianglesKHR = 0x00000100,
+    SkipAABBsKHR = 0x00000200,
+}
+
+enum RayQueryIntersection : uint
+{
+    RayQueryCandidateIntersectionKHR = 0,
+    RayQueryCommittedIntersectionKHR = 1,
+}
+
+enum RayQueryCommittedIntersectionType : uint
+{
+    RayQueryCommittedIntersectionNoneKHR = 0,
+    RayQueryCommittedIntersectionTriangleKHR = 1,
+    RayQueryCommittedIntersectionGeneratedKHR = 2,
+}
+
+enum RayQueryCandidateIntersectionType : uint
+{
+    RayQueryCandidateIntersectionTriangleKHR = 0,
+    RayQueryCandidateIntersectionAABBKHR = 1,
 }
 
 enum Op : uint
@@ -1289,6 +1339,13 @@ enum Op : uint
     OpSubgroupAnyKHR = 4429,
     OpSubgroupAllEqualKHR = 4430,
     OpSubgroupReadInvocationKHR = 4432,
+    OpTypeRayQueryProvisionalKHR = 4472,
+    OpRayQueryInitializeKHR = 4473,
+    OpRayQueryTerminateKHR = 4474,
+    OpRayQueryGenerateIntersectionKHR = 4475,
+    OpRayQueryConfirmIntersectionKHR = 4476,
+    OpRayQueryProceedKHR = 4477,
+    OpRayQueryGetIntersectionTypeKHR = 4479,
     OpGroupIAddNonUniformAMD = 5000,
     OpGroupFAddNonUniformAMD = 5001,
     OpGroupFMinNonUniformAMD = 5002,
@@ -1470,6 +1527,23 @@ enum Op : uint
     OpSubgroupAvcSicGetPackedSkcLumaCountThresholdINTEL = 5814,
     OpSubgroupAvcSicGetPackedSkcLumaSumThresholdINTEL = 5815,
     OpSubgroupAvcSicGetInterRawSadsINTEL = 5816,
+    OpRayQueryGetRayTMinKHR = 6016,
+    OpRayQueryGetRayFlagsKHR = 6017,
+    OpRayQueryGetIntersectionTKHR = 6018,
+    OpRayQueryGetIntersectionInstanceCustomIndexKHR = 6019,
+    OpRayQueryGetIntersectionInstanceIdKHR = 6020,
+    OpRayQueryGetIntersectionInstanceShaderBindingTableRecordOffsetKHR = 6021,
+    OpRayQueryGetIntersectionGeometryIndexKHR = 6022,
+    OpRayQueryGetIntersectionPrimitiveIndexKHR = 6023,
+    OpRayQueryGetIntersectionBarycentricsKHR = 6024,
+    OpRayQueryGetIntersectionFrontFaceKHR = 6025,
+    OpRayQueryGetIntersectionCandidateAABBOpaqueKHR = 6026,
+    OpRayQueryGetIntersectionObjectRayDirectionKHR = 6027,
+    OpRayQueryGetIntersectionObjectRayOriginKHR = 6028,
+    OpRayQueryGetWorldRayDirectionKHR = 6029,
+    OpRayQueryGetWorldRayOriginKHR = 6030,
+    OpRayQueryGetIntersectionObjectToWorldKHR = 6031,
+    OpRayQueryGetIntersectionWorldToObjectKHR = 6032,
 }
 
 

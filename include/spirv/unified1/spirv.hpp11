@@ -860,6 +860,8 @@ enum class Capability : unsigned {
     SignedZeroInfNanPreserve = 4466,
     RoundingModeRTE = 4467,
     RoundingModeRTZ = 4468,
+    RayQueryProvisionalKHR = 4471,
+    RayTraversalPrimitiveCullingProvisionalKHR = 4478,
     Float16ImageAMD = 5008,
     ImageGatherBiasLodAMD = 5009,
     FragmentMaskAMD = 5010,
@@ -928,6 +930,53 @@ enum class Capability : unsigned {
     SubgroupAvcMotionEstimationINTEL = 5696,
     SubgroupAvcMotionEstimationIntraINTEL = 5697,
     SubgroupAvcMotionEstimationChromaINTEL = 5698,
+    Max = 0x7fffffff,
+};
+
+enum class RayFlagsShift : unsigned {
+    OpaqueKHR = 0,
+    NoOpaqueKHR = 1,
+    TerminateOnFirstHitKHR = 2,
+    SkipClosestHitShaderKHR = 3,
+    CullBackFacingTrianglesKHR = 4,
+    CullFrontFacingTrianglesKHR = 5,
+    CullOpaqueKHR = 6,
+    CullNoOpaqueKHR = 7,
+    SkipTrianglesKHR = 8,
+    SkipAABBsKHR = 9,
+    Max = 0x7fffffff,
+};
+
+enum class RayFlagsMask : unsigned {
+    MaskNone = 0,
+    OpaqueKHR = 0x00000001,
+    NoOpaqueKHR = 0x00000002,
+    TerminateOnFirstHitKHR = 0x00000004,
+    SkipClosestHitShaderKHR = 0x00000008,
+    CullBackFacingTrianglesKHR = 0x00000010,
+    CullFrontFacingTrianglesKHR = 0x00000020,
+    CullOpaqueKHR = 0x00000040,
+    CullNoOpaqueKHR = 0x00000080,
+    SkipTrianglesKHR = 0x00000100,
+    SkipAABBsKHR = 0x00000200,
+};
+
+enum class RayQueryIntersection : unsigned {
+    RayQueryCandidateIntersectionKHR = 0,
+    RayQueryCommittedIntersectionKHR = 1,
+    Max = 0x7fffffff,
+};
+
+enum class RayQueryCommittedIntersectionType : unsigned {
+    RayQueryCommittedIntersectionNoneKHR = 0,
+    RayQueryCommittedIntersectionTriangleKHR = 1,
+    RayQueryCommittedIntersectionGeneratedKHR = 2,
+    Max = 0x7fffffff,
+};
+
+enum class RayQueryCandidateIntersectionType : unsigned {
+    RayQueryCandidateIntersectionTriangleKHR = 0,
+    RayQueryCandidateIntersectionAABBKHR = 1,
     Max = 0x7fffffff,
 };
 
@@ -1282,6 +1331,13 @@ enum class Op : unsigned {
     OpSubgroupAnyKHR = 4429,
     OpSubgroupAllEqualKHR = 4430,
     OpSubgroupReadInvocationKHR = 4432,
+    OpTypeRayQueryProvisionalKHR = 4472,
+    OpRayQueryInitializeKHR = 4473,
+    OpRayQueryTerminateKHR = 4474,
+    OpRayQueryGenerateIntersectionKHR = 4475,
+    OpRayQueryConfirmIntersectionKHR = 4476,
+    OpRayQueryProceedKHR = 4477,
+    OpRayQueryGetIntersectionTypeKHR = 4479,
     OpGroupIAddNonUniformAMD = 5000,
     OpGroupFAddNonUniformAMD = 5001,
     OpGroupFMinNonUniformAMD = 5002,
@@ -1463,6 +1519,23 @@ enum class Op : unsigned {
     OpSubgroupAvcSicGetPackedSkcLumaCountThresholdINTEL = 5814,
     OpSubgroupAvcSicGetPackedSkcLumaSumThresholdINTEL = 5815,
     OpSubgroupAvcSicGetInterRawSadsINTEL = 5816,
+    OpRayQueryGetRayTMinKHR = 6016,
+    OpRayQueryGetRayFlagsKHR = 6017,
+    OpRayQueryGetIntersectionTKHR = 6018,
+    OpRayQueryGetIntersectionInstanceCustomIndexKHR = 6019,
+    OpRayQueryGetIntersectionInstanceIdKHR = 6020,
+    OpRayQueryGetIntersectionInstanceShaderBindingTableRecordOffsetKHR = 6021,
+    OpRayQueryGetIntersectionGeometryIndexKHR = 6022,
+    OpRayQueryGetIntersectionPrimitiveIndexKHR = 6023,
+    OpRayQueryGetIntersectionBarycentricsKHR = 6024,
+    OpRayQueryGetIntersectionFrontFaceKHR = 6025,
+    OpRayQueryGetIntersectionCandidateAABBOpaqueKHR = 6026,
+    OpRayQueryGetIntersectionObjectRayDirectionKHR = 6027,
+    OpRayQueryGetIntersectionObjectRayOriginKHR = 6028,
+    OpRayQueryGetWorldRayDirectionKHR = 6029,
+    OpRayQueryGetWorldRayOriginKHR = 6030,
+    OpRayQueryGetIntersectionObjectToWorldKHR = 6031,
+    OpRayQueryGetIntersectionWorldToObjectKHR = 6032,
     Max = 0x7fffffff,
 };
 
@@ -1840,6 +1913,30 @@ inline void HasResultAndType(Op opcode, bool *hasResult, bool *hasResultType) {
     case Op::OpTerminateRayNV: *hasResult = false; *hasResultType = false; break;
     case Op::OpTraceNV: *hasResult = false; *hasResultType = false; break;
     case Op::OpTypeAccelerationStructureNV: *hasResult = true; *hasResultType = false; break;
+    case Op::OpTypeRayQueryProvisionalKHR: *hasResult = true; *hasResultType = false; break;
+    case Op::OpRayQueryInitializeKHR: *hasResult = false; *hasResultType = false; break;
+    case Op::OpRayQueryTerminateKHR: *hasResult = false; *hasResultType = false; break;
+    case Op::OpRayQueryGenerateIntersectionKHR: *hasResult = false; *hasResultType = false; break;
+    case Op::OpRayQueryConfirmIntersectionKHR: *hasResult = false; *hasResultType = false; break;
+    case Op::OpRayQueryProceedKHR: *hasResult = true; *hasResultType = true; break;
+    case Op::OpRayQueryGetIntersectionTypeKHR: *hasResult = true; *hasResultType = true; break;
+    case Op::OpRayQueryGetRayTMinKHR: *hasResult = true; *hasResultType = true; break;
+    case Op::OpRayQueryGetRayFlagsKHR: *hasResult = true; *hasResultType = true; break;
+    case Op::OpRayQueryGetIntersectionTKHR: *hasResult = true; *hasResultType = true; break;
+    case Op::OpRayQueryGetIntersectionInstanceCustomIndexKHR: *hasResult = true; *hasResultType = true; break;
+    case Op::OpRayQueryGetIntersectionInstanceIdKHR: *hasResult = true; *hasResultType = true; break;
+    case Op::OpRayQueryGetIntersectionInstanceShaderBindingTableRecordOffsetKHR: *hasResult = true; *hasResultType = true; break;
+    case Op::OpRayQueryGetIntersectionGeometryIndexKHR: *hasResult = true; *hasResultType = true; break;
+    case Op::OpRayQueryGetIntersectionPrimitiveIndexKHR: *hasResult = true; *hasResultType = true; break;
+    case Op::OpRayQueryGetIntersectionBarycentricsKHR: *hasResult = true; *hasResultType = true; break;
+    case Op::OpRayQueryGetIntersectionFrontFaceKHR: *hasResult = true; *hasResultType = true; break;
+    case Op::OpRayQueryGetIntersectionCandidateAABBOpaqueKHR: *hasResult = true; *hasResultType = true; break;
+    case Op::OpRayQueryGetIntersectionObjectRayDirectionKHR: *hasResult = true; *hasResultType = true; break;
+    case Op::OpRayQueryGetIntersectionObjectRayOriginKHR: *hasResult = true; *hasResultType = true; break;
+    case Op::OpRayQueryGetWorldRayDirectionKHR: *hasResult = true; *hasResultType = true; break;
+    case Op::OpRayQueryGetWorldRayOriginKHR: *hasResult = true; *hasResultType = true; break;
+    case Op::OpRayQueryGetIntersectionObjectToWorldKHR: *hasResult = true; *hasResultType = true; break;
+    case Op::OpRayQueryGetIntersectionWorldToObjectKHR: *hasResult = true; *hasResultType = true; break;
     case Op::OpExecuteCallableNV: *hasResult = false; *hasResultType = false; break;
     case Op::OpTypeCooperativeMatrixNV: *hasResult = true; *hasResultType = false; break;
     case Op::OpCooperativeMatrixLoadNV: *hasResult = true; *hasResultType = true; break;
@@ -2008,6 +2105,7 @@ inline FunctionControlMask operator|(FunctionControlMask a, FunctionControlMask 
 inline MemorySemanticsMask operator|(MemorySemanticsMask a, MemorySemanticsMask b) { return MemorySemanticsMask(unsigned(a) | unsigned(b)); }
 inline MemoryAccessMask operator|(MemoryAccessMask a, MemoryAccessMask b) { return MemoryAccessMask(unsigned(a) | unsigned(b)); }
 inline KernelProfilingInfoMask operator|(KernelProfilingInfoMask a, KernelProfilingInfoMask b) { return KernelProfilingInfoMask(unsigned(a) | unsigned(b)); }
+inline RayFlagsMask operator|(RayFlagsMask a, RayFlagsMask b) { return RayFlagsMask(unsigned(a) | unsigned(b)); }
 
 }  // end namespace spv
 

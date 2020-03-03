@@ -83,6 +83,10 @@ enum OperandClass {
     OperandKernelEnqueueFlags,
     OperandKernelProfilingInfo,
     OperandCapability,
+    OperandRayFlags,
+    OperandRayQueryIntersection,
+    OperandRayQueryCommittedIntersectionType,
+    OperandRayQueryCandidateIntersectionType,
 
     OperandOpcode,
 
