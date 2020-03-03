@@ -69,8 +69,6 @@ static int tf_motion_search(AV1_COMP *cpi,
   // Block information (ONLY Y-plane is used for motion search).
   const int mb_height = block_size_high[block_size];
   const int mb_width = block_size_wide[block_size];
-  const int mb_y = mb_height * mb_row;
-  const int mb_x = mb_width * mb_col;
   const int y_stride = frame_to_filter->y_stride;
   assert(y_stride == ref_frame->y_stride);
   const int y_offset = mb_row * mb_height * y_stride + mb_col * mb_width;
@@ -126,8 +124,8 @@ static int tf_motion_search(AV1_COMP *cpi,
   mb->mv_cost_type = mv_cost_type;
   av1_full_pixel_search(cpi, mb, block_size, start_mv, step_param,
                         full_search_method, 1, sadperbit16,
-                        cond_cost_list(cpi, cost_list), &baseline_mv, mb_x,
-                        mb_y, 0, &ss_cfg, 0);
+                        cond_cost_list(cpi, cost_list), &baseline_mv, 0,
+                        &ss_cfg, &mb->best_mv.as_fullmv, NULL);
   // Since we are merely refining the result from full pixel search, we don't
   // need regularization for subpel search
   mb->mv_cost_type = MV_COST_NONE;
@@ -168,8 +166,8 @@ static int tf_motion_search(AV1_COMP *cpi,
         mb->mv_cost_type = mv_cost_type;
         av1_full_pixel_search(cpi, mb, subblock_size, start_mv, step_param,
                               full_search_method, 1, sadperbit16,
-                              cond_cost_list(cpi, cost_list), &baseline_mv,
-                              mb_x, mb_y, 0, &ss_cfg, 0);
+                              cond_cost_list(cpi, cost_list), &baseline_mv, 0,
+                              &ss_cfg, &mb->best_mv.as_fullmv, NULL);
         // Since we are merely refining the result from full pixel search, we
         // don't need regularization for subpel search
         mb->mv_cost_type = MV_COST_NONE;

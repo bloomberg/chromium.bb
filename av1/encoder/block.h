@@ -394,8 +394,6 @@ struct macroblock {
 
   // Store the best motion vector during motion search
   int_mv best_mv;
-  // Store the second best motion vector during full-pixel motion search
-  int_mv second_best_mv;
 
   // Store the fractional best motion vector during sub/Qpel-pixel motion search
   int_mv fractional_best_mv[3];

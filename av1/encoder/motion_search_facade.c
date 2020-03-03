@@ -125,13 +125,15 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   const int sadpb = x->sadperbit16;
   int cost_list[5];
-  x->best_mv.as_int = x->second_best_mv.as_int = INVALID_MV;
+  int_mv second_best_mv;
+  x->best_mv.as_int = second_best_mv.as_int = INVALID_MV;
   switch (mbmi->motion_mode) {
     case SIMPLE_TRANSLATION:
       bestsme = av1_full_pixel_search(
           cpi, x, bsize, start_mv, step_param, cpi->sf.mv_sf.search_method, 0,
-          sadpb, cond_cost_list(cpi, cost_list), &ref_mv, (MI_SIZE * mi_col),
-          (MI_SIZE * mi_row), 0, &cpi->ss_cfg[SS_CFG_SRC], 0);
+          sadpb, cond_cost_list(cpi, cost_list), &ref_mv, 0,
+          &cpi->ss_cfg[SS_CFG_SRC], &x->best_mv.as_fullmv,
+          &second_best_mv.as_fullmv);
       break;
     case OBMC_CAUSAL:
       bestsme = av1_obmc_full_pixel_search(
@@ -211,8 +213,8 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
     switch (mbmi->motion_mode) {
       case SIMPLE_TRANSLATION:
         if (cpi->sf.mv_sf.use_accurate_subpel_search) {
-          const int try_second = x->second_best_mv.as_int != INVALID_MV &&
-                                 x->second_best_mv.as_int != x->best_mv.as_int;
+          const int try_second = second_best_mv.as_int != INVALID_MV &&
+                                 second_best_mv.as_int != x->best_mv.as_int;
           const int best_mv_var = cpi->find_fractional_mv_step(
               x, cm, &ms_params, &dis, &x->pred_sse[ref]);
 
@@ -222,7 +224,7 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
                                            &ref_mv);
             MV best_mv = x->best_mv.as_mv;
 
-            x->best_mv = x->second_best_mv;
+            x->best_mv = second_best_mv;
             if (av1_is_subpelmv_in_range(
                     &subpel_limits,
                     get_mv_from_fullmv(&x->best_mv.as_fullmv))) {
@@ -707,8 +709,8 @@ void av1_simple_motion_search(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
   av1_set_mv_search_range(&x->mv_limits, &ref_mv);
   var = av1_full_pixel_search(
       cpi, x, bsize, start_mv, step_param, search_methods, do_mesh_search,
-      sadpb, cond_cost_list(cpi, cost_list), &ref_mv, mi_col * MI_SIZE,
-      mi_row * MI_SIZE, 0, &cpi->ss_cfg[SS_CFG_SRC], 0);
+      sadpb, cond_cost_list(cpi, cost_list), &ref_mv, 0,
+      &cpi->ss_cfg[SS_CFG_SRC], &x->best_mv.as_fullmv, NULL);
   // Restore
   x->mv_limits = tmp_mv_limits;
 

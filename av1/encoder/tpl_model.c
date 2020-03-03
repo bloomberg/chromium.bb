@@ -121,8 +121,8 @@ static AOM_INLINE void txfm_quant_rdcost(
 static uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
                                   uint8_t *cur_frame_buf,
                                   uint8_t *ref_frame_buf, int stride,
-                                  int stride_ref, BLOCK_SIZE bsize, int mi_row,
-                                  int mi_col, MV center_mv) {
+                                  int stride_ref, BLOCK_SIZE bsize,
+                                  MV center_mv) {
   AV1_COMMON *cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   MV_SPEED_FEATURES *const mv_sf = &cpi->sf.mv_sf;
@@ -154,8 +154,8 @@ static uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
   assert(ss_cfg->stride == stride_ref);
 
   av1_full_pixel_search(cpi, x, bsize, start_mv, step_param, search_method, 0,
-                        sadpb, cond_cost_list(cpi, cost_list), &center_mv,
-                        (MI_SIZE * mi_col), (MI_SIZE * mi_row), 0, ss_cfg, 0);
+                        sadpb, cond_cost_list(cpi, cost_list), &center_mv, 0,
+                        ss_cfg, &x->best_mv.as_fullmv, NULL);
 
   /* restore UMV window */
   x->mv_limits = tmp_mv_limits;
@@ -350,9 +350,9 @@ static AOM_INLINE void mode_estimation(
     }
 
     for (int idx = 0; idx < refmv_count; ++idx) {
-      uint32_t thissme = motion_estimation(
-          cpi, x, src_mb_buffer, ref_mb, src_stride, ref_stride, bsize, mi_row,
-          mi_col, center_mvs[idx].as_mv);
+      uint32_t thissme =
+          motion_estimation(cpi, x, src_mb_buffer, ref_mb, src_stride,
+                            ref_stride, bsize, center_mvs[idx].as_mv);
 
       if (thissme < bestsme) {
         bestsme = thissme;

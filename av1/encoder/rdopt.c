@@ -2728,11 +2728,12 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
     FULLPEL_MV start_mv = get_fullmv_from_mv(&dv_ref.as_mv);
     const int sadpb = x->sadperbit16;
     int cost_list[5];
-    const int bestsme = av1_full_pixel_search(
+    int bestsme = av1_full_pixel_search(
         cpi, x, bsize, start_mv, step_param, cpi->sf.mv_sf.search_method, 0,
-        sadpb, cond_cost_list(cpi, cost_list), &dv_ref.as_mv,
-        (MI_SIZE * mi_col), (MI_SIZE * mi_row), 1,
-        &cpi->ss_cfg[SS_CFG_LOOKAHEAD], 1);
+        sadpb, cond_cost_list(cpi, cost_list), &dv_ref.as_mv, 1,
+        &cpi->ss_cfg[SS_CFG_LOOKAHEAD], &x->best_mv.as_fullmv, NULL);
+    av1_intrabc_hash_search(cpi, x, bsize, &dv_ref.as_mv, &bestsme,
+                            &x->best_mv.as_fullmv);
 
     x->mv_limits = tmp_mv_limits;
     if (bestsme == INT_MAX) continue;

@@ -150,18 +150,21 @@ int av1_refining_search_8p_c(MACROBLOCK *x, int error_per_bit, int search_range,
                              const struct buf_2d *src,
                              const struct buf_2d *pre);
 
-int av1_full_pixel_search(const struct AV1_COMP *cpi, MACROBLOCK *x,
+int av1_full_pixel_search(const struct AV1_COMP *cpi, const MACROBLOCK *x,
                           BLOCK_SIZE bsize, const FULLPEL_MV start_mv,
                           int step_param, int method, int run_mesh_search,
                           int error_per_bit, int *cost_list, const MV *ref_mv,
-                          int x_pos, int y_pos, int intra,
-                          const search_site_config *cfg,
-                          int use_intrabc_mesh_pattern);
+                          int is_intra_mode, const search_site_config *cfg,
+                          FULLPEL_MV *best_mv, FULLPEL_MV *second_best_mv);
 
-int av1_obmc_full_pixel_search(const struct AV1_COMP *cpi, MACROBLOCK *x,
+void av1_intrabc_hash_search(const struct AV1_COMP *cpi, MACROBLOCK *x,
+                             BLOCK_SIZE bsize, const MV *ref_mv, int *bestsme,
+                             FULLPEL_MV *best_mv);
+
+int av1_obmc_full_pixel_search(const struct AV1_COMP *cpi, const MACROBLOCK *x,
                                const FULLPEL_MV start_mv, int step_param,
                                int sadpb, const aom_variance_fn_ptr_t *fn_ptr,
-                               const MV *ref_mv, FULLPEL_MV *dst_mv,
+                               const MV *ref_mv, FULLPEL_MV *best_mv,
                                const search_site_config *cfg);
 
 unsigned int av1_refine_warped_mv(const struct AV1_COMP *cpi,
