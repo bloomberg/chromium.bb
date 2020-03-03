@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import os
 import signal
+import sys
 import time
 
 import mock
@@ -28,6 +29,9 @@ from chromite.lib import cros_test_lib
 from chromite.lib import fake_cidb
 from chromite.lib import parallel
 from chromite.lib.buildstore import FakeBuildStore
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class PassStage(generic_stages.BuilderStage):

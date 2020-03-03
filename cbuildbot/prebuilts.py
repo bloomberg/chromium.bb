@@ -9,11 +9,15 @@ from __future__ import print_function
 
 import glob
 import os
+import sys
 
 from chromite.cbuildbot import commands
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import portage_util
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 _PREFLIGHT_BINHOST = 'PREFLIGHT_BINHOST'
 _POSTSUBMIT_BINHOST = 'POSTSUBMIT_BINHOST'
