@@ -220,11 +220,6 @@
     betty-arcmaster-mst-android-pfq
     eve-arc-r-mst-android-pfq
 
-== nyc_android_pfq ==
-  master-nyc-android-pfq
-    betty-arc64-nyc-android-pfq
-    betty-nyc-android-pfq
-
 == pi_android_pfq ==
   master-pi-android-pfq
     betty-pi-arc-pi-android-pfq
@@ -543,7 +538,6 @@
   betty-arc64-full-tryjob
   betty-arc64-llvm-next-toolchain-tryjob
   betty-arc64-llvm-toolchain-tryjob
-  betty-arc64-nyc-android-pfq-tryjob
   betty-arc64-payloads-tryjob
   betty-arc64-release-tryjob
   betty-arc64-unittest-stress
@@ -581,7 +575,6 @@
   betty-kernelnext-unittest-stress
   betty-llvm-next-toolchain-tryjob
   betty-llvm-toolchain-tryjob
-  betty-nyc-android-pfq-tryjob
   betty-payloads-tryjob
   betty-pi-arc-full-tryjob
   betty-pi-arc-llvm-next-toolchain-tryjob
@@ -1387,9 +1380,6 @@
   master-mst-android-pfq-tryjob
     betty-arcmaster-mst-android-pfq-tryjob
     eve-arc-r-mst-android-pfq-tryjob
-  master-nyc-android-pfq-tryjob
-    betty-arc64-nyc-android-pfq-tryjob
-    betty-nyc-android-pfq-tryjob
   master-pi-android-pfq-tryjob
     betty-pi-arc-pi-android-pfq-tryjob
     caroline-pi-android-pfq-tryjob

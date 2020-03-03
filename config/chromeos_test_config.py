@@ -440,10 +440,6 @@ def ApplyCustomOverrides(site_config):
           'vm_tests':[],
       },
 
-      'betty-arc64-nyc-android-pfq':
-          site_config.templates.tast_vm_android_pfq_tests,
-      'betty-nyc-android-pfq':
-          site_config.templates.tast_vm_android_pfq_tests,
       'betty-pi-arc-pi-android-pfq':
           site_config.templates.tast_vm_android_pfq_tests,
 
@@ -707,10 +703,6 @@ def AndroidTemplates(site_config):
   )
 
   site_config.templates.mst_android_pfq.apply(
-      site_config.templates.default_hw_tests_override,
-  )
-
-  site_config.templates.nyc_android_pfq.apply(
       site_config.templates.default_hw_tests_override,
   )
 

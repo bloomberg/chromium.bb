@@ -1225,16 +1225,6 @@ def AndroidTemplates(site_config):
       luci_builder=config_lib.LUCI_BUILDER_PFQ,
   )
 
-  # Template for Android NYC.
-  site_config.AddTemplate(
-      'nyc_android_pfq',
-      site_config.templates.generic_android_pfq,
-      display_label=config_lib.DISPLAY_LABEL_NYC_ANDROID_PFQ,
-      android_package='android-container-nyc',
-      android_import_branch=constants.ANDROID_NYC_BUILD_BRANCH,
-      android_gts_build_branch='git_nyc-mr2-dev',
-  )
-
   # Template for Android Pi.
   site_config.AddTemplate(
       'pi_android_pfq',
@@ -1407,23 +1397,6 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   _vmpi_hwtest_experimental_boards = frozenset([])
   _vmpi_vmtest_boards = frozenset([])
   _vmpi_vmtest_experimental_boards = frozenset([])
-
-  # Android NYC master.
-  nyc_master_config = site_config.Add(
-      constants.NYC_ANDROID_PFQ_MASTER,
-      site_config.templates.nyc_android_pfq,
-      site_config.templates.master_android_pfq_mixin,
-      schedule='with 150m interval',
-  )
-
-  _nyc_hwtest_boards = frozenset([])
-  _nyc_hwtest_skylab_boards = frozenset([])
-  _nyc_no_hwtest_boards = frozenset([])
-  _nyc_no_hwtest_experimental_boards = frozenset([])
-  _nyc_vmtest_boards = frozenset([
-      'betty',
-      'betty-arc64',
-  ])
 
   # Android MST slaves.
   mst_master_config.AddSlaves(
@@ -1622,46 +1595,6 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
           important=False,
           vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
                                             test_suite='smoke')],
-      )
-  )
-
-  # Android NYC slaves.
-  nyc_master_config.AddSlaves(
-      site_config.AddForBoards(
-          'nyc-android-pfq',
-          _nyc_hwtest_boards - _nyc_hwtest_skylab_boards,
-          board_configs,
-          site_config.templates.nyc_android_pfq,
-          hw_tests=hw_test_list.SharedPoolPFQ(),
-      ) +
-      site_config.AddForBoards(
-          'nyc-android-pfq',
-          _nyc_hwtest_skylab_boards,
-          board_configs,
-          site_config.templates.nyc_android_pfq,
-          enable_skylab_hw_tests=True,
-          hw_tests=hw_test_list.SharedPoolPFQ(),
-      ) +
-      site_config.AddForBoards(
-          'nyc-android-pfq',
-          _nyc_no_hwtest_boards,
-          board_configs,
-          site_config.templates.nyc_android_pfq,
-      ) +
-      site_config.AddForBoards(
-          'nyc-android-pfq',
-          _nyc_no_hwtest_experimental_boards,
-          board_configs,
-          site_config.templates.nyc_android_pfq,
-          important=False,
-      ) +
-      site_config.AddForBoards(
-          'nyc-android-pfq',
-          _nyc_vmtest_boards,
-          board_configs,
-          site_config.templates.nyc_android_pfq,
-          vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
-                                            test_suite='smoke'),],
       )
   )
 
