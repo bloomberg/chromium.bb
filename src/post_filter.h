@@ -61,7 +61,7 @@ class PostFilter {
   //
   // The overall flow of data in this class (for both single and multi-threaded
   // cases) is as follows:
-  //   -> Input: |yuv_buffer_|.
+  //   -> Input: |frame_buffer_|.
   //   -> Initialize |source_buffer_|, |cdef_buffer_| and
   //      |loop_restoration_buffer_|.
   //   -> Deblocking:
@@ -76,14 +76,13 @@ class PostFilter {
   //   -> Loop Restoration:
   //      * Input: |cdef_buffer_|
   //      * Output: |loop_restoration_buffer_|.
-  //   -> Now |yuv_buffer_| contains the filtered frame (without any changes
-  //      to the plane pointers that were passed into the class).
+  //   -> Now |frame_buffer_| contains the filtered frame.
   PostFilter(const ObuFrameHeader& frame_header,
              const ObuSequenceHeader& sequence_header, LoopFilterMask* masks,
              const Array2D<int16_t>& cdef_index,
              const Array2D<TransformSize>& inter_transform_sizes,
              LoopRestorationInfo* restoration_info,
-             BlockParametersHolder* block_parameters, YuvBuffer* yuv_buffer,
+             BlockParametersHolder* block_parameters, YuvBuffer* frame_buffer,
              YuvBuffer* deblock_buffer, const dsp::Dsp* dsp,
              ThreadPool* thread_pool, uint8_t* threaded_window_buffer,
              uint8_t* superres_line_buffer, int do_post_filter_mask);
@@ -106,9 +105,9 @@ class PostFilter {
   //              |                                 |
   //              -----------> super resolution -----
   // * Any of these filters could be present or absent.
-  // * |yuv_buffer_| points to the decoded frame buffer. When
-  //   ApplyFilteringThreaded() is called, |yuv_buffer_| is modified by each of
-  //   the filters as described below.
+  // * |frame_buffer_| points to the decoded frame buffer. When
+  //   ApplyFilteringThreaded() is called, |frame_buffer_| is modified by each
+  //   of the filters as described below.
   // Filter behavior (multi-threaded):
   // * Deblock: In-place filtering. The output is written to |source_buffer_|.
   //            If cdef and loop restoration are both on, then 4 rows (as
@@ -189,7 +188,7 @@ class PostFilter {
   // to determine where to write the output of the tile decoding process taking
   // in-place filtering offsets into consideration.
   uint8_t* GetUnfilteredBuffer(int plane) { return source_buffer_[plane]; }
-  const YuvBuffer& yuv_buffer() const { return *yuv_buffer_; }
+  const YuvBuffer& frame_buffer() const { return frame_buffer_; }
 
   // Returns true if SuperRes will be performed for the given frame header and
   // mask.
@@ -211,7 +210,7 @@ class PostFilter {
                pixel_size_;
   }
   uint8_t* GetSourceBuffer(Plane plane, int row4x4, int column4x4) const {
-    return GetBufferOffset(source_buffer_[plane], yuv_buffer_->stride(plane),
+    return GetBufferOffset(source_buffer_[plane], frame_buffer_.stride(plane),
                            plane, row4x4, column4x4);
   }
 
@@ -513,14 +512,14 @@ class PostFilter {
   // Frame buffer to hold cdef filtered frame.
   YuvBuffer cdef_filtered_buffer_;
   // Input frame buffer.
-  YuvBuffer* const yuv_buffer_;
-  // A view into |yuv_buffer_| that points to the input and output of the
+  YuvBuffer& frame_buffer_;
+  // A view into |frame_buffer_| that points to the input and output of the
   // deblocking process.
   uint8_t* source_buffer_[kMaxPlanes];
-  // A view into |yuv_buffer_| that points to the output of the CDEF filtered
+  // A view into |frame_buffer_| that points to the output of the CDEF filtered
   // planes (to facilitate in-place CDEF filtering).
   uint8_t* cdef_buffer_[kMaxPlanes];
-  // A view into |yuv_buffer_| that points to the output of the Loop Restored
+  // A view into |frame_buffer_| that points to the output of the Loop Restored
   // planes (to facilitate in-place Loop Restoration).
   uint8_t* loop_restoration_buffer_[kMaxPlanes];
   // Buffer used to store the deblocked pixels that are necessary for loop

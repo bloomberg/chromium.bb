@@ -406,7 +406,6 @@ Tile::Tile(
       current_quantizer_index_(frame_header.quantizer.base_index),
       sequence_header_(sequence_header),
       frame_header_(frame_header),
-      current_frame_(*current_frame),
       reference_frame_sign_bias_(reference_frame_sign_bias),
       reference_frames_(reference_frames),
       motion_field_(*motion_field),
@@ -428,6 +427,7 @@ Tile::Tile(
           frame_header_.allow_intrabc
               ? (sequence_header_.use_128x128_superblock ? 3 : 5)
               : 1),
+      current_frame_(*current_frame),
       cdef_index_(*cdef_index),
       inter_transform_sizes_(*inter_transform_sizes),
       thread_pool_(thread_pool),
@@ -461,7 +461,7 @@ Tile::Tile(
                             frame_parallel;
   memset(delta_lf_, 0, sizeof(delta_lf_));
   delta_lf_all_zero_ = true;
-  const YuvBuffer& buffer = post_filter_.yuv_buffer();
+  const YuvBuffer& buffer = post_filter_.frame_buffer();
   for (int plane = 0; plane < PlaneCount(); ++plane) {
     // Verify that the borders are big enough for Reconstruct(). max_tx_length
     // is the maximum value of tx_width and tx_height for the plane.
@@ -482,10 +482,6 @@ Tile::Tile(
     // Align(buffer.height(plane), H) - 1. Therefore the maximum number of
     // rows Reconstruct() may write to is
     // Align(buffer.height(plane), max_tx_length).
-
-    // Note that it is safe to use the post_filter_.GetUnfilteredBuffer(plane)
-    // in case of intra_block_copy since all the post filters are disabled when
-    // intra_block_copy is on).
     buffer_[plane].Reset(Align(buffer.height(plane), max_tx_length),
                          buffer.stride(plane),
                          post_filter_.GetUnfilteredBuffer(plane));

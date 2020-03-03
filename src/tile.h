@@ -595,7 +595,6 @@ class Tile : public Allocable {
   std::array<Array2D<int8_t>, 2> dc_categories_;
   const ObuSequenceHeader& sequence_header_;
   const ObuFrameHeader& frame_header_;
-  RefCountedBuffer& current_frame_;
   const std::array<bool, kNumReferenceFrameTypes>& reference_frame_sign_bias_;
   const std::array<RefCountedBufferPtr, kNumReferenceFrameTypes>&
       reference_frames_;
@@ -649,7 +648,22 @@ class Tile : public Allocable {
   // use_128x128_superblock ? 3 : 5. This is the allowed range of reference for
   // the top rows for intrabc.
   const int intra_block_copy_lag_;
+
+  // In the Tile class, we use the "current_frame" in two ways:
+  //   1) To write the decoded output into (using the |buffer_| view).
+  //   2) To read the pixels for intra block copy (using the |current_frame_|
+  //      reference).
+  //
+  // When intra block copy is off, |buffer_| and |current_frame_| may or may not
+  // point to the same plane pointers. But it is okay since |current_frame_| is
+  // never used in this case.
+  //
+  // When intra block copy is on, |buffer_| and |current_frame_| always point to
+  // the same plane pointers (since post filtering is disabled). So the usage in
+  // both case 1 and case 2 remain valid.
   Array2DView<uint8_t> buffer_[kMaxPlanes];
+  RefCountedBuffer& current_frame_;
+
   Array2D<int16_t>& cdef_index_;
   Array2D<TransformSize>& inter_transform_sizes_;
   std::array<RestorationUnitInfo, kMaxPlanes> reference_unit_info_;
