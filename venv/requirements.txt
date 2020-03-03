@@ -19,6 +19,7 @@ mox==0.5.3; python_version < '3'
 MySQL-python==1.2.5; python_version < '3'
 numpy==1.16.6
 oauth2client==3.0.0
+portage==2.3.75
 pbr==1.10.0
 ply==3.8
 protobuf==3.0.0
@@ -31,4 +32,4 @@ PyYAML==3.12
 rsa==3.4.2
 six==1.10.0
 smmap2==2.0.1
-SQLAlchemy==1.0.15; python_version < '3'
+SQLAlchemy==1.0.15
