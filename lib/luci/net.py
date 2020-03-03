@@ -11,6 +11,7 @@
 from __future__ import print_function
 
 import httplib2
+import six
 from six.moves import urllib
 
 from chromite.lib import auth
@@ -109,7 +110,8 @@ def request(url,
     headers['Authorization'] = 'Bearer %s' % tok
 
   if payload is not None:
-    assert isinstance(payload, str), type(payload)
+    assert isinstance(payload, (six.string_types, six.binary_type)), \
+        type(payload)
     assert method in ('CREATE', 'POST', 'PUT'), method
 
   attempt = 0
