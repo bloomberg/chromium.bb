@@ -118,11 +118,16 @@ import setup_color
 
 from third_party import six
 
-# Check for people accidentally running this script with Python3 - an
-# increasingly common error on Windows 10 due to the store version of Python.
-if sys.version_info.major >= 3 and not 'GCLIENT_TEST' in os.environ:
-  print("Warning: gclient doesn't yet support Python 3 and may not work "
-        "correctly.", file=sys.stderr)
+# Warn when executing this script with Python 3 when the GCLIENT_PY3 environment
+# variable is not set to 1.
+# It is an increasingly common error on Windows 10 due to the store version of
+# Python.
+if (sys.version_info.major >= 3
+    and not 'GCLIENT_TEST' in os.environ
+    and os.getenv('GCLIENT_PY3') != '1'):
+  print('Warning: Running gclient on Python 3. \n'
+        'If you encounter any issues, please file a bug on crbug.com under '
+        'the Infra>SDK component.', file=sys.stderr)
 
 
 # TODO(crbug.com/953884): Remove this when python3 migration is done.
