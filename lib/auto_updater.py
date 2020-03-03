@@ -497,7 +497,7 @@ class ChromiumOSUpdater(BaseUpdater):
 
         if op == UPDATE_STATUS_IDLE:
           # Something went wrong. Try to get last error code.
-          cmd = 'cat %s' % self.REMOTE_UPDATE_ENGINE_LOGFILE_PATH
+          cmd = ['cat', self.REMOTE_UPDATE_ENGINE_LOGFILE_PATH]
           log = self.device.RunCommand(cmd).output.strip().splitlines()
           err_str = 'Updating payload state for error code: '
           targets = [line for line in log if err_str in line]
@@ -1129,7 +1129,7 @@ class ChromiumOSUpdater(BaseUpdater):
     # TPM state in theory might happen some time other than during
     # provisioning.  Also, the bad TPM state isn't supposed to happen at
     # all; this change is just papering over the real bug.
-    logging.info("Setting clear_tpm_owner_request to 1.")
+    logging.info('Setting clear_tpm_owner_request to 1.')
     self._RetryCommand('crossystem clear_tpm_owner_request=1',
                        **self._cmd_kwargs_omit_error)
 

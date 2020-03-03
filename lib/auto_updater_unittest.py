@@ -606,6 +606,35 @@ class ChromiumOSUpdaterRunErrorTest(ChromiumOSErrorTest):
       with mock.patch('os.path.join', return_value=''):
         self.assertRaises(auto_updater.RootfsUpdateError, CrOS_AU.RunUpdate)
 
+  def testRootfsUpdateIdleError(self):
+    """Test ChromiumOSUpdater.UpdateRootfs with raising exception.
+
+    RootfsUpdateError is raised if the update engine goes to idle state
+    after downloading.
+    """
+    with remote_access.ChromiumOSDeviceHandler(
+        remote_access.TEST_IP) as device:
+      CrOS_AU = auto_updater.ChromiumOSUpdater(device, None, self._payload_dir)
+      self.prepareRootfsUpdate()
+      self.PatchObject(nebraska_wrapper.RemoteNebraskaWrapper, 'Start')
+      self.PatchObject(nebraska_wrapper.RemoteNebraskaWrapper, 'GetURL')
+      mock_run = self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand')
+      self.PatchObject(auto_updater.ChromiumOSUpdater, 'GetUpdateStatus',
+                       side_effect=(
+                           ('UPDATE_STATUS_DOWNLOADING', '0.5'),
+                           ('UPDATE_STATUS_DOWNLOADING', '0.9'),
+                           ('UPDATE_STATUS_FINALIZING', 0),
+                           ('UPDATE_STATUS_IDLE', 0),
+                       ))
+      self.PatchObject(auto_updater.ChromiumOSUpdater,
+                       '_FixPayloadPropertiesFile')
+      patch_join = mock.patch('os.path.join', return_value='')
+      patch_sleep = mock.patch('time.sleep')
+      with patch_sleep as mock_sleep, patch_join as _:
+        self.assertRaises(auto_updater.RootfsUpdateError, CrOS_AU.RunUpdate)
+        mock_sleep.assert_called()
+        mock_run.assert_any_call(['cat', '/var/log/update_engine.log'])
+
   def testStatefulUpdateCmdError(self):
     """Test ChromiumOSUpdater.UpdateStateful with raising exception.
 
