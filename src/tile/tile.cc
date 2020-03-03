@@ -1734,7 +1734,7 @@ bool Tile::Residual(const Block& block, ProcessingMode mode) {
 bool Tile::IsMvValid(const Block& block, bool is_compound) const {
   const BlockParameters& bp = *block.bp;
   for (int i = 0; i < 1 + static_cast<int>(is_compound); ++i) {
-    for (int mv_component : bp.mv[i].mv) {
+    for (int mv_component : bp.mv.mv[i].mv) {
       if (std::abs(mv_component) >= (1 << 14)) {
         return false;
       }
@@ -1743,11 +1743,11 @@ bool Tile::IsMvValid(const Block& block, bool is_compound) const {
   if (!block.bp->prediction_parameters->use_intra_block_copy) {
     return true;
   }
-  if ((bp.mv[0].mv[0] & 7) != 0 || (bp.mv[0].mv[1] & 7) != 0) {
+  if ((bp.mv.mv[0].mv32 & 0x00070007) != 0) {
     return false;
   }
-  const int delta_row = bp.mv[0].mv[0] >> 3;
-  const int delta_column = bp.mv[0].mv[1] >> 3;
+  const int delta_row = bp.mv.mv[0].mv[0] >> 3;
+  const int delta_column = bp.mv.mv[0].mv[1] >> 3;
   int src_top_edge = MultiplyBy4(block.row4x4) + delta_row;
   int src_left_edge = MultiplyBy4(block.column4x4) + delta_column;
   const int src_bottom_edge = src_top_edge + block.height;
@@ -1818,10 +1818,10 @@ bool Tile::AssignInterMv(const Block& block, bool is_compound) {
     }
     if (mode == kPredictionModeNewMv) {
       ReadMotionVector(block, i);
-      bp.mv[i].mv[0] += predicted_mv.mv[0];
-      bp.mv[i].mv[1] += predicted_mv.mv[1];
+      bp.mv.mv[i].mv[0] += predicted_mv.mv[0];
+      bp.mv.mv[i].mv[1] += predicted_mv.mv[1];
     } else {
-      bp.mv[i] = predicted_mv;
+      bp.mv.mv[i] = predicted_mv;
     }
   }
   return IsMvValid(block, is_compound);
@@ -1840,18 +1840,18 @@ bool Tile::AssignIntraMv(const Block& block) {
     if (ref_mv_1.mv32 == 0) {
       const int super_block_size4x4 = kNum4x4BlocksHigh[SuperBlockSize()];
       if (block.row4x4 - super_block_size4x4 < row4x4_start_) {
-        bp.mv[0].mv[1] -= MultiplyBy32(super_block_size4x4);
-        bp.mv[0].mv[1] -= MultiplyBy8(kIntraBlockCopyDelayPixels);
+        bp.mv.mv[0].mv[1] -= MultiplyBy32(super_block_size4x4);
+        bp.mv.mv[0].mv[1] -= MultiplyBy8(kIntraBlockCopyDelayPixels);
       } else {
-        bp.mv[0].mv[0] -= MultiplyBy32(super_block_size4x4);
+        bp.mv.mv[0].mv[0] -= MultiplyBy32(super_block_size4x4);
       }
     } else {
-      bp.mv[0].mv[0] += Clip3(ref_mv_1.mv[0], min[0], max[0]);
-      bp.mv[0].mv[1] += Clip3(ref_mv_1.mv[1], min[0], max[0]);
+      bp.mv.mv[0].mv[0] += Clip3(ref_mv_1.mv[0], min[0], max[0]);
+      bp.mv.mv[0].mv[1] += Clip3(ref_mv_1.mv[1], min[0], max[0]);
     }
   } else {
-    bp.mv[0].mv[0] += Clip3(ref_mv_0.mv[0], min[0], max[0]);
-    bp.mv[0].mv[1] += Clip3(ref_mv_0.mv[1], min[1], max[1]);
+    bp.mv.mv[0].mv[0] += Clip3(ref_mv_0.mv[0], min[0], max[0]);
+    bp.mv.mv[0].mv[1] += Clip3(ref_mv_0.mv[1], min[1], max[1]);
   }
   return IsMvValid(block, /*is_compound=*/false);
 }
@@ -2554,7 +2554,7 @@ void Tile::StoreMotionFieldMvsIntoCurrentFrame(const Block& block) {
     const ReferenceFrameType reference_frame_to_store = bp.reference_frame[i];
     // Must make a local copy so that StoreMotionFieldMvs() knows there is no
     // overlap between load and store.
-    const MotionVector mv_to_store = bp.mv[i];
+    const MotionVector mv_to_store = bp.mv.mv[i];
     const int mv_row = std::abs(mv_to_store.mv[MotionVector::kRow]);
     const int mv_column = std::abs(mv_to_store.mv[MotionVector::kColumn]);
     if (reference_frame_to_store > kReferenceFrameIntra &&

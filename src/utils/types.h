@@ -177,7 +177,7 @@ struct BlockParameters : public Allocable {
   TransformSize uv_transform_size;
   PaletteModeInfo palette_mode_info;
   ReferenceFrameType reference_frame[2];
-  MotionVector mv[2];
+  CandidateMotionVector mv;
   bool is_explicit_compound_type;  // comp_group_idx in the spec.
   bool is_compound_type_average;   // compound_idx in the spec.
   InterpolationFilter interpolation_filter[2];

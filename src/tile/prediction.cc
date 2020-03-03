@@ -655,7 +655,7 @@ GlobalMotion* Tile::GetWarpParams(
         WarpEstimation(
             prediction_parameters.num_warp_samples, DivideBy4(prediction_width),
             DivideBy4(prediction_height), block.row4x4, block.column4x4,
-            block.bp->mv[0], prediction_parameters.warp_estimate_candidates,
+            block.bp->mv.mv[0], prediction_parameters.warp_estimate_candidates,
             local_warp_params) &&
         SetupShear(local_warp_params);
   }
@@ -716,7 +716,7 @@ void Tile::InterPrediction(const Block& block, const Plane plane, const int x,
               : frame_header_.reference_frame_index[reference_type -
                                                     kReferenceFrameLast];
       BlockInterPrediction(block, plane, reference_index,
-                           bp_reference.mv[index], x, y, prediction_width,
+                           bp_reference.mv.mv[index], x, y, prediction_width,
                            prediction_height, candidate_row, candidate_column,
                            block.scratch_buffer->prediction_buffer[index],
                            is_compound, is_inter_intra, dest, dest_stride);
@@ -836,7 +836,7 @@ void Tile::ObmcPrediction(const Block& block, const Plane plane,
         const int prediction_width =
             std::min(width, MultiplyBy4(step) >> subsampling_x);
         ObmcBlockPrediction(
-            block, bp_top.mv[0], plane, candidate_reference_frame_index,
+            block, bp_top.mv.mv[0], plane, candidate_reference_frame_index,
             prediction_width, prediction_height,
             MultiplyBy4(column4x4) >> subsampling_x, block_start_y,
             candidate_row, candidate_column, kObmcDirectionVertical);
@@ -866,7 +866,7 @@ void Tile::ObmcPrediction(const Block& block, const Plane plane,
                                                 kReferenceFrameLast];
         const int prediction_height =
             std::min(height, MultiplyBy4(step) >> subsampling_y);
-        ObmcBlockPrediction(block, bp_left.mv[0], plane,
+        ObmcBlockPrediction(block, bp_left.mv.mv[0], plane,
                             candidate_reference_frame_index, prediction_width,
                             prediction_height, block_start_x,
                             MultiplyBy4(row4x4) >> subsampling_y, candidate_row,

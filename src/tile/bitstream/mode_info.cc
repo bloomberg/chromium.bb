@@ -463,11 +463,11 @@ void Tile::ReadMotionVector(const Block& block, int index) {
                          static_cast<int>(kNumMvJointTypes)));
   if (mv_joint == kMvJointTypeHorizontalZeroVerticalNonZero ||
       mv_joint == kMvJointTypeNonZero) {
-    bp.mv[index].mv[0] = ReadMotionVectorComponent(block, 0);
+    bp.mv.mv[index].mv[0] = ReadMotionVectorComponent(block, 0);
   }
   if (mv_joint == kMvJointTypeHorizontalNonZeroVerticalZero ||
       mv_joint == kMvJointTypeNonZero) {
-    bp.mv[index].mv[1] = ReadMotionVectorComponent(block, 1);
+    bp.mv.mv[index].mv[1] = ReadMotionVectorComponent(block, 1);
   }
 }
 
