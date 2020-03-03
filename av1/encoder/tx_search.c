@@ -841,43 +841,26 @@ static AOM_INLINE void PrintTransformUnitStats(
 #endif  // CONFIG_COLLECT_RD_STATS == 1
 
 #if CONFIG_COLLECT_RD_STATS >= 2
-static int64_t get_sse(const uint8_t *a, int a_stride, const uint8_t *b,
-                       int b_stride, int width, int height) {
-  const int dw = width % 16;
-  const int dh = height % 16;
+static int64_t get_sse(const AV1_COMP *cpi, const MACROBLOCK *x) {
+  const AV1_COMMON *cm = &cpi->common;
+  const int num_planes = av1_num_planes(cm);
+  const MACROBLOCKD *xd = &x->e_mbd;
+  const MB_MODE_INFO *mbmi = xd->mi[0];
   int64_t total_sse = 0;
-  unsigned int sse = 0;
-  int sum = 0;
-  int x, y;
+  for (int plane = 0; plane < num_planes; ++plane) {
+    const struct macroblock_plane *const p = &x->plane[plane];
+    const struct macroblockd_plane *const pd = &xd->plane[plane];
+    const BLOCK_SIZE bs = get_plane_block_size(mbmi->sb_type, pd->subsampling_x,
+                                               pd->subsampling_y);
+    unsigned int sse;
 
-  if (dw > 0) {
-    encoder_variance(&a[width - dw], a_stride, &b[width - dw], b_stride, dw,
-                     height, &sse, &sum);
+    if (x->skip_chroma_rd && plane) continue;
+
+    cpi->fn_ptr[bs].vf(p->src.buf, p->src.stride, pd->dst.buf, pd->dst.stride,
+                       &sse);
     total_sse += sse;
   }
-
-  if (dh > 0) {
-    encoder_variance(&a[(height - dh) * a_stride], a_stride,
-                     &b[(height - dh) * b_stride], b_stride, width - dw, dh,
-                     &sse, &sum);
-    total_sse += sse;
-  }
-
-  for (y = 0; y < height / 16; ++y) {
-    const uint8_t *pa = a;
-    const uint8_t *pb = b;
-    for (x = 0; x < width / 16; ++x) {
-      aom_mse16x16(pa, a_stride, pb, b_stride, &sse);
-      total_sse += sse;
-
-      pa += 16;
-      pb += 16;
-    }
-
-    a += 16 * a_stride;
-    b += 16 * b_stride;
-  }
-
+  total_sse <<= 4;
   return total_sse;
 }
 
