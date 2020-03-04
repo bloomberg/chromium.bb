@@ -708,7 +708,10 @@ class SymlinkTest(image_test_lib.ImageTestCase):
       '/usr/share/misc/magic.mgc': {'/usr/local/share/misc/magic.mgc'},
       '/usr/share/portage': {'/usr/local/share/portage'},
       # Needed for the ARC++/ARCVM dual build. For test images only.
-      '/opt/google/vms/android': {'/usr/local/vms/android'}
+      '/opt/google/vms/android': {'/usr/local/vms/android'},
+      # TODO(b/150806692): Clenaup this library symlink.
+      # Allow /opt/pita/lib path to point to any /run path. For PluginVM DLC.
+      '/opt/pita/lib': {'/run/*'},
   }
 
   @classmethod
