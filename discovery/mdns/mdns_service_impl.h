@@ -19,7 +19,6 @@
 #include "discovery/mdns/public/mdns_constants.h"
 #include "discovery/mdns/public/mdns_service.h"
 #include "platform/api/udp_socket.h"
-#include "platform/base/interface_info.h"
 
 namespace openscreen {
 
@@ -28,6 +27,7 @@ class TaskRunner;
 namespace discovery {
 
 struct Config;
+class NetworkConfig;
 class ReportingClient;
 
 class MdnsServiceImpl : public MdnsService, public UdpSocket::Client {
@@ -37,7 +37,9 @@ class MdnsServiceImpl : public MdnsService, public UdpSocket::Client {
   MdnsServiceImpl(TaskRunner* task_runner,
                   ClockNowFunctionPtr now_function,
                   ReportingClient* reporting_client,
-                  const Config& config);
+                  const Config& config,
+                  NetworkInterfaceIndex network_interface,
+                  SupportedNetworkAddressFamily supported_address_types);
   ~MdnsServiceImpl() override;
 
   // MdnsService Overrides.

@@ -6,11 +6,28 @@
 
 #include <utility>
 
+#include "discovery/common/config.h"
 #include "discovery/mdns/public/mdns_service.h"
 #include "platform/api/task_runner.h"
 
 namespace openscreen {
 namespace discovery {
+namespace {
+
+MdnsService::SupportedNetworkAddressFamily GetSupportedEndpointTypes(
+    const InterfaceInfo& interface) {
+  MdnsService::SupportedNetworkAddressFamily supported_types =
+      MdnsService::kNoAddressFamily;
+  if (interface.HasIpV4Address()) {
+    supported_types = supported_types | MdnsService::kUseIpV4Multicast;
+  }
+  if (interface.HasIpV6Address()) {
+    supported_types = supported_types | MdnsService::kUseIpV6Multicast;
+  }
+  return supported_types;
+}
+
+}  // namespace
 
 // static
 SerialDeletePtr<DnsSdService> DnsSdService::Create(
@@ -25,7 +42,12 @@ ServiceImpl::ServiceImpl(TaskRunner* task_runner,
                          ReportingClient* reporting_client,
                          const Config& config)
     : task_runner_(task_runner),
-      mdns_service_(MdnsService::Create(task_runner, reporting_client, config)),
+      mdns_service_(
+          MdnsService::Create(task_runner,
+                              reporting_client,
+                              config,
+                              config.interface.index,
+                              GetSupportedEndpointTypes(config.interface))),
       querier_(mdns_service_.get(), task_runner_),
       publisher_(mdns_service_.get(), reporting_client, task_runner_) {}
 
