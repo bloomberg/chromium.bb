@@ -324,7 +324,7 @@ def main(argv):
     print_desc()
 
   parser = argparse.ArgumentParser()
-  parser.add_argument('-v', action='count',
+  parser.add_argument('-v', action='count', default=0,
                       help=('Pass once to show tracking info, '
                             'twice for hash and review url, '
                             'thrice for review status'))
