@@ -23,15 +23,14 @@ from chromite.lib import toolchain_util
 assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
-# TODO(crbug/1019868): Add handlers as needed.
 _Handlers = collections.namedtuple('_Handlers', ['name', 'prepare', 'bundle'])
 _TOOLCHAIN_ARTIFACT_HANDLERS = {
     BuilderConfig.Artifacts.UNVERIFIED_CHROME_LLVM_ORDERFILE:
-        _Handlers('UnverifiedOrderingFile',
+        _Handlers('UnverifiedChromeLlvmOrderfile',
                   toolchain_util.PrepareForBuild,
                   toolchain_util.BundleArtifacts),
     BuilderConfig.Artifacts.VERIFIED_CHROME_LLVM_ORDERFILE:
-        _Handlers('VerifiedOrderingFile',
+        _Handlers('VerifiedChromeLlvmOrderfile',
                   toolchain_util.PrepareForBuild,
                   toolchain_util.BundleArtifacts),
     BuilderConfig.Artifacts.CHROME_CLANG_WARNINGS_FILE:

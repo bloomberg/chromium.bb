@@ -395,29 +395,29 @@ class PrepareForBuildHandlerTest(PrepareBundleTest):
     self.gsc_exists = self.PatchObject(
         self.gs_context, 'Exists', return_value=True)
 
-  def testPrepareUnverifiedOrderingFileExists(self):
-    """Test that PrepareUnverfiedOrderingFile works when POINTLESS."""
-    self.SetUpPrepare('UnverifiedOrderingFile', {
-        'UnverifiedOrderingFile': ['gs://publish/location']})
+  def testPrepareUnverifiedChromeLlvmOrderfileExists(self):
+    """Test that PrepareUnverfiedChromeLlvmOrderfile works when POINTLESS."""
+    self.SetUpPrepare('UnverifiedChromeLlvmOrderfile', {
+        'UnverifiedChromeLlvmOrderfile': ['gs://publish/location']})
     self.assertEqual(toolchain_util.PrepareForBuildReturn.POINTLESS,
                      self.obj.Prepare())
     self.gs_context.Exists.assert_called_once_with(
         'gs://publish/location/orderfile.xz')
 
-  def testPrepareUnverifiedOrderingFileMissing(self):
-    """Test that PrepareUnverfiedOrderingFile works when NEEDED."""
-    self.SetUpPrepare('UnverifiedOrderingFile', {
-        'UnverifiedOrderingFile': ['gs://publish/location']})
+  def testPrepareUnverifiedChromeLlvmOrderfileMissing(self):
+    """Test that PrepareUnverfiedChromeLlvmOrderfile works when NEEDED."""
+    self.SetUpPrepare('UnverifiedChromeLlvmOrderfile', {
+        'UnverifiedChromeLlvmOrderfile': ['gs://publish/location']})
     self.gsc_exists.return_value = False
     self.assertEqual(toolchain_util.PrepareForBuildReturn.NEEDED,
                      self.obj.Prepare())
     self.gs_context.Exists.assert_called_once_with(
         'gs://publish/location/orderfile.xz')
 
-  def testPrepareVerifiedOrderingFileExists(self):
-    """Test that PrepareVerfiedOrderingFile works when POINTLESS."""
-    self.SetUpPrepare('VerifiedOrderingFile', {
-        'UnverifiedOrderingFile': [
+  def testPrepareVerifiedChromeLlvmOrderfileExists(self):
+    """Test that PrepareVerfiedChromeLlvmOrderfile works when POINTLESS."""
+    self.SetUpPrepare('VerifiedChromeLlvmOrderfile', {
+        'UnverifiedChromeLlvmOrderfile': [
             'gs://path/to/unvetted',
             'gs://other/path/to/unvetted']})
     self.assertEqual(toolchain_util.PrepareForBuildReturn.POINTLESS,
@@ -426,10 +426,10 @@ class PrepareForBuildHandlerTest(PrepareBundleTest):
         'gs://path/to/vetted/%s.xz' % self.orderfile_name)
     self.patch_ebuild.assert_not_called()
 
-  def testPrepareVerifiedOrderingFileMissing(self):
-    """Test that PrepareVerfiedOrderingFile works when NEEDED."""
-    self.SetUpPrepare('VerifiedOrderingFile', {
-        'UnverifiedOrderingFile': [
+  def testPrepareVerifiedChromeLlvmOrderfileMissing(self):
+    """Test that PrepareVerfiedChromeLlvmOrderfile works when NEEDED."""
+    self.SetUpPrepare('VerifiedChromeLlvmOrderfile', {
+        'UnverifiedChromeLlvmOrderfile': [
             'gs://path/to/unvetted',
             'gs://other/path/to/unvetted']})
     self.gsc_exists.return_value = False
@@ -473,16 +473,16 @@ class BundleArtifactHandlerTest(PrepareBundleTest):
         self.outdir, self.additional_args)
     self.obj._gs_context = self.gs_context
 
-  def testBundleUnverifiedOrderingFile(self):
-    """Test that BundleUnverfiedOrderingFile works."""
-    self.SetUpBundle('UnverifiedOrderingFile')
+  def testBundleUnverifiedChromeLlvmOrderfile(self):
+    """Test that BundleUnverfiedChromeLlvmOrderfile works."""
+    self.SetUpBundle('UnverifiedChromeLlvmOrderfile')
     artifact = os.path.join(self.outdir, 'artifact')
     self.assertEqual([artifact], self.obj.Bundle())
     self.copy2.assert_called_once_with(mock.ANY, artifact)
 
-  def testBundleVerifiedOrderingFileExists(self):
-    """Test that BundleVerfiedOrderingFile works."""
-    self.SetUpBundle('VerifiedOrderingFile')
+  def testBundleVerifiedChromeLlvmOrderfileExists(self):
+    """Test that BundleVerfiedChromeLlvmOrderfile works."""
+    self.SetUpBundle('VerifiedChromeLlvmOrderfile')
     artifact = os.path.join(self.outdir, '%s.xz' % self.orderfile_name)
     self.assertEqual([artifact], self.obj.Bundle())
     self.copy2.assert_called_once_with(

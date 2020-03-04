@@ -1342,14 +1342,14 @@ class PrepareForBuildHandler(_CommonPrepareBundle):
   def Prepare(self):
     return self._prepare_func()
 
-  def _PrepareUnverifiedOrderingFile(self):
+  def _PrepareUnverifiedChromeLlvmOrderfile(self):
     """Prepare to build an unverified ordering file."""
     orderfile_name = self._GetOrderfileName()
 
     # If the (unverified) artifact already exists in our location, then the
     # build is pointless.
     loc = self.input_artifacts.get(
-        'UnverifiedOrderingFile', [ORDERFILE_GS_URL_UNVETTED])[0]
+        'UnverifiedChromeLlvmOrderfile', [ORDERFILE_GS_URL_UNVETTED])[0]
     path = os.path.join(loc, orderfile_name + XZ_COMPRESSION_SUFFIX)
     if self.gs_context.Exists(path):
       # Artifact already created.
@@ -1359,21 +1359,22 @@ class PrepareForBuildHandler(_CommonPrepareBundle):
     # No changes are needed in any ebuild, use flags take care of everything.
 
     # We need this build.
-    logging.info('No UnverifiedOrderingFile found.')
+    logging.info('No UnverifiedChromeLlvmOrderfile found.')
     return PrepareForBuildReturn.NEEDED
 
-  def _PrepareVerifiedOrderingFile(self):
+  def _PrepareVerifiedChromeLlvmOrderfile(self):
     """Prepare to verify an unvetted ordering file."""
     # We will look for the input artifact in the given path, but we only check
     # for the vetted artifact in the first location given.
-    locations = self.input_artifacts.get('UnverifiedOrderingFile',
+    locations = self.input_artifacts.get('UnverifiedChromeLlvmOrderfile',
                                          [ORDERFILE_GS_URL_UNVETTED])
     path = self._FindLatestOrderfileArtifact(locations)
     loc, name = os.path.split(path)
 
     # If not given as an input_artifact, the vetted location is determined from
     # the first location given for the unvetted artifact.
-    vetted_loc = self.input_artifacts.get('VerifiedOrderingFile', [None])[0]
+    vetted_loc = self.input_artifacts.get(
+        'VerifiedChromeLlvmOrderfile', [None])[0]
     if not vetted_loc:
       vetted_loc = os.path.join(os.path.dirname(locations[0]), 'vetted')
     vetted_path = os.path.join(vetted_loc, name)
@@ -1667,7 +1668,7 @@ class BundleArtifactHandler(_CommonPrepareBundle):
   def Bundle(self):
     return self._bundle_func()
 
-  def _BundleUnverifiedOrderingFile(self):
+  def _BundleUnverifiedChromeLlvmOrderfile(self):
     """Bundle to build an unverified ordering file."""
     with self.chroot.tempdir() as tempdir:
       GenerateChromeOrderfile(
@@ -1686,7 +1687,7 @@ class BundleArtifactHandler(_CommonPrepareBundle):
 
     return files
 
-  def _BundleVerifiedOrderingFile(self):
+  def _BundleVerifiedChromeLlvmOrderfile(self):
     """Bundle vetted ordering file."""
     orderfile_name = self._GetArtifactVersionInEbuild(
         constants.CHROME_PN, 'UNVETTED_ORDERFILE') + XZ_COMPRESSION_SUFFIX

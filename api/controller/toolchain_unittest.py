@@ -193,7 +193,7 @@ class PrepareForBuildTest(cros_test_lib.MockTempDirTestCase,
         toolchain_util, 'BundleArtifacts', return_value=[])
     self.PatchObject(toolchain, '_TOOLCHAIN_ARTIFACT_HANDLERS', {
         BuilderConfig.Artifacts.UNVERIFIED_CHROME_LLVM_ORDERFILE:
-            toolchain._Handlers('UnverifiedOrderingFile',
+            toolchain._Handlers('UnverifiedChromeLlvmOrderfile',
                                 self.prep, self.bundle),
     })
 
@@ -219,7 +219,7 @@ class PrepareForBuildTest(cros_test_lib.MockTempDirTestCase,
         chroot=None, sysroot=None)
     toolchain.PrepareForBuild(request, self.response, self.api_config)
     self.prep.assert_called_once_with(
-        'UnverifiedOrderingFile', None, '', '', {}, {})
+        'UnverifiedChromeLlvmOrderfile', None, '', '', {}, {})
 
   def testHandlesUnknownInputArtifacts(self):
     request = toolchain_pb2.PrepareForToolchainBuildRequest(
@@ -232,7 +232,7 @@ class PrepareForBuildTest(cros_test_lib.MockTempDirTestCase,
         ])
     toolchain.PrepareForBuild(request, self.response, self.api_config)
     self.prep.assert_called_once_with(
-        'UnverifiedOrderingFile', None, '', '', {}, {})
+        'UnverifiedChromeLlvmOrderfile', None, '', '', {}, {})
 
   def testPassesAdditionalArgs(self):
     request = toolchain_pb2.PrepareForToolchainBuildRequest(
@@ -253,9 +253,10 @@ class PrepareForBuildTest(cros_test_lib.MockTempDirTestCase,
     )
     toolchain.PrepareForBuild(request, self.response, self.api_config)
     self.prep.assert_called_once_with(
-        'UnverifiedOrderingFile', None, '', '', {
-            'UnverifiedOrderingFile': [
-                'gs://path1', 'gs://path2', 'gs://path3']},
+        'UnverifiedChromeLlvmOrderfile', None, '', '', {
+            'UnverifiedChromeLlvmOrderfile': [
+                'gs://path1', 'gs://path2', 'gs://path3'],
+        },
         {'chrome_cwp_profile': 'CWPVERSION'})
 
   def testHandlesDuplicateInputArtifacts(self):
@@ -274,9 +275,10 @@ class PrepareForBuildTest(cros_test_lib.MockTempDirTestCase,
         ])
     toolchain.PrepareForBuild(request, self.response, self.api_config)
     self.prep.assert_called_once_with(
-        'UnverifiedOrderingFile', None, '', '', {
-            'UnverifiedOrderingFile': [
-                'gs://path1', 'gs://path2', 'gs://path3']}, {})
+        'UnverifiedChromeLlvmOrderfile', None, '', '', {
+            'UnverifiedChromeLlvmOrderfile': [
+                'gs://path1', 'gs://path2', 'gs://path3'],
+        }, {})
 
 
 class BundleToolchainTest(cros_test_lib.MockTempDirTestCase,
@@ -292,7 +294,7 @@ class BundleToolchainTest(cros_test_lib.MockTempDirTestCase,
         toolchain_util, 'BundleArtifacts', return_value=[])
     self.PatchObject(toolchain, '_TOOLCHAIN_ARTIFACT_HANDLERS', {
         BuilderConfig.Artifacts.UNVERIFIED_CHROME_LLVM_ORDERFILE:
-            toolchain._Handlers('UnverifiedOrderingFile',
+            toolchain._Handlers('UnverifiedChromeLlvmOrderfile',
                                 self.prep, self.bundle),
     })
 
