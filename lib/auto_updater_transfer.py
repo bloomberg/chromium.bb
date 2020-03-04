@@ -521,18 +521,25 @@ class LabTransfer(Transfer):
     """
     payload_url = self._GetStagedUrl(staged_filename=self._payload_name,
                                      build_id=self._payload_dir)
+    cmd = ['curl', '-I', payload_url, '--fail']
     try:
-      proc = retry_util.RunCurl(curl_args=['-I', payload_url, '--fail'],
-                                log_output=True)
+      proc = self._RemoteDevserverCall(cmd)
     except cros_build_lib.RunCommandError as e:
-      raise ChromiumOSTransferError('Unable to get payload size: %s' % e)
-    else:
-      pattern = re.compile(r'Content-Length: [0-9]+', re.I)
-      match = pattern.findall(proc.output)
-      if not match:
-        raise ChromiumOSTransferError('Could not get payload size from output: '
-                                      '%s ' % proc.output)
-      return int(match[0].split()[1].strip())
+      logging.error('Unable to get payload size by running command %s due '
+                    'to exception: %s.', ' '.join(cmd), e)
+      # TODO(crbug.com/1059008): Fallback in case the try block above fails.
+      # Should be removed once reliable.
+      try:
+        proc = retry_util.RunCurl(cmd[1:])
+      except cros_build_lib.RunCommandError as e:
+        raise ChromiumOSTransferError('Unable to get payload size: %s' % e)
+
+    pattern = re.compile(r'Content-Length: [0-9]+', re.I)
+    match = pattern.findall(proc.output)
+    if not match:
+      raise ChromiumOSTransferError('Could not get payload size from output: '
+                                    '%s ' % proc.output)
+    return int(match[0].split()[1].strip())
 
   def GetPayloadProps(self):
     """Gets image_version from the payload_dir name and gets payload size.

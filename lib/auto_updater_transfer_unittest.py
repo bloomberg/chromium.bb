@@ -865,44 +865,88 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
                         CrOS_LabTransfer.GetPayloadPropsFile)
       self.assertIsNone(CrOS_LabTransfer._local_payload_props_path)
 
-  def testGetPayloadSize(self):
+  def test_GetPayloadSize(self):
     """Test auto_updater_transfer._GetPayloadSize()."""
     with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      lab_xfer = auto_updater_transfer.LabTransfer
       CrOS_LabTransfer = CreateLabTransferInstance(
           device, payload_name='test_update.gz',
           payload_dir='/test/payload/dir')
       expected_size = 75810234
       output = 'Content-Length: %s' % str(expected_size)
+      self.PatchObject(lab_xfer, '_RemoteDevserverCall',
+                       return_value=cros_build_lib.CommandResult(output=output))
+      size = CrOS_LabTransfer._GetPayloadSize()
+      self.assertEqual(size, expected_size)
+
+  def test_GetPayloadSizeRemoteDevserverError(self):
+    """Test auto_updater_transfer._GetPayloadSize().
+
+    Test when LabTransfer._RemoteDevserverCall throws an error.
+    """
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      lab_xfer = auto_updater_transfer.LabTransfer
+      CrOS_LabTransfer = CreateLabTransferInstance(
+          device, payload_name='test_update.gz',
+          payload_dir='/test/payload/dir')
+      expected_size = 75810234
+      output = 'Content-Length: %s' % str(expected_size)
+      self.PatchObject(lab_xfer, '_RemoteDevserverCall',
+                       side_effect=cros_build_lib.RunCommandError(msg=''))
       self.PatchObject(retry_util, 'RunCurl',
                        return_value=cros_build_lib.CommandResult(output=output))
       size = CrOS_LabTransfer._GetPayloadSize()
       self.assertEqual(size, expected_size)
 
-  def testGetPayloadSizeNoRegexMatchError(self):
+  def test_GetPayloadSizeNoRegexMatchError(self):
     """Test errors thrown by auto_updater_transfer._GetPayloadSize().
 
     Test error thrown when the output received from the curl command does not
     contain expected fields.
     """
     with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      lab_xfer = auto_updater_transfer.LabTransfer
       CrOS_LabTransfer = CreateLabTransferInstance(
           device, payload_name='test_update.gz',
           payload_dir='/test/payload/dir')
       output = 'No Match Output'
+      self.PatchObject(lab_xfer, '_RemoteDevserverCall',
+                       return_value=cros_build_lib.CommandResult(output=output))
+      self.assertRaises(auto_updater_transfer.ChromiumOSTransferError,
+                        CrOS_LabTransfer._GetPayloadSize)
+
+  def test_GetPayloadSizeNoRegexMatchRemoteDevserverCallError(self):
+    """Test errors thrown by auto_updater_transfer._GetPayloadSize().
+
+    Test error thrown when the output received from the curl command does not
+    contain expected fields and LabTransfer._RemoteDevserverCall method throws
+    an error.
+    """
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      lab_xfer = auto_updater_transfer.LabTransfer
+      CrOS_LabTransfer = CreateLabTransferInstance(
+          device, payload_name='test_update.gz',
+          payload_dir='/test/payload/dir')
+      output = 'No Match Output'
+      self.PatchObject(lab_xfer, '_RemoteDevserverCall',
+                       side_effect=cros_build_lib.RunCommandError(msg=''))
       self.PatchObject(retry_util, 'RunCurl',
                        return_value=cros_build_lib.CommandResult(output=output))
       self.assertRaises(auto_updater_transfer.ChromiumOSTransferError,
                         CrOS_LabTransfer._GetPayloadSize)
 
-  def testGetPayloadSizeCurlRunCommandError(self):
+  def test_GetPayloadSizeCurlRunCommandError(self):
     """Test errors thrown by auto_updater_transfer.GetPayloadSize().
 
     Test error thrown when cros_build_lib.run raises a RunCommandError.
     """
     with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      lab_xfer = auto_updater_transfer.LabTransfer
       CrOS_LabTransfer = CreateLabTransferInstance(
           device, payload_name='test_update.gz',
           payload_dir='/test/payload/dir')
+      self.PatchObject(lab_xfer, '_RemoteDevserverCall',
+                       side_effect=cros_build_lib.RunCommandError(msg=''))
       self.PatchObject(retry_util, 'RunCurl',
                        side_effect=cros_build_lib.RunCommandError(msg=''))
       self.assertRaises(auto_updater_transfer.ChromiumOSTransferError,
