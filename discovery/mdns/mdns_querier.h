@@ -71,19 +71,42 @@ class MdnsQuerier : public MdnsReceiver::ResponseClient {
   // MdnsReceiver::ResponseClient overrides.
   void OnMessageReceived(const MdnsMessage& message) override;
 
-  // Callback passed to owned MdnsRecordTrackers
+  // Expires the record tracker provided. This callback is passed to owned
+  // MdnsRecordTracker instances in |records_|.
   void OnRecordExpired(MdnsRecordTracker* tracker, const MdnsRecord& record);
 
   // Determines whether a record received by this querier should be processed
   // or dropped.
   bool ShouldAnswerRecordBeProcessed(const MdnsRecord& answer);
 
+  // Processes any record update, calling into the below methods as needed.
   void ProcessRecord(const MdnsRecord& records);
+
+  // Processes a shared record update as a record of type |type|.
   void ProcessSharedRecord(const MdnsRecord& record, DnsType type);
+
+  // Processes a unique record update as a record of type |type|.
   void ProcessUniqueRecord(const MdnsRecord& record, DnsType type);
+
+  // Called when exactly one tracker is associated with a provided key.
+  // Determines the type of update being executed by this update call, then
+  // fires the appropriate callback.
+  void ProcessSinglyTrackedUniqueRecord(const MdnsRecord& record,
+                                        MdnsRecordTracker* tracker);
+
+  // Called when multiple records are associated with the same key. Expire all
+  // record with non-matching RDATA. Update the record with the matching RDATA
+  // if it exists, otherwise insert a new record.
+  void ProcessMultiTrackedUniqueRecord(const MdnsRecord& record,
+                                       DnsType dns_type);
+
+  // Calls all callbacks associated with the provided record.
   void ProcessCallbacks(const MdnsRecord& record, RecordChangedEvent event);
 
+  // Begins tracking the provided question.
   void AddQuestion(const MdnsQuestion& question);
+
+  // Begins tracking the provided record.
   void AddRecord(const MdnsRecord& record, DnsType type);
 
   MdnsSender* const sender_;

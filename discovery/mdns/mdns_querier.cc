@@ -376,11 +376,10 @@ void MdnsQuerier::ProcessUniqueRecord(const MdnsRecord& record,
     }
   }
 
-  const bool will_exist = record.dns_type() != DnsType::kNSEC;
-
   // Have not seen any records with this key before. This case is expected the
   // first time a record is received.
   if (num_records_for_key == 0) {
+    const bool will_exist = record.dns_type() != DnsType::kNSEC;
     AddRecord(record, dns_type);
     if (will_exist) {
       ProcessCallbacks(record, RecordChangedEvent::kCreated);
@@ -388,98 +387,101 @@ void MdnsQuerier::ProcessUniqueRecord(const MdnsRecord& record,
   }
 
   // There is exactly one tracker associated with this key. This is the expected
-  // case when a record matching this one has already been seen. Determine the
-  // type of update being executed by this update, then fire the appropriate
-  // callback.
+  // case when a record matching this one has already been seen.
   else if (num_records_for_key == 1) {
-    OSP_DCHECK(typed_tracker != nullptr);
+    ProcessSinglyTrackedUniqueRecord(record, typed_tracker);
+  }
 
-    // There's only one record with this key.
-    const bool existed_previously = !typed_tracker->is_negative_response();
+  // Multiple records with the same key.
+  else {
+    ProcessMultiTrackedUniqueRecord(record, dns_type);
+  }
+}
 
-    // Calculate the callback to call on record update success while the old
-    // record still exists.
-    MdnsRecord record_for_callback = record;
-    if (existed_previously && !will_exist) {
-      record_for_callback =
-          MdnsRecord(record.name(), typed_tracker->dns_type(),
-                     typed_tracker->dns_class(), typed_tracker->record_type(),
-                     typed_tracker->ttl(), typed_tracker->rdata());
+void MdnsQuerier::ProcessSinglyTrackedUniqueRecord(const MdnsRecord& record,
+                                                   MdnsRecordTracker* tracker) {
+  OSP_DCHECK(tracker != nullptr);
+
+  const bool existed_previously = !tracker->is_negative_response();
+  const bool will_exist = record.dns_type() != DnsType::kNSEC;
+
+  // Calculate the callback to call on record update success while the old
+  // record still exists.
+  MdnsRecord record_for_callback = record;
+  if (existed_previously && !will_exist) {
+    record_for_callback =
+        MdnsRecord(record.name(), tracker->dns_type(), tracker->dns_class(),
+                   tracker->record_type(), tracker->ttl(), tracker->rdata());
+  }
+
+  ErrorOr<MdnsRecordTracker::UpdateType> result = tracker->Update(record);
+  if (result.is_error()) {
+    reporting_client_->OnRecoverableError(Error(
+        Error::Code::kUpdateReceivedRecordFailure, result.error().ToString()));
+  } else {
+    switch (result.value()) {
+      case MdnsRecordTracker::UpdateType::kGoodbye:
+        tracker->ExpireSoon();
+        break;
+      case MdnsRecordTracker::UpdateType::kTTLOnly:
+        // TTL has been updated.  No action required.
+        break;
+      case MdnsRecordTracker::UpdateType::kRdata:
+        // If RDATA on the record is different, notify that the record has
+        // been updated.
+        if (existed_previously && will_exist) {
+          ProcessCallbacks(record_for_callback, RecordChangedEvent::kUpdated);
+        } else if (existed_previously) {
+          // Do not expire the tracker, because it still holds an NSEC record.
+          ProcessCallbacks(record_for_callback, RecordChangedEvent::kExpired);
+        } else if (will_exist) {
+          ProcessCallbacks(record_for_callback, RecordChangedEvent::kCreated);
+        }
+        break;
     }
+  }
+}
 
-    ErrorOr<MdnsRecordTracker::UpdateType> result =
-        typed_tracker->Update(record);
-    if (result.is_error()) {
-      reporting_client_->OnRecoverableError(
-          Error(Error::Code::kUpdateReceivedRecordFailure,
-                result.error().ToString()));
-    } else {
-      switch (result.value()) {
-        case MdnsRecordTracker::UpdateType::kGoodbye:
-          typed_tracker->ExpireSoon();
-          break;
-        case MdnsRecordTracker::UpdateType::kTTLOnly:
-          // TTL has been updated.  No action required.
-          break;
-        case MdnsRecordTracker::UpdateType::kRdata:
-          // If RDATA on the record is different, notify that the record has
-          // been updated.
-          if (existed_previously && will_exist) {
-            ProcessCallbacks(record_for_callback, RecordChangedEvent::kUpdated);
-          } else if (existed_previously) {
-            // Do not expire the tracker, because it still holds an NSEC record.
-            ProcessCallbacks(record_for_callback, RecordChangedEvent::kExpired);
-          } else if (will_exist) {
-            ProcessCallbacks(record_for_callback, RecordChangedEvent::kCreated);
+void MdnsQuerier::ProcessMultiTrackedUniqueRecord(const MdnsRecord& record,
+                                                  DnsType dns_type) {
+  bool is_new_record = true;
+  auto records_it = records_.equal_range(record.name());
+  for (auto entry = records_it.first; entry != records_it.second; ++entry) {
+    MdnsRecordTracker* tracker = entry->second.get();
+    if (dns_type == tracker->dns_type() &&
+        record.dns_class() == tracker->dns_class()) {
+      if (record.rdata() == tracker->rdata()) {
+        is_new_record = false;
+        ErrorOr<MdnsRecordTracker::UpdateType> result = tracker->Update(record);
+        if (result.is_error()) {
+          reporting_client_->OnRecoverableError(
+              Error(Error::Code::kUpdateReceivedRecordFailure,
+                    result.error().ToString()));
+        } else {
+          switch (result.value()) {
+            case MdnsRecordTracker::UpdateType::kGoodbye:
+              tracker->ExpireSoon();
+              break;
+            case MdnsRecordTracker::UpdateType::kTTLOnly:
+              // No notification is necessary on a TTL only update.
+              break;
+            case MdnsRecordTracker::UpdateType::kRdata:
+              // Not possible - we already checked that the RDATA matches.
+              OSP_NOTREACHED();
+              break;
           }
-          break;
+        }
+      } else {
+        tracker->ExpireSoon();
       }
     }
   }
 
-  // Multiple records with the same key. Expire all record with non-matching
-  // RDATA. Update the record with the matching RDATA if it exists, otherwise
-  // insert a new record.
-  else {
-    bool is_new_record = true;
-    for (auto entry = records_it.first; entry != records_it.second; ++entry) {
-      MdnsRecordTracker* tracker = entry->second.get();
-      if (dns_type == tracker->dns_type() &&
-          record.dns_class() == tracker->dns_class()) {
-        if (record.rdata() == tracker->rdata()) {
-          is_new_record = false;
-          ErrorOr<MdnsRecordTracker::UpdateType> result =
-              tracker->Update(record);
-          if (result.is_error()) {
-            reporting_client_->OnRecoverableError(
-                Error(Error::Code::kUpdateReceivedRecordFailure,
-                      result.error().ToString()));
-          } else {
-            switch (result.value()) {
-              case MdnsRecordTracker::UpdateType::kGoodbye:
-                tracker->ExpireSoon();
-                break;
-              case MdnsRecordTracker::UpdateType::kTTLOnly:
-                // No notification is necessary on a TTL only update.
-                break;
-              case MdnsRecordTracker::UpdateType::kRdata:
-                // Not possible - we already checked that the RDATA matches.
-                OSP_NOTREACHED();
-                break;
-            }
-          }
-        } else {
-          tracker->ExpireSoon();
-        }
-      }
-    }
-
-    if (is_new_record) {
-      // Did not find an existing record to update.
-      AddRecord(record, dns_type);
-      if (record.dns_type() != DnsType::kNSEC) {
-        ProcessCallbacks(record, RecordChangedEvent::kCreated);
-      }
+  if (is_new_record) {
+    // Did not find an existing record to update.
+    AddRecord(record, dns_type);
+    if (record.dns_type() != DnsType::kNSEC) {
+      ProcessCallbacks(record, RecordChangedEvent::kCreated);
     }
   }
 }
