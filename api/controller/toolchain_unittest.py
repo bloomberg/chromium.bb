@@ -192,7 +192,7 @@ class PrepareForBuildTest(cros_test_lib.MockTempDirTestCase,
     self.bundle = self.PatchObject(
         toolchain_util, 'BundleArtifacts', return_value=[])
     self.PatchObject(toolchain, '_TOOLCHAIN_ARTIFACT_HANDLERS', {
-        BuilderConfig.Artifacts.UNVERIFIED_ORDERING_FILE:
+        BuilderConfig.Artifacts.UNVERIFIED_CHROME_LLVM_ORDERFILE:
             toolchain._Handlers('UnverifiedOrderingFile',
                                 self.prep, self.bundle),
     })
@@ -214,7 +214,8 @@ class PrepareForBuildTest(cros_test_lib.MockTempDirTestCase,
 
   def testAcceptsNone(self):
     request = toolchain_pb2.PrepareForToolchainBuildRequest(
-        artifact_types=[BuilderConfig.Artifacts.UNVERIFIED_ORDERING_FILE],
+        artifact_types=[
+            BuilderConfig.Artifacts.UNVERIFIED_CHROME_LLVM_ORDERFILE],
         chroot=None, sysroot=None)
     toolchain.PrepareForBuild(request, self.response, self.api_config)
     self.prep.assert_called_once_with(
@@ -222,7 +223,8 @@ class PrepareForBuildTest(cros_test_lib.MockTempDirTestCase,
 
   def testHandlesUnknownInputArtifacts(self):
     request = toolchain_pb2.PrepareForToolchainBuildRequest(
-        artifact_types=[BuilderConfig.Artifacts.UNVERIFIED_ORDERING_FILE],
+        artifact_types=[
+            BuilderConfig.Artifacts.UNVERIFIED_CHROME_LLVM_ORDERFILE],
         chroot=None, sysroot=None, input_artifacts=[
             BuilderConfig.Artifacts.InputArtifactInfo(
                 input_artifact_type=BuilderConfig.Artifacts.IMAGE_ZIP,
@@ -234,15 +236,16 @@ class PrepareForBuildTest(cros_test_lib.MockTempDirTestCase,
 
   def testPassesAdditionalArgs(self):
     request = toolchain_pb2.PrepareForToolchainBuildRequest(
-        artifact_types=[BuilderConfig.Artifacts.UNVERIFIED_ORDERING_FILE],
+        artifact_types=[
+            BuilderConfig.Artifacts.UNVERIFIED_CHROME_LLVM_ORDERFILE],
         chroot=None, sysroot=None, input_artifacts=[
             BuilderConfig.Artifacts.InputArtifactInfo(
                 input_artifact_type=\
-                    BuilderConfig.Artifacts.UNVERIFIED_ORDERING_FILE,
+                    BuilderConfig.Artifacts.UNVERIFIED_CHROME_LLVM_ORDERFILE,
                 input_artifact_gs_locations=['path1', 'path2']),
             BuilderConfig.Artifacts.InputArtifactInfo(
                 input_artifact_type=\
-                    BuilderConfig.Artifacts.UNVERIFIED_ORDERING_FILE,
+                    BuilderConfig.Artifacts.UNVERIFIED_CHROME_LLVM_ORDERFILE,
                 input_artifact_gs_locations=['path3']),
         ],
         additional_args=common_pb2.PrepareForBuildAdditionalArgs(
@@ -257,15 +260,16 @@ class PrepareForBuildTest(cros_test_lib.MockTempDirTestCase,
 
   def testHandlesDuplicateInputArtifacts(self):
     request = toolchain_pb2.PrepareForToolchainBuildRequest(
-        artifact_types=[BuilderConfig.Artifacts.UNVERIFIED_ORDERING_FILE],
+        artifact_types=[
+            BuilderConfig.Artifacts.UNVERIFIED_CHROME_LLVM_ORDERFILE],
         chroot=None, sysroot=None, input_artifacts=[
             BuilderConfig.Artifacts.InputArtifactInfo(
                 input_artifact_type=\
-                    BuilderConfig.Artifacts.UNVERIFIED_ORDERING_FILE,
+                    BuilderConfig.Artifacts.UNVERIFIED_CHROME_LLVM_ORDERFILE,
                 input_artifact_gs_locations=['path1', 'path2']),
             BuilderConfig.Artifacts.InputArtifactInfo(
                 input_artifact_type=\
-                    BuilderConfig.Artifacts.UNVERIFIED_ORDERING_FILE,
+                    BuilderConfig.Artifacts.UNVERIFIED_CHROME_LLVM_ORDERFILE,
                 input_artifact_gs_locations=['path3']),
         ])
     toolchain.PrepareForBuild(request, self.response, self.api_config)
@@ -287,7 +291,7 @@ class BundleToolchainTest(cros_test_lib.MockTempDirTestCase,
     self.bundle = self.PatchObject(
         toolchain_util, 'BundleArtifacts', return_value=[])
     self.PatchObject(toolchain, '_TOOLCHAIN_ARTIFACT_HANDLERS', {
-        BuilderConfig.Artifacts.UNVERIFIED_ORDERING_FILE:
+        BuilderConfig.Artifacts.UNVERIFIED_CHROME_LLVM_ORDERFILE:
             toolchain._Handlers('UnverifiedOrderingFile',
                                 self.prep, self.bundle),
     })
@@ -311,20 +315,21 @@ class BundleToolchainTest(cros_test_lib.MockTempDirTestCase,
   def testValidateOnly(self):
     """Sanity check that a validate only call does not execute any logic."""
     request = self._GetRequest(
-        [BuilderConfig.Artifacts.UNVERIFIED_ORDERING_FILE])
+        [BuilderConfig.Artifacts.UNVERIFIED_CHROME_LLVM_ORDERFILE])
     toolchain.BundleArtifacts(request, self.response,
                               self.validate_only_config)
     self.bundle.assert_not_called()
 
   def testSetsArtifactsInfo(self):
     request = self._GetRequest(
-        [BuilderConfig.Artifacts.UNVERIFIED_ORDERING_FILE])
+        [BuilderConfig.Artifacts.UNVERIFIED_CHROME_LLVM_ORDERFILE])
     self.bundle.return_value = ['artifact.xz']
     toolchain.BundleArtifacts(request, self.response, self.api_config)
     self.assertEqual(1, len(self.response.artifacts_info))
     self.assertEqual(
         self.response.artifacts_info[0],
         toolchain_pb2.ArtifactInfo(
-            artifact_type=BuilderConfig.Artifacts.UNVERIFIED_ORDERING_FILE,
+            artifact_type=(
+                BuilderConfig.Artifacts.UNVERIFIED_CHROME_LLVM_ORDERFILE),
             artifacts=[
                 artifacts_pb2.Artifact(path=self.bundle.return_value[0])]))
