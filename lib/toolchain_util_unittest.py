@@ -379,6 +379,7 @@ class PrepareForBuildHandlerTest(PrepareBundleTest):
     self.orderfile_name = (
         'chromeos-chrome-orderfile-field-78-3877.0-1567418235-'
         'benchmark-78.0.3893.0-r1.orderfile')
+    self.afdo_name = 'chromeos-chrome-amd64-78.0.3893.0-r1.afdo'
     self.PatchObject(
         toolchain_util._CommonPrepareBundle,
         '_GetOrderfileName',
@@ -451,6 +452,26 @@ class PrepareForBuildHandlerTest(PrepareBundleTest):
     self.gs_context.Exists.assert_called_once_with(
         'gs://path/to/vetted/%s.xz' % self.orderfile_name)
     self.patch_ebuild.assert_called_once()
+
+  def testPrepareUnverifiedChromeBenchmarkAfdoFile(self):
+    self.SetUpPrepare(
+        'UnverifiedChromeBenchmarkAfdoFile', {
+            'UnverifiedChromeBenchmarkPerfFile': ['gs://path/to/perfdata'],
+            'UnverifiedChromeBenchmarkAfdoFile': ['gs://path/to/unvetted'],
+            'ChromeDebugBinary': ['gs://image-archive/path'],
+        })
+    self.gsc_exists.return_value = False
+    self.assertEqual(toolchain_util.PrepareForBuildReturn.NEEDED,
+                     self.obj.Prepare())
+    expected = [
+        mock.call('gs://path/to/unvetted/'
+                  'chromeos-chrome-amd64-78.0.3893.0-r1.afdo.bz2'),
+        mock.call('gs://image-archive/path/chrome.debug.bz2'),
+        mock.call('gs://path/to/perfdata/'
+                  'chromeos-chrome-amd64-78.0.3893.0-r1.perf.data.bz2'),
+    ]
+    self.assertEqual(expected, self.gs_context.Exists.call_args_list)
+    self.patch_ebuild.assert_not_called()
 
 
 class BundleArtifactHandlerTest(PrepareBundleTest):
@@ -551,6 +572,20 @@ class BundleArtifactHandlerTest(PrepareBundleTest):
                   '%s.llvm.profdata.tar.xz' % base)
     ]
     self.assertEqual(artifacts, self.obj.Bundle())
+
+  def testBundleUnverifiedChromeBenchmarkPerfFile(self):
+    self.SetUpBundle('UnverifiedChromeBenchmarkPerfFile')
+    self.assertEqual([], self.obj.Bundle())
+
+  def testBundleChromeDebugBinary(self):
+    self.SetUpBundle('ChromeDebugBinary')
+    bin_path = toolchain_util._CHROME_DEBUG_BIN % {
+        'root': self.chroot.path,
+        'sysroot': self.sysroot
+    }
+    osutils.WriteFile(bin_path, '', makedirs=True)
+    self.assertEqual([bin_path + toolchain_util.BZ2_COMPRESSION_SUFFIX],
+                     self.obj.Bundle())
 
 
 class FindEbuildPathTest(cros_test_lib.MockTempDirTestCase):
@@ -1277,8 +1312,10 @@ class GenerateBenchmarkAFDOProfile(cros_test_lib.MockTempDirTestCase):
         toolchain_util.GenerateBenchmarkAFDOProfile,
         '_GetPerfAFDOName',
         return_value=afdo_name)
-    mock_check = self.PatchObject(toolchain_util.GenerateBenchmarkAFDOProfile,
-                                  '_CheckAFDOPerfDataStatus')
+    # TODO(crbug/1065172): Invalid assertion that had previously been mocked.
+    # mock_check =
+    self.PatchObject(toolchain_util.GenerateBenchmarkAFDOProfile,
+                     '_CheckAFDOPerfDataStatus')
     mock_decompress = self.PatchObject(
         toolchain_util.GenerateBenchmarkAFDOProfile, '_DecompressAFDOFile')
     mock_copy = self.PatchObject(gs.GSContext, 'Copy')
@@ -1303,8 +1340,7 @@ class GenerateBenchmarkAFDOProfile(cros_test_lib.MockTempDirTestCase):
     """Test method _CreateAFDOFromPerfData()."""
     # Intercept the real path to chrome binary
     mock_chrome_debug = os.path.join(self.working_dir, 'chrome.debug')
-    toolchain_util.GenerateBenchmarkAFDOProfile.CHROME_DEBUG_BIN = \
-      mock_chrome_debug
+    toolchain_util._CHROME_DEBUG_BIN = mock_chrome_debug
     osutils.Touch(mock_chrome_debug)
     perf_name = 'chromeos-chrome-amd64-77.0.3849.0.perf.data'
     self.PatchObject(
@@ -1317,7 +1353,7 @@ class GenerateBenchmarkAFDOProfile(cros_test_lib.MockTempDirTestCase):
     mock_command = self.PatchObject(cros_build_lib, 'run')
     self.test_obj._CreateAFDOFromPerfData()
     afdo_cmd = [
-        toolchain_util.GenerateBenchmarkAFDOProfile.AFDO_GENERATE_LLVM_PROF,
+        toolchain_util._AFDO_GENERATE_LLVM_PROF,
         '--binary=/tmp/chrome.unstripped', '--profile=/tmp/' + perf_name,
         '--out=/tmp/' + afdo_name
     ]
@@ -1357,9 +1393,9 @@ class GenerateBenchmarkAFDOProfile(cros_test_lib.MockTempDirTestCase):
 
   def testGenerateAFDOData(self):
     """Test main function of _GenerateAFDOData()."""
-    chrome_binary = self.test_obj.CHROME_DEBUG_BIN % {
+    chrome_binary = toolchain_util._CHROME_DEBUG_BIN % {
         'root': self.chroot_dir,
-        'board': self.board
+        'sysroot': os.path.join('build', self.board)
     }
     afdo_name = 'chrome.afdo'
     mock_create = self.PatchObject(

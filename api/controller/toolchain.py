@@ -30,19 +30,20 @@ _TOOLCHAIN_ARTIFACT_HANDLERS = {
                   toolchain_util.PrepareForBuild,
                   toolchain_util.BundleArtifacts),
     BuilderConfig.Artifacts.VERIFIED_CHROME_LLVM_ORDERFILE:
-        _Handlers('VerifiedChromeLlvmOrderfile',
-                  toolchain_util.PrepareForBuild,
+        _Handlers('VerifiedChromeLlvmOrderfile', toolchain_util.PrepareForBuild,
                   toolchain_util.BundleArtifacts),
     BuilderConfig.Artifacts.CHROME_CLANG_WARNINGS_FILE:
-        _Handlers('ChromeClangWarningsFile',
-                  toolchain_util.PrepareForBuild,
+        _Handlers('ChromeClangWarningsFile', toolchain_util.PrepareForBuild,
                   toolchain_util.BundleArtifacts),
     BuilderConfig.Artifacts.UNVERIFIED_LLVM_PGO_FILE:
-        _Handlers('UnverifiedLlvmPgoFile',
-                  toolchain_util.PrepareForBuild,
+        _Handlers('UnverifiedLlvmPgoFile', toolchain_util.PrepareForBuild,
                   toolchain_util.BundleArtifacts),
     BuilderConfig.Artifacts.UNVERIFIED_CHROME_BENCHMARK_AFDO_FILE:
         _Handlers('UnverifiedChromeBenchmarkAfdoFile',
+                  toolchain_util.PrepareForBuild,
+                  toolchain_util.BundleArtifacts),
+    BuilderConfig.Artifacts.CHROME_DEBUG_BINARY:
+        _Handlers('ChromeDebugBinary',
                   toolchain_util.PrepareForBuild,
                   toolchain_util.BundleArtifacts),
     BuilderConfig.Artifacts.UNVERIFIED_CHROME_BENCHMARK_PERF_FILE:
@@ -54,24 +55,19 @@ _TOOLCHAIN_ARTIFACT_HANDLERS = {
                   toolchain_util.PrepareForBuild,
                   toolchain_util.BundleArtifacts),
     BuilderConfig.Artifacts.UNVERIFIED_KERNEL_CWP_AFDO_FILE:
-        _Handlers('UnverifiedKernelCwpAfdoFile',
-                  toolchain_util.PrepareForBuild,
+        _Handlers('UnverifiedKernelCwpAfdoFile', toolchain_util.PrepareForBuild,
                   toolchain_util.BundleArtifacts),
     BuilderConfig.Artifacts.VERIFIED_KERNEL_CWP_AFDO_FILE:
-        _Handlers('VerifiedKernelCwpAfdoFile',
-                  toolchain_util.PrepareForBuild,
+        _Handlers('VerifiedKernelCwpAfdoFile', toolchain_util.PrepareForBuild,
                   toolchain_util.BundleArtifacts),
     BuilderConfig.Artifacts.UNVERIFIED_CHROME_CWP_AFDO_FILE:
-        _Handlers('UnverifiedChromeCwpAfdoFile',
-                  toolchain_util.PrepareForBuild,
+        _Handlers('UnverifiedChromeCwpAfdoFile', toolchain_util.PrepareForBuild,
                   toolchain_util.BundleArtifacts),
     BuilderConfig.Artifacts.VERIFIED_CHROME_CWP_AFDO_FILE:
-        _Handlers('VerifiedChromeCwpAfdoFile',
-                  toolchain_util.PrepareForBuild,
+        _Handlers('VerifiedChromeCwpAfdoFile', toolchain_util.PrepareForBuild,
                   toolchain_util.BundleArtifacts),
     BuilderConfig.Artifacts.VERIFIED_RELEASE_AFDO_FILE:
-        _Handlers('VerifiedReleaseAfdoFile',
-                  toolchain_util.PrepareForBuild,
+        _Handlers('VerifiedReleaseAfdoFile', toolchain_util.PrepareForBuild,
                   toolchain_util.BundleArtifacts),
 }
 
