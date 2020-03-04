@@ -3306,21 +3306,20 @@ class CMDTryTestCase(CMDTestCaseBase):
         sys.stderr.getvalue())
 
   @mock.patch('git_cl._call_buildbucket')
-  @mock.patch('git_cl.fetch_try_jobs')
+  @mock.patch('git_cl._fetch_tryjobs')
   def testScheduleOnBuildbucketRetryFailed(
       self, mockFetchTryJobs, mockCallBuildbucket):
-
-    git_cl.fetch_try_jobs.side_effect = lambda *_, **kw: {
+    git_cl._fetch_tryjobs.side_effect = lambda *_, **kw: {
         7: [],
         6: [{
             'id': 112112,
             'builder': {
                 'project': 'chromium',
                 'bucket': 'try',
-                'builder': 'linux',},
+                'builder': 'linux', },
             'createTime': '2019-10-09T08:00:01.854286Z',
             'tags': [],
-            'status': 'FAILURE',}],}[kw['patchset']]
+            'status': 'FAILURE', }], }[kw['patchset']]
     mockCallBuildbucket.return_value = {}
 
     self.assertEqual(0, git_cl.main(['try', '--retry-failed']))
@@ -3393,8 +3392,8 @@ class CMDTryTestCase(CMDTestCaseBase):
 class CMDUploadTestCase(CMDTestCaseBase):
   def setUp(self):
     super(CMDUploadTestCase, self).setUp()
-    mock.patch('git_cl.fetch_try_jobs').start()
-    mock.patch('git_cl._trigger_try_jobs', return_value={}).start()
+    mock.patch('git_cl._fetch_tryjobs').start()
+    mock.patch('git_cl._trigger_tryjobs', return_value={}).start()
     mock.patch('git_cl.Changelist.CMDUpload', return_value=0).start()
     mock.patch('git_cl.Settings.GetIsGerrit', return_value=True).start()
     self.addCleanup(mock.patch.stopall)
@@ -3412,7 +3411,7 @@ class CMDUploadTestCase(CMDTestCaseBase):
     # upload, if --retry-failed is added, then the tool will fetch try jobs
     # from the previous patchset and trigger the right builders on the latest
     # patchset.
-    git_cl.fetch_try_jobs.side_effect = [
+    git_cl._fetch_tryjobs.side_effect = [
         # Latest patchset: No builds.
         [],
         # Patchset before latest: Some builds.
@@ -3433,13 +3432,13 @@ class CMDUploadTestCase(CMDTestCaseBase):
     self.assertEqual([
         mock.call(mock.ANY, 'cr-buildbucket.appspot.com', patchset=7),
         mock.call(mock.ANY, 'cr-buildbucket.appspot.com', patchset=6),
-    ], git_cl.fetch_try_jobs.mock_calls)
+    ], git_cl._fetch_tryjobs.mock_calls)
     expected_buckets = [
         ('chromium', 'try', 'bot_failure'),
         ('chromium', 'try', 'bot_infra_failure'),
     ]
-    git_cl._trigger_try_jobs.assert_called_once_with(
-        mock.ANY, expected_buckets, mock.ANY, 8)
+    git_cl._trigger_tryjobs.assert_called_once_with(mock.ANY, expected_buckets,
+                                                    mock.ANY, 8)
 
 
 class CMDFormatTestCase(unittest.TestCase):

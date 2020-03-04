@@ -375,7 +375,7 @@ def _parse_bucket(raw_bucket):
   return project, bucket
 
 
-def _trigger_try_jobs(changelist, jobs, options, patchset):
+def _trigger_tryjobs(changelist, jobs, options, patchset):
   """Sends a request to Buildbucket to trigger tryjobs for a changelist.
 
   Args:
@@ -389,8 +389,7 @@ def _trigger_try_jobs(changelist, jobs, options, patchset):
   print('To see results here, run:        git cl try-results')
   print('To see results in browser, run:  git cl web')
 
-  requests = _make_try_job_schedule_requests(
-      changelist, jobs, options, patchset)
+  requests = _make_tryjob_schedule_requests(changelist, jobs, options, patchset)
   if not requests:
     return
 
@@ -411,7 +410,7 @@ def _trigger_try_jobs(changelist, jobs, options, patchset):
         'Failed to schedule builds for some bots:\n%s' % '\n'.join(errors))
 
 
-def _make_try_job_schedule_requests(changelist, jobs, options, patchset):
+def _make_tryjob_schedule_requests(changelist, jobs, options, patchset):
   gerrit_changes = [changelist.GetGerritChange(patchset)]
   shared_properties = {'category': getattr(options, 'category', 'git_cl_try')}
   if getattr(options, 'clobber', False):
@@ -455,7 +454,7 @@ def _make_try_job_schedule_requests(changelist, jobs, options, patchset):
   return requests
 
 
-def fetch_try_jobs(changelist, buildbucket_host, patchset=None):
+def _fetch_tryjobs(changelist, buildbucket_host, patchset=None):
   """Fetches tryjobs from buildbucket.
 
   Returns list of buildbucket.v2.Build with the try jobs for the changelist.
@@ -507,7 +506,7 @@ def _fetch_latest_builds(changelist, buildbucket_host, latest_patchset=None):
 
   min_ps = max(1, ps - 5)
   while ps >= min_ps:
-    builds = fetch_try_jobs(changelist, buildbucket_host, patchset=ps)
+    builds = _fetch_tryjobs(changelist, buildbucket_host, patchset=ps)
     if len(builds):
       return builds, ps
     ps -= 1
@@ -518,13 +517,13 @@ def _filter_failed_for_retry(all_builds):
   """Returns a list of buckets/builders that are worth retrying.
 
   Args:
-    all_builds (list): Builds, in the format returned by fetch_try_jobs,
+    all_builds (list): Builds, in the format returned by _fetch_tryjobs,
       i.e. a list of buildbucket.v2.Builds which includes status and builder
       info.
 
   Returns:
     A dict {(proj, bucket): [builders]}. This is the same format accepted by
-    _trigger_try_jobs.
+    _trigger_tryjobs.
   """
   grouped = {}
   for build in all_builds:
@@ -559,8 +558,8 @@ def _filter_failed_for_retry(all_builds):
   return sorted(jobs)
 
 
-def print_try_jobs(options, builds):
-  """Prints nicely result of fetch_try_jobs."""
+def _print_tryjobs(options, builds):
+  """Prints nicely result of _fetch_tryjobs."""
   if not builds:
     print('No tryjobs scheduled.')
     return
@@ -4400,7 +4399,7 @@ def CMDupload(parser, args):
     if len(jobs) == 0:
       print('No failed tryjobs, so --retry-failed has no effect.')
       return ret
-    _trigger_try_jobs(cl, jobs, options, patchset + 1)
+    _trigger_tryjobs(cl, jobs, options, patchset + 1)
 
   return ret
 
@@ -4716,7 +4715,7 @@ def CMDtry(parser, args):
 
   patchset = cl.GetMostRecentPatchset()
   try:
-    _trigger_try_jobs(cl, jobs, options, patchset)
+    _trigger_tryjobs(cl, jobs, options, patchset)
   except BuildbucketResponseException as ex:
     print('ERROR: %s' % ex)
     return 1
@@ -4763,14 +4762,14 @@ def CMDtry_results(parser, args):
                    cl.GetIssue())
 
   try:
-    jobs = fetch_try_jobs(cl, options.buildbucket_host, patchset)
+    jobs = _fetch_tryjobs(cl, options.buildbucket_host, patchset)
   except BuildbucketResponseException as ex:
     print('Buildbucket error: %s' % ex)
     return 1
   if options.json:
     write_json(options.json, jobs)
   else:
-    print_try_jobs(options, jobs)
+    _print_tryjobs(options, jobs)
   return 0
 
 
