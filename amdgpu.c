@@ -18,13 +18,9 @@
 #include "helpers.h"
 #include "util.h"
 
-#ifdef __ANDROID__
-#define DRI_PATH "/vendor/lib/dri/radeonsi_dri.so"
-#else
 // clang-format off
 #define DRI_PATH STRINGIZE(DRI_DRIVER_DIR/radeonsi_dri.so)
 // clang-format on
-#endif
 
 #define TILE_TYPE_LINEAR 0
 /* DRI backend decides tiling in this case. */
