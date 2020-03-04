@@ -2879,6 +2879,12 @@ def ApplyCustomOverrides(site_config):
       },
 
       # --- end from here ---
+
+      # Enable distributed ThinLTO (crbug/877722) only on nocturne for now.
+      'nocturne-release': {
+          'useflags': config_lib.append_useflags(['goma_thinlto']),
+      },
+
   }
 
   # Some boards in toolchain builder are not using the same configuration as

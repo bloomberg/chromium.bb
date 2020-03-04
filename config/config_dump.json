@@ -24692,6 +24692,11 @@
         "boards": [
             "nocturne"
         ],
+        "useflags": [
+            "-cros-debug",
+            "chrome_internal",
+            "goma_thinlto"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -24716,6 +24721,11 @@
         "paygen": false,
         "push_image": false,
         "suite_scheduling": false,
+        "useflags": [
+            "-cros-debug",
+            "chrome_internal",
+            "goma_thinlto"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
