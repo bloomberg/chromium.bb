@@ -450,11 +450,145 @@ static AOM_INLINE void set_vbp_thresholds(AV1_COMP *cpi, int64_t thresholds[],
   }
 }
 
+// Set temporal variance low flag for superblock 64x64.
+// Only first 25 in the array are used in this case.
+static AOM_INLINE void set_low_temp_var_flag_64x64(AV1_COMP *cpi, MACROBLOCK *x,
+                                                   MACROBLOCKD *xd, v64x64 *vt,
+                                                   int64_t thresholds[],
+                                                   int mi_col, int mi_row) {
+  AV1_COMMON *const cm = &cpi->common;
+
+  if (xd->mi[0]->sb_type == BLOCK_64X64) {
+    if ((vt->part_variances).none.variance < (thresholds[0] >> 1))
+      x->variance_low[0] = 1;
+  } else if (xd->mi[0]->sb_type == BLOCK_64X32) {
+    for (int i = 0; i < 2; i++) {
+      if (vt->part_variances.horz[i].variance < (thresholds[0] >> 2))
+        x->variance_low[i + 1] = 1;
+    }
+  } else if (xd->mi[0]->sb_type == BLOCK_32X64) {
+    for (int i = 0; i < 2; i++) {
+      if (vt->part_variances.vert[i].variance < (thresholds[0] >> 2))
+        x->variance_low[i + 3] = 1;
+    }
+  } else {
+    static const int idx[4][2] = { { 0, 0 }, { 0, 8 }, { 8, 0 }, { 8, 8 } };
+    for (int i = 0; i < 4; i++) {
+      const int idx_str =
+          cm->mi_stride * (mi_row + idx[i][0]) + mi_col + idx[i][1];
+      MB_MODE_INFO **this_mi = cm->mi_grid_base + idx_str;
+
+      if (cm->mi_cols <= mi_col + idx[i][1] ||
+          cm->mi_rows <= mi_row + idx[i][0])
+        continue;
+
+      if (*this_mi == NULL) continue;
+
+      if ((*this_mi)->sb_type == BLOCK_32X32) {
+        int64_t threshold_32x32 = (5 * thresholds[1]) >> 3;
+        if (vt->split[i].part_variances.none.variance < threshold_32x32)
+          x->variance_low[i + 5] = 1;
+      } else {
+        // For 32x16 and 16x32 blocks, the flag is set on each 16x16 block
+        // inside.
+        if ((*this_mi)->sb_type == BLOCK_16X16 ||
+            (*this_mi)->sb_type == BLOCK_32X16 ||
+            (*this_mi)->sb_type == BLOCK_16X32) {
+          for (int j = 0; j < 4; j++) {
+            if (vt->split[i].split[j].part_variances.none.variance <
+                (thresholds[2] >> 8))
+              x->variance_low[(i << 2) + j + 9] = 1;
+          }
+        }
+      }
+    }
+  }
+}
+
+static AOM_INLINE void set_low_temp_var_flag_128x128(
+    AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd, v128x128 *vt,
+    int64_t thresholds[], int mi_col, int mi_row) {
+  AV1_COMMON *const cm = &cpi->common;
+
+  if (xd->mi[0]->sb_type == BLOCK_128X128) {
+    if (vt->part_variances.none.variance < (thresholds[0] >> 1))
+      x->variance_low[0] = 1;
+  } else if (xd->mi[0]->sb_type == BLOCK_128X64) {
+    for (int i = 0; i < 2; i++) {
+      if (vt->part_variances.horz[i].variance < (thresholds[0] >> 2))
+        x->variance_low[i + 1] = 1;
+    }
+  } else if (xd->mi[0]->sb_type == BLOCK_64X128) {
+    for (int i = 0; i < 2; i++) {
+      if (vt->part_variances.vert[i].variance < (thresholds[0] >> 2))
+        x->variance_low[i + 3] = 1;
+    }
+  } else {
+    static const int idx64[4][2] = {
+      { 0, 0 }, { 0, 16 }, { 16, 0 }, { 16, 16 }
+    };
+    static const int idx32[4][2] = { { 0, 0 }, { 0, 8 }, { 8, 0 }, { 8, 8 } };
+    for (int i = 0; i < 4; i++) {
+      const int idx_str =
+          cm->mi_stride * (mi_row + idx64[i][0]) + mi_col + idx64[i][1];
+      MB_MODE_INFO **mi_64 = cm->mi_grid_base + idx_str;
+      if (*mi_64 == NULL) continue;
+      if (cm->mi_cols <= mi_col + idx64[i][1] ||
+          cm->mi_rows <= mi_row + idx64[i][0])
+        continue;
+      const int64_t threshold_64x64 = (5 * thresholds[1]) >> 3;
+      if ((*mi_64)->sb_type == BLOCK_64X64) {
+        if (vt->split[i].part_variances.none.variance < threshold_64x64)
+          x->variance_low[5 + i] = 1;
+      } else if ((*mi_64)->sb_type == BLOCK_64X32) {
+        for (int j = 0; j < 2; j++)
+          if (vt->split[i].part_variances.horz[j].variance <
+              (threshold_64x64 >> 1))
+            x->variance_low[9 + (i << 1) + j] = 1;
+      } else if ((*mi_64)->sb_type == BLOCK_32X64) {
+        for (int j = 0; j < 2; j++)
+          if (vt->split[i].part_variances.vert[j].variance <
+              (threshold_64x64 >> 1))
+            x->variance_low[17 + (i << 1) + j] = 1;
+      } else {
+        for (int k = 0; k < 4; k++) {
+          const int idx_str1 = cm->mi_stride * idx32[k][0] + idx32[k][1];
+          MB_MODE_INFO **mi_32 = cm->mi_grid_base + idx_str + idx_str1;
+          if (*mi_32 == NULL) continue;
+
+          if (cm->mi_cols <= mi_col + idx64[i][1] + idx32[k][1] ||
+              cm->mi_rows <= mi_row + idx64[i][0] + idx32[k][0])
+            continue;
+          const int64_t threshold_32x32 = (5 * thresholds[2]) >> 3;
+          if ((*mi_32)->sb_type == BLOCK_32X32) {
+            if (vt->split[i].split[k].part_variances.none.variance <
+                threshold_32x32)
+              x->variance_low[25 + (i << 2) + k] = 1;
+          } else {
+            // For 32x16 and 16x32 blocks, the flag is set on each 16x16 block
+            // inside.
+            if ((*mi_32)->sb_type == BLOCK_16X16 ||
+                (*mi_32)->sb_type == BLOCK_32X16 ||
+                (*mi_32)->sb_type == BLOCK_16X32) {
+              for (int j = 0; j < 4; j++) {
+                if (vt->split[i]
+                        .split[k]
+                        .split[j]
+                        .part_variances.none.variance < (thresholds[3] >> 8))
+                  x->variance_low[41 + (i << 4) + (k << 2) + j] = 1;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 static AOM_INLINE void set_low_temp_var_flag(
     AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd, v128x128 *vt,
     int64_t thresholds[], MV_REFERENCE_FRAME ref_frame_partition, int mi_col,
     int mi_row) {
-  int i, j, k;
   AV1_COMMON *const cm = &cpi->common;
   const int mv_thr = cm->width > 640 ? 8 : 4;
   // Check temporal variance for bsize >= 16x16, if LAST_FRAME was selected and
@@ -468,77 +602,12 @@ static AOM_INLINE void set_low_temp_var_flag(
         xd->mi[0]->mv[0].as_mv.col > -mv_thr &&
         xd->mi[0]->mv[0].as_mv.row < mv_thr &&
         xd->mi[0]->mv[0].as_mv.row > -mv_thr))) {
-    if (xd->mi[0]->sb_type == BLOCK_128X128) {
-      if (vt->part_variances.none.variance < (thresholds[0] >> 1))
-        x->variance_low[0] = 1;
-    } else if (xd->mi[0]->sb_type == BLOCK_128X64) {
-      for (i = 0; i < 2; i++) {
-        if (vt->part_variances.horz[i].variance < (thresholds[0] >> 2))
-          x->variance_low[i + 1] = 1;
-      }
-    } else if (xd->mi[0]->sb_type == BLOCK_64X128) {
-      for (i = 0; i < 2; i++) {
-        if (vt->part_variances.vert[i].variance < (thresholds[0] >> 2))
-          x->variance_low[i + 3] = 1;
-      }
-    } else {
-      for (i = 0; i < 4; i++) {
-        const int idx[4][2] = { { 0, 0 }, { 0, 16 }, { 16, 0 }, { 16, 16 } };
-        const int idx_str =
-            cm->mi_stride * (mi_row + idx[i][0]) + mi_col + idx[i][1];
-        MB_MODE_INFO **mi_64 = cm->mi_grid_base + idx_str;
-        if (*mi_64 == NULL) continue;
-        if (cm->mi_cols <= mi_col + idx[i][1] ||
-            cm->mi_rows <= mi_row + idx[i][0])
-          continue;
-        const int64_t threshold_64x64 = (5 * thresholds[1]) >> 3;
-        if ((*mi_64)->sb_type == BLOCK_64X64) {
-          if (vt->split[i].part_variances.none.variance < threshold_64x64)
-            x->variance_low[5 + i] = 1;
-        } else if ((*mi_64)->sb_type == BLOCK_64X32) {
-          for (j = 0; j < 2; j++)
-            if (vt->split[i].part_variances.horz[j].variance <
-                (threshold_64x64 >> 1))
-              x->variance_low[9 + (i << 1) + j] = 1;
-        } else if ((*mi_64)->sb_type == BLOCK_32X64) {
-          for (j = 0; j < 2; j++)
-            if (vt->split[i].part_variances.vert[j].variance <
-                (threshold_64x64 >> 1))
-              x->variance_low[17 + (i << 1) + j] = 1;
-        } else {
-          for (k = 0; k < 4; k++) {
-            const int idx1[4][2] = { { 0, 0 }, { 0, 8 }, { 8, 0 }, { 8, 8 } };
-            const int idx_str1 = cm->mi_stride * idx1[k][0] + idx1[k][1];
-            MB_MODE_INFO **mi_32 = cm->mi_grid_base + idx_str + idx_str1;
-            if (*mi_32 == NULL) continue;
-
-            if (cm->mi_cols <= mi_col + idx[i][1] + idx1[k][1] ||
-                cm->mi_rows <= mi_row + idx[i][0] + idx1[k][0])
-              continue;
-            const int64_t threshold_32x32 = (5 * thresholds[2]) >> 3;
-            if ((*mi_32)->sb_type == BLOCK_32X32) {
-              if (vt->split[i].split[k].part_variances.none.variance <
-                  threshold_32x32)
-                x->variance_low[25 + (i << 2) + k] = 1;
-            } else {
-              // For 32x16 and 16x32 blocks, the flag is set on each 16x16 block
-              // inside.
-              if ((*mi_32)->sb_type == BLOCK_16X16 ||
-                  (*mi_32)->sb_type == BLOCK_32X16 ||
-                  (*mi_32)->sb_type == BLOCK_16X32) {
-                for (j = 0; j < 4; j++) {
-                  if (vt->split[i]
-                          .split[k]
-                          .split[j]
-                          .part_variances.none.variance < (thresholds[3] >> 8))
-                    x->variance_low[41 + (i << 4) + (k << 2) + j] = 1;
-                }
-              }
-            }
-          }
-        }
-      }
-    }
+    const int is_small_sb = (cm->seq_params.sb_size == BLOCK_64X64);
+    if (is_small_sb)
+      set_low_temp_var_flag_64x64(cpi, x, xd, &(vt->split[0]), thresholds,
+                                  mi_col, mi_row);
+    else
+      set_low_temp_var_flag_128x128(cpi, x, xd, vt, thresholds, mi_col, mi_row);
   }
 }
 
@@ -1009,7 +1078,7 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
     }
   }
 
-  if (cpi->sf.rt_sf.short_circuit_low_temp_var && !is_small_sb) {
+  if (cpi->sf.rt_sf.short_circuit_low_temp_var) {
     set_low_temp_var_flag(cpi, x, xd, vt, thresholds, ref_frame_partition,
                           mi_col, mi_row);
   }
