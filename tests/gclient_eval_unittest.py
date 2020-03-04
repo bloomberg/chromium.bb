@@ -173,6 +173,22 @@ class ExecTest(unittest.TestCase):
     self.assertIn('baz was used as a variable, but was not declared',
                   str(cm.exception))
 
+  def test_doesnt_allow_duplicate_deps(self):
+    with self.assertRaises(ValueError) as cm:
+      gclient_eval.Parse('\n'.join([
+        'deps = {',
+        '  "a_dep": {',
+        '    "url": "a_url@a_rev",',
+        '    "condition": "foo",',
+        '  },',
+        '  "a_dep": {',
+        '    "url": "a_url@another_rev",',
+        '    "condition": "not foo",',
+        '  }',
+        '}',
+      ]), '<unknown>')
+    self.assertIn('duplicate key in dictionary: a_dep', str(cm.exception))
+
 
 class UpdateConditionTest(unittest.TestCase):
   def test_both_present(self):
@@ -1050,7 +1066,6 @@ class ParseTest(unittest.TestCase):
         "hooks": [{"action": ["a", "action"]},
                   {"action": ["b", "action"], "condition": "checkout_mac"}],
     }, local_scope)
-
 
 
 if __name__ == '__main__':

@@ -26,8 +26,8 @@ else:
 
 class _NodeDict(collections_abc.MutableMapping):
   """Dict-like type that also stores information on AST nodes and tokens."""
-  def __init__(self, data, tokens=None):
-    self.data = collections.OrderedDict(data)
+  def __init__(self, data=None, tokens=None):
+    self.data = collections.OrderedDict(data or [])
     self.tokens = tokens
 
   def __str__(self):
@@ -250,8 +250,15 @@ def _gclient_eval(node_or_string, filename='<unknown>', vars_dict=None):
     elif isinstance(node, ast.List):
       return list(map(_convert, node.elts))
     elif isinstance(node, ast.Dict):
-      return _NodeDict((_convert(k), (_convert(v), v))
-          for k, v in zip(node.keys, node.values))
+      node_dict = _NodeDict()
+      for key_node, value_node in zip(node.keys, node.values):
+        key = _convert(key_node)
+        if key in node_dict:
+          raise ValueError(
+              'duplicate key in dictionary: %s (file %r, line %s)' % (
+                  key, filename, getattr(key_node, 'lineno', '<unknown>')))
+        node_dict.SetNode(key, _convert(value_node), value_node)
+      return node_dict
     elif isinstance(node, ast.Name):
       if node.id not in _allowed_names:
         raise ValueError(
