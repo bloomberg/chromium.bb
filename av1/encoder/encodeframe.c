@@ -4388,6 +4388,75 @@ static INLINE void restore_sb_state(const SB_FIRST_PASS_STATS *sb_fp_stats,
 #endif  // CONFIG_INTERNAL_STATS
 }
 
+#if !CONFIG_REALTIME_ONLY
+static void init_ref_frame_space(AV1_COMP *cpi, ThreadData *td, int mi_row,
+                                 int mi_col) {
+  const AV1_COMMON *cm = &cpi->common;
+  MACROBLOCK *x = &td->mb;
+  const int frame_idx = cpi->gf_group.index;
+  TplDepFrame *tpl_frame = &cpi->tpl_frame[frame_idx];
+
+  memset(x->search_ref_frame, 0, sizeof(x->search_ref_frame));
+
+  if (tpl_frame->is_valid == 0) return;
+  if (!is_frame_tpl_eligible(cpi)) return;
+  if (frame_idx >= MAX_LAG_BUFFERS) return;
+  if (cpi->oxcf.superres_mode != SUPERRES_NONE) return;
+  if (cpi->oxcf.aq_mode != NO_AQ) return;
+
+  TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
+  const int tpl_stride = tpl_frame->stride;
+  int64_t inter_cost[INTER_REFS_PER_FRAME] = { 0 };
+  const int step = 1 << cpi->tpl_stats_block_mis_log2;
+
+  const BLOCK_SIZE sb_size = cm->seq_params.sb_size;
+  const int mi_row_end = AOMMIN(mi_size_high[sb_size] + mi_row, cm->mi_rows);
+  const int mi_col_end = AOMMIN(mi_size_wide[sb_size] + mi_col, cm->mi_cols);
+
+  for (int row = mi_row; row < mi_row_end; row += step) {
+    for (int col = mi_col; col < mi_col_end; col += step) {
+      TplDepStats *this_stats =
+          &tpl_stats[av1_tpl_ptr_pos(cpi, row, col, tpl_stride)];
+      for (int rf_idx = 0; rf_idx < INTER_REFS_PER_FRAME; ++rf_idx)
+        inter_cost[rf_idx] += this_stats->pred_error[rf_idx];
+    }
+  }
+
+  int rank_index[INTER_REFS_PER_FRAME - 1] = { 0 };
+
+  for (int idx = 0; idx < INTER_REFS_PER_FRAME - 1; ++idx) {
+    rank_index[idx] = idx + 1;
+    for (int i = idx; i > 0; --i) {
+      if (inter_cost[rank_index[i - 1]] > inter_cost[rank_index[i]]) {
+        const int tmp = rank_index[i - 1];
+        rank_index[i - 1] = rank_index[i];
+        rank_index[i] = tmp;
+      }
+    }
+  }
+
+  const int is_overlay = cpi->gf_group.update_type[frame_idx] == OVERLAY_UPDATE;
+  x->search_ref_frame[INTRA_FRAME] = 1;
+  x->search_ref_frame[LAST_FRAME] = 1;
+
+  int cutoff_ref = 0;
+
+  for (int idx = 0; idx < INTER_REFS_PER_FRAME - 1; ++idx) {
+    x->search_ref_frame[rank_index[idx] + LAST_FRAME] = 1;
+    if (idx > 2 && !is_overlay) {
+      // If the predictive coding gains are smaller than the previous more
+      // relevant frame over certain amount, discard this frame.
+      if (labs(inter_cost[rank_index[idx]]) <
+              labs(inter_cost[rank_index[idx - 1]]) / 8 ||
+          inter_cost[rank_index[idx]] == 0)
+        cutoff_ref = 1;
+
+      if (cutoff_ref) x->search_ref_frame[rank_index[idx] + LAST_FRAME] = 0;
+    }
+  }
+}
+#endif  // !CONFIG_REALTIME_ONLY
+
 // This function initializes the stats for encode_rd_sb.
 static INLINE void init_encode_rd_sb(AV1_COMP *cpi, ThreadData *td,
                                      const TileDataEnc *tile_data,
@@ -4410,6 +4479,7 @@ static INLINE void init_encode_rd_sb(AV1_COMP *cpi, ThreadData *td,
   }
 
 #if !CONFIG_REALTIME_ONLY
+  init_ref_frame_space(cpi, td, mi_row, mi_col);
   x->sb_energy_level = 0;
   x->cnn_output_valid = 0;
   if (gather_tpl_data) {
@@ -5202,7 +5272,7 @@ static INLINE void update_valid_ref_frames_for_gm(
         ref_buf[frame]->y_crop_height == cpi->source->y_crop_height &&
         do_gm_search_logic(&cpi->sf, frame) &&
         !prune_ref_by_selective_ref_frame(
-            cpi, ref_frame, cm->cur_frame->ref_display_order_hint,
+            cpi, NULL, ref_frame, cm->cur_frame->ref_display_order_hint,
             cm->current_frame.display_order_hint) &&
         !(cpi->sf.gm_sf.selective_ref_gm && skip_gm_frame(cm, frame))) {
       assert(ref_buf[frame] != NULL);

@@ -3557,7 +3557,7 @@ static int inter_mode_search_order_independent_skip(
     }
   }
 
-  if (prune_ref_by_selective_ref_frame(cpi, ref_frame,
+  if (prune_ref_by_selective_ref_frame(cpi, x, ref_frame,
                                        cm->cur_frame->ref_display_order_hint,
                                        cm->current_frame.display_order_hint))
     return 1;

@@ -159,6 +159,8 @@ static INLINE int prune_ref(const MV_REFERENCE_FRAME *const ref_frame,
                             const unsigned int frame_display_order_hint,
                             const int *ref_frame_list) {
   for (int i = 0; i < 2; i++) {
+    if (ref_frame_list[i] == NONE_FRAME) continue;
+
     if (ref_frame[0] == ref_frame_list[i] ||
         ref_frame[1] == ref_frame_list[i]) {
       if (av1_encoder_get_relative_dist(
@@ -172,10 +174,12 @@ static INLINE int prune_ref(const MV_REFERENCE_FRAME *const ref_frame,
 }
 
 static INLINE int prune_ref_by_selective_ref_frame(
-    const AV1_COMP *const cpi, const MV_REFERENCE_FRAME *const ref_frame,
+    const AV1_COMP *const cpi, const MACROBLOCK *const x,
+    const MV_REFERENCE_FRAME *const ref_frame,
     const unsigned int *const ref_display_order_hint,
     const unsigned int cur_frame_display_order_hint) {
   const SPEED_FEATURES *const sf = &cpi->sf;
+
   if (sf->inter_sf.selective_ref_frame) {
     const AV1_COMMON *const cm = &cpi->common;
     const OrderHintInfo *const order_hint_info =
@@ -183,7 +187,13 @@ static INLINE int prune_ref_by_selective_ref_frame(
     const int comp_pred = ref_frame[1] > INTRA_FRAME;
     if (sf->inter_sf.selective_ref_frame >= 2 ||
         (sf->inter_sf.selective_ref_frame == 1 && comp_pred)) {
-      const int ref_frame_list[2] = { LAST3_FRAME, LAST2_FRAME };
+      int ref_frame_list[2] = { LAST3_FRAME, LAST2_FRAME };
+
+      if (x != NULL) {
+        if (x->search_ref_frame[LAST3_FRAME]) ref_frame_list[0] = NONE_FRAME;
+        if (x->search_ref_frame[LAST2_FRAME]) ref_frame_list[1] = NONE_FRAME;
+      }
+
       if (prune_ref(ref_frame, order_hint_info, ref_display_order_hint,
                     ref_display_order_hint[GOLDEN_FRAME - LAST_FRAME],
                     ref_frame_list))
@@ -210,9 +220,16 @@ static INLINE int prune_ref_by_selective_ref_frame(
     }
 
     if (sf->inter_sf.selective_ref_frame >= 3) {
-      static const int ref_frame_list[2] = { ALTREF2_FRAME, BWDREF_FRAME };
+      int ref_frame_list[2] = { ALTREF2_FRAME, BWDREF_FRAME };
+
+      if (x != NULL) {
+        if (x->search_ref_frame[ALTREF2_FRAME]) ref_frame_list[0] = NONE_FRAME;
+        if (x->search_ref_frame[BWDREF_FRAME]) ref_frame_list[1] = NONE_FRAME;
+      }
+
       if (prune_ref(ref_frame, order_hint_info, ref_display_order_hint,
-                    cur_frame_display_order_hint, ref_frame_list))
+                    ref_display_order_hint[LAST_FRAME - LAST_FRAME],
+                    ref_frame_list))
         return 1;
     }
 

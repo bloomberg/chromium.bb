@@ -472,6 +472,8 @@ struct macroblock {
   // The type of mv cost used during motion search
   MV_COST_TYPE mv_cost_type;
 
+  int search_ref_frame[REF_FRAMES];
+
 #if CONFIG_AV1_HIGHBITDEPTH
   void (*fwd_txfm4x4)(const int16_t *input, tran_low_t *output, int stride);
   void (*inv_txfm_add)(const tran_low_t *input, uint8_t *dest, int stride,
