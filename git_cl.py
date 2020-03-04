@@ -2781,7 +2781,7 @@ class ChangeDescription(object):
     # Next, maybe fill in OWNERS coverage gaps to either tbrs/reviewers.
     if add_owners_to:
       owners_db = owners.Database(change.RepositoryRoot(),
-                                  fopen=file, os_path=os.path)
+                                  fopen=open, os_path=os.path)
       missing_files = owners_db.files_not_covered_by(change.LocalPaths(),
                                                      (tbrs | reviewers))
       LOOKUP[add_owners_to].update(
@@ -4944,7 +4944,7 @@ def CMDowners(parser, args):
   if options.show_all:
     for arg in args:
       base_branch = cl.GetCommonAncestorWithUpstream()
-      database = owners.Database(settings.GetRoot(), file, os.path)
+      database = owners.Database(settings.GetRoot(), open, os.path)
       database.load_data_needed_for([arg])
       print('Owners for %s:' % arg)
       for owner in sorted(database.all_possible_owners([arg], None)):
@@ -4963,7 +4963,7 @@ def CMDowners(parser, args):
   affected_files = [f.LocalPath() for f in change.AffectedFiles()]
 
   if options.batch:
-    db = owners.Database(change.RepositoryRoot(), file, os.path)
+    db = owners.Database(change.RepositoryRoot(), open, os.path)
     print('\n'.join(db.reviewers_for(affected_files, author)))
     return 0
 
@@ -4972,7 +4972,7 @@ def CMDowners(parser, args):
       change.RepositoryRoot(),
       author,
       [] if options.ignore_current else cl.GetReviewers(),
-      fopen=file, os_path=os.path,
+      fopen=open, os_path=os.path,
       disable_color=options.no_color,
       override_files=change.OriginalOwnersFiles(),
       ignore_author=options.ignore_self).run()
