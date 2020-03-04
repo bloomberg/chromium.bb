@@ -59,13 +59,17 @@ TaskRunner* PlatformClientPosix::GetTaskRunner() {
 }
 
 PlatformClientPosix::~PlatformClientPosix() {
+  OSP_DVLOG << "Shutting down the Task Runner...";
   task_runner_->RequestStopSoon();
   if (task_runner_thread_ && task_runner_thread_->joinable()) {
     task_runner_thread_->join();
+    OSP_DVLOG << "\tTask Runner shutdown complete!";
   }
 
+  OSP_DVLOG << "Shutting down network operations...";
   networking_loop_.RequestStopSoon();
   networking_loop_thread_.join();
+  OSP_DVLOG << "\tNetwork operation shutdown complete!";
 }
 
 // static

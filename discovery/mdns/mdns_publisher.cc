@@ -92,6 +92,8 @@ Error MdnsPublisher::RegisterRecord(const MdnsRecord& record) {
     }
   }
 
+  OSP_DVLOG << "Registering record of type '" << record.dns_type() << "'";
+
   it->second.push_back(CreateAnnouncer(record));
 
   return Error::None();
@@ -104,6 +106,8 @@ Error MdnsPublisher::UnregisterRecord(const MdnsRecord& record) {
     return Error::Code::kParameterInvalid;
   }
   ValidateRecord(record);
+
+  OSP_DVLOG << "Unregistering record of type '" << record.dns_type() << "'";
 
   return RemoveRecord(record, true);
 }
@@ -127,6 +131,8 @@ Error MdnsPublisher::UpdateRegisteredRecord(const MdnsRecord& old_record,
       old_record.record_type() != new_record.record_type()) {
     return Error::Code::kParameterInvalid;
   }
+
+  OSP_DVLOG << "Updating record of type '" << new_record.dns_type() << "'";
 
   // Remove the old record. Per RFC 6762 section 8.4, a goodbye message will not
   // be sent, as all records which can be removed here are unique records, which

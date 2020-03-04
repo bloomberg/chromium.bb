@@ -21,6 +21,7 @@
 
 #include "platform/api/time.h"
 #include "platform/base/ip_address.h"
+#include "util/logging.h"
 
 namespace openscreen {
 namespace discovery {
@@ -306,6 +307,28 @@ enum class DnsType : uint16_t {
   kNSEC = 47,
   kANY = 255,  // Only allowed for QTYPE
 };
+
+inline std::ostream& operator<<(std::ostream& output, DnsType type) {
+  switch (type) {
+    case DnsType::kA:
+      return output << "A";
+    case DnsType::kPTR:
+      return output << "PTR";
+    case DnsType::kTXT:
+      return output << "TXT";
+    case DnsType::kAAAA:
+      return output << "AAAA";
+    case DnsType::kSRV:
+      return output << "SRV";
+    case DnsType::kNSEC:
+      return output << "NSEC";
+    case DnsType::kANY:
+      return output << "ANY";
+  }
+
+  OSP_NOTREACHED();
+  return output;
+}
 
 constexpr std::array<DnsType, 7> kSupportedDnsTypes = {
     DnsType::kA,   DnsType::kPTR,  DnsType::kTXT, DnsType::kAAAA,

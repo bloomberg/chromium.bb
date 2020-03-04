@@ -19,6 +19,27 @@
 
 namespace openscreen {
 namespace discovery {
+namespace {
+
+// NOTE: Must be inlined to avoid compilation failure for unused function when
+// DLOGs are disabled.
+template <typename T>
+inline std::string GetInstanceNames(
+    const std::unordered_map<std::string, T>& map) {
+  std::string s;
+  auto it = map.begin();
+  if (it == map.end()) {
+    return s;
+  }
+
+  s += it->first;
+  while (++it != map.end()) {
+    s += ", " + it->first;
+  }
+  return s;
+}
+
+}  // namespace
 
 // This class represents a top-level discovery API which sits on top of DNS-SD.
 // T is the service-specific type which stores information regarding a specific
@@ -115,6 +136,11 @@ class DnsSdServiceWatcher : public DnsSdQuerier::Callback {
     for (const auto& pair : records_) {
       refs.push_back(*pair.second.get());
     }
+
+    OSP_DVLOG << "Currently " << records_.size()
+              << " known service instances: [" << GetInstanceNames(records_)
+              << "]";
+
     return refs;
   }
 

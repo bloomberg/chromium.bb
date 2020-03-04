@@ -48,8 +48,8 @@ class DnsSdPublisher {
   // service id, where the service id is the second part of the
   // <instance>.<service>.<domain> domain name as described in RFC 6763. If no
   // such records are published, this operation will be a no-op. Returns the
-  // number of records which were removed.
-  virtual int DeregisterAll(const std::string& service) = 0;
+  // number of records which were removed, or an error code on error.
+  virtual ErrorOr<int> DeregisterAll(const std::string& service) = 0;
 };
 
 }  // namespace discovery

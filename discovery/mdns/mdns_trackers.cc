@@ -5,6 +5,7 @@
 #include "discovery/mdns/mdns_trackers.h"
 
 #include <array>
+#include <limits>
 
 #include "discovery/common/config.h"
 #include "discovery/mdns/mdns_random.h"
@@ -297,14 +298,19 @@ MdnsQuestionTracker::MdnsQuestionTracker(MdnsQuestion question,
                   TrackerType::kQuestionTracker),
       question_(std::move(question)),
       send_delay_(kMinimumQueryInterval),
-      query_type_(query_type) {
+      query_type_(query_type),
+      maximum_announcement_count_(config.new_query_announcement_count < 0
+                                      ? INT_MAX
+                                      : config.new_query_announcement_count) {
   // Initialize the last send time to time_point::min() so that the next call to
   // SendQuery() is guaranteed to query the network.
   last_send_time_ = TrivialClockTraits::time_point::min();
 
   // The initial query has to be sent after a random delay of 20-120
   // milliseconds.
-  if (config.should_announce_new_queries_) {
+  if (announcements_so_far_ < maximum_announcement_count_) {
+    announcements_so_far_++;
+
     if (query_type_ == QueryType::kOneShot) {
       task_runner_->PostTask([this] { MdnsQuestionTracker::SendQuery(); });
     } else {
@@ -397,6 +403,11 @@ bool MdnsQuestionTracker::SendQuery() {
 }
 
 void MdnsQuestionTracker::ScheduleFollowUpQuery() {
+  if (announcements_so_far_ >= maximum_announcement_count_) {
+    return;
+  }
+  announcements_so_far_++;
+
   send_alarm_.ScheduleFromNow(
       [this] {
         if (SendQuery()) {

@@ -15,13 +15,14 @@ struct Config {
   // Network Interface on which mDNS should be run.
   InterfaceInfo interface;
 
-  // Number of times new mDNS records should be announced. See RFC 6762 section
-  // 8.3 for further details. Per RFC, this value is expected to be in the range
-  // of 2 to 8.
+  // Number of times new mDNS records should be announced, using an exponential
+  // back off. See RFC 6762 section 8.3 for further details. Per RFC, this value
+  // is expected to be in the range of 2 to 8.
   int new_record_announcement_count = 8;
 
-  // Determines whether new mDNS Queries should be sent out over the network.
-  bool should_announce_new_queries_ = true;
+  // Number of times new mDNS records should be announced, using an exponential
+  // back off. -1 signifies that there should be no maximum.
+  int new_query_announcement_count = -1;
 };
 
 }  // namespace discovery

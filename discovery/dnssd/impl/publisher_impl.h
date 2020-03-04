@@ -28,7 +28,7 @@ class PublisherImpl : public DnsSdPublisher,
   // DnsSdPublisher overrides.
   Error Register(const DnsSdInstanceRecord& record, Client* client) override;
   Error UpdateRegistration(const DnsSdInstanceRecord& record) override;
-  int DeregisterAll(const std::string& service) override;
+  ErrorOr<int> DeregisterAll(const std::string& service) override;
 
  private:
   Error UpdatePublishedRegistration(const DnsSdInstanceRecord& record);

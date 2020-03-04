@@ -69,6 +69,7 @@ void MdnsReceiver::OnRead(UdpSocket* socket,
     return;
   }
 
+  OSP_DVLOG << "Received new mDNS Message";
   if (message.type() == MessageType::Response) {
     for (ResponseClient* client : response_clients_) {
       client->OnMessageReceived(message);

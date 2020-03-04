@@ -267,6 +267,9 @@ void MdnsResponder::OnMessageReceived(const MdnsMessage& message,
     return;
   }
 
+  OSP_DVLOG << "Received mDNS Query with " << message.questions().size()
+            << " questions. Processing...";
+
   const std::vector<MdnsRecord>& known_answers = message.answers();
 
   for (const auto& question : message.questions()) {
@@ -306,6 +309,8 @@ void MdnsResponder::OnMessageReceived(const MdnsMessage& message,
       }
     }
   }
+
+  OSP_DVLOG << "\tmDNS Query processed!";
 }
 
 void MdnsResponder::SendResponse(
