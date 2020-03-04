@@ -229,8 +229,8 @@ void ScanRow(const Tile::Block& block, int delta_row, bool is_compound,
   do {
     const BlockParameters& mv_bp = block.tile.Parameters(mv_row, mv_column);
     const int step =
-        std::max(static_cast<int>(
-                     std::min(block.width4x4, kNum4x4BlocksWide[mv_bp.size])),
+        std::max(std::min(block.width4x4,
+                          static_cast<int>(kNum4x4BlocksWide[mv_bp.size])),
                  min_step);
     AddReferenceMvCandidate(block, mv_bp, is_compound, MultiplyBy2(step),
                             global_mv, found_new_mv, found_match, num_mv_found,
@@ -260,8 +260,8 @@ void ScanColumn(const Tile::Block& block, int delta_column, bool is_compound,
   do {
     const BlockParameters& mv_bp = block.tile.Parameters(mv_row, mv_column);
     const int step =
-        std::max(static_cast<int>(
-                     std::min(block.height4x4, kNum4x4BlocksHigh[mv_bp.size])),
+        std::max(std::min(block.height4x4,
+                          static_cast<int>(kNum4x4BlocksHigh[mv_bp.size])),
                  min_step);
     AddReferenceMvCandidate(block, mv_bp, is_compound, MultiplyBy2(step),
                             global_mv, found_new_mv, found_match, num_mv_found,

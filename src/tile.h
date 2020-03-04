@@ -692,12 +692,12 @@ class Tile : public Allocable {
 };
 
 struct Tile::Block {
-  Block(const Tile& tile, int row4x4, int column4x4, BlockSize size,
+  Block(const Tile& tile, BlockSize size, int row4x4, int column4x4,
         TileScratchBuffer* const scratch_buffer, ResidualPtr* residual)
       : tile(tile),
+        size(size),
         row4x4(row4x4),
         column4x4(column4x4),
-        size(size),
         width(kBlockWidthPixels[size]),
         height(kBlockHeightPixels[size]),
         width4x4(width >> 2),
@@ -825,17 +825,17 @@ struct Tile::Block {
   }
 
   const Tile& tile;
-  const int row4x4;
-  const int column4x4;
-  const BlockSize size;
-  const uint8_t width;
-  const uint8_t height;
-  const uint8_t width4x4;
-  const uint8_t height4x4;
   bool has_chroma;
-  BlockSize residual_size[kMaxPlanes];
+  const BlockSize size;
   bool top_available[kMaxPlanes];
   bool left_available[kMaxPlanes];
+  BlockSize residual_size[kMaxPlanes];
+  const int row4x4;
+  const int column4x4;
+  const int width;
+  const int height;
+  const int width4x4;
+  const int height4x4;
   const BlockParameters* bp_top;
   const BlockParameters* bp_left;
   BlockParameters* bp;

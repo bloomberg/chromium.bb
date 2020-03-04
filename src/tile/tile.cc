@@ -2011,7 +2011,7 @@ bool Tile::ProcessBlock(int row4x4, int column4x4, BlockSize block_size,
   }
   BlockParameters& bp = *tree->parameters();
   block_parameters_holder_.FillCache(row4x4, column4x4, block_size, &bp);
-  Block block(*this, row4x4, column4x4, block_size, scratch_buffer, residual);
+  Block block(*this, block_size, row4x4, column4x4, scratch_buffer, residual);
   bp.size = block_size;
   bp.prediction_parameters =
       split_parse_and_decode_ ? std::unique_ptr<PredictionParameters>(
@@ -2074,7 +2074,7 @@ bool Tile::DecodeBlock(ParameterTree* const tree,
     return true;
   }
   const BlockSize block_size = tree->block_size();
-  Block block(*this, row4x4, column4x4, block_size, scratch_buffer, residual);
+  Block block(*this, block_size, row4x4, column4x4, scratch_buffer, residual);
   ComputePrediction(block);
   if (!Residual(block, kProcessingModeDecodeOnly)) return false;
   if (kDeblockFilterBitMask && !build_bit_mask_when_parsing_) {
