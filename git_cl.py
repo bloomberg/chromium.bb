@@ -228,9 +228,16 @@ def datetime_now():
   return datetime.datetime.now()
 
 
+def _raw_input(message):
+  # Use this so that it can be mocked in tests on Python 2 and 3.
+  if sys.version_info.major == 2:
+    return raw_input(message)
+  return input(message)
+
+
 def ask_for_data(prompt):
   try:
-    return raw_input(prompt)
+    return _raw_input(prompt)
   except KeyboardInterrupt:
     # Hide the exception.
     sys.exit(1)
@@ -1433,8 +1440,8 @@ class Changelist(object):
 
     with gclient_utils.temporary_file() as description_file:
       with gclient_utils.temporary_file() as json_output:
-        gclient_utils.FileWrite(
-            description_file, description.encode('utf-8'), mode='wb')
+
+        gclient_utils.FileWrite(description_file, description)
         args.extend(['--json_output', json_output])
         args.extend(['--description_file', description_file])
 
@@ -1458,8 +1465,7 @@ class Changelist(object):
     args.append('--post_upload')
 
     with gclient_utils.temporary_file() as description_file:
-      gclient_utils.FileWrite(
-          description_file, description.encode('utf-8'), mode='wb')
+      gclient_utils.FileWrite(description_file, description)
       args.extend(['--description_file', description_file])
       p = subprocess2.Popen(['vpython', PRESUBMIT_SUPPORT] + args)
       p.wait()
@@ -1490,7 +1496,10 @@ class Changelist(object):
     if not options.bypass_watchlists:
       self.ExtendCC(watchlist.GetWatchersForPaths(files))
 
-    description = change.FullDescriptionText()
+    if self.GetIssue():
+      description = self.FetchDescription()
+    else:
+      description = self.GetLocalDescription(base_branch)
     if options.reviewers or options.tbrs or options.add_owners_to:
       # Set the reviewer list now so that presubmit checks can access it.
       change_description = ChangeDescription(description)
@@ -5041,7 +5050,7 @@ def _RunClangFormatDiff(opts, clang_diff_files, top_dir, upstream_commit):
       cmd.append('-i')
 
     diff_cmd = BuildGitDiffCmd('-U0', upstream_commit, clang_diff_files)
-    diff_output = RunGit(diff_cmd)
+    diff_output = RunGit(diff_cmd).encode('utf-8')
 
     stdout = RunCommand(cmd, stdin=diff_output, cwd=top_dir, env=env)
     if opts.diff:
@@ -5327,7 +5336,7 @@ def CMDcheckout(parser, args):
     print('Multiple branches match issue %s:' % target_issue)
     for i in range(len(branches)):
       print('%d: %s' % (i, branches[i]))
-    which = raw_input('Choose by index: ')
+    which = ask_for_data('Choose by index: ')
     try:
       RunGit(['checkout', branches[int(which)]])
     except (IndexError, ValueError):
