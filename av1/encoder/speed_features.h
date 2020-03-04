@@ -428,6 +428,9 @@ typedef struct PARTITION_SPEED_FEATURES {
 
   // Disable extended partition search for lower block sizes.
   int ext_partition_eval_thresh;
+
+  // Prune 1:4 partition search based on winner info from split partitions
+  int prune_4_partition_using_split_info;
 } PARTITION_SPEED_FEATURES;
 
 typedef struct MV_SPEED_FEATURES {

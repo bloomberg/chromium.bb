@@ -2584,6 +2584,12 @@ static AOM_INLINE void update_picked_ref_frames_mask(MACROBLOCK *const x,
   }
 }
 
+// Structure to keep win flags for HORZ and VERT partition evaluations
+typedef struct {
+  bool horz_win;
+  bool vert_win;
+} RD_RECT_PART_WIN_INFO;
+
 // TODO(jinging,jimbankoski,rbultje): properly skip partition types that are
 // unlikely to be selected depending on previous rate-distortion optimization
 // results, for encoding speed-up.
@@ -2593,7 +2599,8 @@ static bool rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
                               BLOCK_SIZE max_sq_part, BLOCK_SIZE min_sq_part,
                               RD_STATS *rd_cost, RD_STATS best_rdc,
                               PC_TREE *pc_tree, int64_t *none_rd,
-                              SB_MULTI_PASS_MODE multi_pass_mode) {
+                              SB_MULTI_PASS_MODE multi_pass_mode,
+                              RD_RECT_PART_WIN_INFO *rect_part_win_info) {
   const AV1_COMMON *const cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   TileInfo *const tile_info = &tile_data->tile_info;
@@ -2626,6 +2633,10 @@ static bool rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
   int horz_ctx_is_ready = 0;
   int vert_ctx_is_ready = 0;
   BLOCK_SIZE bsize2 = get_partition_subsize(bsize, PARTITION_SPLIT);
+  // Initialise HORZ and VERT win flags as true for all split partitions
+  RD_RECT_PART_WIN_INFO split_part_rect_win[4] = {
+    { true, true }, { true, true }, { true, true }, { true, true }
+  };
 
   bool found_best_partition = false;
   if (best_rdc.rdcost < 0) {
@@ -2977,7 +2988,8 @@ BEGIN_PARTITION_SEARCH:
       if (!rd_pick_partition(cpi, td, tile_data, tp, mi_row + y_idx,
                              mi_col + x_idx, subsize, max_sq_part, min_sq_part,
                              &this_rdc, best_remain_rdcost, pc_tree->split[idx],
-                             p_split_rd, multi_pass_mode)) {
+                             p_split_rd, multi_pass_mode,
+                             &split_part_rect_win[idx])) {
         av1_invalid_rd_stats(&sum_rdc);
         break;
       }
@@ -3128,6 +3140,11 @@ BEGIN_PARTITION_SEARCH:
         found_best_partition = true;
         pc_tree->partitioning = PARTITION_HORZ;
       }
+    } else {
+      // Update HORZ win flag
+      if (rect_part_win_info != NULL) {
+        rect_part_win_info->horz_win = false;
+      }
     }
 
     restore_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);
@@ -3210,6 +3227,11 @@ BEGIN_PARTITION_SEARCH:
       best_rdc = sum_rdc;
       found_best_partition = true;
       pc_tree->partitioning = PARTITION_VERT;
+    } else {
+      // Update VERT win flag
+      if (rect_part_win_info != NULL) {
+        rect_part_win_info->vert_win = false;
+      }
     }
 
     restore_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);
@@ -3537,6 +3559,27 @@ BEGIN_PARTITION_SEARCH:
   if (blksize < (min_partition_size << 2)) {
     partition_horz4_allowed = 0;
     partition_vert4_allowed = 0;
+  }
+
+  if (cpi->sf.part_sf.prune_4_partition_using_split_info &&
+      (partition_horz4_allowed || partition_vert4_allowed)) {
+    // Count of child blocks in which HORZ or VERT partition has won
+    int num_child_horz_win = 0, num_child_vert_win = 0;
+    for (int idx = 0; idx < 4; idx++) {
+      num_child_horz_win += (split_part_rect_win[idx].horz_win) ? 1 : 0;
+      num_child_vert_win += (split_part_rect_win[idx].vert_win) ? 1 : 0;
+    }
+
+    // Prune HORZ4/VERT4 partitions based on number of HORZ/VERT winners of
+    // split partiitons.
+    // Conservative pruning for high quantizers
+    const int num_win_thresh = 3 * (MAXQ - x->qindex) / MAXQ + 1;
+    if (num_child_horz_win < num_win_thresh) {
+      partition_horz4_allowed = 0;
+    }
+    if (num_child_vert_win < num_win_thresh) {
+      partition_vert4_allowed = 0;
+    }
   }
 
   // PARTITION_HORZ_4
@@ -4578,14 +4621,14 @@ static AOM_INLINE void encode_rd_sb(AV1_COMP *cpi, ThreadData *td,
     if (num_passes == 1) {
       rd_pick_partition(cpi, td, tile_data, tp, mi_row, mi_col, sb_size,
                         max_sq_size, min_sq_size, &dummy_rdc, dummy_rdc,
-                        pc_root, NULL, SB_SINGLE_PASS);
+                        pc_root, NULL, SB_SINGLE_PASS, NULL);
     } else {
       // First pass
       SB_FIRST_PASS_STATS sb_fp_stats;
       backup_sb_state(&sb_fp_stats, cpi, td, tile_data, mi_row, mi_col);
       rd_pick_partition(cpi, td, tile_data, tp, mi_row, mi_col, sb_size,
                         max_sq_size, min_sq_size, &dummy_rdc, dummy_rdc,
-                        pc_root, NULL, SB_DRY_PASS);
+                        pc_root, NULL, SB_DRY_PASS, NULL);
 
       // Second pass
       init_encode_rd_sb(cpi, td, tile_data, pc_root, &dummy_rdc, mi_row, mi_col,
@@ -4597,7 +4640,7 @@ static AOM_INLINE void encode_rd_sb(AV1_COMP *cpi, ThreadData *td,
 
       rd_pick_partition(cpi, td, tile_data, tp, mi_row, mi_col, sb_size,
                         max_sq_size, min_sq_size, &dummy_rdc, dummy_rdc,
-                        pc_root, NULL, SB_WET_PASS);
+                        pc_root, NULL, SB_WET_PASS, NULL);
     }
 
 #if CONFIG_COLLECT_COMPONENT_TIMING
