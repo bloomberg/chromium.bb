@@ -172,14 +172,31 @@ void CopyRows(const Pixel* src, const ptrdiff_t src_stride,
       dst += kCdefBorder;
     }
     for (int y = 0; y < num_rows; ++y) {
-      for (int x = -kCdefBorder; x < 0; ++x) {
-        dst[x] = is_frame_left ? PostFilter::kCdefLargeValue : src[x];
-      }
-      for (int x = 0; x < block_width; ++x) {
-        dst[x] = src[x];
-      }
-      for (int x = block_width; x < unit_width + kCdefBorder; ++x) {
-        dst[x] = is_frame_right ? PostFilter::kCdefLargeValue : src[x];
+      if (sizeof(src[0]) == sizeof(dst[0])) {
+        if (is_frame_left) {
+          Memset(dst - kCdefBorder, PostFilter::kCdefLargeValue, kCdefBorder);
+        } else {
+          memcpy(dst - kCdefBorder, src - kCdefBorder,
+                 kCdefBorder * sizeof(dst[0]));
+        }
+        memcpy(dst, src, block_width * sizeof(dst[0]));
+        if (is_frame_right) {
+          Memset(dst + block_width, PostFilter::kCdefLargeValue,
+                 unit_width + kCdefBorder - block_width);
+        } else {
+          memcpy(dst + block_width, src + block_width,
+                 (unit_width + kCdefBorder - block_width) * sizeof(dst[0]));
+        }
+      } else {
+        for (int x = -kCdefBorder; x < 0; ++x) {
+          dst[x] = is_frame_left ? PostFilter::kCdefLargeValue : src[x];
+        }
+        for (int x = 0; x < block_width; ++x) {
+          dst[x] = src[x];
+        }
+        for (int x = block_width; x < unit_width + kCdefBorder; ++x) {
+          dst[x] = is_frame_right ? PostFilter::kCdefLargeValue : src[x];
+        }
       }
       dst += dst_stride;
       src += src_stride;
