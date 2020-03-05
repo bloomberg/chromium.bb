@@ -1941,6 +1941,11 @@ action("generate_devtools_grd") {
         "$resources_out_dir/sdk/wasm_source_map/pkg/wasm_source_map_bg.wasm",
       ]
 
+  if (is_blpwtk2) {
+    # Bundle remote modules in blpwtk2
+    grd_files += generated_remote_modules
+  }
+
   inputs = grd_files + devtools_image_files
   outfile = "$root_gen_dir/devtools/devtools_resources.grd"
   outputs = [
