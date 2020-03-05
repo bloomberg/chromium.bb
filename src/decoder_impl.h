@@ -216,7 +216,7 @@ class DecoderImpl : public Allocable {
       const ObuFrameHeader& frame_header,
       const Vector<std::unique_ptr<Tile>>& tiles,
       const SymbolDecoderContext& saved_symbol_decoder_context,
-      const SegmentationMap* prev_segment_ids, const DecoderState& state,
+      const SegmentationMap* prev_segment_ids,
       FrameScratchBuffer* frame_scratch_buffer, PostFilter* post_filter,
       RefCountedBuffer* current_frame);
   // Sets the current frame's segmentation map for two cases. The third case

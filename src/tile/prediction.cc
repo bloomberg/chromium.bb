@@ -1063,6 +1063,26 @@ void Tile::BlockInterPrediction(
       reference_buffer->top_border(plane),
       reference_buffer->bottom_border(plane), &ref_block_start_x,
       &ref_block_start_y, &ref_block_end_x);
+
+  // In frame parallel mode, ensure that the reference block has been decoded
+  // and available for referencing.
+  if (reference_frame_index != -1 && frame_parallel_) {
+    int reference_y_max;
+    if (is_scaled) {
+      // TODO(vigneshv): For now, we wait for the entire reference frame to be
+      // decoded if we are using scaled references. This will eventually be
+      // fixed.
+      reference_y_max = reference_height;
+    } else {
+      reference_y_max = std::max(
+          std::min(ref_block_start_y + height + kSubPixelTaps, ref_last_y), 0);
+      // For U and V planes with subsampling, we need to multiply
+      // reference_y_max by 2 since we only track the progress of Y planes.
+      reference_y_max <<= subsampling_y;
+    }
+    reference_frames_[reference_frame_index]->WaitUntil(reference_y_max);
+  }
+
   const uint8_t* block_start = nullptr;
   ptrdiff_t convolve_buffer_stride;
   if (!extend_block) {
@@ -1173,6 +1193,31 @@ void Tile::BlockWarpProcess(const Block& block, const Plane plane,
   const int source_height =
       reference_frames_[reference_frame_index]->buffer()->height(plane);
   uint16_t* const prediction = block.scratch_buffer->prediction_buffer[index];
+
+  // In frame parallel mode, ensure that the reference block has been decoded
+  // and available for referencing.
+  if (frame_parallel_) {
+    int reference_y_max = kLargeNegativeValue;
+    // Find out the maximum y-coordinate for warping.
+    for (int start_y = block_start_y; start_y < block_start_y + height;
+         start_y += 8) {
+      for (int start_x = block_start_x; start_x < block_start_x + width;
+           start_x += 8) {
+        const int src_x = (start_x + 4) << subsampling_x_[plane];
+        const int src_y = (start_y + 4) << subsampling_y_[plane];
+        const int dst_y = src_x * warp_params->params[4] +
+                          src_y * warp_params->params[5] +
+                          warp_params->params[1];
+        const int y4 = dst_y >> subsampling_y_[plane];
+        const int iy4 = y4 >> kWarpedModelPrecisionBits;
+        reference_y_max = std::max(iy4 + 8, reference_y_max);
+      }
+    }
+    // For U and V planes with subsampling, we need to multiply reference_y_max
+    // by 2 since we only track the progress of Y planes.
+    reference_y_max <<= subsampling_y_[plane];
+    reference_frames_[reference_frame_index]->WaitUntil(reference_y_max);
+  }
   if (is_compound) {
     dsp_.warp_compound(source, source_stride, source_width, source_height,
                        warp_params->params, subsampling_x_[plane],

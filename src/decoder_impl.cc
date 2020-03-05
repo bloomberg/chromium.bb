@@ -886,8 +886,7 @@ StatusCode DecoderImpl::DecodeTiles(
   if (IsFrameParallel()) {
     return DecodeTilesFrameParallel(
         sequence_header, frame_header, tiles, saved_symbol_decoder_context,
-        prev_segment_ids, state, frame_scratch_buffer, &post_filter,
-        current_frame);
+        prev_segment_ids, frame_scratch_buffer, &post_filter, current_frame);
   }
   StatusCode status;
   if (settings_.threads == 1) {
@@ -1015,7 +1014,7 @@ StatusCode DecoderImpl::DecodeTilesFrameParallel(
     const ObuFrameHeader& frame_header,
     const Vector<std::unique_ptr<Tile>>& tiles,
     const SymbolDecoderContext& saved_symbol_decoder_context,
-    const SegmentationMap* const prev_segment_ids, const DecoderState& state,
+    const SegmentationMap* const prev_segment_ids,
     FrameScratchBuffer* const frame_scratch_buffer,
     PostFilter* const post_filter, RefCountedBuffer* const current_frame) {
   // Parse the frame.
@@ -1043,17 +1042,8 @@ StatusCode DecoderImpl::DecodeTilesFrameParallel(
   SetCurrentFrameSegmentationMap(frame_header, prev_segment_ids, current_frame);
   // Mark frame as parsed.
   current_frame->SetFrameState(kFrameStateParsed);
-
-  // We can decode the current frame if all the reference frames have been
-  // decoded.
-  for (int i = 0; i < kNumReferenceFrameTypes; ++i) {
-    if (!state.reference_valid[i] || state.reference_frame[i] == nullptr) {
-      continue;
-    }
-    // Wait for this reference frame to be decoded.
-    state.reference_frame[i]->WaitUntilDecoded();
-  }
-  // Decode in superblock row order.
+  // Decode in superblock row order (inter prediction in the Tile class will
+  // block until the required superblocks in the reference frame are decoded).
   int row4x4;
   for (row4x4 = 0; row4x4 < frame_header.rows4x4; row4x4 += block_width4x4) {
     for (const auto& tile_ptr : tiles) {

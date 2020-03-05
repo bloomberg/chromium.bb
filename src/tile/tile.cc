@@ -435,7 +435,8 @@ Tile::Tile(
       tile_scratch_buffer_pool_(tile_scratch_buffer_pool),
       pending_tiles_(pending_tiles),
       build_bit_mask_when_parsing_(false),
-      initialized_(false) {
+      initialized_(false),
+      frame_parallel_(frame_parallel) {
   row_ = number_ / frame_header.tile_info.tile_columns;
   column_ = number_ % frame_header.tile_info.tile_columns;
   row4x4_start_ = frame_header.tile_info.tile_row_start[row_];

@@ -697,6 +697,7 @@ class Tile : public Allocable {
   bool delta_lf_all_zero_;
   bool build_bit_mask_when_parsing_;
   bool initialized_;
+  const bool frame_parallel_;
 };
 
 struct Tile::Block {
