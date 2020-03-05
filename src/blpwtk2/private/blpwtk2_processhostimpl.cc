@@ -444,6 +444,18 @@ void ProcessHostImpl::registerScreenForStreaming(
   std::move(callback).Run(std::string(media_id.data(), media_id.size()));
 }
 
+void ProcessHostImpl::dumpDiagnostics(int type, const std::string& path)
+{
+    d_impl->context().dumpDiagnostics(
+            static_cast<Profile::DiagnosticInfoType>(type), StringRef(path));
+}
+
+void ProcessHostImpl::getGpuInfo(getGpuInfoCallback callback)
+{
+    std::string diagnostics = d_impl->context().getGpuInfo();
+    std::move(callback).Run(diagnostics);
+}
+
 void ProcessHostImpl::addHttpProxy(mojom::ProxyConfigType type,
                                    const std::string& host,
                                    int port) {
