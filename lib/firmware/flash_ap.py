@@ -50,7 +50,7 @@ class DutControl(object):
   """Wrapper for dut_control calls."""
 
   def __init__(self, port):
-    self._base_cmd = ['dut_control']
+    self._base_cmd = ['dut-control']
     if port:
       self._base_cmd.append('--port=%s' % port)
 
@@ -58,7 +58,8 @@ class DutControl(object):
     """Get the value of |arg| from dut_control."""
     try:
       result = cros_build_lib.run(self._base_cmd + [arg], stdout=True)
-    except cros_build_lib.CalledProcessError:
+    except cros_build_lib.CalledProcessError as e:
+      logging.debug('dut-control error: %s', str(e))
       raise DutConnectionError(
           'Could not establish servo connection. Verify servod is running in '
           'the background, and the servo is properly connected.')
