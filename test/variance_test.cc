@@ -805,7 +805,7 @@ void SubpelVarianceTest<SubpelVarianceFunctionType>::SpeedTest() {
     }
   }
 
-  unsigned int sse1;
+  unsigned int sse1, sse2;
   int run_time = 1000000000 / block_size();
   aom_usec_timer timer;
 
@@ -818,8 +818,24 @@ void SubpelVarianceTest<SubpelVarianceFunctionType>::SpeedTest() {
   aom_usec_timer_mark(&timer);
 
   const int elapsed_time = static_cast<int>(aom_usec_timer_elapsed(&timer));
-  printf("sub_pixel_variance_%dx%d_%d: %d us\n", width(), height(),
-         params_.bit_depth, elapsed_time);
+
+  aom_usec_timer timer_c;
+
+  aom_usec_timer_start(&timer_c);
+  for (int i = 0; i < run_time; ++i) {
+    int x = rnd_(8);
+    int y = rnd_(8);
+    subpel_variance_ref(ref_, src_, params_.log2width, params_.log2height, x, y,
+                        &sse2, use_high_bit_depth(), params_.bit_depth);
+  }
+  aom_usec_timer_mark(&timer_c);
+
+  const int elapsed_time_c = static_cast<int>(aom_usec_timer_elapsed(&timer_c));
+
+  printf(
+      "sub_pixel_variance_%dx%d_%d: ref_time=%d us opt_time=%d us gain=%d \n",
+      width(), height(), params_.bit_depth, elapsed_time_c, elapsed_time,
+      elapsed_time_c / elapsed_time);
 }
 
 template <>
@@ -1076,6 +1092,7 @@ TEST_P(SumOfSquaresTest, Const) { ConstTest(); }
 TEST_P(SumOfSquaresTest, Ref) { RefTest(); }
 TEST_P(AvxSubpelVarianceTest, Ref) { RefTest(); }
 TEST_P(AvxSubpelVarianceTest, ExtremeRef) { ExtremeRefTest(); }
+TEST_P(AvxSubpelVarianceTest, DISABLED_Speed) { SpeedTest(); }
 TEST_P(AvxSubpelAvgVarianceTest, Ref) { RefTest(); }
 TEST_P(AvxDistWtdSubpelAvgVarianceTest, Ref) { RefTest(); }
 TEST_P(AvxObmcSubpelVarianceTest, Ref) { RefTest(); }
@@ -2272,7 +2289,12 @@ INSTANTIATE_TEST_SUITE_P(
         SubpelVarianceParams(6, 5, &aom_sub_pixel_variance64x32_avx2, 0),
         SubpelVarianceParams(5, 6, &aom_sub_pixel_variance32x64_avx2, 0),
         SubpelVarianceParams(5, 5, &aom_sub_pixel_variance32x32_avx2, 0),
-        SubpelVarianceParams(5, 4, &aom_sub_pixel_variance32x16_avx2, 0)));
+        SubpelVarianceParams(5, 4, &aom_sub_pixel_variance32x16_avx2, 0),
+        SubpelVarianceParams(4, 6, &aom_sub_pixel_variance16x64_avx2, 0),
+        SubpelVarianceParams(4, 5, &aom_sub_pixel_variance16x32_avx2, 0),
+        SubpelVarianceParams(4, 4, &aom_sub_pixel_variance16x16_avx2, 0),
+        SubpelVarianceParams(4, 3, &aom_sub_pixel_variance16x8_avx2, 0),
+        SubpelVarianceParams(4, 2, &aom_sub_pixel_variance16x4_avx2, 0)));
 
 INSTANTIATE_TEST_SUITE_P(
     AVX2, AvxSubpelAvgVarianceTest,
