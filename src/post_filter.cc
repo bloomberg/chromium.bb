@@ -225,8 +225,10 @@ PostFilter::PostFilter(
       width_(frame_header.width),
       height_(frame_header.height),
       bitdepth_(sequence_header.color_config.bitdepth),
-      subsampling_x_(sequence_header.color_config.subsampling_x),
-      subsampling_y_(sequence_header.color_config.subsampling_y),
+      subsampling_x_{0, sequence_header.color_config.subsampling_x,
+                     sequence_header.color_config.subsampling_x},
+      subsampling_y_{0, sequence_header.color_config.subsampling_y,
+                     sequence_header.color_config.subsampling_y},
       planes_(sequence_header.color_config.is_monochrome ? kMaxPlanesMonochrome
                                                          : kMaxPlanes),
       pixel_size_(static_cast<int>((bitdepth_ == 8) ? sizeof(uint8_t)
@@ -251,11 +253,10 @@ PostFilter::PostFilter(
   }
   if (DoSuperRes()) {
     for (int plane = 0; plane < planes_; ++plane) {
-      const int8_t subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
       const int downscaled_width =
-          RightShiftWithRounding(width_, subsampling_x);
+          RightShiftWithRounding(width_, subsampling_x_[plane]);
       const int upscaled_width =
-          RightShiftWithRounding(upscaled_width_, subsampling_x);
+          RightShiftWithRounding(upscaled_width_, subsampling_x_[plane]);
       const int superres_width = downscaled_width << kSuperResScaleBits;
       super_res_info_[plane].step =
           (superres_width + upscaled_width / 2) / upscaled_width;
@@ -385,13 +386,13 @@ void PostFilter::ApplySuperResThreaded() {
     if (i < num_threads - 1) {
       thread_pool_->Schedule([this, buffers, strides, thread_pool_rows4x4,
                               line_buffer_offset, &pending_workers]() {
-        ApplySuperRes(buffers, strides, thread_pool_rows4x4, subsampling_y_,
-                      line_buffer_offset);
+        ApplySuperRes(buffers, strides, thread_pool_rows4x4,
+                      subsampling_y_[kPlaneU], line_buffer_offset);
         pending_workers.Decrement();
       });
     } else {
-      ApplySuperRes(buffers, strides, current_thread_rows4x4, subsampling_y_,
-                    line_buffer_offset);
+      ApplySuperRes(buffers, strides, current_thread_rows4x4,
+                    subsampling_y_[kPlaneU], line_buffer_offset);
     }
   }
   // Wait for the threadpool jobs to finish.
@@ -415,11 +416,10 @@ void PostFilter::ApplyFilteringThreaded() {
 void PostFilter::ExtendBordersForReferenceFrame() {
   if (frame_header_.refresh_frame_flags == 0) return;
   for (int plane = kPlaneY; plane < planes_; ++plane) {
-    const int8_t subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
-    const int8_t subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y_;
     const int plane_width =
-        RightShiftWithRounding(upscaled_width_, subsampling_x);
-    const int plane_height = RightShiftWithRounding(height_, subsampling_y);
+        RightShiftWithRounding(upscaled_width_, subsampling_x_[plane]);
+    const int plane_height =
+        RightShiftWithRounding(height_, subsampling_y_[plane]);
     assert(frame_buffer_.left_border(plane) >= kMinLeftBorderPixels &&
            frame_buffer_.right_border(plane) >= kMinRightBorderPixels &&
            frame_buffer_.top_border(plane) >= kMinTopBorderPixels &&
@@ -564,9 +564,8 @@ void PostFilter::SetupDeblockBuffer(int row4x4_start, int sb4x4) {
     for (int plane = 0; plane < planes_; ++plane) {
       uint8_t* src = deblock_buffer_.data(plane) +
                      row_offset_start * deblock_buffer_.stride(plane);
-      const int subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
       const int plane_width =
-          RightShiftWithRounding(upscaled_width_, subsampling_x);
+          RightShiftWithRounding(upscaled_width_, subsampling_x_[plane]);
       for (int i = 0; i < 4; ++i) {
 #if LIBGAV1_MAX_BITDEPTH >= 10
         if (bitdepth_ >= 10) {
@@ -585,8 +584,6 @@ void PostFilter::SetupDeblockBuffer(int row4x4_start, int sb4x4) {
 }
 
 void PostFilter::CopyDeblockedPixels(Plane plane, int row4x4) {
-  const int subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
-  const int subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y_;
   const ptrdiff_t src_stride = frame_buffer_.stride(plane);
   const uint8_t* const src =
       GetSourceBuffer(static_cast<Plane>(plane), row4x4, 0);
@@ -596,13 +593,15 @@ void PostFilter::CopyDeblockedPixels(Plane plane, int row4x4) {
   // be used by loop restoration. So |row_unit| is offset by 1.
   const int row_offset = MultiplyBy4(row_unit + 1);
   uint8_t* dst = deblock_buffer_.data(plane) + dst_stride * row_offset;
-  const int num_pixels =
-      SubsampledValue(MultiplyBy4(frame_header_.columns4x4), subsampling_x);
+  const int num_pixels = SubsampledValue(MultiplyBy4(frame_header_.columns4x4),
+                                         subsampling_x_[plane]);
   int last_valid_row = -1;
-  const int plane_height = SubsampledValue(frame_header_.height, subsampling_y);
+  const int plane_height =
+      SubsampledValue(frame_header_.height, subsampling_y_[plane]);
   for (int i = 0; i < 4; ++i) {
-    int row = kDeblockedRowsForLoopRestoration[subsampling_y][i];
-    const int absolute_row = (MultiplyBy4(row4x4) >> subsampling_y) + row;
+    int row = kDeblockedRowsForLoopRestoration[subsampling_y_[plane]][i];
+    const int absolute_row =
+        (MultiplyBy4(row4x4) >> subsampling_y_[plane]) + row;
     if (absolute_row >= plane_height) {
       if (last_valid_row == -1) {
         // We have run out of rows and there no valid row to copy. This will not
@@ -717,19 +716,19 @@ void PostFilter::ApplyCdefForOneUnit(uint16_t* cdef_block, const int index,
 
   if (index == -1) {
     for (int plane = kPlaneY; plane < planes_; ++plane) {
-      const int subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
-      const int subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y_;
-      const int start_x = MultiplyBy4(column4x4_start) >> subsampling_x;
-      const int start_y = MultiplyBy4(row4x4_start) >> subsampling_y;
+      const int start_x = MultiplyBy4(column4x4_start) >> subsampling_x_[plane];
+      const int start_y = MultiplyBy4(row4x4_start) >> subsampling_y_[plane];
       int cdef_stride;
       uint8_t* const cdef_buffer = GetCdefBufferAndStride(
-          start_x, start_y, plane, subsampling_x, subsampling_y,
+          start_x, start_y, plane, subsampling_x_[plane], subsampling_y_[plane],
           window_buffer_plane_size, &cdef_stride);
       const int src_stride = frame_buffer_.stride(plane);
       uint8_t* const src_buffer =
           source_buffer_[plane] + start_y * src_stride + start_x * pixel_size_;
-      const int block_width = MultiplyBy4(block_width4x4) >> subsampling_x;
-      const int block_height = MultiplyBy4(block_height4x4) >> subsampling_y;
+      const int block_width =
+          MultiplyBy4(block_width4x4) >> subsampling_x_[plane];
+      const int block_height =
+          MultiplyBy4(block_height4x4) >> subsampling_y_[plane];
       for (int y = 0; y < block_height; ++y) {
         memcpy(cdef_buffer + y * cdef_stride, src_buffer + y * src_stride,
                block_width * pixel_size_);
@@ -763,8 +762,8 @@ void PostFilter::ApplyCdefForOneUnit(uint16_t* cdef_block, const int index,
       uint8_t secondary_strength;
 
       for (int plane = kPlaneY; plane < planes_; ++plane) {
-        const int subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
-        const int subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y_;
+        const int8_t subsampling_x = subsampling_x_[plane];
+        const int8_t subsampling_y = subsampling_y_[plane];
         const int start_x = MultiplyBy4(column4x4) >> subsampling_x;
         const int start_y = MultiplyBy4(row4x4) >> subsampling_y;
         const int block_width = 8 >> subsampling_x;
@@ -805,10 +804,10 @@ void PostFilter::ApplyCdefForOneUnit(uint16_t* cdef_block, const int index,
                              << coeff_shift;
           secondary_strength = frame_header_.cdef.uv_secondary_strength[index]
                                << coeff_shift;
-          direction = (primary_strength == 0)
-                          ? 0
-                          : kCdefUvDirection[subsampling_x_][subsampling_y_]
-                                            [direction_y];
+          direction =
+              (primary_strength == 0)
+                  ? 0
+                  : kCdefUvDirection[subsampling_x][subsampling_y][direction_y];
           damping = frame_header_.cdef.damping + coeff_shift - 1;
         }
 
@@ -900,16 +899,15 @@ void PostFilter::ApplyCdefThreaded() {
       // Copy |threaded_window_buffer_| to |cdef_buffer_|.
       for (int plane = kPlaneY; plane < planes_; ++plane) {
         const int src_stride = frame_buffer_.stride(plane);
-        const int8_t subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
-        const int8_t subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y_;
-        const int plane_row = MultiplyBy4(row4x4) >> subsampling_y;
-        const int plane_column = MultiplyBy4(column4x4) >> subsampling_x;
+        const int plane_row = MultiplyBy4(row4x4) >> subsampling_y_[plane];
+        const int plane_column =
+            MultiplyBy4(column4x4) >> subsampling_x_[plane];
         int copy_width = std::min(frame_header_.columns4x4 - column4x4,
                                   DivideBy4(window_buffer_width_));
-        copy_width = MultiplyBy4(copy_width) >> subsampling_x;
+        copy_width = MultiplyBy4(copy_width) >> subsampling_x_[plane];
         int copy_height =
             std::min(frame_header_.rows4x4 - row4x4, window_buffer_height4x4);
-        copy_height = MultiplyBy4(copy_height) >> subsampling_y;
+        copy_height = MultiplyBy4(copy_height) >> subsampling_y_[plane];
         CopyPlane<Pixel>(
             threaded_window_buffer_ + plane * window_buffer_plane_size,
             window_buffer_width_ * pixel_size_, copy_width, copy_height,
@@ -927,14 +925,14 @@ void PostFilter::ApplySuperResForOneSuperBlockRow(int row4x4_start, int sb4x4) {
   std::array<uint8_t*, kMaxPlanes> buffers;
   std::array<int, kMaxPlanes> strides;
   for (int plane = 0; plane < planes_; ++plane) {
-    const int subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y_;
-    const ptrdiff_t row_offset = (MultiplyBy4(row4x4_start) >> subsampling_y) *
-                                 frame_buffer_.stride(plane);
+    const ptrdiff_t row_offset =
+        (MultiplyBy4(row4x4_start) >> subsampling_y_[plane]) *
+        frame_buffer_.stride(plane);
     buffers[plane] = cdef_buffer_[plane] + row_offset;
     strides[plane] = frame_buffer_.stride(plane);
   }
   const int num_rows4x4 = std::min(sb4x4, frame_header_.rows4x4 - row4x4_start);
-  ApplySuperRes(buffers, strides, num_rows4x4, subsampling_y_,
+  ApplySuperRes(buffers, strides, num_rows4x4, subsampling_y_[kPlaneU],
                 /*line_buffer_offset=*/0);
 }
 
@@ -984,7 +982,7 @@ void PostFilter::ApplySuperRes(const std::array<uint8_t*, kMaxPlanes>& buffers,
                                      line_buffer_offset +
                                      kSuperResBorder * pixel_size_;
   for (int plane = kPlaneY; plane < planes_; ++plane) {
-    const int8_t subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
+    const int8_t subsampling_x = subsampling_x_[plane];
     const int8_t subsampling_y = (plane == kPlaneY) ? 0 : chroma_subsampling_y;
     const int plane_width =
         MultiplyBy4(frame_header_.columns4x4) >> subsampling_x;
@@ -1041,14 +1039,12 @@ void PostFilter::CopyBorderForRestoration(int row4x4, int sb4x4) {
   assert(row4x4 >= 0);
   assert(DoRestoration());
   for (int plane = 0; plane < planes_; ++plane) {
-    int subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y_;
-    int subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
-    const int row = MultiplyBy4(row4x4) >> subsampling_y;
+    const int row = MultiplyBy4(row4x4) >> subsampling_y_[plane];
     const int plane_width =
-        RightShiftWithRounding(upscaled_width_, subsampling_x);
+        RightShiftWithRounding(upscaled_width_, subsampling_x_[plane]);
     const int plane_height = RightShiftWithRounding(
         std::min(MultiplyBy4(sb4x4), height_ - MultiplyBy4(row4x4)),
-        subsampling_y);
+        subsampling_y_[plane]);
     const bool copy_bottom = row4x4 + sb4x4 >= frame_header_.rows4x4;
     const int stride = frame_buffer_.stride(plane);
     uint8_t* const start = GetBufferOffset(
@@ -1082,19 +1078,19 @@ void PostFilter::ExtendBordersForReferenceFrame(int row4x4, int sb4x4) {
   const int loop_restoration_height_offset =
       (DoRestoration() && row4x4 == 0) ? 8 : 0;
   for (int plane = 0; plane < planes_; ++plane) {
-    const int subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y_;
-    const int subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
     const int plane_width =
-        RightShiftWithRounding(upscaled_width_, subsampling_x);
-    const int plane_height = RightShiftWithRounding(height_, subsampling_y);
-    const int row =
-        (MultiplyBy4(row4x4) - loop_restoration_row_offset) >> subsampling_y;
+        RightShiftWithRounding(upscaled_width_, subsampling_x_[plane]);
+    const int plane_height =
+        RightShiftWithRounding(height_, subsampling_y_[plane]);
+    const int row = (MultiplyBy4(row4x4) - loop_restoration_row_offset) >>
+                    subsampling_y_[plane];
     assert(row >= 0);
     if (row >= plane_height) break;
-    const int num_rows = std::min(
-        RightShiftWithRounding(
-            MultiplyBy4(sb4x4) - loop_restoration_height_offset, subsampling_y),
-        plane_height - row);
+    const int num_rows =
+        std::min(RightShiftWithRounding(
+                     MultiplyBy4(sb4x4) - loop_restoration_height_offset,
+                     subsampling_y_[plane]),
+                 plane_height - row);
     const bool copy_bottom = row + num_rows == plane_height;
     const int stride = frame_buffer_.stride(plane);
     uint8_t* const start = frame_buffer_.data(plane) + row * stride;
@@ -1122,31 +1118,30 @@ void PostFilter::ApplyLoopRestorationForOneSuperBlockRow(int row4x4_start,
   assert(DoRestoration());
   const int plane_process_unit_width[kMaxPlanes] = {
       kRestorationProcessingUnitSize,
-      kRestorationProcessingUnitSize >> subsampling_x_,
-      kRestorationProcessingUnitSize >> subsampling_x_};
+      kRestorationProcessingUnitSize >> subsampling_x_[kPlaneU],
+      kRestorationProcessingUnitSize >> subsampling_x_[kPlaneV]};
   const int plane_process_unit_height[kMaxPlanes] = {
       kRestorationProcessingUnitSize,
-      kRestorationProcessingUnitSize >> subsampling_y_,
-      kRestorationProcessingUnitSize >> subsampling_y_};
+      kRestorationProcessingUnitSize >> subsampling_y_[kPlaneU],
+      kRestorationProcessingUnitSize >> subsampling_y_[kPlaneV]};
   for (int plane = 0; plane < planes_; ++plane) {
     if (frame_header_.loop_restoration.type[plane] ==
         kLoopRestorationTypeNone) {
       continue;
     }
-    const int subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y_;
-    const int subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
-    const int unit_height_offset = kRestorationUnitOffset >> subsampling_y;
+    const int unit_height_offset =
+        kRestorationUnitOffset >> subsampling_y_[plane];
     const int plane_height =
-        RightShiftWithRounding(frame_header_.height, subsampling_y);
-    const int plane_width =
-        RightShiftWithRounding(frame_header_.upscaled_width, subsampling_x);
+        RightShiftWithRounding(frame_header_.height, subsampling_y_[plane]);
+    const int plane_width = RightShiftWithRounding(frame_header_.upscaled_width,
+                                                   subsampling_x_[plane]);
     const int num_vertical_units =
         restoration_info_->num_vertical_units(static_cast<Plane>(plane));
     const int process_unit_width = plane_process_unit_width[plane];
     for (int sb_y = 0; sb_y < sb4x4; sb_y += 16) {
       const int row4x4 = row4x4_start + sb_y;
-      const int y =
-          (MultiplyBy4(row4x4) - (row4x4 == 0 ? 0 : 8)) >> subsampling_y;
+      const int y = (MultiplyBy4(row4x4) - (row4x4 == 0 ? 0 : 8)) >>
+                    subsampling_y_[plane];
       if (y >= plane_height) break;
       const int plane_unit_size =
           frame_header_.loop_restoration.unit_size[plane];
@@ -1158,7 +1153,7 @@ void PostFilter::ApplyLoopRestorationForOneSuperBlockRow(int row4x4_start,
           (y + expected_height <= plane_height) ? expected_height
                                                 : plane_height - y;
       for (int column4x4 = 0;; column4x4 += 16) {
-        const int x = MultiplyBy4(column4x4) >> subsampling_x;
+        const int x = MultiplyBy4(column4x4) >> subsampling_x_[plane];
         if (x >= plane_width) break;
 #if LIBGAV1_MAX_BITDEPTH >= 10
         if (bitdepth_ >= 10) {
@@ -1184,11 +1179,10 @@ void PostFilter::ApplyLoopRestorationForSuperBlock(
   const int plane_unit_size = loop_restoration_.unit_size[plane];
   const int num_horizontal_units =
       restoration_info_->num_horizontal_units(static_cast<Plane>(plane));
-  const int8_t subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
-  const int8_t subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y_;
   const int plane_width =
-      RightShiftWithRounding(upscaled_width_, subsampling_x);
-  const int plane_height = RightShiftWithRounding(height_, subsampling_y);
+      RightShiftWithRounding(upscaled_width_, subsampling_x_[plane]);
+  const int plane_height =
+      RightShiftWithRounding(height_, subsampling_y_[plane]);
   Array2DView<Pixel> loop_restored_window(
       current_process_unit_height, stride / sizeof(Pixel),
       reinterpret_cast<Pixel*>(loop_restoration_buffer_[plane] + y * stride +
@@ -1253,8 +1247,7 @@ void PostFilter::ApplyLoopRestorationForOneUnit(
       kRestorationProcessingUnitSizeWithBorders + kRestorationPadding,
       intermediate_buffers.wiener,
       kMaxSuperBlockSizeInPixels};
-  const int deblock_buffer_units =
-      64 >> (plane == kPlaneY ? 0 : subsampling_y_);
+  const int deblock_buffer_units = 64 >> subsampling_y_[plane];
   uint8_t* const deblock_buffer = deblock_buffer_.data(plane);
   const int deblock_buffer_stride = deblock_buffer_.stride(plane);
   const int deblock_unit_y = MultiplyBy4(Ceil(unit_y, deblock_buffer_units));
@@ -1299,21 +1292,20 @@ template <typename Pixel>
 void PostFilter::ApplyLoopRestorationThreaded() {
   const int plane_process_unit_width[kMaxPlanes] = {
       kRestorationProcessingUnitSize,
-      kRestorationProcessingUnitSize >> subsampling_x_,
-      kRestorationProcessingUnitSize >> subsampling_x_};
+      kRestorationProcessingUnitSize >> subsampling_x_[kPlaneU],
+      kRestorationProcessingUnitSize >> subsampling_x_[kPlaneV]};
   const int plane_process_unit_height[kMaxPlanes] = {
       kRestorationProcessingUnitSize,
-      kRestorationProcessingUnitSize >> subsampling_y_,
-      kRestorationProcessingUnitSize >> subsampling_y_};
+      kRestorationProcessingUnitSize >> subsampling_y_[kPlaneU],
+      kRestorationProcessingUnitSize >> subsampling_y_[kPlaneV]};
 
   for (int plane = kPlaneY; plane < planes_; ++plane) {
     if (loop_restoration_.type[plane] == kLoopRestorationTypeNone) {
       continue;
     }
 
-    const int8_t subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
-    const int8_t subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y_;
-    const int unit_height_offset = kRestorationUnitOffset >> subsampling_y;
+    const int unit_height_offset =
+        kRestorationUnitOffset >> subsampling_y_[plane];
     uint8_t* const src_buffer = cdef_buffer_[plane];
     const int src_stride = frame_buffer_.stride(plane);
     const int plane_unit_size = loop_restoration_.unit_size[plane];
@@ -1322,8 +1314,9 @@ void PostFilter::ApplyLoopRestorationThreaded() {
     const int num_horizontal_units =
         restoration_info_->num_horizontal_units(static_cast<Plane>(plane));
     const int plane_width =
-        RightShiftWithRounding(upscaled_width_, subsampling_x);
-    const int plane_height = RightShiftWithRounding(height_, subsampling_y);
+        RightShiftWithRounding(upscaled_width_, subsampling_x_[plane]);
+    const int plane_height =
+        RightShiftWithRounding(height_, subsampling_y_[plane]);
     ExtendFrameBoundary(src_buffer, plane_width, plane_height, src_stride,
                         kRestorationBorder, kRestorationBorder,
                         kRestorationBorder, kRestorationBorder);
@@ -1424,8 +1417,8 @@ void PostFilter::ApplyLoopRestoration() {
 
 void PostFilter::HorizontalDeblockFilter(Plane plane, int row4x4_start,
                                          int column4x4_start, int unit_id) {
-  const int8_t subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
-  const int8_t subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y_;
+  const int8_t subsampling_x = subsampling_x_[plane];
+  const int8_t subsampling_y = subsampling_y_[plane];
   const int row_step = 1 << subsampling_y;
   const int column_step = 1 << subsampling_x;
   const size_t src_step = 4 * pixel_size_;
@@ -1579,8 +1572,8 @@ void PostFilter::HorizontalDeblockFilter(Plane plane, int row4x4_start,
 
 void PostFilter::VerticalDeblockFilter(Plane plane, int row4x4_start,
                                        int column4x4_start, int unit_id) {
-  const int8_t subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
-  const int8_t subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y_;
+  const int8_t subsampling_x = subsampling_x_[plane];
+  const int8_t subsampling_y = subsampling_y_[plane];
   const int row_step = 1 << subsampling_y;
   const int two_row_step = row_step << 1;
   const int column_step = 1 << subsampling_x;
@@ -1767,8 +1760,8 @@ void PostFilter::HorizontalDeblockFilterNoMask(Plane plane, int row4x4_start,
                                                int column4x4_start,
                                                int unit_id) {
   static_cast<void>(unit_id);
-  const int8_t subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
-  const int8_t subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y_;
+  const int8_t subsampling_x = subsampling_x_[plane];
+  const int8_t subsampling_y = subsampling_y_[plane];
   const int column_step = 1 << subsampling_x;
   const size_t src_step = MultiplyBy4(pixel_size_);
   const ptrdiff_t src_stride = frame_buffer_.stride(plane);
@@ -1811,8 +1804,8 @@ void PostFilter::HorizontalDeblockFilterNoMask(Plane plane, int row4x4_start,
 void PostFilter::VerticalDeblockFilterNoMask(Plane plane, int row4x4_start,
                                              int column4x4_start, int unit_id) {
   static_cast<void>(unit_id);
-  const int8_t subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
-  const int8_t subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y_;
+  const int8_t subsampling_x = subsampling_x_[plane];
+  const int8_t subsampling_y = subsampling_y_[plane];
   const int row_step = 1 << subsampling_y;
   const ptrdiff_t row_stride = MultiplyBy4(frame_buffer_.stride(plane));
   const ptrdiff_t src_stride = frame_buffer_.stride(plane);
@@ -1948,24 +1941,20 @@ void PostFilter::PrepareCdefBlock(int block_width4x4, int block_height4x4,
     uint16_t* cdef_src =
         cdef_source + plane * kRestorationProcessingUnitSizeWithBorders *
                           kRestorationProcessingUnitSizeWithBorders;
-    const int plane_subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
-    const int plane_subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y_;
-    const int start_x = MultiplyBy4(column_64x64) >> plane_subsampling_x;
-    const int start_y = MultiplyBy4(row_64x64) >> plane_subsampling_y;
-    const int plane_width = RightShiftWithRounding(width_, plane_subsampling_x);
-    const int plane_height =
-        RightShiftWithRounding(height_, plane_subsampling_y);
-    const int block_width = MultiplyBy4(block_width4x4) >> plane_subsampling_x;
-    const int block_height =
-        MultiplyBy4(block_height4x4) >> plane_subsampling_y;
+    const int8_t subsampling_x = subsampling_x_[plane];
+    const int8_t subsampling_y = subsampling_y_[plane];
+    const int start_x = MultiplyBy4(column_64x64) >> subsampling_x;
+    const int start_y = MultiplyBy4(row_64x64) >> subsampling_y;
+    const int plane_width = RightShiftWithRounding(width_, subsampling_x);
+    const int plane_height = RightShiftWithRounding(height_, subsampling_y);
+    const int block_width = MultiplyBy4(block_width4x4) >> subsampling_x;
+    const int block_height = MultiplyBy4(block_height4x4) >> subsampling_y;
     // unit_width, unit_height are the same as block_width, block_height unless
     // it reaches the frame boundary, where block_width < 64 or
     // block_height < 64. unit_width, unit_height guarantee we build blocks on
     // a multiple of 8.
-    const int unit_width =
-        Align(block_width, (plane_subsampling_x > 0) ? 4 : 8);
-    const int unit_height =
-        Align(block_height, (plane_subsampling_y > 0) ? 4 : 8);
+    const int unit_width = Align(block_width, (subsampling_x > 0) ? 4 : 8);
+    const int unit_height = Align(block_height, (subsampling_y > 0) ? 4 : 8);
     const bool is_frame_left = column_64x64 == 0;
     const bool is_frame_right = start_x + block_width >= plane_width;
     const bool is_frame_top = row_64x64 == 0;

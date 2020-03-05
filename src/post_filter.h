@@ -205,8 +205,9 @@ class PostFilter {
   uint8_t* GetBufferOffset(uint8_t* base_buffer, int stride, Plane plane,
                            int row4x4, int column4x4) const {
     return base_buffer +
-           RowOrColumn4x4ToPixel(row4x4, plane, subsampling_y_) * stride +
-           RowOrColumn4x4ToPixel(column4x4, plane, subsampling_x_) *
+           RowOrColumn4x4ToPixel(row4x4, plane, subsampling_y_[plane]) *
+               stride +
+           RowOrColumn4x4ToPixel(column4x4, plane, subsampling_x_[plane]) *
                pixel_size_;
   }
   uint8_t* GetSourceBuffer(Plane plane, int row4x4, int column4x4) const {
@@ -470,8 +471,8 @@ class PostFilter {
   const int width_;
   const int height_;
   const int8_t bitdepth_;
-  const int8_t subsampling_x_;
-  const int8_t subsampling_y_;
+  const int8_t subsampling_x_[kMaxPlanes];
+  const int8_t subsampling_y_[kMaxPlanes];
   const int8_t planes_;
   const int pixel_size_;
   // This class does not take ownership of the masks/restoration_info, but it
