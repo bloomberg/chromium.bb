@@ -1467,7 +1467,6 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   int best_early_term = 0;
   unsigned int ref_costs_single[REF_FRAMES],
       ref_costs_comp[REF_FRAMES][REF_FRAMES];
-  int use_golden_nonzeromv = 1;
   int force_skip_low_temp_var = 0;
   int skip_ref_find_pred[8] = { 0 };
   unsigned int sse_zeromv_norm = UINT_MAX;
@@ -1496,6 +1495,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   int use_modeled_non_rd_cost = 0;
   int enable_filter_search = 0;
   InterpFilter default_interp_filter = EIGHTTAP_REGULAR;
+  int64_t thresh_sad_pred = INT64_MAX;
 
   (void)best_rd_so_far;
 
@@ -1572,9 +1572,6 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     }
   }
 
-  if (!(cpi->ref_frame_flags & flag_list[GOLDEN_FRAME]))
-    use_golden_nonzeromv = 0;
-
   // If the segment reference frame feature is enabled and it's set to GOLDEN
   // reference, then make sure we don't skip checking GOLDEN, this is to
   // prevent possibility of not picking any mode.
@@ -1596,6 +1593,12 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                       bsize, force_skip_low_temp_var, comp_modes > 0);
     }
   }
+
+  thresh_sad_pred = ((int64_t)x->pred_mv_sad[LAST_FRAME]) << 1;
+  // Increase threshold for less agressive pruning.
+  if (cpi->sf.rt_sf.nonrd_prune_ref_frame_search == 1)
+    thresh_sad_pred += (x->pred_mv_sad[LAST_FRAME] >> 2);
+
   const int large_block = bsize >= BLOCK_32X32;
   const int use_model_yrd_large =
       cpi->oxcf.rc_mode == AOM_CBR && large_block &&
@@ -1704,7 +1707,6 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       continue;
     }
 
-// TODO(kyslov) Refine logic of pruning reference .
 #if 0
         if (x->content_state_sb != kVeryHighSad &&
         (cpi->sf.short_circuit_low_temp_var >= 2 ||
@@ -1713,36 +1715,20 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
             NEWMV)  {
           continue;
         }
-
-        // Disable this drop out case if the ref frame segment level feature is
-        // enabled for this segment. This is to prevent the possibility that we
-        // end up unable to pick any mode.
-        if (!segfeature_active(seg, mi->segment_id, SEG_LVL_REF_FRAME)) {
-          if (sf->reference_masking &&
-              !(frame_mv[this_mode][ref_frame].as_int == 0 &&
-                ref_frame == LAST_FRAME)) {
-            if (usable_ref_frame < ALTREF_FRAME) {
-              if (!force_skip_low_temp_var && usable_ref_frame > LAST_FRAME) {
-                i = (ref_frame == LAST_FRAME) ? GOLDEN_FRAME : LAST_FRAME;
-                if ((cpi->ref_frame_flags & flag_list[i]))
-                  if (x->pred_mv_sad[ref_frame] > (x->pred_mv_sad[i] << 1))
-                    ref_frame_skip_mask |= (1 << ref_frame);
-              }
-            } else if (!cpi->rc.is_src_frame_alt_ref &&
-                       !(frame_mv[this_mode][ref_frame].as_int == 0 &&
-                         ref_frame == ALTREF_FRAME)) {
-              int ref1 = (ref_frame == GOLDEN_FRAME) ? LAST_FRAME :
-       GOLDEN_FRAME; int ref2 = (ref_frame == ALTREF_FRAME) ? LAST_FRAME :
-       ALTREF_FRAME; if (((cpi->ref_frame_flags & flag_list[ref1]) &&
-                (x->pred_mv_sad[ref_frame] > (x->pred_mv_sad[ref1] << 1))) ||
-                  ((cpi->ref_frame_flags & flag_list[ref2]) &&
-                   (x->pred_mv_sad[ref_frame] > (x->pred_mv_sad[ref2] << 1))))
-                ref_frame_skip_mask |= (1 << ref_frame);
-            }
-          }
-          if (ref_frame_skip_mask & (1 << ref_frame)) continue;
-        }
 #endif
+
+    // Disable this drop out case if the ref frame segment level feature is
+    // enabled for this segment. This is to prevent the possibility that we
+    // end up unable to pick any mode.
+    if (!segfeature_active(seg, mi->segment_id, SEG_LVL_REF_FRAME)) {
+      // Check for skipping GOLDEN and ALTREF based pred_mv_sad.
+      if (cpi->sf.rt_sf.nonrd_prune_ref_frame_search > 0 &&
+          ref_frame != LAST_FRAME) {
+        if ((int64_t)(x->pred_mv_sad[ref_frame]) > thresh_sad_pred)
+          ref_frame_skip_mask |= (1 << ref_frame);
+      }
+      if (ref_frame_skip_mask & (1 << ref_frame)) continue;
+    }
 
     // Select prediction reference frames.
     for (int i = 0; i < MAX_MB_PLANE; i++) {
@@ -1790,20 +1776,6 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     }
 
     if (skip_this_mv) continue;
-
-    // If use_golden_nonzeromv is false, NEWMV mode is skipped for golden, no
-    // need to compute best_pred_sad which is only used to skip golden NEWMV.
-    if (use_golden_nonzeromv && this_mode == NEWMV && ref_frame == LAST_FRAME &&
-        frame_mv[NEWMV][LAST_FRAME].as_int != INVALID_MV) {
-      const int pre_stride = xd->plane[0].pre[0].stride;
-      const uint8_t *const pre_buf =
-          xd->plane[0].pre[0].buf +
-          (frame_mv[NEWMV][LAST_FRAME].as_mv.row >> 3) * pre_stride +
-          (frame_mv[NEWMV][LAST_FRAME].as_mv.col >> 3);
-      best_pred_sad = cpi->fn_ptr[bsize].sdf(
-          x->plane[0].src.buf, x->plane[0].src.stride, pre_buf, pre_stride);
-      x->pred_mv_sad[LAST_FRAME] = best_pred_sad;
-    }
 
     if (this_mode != NEARESTMV && !comp_pred &&
         frame_mv[this_mode][ref_frame].as_int ==
