@@ -302,6 +302,45 @@ void ProfileImpl::setPacUrl(const StringRef& url)
 
 
 // patch section: spellcheck
+void ProfileImpl::enableSpellCheck(bool enabled)
+{
+    d_hostPtr->enableSpellCheck(enabled);
+}
+
+void ProfileImpl::setLanguages(const StringRef *languages,
+                               size_t           numLanguages)
+{
+    std::vector<std::string> languageList;
+
+    for (size_t i=0; i<numLanguages; ++i) {
+        languageList.push_back(languages[i].toStdString());
+    }
+
+    d_hostPtr->setLanguages(languageList);
+}
+
+void ProfileImpl::addCustomWords(const StringRef *words, size_t numWords)
+{
+    std::vector<std::string> wordList;
+
+    for (size_t i=0; i<numWords; ++i) {
+        wordList.push_back(words[i].toStdString());
+    }
+
+    d_hostPtr->addCustomWords(wordList);
+}
+
+void ProfileImpl::removeCustomWords(const StringRef *words,
+                                    size_t           numWords)
+{
+    std::vector<std::string> wordList;
+
+    for (size_t i=0; i<numWords; ++i) {
+        wordList.push_back(words[i].toStdString());
+    }
+
+    d_hostPtr->removeCustomWords(wordList);
+}
 
 
 // patch section: printing

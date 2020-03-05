@@ -503,6 +503,9 @@ bool HunspellImpl::spell(const std::string& word, int* info, std::string* root) 
       wl = cleanword2(scw, sunicw, word, &captype, &abbv);
   }
 
+  // blpwtk2: ignore all-cap words
+  if (ALLCAP == captype) return 1;
+
 #ifdef MOZILLA_CLIENT
   // accept the abbreviated words without dots
   // workaround for the incomplete tokenization of Mozilla
