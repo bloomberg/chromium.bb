@@ -18,6 +18,7 @@
 #define LIBGAV1_SRC_DECODER_IMPL_H_
 
 #include <array>
+#include <condition_variable>  // NOLINT (unapproved c++11 header)
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -248,6 +249,7 @@ class DecoderImpl : public Allocable {
   // Used to synchronize the accesses into |temporal_units_| in order to update
   // the "decoded" state of an temporal unit.
   std::mutex mutex_;
+  std::condition_variable decoded_condvar_;
   std::unique_ptr<ThreadPool> frame_thread_pool_;
 
   ObuSequenceHeader sequence_header_ = {};

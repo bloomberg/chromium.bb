@@ -205,8 +205,13 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
     temporal_units_.Pop();
     return status;
   }
-  {
-    std::lock_guard<std::mutex> lock(mutex_);
+  if (settings_.blocking_dequeue) {
+    std::unique_lock<std::mutex> lock(mutex_);
+    while (!temporal_unit.decoded) {
+      decoded_condvar_.wait(lock);
+    }
+  } else {
+    std::unique_lock<std::mutex> lock(mutex_);
     if (!temporal_unit.decoded) return kStatusTryAgain;
   }
   if (settings_.release_input_buffer != nullptr) {
@@ -289,6 +294,7 @@ StatusCode DecoderImpl::ParseAndEnqueue() {
     std::lock_guard<std::mutex> lock(mutex_);
     temporal_unit.has_displayable_frame = false;
     temporal_unit.decoded = true;
+    decoded_condvar_.notify_one();
     return kStatusOk;
   }
   for (auto& frame : temporal_unit.frames) {
@@ -303,6 +309,7 @@ StatusCode DecoderImpl::ParseAndEnqueue() {
       temporal_unit.status = status;
       if (++temporal_unit.decoded_count == temporal_unit.frames.size()) {
         temporal_unit.decoded = true;
+        decoded_condvar_.notify_one();
       }
     });
   }

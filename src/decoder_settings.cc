@@ -18,7 +18,8 @@ extern "C" {
 
 void Libgav1DecoderSettingsInitDefault(Libgav1DecoderSettings* settings) {
   settings->threads = 1;
-  settings->frame_parallel = 0;  // false
+  settings->frame_parallel = 0;    // false
+  settings->blocking_dequeue = 0;  // false
   settings->on_frame_buffer_size_changed = nullptr;
   settings->get_frame_buffer = nullptr;
   settings->release_frame_buffer = nullptr;

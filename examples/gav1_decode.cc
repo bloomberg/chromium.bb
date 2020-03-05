@@ -227,6 +227,7 @@ int main(int argc, char* argv[]) {
   settings.post_filter_mask = options.post_filter_mask;
   settings.threads = options.threads;
   settings.frame_parallel = options.frame_parallel;
+  settings.blocking_dequeue = true;
   settings.callback_private_data = &input_buffers;
   settings.release_input_buffer = ReleaseInputBuffer;
 #ifdef GAV1_DECODE_USE_CV_PIXEL_BUFFER_POOL
@@ -294,7 +295,10 @@ int main(int argc, char* argv[]) {
         }
         ++enqueued;
         input_buffer = nullptr;
-      } else if (status != libgav1::kStatusTryAgain) {
+        // Continue to enqueue frames until we get a kStatusTryAgain status.
+        continue;
+      }
+      if (status != libgav1::kStatusTryAgain) {
         fprintf(stderr, "Unable to enqueue frame: %s\n",
                 libgav1::GetErrorString(status));
         return EXIT_FAILURE;
@@ -303,15 +307,13 @@ int main(int argc, char* argv[]) {
 
     const libgav1::DecoderBuffer* buffer;
     status = decoder.DequeueFrame(&buffer);
-    if (status != libgav1::kStatusOk && status != libgav1::kStatusTryAgain) {
+    if (status != libgav1::kStatusOk) {
       fprintf(stderr, "Unable to dequeue frame: %s\n",
               libgav1::GetErrorString(status));
       return EXIT_FAILURE;
     }
-    if (status == libgav1::kStatusOk) {
-      --enqueued;
-    }
-    if (status == libgav1::kStatusOk && buffer != nullptr) {
+    --enqueued;
+    if (buffer != nullptr) {
       ++decoded_frames;
       if (options.verbose > 1) {
         fprintf(stderr, "buffer dequeued\n");

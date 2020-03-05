@@ -51,6 +51,11 @@ typedef struct Libgav1DecoderSettings {
   // NOTE: Frame parallel decoding is not implemented, this setting is
   // currently ignored.
   int frame_parallel;
+  // A boolean. In frame parallel mode, should Libgav1DecoderDequeueFrame wait
+  // until a enqueued frame is available for dequeueing.
+  //
+  // If frame_parallel is 0, this setting is ignored.
+  int blocking_dequeue;
   // Called when the first sequence header or a sequence header with a
   // different frame size (which includes bitdepth, monochrome, subsampling_x,
   // subsampling_y, maximum frame width, or maximum frame height) is received.
@@ -96,6 +101,11 @@ struct DecoderSettings {
   // NOTE: Frame parallel decoding is not implemented, this setting is
   // currently ignored.
   bool frame_parallel = false;
+  // In frame parallel mode, should DequeueFrame wait until a enqueued frame is
+  // available for dequeueing.
+  //
+  // If frame_parallel is false, this setting is ignored.
+  bool blocking_dequeue = false;
   // Called when the first sequence header or a sequence header with a
   // different frame size (which includes bitdepth, monochrome, subsampling_x,
   // subsampling_y, maximum frame width, or maximum frame height) is received.
