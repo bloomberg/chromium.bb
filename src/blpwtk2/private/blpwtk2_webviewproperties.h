@@ -28,6 +28,9 @@
 namespace blpwtk2 {
 
 struct WebViewProperties {
+    bool takeKeyboardFocusOnMouseDown;
+    bool takeLogicalFocusOnMouseDown;
+    bool activateWindowOnMouseDown;
     bool domPasteEnabled;
     bool javascriptCanAccessClipboard;
     bool rerouteMouseWheelToAnyRelatedWindow;

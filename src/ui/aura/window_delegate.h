@@ -48,6 +48,9 @@ class AURA_EXPORT WindowDelegate : public ui::EventHandler {
   // window coordinates.
   virtual int GetNonClientComponent(const gfx::Point& point) const = 0;
 
+  // Returns true if the window should try to take focus on mousedown.
+  virtual bool ShouldTryFocusOnMouseDown() const;
+
   // Returns true if event handling should descend into |child|. |location| is
   // in terms of the Window.
   virtual bool ShouldDescendIntoChildForEventHandling(
