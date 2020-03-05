@@ -1405,22 +1405,24 @@ class Changelist(object):
 
   def _GetCommonPresubmitArgs(self, verbose, upstream):
     args = [
-        '--author', self.GetAuthor(),
         '--root', settings.GetRoot(),
         '--upstream', upstream,
     ]
 
     args.extend(['--verbose'] * verbose)
 
+    author = self.GetAuthor()
+    gerrit_url = self.GetCodereviewServer()
     issue = self.GetIssue()
     patchset = self.GetPatchset()
-    gerrit_url = self.GetCodereviewServer()
+    if author:
+      args.extend(['--author', author])
+    if gerrit_url:
+      args.extend(['--gerrit_url', gerrit_url])
     if issue:
       args.extend(['--issue', str(issue)])
     if patchset:
       args.extend(['--patchset', str(patchset)])
-    if gerrit_url:
-      args.extend(['--gerrit_url', gerrit_url])
 
     return args
 

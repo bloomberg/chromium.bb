@@ -2842,17 +2842,60 @@ class ChangelistTest(unittest.TestCase):
     self.assertEqual(expected_results, results)
     subprocess2.Popen.assert_called_once_with([
         'vpython', 'PRESUBMIT_SUPPORT',
-        '--author', 'author',
         '--root', 'root',
         '--upstream', 'upstream',
         '--verbose', '--verbose',
+        '--author', 'author',
+        '--gerrit_url', 'https://chromium-review.googlesource.com',
         '--issue', '123456',
         '--patchset', '7',
-        '--gerrit_url', 'https://chromium-review.googlesource.com',
         '--commit',
         '--may_prompt',
         '--parallel',
         '--all_files',
+        '--json_output', '/tmp/fake-temp2',
+        '--description_file', '/tmp/fake-temp1',
+    ])
+    gclient_utils.FileWrite.assert_called_once_with(
+        '/tmp/fake-temp1', 'description')
+    metrics.collector.add_repeated('sub_commands', {
+      'command': 'presubmit',
+      'execution_time': 100,
+      'exit_code': 0,
+    })
+
+  def testRunHook_FewerOptions(self):
+    expected_results = {
+        'more_cc': ['more@example.com', 'cc@example.com'],
+        'should_continue': True,
+    }
+    gclient_utils.FileRead.return_value = json.dumps(expected_results)
+    git_cl.time_time.side_effect = [100, 200]
+    mockProcess = mock.Mock()
+    mockProcess.wait.return_value = 0
+    subprocess2.Popen.return_value = mockProcess
+
+    git_cl.Changelist.GetAuthor.return_value = None
+    git_cl.Changelist.GetIssue.return_value = None
+    git_cl.Changelist.GetPatchset.return_value = None
+    git_cl.Changelist.GetCodereviewServer.return_value = None
+
+    cl = git_cl.Changelist()
+    results = cl.RunHook(
+        committing=False,
+        may_prompt=False,
+        verbose=0,
+        parallel=False,
+        upstream='upstream',
+        description='description',
+        all_files=False)
+
+    self.assertEqual(expected_results, results)
+    subprocess2.Popen.assert_called_once_with([
+        'vpython', 'PRESUBMIT_SUPPORT',
+        '--root', 'root',
+        '--upstream', 'upstream',
+        '--upload',
         '--json_output', '/tmp/fake-temp2',
         '--description_file', '/tmp/fake-temp1',
     ])
@@ -2890,13 +2933,13 @@ class ChangelistTest(unittest.TestCase):
 
     subprocess2.Popen.assert_called_once_with([
         'vpython', 'PRESUBMIT_SUPPORT',
-        '--author', 'author',
         '--root', 'root',
         '--upstream', 'upstream',
         '--verbose', '--verbose',
+        '--author', 'author',
+        '--gerrit_url', 'https://chromium-review.googlesource.com',
         '--issue', '123456',
         '--patchset', '7',
-        '--gerrit_url', 'https://chromium-review.googlesource.com',
         '--post_upload',
         '--description_file', '/tmp/fake-temp1',
     ])
