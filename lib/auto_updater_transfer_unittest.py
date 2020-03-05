@@ -17,10 +17,12 @@ from __future__ import print_function
 import os
 
 import mock
+import six
 
 from chromite.lib import auto_updater_transfer
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.lib import remote_access
 from chromite.lib import retry_util
@@ -843,22 +845,86 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
   def testGetPayloadPropsFile(self):
     """Test LabTransfer.GetPayloadPropsFile()."""
     with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      lab_xfer = auto_updater_transfer.LabTransfer
+      payload_props_path = os.path.join(self.tempdir, 'test_update.gz.json')
+      output = ('{"appid": "{0BB3F9E1-A066-9352-50B8-5C1356D09AEB}", '
+                '"is_delta": false, "metadata_signature": null, '
+                '"metadata_size": 57053, '
+                '"sha256_hex": "aspPgQRWLu5wPM5NucqAYVmVCvL5lxQJ/n9ckhZS83Y=", '
+                '"size": 998103540, '
+                '"target_version": "99999.0.0", "version": 2}')
+      bin_op = six.ensure_binary(output)
+
       CrOS_LabTransfer = CreateLabTransferInstance(
           device, tempdir=self.tempdir, payload_name='test_update.gz')
-      self.PatchObject(retry_util, 'RunCurl')
-      self.PatchObject(os.path, 'isfile', return_value=True)
+      self.PatchObject(lab_xfer, '_RemoteDevserverCall',
+                       return_value=cros_build_lib.CommandResult(stdout=bin_op))
       CrOS_LabTransfer.GetPayloadPropsFile()
+      props = osutils.ReadFile(payload_props_path)
+
+      self.assertEqual(props, output)
       self.assertEqual(CrOS_LabTransfer._local_payload_props_path,
-                       os.path.join(self.tempdir, 'test_update.gz.json'))
+                       payload_props_path)
+
+  def testGetPayloadPropsFileWrongFormat(self):
+    """Test LabTransfer.GetPayloadPropsFile().
+
+    Test when the payload is not in the correct json format. Also, test if the
+    fallback is being called.
+    """
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      lab_xfer = auto_updater_transfer.LabTransfer
+      payload_props_path = os.path.join(self.tempdir, 'test_update.gz.json')
+      output = 'Not in Json format'
+
+      CrOS_LabTransfer = CreateLabTransferInstance(
+          device, tempdir=self.tempdir, payload_name='test_update.gz')
+
+      self.PatchObject(lab_xfer, '_RemoteDevserverCall',
+                       return_value=cros_build_lib.CommandResult(stdout=output))
+      self.PatchObject(retry_util, 'RunCurl',
+                       return_value=cros_build_lib.CommandResult(stdout=''))
+      CrOS_LabTransfer.GetPayloadPropsFile()
+
+      self.assertEqual(CrOS_LabTransfer._local_payload_props_path,
+                       payload_props_path)
+
+  def testGetPayloadPropsFileRemoteDevserverCallError(self):
+    """Test LabTransfer.GetPayloadPropsFile().
+
+    Test when the LabTransfer._RemoteDevserverCall() method throws an error.
+    """
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+
+      lab_xfer = auto_updater_transfer.LabTransfer
+      payload_props_path = os.path.join(self.tempdir, 'test_update.gz.json')
+      output = ''
+
+      CrOS_LabTransfer = CreateLabTransferInstance(
+          device, tempdir=self.tempdir, payload_name='test_update.gz')
+
+      self.PatchObject(lab_xfer, '_RemoteDevserverCall',
+                       side_effect=cros_build_lib.RunCommandError(msg=''))
+      self.PatchObject(retry_util, 'RunCurl',
+                       return_value=cros_build_lib.CommandResult(stdout=output))
+
+      CrOS_LabTransfer.GetPayloadPropsFile()
+
+      self.assertEqual(CrOS_LabTransfer._local_payload_props_path,
+                       payload_props_path)
 
   def testGetPayloadPropsFileError(self):
     """Test LabTransfer.GetPayloadPropsFile().
 
-    Test when the GetPayloadPropsFile() method throws an error.
+    Test when the payload is not available.
     """
     with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      lab_xfer = auto_updater_transfer.LabTransfer
       CrOS_LabTransfer = CreateLabTransferInstance(
-          device, tempdir=self.tempdir, payload_name='test_update.gz')
+          device, tempdir=self.tempdir, payload_name='test_update.gz',
+          payload_dir='/test/dir')
+      self.PatchObject(lab_xfer, '_RemoteDevserverCall',
+                       side_effect=cros_build_lib.RunCommandError(msg=''))
       self.PatchObject(retry_util, 'RunCurl',
                        side_effect=retry_util.DownloadError())
       self.assertRaises(auto_updater_transfer.ChromiumOSTransferError,
@@ -875,7 +941,7 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
       expected_size = 75810234
       output = 'Content-Length: %s' % str(expected_size)
       self.PatchObject(lab_xfer, '_RemoteDevserverCall',
-                       return_value=cros_build_lib.CommandResult(output=output))
+                       return_value=cros_build_lib.CommandResult(stdout=output))
       size = CrOS_LabTransfer._GetPayloadSize()
       self.assertEqual(size, expected_size)
 
@@ -894,7 +960,7 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
       self.PatchObject(lab_xfer, '_RemoteDevserverCall',
                        side_effect=cros_build_lib.RunCommandError(msg=''))
       self.PatchObject(retry_util, 'RunCurl',
-                       return_value=cros_build_lib.CommandResult(output=output))
+                       return_value=cros_build_lib.CommandResult(stdout=output))
       size = CrOS_LabTransfer._GetPayloadSize()
       self.assertEqual(size, expected_size)
 
@@ -911,7 +977,7 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
           payload_dir='/test/payload/dir')
       output = 'No Match Output'
       self.PatchObject(lab_xfer, '_RemoteDevserverCall',
-                       return_value=cros_build_lib.CommandResult(output=output))
+                       return_value=cros_build_lib.CommandResult(stdout=output))
       self.assertRaises(auto_updater_transfer.ChromiumOSTransferError,
                         CrOS_LabTransfer._GetPayloadSize)
 
@@ -931,7 +997,7 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
       self.PatchObject(lab_xfer, '_RemoteDevserverCall',
                        side_effect=cros_build_lib.RunCommandError(msg=''))
       self.PatchObject(retry_util, 'RunCurl',
-                       return_value=cros_build_lib.CommandResult(output=output))
+                       return_value=cros_build_lib.CommandResult(stdout=output))
       self.assertRaises(auto_updater_transfer.ChromiumOSTransferError,
                         CrOS_LabTransfer._GetPayloadSize)
 

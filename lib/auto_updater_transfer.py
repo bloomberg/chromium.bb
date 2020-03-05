@@ -39,6 +39,7 @@ from __future__ import division
 from __future__ import print_function
 
 import abc
+import json
 import os
 import re
 
@@ -500,17 +501,40 @@ class LabTransfer(Transfer):
     """
     if self._local_payload_props_path is None:
       payload_props_filename = GetPayloadPropertiesFileName(self._payload_name)
-      cmd = self._GetCurlCmdForPayloadDownload(
-          payload_dir=self._tempdir, build_id=self._payload_dir,
-          payload_filename=payload_props_filename)
+      payload_props_path = os.path.join(self._tempdir, payload_props_filename)
+      fallback = True
+
+      # Get command to retrieve contents of the properties file.
+      cmd = ['curl',
+             self._GetStagedUrl(payload_props_filename, self._payload_dir)]
       try:
-        retry_util.RunCurl(cmd[1:])
-      except retry_util.DownloadError as e:
-        raise ChromiumOSTransferError('Unable to download %s: %s' %
-                                      (payload_props_filename, e))
+        result = self._RemoteDevserverCall(cmd)
+        json.loads(result.output)
+      except cros_build_lib.RunCommandError as e:
+        logging.error('Unable to get payload properties file by running %s due '
+                      'to exception: %s.', ' '.join(cmd), e)
+      except ValueError:
+        logging.error('Could not create %s as %s not valid json.',
+                      payload_props_path, result.output)
       else:
-        self._local_payload_props_path = os.path.join(self._tempdir,
-                                                      payload_props_filename)
+        fallback = False
+        osutils.WriteFile(payload_props_path, result.output, 'wb')
+
+      if fallback:
+        # TODO(crbug.com/1059008): Fallback in case the try block above fails.
+        # Should be removed once reliable.
+
+        # Get command to download the properties file.
+        cmd = self._GetCurlCmdForPayloadDownload(
+            payload_dir=self._tempdir, build_id=self._payload_dir,
+            payload_filename=payload_props_filename)
+        try:
+          retry_util.RunCurl(cmd[1:])
+        except retry_util.DownloadError as e:
+          raise ChromiumOSTransferError('Unable to download %s: %s' %
+                                        (payload_props_filename, e))
+
+      self._local_payload_props_path = payload_props_path
     return self._local_payload_props_path
 
   def _GetPayloadSize(self):
