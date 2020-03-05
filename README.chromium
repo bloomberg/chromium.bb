@@ -248,3 +248,13 @@ D. Local Modifications
   - upstream PR:
     https://github.com/unicode-org/icu/pull/971
 
+11. Fix fractional second support.
+  - patches/fracsecond.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-20739
+    https://unicode-org.atlassian.net/browse/ICU-20738
+    https://unicode-org.atlassian.net/browse/ICU-20967
+  - upstream PR:
+    https://github.com/unicode-org/icu/pull/977
+    https://github.com/unicode-org/icu/pull/914
+    https://github.com/unicode-org/icu/pull/978

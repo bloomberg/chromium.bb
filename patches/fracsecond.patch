@@ -1,0 +1,172 @@
+diff --git a/source/i18n/dtitvfmt.cpp b/source/i18n/dtitvfmt.cpp
+index f47e7708..64b40652 100644
+--- a/source/i18n/dtitvfmt.cpp
++++ b/source/i18n/dtitvfmt.cpp
+@@ -444,6 +444,9 @@ DateIntervalFormat::formatImpl(Calendar& fromCalendar,
+     } else if ( fromCalendar.get(UCAL_SECOND, status) !=
+                 toCalendar.get(UCAL_SECOND, status) ) {
+         field = UCAL_SECOND;
++    } else if ( fromCalendar.get(UCAL_MILLISECOND, status) !=
++                toCalendar.get(UCAL_MILLISECOND, status) ) {
++        field = UCAL_MILLISECOND;
+     }
+ 
+     if ( U_FAILURE(status) ) {
+@@ -455,7 +458,7 @@ DateIntervalFormat::formatImpl(Calendar& fromCalendar,
+          */
+         return fDateFormat->_format(fromCalendar, appendTo, fphandler, status);
+     }
+-    UBool fromToOnSameDay = (field==UCAL_AM_PM || field==UCAL_HOUR || field==UCAL_MINUTE || field==UCAL_SECOND);
++    UBool fromToOnSameDay = (field==UCAL_AM_PM || field==UCAL_HOUR || field==UCAL_MINUTE || field==UCAL_SECOND || field==UCAL_MILLISECOND);
+ 
+     // following call should not set wrong status,
+     // all the pass-in fields are valid till here
+diff --git a/source/i18n/dtitvinf.cpp b/source/i18n/dtitvinf.cpp
+index 7474bebf..3df90408 100644
+--- a/source/i18n/dtitvinf.cpp
++++ b/source/i18n/dtitvinf.cpp
+@@ -712,6 +712,9 @@ DateIntervalInfo::calendarFieldToIntervalIndex(UCalendarDateFields field,
+       case UCAL_SECOND:
+         index = kIPI_SECOND;
+         break;
++      case UCAL_MILLISECOND:
++        index = kIPI_MILLISECOND;
++        break;
+       default:
+         status = U_ILLEGAL_ARGUMENT_ERROR;
+     }
+diff --git a/source/i18n/dtptngen.cpp b/source/i18n/dtptngen.cpp
+index c5f8618a..89bea98f 100644
+--- a/source/i18n/dtptngen.cpp
++++ b/source/i18n/dtptngen.cpp
+@@ -1479,6 +1479,7 @@ DateTimePatternGenerator::getBestRaw(DateTimeMatcher& source,
+                                      UErrorCode &status,
+                                      const PtnSkeleton** specifiedSkeletonPtr) {
+     int32_t bestDistance = 0x7fffffff;
++    int32_t bestMissingFieldMask = -1;
+     DistanceInfo tempInfo;
+     const UnicodeString *bestPattern=nullptr;
+     const PtnSkeleton* specifiedSkeleton=nullptr;
+@@ -1492,8 +1493,15 @@ DateTimePatternGenerator::getBestRaw(DateTimeMatcher& source,
+             continue;
+         }
+         int32_t distance=source.getDistance(trial, includeMask, tempInfo);
+-        if (distance<bestDistance) {
++        // Because we iterate over a map the order is undefined. Can change between implementations,
++        // versions, and will very likely be different between Java and C/C++.
++        // So if we have patterns with the same distance we also look at the missingFieldMask,
++        // and we favour the smallest one. Because the field is a bitmask this technically means we
++        // favour differences in the "least significant fields". For example we prefer the one with differences
++        // in seconds field vs one with difference in the hours field.
++        if (distance<bestDistance || (distance==bestDistance && bestMissingFieldMask<tempInfo.missingFieldMask)) {
+             bestDistance=distance;
++            bestMissingFieldMask=tempInfo.missingFieldMask;
+             bestPattern=patternMap->getPatternFromSkeleton(*trial.getSkeletonPtr(), &specifiedSkeleton);
+             missingFields->setTo(tempInfo);
+             if (distance==0) {
+@@ -2162,6 +2170,33 @@ DateTimeMatcher::set(const UnicodeString& pattern, FormatParser* fp, PtnSkeleton
+         }
+         skeletonResult.type[field] = subField;
+     }
++
++    // #20739, we have a skeleton with minutes and milliseconds, but no seconds
++    //
++    // Theoretically we would need to check and fix all fields with "gaps":
++    // for example year-day (no month), month-hour (no day), and so on, All the possible field combinations.
++    // Plus some smartness: year + hour => should we add month, or add day-of-year?
++    // What about month + day-of-week, or month + am/pm indicator.
++    // I think beyond a certain point we should not try to fix bad developer input and try guessing what they mean.
++    // Garbage in, garbage out.
++    if (!skeletonResult.original.isFieldEmpty(UDATPG_MINUTE_FIELD)
++        && !skeletonResult.original.isFieldEmpty(UDATPG_FRACTIONAL_SECOND_FIELD)
++        && skeletonResult.original.isFieldEmpty(UDATPG_SECOND_FIELD)) {
++        // Force the use of seconds
++        for (i = 0; dtTypes[i].patternChar != 0; i++) {
++            if (dtTypes[i].field == UDATPG_SECOND_FIELD) {
++                // first entry for UDATPG_SECOND_FIELD
++                skeletonResult.original.populate(UDATPG_SECOND_FIELD, dtTypes[i].patternChar, dtTypes[i].minLen);
++                skeletonResult.baseOriginal.populate(UDATPG_SECOND_FIELD, dtTypes[i].patternChar, dtTypes[i].minLen);
++                // We add value.length, same as above, when type is first initialized.
++                // The value we want to "fake" here is "s", and 1 means "s".length()
++                int16_t subField = dtTypes[i].type;
++                skeletonResult.type[UDATPG_SECOND_FIELD] = (subField > 0) ? subField + 1 : subField;
++                break;
++            }
++        }
++    }
++
+     // #13183, handle special behavior for day period characters (a, b, B)
+     if (!skeletonResult.original.isFieldEmpty(UDATPG_HOUR_FIELD)) {
+         if (skeletonResult.original.getFieldChar(UDATPG_HOUR_FIELD)==LOW_H || skeletonResult.original.getFieldChar(UDATPG_HOUR_FIELD)==CAP_K) {
+diff --git a/source/i18n/unicode/dtitvfmt.h b/source/i18n/unicode/dtitvfmt.h
+index 23fc02e2..4ec216e7 100644
+--- a/source/i18n/unicode/dtitvfmt.h
++++ b/source/i18n/unicode/dtitvfmt.h
+@@ -174,11 +174,12 @@ class U_I18N_API FormattedDateInterval : public UMemory, public FormattedValue {
+  *
+  * <P>
+  * The calendar fields we support for interval formatting are:
+- * year, month, date, day-of-week, am-pm, hour, hour-of-day, minute, and second
++ * year, month, date, day-of-week, am-pm, hour, hour-of-day, minute, second,
++ * and millisecond.
+  * (though we do not currently have specific intervalFormat date for skeletons
+- * with seconds).
++ * with seconds and millisecond).
+  * Those calendar fields can be defined in the following order:
+- * year >  month > date > hour (in day) >  minute > second
++ * year >  month > date > hour (in day) >  minute > second > millisecond
+  *
+  * The largest different calendar fields between 2 calendars is the
+  * first different calendar field in above order.
+diff --git a/source/i18n/unicode/dtitvinf.h b/source/i18n/unicode/dtitvinf.h
+index a894d12c..68bfa435 100644
+--- a/source/i18n/unicode/dtitvinf.h
++++ b/source/i18n/unicode/dtitvinf.h
+@@ -137,8 +137,8 @@ U_NAMESPACE_BEGIN
+  * After a DateIntervalInfo object is created, clients may modify
+  * the interval patterns using setIntervalPattern function as so desired.
+  * Currently, users can only set interval patterns when the following
+- * calendar fields are different: ERA, YEAR, MONTH, DATE,  DAY_OF_MONTH,
+- * DAY_OF_WEEK, AM_PM,  HOUR, HOUR_OF_DAY, and MINUTE.
++ * calendar fields are different: ERA, YEAR, MONTH, DATE, DAY_OF_MONTH,
++ * DAY_OF_WEEK, AM_PM, HOUR, HOUR_OF_DAY, MINUTE, SECOND, and MILLISECOND.
+  * Interval patterns when other calendar fields are different is not supported.
+  * <P>
+  * DateIntervalInfo objects are cloneable.
+@@ -245,7 +245,7 @@ public:
+      * Restriction:
+      * Currently, users can only set interval patterns when the following
+      * calendar fields are different: ERA, YEAR, MONTH, DATE,  DAY_OF_MONTH,
+-     * DAY_OF_WEEK, AM_PM,  HOUR, HOUR_OF_DAY, and MINUTE.
++     * DAY_OF_WEEK, AM_PM,  HOUR, HOUR_OF_DAY, MINUTE, SECOND and MILLISECOND.
+      * Interval patterns when other calendar fields are different are
+      * not supported.
+      *
+@@ -348,7 +348,7 @@ private:
+     /**
+      * Following is for saving the interval patterns.
+      * We only support interval patterns on
+-     * ERA, YEAR, MONTH, DAY, AM_PM, HOUR, and MINUTE
++     * ERA, YEAR, MONTH, DAY, AM_PM, HOUR, MINUTE, SECOND and MILLISECOND.
+      */
+     enum IntervalPatternIndex
+     {
+@@ -360,6 +360,7 @@ private:
+         kIPI_HOUR,
+         kIPI_MINUTE,
+         kIPI_SECOND,
++        kIPI_MILLISECOND,
+         kIPI_MAX_INDEX
+     };
+ public:
+@@ -453,8 +454,8 @@ private:
+      * hash table.
+      *
+      * Since we only support the following calendar fields:
+-     * ERA, YEAR, MONTH, DATE,  DAY_OF_MONTH, DAY_OF_WEEK,
+-     * AM_PM,  HOUR, HOUR_OF_DAY, and MINUTE,
++     * ERA, YEAR, MONTH, DATE, DAY_OF_MONTH, DAY_OF_WEEK,
++     * AM_PM, HOUR, HOUR_OF_DAY, MINUTE, SECOND, and MILLISECOND.
+      * We reserve only 4 interval patterns for a skeleton.
+      *
+      * @param field    calendar field
