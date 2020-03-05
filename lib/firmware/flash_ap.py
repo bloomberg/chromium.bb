@@ -57,7 +57,8 @@ class DutControl(object):
   def get_value(self, arg):
     """Get the value of |arg| from dut_control."""
     try:
-      result = cros_build_lib.run(self._base_cmd + [arg], stdout=True)
+      result = cros_build_lib.run(
+          self._base_cmd + [arg], stdout=True, encoding='utf-8')
     except cros_build_lib.CalledProcessError as e:
       logging.debug('dut-control error: %s', str(e))
       raise DutConnectionError(
@@ -65,7 +66,7 @@ class DutControl(object):
           'the background, and the servo is properly connected.')
 
     # Return value from the "key:value" output.
-    return result.output.partition(':')[2].strip()
+    return result.stdout.partition(':')[2].strip()
 
   def run(self, cmd_fragment, verbose=False, dryrun=False):
     """Run a dut_control command.
