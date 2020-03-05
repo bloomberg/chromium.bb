@@ -1873,48 +1873,85 @@ LIBGAV1_ALWAYS_INLINE bool Identity4DcOnly(void* dest, const void* source,
   return true;
 }
 
-LIBGAV1_ALWAYS_INLINE void Identity4ColumnStoreToFrame(
+template <int identity_size>
+LIBGAV1_ALWAYS_INLINE void IdentityColumnStoreToFrame(
     Array2DView<uint8_t> frame, const int start_x, const int start_y,
     const int tx_width, const int tx_height, const int16_t* source) {
   const int stride = frame.columns();
   uint8_t* dst = frame[start_y] + start_x;
 
-  if (tx_width == 4) {
-    const uint8x8_t zero = vdup_n_u8(0);
-    int i = 0;
-    do {
-      const int16x4_t residual = vld1_s16(&source[i * tx_width]);
-      const int16x4_t residual_fraction =
-          vqrdmulh_n_s16(residual, kIdentity4MultiplierFraction << 3);
-      const int16x4_t v_dst_i = vqadd_s16(residual, residual_fraction);
-      // TODO(johannkoenig): Treating |v_dst_i| as unsigned and using vaddl(a,
-      // frame_data) should have correct overflow without extending |frame_data|
-      // first. The |zero| argument also needs to be removed from the loop to
-      // avoid re-zeroing the register on every pass. All uses of vmovl_u8() in
-      // this file should be reevaluated.
-      const int16x8_t frame_data =
-          vreinterpretq_s16_u16(vmovl_u8(Load4<0>(dst, zero)));
-      const int16x4_t a = vrshr_n_s16(v_dst_i, 4);
-      const int16x4_t b = vqadd_s16(a, vget_low_s16(frame_data));
-      const uint8x8_t d = vqmovun_s16(vcombine_s16(b, b));
-      StoreLo4(dst, d);
-      dst += stride;
-    } while (++i < tx_height);
+  if (identity_size < 32) {
+    if (tx_width == 4) {
+      uint8x8_t frame_data = vdup_n_u8(0);
+      int i = 0;
+      do {
+        const int16x4_t v_src = vld1_s16(&source[i * tx_width]);
+
+        int16x4_t v_dst_i;
+        if (identity_size == 4) {
+          const int16x4_t v_src_fraction =
+              vqrdmulh_n_s16(v_src, kIdentity4MultiplierFraction << 3);
+          v_dst_i = vqadd_s16(v_src, v_src_fraction);
+        } else if (identity_size == 8) {
+          v_dst_i = vqadd_s16(v_src, v_src);
+        } else {  // identity_size == 16
+          const int16x4_t v_src_mult =
+              vqrdmulh_n_s16(v_src, kIdentity4MultiplierFraction << 4);
+          const int16x4_t v_srcx2 = vqadd_s16(v_src, v_src);
+          v_dst_i = vqadd_s16(v_srcx2, v_src_mult);
+        }
+
+        frame_data = Load4<0>(dst, frame_data);
+        const int16x4_t a = vrshr_n_s16(v_dst_i, 4);
+        const uint16x8_t b =
+            vaddw_u8(vreinterpretq_u16_s16(vcombine_s16(a, a)), frame_data);
+        const uint8x8_t d = vqmovun_s16(vreinterpretq_s16_u16(b));
+        StoreLo4(dst, d);
+        dst += stride;
+      } while (++i < tx_height);
+    } else {
+      int i = 0;
+      do {
+        const int row = i * tx_width;
+        int j = 0;
+        do {
+          const int16x8_t v_src = vld1q_s16(&source[row + j]);
+
+          int16x8_t v_dst_i;
+          if (identity_size == 4) {
+            const int16x8_t v_src_fraction =
+                vqrdmulhq_n_s16(v_src, kIdentity4MultiplierFraction << 3);
+            v_dst_i = vqaddq_s16(v_src, v_src_fraction);
+          } else if (identity_size == 8) {
+            v_dst_i = vqaddq_s16(v_src, v_src);
+          } else {  // identity_size == 16
+            const int16x8_t v_src_mult =
+                vqrdmulhq_n_s16(v_src, kIdentity4MultiplierFraction << 4);
+            const int16x8_t v_srcx2 = vqaddq_s16(v_src, v_src);
+            v_dst_i = vqaddq_s16(v_src_mult, v_srcx2);
+          }
+
+          const uint8x8_t frame_data = vld1_u8(dst + j);
+          const int16x8_t a = vrshrq_n_s16(v_dst_i, 4);
+          const uint16x8_t b = vaddw_u8(vreinterpretq_u16_s16(a), frame_data);
+          const uint8x8_t d = vqmovun_s16(vreinterpretq_s16_u16(b));
+          vst1_u8(dst + j, d);
+          j += 8;
+        } while (j < tx_width);
+        dst += stride;
+      } while (++i < tx_height);
+    }
   } else {
     int i = 0;
     do {
       const int row = i * tx_width;
       int j = 0;
       do {
-        const int16x8_t residual = vld1q_s16(&source[row + j]);
-        const int16x8_t residual_fraction =
-            vqrdmulhq_n_s16(residual, kIdentity4MultiplierFraction << 3);
-        const int16x8_t v_dst_i = vqaddq_s16(residual, residual_fraction);
-        const int16x8_t frame_data =
-            vreinterpretq_s16_u16(vmovl_u8(vld1_u8(dst + j)));
-        const int16x8_t a = vrshrq_n_s16(v_dst_i, 4);
-        const int16x8_t b = vqaddq_s16(a, frame_data);
-        const uint8x8_t d = vqmovun_s16(b);
+        const int16x8_t v_dst_i = vld1q_s16(&source[row + j]);
+        const uint8x8_t frame_data = vld1_u8(dst + j);
+        const int16x8_t a = vrshrq_n_s16(v_dst_i, 2);
+        const uint16x8_t b = vaddw_u8(vreinterpretq_u16_s16(a), frame_data);
+        const uint8x8_t d = vqmovun_s16(vreinterpretq_s16_u16(b));
         vst1_u8(dst + j, d);
         j += 8;
       } while (j < tx_width);
@@ -1930,21 +1967,21 @@ LIBGAV1_ALWAYS_INLINE void Identity4RowColumnStoreToFrame(
   uint8_t* dst = frame[start_y] + start_x;
 
   if (tx_width == 4) {
-    const uint8x8_t zero = vdup_n_u8(0);
+    uint8x8_t frame_data = vdup_n_u8(0);
     int i = 0;
     do {
       const int16x4_t v_src = vld1_s16(&source[i * tx_width]);
       const int16x4_t v_src_mult =
           vqrdmulh_n_s16(v_src, kIdentity4MultiplierFraction << 3);
-      const int16x8_t frame_data =
-          vreinterpretq_s16_u16(vmovl_u8(Load4<0>(dst, zero)));
       const int16x4_t v_dst_row = vqadd_s16(v_src, v_src_mult);
       const int16x4_t v_src_mult2 =
           vqrdmulh_n_s16(v_dst_row, kIdentity4MultiplierFraction << 3);
       const int16x4_t v_dst_col = vqadd_s16(v_dst_row, v_src_mult2);
+      frame_data = Load4<0>(dst, frame_data);
       const int16x4_t a = vrshr_n_s16(v_dst_col, 4);
-      const int16x4_t b = vqadd_s16(a, vget_low_s16(frame_data));
-      const uint8x8_t d = vqmovun_s16(vcombine_s16(b, b));
+      const uint16x8_t b =
+          vaddw_u8(vreinterpretq_u16_s16(vcombine_s16(a, a)), frame_data);
+      const uint8x8_t d = vqmovun_s16(vreinterpretq_s16_u16(b));
       StoreLo4(dst, d);
       dst += stride;
     } while (++i < tx_height);
@@ -1960,12 +1997,11 @@ LIBGAV1_ALWAYS_INLINE void Identity4RowColumnStoreToFrame(
         const int16x8_t v_dst_row = vqaddq_s16(v_src_round, v_src_round);
         const int16x8_t v_src_mult2 =
             vqrdmulhq_n_s16(v_dst_row, kIdentity4MultiplierFraction << 3);
-        const int16x8_t frame_data =
-            vreinterpretq_s16_u16(vmovl_u8(vld1_u8(dst + j)));
         const int16x8_t v_dst_col = vqaddq_s16(v_dst_row, v_src_mult2);
+        const uint8x8_t frame_data = vld1_u8(dst + j);
         const int16x8_t a = vrshrq_n_s16(v_dst_col, 4);
-        const int16x8_t b = vqaddq_s16(a, frame_data);
-        const uint8x8_t d = vqmovun_s16(b);
+        const uint16x8_t b = vaddw_u8(vreinterpretq_u16_s16(a), frame_data);
+        const uint8x8_t d = vqmovun_s16(vreinterpretq_s16_u16(b));
         vst1_u8(dst + j, d);
         j += 8;
       } while (j < tx_width);
@@ -2023,45 +2059,6 @@ LIBGAV1_ALWAYS_INLINE bool Identity8DcOnly(void* dest, const void* source,
   return true;
 }
 
-LIBGAV1_ALWAYS_INLINE void Identity8ColumnStoreToFrame_NEON(
-    Array2DView<uint8_t> frame, const int start_x, const int start_y,
-    const int tx_width, const int tx_height, const int16_t* source) {
-  const int stride = frame.columns();
-  uint8_t* dst = frame[start_y] + start_x;
-
-  if (tx_width == 4) {
-    const uint8x8_t zero = vdup_n_u8(0);
-    int i = 0;
-    do {
-      const int16x4_t residual = vld1_s16(&source[i * tx_width]);
-      const int16x4_t v_dst_i = vqadd_s16(residual, residual);
-      const int16x8_t frame_data =
-          vreinterpretq_s16_u16(vmovl_u8(Load4<0>(dst, zero)));
-      const int16x4_t a = vrshr_n_s16(v_dst_i, 4);
-      const int16x4_t b = vqadd_s16(a, vget_low_s16(frame_data));
-      const uint8x8_t d = vqmovun_s16(vcombine_s16(b, b));
-      StoreLo4(dst, d);
-      dst += stride;
-    } while (++i < tx_height);
-  } else {
-    int i = 0;
-    do {
-      const int row = i * tx_width;
-      for (int j = 0; j < tx_width; j += 8) {
-        const int16x8_t residual = vld1q_s16(&source[row + j]);
-        const int16x8_t v_dst_i = vqaddq_s16(residual, residual);
-        const int16x8_t frame_data =
-            vreinterpretq_s16_u16(vmovl_u8(vld1_u8(dst + j)));
-        const int16x8_t a = vrshrq_n_s16(v_dst_i, 4);
-        const int16x8_t b = vqaddq_s16(a, frame_data);
-        const uint8x8_t d = vqmovun_s16(b);
-        vst1_u8(dst + j, d);
-      }
-      dst += stride;
-    } while (++i < tx_height);
-  }
-}
-
 LIBGAV1_ALWAYS_INLINE void Identity16Row_NEON(void* dest, const void* source,
                                               int32_t step, int shift) {
   auto* const dst = static_cast<int16_t*>(dest);
@@ -2110,53 +2107,6 @@ LIBGAV1_ALWAYS_INLINE bool Identity16DcOnly(void* dest, const void* source,
   return true;
 }
 
-LIBGAV1_ALWAYS_INLINE void Identity16ColumnStoreToFrame_NEON(
-    Array2DView<uint8_t> frame, const int start_x, const int start_y,
-    const int tx_width, const int tx_height, const int16_t* source) {
-  const int stride = frame.columns();
-  uint8_t* dst = frame[start_y] + start_x;
-
-  if (tx_width == 4) {
-    const uint8x8_t zero = vdup_n_u8(0);
-    int i = 0;
-    do {
-      const int16x4_t v_src = vld1_s16(&source[i * tx_width]);
-      const int16x4_t v_src_mult =
-          vqrdmulh_n_s16(v_src, kIdentity4MultiplierFraction << 4);
-      const int16x8_t frame_data =
-          vreinterpretq_s16_u16(vmovl_u8(Load4<0>(dst, zero)));
-
-      const int16x4_t v_srcx2 = vqadd_s16(v_src, v_src);
-      const int16x4_t v_dst_i = vqadd_s16(v_srcx2, v_src_mult);
-
-      const int16x4_t a = vrshr_n_s16(v_dst_i, 4);
-      const int16x4_t b = vqadd_s16(a, vget_low_s16(frame_data));
-      const uint8x8_t d = vqmovun_s16(vcombine_s16(b, b));
-      StoreLo4(dst, d);
-      dst += stride;
-    } while (++i < tx_height);
-  } else {
-    int i = 0;
-    do {
-      const int row = i * tx_width;
-      for (int j = 0; j < tx_width; j += 8) {
-        const int16x8_t v_src = vld1q_s16(&source[row + j]);
-        const int16x8_t v_src_mult =
-            vqrdmulhq_n_s16(v_src, kIdentity4MultiplierFraction << 4);
-        const int16x8_t frame_data =
-            vreinterpretq_s16_u16(vmovl_u8(vld1_u8(dst + j)));
-        const int16x8_t v_srcx2 = vqaddq_s16(v_src, v_src);
-        const int16x8_t v_dst_i = vqaddq_s16(v_src_mult, v_srcx2);
-        const int16x8_t a = vrshrq_n_s16(v_dst_i, 4);
-        const int16x8_t b = vqaddq_s16(a, frame_data);
-        const uint8x8_t d = vqmovun_s16(b);
-        vst1_u8(dst + j, d);
-      }
-      dst += stride;
-    } while (++i < tx_height);
-  }
-}
-
 LIBGAV1_ALWAYS_INLINE void Identity32Row16_NEON(void* dest, const void* source,
                                                 const int32_t step) {
   auto* const dst = static_cast<int16_t*>(dest);
@@ -2192,30 +2142,6 @@ LIBGAV1_ALWAYS_INLINE bool Identity32DcOnly(void* dest, const void* source,
   const int16x4_t v_dst_0 = vqadd_s16(v_src, v_src);
   vst1_lane_s16(&dst[0], v_dst_0, 0);
   return true;
-}
-
-LIBGAV1_ALWAYS_INLINE void Identity32ColumnStoreToFrame(
-    Array2DView<uint8_t> frame, const int start_x, const int start_y,
-    const int tx_width, const int tx_height, const int16_t* source) {
-  const int stride = frame.columns();
-  uint8_t* dst = frame[start_y] + start_x;
-
-  int i = 0;
-  do {
-    const int row = i * tx_width;
-    int j = 0;
-    do {
-      const int16x8_t v_dst_i = vld1q_s16(&source[row + j]);
-      const int16x8_t frame_data =
-          vreinterpretq_s16_u16(vmovl_u8(vld1_u8(dst + j)));
-      const int16x8_t a = vrshrq_n_s16(v_dst_i, 2);
-      const int16x8_t b = vqaddq_s16(a, frame_data);
-      const uint8x8_t d = vqmovun_s16(b);
-      vst1_u8(dst + j, d);
-      j += 8;
-    } while (j < tx_width);
-    dst += stride;
-  } while (++i < tx_height);
 }
 
 //------------------------------------------------------------------------------
@@ -3032,7 +2958,7 @@ void Identity4TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
     FlipColumns<4>(src, tx_width);
   }
 
-  Identity4ColumnStoreToFrame(frame, start_x, start_y, tx_width, height, src);
+  IdentityColumnStoreToFrame<4>(frame, start_x, start_y, tx_width, height, src);
 }
 
 void Identity8TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
@@ -3091,8 +3017,7 @@ void Identity8TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
     FlipColumns<8>(src, tx_width);
   }
   const int height = (non_zero_coeff_count == 1) ? 1 : tx_height;
-  Identity8ColumnStoreToFrame_NEON(frame, start_x, start_y, tx_width, height,
-                                   src);
+  IdentityColumnStoreToFrame<8>(frame, start_x, start_y, tx_width, height, src);
 }
 
 void Identity16TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
@@ -3130,8 +3055,8 @@ void Identity16TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
     FlipColumns<16>(src, tx_width);
   }
   const int height = (non_zero_coeff_count == 1) ? 1 : tx_height;
-  Identity16ColumnStoreToFrame_NEON(frame, start_x, start_y, tx_width, height,
-                                    src);
+  IdentityColumnStoreToFrame<16>(frame, start_x, start_y, tx_width, height,
+                                 src);
 }
 
 void Identity32TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
@@ -3171,7 +3096,8 @@ void Identity32TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
 
   assert(!is_row);
   const int height = (non_zero_coeff_count == 1) ? 1 : tx_height;
-  Identity32ColumnStoreToFrame(frame, start_x, start_y, tx_width, height, src);
+  IdentityColumnStoreToFrame<32>(frame, start_x, start_y, tx_width, height,
+                                 src);
 }
 
 void Wht4TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
