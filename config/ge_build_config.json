@@ -678,7 +678,7 @@
       "configs": [
         {
           "builder": "RELEASE",
-          "experimental": true,
+          "experimental": false,
           "leader_board": false,
           "board_group": "jecht",
           "arch": "X86_INTERNAL"

@@ -16644,7 +16644,6 @@
             "guado"
         ],
         "chrome_sdk_build_chrome": false,
-        "important": false,
         "vm_tests": [],
         "vm_tests_override": null
     },
