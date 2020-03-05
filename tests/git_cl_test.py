@@ -13,6 +13,7 @@ import datetime
 import json
 import logging
 import multiprocessing
+import optparse
 import os
 import pprint
 import shutil
@@ -65,14 +66,22 @@ class ChangelistMock(object):
   # A class variable so we can access it when we don't have access to the
   # instance that's being set.
   desc = ''
-  def __init__(self, **kwargs):
-    pass
+
+  def __init__(self, gerrit_change=None, **kwargs):
+    self._gerrit_change = gerrit_change
+
   def GetIssue(self):
     return 1
+
   def FetchDescription(self):
     return ChangelistMock.desc
+
   def UpdateDescription(self, desc, force=False):
     ChangelistMock.desc = desc
+
+  def GetGerritChange(self, patchset=None, **kwargs):
+    del patchset
+    return self._gerrit_change
 
 
 class GitMocks(object):
@@ -3433,6 +3442,7 @@ class CMDTryTestCase(CMDTestCaseBase):
 
 
 class CMDUploadTestCase(CMDTestCaseBase):
+
   def setUp(self):
     super(CMDUploadTestCase, self).setUp()
     mock.patch('git_cl._fetch_tryjobs').start()
@@ -3482,6 +3492,109 @@ class CMDUploadTestCase(CMDTestCaseBase):
     ]
     git_cl._trigger_tryjobs.assert_called_once_with(mock.ANY, expected_buckets,
                                                     mock.ANY, 8)
+
+
+class MakeRequestsHelperTestCase(unittest.TestCase):
+
+  def exampleGerritChange(self):
+    return {
+        'host': 'chromium-review.googlesource.com',
+        'project': 'depot_tools',
+        'change': 1,
+        'patchset': 2,
+    }
+
+  def testMakeRequestsHelperNoOptions(self):
+    # Basic test for the helper function _make_tryjob_schedule_requests;
+    # it shouldn't throw AttributeError even when options doesn't have any
+    # of the expected values; it will use default option values.
+    changelist = ChangelistMock(gerrit_change=self.exampleGerritChange())
+    jobs = [('chromium', 'try', 'my-builder')]
+    options = optparse.Values()
+    requests = git_cl._make_tryjob_schedule_requests(
+        changelist, jobs, options, patchset=None)
+
+    # requestId is non-deterministic. Just assert that it's there and has
+    # a particular length.
+    self.assertEqual(len(requests[0]['scheduleBuild'].pop('requestId')), 36)
+    self.assertEqual(requests, [{
+        'scheduleBuild': {
+            'builder': {
+                'bucket': 'try',
+                'builder': 'my-builder',
+                'project': 'chromium'
+            },
+            'gerritChanges': [self.exampleGerritChange()],
+            'properties': {
+                'category': 'git_cl_try'
+            },
+            'tags': [{
+                'key': 'builder',
+                'value': 'my-builder'
+            }, {
+                'key': 'user_agent',
+                'value': 'git_cl_try'
+            }]
+        }
+    }])
+
+  def testMakeRequestsHelperPresubmitSetsDryRunProperty(self):
+    changelist = ChangelistMock(gerrit_change=self.exampleGerritChange())
+    jobs = [('chromium', 'try', 'presubmit')]
+    options = optparse.Values()
+    requests = git_cl._make_tryjob_schedule_requests(
+        changelist, jobs, options, patchset=None)
+    self.assertEqual(requests[0]['scheduleBuild']['properties'], {
+        'category': 'git_cl_try',
+        'dry_run': 'true'
+    })
+
+  def testMakeRequestsHelperRevisionSet(self):
+    # Gitiles commit is specified when revision is in options.
+    changelist = ChangelistMock(gerrit_change=self.exampleGerritChange())
+    jobs = [('chromium', 'try', 'my-builder')]
+    options = optparse.Values({'revision': 'ba5eba11'})
+    requests = git_cl._make_tryjob_schedule_requests(
+        changelist, jobs, options, patchset=None)
+    self.assertEqual(
+        requests[0]['scheduleBuild']['gitilesCommit'], {
+            'host': 'chromium-review.googlesource.com',
+            'id': 'ba5eba11',
+            'project': 'depot_tools'
+        })
+
+  def testMakeRequestsHelperRetryFailedSet(self):
+    # An extra tag is added when retry_failed is in options.
+    changelist = ChangelistMock(gerrit_change=self.exampleGerritChange())
+    jobs = [('chromium', 'try', 'my-builder')]
+    options = optparse.Values({'retry_failed': 'true'})
+    requests = git_cl._make_tryjob_schedule_requests(
+        changelist, jobs, options, patchset=None)
+    self.assertEqual(
+        requests[0]['scheduleBuild']['tags'], [
+            {
+                'key': 'builder',
+                'value': 'my-builder'
+            },
+            {
+                'key': 'user_agent',
+                'value': 'git_cl_try'
+            },
+            {
+                'key': 'retry_failed',
+                'value': '1'
+            }
+        ])
+
+  def testMakeRequestsHelperCategorySet(self):
+    # The category property can be overriden with options.
+    changelist = ChangelistMock(gerrit_change=self.exampleGerritChange())
+    jobs = [('chromium', 'try', 'my-builder')]
+    options = optparse.Values({'category': 'my-special-category'})
+    requests = git_cl._make_tryjob_schedule_requests(
+        changelist, jobs, options, patchset=None)
+    self.assertEqual(requests[0]['scheduleBuild']['properties'],
+                     {'category': 'my-special-category'})
 
 
 class CMDFormatTestCase(unittest.TestCase):
