@@ -13,6 +13,7 @@ from chromite.lib import build_target_util
 from chromite.lib import cros_test_lib
 from chromite.lib import workon_helper
 from chromite.lib.firmware import ap_firmware
+from chromite.lib.firmware import servo_lib
 
 
 class BuildTest(cros_test_lib.RunCommandTestCase):
@@ -98,3 +99,135 @@ class BuildTest(cros_test_lib.RunCommandTestCase):
     # has been set.
     self.rc.assertCommandContains(
         list(build_pkgs), extra_env={'FW_NAME': 'board-variant'})
+
+
+class DeployConfigTest(cros_test_lib.TestCase):
+  """Test the deploy configuration class."""
+
+  def setUp(self):
+    self.servo = servo_lib.Servo(servo_lib.SERVO_C2D2, 'abc123')
+
+    # Expected dut commands and base flash commands.
+    self.expected_dut_on = [['dut_on']]
+    self.expected_dut_off = [['dut_off']]
+    base_flashrom = ['flashrom']
+    base_futility = ['futility']
+    # The get commands function returning the base commands.
+    commands = (
+        self.expected_dut_on[:],
+        self.expected_dut_off[:],
+        base_flashrom[:],
+        base_futility[:],
+    )
+    self.get_commands = (
+        lambda *args: commands
+    )
+
+    # The expected commands.
+    self.image = 'image'
+    self.expected_flashrom = base_flashrom + [self.image]
+    self.expected_futility = base_futility + [self.image]
+    # The optional fast and verbose arguments.
+    self.flashrom_fast_verbose = ['-n', '-V']
+    self.futility_fast_verbose = ['--fast', '-v']
+
+  def _assert_command(self, flash, flashrom=False, fast_verbose=None):
+    """Helper to check the flash command.
+
+    Args:
+      flash (list[str]): The command being checked.
+      flashrom (bool): Check flashrom (True) or futility (False).
+      fast_verbose (bool|None): Assert the fast and verbose options were (True)
+        or were not (False) added to the command, or skip the check (None).
+    """
+    # Base command checks.
+    expected = self.expected_flashrom if flashrom else self.expected_futility
+    for element in expected:
+      self.assertIn(element, flash)
+
+    # Fast/verbose checks.
+    expected = (
+        self.flashrom_fast_verbose if flashrom else self.futility_fast_verbose)
+    if fast_verbose:
+      for element in expected:
+        self.assertIn(element, flash)
+    elif fast_verbose is False:
+      for element in expected:
+        self.assertNotIn(element, flash)
+
+  def test_force_fast(self):
+    """Test the force fast call-through."""
+    get_commands = lambda *args: ([], [], [], [])
+    force_fast = lambda futility, servo: futility and servo == self.servo
+
+    config = ap_firmware.DeployConfig(get_commands, force_fast=force_fast)
+    self.assertTrue(config.force_fast(flashrom=False, servo=self.servo))
+    self.assertFalse(config.force_fast(flashrom=True, servo=self.servo))
+
+  def test_no_force_fast(self):
+    """Sanity check no force fast function gets handled properly."""
+    get_commands = lambda *args: ([], [], [], [])
+
+    config = ap_firmware.DeployConfig(get_commands)
+    self.assertFalse(config.force_fast(flashrom=False, servo=self.servo))
+    self.assertFalse(config.force_fast(flashrom=True, servo=self.servo))
+
+  def test_dut_commands(self):
+    """Sanity check for the dut commands pass through."""
+    config = ap_firmware.DeployConfig(self.get_commands)
+    commands = config.get_servo_commands(self.servo, self.image)
+
+    self.assertListEqual(self.expected_dut_on, commands.dut_on)
+    self.assertListEqual(self.expected_dut_off, commands.dut_off)
+
+  def test_flashrom_command(self):
+    """Test the base flashrom command is built correctly."""
+    config = ap_firmware.DeployConfig(self.get_commands)
+    commands = config.get_servo_commands(self.servo, self.image, flashrom=True)
+
+    self._assert_command(commands.flash, flashrom=True, fast_verbose=False)
+
+  def test_fast_verbose_flashrom(self):
+    """Sanity check the fast/verbose flashrom arguments get added."""
+    config = ap_firmware.DeployConfig(self.get_commands)
+    commands = config.get_servo_commands(
+        self.servo, self.image, flashrom=True, fast=True, verbose=True)
+
+    self._assert_command(commands.flash, flashrom=True, fast_verbose=True)
+
+  def test_futility_command(self):
+    """Test the futility command is built correctly."""
+    config = ap_firmware.DeployConfig(self.get_commands)
+    commands = config.get_servo_commands(self.servo, self.image)
+
+    self._assert_command(commands.flash, flashrom=False, fast_verbose=False)
+
+  def test_fast_verbose_futility(self):
+    """Sanity check the fast/verbose futility arguments get added."""
+    config = ap_firmware.DeployConfig(self.get_commands)
+    commands = config.get_servo_commands(
+        self.servo, self.image, fast=True, verbose=True)
+
+    self._assert_command(commands.flash, flashrom=False, fast_verbose=True)
+
+  def test_force_fast_flashrom(self):
+    """Test the flashrom and fast command alterations."""
+    force_fast = lambda *args: True
+    config = ap_firmware.DeployConfig(
+        self.get_commands,
+        force_fast=force_fast,
+        servo_force_command=ap_firmware.DeployConfig.FORCE_FLASHROM)
+
+    commands = config.get_servo_commands(self.servo, self.image, verbose=True)
+    self._assert_command(commands.flash, flashrom=True, fast_verbose=True)
+
+  def test_force_fast_futility(self):
+    """Test the futility and fast command alterations."""
+    force_fast = lambda *args: True
+    config = ap_firmware.DeployConfig(
+        self.get_commands,
+        force_fast=force_fast,
+        servo_force_command=ap_firmware.DeployConfig.FORCE_FUTILITY)
+
+    commands = config.get_servo_commands(self.servo, self.image, verbose=True)
+    self._assert_command(commands.flash, flashrom=False, fast_verbose=True)

@@ -23,6 +23,10 @@ _CONFIG_BUILD_PACKAGES = 'BUILD_PACKAGES'
 # packages.
 BuildConfig = collections.namedtuple('BuildConfig', ('workon', 'build'))
 
+# The set of commands for a servo deploy.
+ServoDeployCommands = collections.namedtuple('ServoDeployCommands',
+                                             ('dut_on', 'dut_off', 'flash'))
+
 
 class Error(Exception):
   """Base error class for the module."""
@@ -123,6 +127,109 @@ def deploy(build_target,
     raise DeployError(str(e))
 
 
+class DeployConfig(object):
+  """Deploy configuration wrapper."""
+
+  FORCE_FLASHROM = 'flashrom'
+  FORCE_FUTILITY = 'futility'
+
+  def __init__(self,
+               get_commands,
+               force_fast=None,
+               servo_force_command=None,
+               ssh_force_command=None):
+    """DeployConfig init.
+
+    Args:
+      get_commands: A function that takes a servo and returns four sets of
+        commands: The dut on, dut off, flashrom, and futility commands to flash
+        a servo for a particular build target.
+      force_fast: A function that takes two arguments; a bool to indicate if it
+        is for a futility (True) or flashrom (False) command.
+      servo_force_command: One of the FORCE_{command} constants to force use of
+        a specific command, or None to not force.
+      ssh_force_command: One of the FORCE_{command} constants to force use of
+        a specific command, or None to not force.
+    """
+    self._get_commands = get_commands
+    self._force_fast = force_fast
+    self._servo_force_command = servo_force_command
+    self._ssh_force_command = ssh_force_command
+
+  @property
+  def servo_force_flashrom(self):
+    return self._servo_force_command == self.FORCE_FLASHROM
+
+  @property
+  def servo_force_futility(self):
+    return self._servo_force_command == self.FORCE_FUTILITY
+
+  @property
+  def ssh_force_flashrom(self):
+    return self._ssh_force_command == self.FORCE_FLASHROM
+
+  @property
+  def ssh_force_futility(self):
+    return self._ssh_force_command == self.FORCE_FUTILITY
+
+  def force_fast(self, servo, flashrom):
+    """Check if the fast flash option is required.
+
+    Some configurations fail flash verification, which can be skipped with
+    a fast flash.
+
+    Args:
+      servo (servo_lib.Servo): The servo connected to the DUT.
+      flashrom (bool): Whether flashrom is being used instead of futility.
+
+    Returns:
+      bool: True if it requires a fast flash, False otherwise.
+    """
+    if not self._force_fast:
+      # No function defined in the module, so no required cases.
+      return False
+
+    return self._force_fast(not flashrom, servo)
+
+  def get_servo_commands(self,
+                         servo,
+                         image_path,
+                         flashrom=False,
+                         fast=False,
+                         verbose=False):
+    """Get the servo flash commands from the build target config."""
+    dut_on, dut_off, flashrom_cmd, futility_cmd = self._get_commands(servo)
+
+    # Make any forced changes to the given options.
+    if not flashrom and self.servo_force_flashrom:
+      logging.notice('Forcing flashrom flash.')
+      flashrom = True
+    elif flashrom and self.servo_force_futility:
+      logging.notice('Forcing futility flash.')
+      flashrom = False
+
+    if not fast and self.force_fast(servo, flashrom):
+      logging.notice('Forcing fast flash.')
+      fast = True
+
+    # Make common command additions here to simplify the config modules.
+    flashrom_cmd += [image_path]
+    futility_cmd += [image_path]
+    futility_cmd += ['--force', '--wp=0']
+
+    if fast:
+      flashrom_cmd += ['-n']
+      futility_cmd += ['--fast']
+    if verbose:
+      flashrom_cmd += ['-V']
+      futility_cmd += ['-v']
+
+    return ServoDeployCommands(
+        dut_on=dut_on,
+        dut_off=dut_off,
+        flash=flashrom_cmd if flashrom else futility_cmd)
+
+
 def _get_build_config(build_target):
   """Get the relevant build config for |build_target|."""
   module = _get_config_module(build_target)
@@ -136,6 +243,29 @@ def _get_build_config(build_target):
         (build_target.name, build_target.name))
 
   return BuildConfig(workon=workon_pkgs, build=build_pkgs)
+
+
+def _get_deploy_config(build_target):
+  """Get the relevant deploy config for |build_target|."""
+  module = _get_config_module(build_target)
+
+  force_fast = None
+  if hasattr(module, 'is_fast_required'):
+    force_fast = module.is_fast_required
+
+  servo_force_command = None
+  if hasattr(module, '__use_flashrom__') and module.__use_flashrom__:
+    servo_force_command = DeployConfig.FORCE_FLASHROM
+
+  ssh_force_command = None
+  if hasattr(module, 'use_futility_ssh') and module.use_futility_ssh:
+    ssh_force_command = DeployConfig.FORCE_FUTILITY
+
+  return DeployConfig(
+      module.get_commands,
+      force_fast=force_fast,
+      servo_force_command=servo_force_command,
+      ssh_force_command=ssh_force_command)
 
 
 def _get_config_module(build_target):
