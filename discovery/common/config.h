@@ -22,6 +22,8 @@ struct Config {
 
   // Number of times new mDNS records should be announced, using an exponential
   // back off. -1 signifies that there should be no maximum.
+  // NOTE: This is expected to be -1 in all production scenarios and only be a
+  // different value during testing.
   int new_query_announcement_count = -1;
 };
 
