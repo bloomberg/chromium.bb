@@ -143,8 +143,10 @@ class PostFilter {
   //                and the output is written into |loop_restoration_buffer_|
   //                (which is just |source_buffer_| with a shift to the
   //                top-left).
-  void ApplyFilteringForOneSuperBlockRow(int row4x4, int sb4x4,
-                                         bool is_last_row);
+  // Returns the index of the last row whose post processing is complete and can
+  // be used for referencing.
+  int ApplyFilteringForOneSuperBlockRow(int row4x4, int sb4x4,
+                                        bool is_last_row);
 
   bool DoCdef() const { return DoCdef(frame_header_, do_post_filter_mask_); }
   static bool DoCdef(const ObuFrameHeader& frame_header,
@@ -533,6 +535,8 @@ class PostFilter {
   const uint8_t do_post_filter_mask_;
 
   ThreadPool* const thread_pool_;
+  // Tracks the progress of the post filters.
+  int progress_row_ = kLargeNegativeValue;
 
   // A small buffer to hold input source image block for loop restoration.
   // Its size is one processing unit size + borders.

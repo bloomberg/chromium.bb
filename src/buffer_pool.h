@@ -212,7 +212,17 @@ class RefCountedBuffer {
       parsed_condvar_.notify_all();
     } else if (frame_state == kFrameStateDecoded) {
       decoded_condvar_.notify_all();
+      progress_row_condvar_.notify_all();
     }
+  }
+
+  // Sets the progress of this frame to |progress_row| and notifies any threads
+  // that may be waiting on rows <= |progress_row|.
+  void SetProgress(int progress_row) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (progress_row_ >= progress_row) return;
+    progress_row_ = progress_row;
+    progress_row_condvar_.notify_all();
   }
 
   void MarkFrameAsStarted() {
@@ -221,6 +231,7 @@ class RefCountedBuffer {
     frame_state_ = kFrameStateStarted;
   }
 
+  // Waits until the frame has been parsed.
   void WaitUntilParsed() {
     std::unique_lock<std::mutex> lock(mutex_);
     while (frame_state_ < kFrameStateParsed) {
@@ -228,6 +239,16 @@ class RefCountedBuffer {
     }
   }
 
+  // Waits until the |progress_row| has been decoded (as indicated either by
+  // |progress_row_| or |frame_state_|).
+  void WaitUntil(int progress_row) {
+    std::unique_lock<std::mutex> lock(mutex_);
+    while (progress_row_ < progress_row && frame_state_ != kFrameStateDecoded) {
+      progress_row_condvar_.wait(lock);
+    }
+  }
+
+  // Waits until the entire frame has been decoded.
   void WaitUntilDecoded() {
     std::unique_lock<std::mutex> lock(mutex_);
     while (frame_state_ != kFrameStateDecoded) {
@@ -252,6 +273,10 @@ class RefCountedBuffer {
 
   std::mutex mutex_;
   FrameState frame_state_ = kFrameStateUnknown LIBGAV1_GUARDED_BY(mutex_);
+  int progress_row_ = kLargeNegativeValue LIBGAV1_GUARDED_BY(mutex_);
+  // Signaled when progress_row_ is updated or when frame_state_ is set to
+  // kFrameStateDecoded.
+  std::condition_variable progress_row_condvar_;
   // Signaled when the frame state is set to kFrameStateParsed.
   std::condition_variable parsed_condvar_;
   // Signaled when the frame state is set to kFrameStateDecoded.

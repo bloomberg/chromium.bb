@@ -344,8 +344,6 @@ StatusCode DecoderImpl::DecodeFrame(EncodedFrame* const encoded_frame) {
     if (status != kStatusOk) {
       return status;
     }
-    // Mark frame as decoded.
-    current_frame->SetFrameState(kFrameStateDecoded);
   } else {
     current_frame->WaitUntilDecoded();
   }
@@ -1067,12 +1065,18 @@ StatusCode DecoderImpl::DecodeTilesFrameParallel(
       }
     }
     // Apply post filters for the row above the current row.
-    post_filter->ApplyFilteringForOneSuperBlockRow(row4x4 - block_width4x4,
-                                                   block_width4x4, false);
+    const int progress_row = post_filter->ApplyFilteringForOneSuperBlockRow(
+        row4x4 - block_width4x4, block_width4x4, false);
+    if (progress_row >= 0) {
+      current_frame->SetProgress(progress_row);
+    }
   }
   // Apply post filters for the last row.
   post_filter->ApplyFilteringForOneSuperBlockRow(row4x4 - block_width4x4,
                                                  block_width4x4, true);
+  // Mark frame as decoded (we no longer care about row-level progress since the
+  // entire frame has been decoded).
+  current_frame->SetFrameState(kFrameStateDecoded);
   frame_scratch_buffer->tile_scratch_buffer_pool.Release(
       std::move(tile_scratch_buffer));
   return kStatusOk;

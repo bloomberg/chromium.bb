@@ -302,9 +302,9 @@ PostFilter::PostFilter(
 constexpr int PostFilter::kCdefLargeValue;
 #endif
 
-void PostFilter::ApplyFilteringForOneSuperBlockRow(int row4x4, int sb4x4,
-                                                   bool is_last_row) {
-  if (row4x4 < 0) return;
+int PostFilter::ApplyFilteringForOneSuperBlockRow(int row4x4, int sb4x4,
+                                                  bool is_last_row) {
+  if (row4x4 < 0) return kLargeNegativeValue;
   if (DoDeblock()) {
     ApplyDeblockFilterForOneSuperBlockRow(row4x4, sb4x4);
   }
@@ -353,6 +353,7 @@ void PostFilter::ApplyFilteringForOneSuperBlockRow(int row4x4, int sb4x4,
       ExtendBordersForReferenceFrame();
     }
   }
+  return is_last_row ? height_ : progress_row_;
 }
 
 void PostFilter::ApplySuperResThreaded() {
@@ -1091,6 +1092,9 @@ void PostFilter::ExtendBordersForReferenceFrame(int row4x4, int sb4x4) {
                      MultiplyBy4(sb4x4) - loop_restoration_height_offset,
                      subsampling_y_[plane]),
                  plane_height - row);
+    // We only need to track the progress of the Y plane since the progress of
+    // the U and V planes will be inferred from the progress of the Y plane.
+    if (plane == kPlaneY) progress_row_ = row + num_rows;
     const bool copy_bottom = row + num_rows == plane_height;
     const int stride = frame_buffer_.stride(plane);
     uint8_t* const start = frame_buffer_.data(plane) + row * stride;

@@ -18,6 +18,7 @@
 #include <cstring>
 
 #include "src/utils/common.h"
+#include "src/utils/constants.h"
 #include "src/utils/logging.h"
 
 namespace libgav1 {
@@ -180,6 +181,7 @@ RefCountedBufferPtr BufferPool::GetFreeBuffer() {
   for (auto buffer : buffers_) {
     if (!buffer->in_use_) {
       buffer->in_use_ = true;
+      buffer->progress_row_ = kLargeNegativeValue;
       buffer->SetFrameState(kFrameStateUnknown);
       return RefCountedBufferPtr(buffer, RefCountedBuffer::ReturnToBufferPool);
     }
@@ -198,6 +200,7 @@ RefCountedBufferPtr BufferPool::GetFreeBuffer() {
   }
   buffer->SetBufferPool(this);
   buffer->in_use_ = true;
+  buffer->progress_row_ = kLargeNegativeValue;
   buffer->SetFrameState(kFrameStateUnknown);
   return RefCountedBufferPtr(buffer, RefCountedBuffer::ReturnToBufferPool);
 }
