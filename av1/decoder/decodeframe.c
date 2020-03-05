@@ -121,17 +121,6 @@ static AOM_INLINE void loop_restoration_read_sb_coeffs(
     const AV1_COMMON *const cm, MACROBLOCKD *xd, aom_reader *const r, int plane,
     int runit_idx);
 
-static AOM_INLINE void setup_compound_reference_mode(AV1_COMMON *cm) {
-  cm->comp_fwd_ref[0] = LAST_FRAME;
-  cm->comp_fwd_ref[1] = LAST2_FRAME;
-  cm->comp_fwd_ref[2] = LAST3_FRAME;
-  cm->comp_fwd_ref[3] = GOLDEN_FRAME;
-
-  cm->comp_bwd_ref[0] = BWDREF_FRAME;
-  cm->comp_bwd_ref[1] = ALTREF2_FRAME;
-  cm->comp_bwd_ref[2] = ALTREF_FRAME;
-}
-
 static int read_is_valid(const uint8_t *start, size_t len, const uint8_t *end) {
   return len != 0 && len <= (size_t)(end - start);
 }
@@ -5228,8 +5217,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
   cm->tx_mode = read_tx_mode(cm, rb);
   current_frame->reference_mode = read_frame_reference_mode(cm, rb);
-  if (current_frame->reference_mode != SINGLE_REFERENCE)
-    setup_compound_reference_mode(cm);
 
   av1_setup_skip_mode_allowed(cm);
   current_frame->skip_mode_info.skip_mode_flag =

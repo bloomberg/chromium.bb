@@ -492,10 +492,6 @@ typedef struct AV1Common {
 
   int reduced_tx_set_used;
 
-  // Context probabilities for reference frame prediction
-  MV_REFERENCE_FRAME comp_fwd_ref[FWD_REFS];
-  MV_REFERENCE_FRAME comp_bwd_ref[BWD_REFS];
-
   FRAME_CONTEXT *fc; /* this frame entropy */
   FRAME_CONTEXT *default_frame_context;
   int primary_ref_frame;

@@ -960,19 +960,19 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
       // Decode forward references.
       if (!bit) {
         const int bit1 = READ_REF_BIT(comp_ref_p1);
-        ref_frame[!idx] = cm->comp_fwd_ref[bit1 ? 1 : 0];
+        ref_frame[!idx] = bit1 ? LAST2_FRAME : LAST_FRAME;
       } else {
         const int bit2 = READ_REF_BIT(comp_ref_p2);
-        ref_frame[!idx] = cm->comp_fwd_ref[bit2 ? 3 : 2];
+        ref_frame[!idx] = bit2 ? GOLDEN_FRAME : LAST3_FRAME;
       }
 
       // Decode backward references.
       const int bit_bwd = READ_REF_BIT(comp_bwdref_p);
       if (!bit_bwd) {
         const int bit1_bwd = READ_REF_BIT(comp_bwdref_p1);
-        ref_frame[idx] = cm->comp_bwd_ref[bit1_bwd];
+        ref_frame[idx] = bit1_bwd ? ALTREF2_FRAME : BWDREF_FRAME;
       } else {
-        ref_frame[idx] = cm->comp_bwd_ref[2];
+        ref_frame[idx] = ALTREF_FRAME;
       }
     } else if (mode == SINGLE_REFERENCE) {
       const int bit0 = READ_REF_BIT(single_ref_p1);
