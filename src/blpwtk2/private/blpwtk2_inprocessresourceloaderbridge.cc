@@ -42,8 +42,6 @@
 #include <third_party/blink/public/platform/web_url_request.h>
 #include <url/gurl.h>
 
-#include <unordered_map>
-
 namespace blpwtk2 {
 
 class InProcessResourceLoaderBridge::InProcessURLRequest : public URLRequest {
@@ -176,25 +174,6 @@ class InProcessResourceLoaderBridge::InProcessURLRequest : public URLRequest {
   net::HttpRequestHeaders d_requestHeaders;
 };
 
-// ContextManager is a singleton
-// It provides a way to reuse InProcessResourceContext for equivalent ResourceRequestInfoProvider
-class ContextManager {
- public:
-  static ContextManager& instance();
-
-  using ResourceCtxt = InProcessResourceLoaderBridge::InProcessResourceContext;
-
-  scoped_refptr<ResourceCtxt> getContext(
-      const content::ResourceRequestInfoProvider& request_info_provider);
-
-  void onContextDeleted(ResourceCtxt* ctxt);
-
- private:
-  ContextManager() = default;
-  std::unordered_map<ResourceCtxt*, content::ResourceRequestInfoProvider>
-      d_contextRequestMap;
-};
-
 class InProcessResourceLoaderBridge::InProcessResourceContext
     : public base::RefCounted<InProcessResourceContext>,
       public ResourceContext {
@@ -206,8 +185,8 @@ class InProcessResourceLoaderBridge::InProcessResourceContext
   const GURL& url() const;
 
   // manipulators
-  int start(std::unique_ptr<content::ResourceReceiver> peer);
-  void cancel(int receiverID);
+  bool start(std::unique_ptr<content::ResourceReceiver> peer);
+  void cancel();
   int requesterID() const;
 
   // ResourceContext overrides
@@ -222,13 +201,9 @@ class InProcessResourceLoaderBridge::InProcessResourceContext
   void finish() override;
 
   // notified by its owner InProcessResourceLoaderBridge
-  void OnBridgeDeleted(int receiverID);
+  void OnBridgeDeleted();
 
  private:
-  // bool for cancel requested or not
-  using ReceiverItem = std::pair<std::shared_ptr<content::ResourceReceiver>, bool>;
-  // map receivev ID -> ReceiverItem
-  using PeerMap = std::unordered_map<int, ReceiverItem>;
   friend class base::RefCounted<InProcessResourceContext>;
   ~InProcessResourceContext() final;
 
@@ -239,10 +214,9 @@ class InProcessResourceLoaderBridge::InProcessResourceContext
   std::unique_ptr<InProcessURLRequest> d_urlRequest;
   GURL d_url;
   scoped_refptr<net::HttpResponseHeaders> d_responseHeaders;
-  PeerMap d_peers;
+  std::unique_ptr<content::ResourceReceiver> d_peer;
   void* d_userData;
   int64_t d_totalTransferSize;
-  bool d_startRequested;
   bool d_started;
   bool d_waitingForCancelLoad;  // waiting for cancelLoad()
   bool d_canceled;
@@ -261,7 +235,6 @@ InProcessResourceLoaderBridge::InProcessResourceContext::
       d_url(request_info_provider.url()),
       d_userData(0),
       d_totalTransferSize(0),
-      d_startRequested(false),
       d_started(false),
       d_waitingForCancelLoad(false),
       d_canceled(false),
@@ -274,9 +247,7 @@ InProcessResourceLoaderBridge::InProcessResourceContext::
 }
 
 InProcessResourceLoaderBridge::InProcessResourceContext::
-    ~InProcessResourceContext() {
-  ContextManager::instance().onContextDeleted(this);
-}
+    ~InProcessResourceContext() {}
 
 // accessors
 const GURL& InProcessResourceLoaderBridge::InProcessResourceContext::url()
@@ -285,7 +256,7 @@ const GURL& InProcessResourceLoaderBridge::InProcessResourceContext::url()
 }
 
 // manipulators
-int InProcessResourceLoaderBridge::InProcessResourceContext::start(
+bool InProcessResourceLoaderBridge::InProcessResourceContext::start(
     std::unique_ptr<content::ResourceReceiver> peer) {
   DCHECK(Statics::isInApplicationMainThread());
   DCHECK(!d_started);
@@ -294,39 +265,15 @@ int InProcessResourceLoaderBridge::InProcessResourceContext::start(
   DCHECK(!d_failed);
   DCHECK(!d_finished);
 
-  static int gReceiverCount = 0;
-  int receiverID = ++gReceiverCount;
-  d_peers[receiverID] = std::make_pair(std::move(peer), false);
+  d_peer = std::move(peer);
 
-  if(!d_startRequested) {
-    d_startRequested = true;
-    base::MessageLoopCurrent::Get()->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&InProcessResourceContext::startLoad, this));
-  }
-  return receiverID;
+  base::MessageLoopCurrent::Get()->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&InProcessResourceContext::startLoad, this));
+  return true;
 }
 
-void InProcessResourceLoaderBridge::InProcessResourceContext::cancel(int receiverID) {
+void InProcessResourceLoaderBridge::InProcessResourceContext::cancel() {
   DCHECK(Statics::isInApplicationMainThread());
-  auto iter = d_peers.find(receiverID);
-  if (iter != d_peers.end()) {
-    // Mark cancel requested
-    iter->second.second = true;
-  } else {
-    return;
-  }
-
-  // Check if there is any not canceled items
-  bool hasNotCanceledItem = false;
-  for (const auto& item : d_peers) {
-    if (!item.second.second) {
-      hasNotCanceledItem = true;
-      break;
-    }
-  }
-  if (hasNotCanceledItem) {
-    return;
-  }
 
   if (d_waitingForCancelLoad || d_canceled) {
     // Sometimes Cancel() gets called twice.  If we already got canceled,
@@ -403,19 +350,15 @@ void InProcessResourceLoaderBridge::InProcessResourceContext::addResponseData(
 
   d_totalTransferSize += length;
 
-  if (d_peers.empty())
+  if (!d_peer)
     return;
 
   ensureResponseHeadersSent(buffer, length);
   // The bridge might have been disposed when sending the response
   // headers, so we need to check again.
-  if (d_peers.empty())
+  if (!d_peer)
     return;
-  // Use a copy of d_peers because it could be updated in OnReceivedData
-  auto peers = d_peers;
-  for(const auto& item: peers) {
-    item.second.first->OnReceivedData(buffer, length);
-  }
+  d_peer->OnReceivedData(buffer, length);
 }
 
 void InProcessResourceLoaderBridge::InProcessResourceContext::failed() {
@@ -440,32 +383,25 @@ void InProcessResourceLoaderBridge::InProcessResourceContext::finish() {
     return;
   }
 
-  if (!d_peers.empty()) {
+  if (d_peer) {
     ensureResponseHeadersSent(0, 0);
   }
 
   // The bridge might have been disposed when the headers were sent,
   // so check this again.
-  if (!d_peers.empty()) {
+  if (d_peer) {
     int errorCode =
         d_failed ? net::ERR_FAILED : d_canceled ? net::ERR_ABORTED : net::OK;
     network::URLLoaderCompletionStatus completeStatus;
+    completeStatus.error_code = errorCode;
     completeStatus.exists_in_cache = false;
     completeStatus.completion_time = base::TimeTicks::Now();
     completeStatus.encoded_data_length = d_totalTransferSize;
     completeStatus.encoded_body_length = d_totalTransferSize;
     completeStatus.decoded_body_length = d_totalTransferSize;
-
-    // Use a copy of d_peers because it may be removed in OnCompletedRequest
-    auto peers = d_peers;
-    for (const auto& item : peers) {
-      bool cancelRequested = item.second.second;
-      completeStatus.error_code =
-          cancelRequested ? net::ERR_ABORTED : errorCode;
-      item.second.first->OnCompletedRequest(completeStatus, d_url);
-    }
+    d_peer->OnCompletedRequest(completeStatus, d_url);
   } else {
-    LOG(WARNING) << "d_peers has been deleted before finishing loading";
+    LOG(WARNING) << "d_peer has been deleted before finishing loading";
   }
 
   // This is to balance the AddRef from startLoad().
@@ -497,7 +433,7 @@ void InProcessResourceLoaderBridge::InProcessResourceContext::cancelLoad() {
   DCHECK(d_waitingForCancelLoad);
 
   if (!d_started || d_finished) {
-    if (!d_peers.empty()) {
+    if (d_peer) {
       // Resource canceled before we could start it on the loader, or the
       // loader finished before we could notify it of cancellation.  We can
       // now safely destroy ourself.
@@ -508,11 +444,7 @@ void InProcessResourceLoaderBridge::InProcessResourceContext::cancelLoad() {
       completeStatus.encoded_data_length = d_totalTransferSize;
       completeStatus.encoded_body_length = d_totalTransferSize;
       completeStatus.decoded_body_length = d_totalTransferSize;
-      // Use a copy of d_peers because it could be updated in OnCompletedRequest
-      auto peers = d_peers;
-      for(const auto& item: peers) {
-        item.second.first->OnCompletedRequest(completeStatus, d_url);
-      }
+      d_peer->OnCompletedRequest(completeStatus, d_url);
     }
     return;
   }
@@ -525,9 +457,9 @@ void InProcessResourceLoaderBridge::InProcessResourceContext::cancelLoad() {
 void InProcessResourceLoaderBridge::InProcessResourceContext::
     ensureResponseHeadersSent(const char* buffer, int length) {
   DCHECK(Statics::isInApplicationMainThread());
-  DCHECK(!d_peers.empty());
+  DCHECK(d_peer);
 
-  if (!d_responseHeaders.get() || d_peers.empty()) {
+  if (!d_responseHeaders.get() || !d_peer) {
     return;
   }
 
@@ -544,45 +476,20 @@ void InProcessResourceLoaderBridge::InProcessResourceContext::
                        &responseInfo.mime_type);
   }
 
-  // Use a copy of d_peers because it could be updated in OnReceivedResponse
-  auto peers = d_peers;
-  for(const auto& item: peers) {
-    item.second.first->OnReceivedResponse(responseInfo);
-  }
+  d_peer->OnReceivedResponse(responseInfo);
 }
 
-void InProcessResourceLoaderBridge::InProcessResourceContext::OnBridgeDeleted(
-    int receiverID) {
-  d_peers.erase(receiverID);
-}
-
-ContextManager& ContextManager::instance() {
-  static ContextManager gInstance;
-  return gInstance;
-}
-
-scoped_refptr<ContextManager::ResourceCtxt> ContextManager::getContext(
-    const content::ResourceRequestInfoProvider& request_info_provider) {
-  for (const auto& item : d_contextRequestMap) {
-    if (item.second == request_info_provider) {
-      return item.first;
-    }
-  }
-  auto ref = base::MakeRefCounted<ResourceCtxt>(request_info_provider);
-  d_contextRequestMap[ref.get()] = request_info_provider;
-  return ref;
-}
-
-void ContextManager::onContextDeleted(ResourceCtxt* ctxt) {
-  d_contextRequestMap.erase(ctxt);
+void InProcessResourceLoaderBridge::InProcessResourceContext::OnBridgeDeleted() {
+  d_peer.reset();
 }
 
 // InProcessResourceLoaderBridge
 
 InProcessResourceLoaderBridge::InProcessResourceLoaderBridge(
     const content::ResourceRequestInfoProvider& request_info_provider)
-    : ResourceLoaderBridge(request_info_provider) {
-  d_context = ContextManager::instance().getContext(request_info_provider);
+    : ResourceLoaderBridge(request_info_provider),
+      d_context(base::MakeRefCounted<InProcessResourceContext>(
+          request_info_provider)) {
   DCHECK(Statics::isInApplicationMainThread());
   DCHECK(Statics::inProcessResourceLoader);
 }
@@ -590,7 +497,7 @@ InProcessResourceLoaderBridge::InProcessResourceLoaderBridge(
 InProcessResourceLoaderBridge::~InProcessResourceLoaderBridge() {
   // Since InProcessResourceContext::startLoad() called AddRef(), d_context may
   // still be alive after this destructor
-  d_context->OnBridgeDeleted(d_receiverID);
+  d_context->OnBridgeDeleted();
 }
 
 void InProcessResourceLoaderBridge::SetDefersLoading(bool defers) {}
@@ -607,12 +514,12 @@ void InProcessResourceLoaderBridge::StartLoadingBody(
 void InProcessResourceLoaderBridge::Start(
     std::unique_ptr<content::ResourceReceiver> receiver) {
   DCHECK(Statics::isInApplicationMainThread());
-  d_receiverID = d_context->start(std::move(receiver));
+  d_context->start(std::move(receiver));
 }
 
 void InProcessResourceLoaderBridge::Cancel() {
   DCHECK(Statics::isInApplicationMainThread());
-  d_context->cancel(d_receiverID);
+  d_context->cancel();
 }
 
 void InProcessResourceLoaderBridge::SyncLoad(
