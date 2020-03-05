@@ -75,7 +75,7 @@ enum OpenCLDebugInfo100Instructions {
     OpenCLDebugInfo100DebugMacroUndef = 33,
     OpenCLDebugInfo100DebugImportedEntity = 34,
     OpenCLDebugInfo100DebugSource = 35,
-    OpenCLDebugInfo100InstructionsMax = 0x7ffffff
+    OpenCLDebugInfo100InstructionsMax = 0x7fffffff
 };
 
 
@@ -98,7 +98,7 @@ enum OpenCLDebugInfo100DebugInfoFlags {
     OpenCLDebugInfo100FlagIsEnumClass = 0x4000,
     OpenCLDebugInfo100FlagTypePassByValue = 0x8000,
     OpenCLDebugInfo100FlagTypePassByReference = 0x10000,
-    OpenCLDebugInfo100DebugInfoFlagsMax = 0x7ffffff
+    OpenCLDebugInfo100DebugInfoFlagsMax = 0x7fffffff
 };
 
 enum OpenCLDebugInfo100DebugBaseTypeAttributeEncoding {
@@ -110,14 +110,14 @@ enum OpenCLDebugInfo100DebugBaseTypeAttributeEncoding {
     OpenCLDebugInfo100SignedChar = 5,
     OpenCLDebugInfo100Unsigned = 6,
     OpenCLDebugInfo100UnsignedChar = 7,
-    OpenCLDebugInfo100DebugBaseTypeAttributeEncodingMax = 0x7ffffff
+    OpenCLDebugInfo100DebugBaseTypeAttributeEncodingMax = 0x7fffffff
 };
 
 enum OpenCLDebugInfo100DebugCompositeType {
     OpenCLDebugInfo100Class = 0,
     OpenCLDebugInfo100Structure = 1,
     OpenCLDebugInfo100Union = 2,
-    OpenCLDebugInfo100DebugCompositeTypeMax = 0x7ffffff
+    OpenCLDebugInfo100DebugCompositeTypeMax = 0x7fffffff
 };
 
 enum OpenCLDebugInfo100DebugTypeQualifier {
@@ -125,7 +125,7 @@ enum OpenCLDebugInfo100DebugTypeQualifier {
     OpenCLDebugInfo100VolatileType = 1,
     OpenCLDebugInfo100RestrictType = 2,
     OpenCLDebugInfo100AtomicType = 3,
-    OpenCLDebugInfo100DebugTypeQualifierMax = 0x7ffffff
+    OpenCLDebugInfo100DebugTypeQualifierMax = 0x7fffffff
 };
 
 enum OpenCLDebugInfo100DebugOperation {
@@ -139,13 +139,13 @@ enum OpenCLDebugInfo100DebugOperation {
     OpenCLDebugInfo100StackValue = 7,
     OpenCLDebugInfo100Constu = 8,
     OpenCLDebugInfo100Fragment = 9,
-    OpenCLDebugInfo100DebugOperationMax = 0x7ffffff
+    OpenCLDebugInfo100DebugOperationMax = 0x7fffffff
 };
 
 enum OpenCLDebugInfo100DebugImportedEntity {
     OpenCLDebugInfo100ImportedModule = 0,
     OpenCLDebugInfo100ImportedDeclaration = 1,
-    OpenCLDebugInfo100DebugImportedEntityMax = 0x7ffffff
+    OpenCLDebugInfo100DebugImportedEntityMax = 0x7fffffff
 };
 
 

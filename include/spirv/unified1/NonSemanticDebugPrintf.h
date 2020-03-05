@@ -25,21 +25,21 @@
 // MATERIALS OR THE USE OR OTHER DEALINGS IN THE MATERIALS.
 // 
 
-#ifndef SPIRV_UNIFIED1_AMD_shader_explicit_vertex_parameter_H_
-#define SPIRV_UNIFIED1_AMD_shader_explicit_vertex_parameter_H_
+#ifndef SPIRV_UNIFIED1_NonSemanticDebugPrintf_H_
+#define SPIRV_UNIFIED1_NonSemanticDebugPrintf_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 enum {
-    AMD_shader_explicit_vertex_parameterRevision = 4,
-    AMD_shader_explicit_vertex_parameterRevision_BitWidthPadding = 0x7fffffff
+    NonSemanticDebugPrintfRevision = 1,
+    NonSemanticDebugPrintfRevision_BitWidthPadding = 0x7fffffff
 };
 
-enum AMD_shader_explicit_vertex_parameterInstructions {
-    AMD_shader_explicit_vertex_parameterInterpolateAtVertexAMD = 1,
-    AMD_shader_explicit_vertex_parameterInstructionsMax = 0x7fffffff
+enum NonSemanticDebugPrintfInstructions {
+    NonSemanticDebugPrintfDebugPrintf = 1,
+    NonSemanticDebugPrintfInstructionsMax = 0x7fffffff
 };
 
 
@@ -47,4 +47,4 @@ enum AMD_shader_explicit_vertex_parameterInstructions {
 }
 #endif
 
-#endif // SPIRV_UNIFIED1_AMD_shader_explicit_vertex_parameter_H_
+#endif // SPIRV_UNIFIED1_NonSemanticDebugPrintf_H_

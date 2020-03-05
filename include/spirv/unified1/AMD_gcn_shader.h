@@ -41,7 +41,7 @@ enum AMD_gcn_shaderInstructions {
     AMD_gcn_shaderCubeFaceIndexAMD = 1,
     AMD_gcn_shaderCubeFaceCoordAMD = 2,
     AMD_gcn_shaderTimeAMD = 3,
-    AMD_gcn_shaderInstructionsMax = 0x7ffffff
+    AMD_gcn_shaderInstructionsMax = 0x7fffffff
 };
 
 

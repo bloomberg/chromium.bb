@@ -184,7 +184,7 @@ class CLikeGenerator(LangGenerator):
         return 'enum {}{} {}'.format(prefix, name, '{')
 
     def enum_end(self, prefix, enum):
-        return '    {}{}Max = 0x7ffffff\n{};\n'.format(prefix, enum, '}')
+        return '    {}{}Max = 0x7fffffff\n{};\n'.format(prefix, enum, '}')
 
     def cpp_guard_preamble(self):
         return '#ifdef __cplusplus\nextern "C" {\n#endif\n'
