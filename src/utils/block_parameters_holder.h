@@ -50,7 +50,9 @@ class BlockParametersHolder {
     return block_parameters_cache_[row4x4][column4x4];
   }
 
-  BlockParameters** BaseAddress() { return block_parameters_cache_.data(); }
+  BlockParameters** Address(int row4x4, int column4x4) {
+    return block_parameters_cache_.data() + row4x4 * columns4x4_ + column4x4;
+  }
 
   int columns4x4() const { return columns4x4_; }
 

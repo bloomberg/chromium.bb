@@ -135,6 +135,14 @@ class Tile : public Allocable {
     return row4x4 > row4x4_start_ && column4x4 > column4x4_start_;
   }
 
+  BlockParameters** BlockParametersAddress(int row4x4, int column4x4) const {
+    return block_parameters_holder_.Address(row4x4, column4x4);
+  }
+
+  int BlockParametersStride() const {
+    return block_parameters_holder_.columns4x4();
+  }
+
   // Returns true if Parameters() can be called with |row| and |column| as
   // inputs, false otherwise.
   bool HasParameters(int row, int column) const {
@@ -747,9 +755,9 @@ struct Tile::Block {
           column4x4 -
           (tile.sequence_header_.color_config.subsampling_x & width4x4));
     }
-    const ptrdiff_t stride = tile.block_parameters_holder_.columns4x4();
-    BlockParameters** const bps = tile.block_parameters_holder_.BaseAddress() +
-                                  row4x4 * stride + column4x4;
+    const ptrdiff_t stride = tile.BlockParametersStride();
+    BlockParameters** const bps =
+        tile.BlockParametersAddress(row4x4, column4x4);
     bp = *bps;
     // bp_top is valid only if top_available[kPlaneY] is true.
     if (top_available[kPlaneY]) {
@@ -795,8 +803,8 @@ struct Tile::Block {
   // returns true indicating that the block has neighbors that are suitable for
   // use by overlapped motion compensation.
   bool HasOverlappableCandidates() const {
-    const ptrdiff_t stride = tile.block_parameters_holder_.columns4x4();
-    BlockParameters** const bps = tile.block_parameters_holder_.BaseAddress();
+    const ptrdiff_t stride = tile.BlockParametersStride();
+    BlockParameters** const bps = tile.BlockParametersAddress(0, 0);
     if (top_available[kPlaneY]) {
       BlockParameters** bps_top = bps + (row4x4 - 1) * stride + (column4x4 | 1);
       const int columns = std::min(tile.frame_header_.columns4x4 - column4x4,

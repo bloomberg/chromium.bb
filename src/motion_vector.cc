@@ -203,71 +203,65 @@ void AddReferenceMvCandidate(
 }
 
 int GetMinimumStep(int block_width_or_height4x4, int delta_row_or_column) {
+  assert(delta_row_or_column < 0);
   if (block_width_or_height4x4 >= 16) return 4;
-  if (std::abs(delta_row_or_column) > 1) return 2;
+  if (delta_row_or_column < -1) return 2;
   return 0;
 }
 
 // 7.10.2.2.
-void ScanRow(const Tile::Block& block, int delta_row, bool is_compound,
-             const MotionVector global_mv[2], bool* const found_new_mv,
-             bool* const found_match, int* const num_mv_found,
+void ScanRow(const Tile::Block& block, int mv_column, int delta_row,
+             bool is_compound, const MotionVector global_mv[2],
+             bool* const found_new_mv, bool* const found_match,
+             int* const num_mv_found,
              PredictionParameters* const prediction_parameters) {
-  int delta_column = 0;
-  if (std::abs(delta_row) > 1) {
-    delta_row += block.row4x4 & 1;
-    delta_column = 1 - (block.column4x4 & 1);
-  }
   const int mv_row = block.row4x4 + delta_row;
   if (!block.tile.IsTopInside(mv_row + 1)) return;
-  const int end_mv_column =
-      block.column4x4 + delta_column +
-      std::min({static_cast<int>(block.width4x4),
+  const int width4x4 = block.width4x4;
+  const int min_step = GetMinimumStep(width4x4, delta_row);
+  BlockParameters** bps = block.tile.BlockParametersAddress(mv_row, mv_column);
+  BlockParameters** const end_bps =
+      bps +
+      std::min({static_cast<int>(width4x4),
                 block.tile.frame_header().columns4x4 - block.column4x4, 16});
-  const int min_step = GetMinimumStep(block.width4x4, delta_row);
-  int mv_column = block.column4x4 + delta_column;
   do {
-    const BlockParameters& mv_bp = block.tile.Parameters(mv_row, mv_column);
-    const int step =
-        std::max(std::min(block.width4x4,
-                          static_cast<int>(kNum4x4BlocksWide[mv_bp.size])),
-                 min_step);
+    const BlockParameters& mv_bp = **bps;
+    const int step = std::max(
+        std::min(width4x4, static_cast<int>(kNum4x4BlocksWide[mv_bp.size])),
+        min_step);
     AddReferenceMvCandidate(block, mv_bp, is_compound, MultiplyBy2(step),
                             global_mv, found_new_mv, found_match, num_mv_found,
                             prediction_parameters);
-    mv_column += step;
-  } while (mv_column < end_mv_column);
+    bps += step;
+  } while (bps < end_bps);
 }
 
 // 7.10.2.3.
-void ScanColumn(const Tile::Block& block, int delta_column, bool is_compound,
-                const MotionVector global_mv[2], bool* const found_new_mv,
-                bool* const found_match, int* const num_mv_found,
+void ScanColumn(const Tile::Block& block, int mv_row, int delta_column,
+                bool is_compound, const MotionVector global_mv[2],
+                bool* const found_new_mv, bool* const found_match,
+                int* const num_mv_found,
                 PredictionParameters* const prediction_parameters) {
-  int delta_row = 0;
-  if (std::abs(delta_column) > 1) {
-    delta_row = 1 - (block.row4x4 & 1);
-    delta_column += block.column4x4 & 1;
-  }
   const int mv_column = block.column4x4 + delta_column;
   if (!block.tile.IsLeftInside(mv_column + 1)) return;
-  const int end_mv_row =
-      block.row4x4 + delta_row +
-      std::min({static_cast<int>(block.height4x4),
-                block.tile.frame_header().rows4x4 - block.row4x4, 16});
-  const int min_step = GetMinimumStep(block.height4x4, delta_column);
-  int mv_row = block.row4x4 + delta_row;
+  const int height4x4 = block.height4x4;
+  const int min_step = GetMinimumStep(height4x4, delta_column);
+  const ptrdiff_t stride = block.tile.BlockParametersStride();
+  BlockParameters** bps = block.tile.BlockParametersAddress(mv_row, mv_column);
+  BlockParameters** const end_bps =
+      bps +
+      stride * std::min({static_cast<int>(height4x4),
+                         block.tile.frame_header().rows4x4 - block.row4x4, 16});
   do {
-    const BlockParameters& mv_bp = block.tile.Parameters(mv_row, mv_column);
-    const int step =
-        std::max(std::min(block.height4x4,
-                          static_cast<int>(kNum4x4BlocksHigh[mv_bp.size])),
-                 min_step);
+    const BlockParameters& mv_bp = **bps;
+    const int step = std::max(
+        std::min(height4x4, static_cast<int>(kNum4x4BlocksHigh[mv_bp.size])),
+        min_step);
     AddReferenceMvCandidate(block, mv_bp, is_compound, MultiplyBy2(step),
                             global_mv, found_new_mv, found_match, num_mv_found,
                             prediction_parameters);
-    mv_row += step;
-  } while (mv_row < end_mv_row);
+    bps += step * stride;
+  } while (bps < end_bps);
 }
 
 // 7.10.2.4.
@@ -713,10 +707,10 @@ void FindMvStack(
   if (is_compound) SetupGlobalMv(block, 1, &global_mv[1]);
   bool found_new_mv = false;
   bool found_row_match = false;
-  ScanRow(block, -1, is_compound, global_mv, &found_new_mv, &found_row_match,
-          &num_mv_found, prediction_parameters);
+  ScanRow(block, block.column4x4, -1, is_compound, global_mv, &found_new_mv,
+          &found_row_match, &num_mv_found, prediction_parameters);
   bool found_column_match = false;
-  ScanColumn(block, -1, is_compound, global_mv, &found_new_mv,
+  ScanColumn(block, block.row4x4, -1, is_compound, global_mv, &found_new_mv,
              &found_column_match, &num_mv_found, prediction_parameters);
   if (std::max(block.width4x4, block.height4x4) <= 16) {
     ScanPoint(block, -1, block.width4x4, is_compound, global_mv, &found_new_mv,
@@ -737,12 +731,14 @@ void FindMvStack(
   static constexpr int deltas[2] = {-3, -5};
   for (int i = 0; i < 2; ++i) {
     if (i == 0 || block.height4x4 > 1) {
-      ScanRow(block, deltas[i], is_compound, global_mv, &dummy_bool,
-              &found_row_match, &num_mv_found, prediction_parameters);
+      ScanRow(block, block.column4x4 | 1, deltas[i] + (block.row4x4 & 1),
+              is_compound, global_mv, &dummy_bool, &found_row_match,
+              &num_mv_found, prediction_parameters);
     }
     if (i == 0 || block.width4x4 > 1) {
-      ScanColumn(block, deltas[i], is_compound, global_mv, &dummy_bool,
-                 &found_column_match, &num_mv_found, prediction_parameters);
+      ScanColumn(block, block.row4x4 | 1, deltas[i] + (block.column4x4 & 1),
+                 is_compound, global_mv, &dummy_bool, &found_column_match,
+                 &num_mv_found, prediction_parameters);
     }
   }
   if (num_mv_found < 2) {
