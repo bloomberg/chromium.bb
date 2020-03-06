@@ -45,7 +45,7 @@ class ContentClient : public ChromeContentClient {
 
     base::StringPiece GetDataResource(
         int             resource_id,
-        ui::ScaleFactor scale_factor) const override;
+        ui::ScaleFactor scale_factor) override;
         // Return the contents of a resource in a StringPiece given the resource id.
 };
 

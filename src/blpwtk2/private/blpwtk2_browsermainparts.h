@@ -24,6 +24,7 @@
 #define INCLUDED_BLPWTK2_BROWSERMAINPARTS_H
 
 #include <content/public/browser/browser_main_parts.h>
+#include <content/public/common/service_manager_connection.h>
 #include <chrome/browser/chrome_browser_main_extra_parts.h>
 #include <base/macros.h>
 #include <vector>
@@ -38,7 +39,6 @@ class BrowserMainParts final : public content::BrowserMainParts {
  public:
   BrowserMainParts();
   ~BrowserMainParts() override;
-  void ServiceManagerConnectionStarted(content::ServiceManagerConnection* connection) override;
   void AddParts(ChromeBrowserMainExtraParts* parts);
   void PreDefaultMainMessageLoopRun(base::OnceClosure quit_closure) final;
 

@@ -61,7 +61,8 @@ struct InProcessRenderer {
                      const scoped_refptr<base::SingleThreadTaskRunner>& browserIOTaskRunner,
                      mojo::OutgoingInvitation* broker_client_invitation,
                      const std::string&                                 serviceToken,
-                     int                                                mojoHandle);
+                     int                                                mojoHandle,
+                     const int32_t                                      renderer_client_id);
 
     // Perform any cleanup, such as shutting down the secondary thread if we
     // are in the original chromium thread mode.

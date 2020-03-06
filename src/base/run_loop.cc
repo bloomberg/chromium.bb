@@ -23,7 +23,7 @@ ThreadLocalPointer<RunLoop::Delegate>& GetTlsDelegate() {
   return *instance;
 }
 
-ThreadLocalPointer<RunLoop::Delegate>& GetTlsPumpDelegate() {
+ThreadLocalPointer<MessagePump::Delegate>& GetTlsPumpDelegate() {
   static base::NoDestructor<ThreadLocalPointer<MessagePump::Delegate>> instance;
   return *instance;
 }

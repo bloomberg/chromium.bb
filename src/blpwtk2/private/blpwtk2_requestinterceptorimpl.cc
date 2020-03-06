@@ -48,18 +48,5 @@ net::URLRequestJob* RequestInterceptorImpl::MaybeInterceptRequest(
   return nullptr;
 }
 
-net::URLRequestJob* RequestInterceptorImpl::MaybeInterceptRedirect(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate,
-      const GURL& location) const {
-  return nullptr;
-}
-
-net::URLRequestJob* RequestInterceptorImpl::MaybeInterceptResponse(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const {
-  return nullptr;
-}
-
 }  // close namespace blpwtk2
 

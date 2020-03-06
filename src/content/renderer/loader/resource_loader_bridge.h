@@ -60,7 +60,6 @@ class CONTENT_EXPORT ResourceRequestInfoProvider {
   bool reportRawHeaders() const;
   bool hasUserGesture() const;
   int routingId() const;
-  base::Optional<base::UnguessableToken> appCacheHostId() const;
   net::RequestPriority priority() const;
   scoped_refptr<network::ResourceRequestBody> requestBody() const;
 
@@ -76,7 +75,6 @@ class CONTENT_EXPORT ResourceRequestInfoProvider {
   bool reportRawHeaders_;
   bool hasUserGesture_;
   int routingId_;
-  base::Optional<base::UnguessableToken> appCacheHostId_;
   net::RequestPriority priority_;
   scoped_refptr<network::ResourceRequestBody> requestBody_;
 };
@@ -90,7 +88,7 @@ class CONTENT_EXPORT ResourceReceiver {
   // Called when response headers are available (after all redirects have
   // been followed).
   virtual void OnReceivedResponse(
-      const network::ResourceResponseInfo& info) = 0;
+      network::mojom::URLResponseHeadPtr head) = 0;
 
   // Called when a chunk of response data is available. This method may
   // be called multiple times or not at all if an error occurs.
@@ -109,8 +107,8 @@ class CONTENT_EXPORT BodyLoaderRequestInfoProvider
     : public ResourceRequestInfoProvider {
  public:
   BodyLoaderRequestInfoProvider(
-      const CommonNavigationParams& common_params,
-      const CommitNavigationParams& commit_params,
+      const mojom::CommonNavigationParams& common_params,
+      const mojom::CommitNavigationParams& commit_params,
       const network::ResourceResponseHead& head,
       const network::mojom::URLLoaderClientEndpointsPtr& client_endpoints,
       scoped_refptr<base::SingleThreadTaskRunner> runner,
@@ -137,7 +135,7 @@ class CONTENT_EXPORT BodyLoaderReceiver : public ResourceReceiver {
                      blink::WebNavigationBodyLoader::Client* client);
   ~BodyLoaderReceiver() override;
 
-  void OnReceivedResponse(const network::ResourceResponseInfo& info) override;
+  void OnReceivedResponse(network::mojom::URLResponseHeadPtr head) override;
   void OnReceivedData(const char* data, std::size_t data_length) override;
   void OnCompletedRequest(const network::URLLoaderCompletionStatus&,
                           const GURL&) override;
@@ -159,7 +157,7 @@ class CONTENT_EXPORT RequestPeerReceiver : public ResourceReceiver {
                       scoped_refptr<base::SingleThreadTaskRunner> runner);
   ~RequestPeerReceiver() override;
 
-  void OnReceivedResponse(const network::ResourceResponseInfo& info) override;
+  void OnReceivedResponse(network::mojom::URLResponseHeadPtr head) override;
   void OnReceivedData(const char* data, std::size_t data_length) override;
   void OnCompletedRequest(const network::URLLoaderCompletionStatus&,
                           const GURL&) override;

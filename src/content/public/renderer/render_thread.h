@@ -61,7 +61,8 @@ class CONTENT_EXPORT RenderThread : virtual public ChildThread {
   // implement --single-process functionality.
   static void InitInProcessRenderer(
 		  const InProcessChildThreadParams& params,
-          std::unique_ptr<blink::scheduler::WebThreadScheduler> main_thread_scheduler);
+          std::unique_ptr<blink::scheduler::WebThreadScheduler> main_thread_scheduler,
+          int renderer_client_id);
   static scoped_refptr<base::SingleThreadTaskRunner> IOTaskRunner();
   static void CleanUpInProcessRenderer();
 

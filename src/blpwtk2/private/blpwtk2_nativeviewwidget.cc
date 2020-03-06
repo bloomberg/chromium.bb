@@ -45,11 +45,11 @@ NativeViewWidget::NativeViewWidget(gfx::NativeView contents,
     params.bounds = gfx::Rect(0, 0, 10, 10);
     params.delegate = this;
     params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
-    params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
+    params.opacity = views::Widget::InitParams::WindowOpacity::kOpaque;
     params.activatable = views::Widget::InitParams::ACTIVATABLE_DEFAULT;
     params.layer_type = ui::LAYER_SOLID_COLOR;
     d_impl->set_focus_on_creation(false);
-    d_impl->Init(params);
+    d_impl->Init(std::move(params));
     d_nativeViewHost->Attach(contents);
 
     // Windows-specific code!

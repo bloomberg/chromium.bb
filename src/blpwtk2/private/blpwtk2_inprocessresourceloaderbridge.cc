@@ -58,14 +58,6 @@ class InProcessResourceLoaderBridge::InProcessURLRequest : public URLRequest {
         d_routingId(request_info_provider.routingId()),
         d_priority(request_info_provider.priority()),
         d_requestBody(request_info_provider.requestBody()) {
-    auto optional_host_id = request_info_provider.appCacheHostId();
-    static std::string empty_host_id{};
-    if(optional_host_id.has_value()) {
-      const base::UnguessableToken& token = optional_host_id.value();
-      d_appCacheHostId = String(token.ToString());
-    } else {
-      d_appCacheHostId = String(empty_host_id);
-    }
     d_requestHeaders.MergeFrom(request_info_provider.requestHeaders());
   }
 
@@ -138,8 +130,6 @@ class InProcessResourceLoaderBridge::InProcessURLRequest : public URLRequest {
 
   int requesterID() const override { return d_routingId; }
 
-  AppCacheHostID appCacheHostID() const override { return d_appCacheHostId; }
-
   // see ConvertWebKitPriorityToNetPriority() in web_url_loader_impl.cc:
   Priority priority() const override {
     switch (d_priority) {
@@ -167,7 +157,6 @@ class InProcessResourceLoaderBridge::InProcessURLRequest : public URLRequest {
   bool d_reportRawHeaders;
   bool d_hasUserGesture;
   int d_routingId;
-  AppCacheHostID d_appCacheHostId;
   net::RequestPriority d_priority;
 
   scoped_refptr<network::ResourceRequestBody> d_requestBody;
@@ -267,7 +256,7 @@ bool InProcessResourceLoaderBridge::InProcessResourceContext::start(
 
   d_peer = std::move(peer);
 
-  base::MessageLoopCurrent::Get()->task_runner()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&InProcessResourceContext::startLoad, this));
   return true;
 }
@@ -282,7 +271,7 @@ void InProcessResourceLoaderBridge::InProcessResourceContext::cancel() {
   }
 
   d_waitingForCancelLoad = true;
-  base::MessageLoopCurrent::Get()->task_runner()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&InProcessResourceContext::cancelLoad, this));
 }
 
@@ -463,20 +452,20 @@ void InProcessResourceLoaderBridge::InProcessResourceContext::
     return;
   }
 
-  network::ResourceResponseInfo responseInfo;
-  responseInfo.headers = d_responseHeaders;
-  responseInfo.content_length = d_responseHeaders->GetContentLength();
-  d_responseHeaders->GetMimeTypeAndCharset(&responseInfo.mime_type,
-                                           &responseInfo.charset);
-  d_responseHeaders.reset();
-
-  if (responseInfo.mime_type.empty() && length > 0) {
+  network::mojom::URLResponseHeadPtr responseInfo =
+      network::mojom::URLResponseHead::New();
+  responseInfo->headers = d_responseHeaders;
+  responseInfo->content_length = d_responseHeaders->GetContentLength();
+  d_responseHeaders->GetMimeTypeAndCharset(&responseInfo->mime_type,
+                                           &responseInfo->charset);
+   d_responseHeaders.reset();
+  if (responseInfo->mime_type.empty() && length > 0) {
     net::SniffMimeType(buffer, std::min(length, net::kMaxBytesToSniff), d_url,
                        "", net::ForceSniffFileUrlsForHtml::kDisabled,
-                       &responseInfo.mime_type);
-  }
+                       &responseInfo->mime_type);
+  }  
 
-  d_peer->OnReceivedResponse(responseInfo);
+  d_peer->OnReceivedResponse(std::move(responseInfo));
 }
 
 void InProcessResourceLoaderBridge::InProcessResourceContext::OnBridgeDeleted() {

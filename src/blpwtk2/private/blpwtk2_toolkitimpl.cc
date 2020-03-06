@@ -299,14 +299,14 @@ static void startRenderer(
   // host's IO thread.  This way, the renderer needn't create a ChildIO
   // thread.
   if (isHost) {
-    ioTaskRunner = base::CreateSingleThreadTaskRunnerWithTraits(
+    ioTaskRunner = base::CreateSingleThreadTaskRunner(
         {content::BrowserThread::IO});
   }
 
   LOG(INFO) << "Initializing InProcessRenderer";
   InProcessRenderer::init(isHost, ioTaskRunner, broker_client_invitation,
                           channelInfo.getMojoServiceToken(),
-                          channelInfo.getMojoControllerHandle());
+                          channelInfo.getMojoControllerHandle(), 0);
 }
 
 static size_t GetSwitchPrefixLength(const base::string16& string)
@@ -438,7 +438,7 @@ void ToolkitImpl::startMessageLoop(const sandbox::SandboxInterfaceInfo& sandboxI
         // that was installed above.  Once a message loop is created, it
         // places a reference to itself in TLS.  It can be looked up by
         // calling MessageLoop::current().
-        d_renderMainMessageLoop = std::make_unique<base::MessageLoop>(base::MessageLoop::TYPE_UI);
+        d_renderMainMessageLoop = std::make_unique<base::MessageLoop>(base::MessagePumpType::UI);
     }
     else {
         DCHECK(Statics::isOriginalThreadMode());

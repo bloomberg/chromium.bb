@@ -383,14 +383,15 @@ class UkmRecorderFactoryImpl : public cc::UkmRecorderFactory {
 // static
 void RenderThread::InitInProcessRenderer(
 		const InProcessChildThreadParams& params,
-        std::unique_ptr<blink::scheduler::WebThreadScheduler> main_thread_scheduler)
+        std::unique_ptr<blink::scheduler::WebThreadScheduler> main_thread_scheduler,
+        int renderer_client_id)
 {
   *g_render_process = RenderProcessImpl::Create();
 
   // RenderThreadImpl doesn't currently support a proper shutdown sequence
   // and it's okay when we're running in multi-process mode because renderers
   // get killed by the OS. In-process mode is used for test and debug only.
-  new RenderThreadImpl(params, std::move(main_thread_scheduler));
+  new RenderThreadImpl(params, renderer_client_id, std::move(main_thread_scheduler));
 }
 
 // static

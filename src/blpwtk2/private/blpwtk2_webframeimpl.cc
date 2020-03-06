@@ -82,12 +82,11 @@ void WebFrameImpl::setContentSettingsDelegate(WebContentSettingsDelegate *conten
 // blink::WebContentSettingsClient overrides
 bool WebFrameImpl::AllowRunningInsecureContent(
         bool                            enabledPerSettings,
-        const blink::WebSecurityOrigin& securityOrigin,
         const blink::WebURL&            url)
 {
     if (!d_contentSettingsDelegate) {
         return blink::WebContentSettingsClient::AllowRunningInsecureContent(
-            enabledPerSettings, securityOrigin,url);
+            enabledPerSettings, url);
     }
 
     return d_contentSettingsDelegate->allowRunningInsecureContent(enabledPerSettings);
