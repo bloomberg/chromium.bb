@@ -719,39 +719,15 @@ StatusCode DecoderImpl::DecodeTiles(
       // use smaller buffer.
       threaded_window_buffer_size *= num_planes;
     }
-    if (frame_scratch_buffer->threaded_window_buffer_size <
-        threaded_window_buffer_size) {
-      // threaded_window_buffer will be subdivided by PostFilter into windows of
-      // width 512 pixels. Each row in the window is filtered by a worker
-      // thread. To avoid false sharing, each 512-pixel row processed by one
-      // thread should not share a cache line with a row processed by another
-      // thread. So we align threaded_window_buffer to the cache line size. In
-      // addition, it is faster to memcpy from an aligned buffer.
-      //
-      // On Linux, the cache line size can be looked up with the command:
-      //   getconf LEVEL1_DCACHE_LINESIZE
-      //
-      // The cache line size should ideally be queried at run time. 64 is a
-      // common cache line size of x86 CPUs. Web searches showed the cache line
-      // size of ARM CPUs is 32 or 64 bytes. So aligning to 64-byte boundary
-      // will work for all CPUs that we care about, even though it is excessive
-      // for some ARM CPUs.
-      constexpr size_t kCacheLineSize = 64;
-      // To avoid false sharing, PostFilter's window width in bytes should also
-      // be a multiple of the cache line size. For simplicity, we check the
-      // window width in pixels.
-      assert(window_buffer_width % kCacheLineSize == 0);
-      frame_scratch_buffer->threaded_window_buffer =
-          MakeAlignedUniquePtr<uint8_t>(kCacheLineSize,
-                                        threaded_window_buffer_size);
-      if (frame_scratch_buffer->threaded_window_buffer == nullptr) {
-        LIBGAV1_DLOG(ERROR,
-                     "Failed to allocate threaded loop restoration buffer.\n");
-        frame_scratch_buffer->threaded_window_buffer_size = 0;
-        return kStatusOutOfMemory;
-      }
-      frame_scratch_buffer->threaded_window_buffer_size =
-          threaded_window_buffer_size;
+    // To avoid false sharing, PostFilter's window width in bytes should be a
+    // multiple of the cache line size. For simplicity, we check the window
+    // width in pixels.
+    assert(window_buffer_width % kCacheLineSize == 0);
+    if (!frame_scratch_buffer->threaded_window_buffer.Resize(
+            threaded_window_buffer_size)) {
+      LIBGAV1_DLOG(ERROR,
+                   "Failed to resize threaded loop restoration buffer.\n");
+      return kStatusOutOfMemory;
     }
   }
 
@@ -782,17 +758,10 @@ StatusCode DecoderImpl::DecodeTiles(
         ((MultiplyBy4(frame_header.columns4x4) + MultiplyBy2(kSuperResBorder)) *
          (sequence_header.color_config.bitdepth == 8 ? sizeof(uint8_t)
                                                      : sizeof(uint16_t)));
-    if (frame_scratch_buffer->superres_line_buffer_size <
-        superres_line_buffer_size) {
-      frame_scratch_buffer->superres_line_buffer =
-          MakeAlignedUniquePtr<uint8_t>(16, superres_line_buffer_size);
-      if (frame_scratch_buffer->superres_line_buffer == nullptr) {
-        LIBGAV1_DLOG(ERROR, "Failed to allocate superres line buffer.\n");
-        frame_scratch_buffer->superres_line_buffer_size = 0;
-        return kStatusOutOfMemory;
-      }
-      frame_scratch_buffer->superres_line_buffer_size =
-          superres_line_buffer_size;
+    if (!frame_scratch_buffer->superres_line_buffer.Resize(
+            superres_line_buffer_size)) {
+      LIBGAV1_DLOG(ERROR, "Failed to resize superres line buffer.\n");
+      return kStatusOutOfMemory;
     }
   }
 

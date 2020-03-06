@@ -29,6 +29,7 @@
 #include "src/tile_scratch_buffer.h"
 #include "src/utils/array_2d.h"
 #include "src/utils/constants.h"
+#include "src/utils/dynamic_buffer.h"
 #include "src/utils/memory.h"
 #include "src/utils/stack.h"
 #include "src/utils/types.h"
@@ -47,11 +48,15 @@ struct FrameScratchBuffer {
   SymbolDecoderContext symbol_decoder_context;
   std::unique_ptr<ResidualBufferPool> residual_buffer_pool;
   Array2D<SuperBlockState> superblock_state;
-  AlignedUniquePtr<uint8_t> threaded_window_buffer;
-  size_t threaded_window_buffer_size = 0;
+  // threaded_window_buffer will be subdivided by PostFilter into windows of
+  // width 512 pixels. Each row in the window is filtered by a worker thread.
+  // To avoid false sharing, each 512-pixel row processed by one thread should
+  // not share a cache line with a row processed by another thread. So we align
+  // threaded_window_buffer to the cache line size. In addition, it is faster to
+  // memcpy from an aligned buffer.
+  AlignedDynamicBuffer<uint8_t, kCacheLineSize> threaded_window_buffer;
   // Buffer used to temporarily store the input row for applying SuperRes.
-  AlignedUniquePtr<uint8_t> superres_line_buffer;
-  size_t superres_line_buffer_size = 0;
+  AlignedDynamicBuffer<uint8_t, 16> superres_line_buffer;
   // Buffer used to store the deblocked pixels that are necessary for loop
   // restoration. This buffer will store 4 rows for every 64x64 block (4 rows
   // for every 32x32 for chroma with subsampling). The indices of the rows that

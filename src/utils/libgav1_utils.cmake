@@ -31,6 +31,7 @@ list(APPEND libgav1_utils_sources
             "${libgav1_source}/utils/constants.h"
             "${libgav1_source}/utils/cpu.cc"
             "${libgav1_source}/utils/cpu.h"
+            "${libgav1_source}/utils/dynamic_buffer.h"
             "${libgav1_source}/utils/entropy_decoder.cc"
             "${libgav1_source}/utils/entropy_decoder.h"
             "${libgav1_source}/utils/executor.cc"

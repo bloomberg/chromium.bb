@@ -25,6 +25,7 @@
 #include "src/dsp/common.h"
 #include "src/symbol_decoder_context.h"
 #include "src/utils/constants.h"
+#include "src/utils/dynamic_buffer.h"
 #include "src/utils/entropy_decoder.h"
 #include "src/utils/types.h"
 
@@ -87,8 +88,7 @@ class LoopRestorationInfo {
   // points to an array of num_units_[plane] elements.
   RestorationUnitInfo* loop_restoration_info_[kMaxPlanes];
   // Owns the memory that loop_restoration_info_[plane] points to.
-  std::unique_ptr<RestorationUnitInfo[]> loop_restoration_info_buffer_;
-  int loop_restoration_info_buffer_size_ = 0;
+  DynamicBuffer<RestorationUnitInfo> loop_restoration_info_buffer_;
   bool plane_needs_filtering_[kMaxPlanes];
   const LoopRestoration* loop_restoration_;
   int8_t subsampling_x_;

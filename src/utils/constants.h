@@ -149,6 +149,15 @@ enum {
   kMaxTileColumns = 64,
   kMaxTileRows = 64,
   kMaxOperatingPoints = 32,
+  // The cache line size should ideally be queried at run time. 64 is a common
+  // cache line size of x86 CPUs. Web searches showed the cache line size of ARM
+  // CPUs is 32 or 64 bytes. So aligning to 64-byte boundary will work for all
+  // CPUs that we care about, even though it is excessive for some ARM
+  // CPUs.
+  //
+  // On Linux, the cache line size can be looked up with the command:
+  //   getconf LEVEL1_DCACHE_LINESIZE
+  kCacheLineSize = 64,
 };  // anonymous enum
 
 enum FrameType : uint8_t {

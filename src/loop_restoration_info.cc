@@ -72,16 +72,10 @@ bool LoopRestorationInfo::Reset(const LoopRestoration* const loop_restoration,
         num_horizontal_units_[plane] * num_vertical_units_[plane];
     total_num_units += num_units_[plane];
   }
-  if (total_num_units > loop_restoration_info_buffer_size_) {
-    // Allocate the RestorationUnitInfo arrays for all planes in a single heap
-    // allocation and divide up the buffer into arrays of the right sizes.
-    loop_restoration_info_buffer_.reset(
-        new (std::nothrow) RestorationUnitInfo[total_num_units]);
-    if (loop_restoration_info_buffer_ == nullptr) {
-      loop_restoration_info_buffer_size_ = 0;
-      return false;
-    }
-    loop_restoration_info_buffer_size_ = total_num_units;
+  // Allocate the RestorationUnitInfo arrays for all planes in a single heap
+  // allocation and divide up the buffer into arrays of the right sizes.
+  if (!loop_restoration_info_buffer_.Resize(total_num_units)) {
+    return false;
   }
   RestorationUnitInfo* loop_restoration_info =
       loop_restoration_info_buffer_.get();
