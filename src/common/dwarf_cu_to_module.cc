@@ -350,9 +350,10 @@ void DwarfCUToModule::GenericDIEHandler::ProcessAttributeReference(
       SpecificationByOffset::iterator spec = specifications->find(data);
       if (spec != specifications->end()) {
         specification_ = &spec->second;
-      } else {
-        // The DW_AT_specification is a forward reference.
+      } else if (data > offset_) {
         forward_ref_die_offset_ = data;
+      } else {
+        cu_context_->reporter->UnknownSpecification(offset_, data);
       }
       break;
     }
@@ -544,8 +545,10 @@ void DwarfCUToModule::FuncHandler::ProcessAttributeReference(
       AbstractOriginByOffset::const_iterator origin = origins.find(data);
       if (origin != origins.end()) {
         abstract_origin_ = &(origin->second);
-      } else {
+      } else if (data > offset_) {
         forward_ref_die_offset_ = data;
+      } else {
+        cu_context_->reporter->UnknownAbstractOrigin(offset_, data);
       }
       break;
     }
@@ -581,9 +584,9 @@ void DwarfCUToModule::FuncHandler::Finish() {
   // to be processed, and fix up the name of the appropriate Module::Function.
   // "name_" will have already been fixed up in EndAttributes().
   if (!name_.empty()) {
-    auto Iter = cu_context_->forward_ref_die_to_func.find(offset_);
-    if (Iter != cu_context_->forward_ref_die_to_func.end())
-      Iter->second->name = name_;
+    auto iter = cu_context_->forward_ref_die_to_func.find(offset_);
+    if (iter != cu_context_->forward_ref_die_to_func.end())
+      iter->second->name = name_;
   }
 
   if (!ranges_) {
@@ -638,10 +641,17 @@ void DwarfCUToModule::FuncHandler::Finish() {
       // If the function address is zero this is a sign that this function
       // description is just empty debug data and should just be discarded.
       cu_context_->functions.push_back(func.release());
-      if (forward_ref_die_offset_ != 0)
-        cu_context_->forward_ref_die_to_func[forward_ref_die_offset_] =
-            cu_context_->functions.back();
-     }
+      if (forward_ref_die_offset_ != 0) {
+        auto iter =
+            cu_context_->forward_ref_die_to_func.find(forward_ref_die_offset_);
+        if (iter == cu_context_->forward_ref_die_to_func.end()) {
+          cu_context_->reporter->UnknownSpecification(offset_,
+                                                      forward_ref_die_offset_);
+        } else {
+          iter->second = cu_context_->functions.back();
+        }
+      }
+    }
   } else if (inline_) {
     AbstractOrigin origin(name_);
     cu_context_->file_context->file_private_->origins[offset_] = origin;
@@ -695,8 +705,8 @@ void DwarfCUToModule::WarningReporter::UnknownSpecification(uint64 offset,
                                                             uint64 target) {
   CUHeading();
   fprintf(stderr, "%s: the DIE at offset 0x%llx has a DW_AT_specification"
-          " attribute referring to the die at offset 0x%llx, which either"
-          " was not marked as a declaration, or comes later in the file\n",
+          " attribute referring to the DIE at offset 0x%llx, which was not"
+          " marked as a declaration\n",
           filename_.c_str(), offset, target);
 }
 
@@ -704,8 +714,8 @@ void DwarfCUToModule::WarningReporter::UnknownAbstractOrigin(uint64 offset,
                                                              uint64 target) {
   CUHeading();
   fprintf(stderr, "%s: the DIE at offset 0x%llx has a DW_AT_abstract_origin"
-          " attribute referring to the die at offset 0x%llx, which either"
-          " was not marked as an inline, or comes later in the file\n",
+          " attribute referring to the DIE at offset 0x%llx, which was not"
+          " marked as an inline\n",
           filename_.c_str(), offset, target);
 }
 
