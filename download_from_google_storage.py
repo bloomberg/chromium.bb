@@ -267,6 +267,14 @@ def _downloader_worker_thread(thread_num, q, force, base_url,
             thread_num, file_url, output_filename))
         ret_codes.put((1, 'File %s for %s does not exist.' % (
             file_url, output_filename)))
+      elif code == 401:
+        out_q.put(
+            """%d> Failed to fetch file %s for %s due to unauthorized access,
+            skipping. Try running `gsutil.py config` and pass 0 if you don't
+            know your project id.""" % (thread_num, file_url, output_filename))
+        ret_codes.put(
+            (1, 'Failed to fetch file %s for %s due to unauthorized access.' %
+             (file_url, output_filename)))
       else:
         # Other error, probably auth related (bad ~/.boto, etc).
         out_q.put('%d> Failed to fetch file %s for %s, skipping. [Err: %s]' %
