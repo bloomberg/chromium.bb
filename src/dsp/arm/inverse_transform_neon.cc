@@ -2263,11 +2263,9 @@ LIBGAV1_ALWAYS_INLINE void Wht4_NEON(uint8_t* dst, const int dst_stride,
   for (int row = 0; row < 4; row += 2) {
     frame_data = Load4<0>(dst, frame_data);
     frame_data = Load4<1>(dst + dst_stride, frame_data);
-    const int16x8_t a = vreinterpretq_s16_u16(vmovl_u8(frame_data));
     const int16x8_t residual = vcombine_s16(s[row], s[row + 1]);
-    // Saturate to prevent overflowing int16_t
-    const int16x8_t b = vqaddq_s16(a, residual);
-    frame_data = vqmovun_s16(b);
+    const uint16x8_t b = vaddw_u8(vreinterpretq_u16_s16(residual), frame_data);
+    frame_data = vqmovun_s16(vreinterpretq_s16_u16(b));
     StoreLo4(dst, frame_data);
     dst += dst_stride;
     StoreHi4(dst, frame_data);
@@ -2373,15 +2371,15 @@ LIBGAV1_ALWAYS_INLINE void StoreToFrameWithRound(
 
   // Enable for 4x4, 4x8, 4x16
   if (tx_height < 32 && tx_width == 4) {
-    const uint8x8_t zero = vdup_n_u8(0);
+    uint8x8_t frame_data = vdup_n_u8(0);
     for (int i = 0; i < tx_height; ++i) {
       const int row = flip_rows ? (tx_height - i - 1) * 4 : i * 4;
       const int16x4_t residual = vld1_s16(&source[row]);
-      const int16x8_t frame_data =
-          vreinterpretq_s16_u16(vmovl_u8(Load4<0>(dst, zero)));
+      frame_data = Load4<0>(dst, frame_data);
       const int16x4_t a = vrshr_n_s16(residual, 4);
-      const int16x4_t b = vqadd_s16(a, vget_low_s16(frame_data));
-      const uint8x8_t d = vqmovun_s16(vcombine_s16(b, b));
+      const uint16x8_t b =
+          vaddw_u8(vreinterpretq_u16_s16(vcombine_s16(a, a)), frame_data);
+      const uint8x8_t d = vqmovun_s16(vreinterpretq_s16_u16(b));
       StoreLo4(dst, d);
       dst += stride;
     }
@@ -2390,11 +2388,10 @@ LIBGAV1_ALWAYS_INLINE void StoreToFrameWithRound(
     for (int i = 0; i < tx_height; ++i) {
       const int row = flip_rows ? (tx_height - i - 1) * 8 : i * 8;
       const int16x8_t residual = vld1q_s16(&source[row]);
-      const int16x8_t frame_data =
-          vreinterpretq_s16_u16(vmovl_u8(vld1_u8(dst)));
+      const uint8x8_t frame_data = vld1_u8(dst);
       const int16x8_t a = vrshrq_n_s16(residual, 4);
-      const int16x8_t b = vqaddq_s16(a, frame_data);
-      const uint8x8_t d = vqmovun_s16(b);
+      const uint16x8_t b = vaddw_u8(vreinterpretq_u16_s16(a), frame_data);
+      const uint8x8_t d = vqmovun_s16(vreinterpretq_s16_u16(b));
       vst1_u8(dst, d);
       dst += stride;
     }
@@ -2411,13 +2408,13 @@ LIBGAV1_ALWAYS_INLINE void StoreToFrameWithRound(
         const uint8x16_t frame_data = vld1q_u8(frame[y] + x);
         const int16x8_t a = vrshrq_n_s16(residual, 4);
         const int16x8_t a_hi = vrshrq_n_s16(residual_hi, 4);
-        const int16x8_t d =
-            vreinterpretq_s16_u16(vmovl_u8(vget_low_u8(frame_data)));
-        const int16x8_t d_hi =
-            vreinterpretq_s16_u16(vmovl_u8(vget_high_u8(frame_data)));
-        const int16x8_t e = vqaddq_s16(a, d);
-        const int16x8_t e_hi = vqaddq_s16(a_hi, d_hi);
-        vst1q_u8(frame[y] + x, vcombine_u8(vqmovun_s16(e), vqmovun_s16(e_hi)));
+        const uint16x8_t b =
+            vaddw_u8(vreinterpretq_u16_s16(a), vget_low_u8(frame_data));
+        const uint16x8_t b_hi =
+            vaddw_u8(vreinterpretq_u16_s16(a_hi), vget_high_u8(frame_data));
+        vst1q_u8(frame[y] + x,
+                 vcombine_u8(vqmovun_s16(vreinterpretq_s16_u16(b)),
+                             vqmovun_s16(vreinterpretq_s16_u16(b_hi))));
         j += 16;
       } while (j < tx_width);
     }
