@@ -101,6 +101,8 @@ class Authenticator(object):
     # which then must use it.
     if LuciContextAuthenticator.is_luci():
       return LuciContextAuthenticator()
+    # TODO(crbug.com/1059384): Automatically detect when running on cloudtop,
+    # and use CookiesAuthenticator instead.
     if GceAuthenticator.is_gce():
       return GceAuthenticator()
     return CookiesAuthenticator()
@@ -465,6 +467,10 @@ def ReadHttpResponse(conn, accept_statuses=frozenset([200])):
       host = auth_match.group(1) if auth_match else conn.req_host
       print('Authentication failed. Please make sure your .gitcookies '
             'file has credentials for %s.' % host)
+    # TODO(crbug.com/1059384): Automatically detect when running on cloudtop.
+    if isinstance(Authenticator.get(), GceAuthenticator):
+      print('If you\'re on a cloudtop instance, export '
+            'SKIP_GCE_AUTH_FOR_GIT=1 in your env.')
     print('Try:\n  git cl creds-check')
 
   reason = '%s: %s' % (response.reason, contents)
