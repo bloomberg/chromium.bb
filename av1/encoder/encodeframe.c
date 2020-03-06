@@ -4489,8 +4489,8 @@ static void init_ref_frame_space(AV1_COMP *cpi, ThreadData *td, int mi_row,
     if (idx > 2 && !is_overlay) {
       // If the predictive coding gains are smaller than the previous more
       // relevant frame over certain amount, discard this frame.
-      if (labs(inter_cost[rank_index[idx]]) <
-              labs(inter_cost[rank_index[idx - 1]]) / 8 ||
+      if (llabs(inter_cost[rank_index[idx]]) <
+              llabs(inter_cost[rank_index[idx - 1]]) / 8 ||
           inter_cost[rank_index[idx]] == 0)
         cutoff_ref = 1;
 
