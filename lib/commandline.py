@@ -23,8 +23,7 @@ import sys
 import six
 from six.moves import urllib
 
-# TODO(build): sort the cbuildbot.constants/lib.constants issue;
-# lib shouldn't have to import from buildbot like this.
+from chromite.lib import build_target_util
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_collections
@@ -167,6 +166,16 @@ def NormalizeUri(value):
     return urllib.parse.urlunparse(o)
   else:
     return NormalizeLocalOrGSPath(value)
+
+
+def ParseBuildTarget(value):
+  """Parse a build target argument into a build target object."""
+  if not build_target_util.is_valid_name(value):
+    msg = 'Invalid build target name.'
+    logging.error(msg)
+    raise ValueError(msg)
+
+  return build_target_util.BuildTarget(value)
 
 
 # A Device object holds information parsed from the command line input:
@@ -434,6 +443,7 @@ class _SplitExtendAction(argparse.Action):
 VALID_TYPES = {
     'ab_url': NormalizeAbUrl,
     'bool': ParseBool,
+    'build_target': ParseBuildTarget,
     'date': ParseDate,
     'path': osutils.ExpandPath,
     'gs_path': NormalizeGSPath,

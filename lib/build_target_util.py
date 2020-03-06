@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import re
 
 
 class Error(Exception):
@@ -39,7 +40,7 @@ class BuildTarget(object):
     if build_root:
       self.root = os.path.normpath(build_root)
     else:
-      self.root = GetDefaultSysrootPath(self.name)
+      self.root = get_default_sysroot_path(self.name)
 
   def __eq__(self, other):
     if self.__class__ is other.__class__:
@@ -75,8 +76,15 @@ class BuildTarget(object):
     """
     return '%s-%s' % (base_command, self.name)
 
-def GetDefaultSysrootPath(target_name):
-  if target_name:
-    return os.path.join('/build', target_name)
+
+def get_default_sysroot_path(build_target_name):
+  """Get the default sysroot path for a build target."""
+  if build_target_name:
+    return os.path.join('/build', build_target_name)
   else:
     raise InvalidNameError('Target name is required.')
+
+
+def is_valid_name(build_target_name):
+  """Validate |build_target_name| is a valid name."""
+  return bool(re.match(r'^[a-zA-Z0-9-_]+$', build_target_name))

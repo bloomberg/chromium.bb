@@ -14,6 +14,7 @@ import os
 import sys
 
 from chromite.cli import command
+from chromite.lib import build_target_util
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -115,6 +116,35 @@ class BoolTest(cros_test_lib.TestCase):
     self._RunBoolTestCase('false', False)
     self._RunBoolTestCase('no', False)
     self._RunBoolTestCase('FaLse', False)
+
+
+class BuildTargetTest(cros_test_lib.TestCase):
+  """Test type='build_target' functionality."""
+
+  @staticmethod
+  def _ParseCommandLine(argv):
+    parser = commandline.ArgumentParser()
+    parser.add_argument('--build-target', type='build_target',
+                        help='Build Target Argument.')
+    return parser.parse_args(argv)
+
+  def _RunBuildTargetTestCase(self, build_target_name, expected):
+    options = self._ParseCommandLine(['--build-target', build_target_name])
+    self.assertEqual(options.build_target, expected)
+
+  def _CheckBuildTargetParseFails(self, build_target_name):
+    """Checks that parsing a device input fails."""
+    with self.assertRaises(SystemExit):
+      self._ParseCommandLine(['--build-target', build_target_name])
+
+  def test_valid_build_target(self):
+    """Test valid build target name."""
+    self._RunBuildTargetTestCase(
+        'build-target-name', build_target_util.BuildTarget('build-target-name'))
+
+  def test_invalid_build_target(self):
+    """Test invalid build target name."""
+    self._CheckBuildTargetParseFails('invalid-name-!@#$%^&*()+=')
 
 
 class DeviceParseTest(cros_test_lib.OutputTestCase):
