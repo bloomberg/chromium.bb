@@ -25,6 +25,7 @@
 #include <base/bind.h>
 #include <base/lazy_instance.h>
 #include <base/threading/thread_local.h>
+#include <float.h>
 
 namespace blpwtk2 {
 

@@ -1416,10 +1416,9 @@ RenderProcessHost* RenderProcessHost::CreateProcessHost(
   content::StoragePartitionImpl* partitionImpl =
       static_cast<content::StoragePartitionImpl*>(partition);
 
-  constexpr bool isGuest = false;
   const int host_id = content::RenderProcessHostImpl::GenerateUniqueId();
   return RenderProcessHostImpl::CreateRenderProcessHost(
-      host_id, std::move(process), browserContext, partitionImpl, nullptr, isGuest);
+      host_id, std::move(process), browserContext, partitionImpl, nullptr);
 }
 
 // static
@@ -1745,12 +1744,14 @@ bool RenderProcessHostImpl::Init() {
       OnProcessLaunched();  // Fake a callback that the process is ready.
 
 #if 0
-      g_in_process_thread = in_process_renderer_->message_loop();
+      in_process_renderer_->StartWithOptions(options);
+
+      g_in_process_thread = = in_process_renderer_.get();
 #endif
 
       if (GetContentClient()->browser()->SupportsInProcessRenderer()) {
         GetContentClient()->browser()->StartInProcessRendererThread(
-            &mojo_invitation_, child_connection_->service_token());
+            &mojo_invitation_, id_);
       }
 
       // Make sure any queued messages on the channel are flushed in the case
@@ -5002,8 +5003,8 @@ void RenderProcessHost::InterceptBindHostReceiverForTesting(
   GetBindHostReceiverInterceptor() = std::move(callback);
 }
 
-void RenderProcessHostImpl::SetProcess(base::Process process) {
-  child_connection_->SetProcess(std::move(process));
-}
+//void RenderProcessHostImpl::SetProcess(base::Process process) {
+//  child_connection_->SetProcess(std::move(process));
+//}
 
 }  // namespace content

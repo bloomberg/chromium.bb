@@ -32,7 +32,7 @@
 #include <content/public/browser/web_contents.h>
 #include <content/public/common/context_menu_params.h>
 #include <content/public/common/menu_item.h>
-#include <third_party/blink/public/web/web_context_menu_data.h>
+#include <third_party/blink/public/common/context_menu_data/edit_flags.h>
 #include <ui/aura/window_tree_host.h>
 #include <ui/aura/window.h>
 
@@ -140,13 +140,13 @@ void WebContentsViewDelegateImpl::ShowContextMenu(
     params2Impl.x = point.x();
     params2Impl.y = point.y();
     params2Impl.canCut =
-        params.is_editable && (params.edit_flags & blink::WebContextMenuData::kCanCut);
+        params.is_editable && (params.edit_flags & blink::ContextMenuDataEditFlags::kCanCut);
     params2Impl.canCopy =
-        hasSelection || (params.is_editable && (params.edit_flags & blink::WebContextMenuData::kCanCopy));
+        hasSelection || (params.is_editable && (params.edit_flags & blink::ContextMenuDataEditFlags::kCanCopy));
     params2Impl.canPaste =
-        params.is_editable && (params.edit_flags & blink::WebContextMenuData::kCanPaste);
+        params.is_editable && (params.edit_flags & blink::ContextMenuDataEditFlags::kCanPaste);
     params2Impl.canDelete =
-        params.is_editable && (params.edit_flags & blink::WebContextMenuData::kCanDelete);
+        params.is_editable && (params.edit_flags & blink::ContextMenuDataEditFlags::kCanDelete);
 
     convertCustomItems(params, &params2Impl);
     convertSpellcheck(params, &params2Impl);

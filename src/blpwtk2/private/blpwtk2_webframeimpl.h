@@ -28,6 +28,7 @@
 #include <blpwtk2_webframe.h>
 
 #include <third_party/blink/public/platform/web_content_settings_client.h>
+#include <third_party/blink/public/platform/web_security_origin.h>
 
 namespace blink {
 class WebFrame;
@@ -49,7 +50,6 @@ class WebFrameImpl : public WebFrame,
 
     // blink::WebContentSettingsClient overrides
     bool AllowRunningInsecureContent(bool                            enabledPerSettings,
-                                     const blink::WebSecurityOrigin& securityOrigin,
                                      const blink::WebURL&            url) override;
 
   public:

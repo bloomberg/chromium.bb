@@ -400,7 +400,6 @@ void MaybeAddTrusteerEndpointProtection(bool report_full_names,
 
   products->push_back(av_product);
 }
-#endif
 
 void MaybeAddCarbonBlack(bool report_full_names,
                          std::vector<AvProduct>* products) {
@@ -449,6 +448,7 @@ void MaybeAddUnregisteredAntiVirusProducts(bool report_full_names,
   MaybeAddTrusteerEndpointProtection(report_full_names, products);
   MaybeAddCarbonBlack(report_full_names, products);
 }
+#endif
 
 }  // namespace
 

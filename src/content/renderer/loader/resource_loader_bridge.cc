@@ -25,6 +25,7 @@
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
+#include "services/network/public/mojom/url_response_head.mojom-blink.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 
 
@@ -71,11 +72,6 @@ int ResourceRequestInfoProvider::routingId() const {
   return routingId_;
 }
 
-base::Optional<base::UnguessableToken>
-ResourceRequestInfoProvider::appCacheHostId() const {
-  return appCacheHostId_;
-}
-
 net::RequestPriority ResourceRequestInfoProvider::priority() const {
   return priority_;
 }
@@ -86,8 +82,8 @@ ResourceRequestInfoProvider::requestBody() const {
 }
 
 BodyLoaderRequestInfoProvider::BodyLoaderRequestInfoProvider(
-    const CommonNavigationParams& common_params,
-    const CommitNavigationParams& commit_params,
+    const mojom::CommonNavigationParams& common_params,
+    const mojom::CommitNavigationParams& commit_params,
     const network::ResourceResponseHead& head,
     const network::mojom::URLLoaderClientEndpointsPtr& client_endpoints,
     scoped_refptr<base::SingleThreadTaskRunner> runner,
@@ -103,7 +99,6 @@ BodyLoaderRequestInfoProvider::BodyLoaderRequestInfoProvider(
   reportRawHeaders_ = (false);
   hasUserGesture_ = common_params.has_user_gesture;
   routingId_ = (render_frame_id);
-  appCacheHostId_ = (commit_params.appcache_host_id);
   priority_ = net::MEDIUM;
   requestBody_ = common_params.post_data;
 }
@@ -120,7 +115,6 @@ PeerRequestInfoProvider::PeerRequestInfoProvider(
   reportRawHeaders_ = request->report_raw_headers;
   hasUserGesture_ = request->has_user_gesture;
   routingId_ = request->render_frame_id;
-  appCacheHostId_ = request->appcache_host_id;
   priority_ = request->priority;
   requestBody_ = request->request_body;
   requestHeaders_.MergeFrom(request->headers);
@@ -139,7 +133,7 @@ BodyLoaderReceiver::BodyLoaderReceiver(
 BodyLoaderReceiver::~BodyLoaderReceiver() = default;
 
 void BodyLoaderReceiver::OnReceivedResponse(
-    const network::ResourceResponseInfo& info) {}
+    network::mojom::URLResponseHeadPtr head) {}
 
 void BodyLoaderReceiver::OnReceivedData(const char* data,
                                         std::size_t data_length) {
@@ -192,8 +186,8 @@ RequestPeerReceiver::RequestPeerReceiver(
 RequestPeerReceiver::~RequestPeerReceiver() = default;
 
 void RequestPeerReceiver::OnReceivedResponse(
-    const network::ResourceResponseInfo& info) {
-  peer_->OnReceivedResponse(info);
+    network::mojom::URLResponseHeadPtr info) {
+  peer_->OnReceivedResponse(std::move(info));
 }
 
 void RequestPeerReceiver::OnReceivedData(const char* data,

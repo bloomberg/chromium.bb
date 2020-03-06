@@ -53,14 +53,15 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
     
     // The following are the in-process render thread's info
     std::atomic<mojo::OutgoingInvitation*> d_broker_client_invitation{nullptr};
+    
+    int d_render_client_id;
 
   public:
     // CREATORS
     explicit ContentBrowserClientImpl();
     ~ContentBrowserClientImpl() final;
 
-    void RenderProcessWillLaunch(content::RenderProcessHost* host,
-        service_manager::mojom::ServiceRequest* service_request) override;
+    void RenderProcessWillLaunch(content::RenderProcessHost* host) override;
 
     // Notifies that a render process will be created. This is called
     // before the content layer adds its own BrowserMessageFilters, so
@@ -93,8 +94,6 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
         // return true, they must also implement StartInProcessRendererThread
         // and StopInProcessRendererThread.
 
-    void ResourceDispatcherHostCreated() override;
-
     content::WebContentsViewDelegate *GetWebContentsViewDelegate(
         content::WebContents *webContents) override;
         // If content creates the WebContentsView implementation, it will ask
@@ -117,8 +116,7 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
     // Start the in-process renderer thread.  This will only ever be called if
     // SupportsInProcessRenderer() returns true.
     void StartInProcessRendererThread(
-        mojo::OutgoingInvitation* broker_client_invitation,
-        const std::string& service_token) override;
+        mojo::OutgoingInvitation* broker_client_invitation, int renderer_client_id) override;
 
     // Use build-time C++ manifests instead of runtime JSON manifests
     // https://chromium-review.googlesource.com/c/chromium/src/+/1423354
@@ -130,7 +128,7 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
             base::StringPiece name) override;
 
     // Returns the user agent.  Content may cache this value.
-    std::string GetUserAgent() const override;
+    std::string GetUserAgent() override;
 
 };
 

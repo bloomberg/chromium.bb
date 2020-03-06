@@ -95,7 +95,7 @@ int ResponseWriter::Write(net::IOBuffer* buffer,
   base::Value* id = new base::Value(stream_id_);
   base::Value* chunkValue = new base::Value(chunk);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::Bind(&DevToolsFrontendHostDelegateImpl::CallClientFunction,
                  shell_devtools_, "DevToolsAPI.streamWrite",
@@ -169,7 +169,7 @@ void DevToolsFrontendHostDelegateImpl::WebContentsDestroyed()
 {
     if (d_agentHost) {
         d_agentHost->DetachClient(this);
-        d_agentHost = 0;
+        d_agentHost = nullptr;
     }
 }
 
@@ -226,12 +226,12 @@ void DevToolsFrontendHostDelegateImpl::HandleMessageFromDevToolsFrontend(
         }
 
         net::URLFetcher* fetcher =
-            net::URLFetcher::Create(gurl, net::URLFetcher::GET, this).release();
+            net::URLFetcher::Create(0, gurl, net::URLFetcher::GET, this, MISSING_TRAFFIC_ANNOTATION).release();
         d_pendingRequests[fetcher] = request_id;
 
-        content::BrowserContext* browser_context = web_contents()->GetBrowserContext();
-        fetcher->SetRequestContext(
-            content::BrowserContext::GetDefaultStoragePartition(browser_context)->GetURLRequestContext());
+        // content::BrowserContext* browser_context = web_contents()->GetBrowserContext();
+        // fetcher->SetRequestContext(
+        //     content::BrowserContext::GetDefaultStoragePartition(browser_context)->GetURLRequestContext());
 
         fetcher->SetExtraRequestHeaders(headers);
         fetcher->SaveResponseWithWriter(std::unique_ptr<net::URLFetcherResponseWriter>(

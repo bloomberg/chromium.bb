@@ -81,6 +81,7 @@ wchar_t g_debug_icu_pf_filename[_MAX_PATH];
 // This variable is exported through the header file.
 #if defined(IS_BLPWTK2)
 const char kIcuDataFileName[] = BLPWTK2_ICUDTL_DAT_NAME;
+const char kIcuExtraDataFileName[] = BLPWTK2_ICUDTL_EXT_DAT_NAME;
 #else
 const char kIcuDataFileName[] = "icudtl.dat";
 const char kIcuExtraDataFileName[] = "icudtl_extra.dat";

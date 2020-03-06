@@ -262,7 +262,7 @@ void WebViewImpl::destroy()
     d_wasDestroyed = true;
     if (d_isReadyForDelete) {
         d_isDeletingSoon = true;
-        base::MessageLoopCurrent::Get()->task_runner()->DeleteSoon(FROM_HERE, this);
+        base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
     }
 }
 
@@ -790,7 +790,7 @@ void WebViewImpl::DidNavigateMainFramePostCommit(content::WebContents *source)
     if (d_wasDestroyed) {
         if (!d_isDeletingSoon) {
             d_isDeletingSoon = true;
-            base::MessageLoopCurrent::Get()->task_runner()->DeleteSoon(FROM_HERE, this);
+            base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
         }
     }
 }
@@ -816,7 +816,8 @@ void WebViewImpl::RequestMediaAccessPermission(
     class DummyMediaStreamUI final : public content::MediaStreamUI {
       public:
         gfx::NativeViewId OnStarted(base::OnceClosure stop,
-                                   base::RepeatingClosure source) override {
+                                   SourceCallback source) override {
+                                 //  base::RepeatingClosure source) override {
         return 0;
        }
     };
@@ -829,7 +830,7 @@ void WebViewImpl::RequestMediaAccessPermission(
     std::unique_ptr<content::MediaStreamUI> ui(new DummyMediaStreamUI());
     blink::MediaStreamDevices devices;
     if (request.requested_video_device_id.empty()) {
-        if (request.video_type != blink::MEDIA_NO_SERVICE && !videoDevices.empty()) {
+        if (request.video_type != blink::mojom::MediaStreamType::NO_SERVICE && !videoDevices.empty()) {
             devices.push_back(videoDevices[0]);
         }
     }
@@ -840,13 +841,13 @@ void WebViewImpl::RequestMediaAccessPermission(
         }
         else {
             blink::MediaStreamDevice desktop_device = DesktopStreamsRegistry::GetInstance()->RequestMediaForStreamId(request.requested_video_device_id);
-            if (desktop_device.type != blink::MEDIA_NO_SERVICE) {
+            if (desktop_device.type != blink::mojom::MediaStreamType::NO_SERVICE) {
                 devices.push_back(desktop_device);
             }
         }
     }
     if (request.requested_audio_device_id.empty()) {
-        if (request.audio_type != blink::MEDIA_NO_SERVICE && !audioDevices.empty()) {
+        if (request.audio_type != blink::mojom::MediaStreamType::NO_SERVICE && !audioDevices.empty()) {
             devices.push_back(audioDevices[0]);
         }
     }
@@ -856,12 +857,12 @@ void WebViewImpl::RequestMediaAccessPermission(
             devices.push_back(*device);
         }
     }
-    std::move(callback).Run(devices, blink::MEDIA_DEVICE_OK, std::move(ui));
+    std::move(callback).Run(devices, blink::mojom::MediaStreamRequestResult::OK, std::move(ui));
 }
 
 bool WebViewImpl::CheckMediaAccessPermission(content::RenderFrameHost*,
                                              const GURL&,
-                                             blink::MediaStreamType)
+                                             blink::mojom::MediaStreamType)
 {
     // When CheckMediaAccessPermission returns true,
     // the user will be able to access MediaDeviceInfo.label

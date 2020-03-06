@@ -67,7 +67,6 @@ class ContentRendererClientImpl : public content::ContentRendererClient,
     void PrepareErrorPage(content::RenderFrame* render_frame,
                           const blink::WebURLError& error,
                           const std::string& http_method,
-                          bool ignoring_cache,
                           std::string* error_html) override;
     // Returns the information to display when a navigation error occurs.
     // If |error_html| is not null then it may be set to a HTML page
@@ -109,15 +108,11 @@ class ContentRendererClientImpl : public content::ContentRendererClient,
     void GetInterface(const std::string& name,
                       mojo::ScopedMessagePipeHandle request_handle) override;
 
-    // content::ContentRendererClient:
-    void CreateRendererService(
-        service_manager::mojom::ServiceRequest service_request) override;
-
     service_manager::Connector* GetConnector();
 
     service_manager::BinderRegistry d_registry;
     std::unique_ptr<service_manager::Connector> d_connector;
-    service_manager::mojom::ConnectorRequest d_connector_request;
+    mojo::PendingReceiver<service_manager::mojom::Connector> d_connector_request;
     std::unique_ptr<blpwtk2::ForwardingService> d_forward_service;
     std::unique_ptr<service_manager::ServiceBinding> d_service_binding;
 

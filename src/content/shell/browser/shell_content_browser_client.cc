@@ -350,22 +350,22 @@ bool ShellContentBrowserClient::SupportsInProcessRenderer()
 
 void ShellContentBrowserClient::StartInProcessRendererThread(
     mojo::OutgoingInvitation* broker_client_invitation,
-    const std::string& service_token) {
+    int renderer_client_id) {
   DCHECK(!g_in_process_renderer_thread);
 
   g_in_process_renderer_thread =
       CreateInProcessRendererThread(InProcessChildThreadParams(
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
-          broker_client_invitation, service_token));
+          base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
+          broker_client_invitation), renderer_client_id);
 
   base::Thread::Options options;
 #if defined(OS_WIN) && !defined(OS_MACOSX)
   // In-process plugins require this to be a UI message loop.
-  options.message_loop_type = base::MessageLoop::TYPE_UI;
+  options.message_pump_type = base::MessagePumpType::UI;
 #else
   // We can't have multiple UI loops on Linux and Android, so we don't support
   // in-process plugins.
-  options.message_loop_type = base::MessageLoop::TYPE_DEFAULT;
+  options.message_pump_type = base::MessagePumpType::DEFAULT;
 #endif
 
   g_in_process_renderer_thread->StartWithOptions(options);

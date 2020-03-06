@@ -35,13 +35,14 @@
 #include <base/message_loop/message_loop.h>
 #include <ipc/ipc_sender.h>
 #include <ipc/ipc_sync_channel.h>
+#include <content/public/common/service_manager_connection.h>
 #include <content/public/renderer/render_thread.h>
-#include <content/common/service_manager/child_connection.h>
 #include <components/printing/renderer/print_render_frame_helper.h>
 #include <mojo/public/cpp/bindings/strong_binding.h>
 #include <services/service_manager/public/cpp/connector.h>
 #include <third_party/blink/renderer/core/page/bb_window_hooks.h>
 #include <third_party/blink/public/platform/web_cache.h>
+#include <services/service_manager/public/cpp/service_filter.h>
 
 namespace blpwtk2 {
 
@@ -69,8 +70,13 @@ ProfileImpl::ProfileImpl(MainMessagePump *pump,
     static const std::string SERVICE_NAME("content_browser");
     g_instances.insert(this);
 
-    content::RenderThread* renderThread = content::RenderThread::Get();
-	renderThread->GetConnector()->BindInterface(SERVICE_NAME, &d_hostPtr);
+    auto* connection = content::ServiceManagerConnection::GetForProcess();
+    if (connection) {
+        mojo::Remote<mojom::ProcessHost> process_host;
+        connection->GetConnector()->Connect(SERVICE_NAME,
+            process_host.BindNewPipeAndPassReceiver());
+    }
+
     DCHECK(0 != pid);
 
     d_hostPtr->bindProcess(
@@ -280,10 +286,9 @@ void ProfileImpl::createWebView(WebViewDelegate            *delegate,
     mojom::WebViewHostPtr *webViewHostPtr =
         new mojom::WebViewHostPtr;
 
-    auto taskRunner = base::MessageLoopCurrent::Get()->task_runner();
-
     d_hostPtr->createWebView(
-        mojo::MakeRequest(webViewHostPtr, taskRunner),
+        mojo::MakeRequest(webViewHostPtr,
+        base::ThreadTaskRunnerHandle::Get()),
         createParams->Clone(),
         base::Bind(
             &onWebViewCreated,

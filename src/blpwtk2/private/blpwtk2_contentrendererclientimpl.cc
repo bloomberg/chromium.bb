@@ -40,7 +40,6 @@
 
 
 #include <base/strings/utf_string_conversions.h>
-#include <chrome/common/constants.mojom.h>
 #include <components/spellcheck/renderer/spellcheck.h>
 #include <components/spellcheck/renderer/spellcheck_provider.h>
 #include <content/child/font_warmup_win.h>
@@ -126,7 +125,6 @@ void ContentRendererClientImpl::PrepareErrorPage(
     content::RenderFrame* render_frame,
     const blink::WebURLError& error,
     const std::string& http_method,
-    bool ignoring_cache,
     std::string* error_html)
 {
     GURL gurl = (GURL) error.url();
@@ -220,18 +218,7 @@ void ContentRendererClientImpl::OnStart()
 void ContentRendererClientImpl::GetInterface(
         const std::string& interface_name, mojo::ScopedMessagePipeHandle interface_pipe)
 {
-    // needed for chrome services
-    GetConnector()->BindInterface(
-        service_manager::ServiceFilter::ByName(chrome::mojom::kServiceName),
-        interface_name, std::move(interface_pipe));
-}
 
-void ContentRendererClientImpl::CreateRendererService(
-    service_manager::mojom::ServiceRequest service_request)
-{
-    d_forward_service = std::make_unique<blpwtk2::ForwardingService>(this);
-    d_service_binding = std::make_unique<service_manager::ServiceBinding>(d_forward_service.get(),
-        std::move(service_request));
 }
 
 service_manager::Connector* ContentRendererClientImpl::GetConnector()

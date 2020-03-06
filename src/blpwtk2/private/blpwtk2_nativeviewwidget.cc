@@ -46,12 +46,12 @@ NativeViewWidget::NativeViewWidget(gfx::NativeView contents,
     params.bounds = gfx::Rect(0, 0, 10, 10);
     params.delegate = this;
     params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
-    params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
+    params.opacity = views::Widget::InitParams::WindowOpacity::kOpaque;
     params.activatable = activatable ? views::Widget::InitParams::ACTIVATABLE_DEFAULT : views::Widget::InitParams::ACTIVATABLE_NO;
     params.layer_type = ui::LAYER_SOLID_COLOR;
     params.reroute_mouse_wheel_to_any_related_window = rerouteMouseWheelToAnyRelatedWindow;
     d_impl->set_focus_on_creation(false);
-    d_impl->Init(params);
+    d_impl->Init(std::move(params));
     d_nativeViewHost->Attach(contents);
 
     // Windows-specific code!

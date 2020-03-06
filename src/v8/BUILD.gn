@@ -1413,6 +1413,11 @@ action("v8_dump_build_config") {
 ###############################################################################
 # Source Sets (aka static libraries)
 #
+source_set("v8_maybe_snapshot") {
+  public_deps = [
+    ":v8_snapshot",
+  ]
+}
 
 v8_source_set("v8_snapshot") {
   visibility = [ ":*" ]  # Targets in this file can depend on this.
@@ -4118,9 +4123,7 @@ if (is_component_build) {
       "//base/allocator",
       "//base/allocator:buildflags",
     ]
-    if (v8_use_snapshot) {
-      public_deps += [ ":v8_initializers" ]
-    }
+    public_deps += [ ":v8_initializers" ]
     configs = [ ":internal_config" ]
     if (bb_generate_map_files) {
       configs += [ "//blpwtk2:blpwtk2_gen_map" ]
@@ -4169,9 +4172,7 @@ if (is_component_build) {
       ":v8_libplatform",
     ]
 
-    if (v8_use_snapshot) {
-      public_deps += [ ":v8_initializers" ]
-    }
+    public_deps += [ ":v8_initializers" ]
 
     public_configs = [ ":external_config" ]
   }

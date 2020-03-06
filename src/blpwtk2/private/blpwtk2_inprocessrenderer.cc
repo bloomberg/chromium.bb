@@ -66,6 +66,7 @@ class InProcessRendererThread : public base::Thread {
     mojo::OutgoingInvitation* d_broker_client_invitation;
     std::string d_serviceToken;
     int d_mojoHandle;
+    const int32_t d_renderer_client_id;
 
     // Called just prior to starting the message loop
     void Init() override;
@@ -78,9 +79,10 @@ class InProcessRendererThread : public base::Thread {
 public:
     InProcessRendererThread(
             const scoped_refptr<base::SingleThreadTaskRunner>& browserIOTaskRunner,
-            mojo::OutgoingInvitation*         broker_client_invitation,
+            mojo::OutgoingInvitation*                          broker_client_invitation,
             const std::string&                                 serviceToken,
-            int                                                mojoHandle);
+            int                                                mojoHandle,
+            const int32_t                                      renderer_client_id);
     ~InProcessRendererThread() final;
 };
 
@@ -97,9 +99,9 @@ void InProcessRendererThread::Init()
     content::RenderThread::InitInProcessRenderer(
         content::InProcessChildThreadParams(d_browserIOTaskRunner,
                                             d_broker_client_invitation,
-                                            d_serviceToken,
                                             d_mojoHandle),
-                                            std::move(main_thread_scheduler));
+                                            std::move(main_thread_scheduler),
+                                            d_renderer_client_id);
 
     // No longer need to hold on to this reference.
     d_browserIOTaskRunner = nullptr;
@@ -114,17 +116,19 @@ void InProcessRendererThread::CleanUp()
 
 InProcessRendererThread::InProcessRendererThread(
         const scoped_refptr<base::SingleThreadTaskRunner>& browserIOTaskRunner,
-        mojo::OutgoingInvitation*         broker_client_invitation,
+        mojo::OutgoingInvitation*                          broker_client_invitation,
         const std::string&                                 serviceToken,
-        int                                                mojoHandle)
+        int                                                mojoHandle,
+        const int32_t                                      renderer_client_id)
 : base::Thread("BlpInProcRenderer")
 , d_browserIOTaskRunner(browserIOTaskRunner)
 , d_broker_client_invitation(broker_client_invitation)
 , d_serviceToken(serviceToken)
 , d_mojoHandle(mojoHandle)
+, d_renderer_client_id(renderer_client_id)
 {
     base::Thread::Options options;
-    options.message_loop_type = base::MessageLoop::TYPE_UI;
+    options.message_pump_type = base::MessagePumpType::UI;
     StartWithOptions(options);
 }
 
@@ -145,7 +149,8 @@ void InProcessRenderer::init(
         const scoped_refptr<base::SingleThreadTaskRunner>& browserIOTaskRunner,
         mojo::OutgoingInvitation* broker_client_invitation,
         const std::string&                                 serviceToken,
-        int                                                mojoHandle)
+        int                                                mojoHandle,
+        const int32_t                                      renderer_client_id)
 {
     DCHECK(Statics::isInApplicationMainThread());
     DCHECK(!g_inProcessRendererThread);
@@ -156,7 +161,8 @@ void InProcessRenderer::init(
             new InProcessRendererThread(browserIOTaskRunner,
                                         broker_client_invitation,
                                         serviceToken,
-                                        mojoHandle);
+                                        mojoHandle,
+                                        renderer_client_id);
     }
     else {
       std::unique_ptr<blink::scheduler::WebThreadScheduler>
@@ -168,8 +174,9 @@ void InProcessRenderer::init(
       content::RenderThread::InitInProcessRenderer(
           content::InProcessChildThreadParams(browserIOTaskRunner,
                                               broker_client_invitation,
-                                              serviceToken, mojoHandle, true),
-          std::move(main_thread_scheduler));
+                                              mojoHandle, true),
+          std::move(main_thread_scheduler),
+          renderer_client_id);
 
       if (!display::Screen::GetScreen()) {
           g_screen.reset(new display::win::ScreenWin());

@@ -100,30 +100,23 @@ static_library("chrome_blpwtk2") {
     # required by //chrome/common/common_message_generator.h
 #    "//chrome/common/render_messages.cc",
 #    "//chrome/common/render_messages.h",
-    "//chrome/common/page_load_metrics/page_load_timing.cc",
-    "//chrome/common/page_load_metrics/page_load_timing.h",
-
-    # required for chrome services
-    "//chrome/browser/chrome_service.cc",
-    "//chrome/browser/chrome_service.h",
+    "//components/page_load_metrics/common/page_load_timing.cc",
+    "//components/page_load_metrics/common/page_load_timing.h",
   ]
 
   deps = [
      "//chrome/app:chrome_service_manifests",
      "//chrome/services/printing/public/mojom",
      "//chrome/services/printing:lib",
-     "//chrome/services/printing/public/cpp:manifest",
      "//chrome/services/util_win/public/mojom",
      "//chrome/services/util_win:lib",
      "//components/printing/browser",
      "//components/printing/renderer",
-     "//components/signin/core/browser:signin_buildflags",
+     "//components/signin/public/base:signin_buildflags",
      "//components/safe_browsing/web_ui:constants",
-     "//components/mirroring/mojom:constants",
      "//components/mirroring/service:mirroring_service",
-     "//components/services/pdf_compositor/public/cpp:factory",
-     "//components/services/pdf_compositor/public/interfaces",
      "//components/printing/renderer",
+     "//components/services/pdf_compositor/public/mojom",
      "//content",
 
      # required by //chrome/common/chrome_content_client.cc
@@ -131,9 +124,9 @@ static_library("chrome_blpwtk2") {
      "//chrome/common:resources",
      "//chrome/common/importer:interfaces",
      "//components/services/heap_profiling",
-     "//components/services/patch/public/interfaces",
+     "//components/services/patch/public/mojom",
      "//components/services/patch:lib",
-     "//components/services/unzip/public/interfaces",
+     "//components/services/unzip/public/mojom",
      "//components/services/unzip:lib",
      "//rlz/buildflags",
      "//services/proxy_resolver:lib",

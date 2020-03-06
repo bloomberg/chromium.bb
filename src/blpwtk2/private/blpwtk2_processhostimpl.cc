@@ -196,7 +196,6 @@ bool ProcessHostImpl::Impl::onRenderLaunched(
                                  render_process_handle,
                                  std::move(local_channel_endpoint),
                                  base::Bind(std::move(on_invitation_error)));
-  impl_ptr->SetProcess(d_process->Duplicate());
   return true;
 }
 
@@ -308,7 +307,7 @@ void ProcessHostImpl::create(
 void ProcessHostImpl::registerMojoInterfaces(
     service_manager::BinderRegistry* registry) {
   const scoped_refptr<base::SingleThreadTaskRunner>& runner =
-      base::CreateSingleThreadTaskRunnerWithTraits(
+      base::CreateSingleThreadTaskRunner(
           {content::BrowserThread::UI});
 
   registry->AddInterface(base::Bind(&ProcessHostImpl::create, runner), runner);
@@ -378,7 +377,7 @@ void ProcessHostImpl::createHostChannel(unsigned int pid,
                                         const std::string& profileDir,
                                         createHostChannelCallback callback) {
   const scoped_refptr<base::SingleThreadTaskRunner>& runner =
-      base::CreateSingleThreadTaskRunnerWithTraits(
+      base::CreateSingleThreadTaskRunner(
           {content::BrowserThread::UI});
 
   std::move(callback).Run(createHostChannel(static_cast<base::ProcessId>(pid),
@@ -447,7 +446,7 @@ void ProcessHostImpl::createWebView(mojom::WebViewHostRequest hostRequest,
       browserContext = &d_impl->context();
     }
 
-    auto taskRunner = base::CreateSingleThreadTaskRunnerWithTraits(
+    auto taskRunner = base::CreateSingleThreadTaskRunner(
         content::BrowserThread::UI);
 
     mojom::WebViewClientPtr clientPtr;

@@ -86,7 +86,6 @@ class BLPWTK2_EXPORT URLRequest {
     virtual bool reportRawHeaders() const = 0;
     virtual bool hasUserGesture() const = 0;
     virtual int requesterID() const = 0;
-    virtual AppCacheHostID appCacheHostID() const = 0;
     virtual Priority priority() const = 0;
 
   protected:

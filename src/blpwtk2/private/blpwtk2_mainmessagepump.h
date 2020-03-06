@@ -27,6 +27,7 @@
 
 #include <base/message_loop/message_pump_win.h>
 #include <base/message_loop/message_loop.h>
+#include <base/message_loop/message_loop_current.h>
 
 namespace base {
 class RunLoop;

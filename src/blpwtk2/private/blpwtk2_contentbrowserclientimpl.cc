@@ -40,9 +40,6 @@
 #include <content/public/browser/browser_main_parts.h>
 #include <content/public/browser/render_view_host.h>
 #include <content/public/browser/render_process_host.h>
-#include <content/public/browser/resource_dispatcher_host.h>
-#include <content/public/browser/resource_dispatcher_host_delegate.h>
-#include <content/public/browser/resource_request_info.h>
 #include <content/public/browser/web_contents.h>
 #include "content/public/common/service_manager_connection.h"
 #include <content/public/common/service_names.mojom.h>
@@ -50,18 +47,11 @@
 #include <content/public/common/user_agent.h>
 #include "chrome/app/builtin_service_manifests.h"
 #include "chrome/app/chrome_content_browser_overlay_manifest.h"
-#include "chrome/app/chrome_content_gpu_overlay_manifest.h"
-#include "chrome/app/chrome_content_renderer_overlay_manifest.h"
-#include "chrome/app/chrome_content_utility_overlay_manifest.h"
-#include "chrome/app/chrome_renderer_manifest.h"
-#include <chrome/browser/chrome_service.h>
-#include <chrome/common/constants.mojom.h>
 #include <chrome/grit/browser_resources.h>
 #include "mojo/public/cpp/bindings/remote.h"
 #include <services/service_manager/public/cpp/connector.h>
 #include <ui/base/resource/resource_bundle.h>
 
-#include "chrome/common/constants.mojom.h"
 #include "components/spellcheck/common/spellcheck.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
@@ -69,33 +59,6 @@
 #include <chrome/browser/printing/printing_message_filter.h>
 
 namespace blpwtk2 {
-namespace {
-
-                            // ====================================
-                            // class ResourceDispatcherHostDelegate
-                            // ====================================
-
-class ResourceDispatcherHostDelegate : public content::ResourceDispatcherHostDelegate
-{
-    ResourceDispatcherHostDelegate() = default;
-    DISALLOW_COPY_AND_ASSIGN(ResourceDispatcherHostDelegate);
-
-  public:
-    static ResourceDispatcherHostDelegate& Get();
-};
-
-                            // ------------------------------------
-                            // class ResourceDispatcherHostDelegate
-                            // ------------------------------------
-
-ResourceDispatcherHostDelegate& ResourceDispatcherHostDelegate::Get()
-{
-    static ResourceDispatcherHostDelegate instance;
-    return instance;
-}
-
-}  // close unnamed namespace
-
 
                         // ------------------------------
                         // class ContentBrowserClientImpl
@@ -114,7 +77,6 @@ ContentBrowserClientImpl::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters)
 {
     auto main_parts = std::make_unique<BrowserMainParts>();
-    main_parts->AddParts(ChromeService::GetInstance()->CreateExtraParts());
     return main_parts;
 }
 
@@ -124,26 +86,10 @@ bool ContentBrowserClientImpl::ShouldEnableStrictSiteIsolation()
 }
 
 void ContentBrowserClientImpl::RenderProcessWillLaunch(
-    content::RenderProcessHost *host,
-    service_manager::mojom::ServiceRequest* service_request)
+    content::RenderProcessHost *host)
 {
-    DCHECK(Statics::isInBrowserMainThread());
-
     int id = host->GetID();
     host->AddFilter(new printing::PrintingMessageFilter(id, nullptr));
-
-    // Start a new instance of chrome_renderer service for the "to be"
-    // launched renderer process.  This is a requirement for chrome services
-    mojo::PendingRemote<service_manager::mojom::Service> service;
-    *service_request = service.InitWithNewPipeAndPassReceiver();
-    service_manager::Identity renderer_identity = host->GetChildIdentity();
-    mojo::Remote<service_manager::mojom::ProcessMetadata> metadata;
-    ChromeService::GetInstance()->connector()->RegisterServiceInstance(
-        service_manager::Identity(chrome::mojom::kRendererServiceName,
-                                  renderer_identity.instance_group(),
-                                  renderer_identity.instance_id(),
-                                  renderer_identity.globally_unique_id()),
-        std::move(service), metadata.BindNewPipeAndPassReceiver());
 }
 
 void ContentBrowserClientImpl::OverrideWebkitPrefs(
@@ -164,12 +110,6 @@ void ContentBrowserClientImpl::OverrideWebkitPrefs(
 bool ContentBrowserClientImpl::SupportsInProcessRenderer()
 {
     return Statics::isInProcessRendererEnabled;
-}
-
-void ContentBrowserClientImpl::ResourceDispatcherHostCreated()
-{
-    content::ResourceDispatcherHost::Get()->SetDelegate(
-        &ResourceDispatcherHostDelegate::Get());
 }
 
 content::WebContentsViewDelegate*
@@ -214,10 +154,10 @@ void ContentBrowserClientImpl::ExposeInterfacesToRenderer(
 }
 
 void ContentBrowserClientImpl::StartInProcessRendererThread(
-    mojo::OutgoingInvitation* broker_client_invitation,
-    const std::string& service_token)
+    mojo::OutgoingInvitation* broker_client_invitation, int renderer_client_id)
 {
     d_broker_client_invitation = broker_client_invitation;
+    d_render_client_id = renderer_client_id;
 }
 
 mojo::OutgoingInvitation* ContentBrowserClientImpl::GetClientInvitation() const
@@ -246,18 +186,11 @@ base::Optional<service_manager::Manifest> ContentBrowserClientImpl::GetServiceMa
 {
   if (name == content::mojom::kBrowserServiceName) {
     return GetChromeContentBrowserOverlayManifest();
-  } else if (name == content::mojom::kGpuServiceName) {
-    return GetChromeContentGpuOverlayManifest();
-  } else if (name == content::mojom::kRendererServiceName) {
-    return GetChromeContentRendererOverlayManifest();
-  } else if (name == content::mojom::kUtilityServiceName) {
-    return GetChromeContentUtilityOverlayManifest();
   }
-
   return base::nullopt;
 }
 
-std::string ContentBrowserClientImpl::GetUserAgent() const
+std::string ContentBrowserClientImpl::GetUserAgent()
 {
     // include Chrome in our user-agent because some sites actually look for
     // this.  For example, google's "Search as you type" feature.

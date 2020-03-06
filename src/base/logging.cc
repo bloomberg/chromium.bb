@@ -498,7 +498,7 @@ bool ShouldCreateLogMessage(int severity) {
 // If |severity| is high then true will be returned when no log destinations are
 // set, or only LOG_TO_FILE is set, since that is useful for local development
 // and debugging.
-bool ShouldLogToStderr(int severity) {
+bool ShouldLogToStderr(int severity, bool wtk2_handled) {
   if (wtk2_handled) {
     return false;
   }
@@ -898,7 +898,7 @@ LogMessage::~LogMessage() {
 #endif  // OS_FUCHSIA
   }
 
-  if (ShouldLogToStderr(severity_)) {
+  if (ShouldLogToStderr(severity_, wtk2_handled)) {
     ignore_result(fwrite(str_newline.data(), str_newline.size(), 1, stderr));
     fflush(stderr);
   }
