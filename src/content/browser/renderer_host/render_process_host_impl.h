@@ -322,7 +322,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // When the render process is created by some other workflow, it is necessary
   // to update the process information of related pid receiver in
   // ChildConnection.
-  void SetProcess(base::Process process);
+  //void SetProcess(base::Process process);
 
   // This value is guaranteed to never be returned by GenerateUniqueId() below.
   static int kInvalidId;

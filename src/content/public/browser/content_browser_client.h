@@ -871,7 +871,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // SupportsInProcessRenderer() returns true.
   virtual void StartInProcessRendererThread(
       mojo::OutgoingInvitation* broker_client_invitation,
-      const std::string& service_token) {}
+      int renderer_client_id) {}
 
   // Stop the in-process renderer thread.
   virtual void StopInProcessRendererThread() {}

@@ -177,11 +177,11 @@ ShouldSwapBrowsingInstance ShouldProactivelySwapBrowsingInstance(
 }  // namespace
 
 RenderFrameHostManager::RenderFrameHostManager(FrameTreeNode* frame_tree_node,
-                                               int render_process_affinity,
-                                               Delegate* delegate)
+                                               Delegate* delegate,
+                                               int render_process_affinity)
     : frame_tree_node_(frame_tree_node),
-      render_process_affinity_(render_process_affinity),
-      delegate_(delegate) {
+      delegate_(delegate),
+      render_process_affinity_(render_process_affinity) {
   DCHECK(frame_tree_node_);
 }
 

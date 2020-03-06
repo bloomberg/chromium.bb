@@ -37,15 +37,8 @@ BrowserMainParts::~BrowserMainParts()
 {
 }
 
-void BrowserMainParts::ServiceManagerConnectionStarted(
-    content::ServiceManagerConnection* connection) {
-
-  for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
-    chrome_extra_parts_[i]->ServiceManagerConnectionStarted(connection);
-}
-
 void BrowserMainParts::AddParts(ChromeBrowserMainExtraParts* parts) {
-  chrome_extra_parts_.push_back(parts);
+    chrome_extra_parts_.push_back(parts);
 }
 
 void BrowserMainParts::PreDefaultMainMessageLoopRun(base::OnceClosure quit_closure) {

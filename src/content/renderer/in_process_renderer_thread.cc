@@ -40,7 +40,7 @@ void InProcessRendererThread::Init() {
   std::unique_ptr<blink::scheduler::WebThreadScheduler> main_thread_scheduler =
       blink::scheduler::WebThreadScheduler::CreateMainThreadScheduler();
 
-  RenderThread::InitInProcessRenderer(params_, std::move(main_thread_scheduler));
+  RenderThread::InitInProcessRenderer(params_, std::move(main_thread_scheduler), renderer_client_id_);
 }
 
 void InProcessRendererThread::CleanUp() {

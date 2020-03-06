@@ -101,7 +101,7 @@ void WebViewProxy::destroy()
     // the WebView.
     d_pendingDestroy = true;
     d_delegate = nullptr;
-    base::MessageLoopCurrent::Get()->task_runner()->DeleteSoon(FROM_HERE, this);
+    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
 WebFrame *WebViewProxy::mainFrame()
@@ -558,7 +558,7 @@ void WebViewProxy::notifyRoutingId(int id)
     if (!rv) {
         // The RenderView has not been created yet.  Keep reposting this task
         // until the RenderView is available.
-        base::MessageLoopCurrent::Get()->task_runner()->PostTask(
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE,
             base::Bind(&WebViewProxy::notifyRoutingId,
                        base::Unretained(this),

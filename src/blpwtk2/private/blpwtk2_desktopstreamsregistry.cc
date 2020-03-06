@@ -30,6 +30,7 @@
 #include <base/time/time.h>
 #include <content/public/browser/browser_task_traits.h>
 #include <content/public/browser/browser_thread.h>
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 
 namespace blpwtk2 {
 
@@ -97,9 +98,9 @@ std::string DesktopStreamsRegistry::RegisterStream(
   ApprovedDesktopMediaStream& stream = approved_streams_[id];
   stream.source = source;
   stream.device = blink::MediaStreamDevice(
-      blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, source.ToString(), source.ToString());
+      blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE, source.ToString(), source.ToString());
 
-  base::PostDelayedTaskWithTraits(
+  base::PostDelayedTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::Bind(&DesktopStreamsRegistry::CleanupStream,
                  base::Unretained(this), id),

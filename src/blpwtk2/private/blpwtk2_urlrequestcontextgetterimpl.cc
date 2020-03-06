@@ -22,8 +22,6 @@
 
 #include <blpwtk2_urlrequestcontextgetterimpl.h>
 
-#include <blpwtk2_networkdelegateimpl.h>
-
 #include <base/bind.h>
 #include <base/command_line.h>
 #include <base/logging.h>  // for DCHECK
@@ -35,6 +33,7 @@
 #include <content/public/browser/browser_thread.h>
 #include <content/public/common/content_switches.h>
 #include <content/public/common/url_constants.h>
+#include <net/base/network_delegate_impl.h>
 #include <net/cert/cert_verifier.h>
 #include <net/cookies/cookie_monster.h>
 #include <net/dns/mapped_host_resolver.h>
@@ -44,13 +43,11 @@
 #include <net/http/http_cache.h>
 #include <net/http/http_network_layer.h>
 #include <net/http/http_network_session.h>
-#include <net/http/http_server_properties_impl.h>
+#include "net/http/http_server_properties.h"
 #include <net/proxy_resolution/proxy_config_service.h>
 #include <net/proxy_resolution/proxy_config_service_fixed.h>
 #include <net/proxy_resolution/proxy_resolution_service.h>
 #include <net/ssl/ssl_config_service_defaults.h>
-#include <net/url_request/data_protocol_handler.h>
-#include <net/url_request/file_protocol_handler.h>
 #include <net/url_request/static_http_user_agent_settings.h>
 #include <net/url_request/url_request_context.h>
 #include <net/url_request/url_request_context_storage.h>
@@ -70,7 +67,7 @@ URLRequestContextGetterImpl::URLRequestContextGetterImpl(
 , d_diskCacheEnabled(diskCacheEnabled)
 , d_cookiePersistenceEnabled(cookiePersistenceEnabled)
 , d_wasProxyInitialized(false)
-, d_background_task_runner(base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}))
+, d_background_task_runner(base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()}))
 {
 }
 
@@ -123,7 +120,7 @@ void URLRequestContextGetterImpl::useSystemProxyConfig()
 
     d_wasProxyInitialized = true;
 
-    auto ioLoop = base::CreateSingleThreadTaskRunnerWithTraits(
+    auto ioLoop = base::CreateSingleThreadTaskRunner(
         {content::BrowserThread::IO});
 
     // We must create the proxy config service on the UI loop on Linux
@@ -175,7 +172,7 @@ net::URLRequestContext* URLRequestContextGetterImpl::GetURLRequestContext()
 scoped_refptr<base::SingleThreadTaskRunner>
 URLRequestContextGetterImpl::GetNetworkTaskRunner() const
 {
-    return base::CreateSingleThreadTaskRunnerWithTraits(
+    return base::CreateSingleThreadTaskRunner(
            {content::BrowserThread::IO});
 }
 
@@ -198,7 +195,7 @@ void URLRequestContextGetterImpl::initialize()
     net::URLRequestContextBuilder builder;
 
     builder.set_proxy_resolution_service(std::move(d_proxyService));
-    builder.set_network_delegate(std::unique_ptr<NetworkDelegateImpl>(new NetworkDelegateImpl()));
+    builder.set_network_delegate(std::unique_ptr<net::NetworkDelegateImpl>(new net::NetworkDelegateImpl()));
     builder.SetCookieStore(std::unique_ptr<net::CookieMonster>(
             new net::CookieMonster(d_cookieStore, nullptr)));
     builder.set_accept_language("en-us,en");
@@ -242,16 +239,6 @@ void URLRequestContextGetterImpl::initialize()
         }
         d_protocolHandlers.clear();
     }
-
-    builder.SetProtocolHandler(
-        url::kDataScheme,
-        std::unique_ptr<net::DataProtocolHandler>(new net::DataProtocolHandler));
-
-    auto task_runner = base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
-    builder.SetProtocolHandler(
-        url::kFileScheme,
-        std::make_unique<net::FileProtocolHandler>(std::move(task_runner)));
 
     builder.SetInterceptors(std::move(d_requestInterceptors));
     d_urlRequestContext = builder.Build();

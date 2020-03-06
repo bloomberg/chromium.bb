@@ -235,12 +235,10 @@ template("generate_mini_installer") {
       deps += [ "//v8" ]
       if (bb_version == "") {
         inputs += [
-          "$root_out_dir/natives_blob.bin",
           "$root_out_dir/snapshot_blob.bin",
         ]
       } else {
         inputs += [
-          "$root_out_dir/natives_blob.$bb_version.bin",
           "$root_out_dir/snapshot_blob.$bb_version.bin",
         ]
         args += [ "--include_snapshotblob=1" ]

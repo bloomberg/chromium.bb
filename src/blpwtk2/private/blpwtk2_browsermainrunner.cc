@@ -31,7 +31,7 @@
 #include <base/message_loop/message_loop.h>
 #include <base/message_loop/message_loop_current.h>
 #include <base/strings/string_number_conversions.h>
-#include <base/task/thread_pool/thread_pool.h>
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include <chrome/browser/printing/print_job_manager.h>
 #include <content/browser/scheduler/browser_task_executor.h>
 #include <content/public/browser/browser_main_runner.h>
@@ -63,7 +63,7 @@ BrowserMainRunner::BrowserMainRunner(
     int rc = d_impl->Initialize(d_mainParams);
     DCHECK(-1 == rc);  // it returns -1 for success!!
 
-    Statics::browserMainTaskRunner = base::MessageLoopCurrent::Get()->task_runner();
+    Statics::browserMainTaskRunner = base::ThreadTaskRunnerHandle::Get();
 
     display::Screen::SetScreenInstance(views::CreateDesktopScreen());
     d_viewsDelegate.reset(new ViewsDelegateImpl());

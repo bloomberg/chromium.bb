@@ -36,13 +36,6 @@ class RequestInterceptorImpl final : public net::URLRequestInterceptor {
   net::URLRequestJob* MaybeInterceptRequest(
           net::URLRequest* request,
           net::NetworkDelegate* network_delegate) const override;
-  net::URLRequestJob* MaybeInterceptRedirect(
-          net::URLRequest* request,
-          net::NetworkDelegate* network_delegate,
-          const GURL& location) const override;
-  net::URLRequestJob* MaybeInterceptResponse(
-          net::URLRequest* request,
-          net::NetworkDelegate* network_delegate) const override;
 
   DISALLOW_COPY_AND_ASSIGN(RequestInterceptorImpl);
 };

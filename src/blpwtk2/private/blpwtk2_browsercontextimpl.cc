@@ -158,8 +158,8 @@ BrowserContextImpl::~BrowserContextImpl()
 
     BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(this);
 
-    d_userPrefs = 0;
-    d_prefRegistry = 0;
+    d_userPrefs = nullptr;
+    d_prefRegistry = nullptr;
 
     content::BrowserThread::DeleteSoon(content::BrowserThread::UI,
                                        FROM_HERE,
@@ -180,7 +180,7 @@ BrowserContextImpl::~BrowserContextImpl()
         base::DeleteFile(d_requestContextGetter->path(), true);
     }
 
-    d_requestContextGetter = 0;
+    d_requestContextGetter = nullptr;
     d_isDestroyed = true;
 
     ShutdownStoragePartitions();
@@ -456,13 +456,13 @@ BrowserContextImpl::CreateZoomLevelDelegate(
     return std::unique_ptr<content::ZoomLevelDelegate>();
 }
 
-base::FilePath BrowserContextImpl::GetPath() const
+base::FilePath BrowserContextImpl::GetPath()
 {
     DCHECK(!d_isDestroyed);
     return d_requestContextGetter->path();
 }
 
-bool BrowserContextImpl::IsOffTheRecord() const
+bool BrowserContextImpl::IsOffTheRecord()
 {
     DCHECK(!d_isDestroyed);
     return d_isOffTheRecord;
@@ -501,6 +501,11 @@ content::PushMessagingService *BrowserContextImpl::GetPushMessagingService()
     return nullptr;
 }
 
+content::StorageNotificationService* BrowserContextImpl::GetStorageNotificationService()
+{
+    return nullptr;
+}
+
 content::SSLHostStateDelegate* BrowserContextImpl::GetSSLHostStateDelegate()
 {
     return nullptr;
@@ -530,38 +535,6 @@ BrowserContextImpl::GetBackgroundSyncController()
 content::BrowsingDataRemoverDelegate*
 BrowserContextImpl::GetBrowsingDataRemoverDelegate() {
   return nullptr;
-}
-
-net::URLRequestContextGetter* BrowserContextImpl::CreateRequestContext(
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors)
-{
-    request_interceptors.push_back(std::make_unique<RequestInterceptorImpl>());
-    requestContextGetter()->setProtocolHandlers(
-            protocol_handlers, std::move(request_interceptors));
-    return requestContextGetter();
-}
-
-net::URLRequestContextGetter*
-BrowserContextImpl::CreateRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory,
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors)
-{
-    return nullptr;
-}
-
-net::URLRequestContextGetter* BrowserContextImpl::CreateMediaRequestContext()
-{
-    return requestContextGetter();
-}
-
-net::URLRequestContextGetter*
-BrowserContextImpl::CreateMediaRequestContextForStoragePartition(
-      const base::FilePath& partition_path, bool in_memory)
-{
-    return nullptr;
 }
 
 }  // close namespace blpwtk2

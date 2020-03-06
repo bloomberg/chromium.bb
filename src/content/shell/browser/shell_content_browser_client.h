@@ -56,7 +56,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   bool SupportsInProcessRenderer() override;
   void StartInProcessRendererThread(
       mojo::OutgoingInvitation* broker_client_invitation,
-      const std::string& service_token) override;
+      int renderer_client_id) override;
   void StopInProcessRendererThread() override;
   std::string GetDefaultDownloadName() override;
   WebContentsViewDelegate* GetWebContentsViewDelegate(
