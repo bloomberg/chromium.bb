@@ -1078,7 +1078,7 @@ void Tile::BlockInterPrediction(
           std::min(ref_block_start_y + height + kSubPixelTaps, ref_last_y);
       // For U and V planes with subsampling, we need to multiply
       // reference_y_max by 2 since we only track the progress of Y planes.
-      reference_y_max <<= subsampling_y;
+      reference_y_max = LeftShift(reference_y_max, subsampling_y);
     }
     reference_frames_[reference_frame_index]->WaitUntil(reference_y_max);
   }
@@ -1215,7 +1215,7 @@ void Tile::BlockWarpProcess(const Block& block, const Plane plane,
     }
     // For U and V planes with subsampling, we need to multiply reference_y_max
     // by 2 since we only track the progress of Y planes.
-    reference_y_max <<= subsampling_y_[plane];
+    reference_y_max = LeftShift(reference_y_max, subsampling_y_[plane]);
     reference_frames_[reference_frame_index]->WaitUntil(reference_y_max);
   }
   if (is_compound) {
