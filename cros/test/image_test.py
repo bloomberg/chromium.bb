@@ -676,6 +676,9 @@ class SymlinkTest(image_test_lib.ImageTestCase):
   # The key is the symlink and the value is the symlink target.
   # Both accept fnmatch style expressions (i.e. globs).
   _ACCEPTABLE_LINKS = {
+      # Allow any /etc path to point to any /run path.
+      '/etc/*': {'/run/*'},
+
       '/etc/localtime': {'/var/lib/timezone/localtime'},
       '/etc/machine-id': {'/var/lib/dbus/machine-id'},
       '/etc/mtab': {'/proc/mounts'},
@@ -717,10 +720,6 @@ class SymlinkTest(image_test_lib.ImageTestCase):
   @classmethod
   def _SymlinkTargetAllowed(cls, source, target):
     """See whether |source| points to an acceptable |target|."""
-    # Allow any /etc path to point to any /run path.
-    if source.startswith('/etc') and target.startswith('/run'):
-      return True
-
     # Scan the allow list.
     for allow_source, allow_targets in cls._ACCEPTABLE_LINKS.items():
       if (fnmatch.fnmatch(source, allow_source) and
