@@ -87,6 +87,8 @@ export class GPUTest extends Fixture {
         this.fail('Unexpected out-of-memory error occurred');
       }
     }
+
+    devicePool.release(this.device);
   }
 
   async initGLSL(): Promise<void> {
