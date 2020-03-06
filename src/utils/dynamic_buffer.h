@@ -2,6 +2,7 @@
 #define LIBGAV1_SRC_UTILS_DYNAMIC_BUFFER_H_
 
 #include <memory>
+#include <new>
 
 #include "src/utils/memory.h"
 
@@ -29,7 +30,6 @@ class DynamicBuffer {
   }
 
  private:
-  // Used only when |aligned| is false.
   std::unique_ptr<T[]> buffer_;
   size_t size_ = 0;
 };
