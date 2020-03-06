@@ -282,9 +282,9 @@ static INLINE void find_predictors(
     av1_find_best_ref_mvs_from_stack(cm->allow_high_precision_mv, mbmi_ext,
                                      ref_frame, &frame_mv[NEARESTMV][ref_frame],
                                      &frame_mv[NEARMV][ref_frame], 0);
-    // Early exit for golden frame if force_skip_low_temp_var is set.
+    // Early exit for non-LAST frame if force_skip_low_temp_var is set.
     if (!av1_is_scaled(sf) && bsize >= BLOCK_8X8 &&
-        !(force_skip_low_temp_var && ref_frame == GOLDEN_FRAME)) {
+        !(force_skip_low_temp_var && ref_frame != LAST_FRAME)) {
       av1_mv_pred(cpi, x, yv12_mb[ref_frame][0].buf, yv12->y_stride, ref_frame,
                   bsize);
     }
@@ -1566,7 +1566,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       x->nonrd_prune_ref_frame_search) {
     force_skip_low_temp_var =
         get_force_skip_low_temp_var(&x->variance_low[0], mi_row, mi_col, bsize);
-    // If force_skip_low_temp_var is set, skip golden reference.
+    // If force_skip_low_temp_var is set, skip non-LAST references.
     if (force_skip_low_temp_var) {
       usable_ref_frame = LAST_FRAME;
     }
@@ -1696,7 +1696,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       if (ref_frame != LAST_FRAME && this_mode == NEARMV) continue;
     }
 
-    // Skip non-zeromv mode search for golden frame if force_skip_low_temp_var
+    // Skip non-zeromv mode search for non-LAST frame if force_skip_low_temp_var
     // is set. If nearestmv for golden frame is 0, zeromv mode will be skipped
     // later.
     if (!force_mv_inter_layer && force_skip_low_temp_var &&
