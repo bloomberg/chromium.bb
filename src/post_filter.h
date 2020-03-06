@@ -610,8 +610,12 @@ void PrepareLoopRestorationBlock(const bool do_cdef, const uint8_t* cdef_buffer,
     cdef_ptr += cdef_stride;
     dst += dest_stride;
   }
-  // Bottom 3 rows.
-  if (deblock_ptr != nullptr) deblock_ptr += deblock_stride * 4;
+  // Bottom 3 rows. If |frame_top_border| is true, then we are in the first
+  // superblock row, so in that case, do not increment |deblock_ptr| since we
+  // don't store anything from the first superblock row into |deblock_buffer|.
+  if (deblock_ptr != nullptr && !frame_top_border) {
+    deblock_ptr += deblock_stride * 4;
+  }
   for (int i = 0; i < kRestorationBorder; ++i) {
     if (frame_bottom_border || !do_cdef) {
       memcpy(dst, cdef_ptr, sizeof(Pixel) * (width + 2 * kRestorationBorder));

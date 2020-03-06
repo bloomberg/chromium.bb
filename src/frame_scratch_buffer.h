@@ -55,10 +55,7 @@ struct FrameScratchBuffer {
   // Buffer used to store the deblocked pixels that are necessary for loop
   // restoration. This buffer will store 4 rows for every 64x64 block (4 rows
   // for every 32x32 for chroma with subsampling). The indices of the rows that
-  // are stored are specified in |kDeblockedRowsForLoopRestoration|. First 4
-  // rows of this buffer are never populated and never used.
-  // TODO(vigneshv): The first 4 unused rows can probably be removed by
-  // adjusting the offsets.
+  // are stored are specified in |kDeblockedRowsForLoopRestoration|.
   YuvBuffer deblock_buffer;
   TileScratchBufferPool tile_scratch_buffer_pool;
   // TODO(vigneshv): This is part of the frame scratch buffer for now. This will

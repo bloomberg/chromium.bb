@@ -779,8 +779,7 @@ StatusCode DecoderImpl::DecodeTiles(
 
   if (do_cdef && do_restoration) {
     // We need to store 4 rows per 64x64 unit.
-    const int num_deblock_units =
-        4 + MultiplyBy4(Ceil(frame_header.rows4x4, 16));
+    const int num_deblock_units = MultiplyBy4(Ceil(frame_header.rows4x4, 16));
     // subsampling_y is set to zero irrespective of the actual frame's
     // subsampling since we need to store exactly |num_deblock_units| rows of
     // the deblocked pixels.

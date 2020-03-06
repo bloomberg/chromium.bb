@@ -545,8 +545,7 @@ void PostFilter::SetupDeblockBuffer(int row4x4_start, int sb4x4) {
     for (int plane = 0; plane < planes_; ++plane) {
       CopyDeblockedPixels(static_cast<Plane>(plane), row4x4);
     }
-    const int row_unit = DivideBy16(row4x4);
-    const int row_offset_start = MultiplyBy4(row_unit + 1);
+    const int row_offset_start = DivideBy4(row4x4);
     if (DoSuperRes()) {
       std::array<uint8_t*, kMaxPlanes> buffers = {
           deblock_buffer_.data(kPlaneY) +
@@ -589,10 +588,7 @@ void PostFilter::CopyDeblockedPixels(Plane plane, int row4x4) {
   const uint8_t* const src =
       GetSourceBuffer(static_cast<Plane>(plane), row4x4, 0);
   const ptrdiff_t dst_stride = deblock_buffer_.stride(plane);
-  const int row_unit = DivideBy16(row4x4);
-  // First 4 rows of |deblock_buffer_| are never populated since they will not
-  // be used by loop restoration. So |row_unit| is offset by 1.
-  const int row_offset = MultiplyBy4(row_unit + 1);
+  const int row_offset = DivideBy4(row4x4);
   uint8_t* dst = deblock_buffer_.data(plane) + dst_stride * row_offset;
   const int num_pixels = SubsampledValue(MultiplyBy4(frame_header_.columns4x4),
                                          subsampling_x_[plane]);
@@ -1254,7 +1250,8 @@ void PostFilter::ApplyLoopRestorationForOneUnit(
   const int deblock_buffer_units = 64 >> subsampling_y_[plane];
   uint8_t* const deblock_buffer = deblock_buffer_.data(plane);
   const int deblock_buffer_stride = deblock_buffer_.stride(plane);
-  const int deblock_unit_y = MultiplyBy4(Ceil(unit_y, deblock_buffer_units));
+  const int deblock_unit_y =
+      std::max(MultiplyBy4(Ceil(unit_y, deblock_buffer_units)) - 4, 0);
   uint8_t* deblock_unit_buffer =
       (deblock_buffer != nullptr)
           ? deblock_buffer + deblock_unit_y * deblock_buffer_stride +
