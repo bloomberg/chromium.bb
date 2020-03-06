@@ -25,6 +25,7 @@
 #include <mutex>  // NOLINT (unapproved c++11 header)
 
 #include "src/buffer_pool.h"
+#include "src/decoder_state.h"
 #include "src/dsp/constants.h"
 #include "src/frame_scratch_buffer.h"
 #include "src/gav1/decoder_buffer.h"
@@ -45,48 +46,6 @@
 #include "src/utils/types.h"
 
 namespace libgav1 {
-
-struct DecoderState {
-  // Section 7.20. Updates frames in the reference_frame array with
-  // |current_frame|, based on the |refresh_frame_flags| bitmask.
-  void UpdateReferenceFrames(const RefCountedBufferPtr& current_frame,
-                             int refresh_frame_flags);
-
-  // Clears all the reference frames.
-  void ClearReferenceFrames();
-
-  // reference_valid and reference_frame_id are used only if
-  // sequence_header_.frame_id_numbers_present is true.
-  // The reference_valid array is indexed by a reference picture slot number.
-  // A value (boolean) in the array signifies whether the corresponding
-  // reference picture slot is valid for use as a reference picture.
-  std::array<bool, kNumReferenceFrameTypes> reference_valid = {};
-  std::array<uint16_t, kNumReferenceFrameTypes> reference_frame_id = {};
-  // A valid value of current_frame_id is an unsigned integer of at most 16
-  // bits. -1 indicates current_frame_id is not initialized.
-  int current_frame_id = -1;
-  // The RefOrderHint array variable in the spec.
-  std::array<uint8_t, kNumReferenceFrameTypes> reference_order_hint = {};
-  // The OrderHint variable in the spec. Its value comes from either the
-  // order_hint syntax element in the uncompressed header (if
-  // show_existing_frame is false) or RefOrderHint[ frame_to_show_map_idx ]
-  // (if show_existing_frame is true and frame_type is KEY_FRAME). See Section
-  // 5.9.2 and Section 7.4.
-  //
-  // NOTE: When show_existing_frame is false, it is often more convenient to
-  // just use the order_hint field of the frame header as OrderHint. So this
-  // field is mainly used to update the reference_order_hint array in
-  // UpdateReferenceFrames().
-  uint8_t order_hint = 0;
-  // reference_frame_sign_bias[i] (a boolean) specifies the intended direction
-  // of the motion vector in time for each reference frame.
-  // * |false| indicates that the reference frame is a forwards reference (i.e.
-  //   the reference frame is expected to be output before the current frame);
-  // * |true| indicates that the reference frame is a backwards reference.
-  // Note: reference_frame_sign_bias[0] (for kReferenceFrameIntra) is not used.
-  std::array<bool, kNumReferenceFrameTypes> reference_frame_sign_bias = {};
-  std::array<RefCountedBufferPtr, kNumReferenceFrameTypes> reference_frame;
-};
 
 struct TemporalUnit;
 

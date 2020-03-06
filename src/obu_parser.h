@@ -24,6 +24,7 @@
 #include <type_traits>
 
 #include "src/buffer_pool.h"
+#include "src/decoder_state.h"
 #include "src/dsp/common.h"
 #include "src/gav1/decoder_buffer.h"
 #include "src/gav1/status_code.h"
@@ -36,8 +37,6 @@
 #include "src/utils/vector.h"
 
 namespace libgav1 {
-
-struct DecoderState;
 
 // structs and enums related to Open Bitstream Units (OBU).
 

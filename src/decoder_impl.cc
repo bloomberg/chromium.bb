@@ -61,28 +61,6 @@ int GetBottomBorderPixels(const bool do_cdef, const bool do_restoration) {
 
 }  // namespace
 
-void DecoderState::UpdateReferenceFrames(
-    const RefCountedBufferPtr& current_frame, int refresh_frame_flags) {
-  for (int ref_index = 0, mask = refresh_frame_flags; mask != 0;
-       ++ref_index, mask >>= 1) {
-    if ((mask & 1) != 0) {
-      reference_valid[ref_index] = true;
-      reference_frame_id[ref_index] = current_frame_id;
-      reference_frame[ref_index] = current_frame;
-      reference_order_hint[ref_index] = order_hint;
-    }
-  }
-}
-
-void DecoderState::ClearReferenceFrames() {
-  reference_valid = {};
-  reference_frame_id = {};
-  reference_order_hint = {};
-  for (int ref_index = 0; ref_index < kNumReferenceFrameTypes; ++ref_index) {
-    reference_frame[ref_index] = nullptr;
-  }
-}
-
 // static
 StatusCode DecoderImpl::Create(const DecoderSettings* settings,
                                std::unique_ptr<DecoderImpl>* output) {
@@ -859,17 +837,10 @@ StatusCode DecoderImpl::DecodeTiles(
 
       std::unique_ptr<Tile> tile(new (std::nothrow) Tile(
           tile_number, tile_group.data + byte_offset, tile_size,
-          sequence_header, frame_header, current_frame,
-          state.reference_frame_sign_bias, state.reference_frame,
-          &frame_scratch_buffer->motion_field, state.reference_order_hint,
-          wedge_masks_, frame_scratch_buffer->symbol_decoder_context,
-          &saved_symbol_decoder_context, prev_segment_ids, &post_filter,
-          &block_parameters_holder, &frame_scratch_buffer->cdef_index,
-          &frame_scratch_buffer->inter_transform_sizes, dsp,
-          threading_strategy.row_thread_pool(tile_index++),
-          frame_scratch_buffer->residual_buffer_pool.get(),
-          &frame_scratch_buffer->tile_scratch_buffer_pool,
-          &frame_scratch_buffer->superblock_state, &pending_tiles,
+          sequence_header, frame_header, current_frame, state,
+          frame_scratch_buffer, wedge_masks_, &saved_symbol_decoder_context,
+          prev_segment_ids, &post_filter, &block_parameters_holder, dsp,
+          threading_strategy.row_thread_pool(tile_index++), &pending_tiles,
           IsFrameParallel()));
       if (tile == nullptr) {
         LIBGAV1_DLOG(ERROR, "Failed to allocate tile.");

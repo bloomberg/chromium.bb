@@ -25,6 +25,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "src/frame_scratch_buffer.h"
 #include "src/motion_vector.h"
 #include "src/reconstruction.h"
 #include "src/utils/bit_mask_set.h"
@@ -374,27 +375,18 @@ void GetClampParameters(const Tile::Block& block, int min[2], int max[2]) {
 
 }  // namespace
 
-Tile::Tile(
-    int tile_number, const uint8_t* const data, size_t size,
-    const ObuSequenceHeader& sequence_header,
-    const ObuFrameHeader& frame_header, RefCountedBuffer* const current_frame,
-    const std::array<bool, kNumReferenceFrameTypes>& reference_frame_sign_bias,
-    const std::array<RefCountedBufferPtr, kNumReferenceFrameTypes>&
-        reference_frames,
-    TemporalMotionField* const motion_field,
-    const std::array<uint8_t, kNumReferenceFrameTypes>& reference_order_hint,
-    const WedgeMaskArray& wedge_masks,
-    const SymbolDecoderContext& symbol_decoder_context,
-    SymbolDecoderContext* const saved_symbol_decoder_context,
-    const SegmentationMap* prev_segment_ids, PostFilter* const post_filter,
-    BlockParametersHolder* const block_parameters_holder,
-    Array2D<int16_t>* const cdef_index,
-    Array2D<TransformSize>* const inter_transform_sizes,
-    const dsp::Dsp* const dsp, ThreadPool* const thread_pool,
-    ResidualBufferPool* const residual_buffer_pool,
-    TileScratchBufferPool* const tile_scratch_buffer_pool,
-    Array2D<SuperBlockState>* const superblock_state,
-    BlockingCounterWithStatus* const pending_tiles, bool frame_parallel)
+Tile::Tile(int tile_number, const uint8_t* const data, size_t size,
+           const ObuSequenceHeader& sequence_header,
+           const ObuFrameHeader& frame_header,
+           RefCountedBuffer* const current_frame, const DecoderState& state,
+           FrameScratchBuffer* const frame_scratch_buffer,
+           const WedgeMaskArray& wedge_masks,
+           SymbolDecoderContext* const saved_symbol_decoder_context,
+           const SegmentationMap* prev_segment_ids,
+           PostFilter* const post_filter,
+           BlockParametersHolder* const block_parameters_holder,
+           const dsp::Dsp* const dsp, ThreadPool* const thread_pool,
+           BlockingCounterWithStatus* const pending_tiles, bool frame_parallel)
     : number_(tile_number),
       data_(data),
       size_(size),
@@ -406,13 +398,13 @@ Tile::Tile(
       current_quantizer_index_(frame_header.quantizer.base_index),
       sequence_header_(sequence_header),
       frame_header_(frame_header),
-      reference_frame_sign_bias_(reference_frame_sign_bias),
-      reference_frames_(reference_frames),
-      motion_field_(*motion_field),
-      reference_order_hint_(reference_order_hint),
+      reference_frame_sign_bias_(state.reference_frame_sign_bias),
+      reference_frames_(state.reference_frame),
+      motion_field_(frame_scratch_buffer->motion_field),
+      reference_order_hint_(state.reference_order_hint),
       wedge_masks_(wedge_masks),
       reader_(data_, size_, frame_header_.enable_cdf_update),
-      symbol_decoder_context_(symbol_decoder_context),
+      symbol_decoder_context_(frame_scratch_buffer->symbol_decoder_context),
       saved_symbol_decoder_context_(saved_symbol_decoder_context),
       prev_segment_ids_(prev_segment_ids),
       dsp_(*dsp),
@@ -428,11 +420,12 @@ Tile::Tile(
               ? (sequence_header_.use_128x128_superblock ? 3 : 5)
               : 1),
       current_frame_(*current_frame),
-      cdef_index_(*cdef_index),
-      inter_transform_sizes_(*inter_transform_sizes),
+      cdef_index_(frame_scratch_buffer->cdef_index),
+      inter_transform_sizes_(frame_scratch_buffer->inter_transform_sizes),
       thread_pool_(thread_pool),
-      residual_buffer_pool_(residual_buffer_pool),
-      tile_scratch_buffer_pool_(tile_scratch_buffer_pool),
+      residual_buffer_pool_(frame_scratch_buffer->residual_buffer_pool.get()),
+      tile_scratch_buffer_pool_(
+          &frame_scratch_buffer->tile_scratch_buffer_pool),
       pending_tiles_(pending_tiles),
       build_bit_mask_when_parsing_(false),
       initialized_(false),
@@ -497,7 +490,8 @@ Tile::Tile(
         std::min(frame_header_.columns4x4, DivideBy4(plane_width + 3)
                                                << subsampling_x_[plane]);
   }
-  if (split_parse_and_decode_ && superblock_state->rows() > 0) {
+  auto& superblock_state = frame_scratch_buffer->superblock_state;
+  if (split_parse_and_decode_ && superblock_state.rows() > 0) {
     // The |superblock_state| array is for the entire frame. Set
     // |threading_.sb_state| to point to the beginning of this Tile.
     std::lock_guard<std::mutex> lock(threading_.mutex);
@@ -507,10 +501,9 @@ Tile::Tile(
         MultiplyBy4(row4x4_start_) >> superblock_width_log2;
     const int superblock_column_start_index =
         MultiplyBy4(column4x4_start_) >> superblock_width_log2;
-    threading_.sb_state.Reset(
-        superblock_rows_, superblock_state->columns(),
-        &(*superblock_state)[superblock_row_start_index]
-                            [superblock_column_start_index]);
+    threading_.sb_state.Reset(superblock_rows_, superblock_state.columns(),
+                              &superblock_state[superblock_row_start_index]
+                                               [superblock_column_start_index]);
   }
 }
 

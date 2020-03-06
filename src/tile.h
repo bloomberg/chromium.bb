@@ -28,9 +28,11 @@
 #include <vector>
 
 #include "src/buffer_pool.h"
+#include "src/decoder_state.h"
 #include "src/dsp/common.h"
 #include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
+#include "src/frame_scratch_buffer.h"
 #include "src/loop_filter_mask.h"
 #include "src/loop_restoration_info.h"
 #include "src/obu_parser.h"
@@ -70,22 +72,13 @@ class Tile : public Allocable {
   Tile(int tile_number, const uint8_t* data, size_t size,
        const ObuSequenceHeader& sequence_header,
        const ObuFrameHeader& frame_header, RefCountedBuffer* current_frame,
-       const std::array<bool, kNumReferenceFrameTypes>&
-           reference_frame_sign_bias,
-       const std::array<RefCountedBufferPtr, kNumReferenceFrameTypes>&
-           reference_frames,
-       TemporalMotionField* motion_field,
-       const std::array<uint8_t, kNumReferenceFrameTypes>& reference_order_hint,
+       const DecoderState& state, FrameScratchBuffer* frame_scratch_buffer,
        const WedgeMaskArray& wedge_masks,
-       const SymbolDecoderContext& symbol_decoder_context,
        SymbolDecoderContext* saved_symbol_decoder_context,
        const SegmentationMap* prev_segment_ids, PostFilter* post_filter,
-       BlockParametersHolder* block_parameters, Array2D<int16_t>* cdef_index,
-       Array2D<TransformSize>* inter_transform_sizes, const dsp::Dsp* dsp,
-       ThreadPool* thread_pool, ResidualBufferPool* residual_buffer_pool,
-       TileScratchBufferPool* tile_scratch_buffer_pool,
-       Array2D<SuperBlockState>* superblock_state,
-       BlockingCounterWithStatus* pending_tiles, bool frame_parallel);
+       BlockParametersHolder* block_parameters, const dsp::Dsp* dsp,
+       ThreadPool* thread_pool, BlockingCounterWithStatus* pending_tiles,
+       bool frame_parallel);
 
   // Move only.
   Tile(Tile&& tile) noexcept;
