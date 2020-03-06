@@ -304,7 +304,7 @@ constexpr int PostFilter::kCdefLargeValue;
 
 int PostFilter::ApplyFilteringForOneSuperBlockRow(int row4x4, int sb4x4,
                                                   bool is_last_row) {
-  if (row4x4 < 0) return kLargeNegativeValue;
+  if (row4x4 < 0) return -1;
   if (DoDeblock()) {
     ApplyDeblockFilterForOneSuperBlockRow(row4x4, sb4x4);
   }

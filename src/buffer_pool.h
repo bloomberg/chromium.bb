@@ -242,6 +242,10 @@ class RefCountedBuffer {
   // Waits until the |progress_row| has been decoded (as indicated either by
   // |progress_row_| or |frame_state_|).
   void WaitUntil(int progress_row) {
+    // If |progress_row| is negative, it means that the wait is on the top
+    // border to be available. The top border will be available when row 0 has
+    // been decoded. So we can simply wait on row 0 instead.
+    progress_row = std::max(progress_row, 0);
     std::unique_lock<std::mutex> lock(mutex_);
     while (progress_row_ < progress_row && frame_state_ != kFrameStateDecoded) {
       progress_row_condvar_.wait(lock);
@@ -273,7 +277,7 @@ class RefCountedBuffer {
 
   std::mutex mutex_;
   FrameState frame_state_ = kFrameStateUnknown LIBGAV1_GUARDED_BY(mutex_);
-  int progress_row_ = kLargeNegativeValue LIBGAV1_GUARDED_BY(mutex_);
+  int progress_row_ = -1 LIBGAV1_GUARDED_BY(mutex_);
   // Signaled when progress_row_ is updated or when frame_state_ is set to
   // kFrameStateDecoded.
   std::condition_variable progress_row_condvar_;

@@ -149,7 +149,6 @@ enum {
   kMaxTileColumns = 64,
   kMaxTileRows = 64,
   kMaxOperatingPoints = 32,
-  kLargeNegativeValue = -999999,
 };  // anonymous enum
 
 enum FrameType : uint8_t {

@@ -1074,8 +1074,8 @@ void Tile::BlockInterPrediction(
       // fixed.
       reference_y_max = reference_height;
     } else {
-      reference_y_max = std::max(
-          std::min(ref_block_start_y + height + kSubPixelTaps, ref_last_y), 0);
+      reference_y_max =
+          std::min(ref_block_start_y + height + kSubPixelTaps, ref_last_y);
       // For U and V planes with subsampling, we need to multiply
       // reference_y_max by 2 since we only track the progress of Y planes.
       reference_y_max <<= subsampling_y;
@@ -1197,7 +1197,7 @@ void Tile::BlockWarpProcess(const Block& block, const Plane plane,
   // In frame parallel mode, ensure that the reference block has been decoded
   // and available for referencing.
   if (frame_parallel_) {
-    int reference_y_max = kLargeNegativeValue;
+    int reference_y_max = -1;
     // Find out the maximum y-coordinate for warping.
     for (int start_y = block_start_y; start_y < block_start_y + height;
          start_y += 8) {

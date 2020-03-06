@@ -181,7 +181,7 @@ RefCountedBufferPtr BufferPool::GetFreeBuffer() {
   for (auto buffer : buffers_) {
     if (!buffer->in_use_) {
       buffer->in_use_ = true;
-      buffer->progress_row_ = kLargeNegativeValue;
+      buffer->progress_row_ = -1;
       buffer->SetFrameState(kFrameStateUnknown);
       return RefCountedBufferPtr(buffer, RefCountedBuffer::ReturnToBufferPool);
     }
@@ -200,7 +200,7 @@ RefCountedBufferPtr BufferPool::GetFreeBuffer() {
   }
   buffer->SetBufferPool(this);
   buffer->in_use_ = true;
-  buffer->progress_row_ = kLargeNegativeValue;
+  buffer->progress_row_ = -1;
   buffer->SetFrameState(kFrameStateUnknown);
   return RefCountedBufferPtr(buffer, RefCountedBuffer::ReturnToBufferPool);
 }

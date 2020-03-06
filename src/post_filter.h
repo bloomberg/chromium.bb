@@ -536,7 +536,7 @@ class PostFilter {
 
   ThreadPool* const thread_pool_;
   // Tracks the progress of the post filters.
-  int progress_row_ = kLargeNegativeValue;
+  int progress_row_ = -1;
 
   // A small buffer to hold input source image block for loop restoration.
   // Its size is one processing unit size + borders.
