@@ -71,7 +71,10 @@ group("gn_all") {
     # TODO(crbug.com/openscreen/86): Build for Mac too once the mac buildbot
     # compiler is upgraded.
     if (!is_mac || force_build_standalone_receiver) {
-      deps += [ "cast/standalone_receiver:cast_receiver" ]
+      deps += [
+        "cast/standalone_receiver:cast_receiver",
+        "cast/standalone_sender:cast_sender",
+      ]
     }
   }
 }
