@@ -1902,7 +1902,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(new TextInputClientMessageFilter());
 #elif defined(OS_WIN)
  {
-    DWriteFontProxyImpl::SetFontCollection(browser_context->GetFontCollection());
+    DWriteFontProxyImpl::SetFontCollection(browser_context_->GetFontCollection());
   }
 #endif
 
