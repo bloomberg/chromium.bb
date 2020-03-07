@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/css/properties/longhands/rubberbandable.h"
+#include "third_party/blink/renderer/core/css/properties/longhands.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
 
 namespace blink {
 namespace css_longhand {
@@ -11,7 +12,6 @@ const CSSValue* Rubberbandable::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.Rubberbandable());
 }
