@@ -20,7 +20,7 @@
  * IN THE SOFTWARE.
  */
 
-#include "third_party/blink/renderer/core/css/properties/longhands/bb_rubberband_group_delimiter.h"
+#include "third_party/blink/renderer/core/css/properties/longhands.h"
 
 #include "third_party/blink/renderer/core/css/css_string_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
@@ -42,7 +42,6 @@ const CSSValue* BbRubberbandGroupDelimiter::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    Node* styled_node,
     bool allow_visited_style) const {
   if (style.BbRubberbandGroupDelimiter() == g_null_atom)
     return CSSIdentifierValue::Create(CSSValueID::kNone);

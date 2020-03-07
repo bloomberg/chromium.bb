@@ -344,7 +344,8 @@ void WebViewImpl::RubberbandWalkLayoutObject(const RubberbandContext& context, c
         PaintLayer* layer = ToLayoutBoxModelObject(layoutObject)->Layer();
         RubberbandLayerContext& layerContext = *localContext.m_layerContext;
 
-        auto location = layer->Location().ToLayoutPoint();
+        auto location = layer->LocationWithoutPositionOffset().ToLayoutPoint() -
+                        layer->PixelSnappedScrolledContentOffset();
 
         if (layer->HasTransformRelatedProperty()) {
             TransformationMatrix matrix = layer->CurrentTransform();
@@ -1083,7 +1084,7 @@ void appendCandidatesByLayoutNGText(
         int startOffset = physicalTextFragment.StartOffset();
         // m_start is indexed to candidate.m_text, which is also physicalTextFragment.Text()
         candidate.m_start = 0;
-        candidate.m_len = physicalTextFragment.Length();
+        candidate.m_len = physicalTextFragment.TextLength();
         candidate.m_groupId = localContext.m_groupId;
         candidate.m_groupDelimiter = localContext.m_groupDelimiter;
 
