@@ -451,7 +451,7 @@ void DesktopWindowTreeHostWin::FrameTypeChanged() {
 }
 
 void DesktopWindowTreeHostWin::CompositionChanged() {
-  SetWindowTransparency();
+  desktop_native_widget_aura_->UpdateWindowTransparency();
 }
 
 void DesktopWindowTreeHostWin::SetFullscreen(bool fullscreen) {
