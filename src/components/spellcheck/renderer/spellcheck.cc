@@ -241,10 +241,11 @@ bool SpellCheck::SpellCheckWord(const base::char16* text_begin,
                                 int tag,
                                 size_t* misspelling_start,
                                 size_t* misspelling_len,
+                                bool check_for_contractions,
                                 std::nullptr_t null_suggestions_ptr) {
   return SpellCheckWord(
       text_begin, position_in_text, text_length, tag, misspelling_start,
-      misspelling_len,
+      misspelling_len, check_for_contractions,
       static_cast<spellcheck::PerLanguageSuggestions*>(nullptr));
 }
 
@@ -255,17 +256,17 @@ bool SpellCheck::SpellCheckWord(
     int tag,
     size_t* misspelling_start,
     size_t* misspelling_len,
-    bool checkForContractions,
+    bool check_for_contractions,
     std::vector<base::string16>* optional_suggestions) {
   if (!optional_suggestions) {
     return SpellCheckWord(text_begin, position_in_text, text_length, tag,
-                          misspelling_start, misspelling_len, nullptr);
+                          misspelling_start, misspelling_len, check_for_contractions, nullptr);
   }
 
   bool result;
   spellcheck::PerLanguageSuggestions per_language_suggestions;
   result = SpellCheckWord(text_begin, position_in_text, text_length, tag,
-                          misspelling_start, misspelling_len,
+                          misspelling_start, misspelling_len, check_for_contractions,
                           &per_language_suggestions);
   spellcheck::FillSuggestions(per_language_suggestions, optional_suggestions);
 
@@ -279,6 +280,7 @@ bool SpellCheck::SpellCheckWord(
     int tag,
     size_t* misspelling_start,
     size_t* misspelling_len,
+    bool check_for_contractions,
     spellcheck::PerLanguageSuggestions* optional_per_language_suggestions) {
   DCHECK(text_length >= position_in_text);
   DCHECK(misspelling_start && misspelling_len) << "Out vars must be given.";
@@ -336,7 +338,7 @@ bool SpellCheck::SpellCheckWord(
           (*language)->SpellCheckWord(
               text_begin, position_in_text, text_length, tag,
               &possible_misspelling_start, &possible_misspelling_len,
-              checkForContractions,
+              check_for_contractions,
               optional_per_language_suggestions ? &language_suggestions
                                                 : nullptr);
 
