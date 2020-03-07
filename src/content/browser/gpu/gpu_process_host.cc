@@ -609,7 +609,7 @@ void GpuProcessHost::OnEstablishGpuChannelTimeout(int client_id,
   if (process_ && process_launched_ && kind_ == GPU_PROCESS_KIND_SANDBOXED && gpu_host_) {
     process_->TerminateOnBadMessageReceived(msg);
   }
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&OnGpuProcessHostDestroyedOnUI, host_id_, std::move(msg), logging::LOG_WARNING));
 }
@@ -661,7 +661,7 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
       kind_(kind),
       process_launched_(false),
       error_message_observer_(
-          std::make_unique<GpuErrorMessageObserver>(this)),
+          std::make_unique<GpuErrorMessageObserver>(this)) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSingleProcess) ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -801,6 +801,7 @@ GpuProcessHost::~GpuProcessHost() {
 #endif
       case base::TERMINATION_STATUS_MAX_ENUM:
         NOTREACHED();
+        break;
       default:
         message += base::StringPrintf(
             "exited with code %d. Termination status is %d",
@@ -1303,7 +1304,7 @@ void GpuProcessHost::OnFatalErrorDetected(const std::string& header,
     msg += "; GPU process will be terminated:";
     process_->TerminateOnBadMessageReceived(msg);
   }
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&OnGpuProcessHostDestroyedOnUI, host_id_, std::move(msg),
                      logging::LOG_WARNING));
