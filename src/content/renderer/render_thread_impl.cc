@@ -806,8 +806,7 @@ void RenderThreadImpl::Init() {
   needs_to_record_first_active_paint_ = false;
   was_backgrounded_time_ = base::TimeTicks::Min();
 
-  if (!GetContentClient()->renderer()->BindFrameSinkProvider(
-      mojo::MakeRequest(&frame_sink_provider_))) {
+  if (!GetContentClient()->renderer()->ShouldBindFrameSinkProvider()) {
     BindHostReceiver(frame_sink_provider_.BindNewPipeAndPassReceiver());
   }
 

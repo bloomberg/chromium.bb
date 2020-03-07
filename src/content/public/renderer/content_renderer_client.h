@@ -447,7 +447,7 @@ class CONTENT_EXPORT ContentRendererClient {
   // it should return 'false' without deleting 'msg'.
   virtual bool Dispatch(IPC::Message* msg);
 
-  virtual bool BindFrameSinkProvider(mojom::FrameSinkProviderRequest request);
+  virtual bool ShouldBindFrameSinkProvider();
 
   // Returns true if |url| still requires native Web Components v0 features.
   // Used for Web UI pages.
