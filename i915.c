@@ -268,26 +268,13 @@ static int i915_bo_from_format(struct bo *bo, uint32_t width, uint32_t height, u
 	return 0;
 }
 
-static int i915_bo_compute_metadata(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
-				    uint64_t use_flags, const uint64_t *modifiers, uint32_t count)
+static int i915_bo_create_for_modifier(struct bo *bo, uint32_t width, uint32_t height,
+				       uint32_t format, uint64_t modifier)
 {
-	static const uint64_t modifier_order[] = {
-		I915_FORMAT_MOD_Y_TILED_CCS,
-		I915_FORMAT_MOD_Y_TILED,
-		I915_FORMAT_MOD_X_TILED,
-		DRM_FORMAT_MOD_LINEAR,
-	};
-	uint64_t modifier;
-
-	if (modifiers) {
-		modifier =
-		    drv_pick_modifier(modifiers, count, modifier_order, ARRAY_SIZE(modifier_order));
-	} else {
-		struct combination *combo = drv_get_combination(bo->drv, format, use_flags);
-		if (!combo)
-			return -EINVAL;
-		modifier = combo->metadata.modifier;
-	}
+	int ret;
+	size_t plane;
+	struct drm_i915_gem_create gem_create;
+	struct drm_i915_gem_set_tiling gem_set_tiling;
 
 	switch (modifier) {
 	case DRM_FORMAT_MOD_LINEAR:
@@ -359,15 +346,6 @@ static int i915_bo_compute_metadata(struct bo *bo, uint32_t width, uint32_t heig
 	} else {
 		i915_bo_from_format(bo, width, height, format);
 	}
-	return 0;
-}
-
-static int i915_bo_create_from_metadata(struct bo *bo)
-{
-	int ret;
-	size_t plane;
-	struct drm_i915_gem_create gem_create;
-	struct drm_i915_gem_set_tiling gem_set_tiling;
 
 	memset(&gem_create, 0, sizeof(gem_create));
 	gem_create.size = bo->meta.total_size;
@@ -398,6 +376,34 @@ static int i915_bo_create_from_metadata(struct bo *bo)
 	}
 
 	return 0;
+}
+
+static int i915_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
+			  uint64_t use_flags)
+{
+	struct combination *combo;
+
+	combo = drv_get_combination(bo->drv, format, use_flags);
+	if (!combo)
+		return -EINVAL;
+
+	return i915_bo_create_for_modifier(bo, width, height, format, combo->metadata.modifier);
+}
+
+static int i915_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint32_t height,
+					 uint32_t format, const uint64_t *modifiers, uint32_t count)
+{
+	static const uint64_t modifier_order[] = {
+		I915_FORMAT_MOD_Y_TILED_CCS,
+		I915_FORMAT_MOD_Y_TILED,
+		I915_FORMAT_MOD_X_TILED,
+		DRM_FORMAT_MOD_LINEAR,
+	};
+	uint64_t modifier;
+
+	modifier = drv_pick_modifier(modifiers, count, modifier_order, ARRAY_SIZE(modifier_order));
+
+	return i915_bo_create_for_modifier(bo, width, height, format, modifier);
 }
 
 static void i915_close(struct driver *drv)
@@ -555,8 +561,8 @@ const struct backend backend_i915 = {
 	.name = "i915",
 	.init = i915_init,
 	.close = i915_close,
-	.bo_compute_metadata = i915_bo_compute_metadata,
-	.bo_create_from_metadata = i915_bo_create_from_metadata,
+	.bo_create = i915_bo_create,
+	.bo_create_with_modifiers = i915_bo_create_with_modifiers,
 	.bo_destroy = drv_gem_bo_destroy,
 	.bo_import = i915_bo_import,
 	.bo_map = i915_bo_map,
