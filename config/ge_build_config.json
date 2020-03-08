@@ -446,18 +446,6 @@
       ]
     },
     {
-      "name": "dedede",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": true,
-          "board_group": "",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "edgar",
       "configs": [
         {
@@ -1737,6 +1725,23 @@
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
           "board_id": 312,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "name": "dedede",
+      "reference_board_name": "dedede",
+      "arch": "X86_INTERNAL",
+      "builder": "RELEASE",
+      "experimental": true,
+      "models": [
+        {
+          "board_name": "dedede",
+          "name": "waddledoo",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 419,
           "is_active": true
         }
       ]

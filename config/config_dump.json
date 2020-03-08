@@ -8825,6 +8825,9 @@
         "hw_tests_disabled_bug": "https://b/144683687",
         "hw_tests_override": [],
         "important": false,
+        "models": [
+            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"dedede\",\n    \"name\": \"waddledoo\",\n    \"test_suites\": []\n}"
+        ],
         "sign_types": [
             "recovery",
             "factory"
@@ -8843,6 +8846,9 @@
         "hw_tests_disabled_bug": "https://b/144683687",
         "hw_tests_override": null,
         "luci_builder": "Try",
+        "models": [
+            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"dedede\",\n    \"name\": \"waddledoo\",\n    \"test_suites\": []\n}"
+        ],
         "paygen": false,
         "push_image": false,
         "sign_types": [
