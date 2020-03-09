@@ -14,7 +14,7 @@ from chromite.api.gen.chromite.api import build_api_test_pb2
 from chromite.api.gen.chromiumos import common_pb2
 from chromite.lib import cros_test_lib
 from chromite.lib import portage_util
-from chromite.lib.build_target_util import BuildTarget
+from chromite.lib.build_target_lib import BuildTarget
 from chromite.lib.chroot_lib import Chroot
 
 

@@ -20,7 +20,7 @@ from chromite.api.gen.config.replication_config_pb2 import (
     REPLICATION_TYPE_FILTER
 )
 from chromite.cbuildbot import manifest_version
-from chromite.lib import build_target_util
+from chromite.lib import build_target_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
@@ -45,7 +45,7 @@ class UprevAndroidTest(cros_test_lib.RunCommandTestCase):
     """Test successful run handling."""
     self.rc.AddCmdResult(partial_mock.In('cros_mark_android_as_stable'),
                          stdout='ANDROID_ATOM=android/android-1.0\n')
-    build_targets = [build_target_util.BuildTarget(t) for t in ['foo', 'bar']]
+    build_targets = [build_target_lib.BuildTarget(t) for t in ['foo', 'bar']]
 
     packages.uprev_android('refs/tracking-branch', 'android/package',
                            'refs/android-build-branch', Chroot(),
@@ -59,7 +59,7 @@ class UprevAndroidTest(cros_test_lib.RunCommandTestCase):
     """Test no uprev handling."""
     self.rc.AddCmdResult(partial_mock.In('cros_mark_android_as_stable'),
                          stdout='')
-    build_targets = [build_target_util.BuildTarget(t) for t in ['foo', 'bar']]
+    build_targets = [build_target_lib.BuildTarget(t) for t in ['foo', 'bar']]
     packages.uprev_android('refs/tracking-branch', 'android/package',
                            'refs/android-build-branch', Chroot(),
                            build_targets=build_targets)
@@ -76,13 +76,13 @@ class UprevBuildTargetsTest(cros_test_lib.RunCommandTestCase):
   def test_invalid_type_fails(self):
     """Test invalid type fails."""
     with self.assertRaises(AssertionError):
-      packages.uprev_build_targets([build_target_util.BuildTarget('foo')],
+      packages.uprev_build_targets([build_target_lib.BuildTarget('foo')],
                                    'invalid')
 
   def test_none_type_fails(self):
     """Test None type fails."""
     with self.assertRaises(AssertionError):
-      packages.uprev_build_targets([build_target_util.BuildTarget('foo')],
+      packages.uprev_build_targets([build_target_lib.BuildTarget('foo')],
                                    None)
 
 
@@ -575,7 +575,7 @@ class ChromeVersionsTest(cros_test_lib.MockTestCase):
   """Tests getting chrome version."""
 
   def setUp(self):
-    self.build_target = build_target_util.BuildTarget('board')
+    self.build_target = build_target_lib.BuildTarget('board')
 
   def test_determine_chrome_version(self):
     """Tests that a valid chrome version is returned."""

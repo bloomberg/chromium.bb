@@ -17,7 +17,7 @@ import mock
 from chromite.api.gen.chromiumos import common_pb2
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import goma_util
-from chromite.lib import build_target_util
+from chromite.lib import build_target_lib
 from chromite.lib import chroot_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -65,7 +65,7 @@ class BuildTargetUnitTestTest(cros_test_lib.RunCommandTempDirTestCase):
 
   def setUp(self):
     self.board = 'board'
-    self.build_target = build_target_util.BuildTarget(self.board)
+    self.build_target = build_target_lib.BuildTarget(self.board)
     self.chroot = chroot_lib.Chroot(path=self.tempdir)
     # Make the chroot's tmp directory, used for the parallel emerge status file.
     tempdir = os.path.join(self.tempdir, 'tmp')

@@ -13,7 +13,7 @@ from chromite.api.gen.chromiumos import common_pb2
 from chromite.cbuildbot import goma_util
 from chromite.lib import constants
 from chromite.lib import portage_util
-from chromite.lib.build_target_util import BuildTarget
+from chromite.lib.build_target_lib import BuildTarget
 from chromite.lib.chroot_lib import Chroot
 
 

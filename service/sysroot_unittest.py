@@ -12,7 +12,7 @@ import sys
 
 import mock
 
-from chromite.lib import build_target_util
+from chromite.lib import build_target_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
@@ -70,7 +70,7 @@ class SetupBoardTest(cros_test_lib.MockTestCase):
                                    return_value=target_sysroot)
     install_toolchain_mock = self.PatchObject(sysroot, 'InstallToolchain')
 
-    sysroot.SetupBoard(build_target_util.BuildTarget('board'))
+    sysroot.SetupBoard(build_target_lib.BuildTarget('board'))
 
     create_mock.assert_called_once()
     install_toolchain_mock.assert_called_once()
@@ -82,7 +82,7 @@ class SetupBoardTest(cros_test_lib.MockTestCase):
                                    return_value=target_sysroot)
     install_toolchain_mock = self.PatchObject(sysroot, 'InstallToolchain')
 
-    target = build_target_util.BuildTarget('board')
+    target = build_target_lib.BuildTarget('board')
     configs = sysroot.SetupBoardRunConfig(regen_configs=True)
 
     sysroot.SetupBoard(target, run_configs=configs)
@@ -107,12 +107,12 @@ class CreateTest(cros_test_lib.RunCommandTempDirTestCase):
     # A board we have a sysroot for already.
     self.board = 'board'
     self.sysroot_path = os.path.join(self.tempdir, 'build', self.board)
-    self.build_target = build_target_util.BuildTarget(
+    self.build_target = build_target_lib.BuildTarget(
         self.board, build_root=self.sysroot_path)
     # A board we don't have a sysroot for yet.
     self.unbuilt_board = 'board2'
     self.unbuilt_path = os.path.join(self.tempdir, 'build', self.unbuilt_board)
-    self.unbuilt_target = build_target_util.BuildTarget(
+    self.unbuilt_target = build_target_lib.BuildTarget(
         self.unbuilt_board, build_root=self.unbuilt_path)
 
     # Create the sysroot.
@@ -220,14 +220,14 @@ class InstallToolchainTest(cros_test_lib.MockTempDirTestCase):
     # A board we have a sysroot for already.
     self.board = 'board'
     self.sysroot_path = os.path.join(self.tempdir, 'build', self.board)
-    self.build_target = build_target_util.BuildTarget(
+    self.build_target = build_target_lib.BuildTarget(
         self.board, build_root=self.sysroot_path)
     self.sysroot = sysroot_lib.Sysroot(self.sysroot_path)
 
     # A board we don't have a sysroot for yet.
     self.unbuilt_board = 'board2'
     self.unbuilt_path = os.path.join(self.tempdir, 'build', self.unbuilt_board)
-    self.unbuilt_target = build_target_util.BuildTarget(
+    self.unbuilt_target = build_target_lib.BuildTarget(
         self.unbuilt_board, build_root=self.unbuilt_path)
     self.unbuilt_sysroot = sysroot_lib.Sysroot(self.unbuilt_path)
 
@@ -317,7 +317,7 @@ class BuildPackagesTest(cros_test_lib.RunCommandTestCase):
     self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=True)
 
     self.board = 'board'
-    self.target = build_target_util.BuildTarget(self.board)
+    self.target = build_target_lib.BuildTarget(self.board)
     self.sysroot_path = '/sysroot/path'
     self.sysroot = sysroot_lib.Sysroot(self.sysroot_path)
 

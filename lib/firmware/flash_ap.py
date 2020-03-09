@@ -23,7 +23,7 @@ import sys
 import tempfile
 import time
 
-from chromite.lib import build_target_util
+from chromite.lib import build_target_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -241,7 +241,7 @@ def deploy(build_target,
   """Deploy an AP FW image to a device.
 
   Args:
-    build_target (build_target_util.BuildTarget): The DUT build target.
+    build_target (build_target_lib.BuildTarget): The DUT build target.
     image (str): The image path.
     device (commandline.Device): The device to be used. Temporarily optional.
     flashrom (bool): Whether to use flashrom or futility.
@@ -413,7 +413,7 @@ def main(argv):
   opts = parse_args(argv)
   try:
     deploy(
-        build_target_util.BuildTarget(opts.board),
+        build_target_lib.BuildTarget(opts.board),
         opts.image,
         flashrom=opts.flashrom,
         fast=opts.fast,

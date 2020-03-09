@@ -190,7 +190,7 @@ def SetupBoard(target, accept_licenses=None, run_configs=None):
   This is the entry point to run the setup_board script.
 
   Args:
-    target (build_target_util.BuildTarget): The build target configuration.
+    target (build_target_lib.BuildTarget): The build target configuration.
     accept_licenses (str|None): The additional licenses to accept.
     run_configs (SetupBoardRunConfig): The run configs.
 
@@ -331,7 +331,7 @@ def InstallToolchain(target, sysroot, run_configs):
   Everything else must have been done already for this to be successful.
 
   Args:
-    target (build_target_util.BuildTarget): The target whose toolchain is being
+    target (build_target_lib.BuildTarget): The target whose toolchain is being
       installed.
     sysroot (sysroot_lib.Sysroot): The sysroot where the toolchain is being
       installed.
@@ -355,7 +355,7 @@ def BuildPackages(target, sysroot, run_configs):
   """Build and install packages into a sysroot.
 
   Args:
-    target (build_target_util.BuildTarget): The target whose packages are being
+    target (build_target_lib.BuildTarget): The target whose packages are being
       installed.
     sysroot (sysroot_lib.Sysroot): The sysroot where the packages are being
       installed.
@@ -475,7 +475,7 @@ def _ChooseProfile(target, sysroot):
   call here, and by extension this method all together.
 
   Args:
-    target (build_target_util.BuildTarget): The build target whose profile is
+    target (build_target_lib.BuildTarget): The build target whose profile is
       being chosen.
     sysroot (sysroot_lib.Sysroot): The sysroot for which the profile is
       being chosen.

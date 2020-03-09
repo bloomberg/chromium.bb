@@ -9,7 +9,7 @@ from __future__ import print_function
 
 import mock
 
-from chromite.lib import build_target_util
+from chromite.lib import build_target_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import workon_helper
 from chromite.lib.firmware import ap_firmware
@@ -28,7 +28,7 @@ class BuildTest(cros_test_lib.RunCommandTestCase):
 
     # pylint: disable=protected-access
     build_config = ap_firmware._get_build_config(
-        build_target_util.BuildTarget('board'))
+        build_target_lib.BuildTarget('board'))
 
     self.assertEqual(('pkg1', 'pkg2'), build_config.workon)
     self.assertEqual(('pkg3', 'pkg4'), build_config.build)
@@ -42,7 +42,7 @@ class BuildTest(cros_test_lib.RunCommandTestCase):
 
     # pylint: disable=protected-access
     build_config = ap_firmware._get_build_config(
-        build_target_util.BuildTarget('board'))
+        build_target_lib.BuildTarget('board'))
 
     self.assertFalse(build_config.workon)
     self.assertEqual(('pkg3', 'pkg4'), build_config.build)
@@ -56,7 +56,7 @@ class BuildTest(cros_test_lib.RunCommandTestCase):
 
     with self.assertRaises(ap_firmware.InvalidConfigError):
       # pylint: disable=protected-access
-      ap_firmware._get_build_config(build_target_util.BuildTarget('board'))
+      ap_firmware._get_build_config(build_target_lib.BuildTarget('board'))
 
   def test_build(self):
     """Sanity checks the workon and command building functions properly."""
@@ -71,7 +71,7 @@ class BuildTest(cros_test_lib.RunCommandTestCase):
     expected_workon_stop = ['cat/workon2']
 
     build_config = ap_firmware.BuildConfig(workon=workon_pkgs, build=build_pkgs)
-    build_target = build_target_util.BuildTarget('board')
+    build_target = build_target_lib.BuildTarget('board')
 
     # Simulate starting the required workon packages. Return first the existing
     # workon packages, then the ones we're starting plus the existing.

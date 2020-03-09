@@ -16,7 +16,7 @@ from chromite.api import controller
 from chromite.api.controller import sysroot as sysroot_controller
 from chromite.api.gen.chromite.api import sysroot_pb2
 from chromite.api.gen.chromiumos import common_pb2
-from chromite.lib import build_target_util
+from chromite.lib import build_target_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
@@ -109,7 +109,7 @@ class CreateTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
     sysroot = sysroot_lib.Sysroot(sysroot_path)
     create_patch = self.PatchObject(sysroot_service, 'Create',
                                     return_value=sysroot)
-    target_patch = self.PatchObject(build_target_util, 'BuildTarget')
+    target_patch = self.PatchObject(build_target_lib, 'BuildTarget')
     rc_patch = self.PatchObject(sysroot_service, 'SetupBoardRunConfig')
 
     # Default values.

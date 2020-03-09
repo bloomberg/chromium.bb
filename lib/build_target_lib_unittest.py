@@ -3,14 +3,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""build_target_util tests."""
+"""build_target_lib tests."""
 
 from __future__ import print_function
 
 import os
 
-from chromite.lib.build_target_util import BuildTarget
-from chromite.lib.build_target_util import InvalidNameError
+from chromite.lib.build_target_lib import BuildTarget
+from chromite.lib.build_target_lib import InvalidNameError
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 

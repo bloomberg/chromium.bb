@@ -11,7 +11,7 @@ import os
 import sys
 
 from chromite.cli import command
-from chromite.lib import build_target_util
+from chromite.lib import build_target_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -90,7 +90,7 @@ To flash your volteer DUT via SERVO on port 1234:
     commandline.RunInsideChroot(self)
     self.validate_options()
 
-    build_target = build_target_util.BuildTarget(self.options.build_target)
+    build_target = build_target_lib.BuildTarget(self.options.build_target)
     try:
       ap_firmware.deploy(
           build_target,

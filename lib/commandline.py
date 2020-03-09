@@ -23,7 +23,7 @@ import sys
 import six
 from six.moves import urllib
 
-from chromite.lib import build_target_util
+from chromite.lib import build_target_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_collections
@@ -170,12 +170,12 @@ def NormalizeUri(value):
 
 def ParseBuildTarget(value):
   """Parse a build target argument into a build target object."""
-  if not build_target_util.is_valid_name(value):
+  if not build_target_lib.is_valid_name(value):
     msg = 'Invalid build target name.'
     logging.error(msg)
     raise ValueError(msg)
 
-  return build_target_util.BuildTarget(value)
+  return build_target_lib.BuildTarget(value)
 
 
 # A Device object holds information parsed from the command line input:

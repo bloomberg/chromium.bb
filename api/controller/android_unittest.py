@@ -19,7 +19,7 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
-from chromite.lib.build_target_util import BuildTarget
+from chromite.lib.build_target_lib import BuildTarget
 from chromite.service import packages
 
 

@@ -10,7 +10,7 @@ from __future__ import print_function
 import sys
 
 from chromite.cli import command
-from chromite.lib import build_target_util
+from chromite.lib import build_target_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib.firmware import ap_firmware
@@ -33,7 +33,7 @@ To build the AP Firmware only for foo-variant:
 
   def __init__(self, options):
     super(BuildApCommand, self).__init__(options)
-    self.build_target = build_target_util.BuildTarget(self.options.build_target)
+    self.build_target = build_target_lib.BuildTarget(self.options.build_target)
 
   @classmethod
   def AddParser(cls, parser):

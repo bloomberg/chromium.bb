@@ -56,7 +56,7 @@ def BuildTargetUnitTest(build_target, chroot, blacklist=None, was_built=True):
   """Run the ebuild unit tests for the target.
 
   Args:
-    build_target (build_target_util.BuildTarget): The build target.
+    build_target (build_target_lib.BuildTarget): The build target.
     chroot (chroot_lib.Chroot): The chroot where the tests are running.
     blacklist (list[str]|None): Tests to skip.
     was_built (bool): Whether packages were built.

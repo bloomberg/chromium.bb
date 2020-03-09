@@ -15,7 +15,7 @@ from chromite.api import faux
 from chromite.api import validate
 from chromite.api.controller import controller_util
 from chromite.api.metrics import deserialize_metrics_log
-from chromite.lib import build_target_util
+from chromite.lib import build_target_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import goma_lib
@@ -43,8 +43,8 @@ def Create(input_proto, output_proto, _config):
   build_target_name = input_proto.build_target.name
   profile = input_proto.profile.name or None
 
-  build_target = build_target_util.BuildTarget(name=build_target_name,
-                                               profile=profile)
+  build_target = build_target_lib.BuildTarget(name=build_target_name,
+                                              profile=profile)
   run_configs = sysroot.SetupBoardRunConfig(
       force=replace_sysroot, upgrade_chroot=update_chroot)
 
@@ -123,7 +123,7 @@ def InstallToolchain(input_proto, output_proto, _config):
   sysroot_path = input_proto.sysroot.path
   build_target_name = input_proto.sysroot.build_target.name
 
-  build_target = build_target_util.BuildTarget(name=build_target_name)
+  build_target = build_target_lib.BuildTarget(name=build_target_name)
   target_sysroot = sysroot_lib.Sysroot(sysroot_path)
   run_configs = sysroot.SetupBoardRunConfig(usepkg=not compile_source)
 

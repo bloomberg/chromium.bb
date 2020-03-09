@@ -14,7 +14,7 @@ import os
 import sys
 
 from chromite.cli import command
-from chromite.lib import build_target_util
+from chromite.lib import build_target_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -140,7 +140,7 @@ class BuildTargetTest(cros_test_lib.TestCase):
   def test_valid_build_target(self):
     """Test valid build target name."""
     self._RunBuildTargetTestCase(
-        'build-target-name', build_target_util.BuildTarget('build-target-name'))
+        'build-target-name', build_target_lib.BuildTarget('build-target-name'))
 
   def test_invalid_build_target(self):
     """Test invalid build target name."""

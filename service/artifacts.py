@@ -194,7 +194,7 @@ def BundleSimpleChromeArtifacts(chroot, sysroot, build_target, output_dir):
   Args:
     chroot (chroot_lib.Chroot): The chroot to be used.
     sysroot (sysroot_lib.Sysroot): The sysroot.
-    build_target (build_target_util.BuildTarget): The sysroot's build target.
+    build_target (build_target_lib.BuildTarget): The sysroot's build target.
     output_dir (str): Where all result files should be stored.
   """
   files = []
@@ -342,7 +342,7 @@ def CreateChromeRoot(chroot, build_target, output_dir):
 
   Args:
     chroot (chroot_lib.Chroot): The chroot in which the sysroot should be built.
-    build_target (build_target_util.BuildTarget): The build target.
+    build_target (build_target_lib.BuildTarget): The build target.
     output_dir (str): The location outside the chroot where the files should be
       stored.
 
@@ -483,7 +483,7 @@ def BundleAFDOGenerationArtifacts(is_orderfile, chroot, chrome_root,
     for AFDO (False).
     chroot (chroot_lib.Chroot): The chroot in which the sysroot should be built.
     chrome_root (str): Path to Chrome root.
-    build_target (build_target_util.BuildTarget): The build target.
+    build_target (build_target_lib.BuildTarget): The build target.
     output_dir (str): The location outside the chroot where the files should be
       stored.
 

@@ -16,7 +16,7 @@ from chromite.api import validate
 from chromite.api.controller import controller_util
 from chromite.api.gen.chromite.api import toolchain_pb2
 from chromite.cbuildbot import commands
-from chromite.lib import build_target_util
+from chromite.lib import build_target_lib
 from chromite.lib import chroot_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -466,7 +466,7 @@ def BundleSimpleChromeArtifacts(input_proto, output_proto, _config):
   cache_dir = input_proto.chroot.cache_dir
 
   # Build out the argument instances.
-  build_target = build_target_util.BuildTarget(build_target_name)
+  build_target = build_target_lib.BuildTarget(build_target_name)
   chroot = chroot_lib.Chroot(path=chroot_path, cache_dir=cache_dir)
   # Sysroot.path needs to be the fully qualified path, including the chroot.
   full_sysroot_path = os.path.join(chroot.path, sysroot_path.lstrip(os.sep))
@@ -540,7 +540,7 @@ def BundleAFDOGenerationArtifacts(input_proto, output_proto, _config):
   """
 
   # Required args.
-  build_target = build_target_util.BuildTarget(input_proto.build_target.name)
+  build_target = build_target_lib.BuildTarget(input_proto.build_target.name)
   chrome_root = input_proto.chroot.chrome_dir
   if not chrome_root:
     cros_build_lib.Die('chrome_root is not included in chroot')

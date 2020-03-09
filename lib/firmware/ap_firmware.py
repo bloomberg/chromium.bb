@@ -104,7 +104,7 @@ def deploy(build_target,
   """Deploy a firmware image to a device.
 
   Args:
-    build_target (build_target_util.BuildTarget): The build target.
+    build_target (build_target_lib.BuildTarget): The build target.
     image (str): The path to the image to flash.
     device (commandline.Device): The DUT being flashed.
     flashrom (bool): Whether to use flashrom or futility.

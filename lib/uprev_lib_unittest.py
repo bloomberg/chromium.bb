@@ -16,7 +16,7 @@ from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import uprev_lib
-from chromite.lib.build_target_util import BuildTarget
+from chromite.lib.build_target_lib import BuildTarget
 from chromite.lib.chroot_lib import Chroot
 
 

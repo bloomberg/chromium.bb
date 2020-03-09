@@ -14,7 +14,7 @@ from chromite.api import validate
 from chromite.api.controller import controller_util
 from chromite.api.gen.chromite.api import binhost_pb2
 from chromite.api.gen.chromiumos import common_pb2
-from chromite.lib import build_target_util
+from chromite.lib import build_target_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -44,7 +44,7 @@ def _UprevResponse(_input_proto, output_proto, _config):
 def Uprev(input_proto, output_proto, _config):
   """Uprev all cros workon ebuilds that have changes."""
   target_names = [t.name for t in input_proto.build_targets]
-  build_targets = [build_target_util.BuildTarget(t) for t in target_names]
+  build_targets = [build_target_lib.BuildTarget(t) for t in target_names]
   overlay_type = _OVERLAY_TYPE_TO_NAME[input_proto.overlay_type]
   chroot = controller_util.ParseChroot(input_proto.chroot)
   output_dir = input_proto.output_dir or None

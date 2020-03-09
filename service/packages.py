@@ -219,7 +219,7 @@ def uprev_build_targets(build_targets,
   """Uprev the set provided build targets, or all if not specified.
 
   Args:
-    build_targets (list[build_target_util.BuildTarget]|None): The build targets
+    build_targets (list[build_target_lib.BuildTarget]|None): The build targets
       whose overlays should be uprevved, empty or None for all.
     overlay_type (str): One of the valid overlay types except None (see
       constants.VALID_OVERLAYS).
@@ -247,7 +247,7 @@ def uprev_overlays(overlays, build_targets=None, chroot=None, output_dir=None):
 
   Args:
     overlays (list[str]): The list of overlay paths.
-    build_targets (list[build_target_util.BuildTarget]|None): The build targets
+    build_targets (list[build_target_lib.BuildTarget]|None): The build targets
       to clean in |chroot|, if desired. No effect unless |chroot| is provided.
     chroot (chroot_lib.Chroot|None): The chroot to clean, if desired.
     output_dir (str|None): The path to optionally dump result files.
@@ -277,7 +277,7 @@ def uprev_versioned_package(package, build_targets, refs, chroot):
 
   Args:
     package (portage_util.CPV): The package being uprevved.
-    build_targets (list[build_target_util.BuildTarget]): The build targets to
+    build_targets (list[build_target_lib.BuildTarget]): The build targets to
         clean on a successful uprev.
     refs (list[uprev_lib.GitRef]):
     chroot (chroot_lib.Chroot): The chroot to enter for cleaning.
@@ -615,7 +615,7 @@ def get_best_visible(atom, build_target=None):
 
   Args:
     atom (str): The atom to look up.
-    build_target (build_target_util.BuildTarget): The build target whose
+    build_target (build_target_lib.BuildTarget): The build target whose
         sysroot should be searched, or the SDK if not provided.
 
   Returns:
@@ -632,7 +632,7 @@ def has_prebuilt(atom, build_target=None, useflags=None):
 
   Args:
     atom (str): The package whose prebuilt is being queried.
-    build_target (build_target_util.BuildTarget): The build target whose
+    build_target (build_target_lib.BuildTarget): The build target whose
         sysroot should be searched, or the SDK if not provided.
     useflags: Any additional USE flags that should be set. May be a string
         of properly formatted USE flags, or an iterable of individual flags.
@@ -667,7 +667,7 @@ def determine_chrome_version(build_target):
   """Returns the current Chrome version for the board (or in buildroot).
 
   Args:
-    build_target (build_target_util.BuildTarget): The board build target.
+    build_target (build_target_lib.BuildTarget): The board build target.
 
   Returns:
     str|None: The chrome version if available.

@@ -20,7 +20,7 @@ from chromite.api.metrics import deserialize_metrics_log
 from chromite.api.controller import controller_util
 from chromite.api.gen.chromite.api import test_pb2
 from chromite.cbuildbot import goma_util
-from chromite.lib import build_target_util
+from chromite.lib import build_target_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import image_lib
@@ -102,7 +102,7 @@ def BuildTargetUnitTest(input_proto, output_proto, _config):
   for package_info in blacklisted_package_info:
     blacklist.append(controller_util.PackageInfoToString(package_info))
 
-  build_target = build_target_util.BuildTarget(board)
+  build_target = build_target_lib.BuildTarget(board)
   chroot = controller_util.ParseChroot(input_proto.chroot)
 
   result = test.BuildTargetUnitTest(build_target, chroot, blacklist=blacklist,

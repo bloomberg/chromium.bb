@@ -13,7 +13,7 @@ import sys
 import mock
 
 from chromite.lib import binpkg
-from chromite.lib import build_target_util
+from chromite.lib import build_target_lib
 from chromite.lib import chroot_lib
 from chromite.lib import constants
 from chromite.lib import cros_test_lib
@@ -44,7 +44,7 @@ class GetPrebuiltAclArgsTest(cros_test_lib.MockTempDirTestCase):
 """
 
   def setUp(self):
-    self.build_target = build_target_util.BuildTarget('board')
+    self.build_target = build_target_lib.BuildTarget('board')
     self.acl_file = os.path.join(self.tempdir, 'googlestorage_acl.txt')
     osutils.WriteFile(self.acl_file, self._ACL_FILE)
 
@@ -141,7 +141,7 @@ class GetPrebuiltsRootTest(cros_test_lib.MockTempDirTestCase):
 
     self.chroot = chroot_lib.Chroot(self.chroot_path)
     self.sysroot = sysroot_lib.Sysroot(self.sysroot_path)
-    self.build_target = build_target_util.BuildTarget('foo')
+    self.build_target = build_target_lib.BuildTarget('foo')
 
     osutils.SafeMakedirs(self.root)
 
@@ -155,7 +155,7 @@ class GetPrebuiltsRootTest(cros_test_lib.MockTempDirTestCase):
     """GetPrebuiltsRoot dies on missing root (target probably not built.)"""
     with self.assertRaises(binhost.EmptyPrebuiltsRoot):
       binhost.GetPrebuiltsRoot(self.chroot, sysroot_lib.Sysroot('/build/bar'),
-                               build_target_util.BuildTarget('bar'))
+                               build_target_lib.BuildTarget('bar'))
 
 
 class GetPrebuiltsFilesTest(cros_test_lib.MockTempDirTestCase):
