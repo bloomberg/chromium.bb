@@ -67,7 +67,12 @@ bool MdnsReader::Read(DomainName* out) {
          bytes_processed <= length()) {
     const uint8_t label_type = ReadBigEndian<uint8_t>(position);
     if (IsTerminationLabel(label_type)) {
-      *out = DomainName(labels);
+      ErrorOr<DomainName> domain =
+          DomainName::TryCreate(labels.begin(), labels.end());
+      if (domain.is_error()) {
+        return false;
+      }
+      *out = std::move(domain.value());
       if (!bytes_consumed) {
         bytes_consumed = position + sizeof(uint8_t) - current();
       }
@@ -115,7 +120,12 @@ bool MdnsReader::Read(RawRecordRdata* out) {
   if (Read(&record_length)) {
     std::vector<uint8_t> buffer(record_length);
     if (Read(buffer.size(), buffer.data())) {
-      *out = RawRecordRdata(std::move(buffer));
+      ErrorOr<RawRecordRdata> rdata =
+          RawRecordRdata::TryCreate(std::move(buffer));
+      if (rdata.is_error()) {
+        return false;
+      }
+      *out = std::move(rdata.value());
       cursor.Commit();
       return true;
     }
@@ -204,7 +214,11 @@ bool MdnsReader::Read(TxtRecordRdata* out) {
   if (cursor.delta() != sizeof(record_length) + record_length) {
     return false;
   }
-  *out = TxtRecordRdata(std::move(texts));
+  ErrorOr<TxtRecordRdata> rdata = TxtRecordRdata::TryCreate(std::move(texts));
+  if (rdata.is_error()) {
+    return false;
+  }
+  *out = std::move(rdata.value());
   cursor.Commit();
   return true;
 }
@@ -251,9 +265,14 @@ bool MdnsReader::Read(MdnsRecord* out) {
   Rdata rdata;
   if (Read(&name) && Read(&type) && Read(&rrclass) && Read(&ttl) &&
       Read(static_cast<DnsType>(type), &rdata)) {
-    *out = MdnsRecord(std::move(name), static_cast<DnsType>(type),
-                      GetDnsClass(rrclass), GetRecordType(rrclass),
-                      std::chrono::seconds(ttl), std::move(rdata));
+    ErrorOr<MdnsRecord> record = MdnsRecord::TryCreate(
+        std::move(name), static_cast<DnsType>(type), GetDnsClass(rrclass),
+        GetRecordType(rrclass), std::chrono::seconds(ttl), std::move(rdata));
+    if (record.is_error()) {
+      return false;
+    }
+    *out = std::move(record.value());
+
     cursor.Commit();
     return true;
   }
@@ -267,8 +286,14 @@ bool MdnsReader::Read(MdnsQuestion* out) {
   uint16_t type;
   uint16_t rrclass;
   if (Read(&name) && Read(&type) && Read(&rrclass)) {
-    *out = MdnsQuestion(std::move(name), static_cast<DnsType>(type),
-                        GetDnsClass(rrclass), GetResponseType(rrclass));
+    ErrorOr<MdnsQuestion> question =
+        MdnsQuestion::TryCreate(std::move(name), static_cast<DnsType>(type),
+                                GetDnsClass(rrclass), GetResponseType(rrclass));
+    if (question.is_error()) {
+      return false;
+    }
+    *out = std::move(question.value());
+
     cursor.Commit();
     return true;
   }
@@ -291,11 +316,18 @@ bool MdnsReader::Read(MdnsMessage* out) {
     // One way to do this is to change the method signature to return
     // ErrorOr<MdnsMessage> and return different error codes for failure to read
     // and for messages that were read successfully but are non-conforming.
-    *out = MdnsMessage(header.id, GetMessageType(header.flags), questions,
-                       answers, authority_records, additional_records);
+    ErrorOr<MdnsMessage> message = MdnsMessage::TryCreate(
+        header.id, GetMessageType(header.flags), questions, answers,
+        authority_records, additional_records);
+    if (message.is_error()) {
+      return false;
+    }
+    *out = std::move(message.value());
+
     if (IsMessageTruncated(header.flags)) {
       out->set_truncated();
     }
+
     cursor.Commit();
     return true;
   }
