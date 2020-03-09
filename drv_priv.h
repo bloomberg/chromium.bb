@@ -8,6 +8,7 @@
 #define DRV_PRIV_H
 
 #include <pthread.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -31,6 +32,7 @@ struct bo_metadata {
 struct bo {
 	struct driver *drv;
 	struct bo_metadata meta;
+	bool is_test_buffer;
 	union bo_handle handles[DRV_MAX_PLANES];
 	void *priv;
 };
@@ -65,6 +67,11 @@ struct backend {
 			 uint64_t use_flags);
 	int (*bo_create_with_modifiers)(struct bo *bo, uint32_t width, uint32_t height,
 					uint32_t format, const uint64_t *modifiers, uint32_t count);
+	// Either both or neither _metadata functions must be implemented.
+	// If the functions are implemented, bo_create and bo_create_with_modifiers must not be.
+	int (*bo_compute_metadata)(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
+				   uint64_t use_flags, const uint64_t *modifiers, uint32_t count);
+	int (*bo_create_from_metadata)(struct bo *bo);
 	int (*bo_destroy)(struct bo *bo);
 	int (*bo_import)(struct bo *bo, struct drv_import_fd_data *data);
 	void *(*bo_map)(struct bo *bo, struct vma *vma, size_t plane, uint32_t map_flags);

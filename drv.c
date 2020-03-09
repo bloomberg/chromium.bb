@@ -114,11 +114,21 @@ static const struct backend *drv_get_backend(int fd)
 		&backend_vgem,     &backend_virtio_gpu,
 	};
 
-	for (i = 0; i < ARRAY_SIZE(backend_list); i++)
-		if (!strcmp(drm_version->name, backend_list[i]->name)) {
+	for (i = 0; i < ARRAY_SIZE(backend_list); i++) {
+		const struct backend *b = backend_list[i];
+		// Exactly one of the main create functions must be defined.
+		assert((b->bo_create != NULL) ^ (b->bo_create_from_metadata != NULL));
+		// Either both or neither must be implemented.
+		assert((b->bo_compute_metadata != NULL) == (b->bo_create_from_metadata != NULL));
+		// Both can't be defined, but it's okay for neither to be (i.e. only bo_create).
+		assert((b->bo_create_with_modifiers == NULL) ||
+		       (b->bo_create_from_metadata == NULL));
+
+		if (!strcmp(drm_version->name, b->name)) {
 			drmFreeVersion(drm_version);
-			return backend_list[i];
+			return b;
 		}
+	}
 
 	drmFreeVersion(drm_version);
 	return NULL;
@@ -223,7 +233,7 @@ struct combination *drv_get_combination(struct driver *drv, uint32_t format, uin
 }
 
 struct bo *drv_bo_new(struct driver *drv, uint32_t width, uint32_t height, uint32_t format,
-		      uint64_t use_flags)
+		      uint64_t use_flags, bool is_test_buffer)
 {
 
 	struct bo *bo;
@@ -238,6 +248,7 @@ struct bo *drv_bo_new(struct driver *drv, uint32_t width, uint32_t height, uint3
 	bo->meta.format = format;
 	bo->meta.use_flags = use_flags;
 	bo->meta.num_planes = drv_num_planes_from_format(format);
+	bo->is_test_buffer = is_test_buffer;
 
 	if (!bo->meta.num_planes) {
 		free(bo);
@@ -253,13 +264,25 @@ struct bo *drv_bo_create(struct driver *drv, uint32_t width, uint32_t height, ui
 	int ret;
 	size_t plane;
 	struct bo *bo;
+	bool is_test_alloc;
 
-	bo = drv_bo_new(drv, width, height, format, use_flags);
+	is_test_alloc = use_flags & BO_USE_TEST_ALLOC;
+	use_flags &= ~BO_USE_TEST_ALLOC;
+
+	bo = drv_bo_new(drv, width, height, format, use_flags, is_test_alloc);
 
 	if (!bo)
 		return NULL;
 
-	ret = drv->backend->bo_create(bo, width, height, format, use_flags);
+	ret = -EINVAL;
+	if (drv->backend->bo_compute_metadata) {
+		ret = drv->backend->bo_compute_metadata(bo, width, height, format, use_flags, NULL,
+							0);
+		if (!is_test_alloc && ret == 0)
+			ret = drv->backend->bo_create_from_metadata(bo);
+	} else if (!is_test_alloc) {
+		ret = drv->backend->bo_create(bo, width, height, format, use_flags);
+	}
 
 	if (ret) {
 		free(bo);
@@ -287,17 +310,26 @@ struct bo *drv_bo_create_with_modifiers(struct driver *drv, uint32_t width, uint
 	size_t plane;
 	struct bo *bo;
 
-	if (!drv->backend->bo_create_with_modifiers) {
+	if (!drv->backend->bo_create_with_modifiers && !drv->backend->bo_compute_metadata) {
 		errno = ENOENT;
 		return NULL;
 	}
 
-	bo = drv_bo_new(drv, width, height, format, BO_USE_NONE);
+	bo = drv_bo_new(drv, width, height, format, BO_USE_NONE, false);
 
 	if (!bo)
 		return NULL;
 
-	ret = drv->backend->bo_create_with_modifiers(bo, width, height, format, modifiers, count);
+	ret = -EINVAL;
+	if (drv->backend->bo_compute_metadata) {
+		ret = drv->backend->bo_compute_metadata(bo, width, height, format, BO_USE_NONE,
+							modifiers, count);
+		if (ret == 0)
+			ret = drv->backend->bo_create_from_metadata(bo);
+	} else {
+		ret = drv->backend->bo_create_with_modifiers(bo, width, height, format, modifiers,
+							     count);
+	}
 
 	if (ret) {
 		free(bo);
@@ -325,20 +357,22 @@ void drv_bo_destroy(struct bo *bo)
 	uintptr_t total = 0;
 	struct driver *drv = bo->drv;
 
-	pthread_mutex_lock(&drv->driver_lock);
+	if (!bo->is_test_buffer) {
+		pthread_mutex_lock(&drv->driver_lock);
 
-	for (plane = 0; plane < bo->meta.num_planes; plane++)
-		drv_decrement_reference_count(drv, bo, plane);
+		for (plane = 0; plane < bo->meta.num_planes; plane++)
+			drv_decrement_reference_count(drv, bo, plane);
 
-	for (plane = 0; plane < bo->meta.num_planes; plane++)
-		total += drv_get_reference_count(drv, bo, plane);
+		for (plane = 0; plane < bo->meta.num_planes; plane++)
+			total += drv_get_reference_count(drv, bo, plane);
 
-	pthread_mutex_unlock(&drv->driver_lock);
+		pthread_mutex_unlock(&drv->driver_lock);
 
-	if (total == 0) {
-		ret = drv_mapping_destroy(bo);
-		assert(ret == 0);
-		bo->drv->backend->bo_destroy(bo);
+		if (total == 0) {
+			ret = drv_mapping_destroy(bo);
+			assert(ret == 0);
+			bo->drv->backend->bo_destroy(bo);
+		}
 	}
 
 	free(bo);
@@ -351,7 +385,7 @@ struct bo *drv_bo_import(struct driver *drv, struct drv_import_fd_data *data)
 	struct bo *bo;
 	off_t seek_end;
 
-	bo = drv_bo_new(drv, data->width, data->height, data->format, data->use_flags);
+	bo = drv_bo_new(drv, data->width, data->height, data->format, data->use_flags, false);
 
 	if (!bo)
 		return NULL;
@@ -414,6 +448,10 @@ void *drv_bo_map(struct bo *bo, const struct rectangle *rect, uint32_t map_flags
 	assert(BO_MAP_READ_WRITE & map_flags);
 	/* No CPU access for protected buffers. */
 	assert(!(bo->meta.use_flags & BO_USE_PROTECTED));
+
+	if (bo->is_test_buffer) {
+		return MAP_FAILED;
+	}
 
 	memset(&mapping, 0, sizeof(mapping));
 	mapping.rect = *rect;
@@ -562,6 +600,10 @@ int drv_bo_get_plane_fd(struct bo *bo, size_t plane)
 	int ret, fd;
 	assert(plane < bo->meta.num_planes);
 
+	if (bo->is_test_buffer) {
+		return -EINVAL;
+	}
+
 	ret = drmPrimeHandleToFD(bo->drv->fd, bo->handles[plane].u32, DRM_CLOEXEC | DRM_RDWR, &fd);
 
 	// Older DRM implementations blocked DRM_RDWR, but gave a read/write mapping anyways
@@ -612,6 +654,10 @@ uint32_t drv_num_buffers_per_bo(struct bo *bo)
 {
 	uint32_t count = 0;
 	size_t plane, p;
+
+	if (bo->is_test_buffer) {
+		return 0;
+	}
 
 	for (plane = 0; plane < bo->meta.num_planes; plane++) {
 		for (p = 0; p < plane; p++)

@@ -271,6 +271,15 @@ enum gbm_bo_flags {
     * The buffer will be read by a video encode accelerator.
     */
    GBM_BO_USE_HW_VIDEO_ENCODER = (1 << 14),
+
+   /**
+    * If this flag is set, no backing memory will be allocated for the
+    * created buffer. The metadata of the buffer (e.g. size) can be
+    * queried, and the values will be equal to a buffer allocated with
+    * the same same arguments minus this flag. However, any methods
+    * which would otherwise access the underlying buffer will fail.
+    */
+   GBM_TEST_ALLOC = (1 << 15),
 };
 
 int
