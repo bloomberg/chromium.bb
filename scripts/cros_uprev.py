@@ -262,6 +262,10 @@ def _WorkOnEbuild(overlay, ebuild, manifest, new_ebuild_files,
   try:
     result = ebuild.RevWorkOnEBuild(os.path.join(constants.SOURCE_ROOT, 'src'),
                                     manifest)
+  except portage_util.InvalidUprevSourceError as e:
+    logging.error('An error occurred while uprevving %s: %s',
+                  ebuild.package, e)
+    raise
   except (OSError, IOError):
     logging.warning(
         'Cannot rev %s\n'

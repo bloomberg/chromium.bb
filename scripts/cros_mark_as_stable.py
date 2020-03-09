@@ -532,6 +532,10 @@ def _WorkOnEbuild(overlay, ebuild, manifest, options, ebuild_paths_to_add,
 
       revved_packages.append(ebuild.package)
       new_package_atoms.append('=%s' % new_package)
+  except portage_util.InvalidUprevSourceError as e:
+    logging.error('An error occurred while uprevving %s: %s',
+                  ebuild.package, e)
+    raise
   except portage_util.EbuildVersionError as e:
     logging.warning('Unable to rev %s: %s', ebuild.package, e)
     raise

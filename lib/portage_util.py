@@ -103,6 +103,10 @@ class MissingOverlayError(Error):
   """This exception indicates that a needed overlay is missing."""
 
 
+class InvalidUprevSourceError(Error):
+  """Error for when an uprev source is invalid."""
+
+
 def GetOverlayRoot(path):
   """Get the overlay root folder for |path|.
 
@@ -1032,9 +1036,13 @@ class EBuild(object):
     srcdirs = info.srcdirs
     subtrees = info.subtrees
     commit_ids = [self.GetCommitId(x) for x in srcdirs]
+    if not commit_ids:
+      raise InvalidUprevSourceError('No commit_ids found for %s' % srcdirs)
     tree_ids = [self.GetTreeId(x) for x in subtrees]
     # Make sure they are all valid (e.g. a deleted repo).
     tree_ids = [tree_id for tree_id in tree_ids if tree_id]
+    if not tree_ids:
+      raise InvalidUprevSourceError('No tree_ids found for %s' % subtrees)
     variables = dict(CROS_WORKON_COMMIT=self.FormatBashArray(commit_ids),
                      CROS_WORKON_TREE=self.FormatBashArray(tree_ids))
 
