@@ -243,51 +243,11 @@ const uint8_t *CompilationUnit::SkipAttribute(const uint8_t *start,
   return NULL;
 }
 
-// Read the abbreviation offset from a compilation unit header.
-int CompilationUnit::ReadAbbrevOffset(const uint8_t *headerptr) {
-  assert(headerptr + reader_->OffsetSize() < buffer_ + buffer_length_);
-  header_.abbrev_offset = reader_->ReadOffset(headerptr);
-  return reader_->OffsetSize();
-}
-
-// Read the address size from a compilation unit header.
-int CompilationUnit::ReadAddressSize(const uint8_t *headerptr) {
-  // Compare against less than or equal because this may be the last
-  // section in the file.
-  assert(headerptr + 1 <= buffer_ + buffer_length_);
-  header_.address_size = reader_->ReadOneByte(headerptr);
-  reader_->SetAddressSize(header_.address_size);
-  return 1;
-}
-
-// Read the DWO id from a split or skeleton compilation unit header.
-int CompilationUnit::ReadDwoId(const uint8_t *headerptr) {
-  assert(headerptr + 8 <= buffer_ + buffer_length_);
-  dwo_id_ = reader_->ReadEightBytes(headerptr);
-  return 8;
-}
-
-// Read the type signature from a type or split type compilation unit header.
-int CompilationUnit::ReadTypeSignature(const uint8_t *headerptr) {
-  assert(headerptr + 8 <= buffer_ + buffer_length_);
-  type_signature_ = reader_->ReadEightBytes(headerptr);
-  return 8;
-}
-
-// Read the DWO id from a split or skeleton compilation unit header.
-int CompilationUnit::ReadTypeOffset(const uint8_t *headerptr) {
-  assert(headerptr + reader_->OffsetSize() < buffer_ + buffer_length_);
-  type_offset_ = reader_->ReadOffset(headerptr);
-  return reader_->OffsetSize();
-}
-
-
-// Read a DWARF header.
-// The header is variable length in DWARF3 and DWARF4 (and DWARF2 as extended by
+// Read a DWARF2/3 header.
+// The header is variable length in DWARF3 (and DWARF2 as extended by
 // most compilers), and consists of an length field, a version number,
 // the offset in the .debug_abbrev section for our abbrevs, and an
-// address size. DWARF5 adds a unit_type to distinguish between
-// partial-, full-, skeleton-, split-, and type- compilation units.
+// address size.
 void CompilationUnit::ReadHeader() {
   const uint8_t *headerptr = buffer_;
   size_t initial_length_size;
@@ -302,33 +262,17 @@ void CompilationUnit::ReadHeader() {
   header_.version = reader_->ReadTwoBytes(headerptr);
   headerptr += 2;
 
-  if (header_.version <= 4) {
-    // Older versions of dwarf have a relatively simple structure.
-    headerptr += ReadAbbrevOffset(headerptr);
-    headerptr += ReadAddressSize(headerptr);
-  } else {
-    // DWARF5 adds a unit_type field, and various fields based on unit_type.
-    assert(headerptr + 1 < buffer_ + buffer_length_);
-    int unit_type = reader_->ReadOneByte(headerptr);
-    headerptr += 1;
-    headerptr += ReadAddressSize(headerptr);
-    headerptr += ReadAbbrevOffset(headerptr);
-    switch (unit_type) {
-      case DW_UT_compile:
-      case DW_UT_partial:
-        // nothing else to read
-        break;
-      case DW_UT_skeleton:
-      case DW_UT_split_compile:
-        headerptr += ReadDwoId(headerptr);;
-        break;
-      case DW_UT_type:
-      case DW_UT_split_type:
-        headerptr += ReadTypeSignature(headerptr);;
-        headerptr += ReadTypeOffset(headerptr);;
-        break;
-    }
-  }
+  assert(headerptr + reader_->OffsetSize() < buffer_ + buffer_length_);
+  header_.abbrev_offset = reader_->ReadOffset(headerptr);
+  headerptr += reader_->OffsetSize();
+
+  // Compare against less than or equal because this may be the last
+  // section in the file.
+  assert(headerptr + 1 <= buffer_ + buffer_length_);
+  header_.address_size = reader_->ReadOneByte(headerptr);
+  reader_->SetAddressSize(header_.address_size);
+  headerptr += 1;
+
   after_header_ = headerptr;
 
   // This check ensures that we don't have to do checking during the

@@ -80,14 +80,8 @@ class TestCompilationUnit: public google_breakpad::test_assembler::Section {
     }
     post_length_offset_ = Size();
     D16(version);
-    if (version <= 4) {
-      SectionOffset(abbrev_offset);
-      D8(address_size);
-    } else {
-      D8(0x01);  // DW_UT_compile
-      D8(address_size);
-      SectionOffset(abbrev_offset);
-    }
+    SectionOffset(abbrev_offset);
+    D8(address_size);
     return *this;
   }
 

@@ -217,8 +217,6 @@ INSTANTIATE_TEST_CASE_P(
                       DwarfHeaderParams(kLittleEndian, 8, 3, 8),
                       DwarfHeaderParams(kLittleEndian, 8, 4, 4),
                       DwarfHeaderParams(kLittleEndian, 8, 4, 8),
-                      DwarfHeaderParams(kLittleEndian, 8, 5, 4),
-                      DwarfHeaderParams(kLittleEndian, 8, 5, 8),
                       DwarfHeaderParams(kBigEndian,    4, 2, 4),
                       DwarfHeaderParams(kBigEndian,    4, 2, 8),
                       DwarfHeaderParams(kBigEndian,    4, 3, 4),
@@ -230,9 +228,7 @@ INSTANTIATE_TEST_CASE_P(
                       DwarfHeaderParams(kBigEndian,    8, 3, 4),
                       DwarfHeaderParams(kBigEndian,    8, 3, 8),
                       DwarfHeaderParams(kBigEndian,    8, 4, 4),
-                      DwarfHeaderParams(kBigEndian,    8, 4, 8),
-                      DwarfHeaderParams(kBigEndian,    8, 5, 4),
-                      DwarfHeaderParams(kBigEndian,    8, 5, 8)));
+                      DwarfHeaderParams(kBigEndian,    8, 4, 8)));
 
 struct DwarfFormsFixture: public DIEFixture {
   // Start a compilation unit, as directed by |params|, containing one
