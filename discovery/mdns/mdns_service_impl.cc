@@ -43,20 +43,19 @@ MdnsServiceImpl::MdnsServiceImpl(
   // Create all UDP sockets needed for this object. They should not yet be bound
   // so that they do not send or receive data until the objects on which their
   // callback depends is initialized.
-  if (supported_address_types & kUseIpV4Multicast) {
-    ErrorOr<std::unique_ptr<UdpSocket>> socket = UdpSocket::Create(
-        task_runner, this, kDefaultMulticastGroupIPv4Endpoint);
-    OSP_DCHECK(!socket.is_error());
-    OSP_DCHECK(socket.value().get());
-    OSP_DCHECK(socket.value()->IsIPv4());
+  //
+  // TODO(crbug.com/openscreen/116): Only bind IP v4 address with IPv4 is a
+  // supported address family.
+  ErrorOr<std::unique_ptr<UdpSocket>> socket =
+      UdpSocket::Create(task_runner, this, kDefaultMulticastGroupIPv4Endpoint);
+  OSP_DCHECK(!socket.is_error());
+  OSP_DCHECK(socket.value().get());
+  OSP_DCHECK(socket.value()->IsIPv4());
 
-    socket_v4_ = std::move(socket.value());
-    socket_v4_->SetMulticastOutboundInterface(network_interface);
-    socket_v4_->JoinMulticastGroup(kDefaultMulticastGroupIPv4,
-                                   network_interface);
-    socket_v4_->JoinMulticastGroup(kDefaultSiteLocalGroupIPv4,
-                                   network_interface);
-  }
+  socket_v4_ = std::move(socket.value());
+  socket_v4_->SetMulticastOutboundInterface(network_interface);
+  socket_v4_->JoinMulticastGroup(kDefaultMulticastGroupIPv4, network_interface);
+  socket_v4_->JoinMulticastGroup(kDefaultSiteLocalGroupIPv4, network_interface);
 
   if (supported_address_types & kUseIpV6Multicast) {
     ErrorOr<std::unique_ptr<UdpSocket>> socket = UdpSocket::Create(
