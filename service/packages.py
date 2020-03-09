@@ -351,15 +351,46 @@ def uprev_kernel_afdo(*_args, **_kwargs):
   return result
 
 
+@uprevs_versioned_package('chromeos-base/termina-image-amd64')
+def uprev_termina_amd64(_build_targets, _refs, chroot):
+  """Updates termina amd64 VM - chromeos-base/termina-image-amd64.
+
+  See: uprev_versioned_package.
+  """
+  return uprev_termina('termina-image-amd64', chroot)
+
+
+@uprevs_versioned_package('chromeos-base/termina-image-arm')
+def uprev_termina_arm(_build_targets, _refs, chroot):
+  """Updates termina arm VM - chromeos-base/termina-image-arm.
+
+  See: uprev_versioned_package.
+  """
+  return uprev_termina('termina-image-arm', chroot)
+
+
+def uprev_termina(package, chroot):
+  """Helper function to uprev termina VM.
+
+  Args:
+    package (string): name of the package
+    chroot (chroot_lib.Chroot): specify a chroot to enter.
+
+  Returns:
+    UprevVersionedPackageResult: The result.
+  """
+  package_path = os.path.join(constants.CHROMIUMOS_OVERLAY_DIR, 'chromeos-base',
+                              package)
+  version_pin_path = os.path.join(package_path, 'VERSION-PIN')
+  return uprev_ebuild_from_pin(package_path, version_pin_path, chroot)
+
+
 @uprevs_versioned_package('chromeos-base/chromeos-dtc-vm')
-def uprev_sludge(build_targets, refs, chroot):
+def uprev_sludge(_build_targets, _refs, chroot):
   """Updates sludge VM - chromeos-base/chromeos-dtc-vm.
 
   See: uprev_versioned_package.
   """
-  # Unused by uprev_sludge
-  del build_targets, refs
-
   package = 'chromeos-dtc-vm'
   package_path = os.path.join('src', 'private-overlays',
                               'project-wilco-private', 'chromeos-base', package)
