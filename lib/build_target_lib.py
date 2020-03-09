@@ -77,12 +77,11 @@ class BuildTarget(object):
     return '%s-%s' % (base_command, self.name)
 
 
-def get_default_sysroot_path(build_target_name):
-  """Get the default sysroot path for a build target."""
-  if build_target_name:
-    return os.path.join('/build', build_target_name)
-  else:
-    raise InvalidNameError('Target name is required.')
+def get_default_sysroot_path(build_target_name=None):
+  """Get the default sysroot location or '/' if |build_target_name| is None."""
+  if build_target_name is None:
+    return '/'
+  return os.path.join('/build', build_target_name)
 
 
 def is_valid_name(build_target_name):
