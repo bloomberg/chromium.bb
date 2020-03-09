@@ -70,6 +70,21 @@ static int64_t calculate_sse(MACROBLOCKD *const xd,
   return sse;
 }
 
+static AOM_INLINE int64_t compute_sse_plane(MACROBLOCK *x, MACROBLOCKD *xd,
+                                            int plane, const BLOCK_SIZE bsize) {
+  struct macroblockd_plane *const pd = &xd->plane[plane];
+  const BLOCK_SIZE plane_bsize =
+      get_plane_block_size(bsize, pd->subsampling_x, pd->subsampling_y);
+  int bw, bh;
+  const struct macroblock_plane *const p = &x->plane[plane];
+  get_txb_dimensions(xd, plane, plane_bsize, 0, 0, plane_bsize, NULL, NULL, &bw,
+                     &bh);
+
+  int64_t sse = calculate_sse(xd, p, pd, bw, bh);
+
+  return sse;
+}
+
 static AOM_INLINE void model_rd_from_sse(const AV1_COMP *const cpi,
                                          const MACROBLOCK *const x,
                                          BLOCK_SIZE plane_bsize, int plane,

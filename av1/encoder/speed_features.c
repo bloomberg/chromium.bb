@@ -510,7 +510,7 @@ static void set_good_speed_features_framesize_independent(
     sf->inter_sf.alt_ref_search_fp = 1;
     sf->inter_sf.prune_ref_mv_idx_search = 1;
     sf->inter_sf.txfm_rd_gate_level =
-        (boosted || cm->allow_screen_content_tools) ? 0 : 1;
+        (boosted || cm->allow_screen_content_tools) ? 0 : 2;
 
     sf->inter_sf.disable_smooth_interintra = 1;
 
@@ -577,7 +577,7 @@ static void set_good_speed_features_framesize_independent(
     sf->inter_sf.disable_obmc = 1;
     sf->inter_sf.disable_onesided_comp = 1;
     sf->inter_sf.txfm_rd_gate_level =
-        (boosted || cm->allow_screen_content_tools) ? 0 : 2;
+        (boosted || cm->allow_screen_content_tools) ? 0 : 3;
     sf->inter_sf.prune_inter_modes_if_skippable = 1;
 
     sf->lpf_sf.lpf_pick = LPF_PICK_FROM_FULL_IMAGE_NON_DUAL;

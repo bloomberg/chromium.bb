@@ -38,7 +38,8 @@ int av1_compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
                          const BUFFER_SET *tmp_dst,
                          const CompoundTypeRdBuffers *buffers, int *rate_mv,
                          int64_t *rd, RD_STATS *rd_stats, int64_t ref_best_rd,
-                         int *is_luma_interp_done, int64_t rd_thresh);
+                         int64_t ref_skip_rd, int *is_luma_interp_done,
+                         int64_t rd_thresh);
 
 #ifdef __cplusplus
 }  // extern "C"

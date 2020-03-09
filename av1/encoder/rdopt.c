@@ -1502,11 +1502,9 @@ static int64_t motion_mode_rd(
       rd_stats->rdcost = est_rd;
       if (rd_stats->rdcost < *best_est_rd) {
         *best_est_rd = rd_stats->rdcost;
-        int64_t skip_rdy = INT64_MAX;
-        if (cpi->sf.inter_sf.txfm_rd_gate_level) {
-          skip_rdy = RDCOST(x->rdmult, mode_rate, sse_y);
-        }
-        ref_skip_rd[1] = skip_rdy;
+        ref_skip_rd[1] = cpi->sf.inter_sf.txfm_rd_gate_level
+                             ? RDCOST(x->rdmult, mode_rate, sse_y)
+                             : INT64_MAX;
       }
       if (cm->current_frame.reference_mode == SINGLE_REFERENCE) {
         if (!is_comp_pred) {
@@ -1535,7 +1533,7 @@ static int64_t motion_mode_rd(
         skip_rd = RDCOST(x->rdmult, rd_stats->rate, curr_sse);
         skip_rdy = RDCOST(x->rdmult, rd_stats->rate, sse_y);
         int eval_txfm = check_txfm_eval(x, bsize, ref_skip_rd[0], skip_rd,
-                                        cpi->sf.inter_sf.txfm_rd_gate_level);
+                                        cpi->sf.inter_sf.txfm_rd_gate_level, 0);
         if (!eval_txfm) continue;
       }
 
@@ -2491,7 +2489,7 @@ static int64_t handle_inter_mode(
       compmode_interinter_cost = av1_compound_type_rd(
           cpi, x, bsize, cur_mv, mode_search_mask, masked_compound_used,
           &orig_dst, &tmp_dst, rd_buffers, &rate_mv, &best_rd_compound,
-          rd_stats, ref_best_rd, &is_luma_interp_done, rd_thresh);
+          rd_stats, ref_best_rd, skip_rd[1], &is_luma_interp_done, rd_thresh);
       if (ref_best_rd < INT64_MAX &&
           (best_rd_compound >> comp_type_rd_shift) * comp_type_rd_scale >
               ref_best_rd) {
@@ -4633,7 +4631,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
         skip_rd = RDCOST(x->rdmult, mode_rate, curr_sse);
         int eval_txfm =
             check_txfm_eval(x, bsize, search_state.best_skip_rd[0], skip_rd,
-                            cpi->sf.inter_sf.txfm_rd_gate_level);
+                            cpi->sf.inter_sf.txfm_rd_gate_level, 0);
         if (!eval_txfm) continue;
       }
 
