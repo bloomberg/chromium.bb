@@ -27,11 +27,14 @@ class FlashApCommand(command.CliCommand):
 
   EPILOG = """Command to flash the AP firmware onto a DUT.
 
-To flash your zork DUT with an IP of 1.1.1.1 via ssh:
+To flash your zork DUT with an IP of 1.1.1.1 via SSH:
   cros flash-ap -b zork -i /path/to/image.bin -d ssh://1.1.1.1
 
-Or to flash your volteer DUT via SERVO on the default port 9999:
-  cros flash-ap -d servo:// -b volteer -i /path/to/image.bin
+To flash your volteer DUT via SERVO on the default port (9999):
+  cros flash-ap -d servo:port -b volteer -i /path/to/image.bin
+
+To flash your volteer DUT via SERVO on port 1234:
+  cros flash-ap -d servo:port:1234 -b volteer -i /path/to/image.bin
 """
 
   @classmethod
