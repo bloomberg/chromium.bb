@@ -852,8 +852,6 @@ class TestGitCl(unittest.TestCase):
     if post_amend_description is None:
       post_amend_description = description
     cc = cc or []
-    # Determined in `_gerrit_base_calls`.
-    determined_ancestor_revision = custom_cl_base or 'fake_ancestor_sha'
 
     calls = []
 
@@ -863,12 +861,6 @@ class TestGitCl(unittest.TestCase):
 
     # If issue is given, then description is fetched from Gerrit instead.
     if issue is None:
-      calls += [
-        ((['git', 'log', '--pretty=format:%s\n\n%b',
-           ((custom_cl_base + '..') if custom_cl_base else
-            'fake_ancestor_sha..HEAD')],),
-         description),
-      ]
       if squash:
         title = 'Initial_upload'
     else:
@@ -881,14 +873,6 @@ class TestGitCl(unittest.TestCase):
     if not git_footers.get_footer_change_id(description) and not squash:
       calls += [
         (('DownloadGerritHook', False), ''),
-        # Amending of commit message to get the Change-Id.
-        ((['git', 'log', '--pretty=format:%s\n\n%b',
-           determined_ancestor_revision + '..HEAD'],),
-         description),
-        ((['git', 'commit', '--amend', '-m', description],), ''),
-        ((['git', 'log', '--pretty=format:%s\n\n%b',
-           determined_ancestor_revision + '..HEAD'],),
-         post_amend_description)
       ]
     if squash:
       if force or not issue:
@@ -1192,7 +1176,10 @@ class TestGitCl(unittest.TestCase):
               lambda path: self._mocked_call(['os.path.isfile', path])).start()
     mock.patch('git_cl.Changelist.GitSanityChecks', return_value=True).start()
     mock.patch(
-        'git_cl.Changelist.GetLocalDescription', return_value='foo').start()
+        'git_cl._create_description_from_log', return_value=description).start()
+    mock.patch(
+        'git_cl.Changelist._AddChangeIdToCommitMessage',
+        return_value=post_amend_description or description).start()
     mock.patch(
         'git_cl.ask_for_data',
         lambda prompt: self._mocked_call('ask_for_data', prompt)).start()
@@ -2818,15 +2805,6 @@ class ChangelistTest(unittest.TestCase):
     self.addCleanup(mock.patch.stopall)
     self.temp_count = 0
 
-  @mock.patch('git_cl.RunGitWithCode')
-  def testGetLocalDescription(self, _mock):
-    git_cl.RunGitWithCode.return_value = (0, 'description')
-    cl = git_cl.Changelist()
-    self.assertEqual('description', cl.GetLocalDescription('branch'))
-    self.assertEqual('description', cl.GetLocalDescription('branch'))
-    git_cl.RunGitWithCode.assert_called_once_with(
-        ['log', '--pretty=format:%s%n%n%b', 'branch...'])
-
   def testRunHook(self):
     expected_results = {
         'more_cc': ['more@example.com', 'cc@example.com'],
@@ -3031,7 +3009,7 @@ class CMDPresubmitTestCase(CMDTestCaseBase):
         'git_cl.Changelist.FetchDescription',
         return_value='fetch description').start()
     mock.patch(
-        'git_cl.Changelist.GetLocalDescription',
+        'git_cl._create_description_from_log',
         return_value='get description').start()
     mock.patch('git_cl.Changelist.RunHook').start()
 

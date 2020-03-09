@@ -194,7 +194,7 @@ def SplitCl(description_file, comment_file, changelist, cmd_upload, dry_run,
     EnsureInGitRepository()
 
     cl = changelist()
-    change = cl.GetChange(cl.GetCommonAncestorWithUpstream())
+    change = cl.GetChange(cl.GetCommonAncestorWithUpstream(), '')
     files = change.AffectedFiles()
 
     if not files:

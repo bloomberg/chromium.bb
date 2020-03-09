@@ -966,7 +966,7 @@ def _create_description_from_log(args):
     log_args = [args[0] + '..' + args[1]]
   else:
     log_args = args[:]  # Hope for the best!
-  return RunGit(['log', '--pretty=format:%s\n\n%b'] + log_args)
+  return RunGit(['log', '--pretty=format:%s%n%n%b'] + log_args)
 
 
 class GerritChangeNotExists(Exception):
@@ -1016,7 +1016,6 @@ class Changelist(object):
     self.lookedup_issue = False
     self.issue = issue or None
     self.description = None
-    self.local_description = None
     self.lookedup_patchset = False
     self.patchset = None
     self.cc = None
@@ -1266,13 +1265,6 @@ class Changelist(object):
       return None
     return '%s/%s' % (self.GetCodereviewServer(), issue)
 
-  def GetLocalDescription(self, upstream_branch):
-    """Return the log messages of all commits up to the branch point."""
-    if self.local_description is None:
-      args = ['log', '--pretty=format:%s%n%n%b', '%s...' % (upstream_branch)]
-      self.local_description = RunGitWithCode(args)[1].strip()
-    return self.local_description
-
   def FetchDescription(self, pretty=False):
     assert self.GetIssue(), 'issue is required to query Gerrit'
 
@@ -1348,7 +1340,7 @@ class Changelist(object):
       self.issue = None
       self.patchset = None
 
-  def GetChange(self, upstream_branch):
+  def GetChange(self, upstream_branch, description):
     if not self.GitSanityChecks(upstream_branch):
       DieWithError('\nGit sanity check failure')
 
@@ -1368,13 +1360,6 @@ class Changelist(object):
 
     issue = self.GetIssue()
     patchset = self.GetPatchset()
-    if issue:
-      description = self.FetchDescription()
-    else:
-      # If the change was never uploaded, use the log messages of all commits
-      # up to the branch point, as git cl upload will prefill the description
-      # with these log messages.
-      description = self.GetLocalDescription(upstream_branch)
 
     author = self.GetAuthor()
     return presubmit_support.GitChange(
@@ -1493,17 +1478,23 @@ class Changelist(object):
     self.EnsureAuthenticated(force=options.force)
     self.EnsureCanUploadPatchset(force=options.force)
 
+    # Get description message for upload.
+    if self.GetIssue():
+      description = self.FetchDescription()
+    elif options.message:
+      description = options.message
+    else:
+      description = _create_description_from_log(git_diff_args)
+      if options.title and options.squash:
+        description = options.title + '\n\n' + message
+
     # Apply watchlists on upload.
-    change = self.GetChange(base_branch)
+    change = self.GetChange(base_branch, description)
     watchlist = watchlists.Watchlists(change.RepositoryRoot())
     files = [f.LocalPath() for f in change.AffectedFiles()]
     if not options.bypass_watchlists:
       self.ExtendCC(watchlist.GetWatchersForPaths(files))
 
-    if self.GetIssue():
-      description = self.FetchDescription()
-    else:
-      description = self.GetLocalDescription(base_branch)
     if options.reviewers or options.tbrs or options.add_owners_to:
       # Set the reviewer list now so that presubmit checks can access it.
       change_description = ChangeDescription(description)
@@ -1524,7 +1515,8 @@ class Changelist(object):
       self.ExtendCC(hook_results['more_cc'])
 
     print_stats(git_diff_args)
-    ret = self.CMDUploadChange(options, git_diff_args, custom_cl_base, change)
+    ret = self.CMDUploadChange(
+        options, git_diff_args, custom_cl_base, change, description)
     if not ret:
       self._GitSetBranchConfigValue(
           'last-upload-hash', RunGit(['rev-parse', 'HEAD']).strip())
@@ -2021,7 +2013,7 @@ class Changelist(object):
       if self.GetIssue():
         description = self.FetchDescription()
       else:
-        description = self.GetLocalDescription(upstream)
+        description = _create_description_from_log([upstream])
       self.RunHook(
           committing=True,
           may_prompt=not force,
@@ -2258,7 +2250,8 @@ class Changelist(object):
 
     return push_stdout
 
-  def CMDUploadChange(self, options, git_diff_args, custom_cl_base, change):
+  def CMDUploadChange(
+      self, options, git_diff_args, custom_cl_base, change, message):
     """Upload the current branch to Gerrit."""
     if options.squash is None:
       # Load default for user, repo, squash=true, in this order.
@@ -2283,12 +2276,6 @@ class Changelist(object):
     if options.squash:
       self._GerritCommitMsgHookCheck(offer_removal=not options.force)
       if self.GetIssue():
-        # Try to get the message from a previous upload.
-        message = self.FetchDescription()
-        if not message:
-          DieWithError(
-              'failed to fetch description from current Gerrit change %d\n'
-              '%s' % (self.GetIssue(), self.GetIssueURL()))
         if not title:
           if options.message:
             # When uploading a subsequent patchset, -m|--message is taken
@@ -2347,12 +2334,6 @@ class Changelist(object):
         assert [change_id] == git_footers.get_footer_change_id(message)
         change_desc = ChangeDescription(message, bug=bug, fixed=fixed)
       else:  # if not self.GetIssue()
-        if options.message:
-          message = options.message
-        else:
-          message = _create_description_from_log(git_diff_args)
-          if options.title:
-            message = options.title + '\n\n' + message
         change_desc = ChangeDescription(message, bug=bug, fixed=fixed)
         if not options.force:
           change_desc.prompt()
@@ -2389,15 +2370,14 @@ class Changelist(object):
         ref_to_push = RunGit(
             ['commit-tree', tree, '-p', parent, '-F', desc_tempfile]).strip()
     else:  # if not options.squash
-      change_desc = ChangeDescription(
-          options.message or _create_description_from_log(git_diff_args))
+      change_desc = ChangeDescription(message)
       if not change_desc.description:
         DieWithError("Description is empty. Aborting...")
 
       if not git_footers.get_footer_change_id(change_desc.description):
         DownloadGerritHook(False)
         change_desc.set_description(
-            self._AddChangeIdToCommitMessage(options, git_diff_args))
+            self._AddChangeIdToCommitMessage(message, git_diff_args))
       if options.reviewers or options.tbrs or options.add_owners_to:
         change_desc.update_reviewers(options.reviewers, options.tbrs,
                                      options.add_owners_to, change)
@@ -2609,13 +2589,11 @@ class Changelist(object):
           change_desc)
     return parent
 
-  def _AddChangeIdToCommitMessage(self, options, args):
+  def _AddChangeIdToCommitMessage(self, log_desc, args):
     """Re-commits using the current message, assumes the commit hook is in
     place.
     """
-    log_desc = options.message or _create_description_from_log(args)
-    git_command = ['commit', '--amend', '-m', log_desc]
-    RunGit(git_command)
+    RunGit(['commit', '--amend', '-m', log_desc])
     new_log_desc = _create_description_from_log(args)
     if git_footers.get_footer_change_id(new_log_desc):
       print('git-cl: Added Change-Id to commit message.')
@@ -4038,7 +4016,7 @@ def CMDdescription(parser, args):
       text = '\n'.join(l.rstrip() for l in sys.stdin)
     elif text == '+':
       base_branch = cl.GetCommonAncestorWithUpstream()
-      text = cl.GetLocalDescription(base_branch)
+      text = _create_description_from_log([base_branch])
 
     description.set_description(text)
   else:
@@ -4070,7 +4048,7 @@ def CMDlint(parser, args):
   os.chdir(settings.GetRoot())
   try:
     cl = Changelist()
-    change = cl.GetChange(cl.GetCommonAncestorWithUpstream())
+    change = cl.GetChange(cl.GetCommonAncestorWithUpstream(), '')
     files = [f.LocalPath() for f in change.AffectedFiles()]
     if not files:
       print('Cannot lint an empty CL')
@@ -4130,7 +4108,7 @@ def CMDpresubmit(parser, args):
   if cl.GetIssue():
     description = cl.FetchDescription()
   else:
-    description = cl.GetLocalDescription(base_branch)
+    description = _create_description_from_log([base_branch])
 
   cl.RunHook(
       committing=not options.upload,
@@ -4965,7 +4943,7 @@ def CMDowners(parser, args):
     # Default to diffing against the common ancestor of the upstream branch.
     base_branch = cl.GetCommonAncestorWithUpstream()
 
-  change = cl.GetChange(base_branch)
+  change = cl.GetChange(base_branch, '')
   affected_files = [f.LocalPath() for f in change.AffectedFiles()]
 
   if options.batch:
