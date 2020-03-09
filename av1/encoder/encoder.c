@@ -5135,7 +5135,7 @@ static uint16_t setup_interp_filter_search_mask(AV1_COMP *cpi) {
 }
 
 #if !CONFIG_REALTIME_ONLY
-#define STRICT_PSNR_DIFF_THRESH 1.0
+#define STRICT_PSNR_DIFF_THRESH 0.9
 // Encode key frame with/without screen content tools to determine whether
 // screen content tools should be enabled for this key frame group or not.
 // The first encoding is without screen content tools.
