@@ -24,10 +24,6 @@ message DlcModuleInfo {
   // If passed in with a value set, there will be no effect. Only an output use
   // parameter.
   string dlc_root = 2;
-  // TODO(kimjae): Once transitioning to a new signal, the |DlcModuleInfo| and
-  // |DlcModuleList| will be deprecated.
-  // Refer to DlcState below for information on this field.
-  DlcState state = 3;
 }
 
 // This is the message used in:
@@ -49,20 +45,6 @@ message DlcModuleList {
   // Omaha URL to query for update. Only used when trying to force the
   // update_engine to download the DLC payloads from a specific address.
   string omaha_url = 2;
-}
-
-// This is the message that is returned from DLC Service via |GetState| method
-// and indicates what state a DLC is in. The error_code field will exist when
-// |NOT_INSTALLED| and previous failures exist pertaining to the DLC.
-message DlcState {
-  // This is the message that indicates what state a DLC is in.
-  enum State {
-    NOT_INSTALLED = 0;
-    INSTALLED = 1;
-    INSTALLING = 2;
-  }
-  State state = 1;
-  string error_code = 2;
 }
 
 // This is the message that indicates how the install progress is running and
