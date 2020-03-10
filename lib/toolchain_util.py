@@ -564,11 +564,15 @@ def _MergeAFDOProfiles(chroot_profile_list,
 
 
 def _RedactAFDOProfile(input_path, output_path):
-  """Redact ICF'ed symbols from AFDO profiles.
+  """Redact ICF'ed symbols and indirect calls from AFDO profiles.
 
   ICF can cause inflation on AFDO sampling results, so we want to remove
   them from AFDO profiles used for Chrome.
   See http://crbug.com/916024 for more details.
+
+  Indirect calls can cause the size increase of nacl, so we need to remove them
+  from AFDO profiles.
+  See http://crbug.com/1057153 for more details.
 
   Args:
     input_path: Full path to input AFDO profile.
@@ -586,18 +590,32 @@ def _RedactAFDOProfile(input_path, output_path):
   # Call the redaction script.
   redacted_temp = input_path + '.redacted.temp'
   with open(input_to_text_temp) as f:
-    cros_build_lib.run(['redact_textual_afdo_profile'],
-                       input=f,
-                       stdout=redacted_temp,
-                       enter_chroot=True,
-                       print_cmd=True)
+    cros_build_lib.run(
+        ['redact_textual_afdo_profile'],
+        input=f,
+        stdout=redacted_temp,
+        enter_chroot=True,
+        print_cmd=True,
+    )
+
+  # Call the remove indirect call script
+  removed_temp = input_path + '.removed.temp'
+  cros_build_lib.run(
+      [
+          'remove_indirect_calls',
+          '--input=' + redacted_temp,
+          '--output=' + removed_temp,
+      ],
+      enter_chroot=True,
+      print_cmd=True,
+  )
 
   # Convert the profiles back to compbinary profiles.
   # Using `compbinary` profiles saves us hundreds of MB of RAM per
   # compilation, since it allows profiles to be lazily loaded.
   convert_to_combinary_command = profdata_command_base + [
       '-compbinary',
-      redacted_temp,
+      removed_temp,
       '-output',
       output_path,
   ]
@@ -1672,12 +1690,24 @@ class PrepareForBuildHandler(_CommonPrepareBundle):
                          enter_chroot=True,
                          print_cmd=True)
 
+    # Call the remove indirect call script
+    removed_temp = input_path + '.removed.temp'
+    cros_build_lib.run(
+        [
+            'remove_indirect_calls',
+            '--input=' + redacted_temp,
+            '--output=' + removed_temp,
+        ],
+        enter_chroot=True,
+        print_cmd=True,
+    )
+
     # Convert the profiles back to compbinary profiles.
     # Using `compbinary` profiles saves us hundreds of MB of RAM per
     # compilation, since it allows profiles to be lazily loaded.
     cmd_to_compbinary = profdata_command_base + [
         '-compbinary',
-        self.chroot.chroot_path(redacted_temp),
+        self.chroot.chroot_path(removed_temp),
         '-output',
         self.chroot.chroot_path(output_path),
     ]

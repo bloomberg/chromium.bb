@@ -1573,6 +1573,7 @@ class UploadReleaseChromeAFDOTest(cros_test_lib.MockTempDirTestCase):
     input_name = os.path.join(self.tempdir, self.merged_name)
     input_to_text = input_name + '.text.temp'
     redacted_temp = input_name + '.redacted.temp'
+    removed_temp = input_name + '.removed.temp'
     output_name = os.path.join(self.tempdir, self.redacted_name)
 
     mock_file_obj = io.StringIO()
@@ -1598,6 +1599,15 @@ class UploadReleaseChromeAFDOTest(cros_test_lib.MockTempDirTestCase):
             ['redact_textual_afdo_profile'],
             input=mock_file_obj,
             stdout=redacted_temp,
+            print_cmd=True,
+            enter_chroot=True,
+        ),
+        mock.call(
+            [
+                'remove_indirect_calls',
+                '--input=' + redacted_temp,
+                '--output=' + removed_temp,
+            ],
             enter_chroot=True,
             print_cmd=True,
         ),
@@ -1607,7 +1617,7 @@ class UploadReleaseChromeAFDOTest(cros_test_lib.MockTempDirTestCase):
                 'merge',
                 '-sample',
                 '-compbinary',
-                redacted_temp,
+                removed_temp,
                 '-output',
                 output_name,
             ],
