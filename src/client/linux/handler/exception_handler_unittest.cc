@@ -27,12 +27,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include <poll.h>
 #include <pthread.h>
 #include <stdint.h>
 #include <unistd.h>
 #include <signal.h>
 #include <sys/mman.h>
-#include <sys/poll.h>
 #include <sys/socket.h>
 #include <sys/uio.h>
 #include <sys/wait.h>

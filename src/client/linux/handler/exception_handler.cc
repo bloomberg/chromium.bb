@@ -78,7 +78,6 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#include <sys/signal.h>
 #include <sys/ucontext.h>
 #include <sys/user.h>
 #include <ucontext.h>
