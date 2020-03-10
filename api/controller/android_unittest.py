@@ -19,7 +19,7 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
-from chromite.lib.build_target_lib import BuildTarget
+from chromite.lib import build_target_lib
 from chromite.service import packages
 
 
@@ -39,7 +39,8 @@ class MarkStableTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
     self.input_proto.build_targets.add().name = 'foo'
     self.input_proto.build_targets.add().name = 'bar'
 
-    self.build_targets = [BuildTarget('foo'), BuildTarget('bar')]
+    self.build_targets = [build_target_lib.BuildTarget('foo'),
+                          build_target_lib.BuildTarget('bar')]
 
     self.response = android_pb2.MarkStableResponse()
 

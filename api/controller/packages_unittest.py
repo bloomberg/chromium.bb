@@ -21,7 +21,7 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import portage_util
-from chromite.lib.build_target_lib import BuildTarget
+from chromite.lib import build_target_lib
 from chromite.service import packages as packages_service
 
 
@@ -555,7 +555,8 @@ class BuildsChromeTest(cros_test_lib.MockTestCase, ApiConfigMixin):
     request = self._GetRequest(board='foo')
     packages_controller.BuildsChrome(request, self.response, self.api_config)
     self.assertTrue(self.response.builds_chrome)
-    patch.assert_called_once_with(constants.CHROME_CP, BuildTarget('foo'), [])
+    patch.assert_called_once_with(constants.CHROME_CP,
+                                  build_target_lib.BuildTarget('foo'), [])
 
   def testBuildsChromeWithPackages(self):
     """Test successful call with packages handling."""
@@ -569,5 +570,6 @@ class BuildsChromeTest(cros_test_lib.MockTestCase, ApiConfigMixin):
     request = self._GetRequest(board='foo', packages=[package])
     packages_controller.BuildsChrome(request, self.response, self.api_config)
     self.assertTrue(self.response.builds_chrome)
-    patch.assert_called_once_with(constants.CHROME_CP, BuildTarget('foo'),
+    patch.assert_called_once_with(constants.CHROME_CP,
+                                  build_target_lib.BuildTarget('foo'),
                                   [controller_util.PackageInfoToCPV(package)])

@@ -9,11 +9,12 @@ from __future__ import print_function
 
 import sys
 
+from chromite.api.gen.chromite.api import sysroot_pb2
 from chromite.api.gen.chromiumos import common_pb2
 from chromite.cbuildbot import goma_util
 from chromite.lib import constants
 from chromite.lib import portage_util
-from chromite.lib.build_target_lib import BuildTarget
+from chromite.lib import build_target_lib
 from chromite.lib.chroot_lib import Chroot
 
 
@@ -96,11 +97,12 @@ def ParseGomaConfig(goma_message, chroot_path):
                         counterz_filename=counterz_filename)
 
 
-def ParseBuildTarget(build_target_message):
+def ParseBuildTarget(build_target_message, profile_message=None):
   """Create a BuildTarget object from a build_target message.
 
   Args:
     build_target_message (common_pb2.BuildTarget): The BuildTarget message.
+    profile_message (sysroot_pb2.Profile|None): The profile message.
 
   Returns:
     BuildTarget: The parsed instance.
@@ -109,8 +111,12 @@ def ParseBuildTarget(build_target_message):
     AssertionError: When the field is not a BuildTarget message.
   """
   assert isinstance(build_target_message, common_pb2.BuildTarget)
+  assert (profile_message is None or
+          isinstance(profile_message, sysroot_pb2.Profile))
 
-  return BuildTarget(build_target_message.name)
+  profile_name = profile_message.name if profile_message else None
+  return build_target_lib.BuildTarget(
+      build_target_message.name, profile=profile_name)
 
 
 def ParseBuildTargets(repeated_build_target_field):

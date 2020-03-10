@@ -11,10 +11,11 @@ import sys
 
 from chromite.api.controller import controller_util
 from chromite.api.gen.chromite.api import build_api_test_pb2
+from chromite.api.gen.chromite.api import sysroot_pb2
 from chromite.api.gen.chromiumos import common_pb2
 from chromite.lib import cros_test_lib
 from chromite.lib import portage_util
-from chromite.lib.build_target_lib import BuildTarget
+from chromite.lib import build_target_lib
 from chromite.lib.chroot_lib import Chroot
 
 
@@ -59,15 +60,29 @@ class ParseBuildTargetTest(cros_test_lib.TestCase):
     """Test successful handling case."""
     name = 'board'
     build_target_message = common_pb2.BuildTarget(name=name)
-    expected = BuildTarget(name)
+    expected = build_target_lib.BuildTarget(name)
     result = controller_util.ParseBuildTarget(build_target_message)
 
     self.assertEqual(expected, result)
 
+  def testParseProfile(self):
+    """Test the parsing of a profile."""
+    name = 'build-target-name'
+    profile = 'profile'
+    build_target_msg = common_pb2.BuildTarget(name=name)
+    profile_msg = sysroot_pb2.Profile(name=profile)
+
+    expected = build_target_lib.BuildTarget(name, profile=profile)
+    result = controller_util.ParseBuildTarget(
+        build_target_msg, profile_message=profile_msg)
+
+    self.assertEqual(expected, result)
+
+
   def testWrongMessage(self):
     """Test invalid message type given."""
     with self.assertRaises(AssertionError):
-      controller_util.ParseBuildTarget(common_pb2.Chroot())
+      controller_util.ParseBuildTarget(build_api_test_pb2.TestRequestMessage())
 
 
 class ParseBuildTargetsTest(cros_test_lib.TestCase):
@@ -82,7 +97,8 @@ class ParseBuildTargetsTest(cros_test_lib.TestCase):
 
     result = controller_util.ParseBuildTargets(message.build_targets)
 
-    self.assertCountEqual([BuildTarget(name) for name in names], result)
+    expected = [build_target_lib.BuildTarget(name) for name in names]
+    self.assertCountEqual(expected, result)
 
   def testWrongMessage(self):
     """Wrong message type handling."""
