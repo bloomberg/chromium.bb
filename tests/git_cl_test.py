@@ -2462,8 +2462,8 @@ class TestGitCl(unittest.TestCase):
              u'_revision_number': 1,
              u'author': {
                u'_account_id': 1111084,
-               u'email': u'commit-bot@chromium.org',
-               u'name': u'Commit Bot'
+               u'email': u'could-be-anything@example.com',
+               u'name': u'LUCI CQ'
              },
              u'date': u'2017-03-15 20:08:45.000000000',
              u'id': u'f5a6c25ecbd3b3b54a43ae418ed97eff046dc50b',
