@@ -1029,6 +1029,9 @@ typedef struct AV1_COMP {
   int dv_joint_cost[MV_JOINTS];
   int has_lossless_segment;
 
+  // Mark which ref frames can be skipped for encoding current frame druing RDO.
+  int prune_ref_frame_mask;
+
   // Factors to control gating of compound type selection based on best
   // approximate rd so far
   int max_comp_type_rd_threshold_mul;

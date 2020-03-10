@@ -5332,8 +5332,7 @@ static INLINE void update_valid_ref_frames_for_gm(
         ref_buf[frame]->y_crop_height == cpi->source->y_crop_height &&
         do_gm_search_logic(&cpi->sf, frame) &&
         !prune_ref_by_selective_ref_frame(
-            cpi, NULL, ref_frame, cm->cur_frame->ref_display_order_hint,
-            cm->current_frame.display_order_hint) &&
+            cpi, NULL, ref_frame, cm->cur_frame->ref_display_order_hint) &&
         !(cpi->sf.gm_sf.selective_ref_gm && skip_gm_frame(cm, frame))) {
       assert(ref_buf[frame] != NULL);
       int relative_frame_dist = av1_encoder_get_relative_dist(
@@ -5409,6 +5408,60 @@ static INLINE void compute_global_motion_for_references(
         reference_frame[frame].distance != 0 &&
         cm->global_motion[ref_frame].wmtype != ROTZOOM)
       break;
+  }
+}
+
+static AOM_INLINE void setup_prune_ref_frame_mask(AV1_COMP *cpi) {
+  if (!cpi->sf.rt_sf.use_nonrd_pick_mode &&
+      cpi->sf.inter_sf.selective_ref_frame >= 2) {
+    AV1_COMMON *const cm = &cpi->common;
+    const OrderHintInfo *const order_hint_info =
+        &cm->seq_params.order_hint_info;
+    const int cur_frame_display_order_hint =
+        cm->current_frame.display_order_hint;
+    unsigned int *ref_display_order_hint =
+        cm->cur_frame->ref_display_order_hint;
+    const int arf2_dist = av1_encoder_get_relative_dist(
+        order_hint_info, ref_display_order_hint[ALTREF2_FRAME - LAST_FRAME],
+        cur_frame_display_order_hint);
+    const int bwd_dist = av1_encoder_get_relative_dist(
+        order_hint_info, ref_display_order_hint[BWDREF_FRAME - LAST_FRAME],
+        cur_frame_display_order_hint);
+
+    for (int ref_idx = REF_FRAMES; ref_idx < MODE_CTX_REF_FRAMES; ++ref_idx) {
+      MV_REFERENCE_FRAME rf[2];
+      av1_set_ref_frame(rf, ref_idx);
+      if (!(cpi->ref_frame_flags & av1_ref_frame_flag_list[rf[0]]) ||
+          !(cpi->ref_frame_flags & av1_ref_frame_flag_list[rf[1]])) {
+        continue;
+      }
+
+      if (!cpi->all_one_sided_refs) {
+        int ref_dist[2];
+        for (int i = 0; i < 2; ++i) {
+          ref_dist[i] = av1_encoder_get_relative_dist(
+              order_hint_info, ref_display_order_hint[rf[i] - LAST_FRAME],
+              cur_frame_display_order_hint);
+        }
+
+        // One-sided compound is used only when all reference frames are
+        // one-sided.
+        if ((ref_dist[0] > 0) == (ref_dist[1] > 0)) {
+          cpi->prune_ref_frame_mask |= 1 << ref_idx;
+        }
+      }
+
+      if (cpi->sf.inter_sf.selective_ref_frame >= 4 &&
+          (rf[0] == ALTREF2_FRAME || rf[1] == ALTREF2_FRAME) &&
+          (cpi->ref_frame_flags & av1_ref_frame_flag_list[BWDREF_FRAME])) {
+        // Check if both ALTREF2_FRAME and BWDREF_FRAME are future references.
+        if (arf2_dist > 0 && bwd_dist > 0 && bwd_dist <= arf2_dist) {
+          // Drop ALTREF2_FRAME as a reference if BWDREF_FRAME is a closer
+          // reference to the current frame than ALTREF2_FRAME
+          cpi->prune_ref_frame_mask |= 1 << ref_idx;
+        }
+      }
+    }
   }
 }
 
@@ -5591,6 +5644,13 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
   memcpy(cm->cur_frame->ref_deltas, cm->lf.ref_deltas, REF_FRAMES);
   memcpy(cm->cur_frame->mode_deltas, cm->lf.mode_deltas, MAX_MODE_LF_DELTAS);
 
+  cpi->all_one_sided_refs =
+      frame_is_intra_only(cm) ? 0 : av1_refs_are_one_sided(cm);
+
+  cpi->prune_ref_frame_mask = 0;
+  // Figure out which ref frames can be skipped at frame level.
+  setup_prune_ref_frame_mask(cpi);
+
   x->txb_split_count = 0;
 #if CONFIG_SPEED_STATS
   x->tx_search_count = 0;
@@ -5688,9 +5748,6 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
 #if CONFIG_COLLECT_COMPONENT_TIMING
   end_timing(cpi, av1_setup_motion_field_time);
 #endif
-
-  cpi->all_one_sided_refs =
-      frame_is_intra_only(cm) ? 0 : av1_refs_are_one_sided(cm);
 
   cm->current_frame.skip_mode_info.skip_mode_flag =
       check_skip_mode_enabled(cpi);

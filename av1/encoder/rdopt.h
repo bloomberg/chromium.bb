@@ -182,85 +182,43 @@ static INLINE int prune_ref(const MV_REFERENCE_FRAME *const ref_frame,
 static INLINE int prune_ref_by_selective_ref_frame(
     const AV1_COMP *const cpi, const MACROBLOCK *const x,
     const MV_REFERENCE_FRAME *const ref_frame,
-    const unsigned int *const ref_display_order_hint,
-    const unsigned int cur_frame_display_order_hint) {
+    const unsigned int *const ref_display_order_hint) {
   const SPEED_FEATURES *const sf = &cpi->sf;
+  if (!sf->inter_sf.selective_ref_frame) return 0;
 
-  if (sf->inter_sf.selective_ref_frame) {
-    const AV1_COMMON *const cm = &cpi->common;
-    const OrderHintInfo *const order_hint_info =
-        &cm->seq_params.order_hint_info;
-    const int comp_pred = ref_frame[1] > INTRA_FRAME;
-    if (sf->inter_sf.selective_ref_frame >= 2 ||
-        (sf->inter_sf.selective_ref_frame == 1 && comp_pred)) {
-      int ref_frame_list[2] = { LAST3_FRAME, LAST2_FRAME };
+  const AV1_COMMON *const cm = &cpi->common;
+  const OrderHintInfo *const order_hint_info = &cm->seq_params.order_hint_info;
+  const int comp_pred = ref_frame[1] > INTRA_FRAME;
 
-      if (x != NULL) {
-        if (x->search_ref_frame[LAST3_FRAME]) ref_frame_list[0] = NONE_FRAME;
-        if (x->search_ref_frame[LAST2_FRAME]) ref_frame_list[1] = NONE_FRAME;
-      }
+  if (sf->inter_sf.selective_ref_frame >= 2 ||
+      (sf->inter_sf.selective_ref_frame == 1 && comp_pred)) {
+    int ref_frame_list[2] = { LAST3_FRAME, LAST2_FRAME };
 
-      if (prune_ref(ref_frame, order_hint_info, ref_display_order_hint,
-                    ref_display_order_hint[GOLDEN_FRAME - LAST_FRAME],
-                    ref_frame_list))
-        return 1;
+    if (x != NULL) {
+      if (x->search_ref_frame[LAST3_FRAME]) ref_frame_list[0] = NONE_FRAME;
+      if (x->search_ref_frame[LAST2_FRAME]) ref_frame_list[1] = NONE_FRAME;
     }
 
-    // One-sided compound is used only when all reference frames are one-sided.
-    if (sf->inter_sf.selective_ref_frame >= 2 && comp_pred &&
-        !cpi->all_one_sided_refs) {
-      unsigned int ref_offsets[2];
-      int ref_dist[2];
-      for (int i = 0; i < 2; ++i) {
-        const RefCntBuffer *const buf = get_ref_frame_buf(cm, ref_frame[i]);
-        assert(buf != NULL);
-        ref_offsets[i] = buf->display_order_hint;
-        ref_dist[i] = av1_encoder_get_relative_dist(
-            order_hint_info, ref_offsets[i], cur_frame_display_order_hint);
-      }
-
-      // If both references are in same direction
-      if ((ref_dist[0] > 0) == (ref_dist[1] > 0)) {
-        return 1;
-      }
-    }
-
-    if (sf->inter_sf.selective_ref_frame >= 3) {
-      int ref_frame_list[2] = { ALTREF2_FRAME, BWDREF_FRAME };
-
-      if (x != NULL) {
-        if (x->search_ref_frame[ALTREF2_FRAME]) ref_frame_list[0] = NONE_FRAME;
-        if (x->search_ref_frame[BWDREF_FRAME]) ref_frame_list[1] = NONE_FRAME;
-      }
-
-      if (prune_ref(ref_frame, order_hint_info, ref_display_order_hint,
-                    ref_display_order_hint[LAST_FRAME - LAST_FRAME],
-                    ref_frame_list))
-        return 1;
-    }
-
-    if (sf->inter_sf.selective_ref_frame >= 4 && comp_pred) {
-      // Check if one of the reference is ALTREF2_FRAME and BWDREF_FRAME is a
-      // valid reference.
-      if ((ref_frame[0] == ALTREF2_FRAME || ref_frame[1] == ALTREF2_FRAME) &&
-          (cpi->ref_frame_flags & av1_ref_frame_flag_list[BWDREF_FRAME])) {
-        // Check if both ALTREF2_FRAME and BWDREF_FRAME are future references.
-        const int arf2_dist = av1_encoder_get_relative_dist(
-            order_hint_info, ref_display_order_hint[ALTREF2_FRAME - LAST_FRAME],
-            cur_frame_display_order_hint);
-        const int bwd_dist = av1_encoder_get_relative_dist(
-            order_hint_info, ref_display_order_hint[BWDREF_FRAME - LAST_FRAME],
-            cur_frame_display_order_hint);
-        if (arf2_dist > 0 && bwd_dist > 0 && bwd_dist <= arf2_dist) {
-          // Drop ALTREF2_FRAME as a reference if BWDREF_FRAME is a closer
-          // reference to the current frame than ALTREF2_FRAME
-          assert(get_ref_frame_buf(cm, ALTREF2_FRAME) != NULL);
-          assert(get_ref_frame_buf(cm, BWDREF_FRAME) != NULL);
-          return 1;
-        }
-      }
-    }
+    if (prune_ref(ref_frame, order_hint_info, ref_display_order_hint,
+                  ref_display_order_hint[GOLDEN_FRAME - LAST_FRAME],
+                  ref_frame_list))
+      return 1;
   }
+
+  if (sf->inter_sf.selective_ref_frame >= 3) {
+    int ref_frame_list[2] = { ALTREF2_FRAME, BWDREF_FRAME };
+
+    if (x != NULL) {
+      if (x->search_ref_frame[ALTREF2_FRAME]) ref_frame_list[0] = NONE_FRAME;
+      if (x->search_ref_frame[BWDREF_FRAME]) ref_frame_list[1] = NONE_FRAME;
+    }
+
+    if (prune_ref(ref_frame, order_hint_info, ref_display_order_hint,
+                  ref_display_order_hint[LAST_FRAME - LAST_FRAME],
+                  ref_frame_list))
+      return 1;
+  }
+
   return 0;
 }
 #ifdef __cplusplus
