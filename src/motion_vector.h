@@ -38,10 +38,8 @@ constexpr bool IsGlobalMvBlock(bool is_global_mv_block,
 
 // The |contexts| output parameter may be null. If the caller does not need
 // the |contexts| output, pass nullptr as the argument.
-void FindMvStack(
-    const Tile::Block& block, bool is_compound,
-    const std::array<bool, kNumReferenceFrameTypes>& reference_frame_sign_bias,
-    const TemporalMotionField& motion_field, MvContexts* contexts);  // 7.10.2
+void FindMvStack(const Tile::Block& block, bool is_compound,
+                 MvContexts* contexts);  // 7.10.2
 
 void FindWarpSamples(const Tile::Block& block, int* num_warp_samples,
                      int* num_samples_scanned,

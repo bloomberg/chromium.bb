@@ -99,6 +99,11 @@ class Tile : public Allocable {
   const ObuSequenceHeader& sequence_header() const { return sequence_header_; }
   const ObuFrameHeader& frame_header() const { return frame_header_; }
   const RefCountedBuffer& current_frame() const { return current_frame_; }
+  const TemporalMotionField& motion_field() const { return motion_field_; }
+  const std::array<bool, kNumReferenceFrameTypes>& reference_frame_sign_bias()
+      const {
+    return reference_frame_sign_bias_;
+  }
 
   // 5.11.51.
   bool IsInside(int row4x4, int column4x4) const {
