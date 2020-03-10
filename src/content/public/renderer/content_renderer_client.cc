@@ -252,7 +252,7 @@ bool ContentRendererClient::Dispatch(IPC::Message* msg) {
   return false;
 }
 
-bool ContentRendererClient::BindFrameSinkProvider(mojom::FrameSinkProviderRequest request) {
+bool ContentRendererClient::ShouldBindFrameSinkProvider() {
   return false;
 }
 
