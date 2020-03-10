@@ -33,6 +33,7 @@
 #include "common/linux/tests/crash_generator.h"
 
 #include <pthread.h>
+#include <sched.h>
 #include <signal.h>
 #include <stdio.h>
 #include <sys/mman.h>
@@ -88,7 +89,7 @@ void *thread_function(void *data) {
     exit(1);
   }
   while (true) {
-    pthread_yield();
+    sched_yield();
   }
 }
 
