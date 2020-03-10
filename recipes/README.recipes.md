@@ -533,15 +533,15 @@ remote_name (str): the remote name to rebase from if not origin
 
 #### **class [GitClApi](/recipes/recipe_modules/git_cl/api.py#9)([RecipeApi][recipe_engine/wkt/RecipeApi]):**
 
-&mdash; **def [get\_description](/recipes/recipe_modules/git_cl/api.py#23)(self, patch_url=None, codereview=None, \*\*kwargs):**
+&mdash; **def [get\_description](/recipes/recipe_modules/git_cl/api.py#23)(self, patch_url=None, \*\*kwargs):**
 
 DEPRECATED. Consider using gerrit.get_change_description instead.
 
-&mdash; **def [issue](/recipes/recipe_modules/git_cl/api.py#54)(self, \*\*kwargs):**
+&mdash; **def [issue](/recipes/recipe_modules/git_cl/api.py#48)(self, \*\*kwargs):**
 
-&mdash; **def [set\_description](/recipes/recipe_modules/git_cl/api.py#34)(self, description, patch_url=None, codereview=None, \*\*kwargs):**
+&mdash; **def [set\_description](/recipes/recipe_modules/git_cl/api.py#31)(self, description, patch_url=None, \*\*kwargs):**
 
-&mdash; **def [upload](/recipes/recipe_modules/git_cl/api.py#47)(self, message, upload_args=None, \*\*kwargs):**
+&mdash; **def [upload](/recipes/recipe_modules/git_cl/api.py#41)(self, message, upload_args=None, \*\*kwargs):**
 ### *recipe_modules* / [gitiles](/recipes/recipe_modules/gitiles)
 
 [DEPS](/recipes/recipe_modules/gitiles/__init__.py#5): [recipe\_engine/json][recipe_engine/recipe_modules/json], [recipe\_engine/path][recipe_engine/recipe_modules/path], [recipe\_engine/python][recipe_engine/recipe_modules/python], [recipe\_engine/raw\_io][recipe_engine/recipe_modules/raw_io], [recipe\_engine/step][recipe_engine/recipe_modules/step], [recipe\_engine/url][recipe_engine/recipe_modules/url]
