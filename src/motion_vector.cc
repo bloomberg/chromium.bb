@@ -296,7 +296,7 @@ void AddTemporalReferenceMvCandidate(
   if (!block.tile.IsInside(mv_row, mv_column)) return;
   const int x8 = mv_column >> 1;
   const int y8 = mv_row >> 1;
-  if (zero_mv_context != nullptr && delta_row == 0 && delta_column == 0) {
+  if (delta_row == 0 && delta_column == 0) {
     *zero_mv_context = 1;
   }
   const BlockParameters& bp = *block.bp;
@@ -320,7 +320,7 @@ void AddTemporalReferenceMvCandidate(
         LowerMvPrecision(block, &candidate_mv.mv[i]);
       }
     }
-    if (zero_mv_context != nullptr && delta_row == 0 && delta_column == 0) {
+    if (delta_row == 0 && delta_column == 0) {
       *zero_mv_context = static_cast<int>(
           std::abs(candidate_mv.mv[0].mv[0] - global_mv[0].mv[0]) >= 16 ||
           std::abs(candidate_mv.mv[0].mv[1] - global_mv[0].mv[1]) >= 16 ||
@@ -354,7 +354,7 @@ void AddTemporalReferenceMvCandidate(
                     &candidate_mv);
     LowerMvPrecision(block, &candidate_mv);
   }
-  if (zero_mv_context != nullptr && delta_row == 0 && delta_column == 0) {
+  if (delta_row == 0 && delta_column == 0) {
     *zero_mv_context = static_cast<int>(
         std::abs(candidate_mv.mv[0] - global_mv[0].mv[0]) >= 16 ||
         std::abs(candidate_mv.mv[1] - global_mv[0].mv[1]) >= 16);
@@ -698,69 +698,72 @@ bool MotionFieldProjection(
 void FindMvStack(
     const Tile::Block& block, bool is_compound,
     const std::array<bool, kNumReferenceFrameTypes>& reference_frame_sign_bias,
-    const TemporalMotionField& motion_field, MvContexts* const contexts,
-    PredictionParameters* const prediction_parameters) {
-  assert(prediction_parameters != nullptr);
-  int num_mv_found = 0;
-  MotionVector* const global_mv = prediction_parameters->global_mv;
+    const TemporalMotionField& motion_field, MvContexts* const contexts) {
+  PredictionParameters& prediction_parameters =
+      *block.bp->prediction_parameters;
+  MotionVector* const global_mv = prediction_parameters.global_mv;
   SetupGlobalMv(block, 0, &global_mv[0]);
   if (is_compound) SetupGlobalMv(block, 1, &global_mv[1]);
   bool found_new_mv = false;
   bool found_row_match = false;
+  int num_mv_found = 0;
   ScanRow(block, block.column4x4, -1, is_compound, global_mv, &found_new_mv,
-          &found_row_match, &num_mv_found, prediction_parameters);
+          &found_row_match, &num_mv_found, &prediction_parameters);
   bool found_column_match = false;
   ScanColumn(block, block.row4x4, -1, is_compound, global_mv, &found_new_mv,
-             &found_column_match, &num_mv_found, prediction_parameters);
+             &found_column_match, &num_mv_found, &prediction_parameters);
   if (std::max(block.width4x4, block.height4x4) <= 16) {
     ScanPoint(block, -1, block.width4x4, is_compound, global_mv, &found_new_mv,
-              &found_row_match, &num_mv_found, prediction_parameters);
+              &found_row_match, &num_mv_found, &prediction_parameters);
   }
   const int nearest_matches =
       static_cast<int>(found_row_match) + static_cast<int>(found_column_match);
-  prediction_parameters->nearest_mv_count = num_mv_found;
-  if (contexts != nullptr) contexts->zero_mv = 0;
+  prediction_parameters.nearest_mv_count = num_mv_found;
+  contexts->zero_mv = 0;
   if (block.tile.frame_header().use_ref_frame_mvs) {
     TemporalScan(block, is_compound, global_mv, motion_field,
-                 (contexts != nullptr) ? &contexts->zero_mv : nullptr,
-                 &num_mv_found, prediction_parameters);
+                 &contexts->zero_mv, &num_mv_found, &prediction_parameters);
   }
   bool dummy_bool = false;
   ScanPoint(block, -1, -1, is_compound, global_mv, &dummy_bool,
-            &found_row_match, &num_mv_found, prediction_parameters);
+            &found_row_match, &num_mv_found, &prediction_parameters);
   static constexpr int deltas[2] = {-3, -5};
   for (int i = 0; i < 2; ++i) {
     if (i == 0 || block.height4x4 > 1) {
       ScanRow(block, block.column4x4 | 1, deltas[i] + (block.row4x4 & 1),
               is_compound, global_mv, &dummy_bool, &found_row_match,
-              &num_mv_found, prediction_parameters);
+              &num_mv_found, &prediction_parameters);
     }
     if (i == 0 || block.width4x4 > 1) {
       ScanColumn(block, block.row4x4 | 1, deltas[i] + (block.column4x4 & 1),
                  is_compound, global_mv, &dummy_bool, &found_column_match,
-                 &num_mv_found, prediction_parameters);
+                 &num_mv_found, &prediction_parameters);
     }
   }
   if (num_mv_found < 2) {
     ExtraSearch(block, is_compound, global_mv, reference_frame_sign_bias,
-                &num_mv_found, prediction_parameters);
+                &num_mv_found, &prediction_parameters);
   } else {
-    SortWeightIndexStack(prediction_parameters->nearest_mv_count,
-                         prediction_parameters->weight_index_stack);
-    SortWeightIndexStack(num_mv_found - prediction_parameters->nearest_mv_count,
-                         prediction_parameters->weight_index_stack +
-                             prediction_parameters->nearest_mv_count);
+    // The sort of |weight_index_stack| could be moved to Tile::AssignIntraMv()
+    // and Tile::AssignInterMv(), and only do a partial sort to the max index we
+    // need. However, the speed gain is trivial.
+    SortWeightIndexStack(prediction_parameters.nearest_mv_count,
+                         prediction_parameters.weight_index_stack);
+    // For intra case, only the first 1 or 2 mvs in the stack will be used.
+    // For inter case, |prediction_parameters.ref_mv_index| is at most 3.
+    // When there are 4 or more nearest mvs, the other mvs will not be used.
+    if (prediction_parameters.nearest_mv_count < 4) {
+      SortWeightIndexStack(
+          num_mv_found - prediction_parameters.nearest_mv_count,
+          prediction_parameters.weight_index_stack +
+              prediction_parameters.nearest_mv_count);
+    }
   }
+  prediction_parameters.ref_mv_count = num_mv_found;
   const int total_matches =
       static_cast<int>(found_row_match) + static_cast<int>(found_column_match);
-  if (contexts != nullptr) {
-    ComputeContexts(found_new_mv, nearest_matches, total_matches,
-                    &contexts->new_mv, &contexts->reference_mv);
-  }
-  prediction_parameters->ref_mv_count = num_mv_found;
-  // The sort of |weight_index_stack| could be moved to Tile::AssignIntraMv()
-  // and Tile::AssignInterMv(), and only do a partial sort to the max index we
-  // need. However, the speed gain is trivial.
+  ComputeContexts(found_new_mv, nearest_matches, total_matches,
+                  &contexts->new_mv, &contexts->reference_mv);
   // The |ref_mv_stack| clamping process is in Tile::AssignIntraMv() and
   // Tile::AssignInterMv(), and only up to two mvs are clamped.
 }
@@ -776,8 +779,7 @@ void FindWarpSamples(const Tile::Block& block, int* const num_warp_samples,
         block.tile.Parameters(block.row4x4 - 1, block.column4x4).size;
     const int source_width4x4 = kNum4x4BlocksWide[source_size];
     if (block.width4x4 <= source_width4x4) {
-      // The & here is equivalent to % since source_width4x4 is a power of
-      // two.
+      // The & here is equivalent to % since source_width4x4 is a power of two.
       const int column_offset = -(block.column4x4 & (source_width4x4 - 1));
       if (column_offset < 0) top_left = false;
       if (column_offset + source_width4x4 > block.width4x4) top_right = false;
