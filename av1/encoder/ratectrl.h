@@ -17,8 +17,8 @@
 
 #include "aom_ports/mem.h"
 
+#include "av1/common/av1_common_int.h"
 #include "av1/common/blockd.h"
-#include "av1/common/onyxc_int.h"
 
 #ifdef __cplusplus
 extern "C" {

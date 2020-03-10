@@ -24,6 +24,7 @@
 #include "aom_ports/mem.h"
 #include "aom_ports/system_state.h"
 
+#include "av1/common/av1_common_int.h"
 #include "av1/common/cfl.h"
 #include "av1/common/common.h"
 #include "av1/common/common_data.h"
@@ -32,7 +33,6 @@
 #include "av1/common/idct.h"
 #include "av1/common/mvref_common.h"
 #include "av1/common/obmc.h"
-#include "av1/common/onyxc_int.h"
 #include "av1/common/pred_common.h"
 #include "av1/common/quant_common.h"
 #include "av1/common/reconinter.h"

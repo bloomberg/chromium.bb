@@ -9,7 +9,7 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 #include "aom/aom_integer.h"
-#include "av1/common/onyxc_int.h"
+#include "av1/common/av1_common_int.h"
 #include "av1/common/txb_common.h"
 
 const int8_t av1_coeff_band_4x4[16] = { 0, 1, 2,  3,  4,  5,  6,  7,

@@ -16,8 +16,8 @@
 
 #include "aom/aom_integer.h"
 #include "aom_ports/system_state.h"
+#include "av1/common/av1_common_int.h"
 #include "av1/common/cdef.h"
-#include "av1/common/onyxc_int.h"
 #include "av1/common/reconinter.h"
 #include "av1/encoder/encoder.h"
 

@@ -20,9 +20,9 @@
 #include "aom_ports/aom_once.h"
 #include "aom_ports/mem.h"
 #include "aom_ports/system_state.h"
-#include "av1/common/reconintra.h"
-#include "av1/common/onyxc_int.h"
+#include "av1/common/av1_common_int.h"
 #include "av1/common/cfl.h"
+#include "av1/common/reconintra.h"
 
 enum {
   NEED_LEFT = 1 << 1,

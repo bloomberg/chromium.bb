@@ -11,9 +11,9 @@
 
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
-#include "av1/common/onyxc_int.h"
+#include "av1/common/av1_common_int.h"
 
-TEST(OnyxcInt, TestGetTxSize) {
+TEST(AV1CommonInt, TestGetTxSize) {
   for (int t = TX_4X4; t < TX_SIZES_ALL; t++) {
     TX_SIZE t2 = get_tx_size(tx_size_wide[t], tx_size_high[t]);
     GTEST_ASSERT_EQ(tx_size_wide[t], tx_size_wide[t2]);

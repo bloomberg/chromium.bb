@@ -13,12 +13,12 @@
 #define AOM_AV1_ENCODER_RECONINTER_ENC_H_
 
 #include "aom/aom_integer.h"
-#include "av1/common/filter.h"
+#include "av1/common/av1_common_int.h"
 #include "av1/common/blockd.h"
-#include "av1/common/onyxc_int.h"
 #include "av1/common/convolve.h"
-#include "av1/common/warped_motion.h"
+#include "av1/common/filter.h"
 #include "av1/common/reconinter.h"
+#include "av1/common/warped_motion.h"
 
 #ifdef __cplusplus
 extern "C" {

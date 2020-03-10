@@ -19,8 +19,8 @@
 #include "aom_scale/yv12config.h"
 #include "aom_util/aom_thread.h"
 
+#include "av1/common/av1_common_int.h"
 #include "av1/common/thread_common.h"
-#include "av1/common/onyxc_int.h"
 #include "av1/decoder/dthread.h"
 #if CONFIG_ACCOUNTING
 #include "av1/decoder/accounting.h"

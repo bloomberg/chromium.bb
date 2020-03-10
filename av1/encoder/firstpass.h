@@ -12,8 +12,8 @@
 #ifndef AOM_AV1_ENCODER_FIRSTPASS_H_
 #define AOM_AV1_ENCODER_FIRSTPASS_H_
 
+#include "av1/common/av1_common_int.h"
 #include "av1/common/enums.h"
-#include "av1/common/onyxc_int.h"
 #include "av1/encoder/lookahead.h"
 #include "av1/encoder/ratectrl.h"
 

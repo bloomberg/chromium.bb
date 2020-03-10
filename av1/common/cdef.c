@@ -16,9 +16,9 @@
 #include "config/aom_scale_rtcd.h"
 
 #include "aom/aom_integer.h"
+#include "av1/common/av1_common_int.h"
 #include "av1/common/cdef.h"
 #include "av1/common/cdef_block.h"
-#include "av1/common/onyxc_int.h"
 #include "av1/common/reconinter.h"
 
 static int is_8x8_block_skip(MB_MODE_INFO **grid, int mi_row, int mi_col,

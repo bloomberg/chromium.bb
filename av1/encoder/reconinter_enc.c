@@ -20,12 +20,12 @@
 #include "aom/aom_integer.h"
 #include "aom_dsp/blend.h"
 
+#include "av1/common/av1_common_int.h"
 #include "av1/common/blockd.h"
 #include "av1/common/mvref_common.h"
+#include "av1/common/obmc.h"
 #include "av1/common/reconinter.h"
 #include "av1/common/reconintra.h"
-#include "av1/common/onyxc_int.h"
-#include "av1/common/obmc.h"
 #include "av1/encoder/reconinter_enc.h"
 
 static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,

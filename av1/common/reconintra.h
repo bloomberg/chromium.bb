@@ -15,8 +15,8 @@
 #include <stdlib.h>
 
 #include "aom/aom_integer.h"
+#include "av1/common/av1_common_int.h"
 #include "av1/common/blockd.h"
-#include "av1/common/onyxc_int.h"
 
 #ifdef __cplusplus
 extern "C" {

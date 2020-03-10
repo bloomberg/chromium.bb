@@ -14,8 +14,8 @@
 
 #include "config/aom_config.h"
 
+#include "av1/common/av1_common_int.h"
 #include "av1/common/blockd.h"
-#include "av1/common/onyxc_int.h"
 #include "av1/common/txb_common.h"
 #include "av1/encoder/block.h"
 #include "av1/encoder/encoder.h"

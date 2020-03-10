@@ -15,7 +15,7 @@
 
 #include "aom/aom_decoder.h"
 #include "aom/aomdx.h"
-#include "av1/common/onyxc_int.h"
+#include "av1/common/av1_common_int.h"
 #include "av1/decoder/accounting.h"
 #include "av1/decoder/inspection.h"
 #include "common/tools_common.h"

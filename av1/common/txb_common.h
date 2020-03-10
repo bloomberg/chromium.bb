@@ -12,7 +12,7 @@
 #ifndef AOM_AV1_COMMON_TXB_COMMON_H_
 #define AOM_AV1_COMMON_TXB_COMMON_H_
 
-#include "av1/common/onyxc_int.h"
+#include "av1/common/av1_common_int.h"
 
 extern const int16_t av1_eob_group_start[12];
 extern const int16_t av1_eob_offset_bits[12];

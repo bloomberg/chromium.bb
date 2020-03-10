@@ -19,9 +19,9 @@
 #include "aom/aom_codec.h"
 #include "aom_ports/system_state.h"
 
+#include "av1/common/av1_common_int.h"
 #include "av1/common/enums.h"
 #include "av1/common/idct.h"
-#include "av1/common/onyxc_int.h"
 #include "av1/common/reconintra.h"
 
 #include "av1/encoder/encoder.h"

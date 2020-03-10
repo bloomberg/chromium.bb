@@ -17,7 +17,7 @@
 #include "config/aom_scale_rtcd.h"
 
 #include "aom_mem/aom_mem.h"
-#include "av1/common/onyxc_int.h"
+#include "av1/common/av1_common_int.h"
 #include "av1/common/resize.h"
 #include "av1/common/restoration.h"
 #include "aom_dsp/aom_dsp_common.h"

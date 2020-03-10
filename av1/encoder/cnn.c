@@ -14,7 +14,7 @@
 
 #include "aom_dsp/aom_dsp_common.h"
 #include "av1/encoder/cnn.h"
-#include "av1/common/onyxc_int.h"
+#include "av1/common/av1_common_int.h"
 
 #define CLAMPINDEX(a, hi) ((a) < 0 ? 0 : ((a) >= (hi) ? ((hi)-1) : (a)))
 

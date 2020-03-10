@@ -12,9 +12,9 @@
 #ifndef AOM_AV1_COMMON_RECONINTER_H_
 #define AOM_AV1_COMMON_RECONINTER_H_
 
-#include "av1/common/filter.h"
-#include "av1/common/onyxc_int.h"
+#include "av1/common/av1_common_int.h"
 #include "av1/common/convolve.h"
+#include "av1/common/filter.h"
 #include "av1/common/warped_motion.h"
 #include "aom/aom_integer.h"
 

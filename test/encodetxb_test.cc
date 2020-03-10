@@ -21,8 +21,8 @@
 
 #include "aom_ports/aom_timer.h"
 #include "aom_ports/mem.h"
+#include "av1/common/av1_common_int.h"
 #include "av1/common/idct.h"
-#include "av1/common/onyxc_int.h"
 #include "av1/common/scan.h"
 #include "av1/common/txb_common.h"
 #include "test/acm_random.h"

@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef AOM_AV1_COMMON_ONYXC_INT_H_
-#define AOM_AV1_COMMON_ONYXC_INT_H_
+#ifndef AOM_AV1_COMMON_AV1_COMMON_INT_H_
+#define AOM_AV1_COMMON_AV1_COMMON_INT_H_
 
 #include "config/aom_config.h"
 #include "config/av1_rtcd.h"
@@ -1429,4 +1429,4 @@ static INLINE void init_frame_info(FRAME_INFO *frame_info,
 }  // extern "C"
 #endif
 
-#endif  // AOM_AV1_COMMON_ONYXC_INT_H_
+#endif  // AOM_AV1_COMMON_AV1_COMMON_INT_H_

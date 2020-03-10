@@ -11,7 +11,7 @@
 #ifndef AOM_AV1_COMMON_MVREF_COMMON_H_
 #define AOM_AV1_COMMON_MVREF_COMMON_H_
 
-#include "av1/common/onyxc_int.h"
+#include "av1/common/av1_common_int.h"
 #include "av1/common/blockd.h"
 
 #ifdef __cplusplus

@@ -9,9 +9,9 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include "av1/common/tile_common.h"
-#include "av1/common/onyxc_int.h"
+#include "av1/common/av1_common_int.h"
 #include "av1/common/resize.h"
+#include "av1/common/tile_common.h"
 #include "aom_dsp/aom_dsp_common.h"
 
 void av1_tile_init(TileInfo *tile, const AV1_COMMON *cm, int row, int col) {

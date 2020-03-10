@@ -13,8 +13,8 @@
 
 #include "aom_ports/system_state.h"
 
+#include "av1/common/av1_common_int.h"
 #include "av1/common/blockd.h"
-#include "av1/common/onyxc_int.h"
 
 PREDICTION_MODE av1_left_block_mode(const MB_MODE_INFO *left_mi) {
   if (!left_mi) return DC_PRED;

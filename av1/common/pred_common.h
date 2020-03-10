@@ -12,9 +12,9 @@
 #ifndef AOM_AV1_COMMON_PRED_COMMON_H_
 #define AOM_AV1_COMMON_PRED_COMMON_H_
 
+#include "av1/common/av1_common_int.h"
 #include "av1/common/blockd.h"
 #include "av1/common/mvref_common.h"
-#include "av1/common/onyxc_int.h"
 #include "aom_dsp/aom_dsp_common.h"
 
 #ifdef __cplusplus

@@ -21,8 +21,8 @@
 
 #include "aom_ports/mem.h"
 
+#include "av1/common/av1_common_int.h"
 #include "av1/common/filter.h"
-#include "av1/common/onyxc_int.h"
 #include "av1/common/reconinter.h"
 
 unsigned int aom_get_mb_ss_sse2(const int16_t *src) {

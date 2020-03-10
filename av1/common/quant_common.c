@@ -9,12 +9,12 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include "av1/common/av1_common_int.h"
+#include "av1/common/blockd.h"
 #include "av1/common/common.h"
-#include "av1/common/onyxc_int.h"
 #include "av1/common/entropy.h"
 #include "av1/common/quant_common.h"
 #include "av1/common/seg_common.h"
-#include "av1/common/blockd.h"
 
 static const int16_t dc_qlookup_QTX[QINDEX_RANGE] = {
   4,    8,    8,    9,    10,  11,  12,  12,  13,  14,  15,   16,   17,   18,

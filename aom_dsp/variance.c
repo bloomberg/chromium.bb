@@ -23,8 +23,8 @@
 #include "aom_dsp/blend.h"
 #include "aom_dsp/variance.h"
 
+#include "av1/common/av1_common_int.h"
 #include "av1/common/filter.h"
-#include "av1/common/onyxc_int.h"
 #include "av1/common/reconinter.h"
 
 uint32_t aom_get4x4sse_cs_c(const uint8_t *a, int a_stride, const uint8_t *b,

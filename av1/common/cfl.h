@@ -12,8 +12,8 @@
 #ifndef AOM_AV1_COMMON_CFL_H_
 #define AOM_AV1_COMMON_CFL_H_
 
+#include "av1/common/av1_common_int.h"
 #include "av1/common/blockd.h"
-#include "av1/common/onyxc_int.h"
 
 // Can we use CfL for the current block?
 static INLINE CFL_ALLOWED_TYPE is_cfl_allowed(const MACROBLOCKD *xd) {

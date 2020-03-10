@@ -93,6 +93,7 @@ list(APPEND AOM_TEST_INTRA_PRED_SPEED_SOURCES "${AOM_GEN_SRC_DIR}/usage_exit.c"
 
 if(NOT BUILD_SHARED_LIBS)
   list(APPEND AOM_UNIT_TEST_COMMON_SOURCES
+              "${AOM_ROOT}/test/av1_common_int_test.cc"
               "${AOM_ROOT}/test/cdef_test.cc"
               "${AOM_ROOT}/test/cfl_test.cc"
               "${AOM_ROOT}/test/convolve_test.cc"
@@ -102,7 +103,6 @@ if(NOT BUILD_SHARED_LIBS)
               "${AOM_ROOT}/test/intrabc_test.cc"
               "${AOM_ROOT}/test/intrapred_test.cc"
               "${AOM_ROOT}/test/lpf_test.cc"
-              "${AOM_ROOT}/test/onyxc_int_test.cc"
               "${AOM_ROOT}/test/scan_test.cc"
               "${AOM_ROOT}/test/selfguided_filter_test.cc"
               "${AOM_ROOT}/test/simd_cmp_impl.h"

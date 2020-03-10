@@ -23,7 +23,7 @@
 #include "aom_util/debug_util.h"
 #endif  // CONFIG_MISMATCH_DEBUG
 
-#include "av1/common/onyxc_int.h"
+#include "av1/common/av1_common_int.h"
 #include "av1/common/reconinter.h"
 
 #include "av1/encoder/encoder.h"
