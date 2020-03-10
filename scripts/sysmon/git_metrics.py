@@ -28,7 +28,7 @@ class _GitRepo(object):
 
   def _check_output(self, args, **kwargs):
     return subprocess.check_output(
-        self._get_git_command() + list(args), **kwargs)
+        self._get_git_command() + list(args), **kwargs).decode('utf-8')
 
   def get_commit_hash(self):
     """Return commit hash string."""
