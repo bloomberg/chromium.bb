@@ -22,6 +22,9 @@ extern "C" {
 #define BH 32
 #define BW 32
 
+// Block size used in temporal filtering.
+#define TF_BLOCK_SIZE BLOCK_32X32
+
 // Window size for YUV temporal filtering.
 // This is particually used for function `av1_apply_temporal_filter_yuv()`.
 #define TF_YUV_FILTER_WINDOW_LENGTH 3

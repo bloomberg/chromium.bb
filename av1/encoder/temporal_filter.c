@@ -141,7 +141,7 @@ static int tf_motion_search(AV1_COMP *cpi,
     mb->e_mbd.mi[0]->mv[0] = mb->best_mv;
   } else {  // Do fractional search on the entire block and all sub-blocks.
     av1_make_default_subpel_ms_params(
-        &ms_params, cpi, mb, BLOCK_32X32, &baseline_mv, cost_list, second_pred,
+        &ms_params, cpi, mb, block_size, &baseline_mv, cost_list, second_pred,
         mask, mask_stride, invert_mask, do_reset_fractional_mv);
     ms_params.forced_stop = EIGHTH_PEL;
     ms_params.var_params.subpel_search_type = subpel_search_type;
@@ -171,7 +171,7 @@ static int tf_motion_search(AV1_COMP *cpi,
         // Since we are merely refining the result from full pixel search, we
         // don't need regularization for subpel search
         mb->mv_cost_type = MV_COST_NONE;
-        av1_make_default_subpel_ms_params(&ms_params, cpi, mb, BLOCK_16X16,
+        av1_make_default_subpel_ms_params(&ms_params, cpi, mb, subblock_size,
                                           &baseline_mv, cost_list, second_pred,
                                           mask, mask_stride, invert_mask,
                                           do_reset_fractional_mv);
@@ -1247,7 +1247,6 @@ int av1_temporal_filter(AV1_COMP *cpi, const int filter_frame_lookahead_idx,
   }
 
   // Do filtering.
-  const BLOCK_SIZE block_size = BLOCK_32X32;
   const int is_key_frame = (filter_frame_lookahead_idx < 0);
   FRAME_DIFF diff = { 0, 0 };
   if (num_frames_for_filtering > 0 && frames[0] != NULL) {
@@ -1260,7 +1259,7 @@ int av1_temporal_filter(AV1_COMP *cpi, const int filter_frame_lookahead_idx,
         frames[0]->y_crop_width, frames[0]->y_crop_height);
     diff = tf_do_filtering(cpi, frames, num_frames_for_filtering,
                            filter_frame_idx, is_key_frame, is_second_arf,
-                           block_size, &sf, strength, noise_levels);
+                           TF_BLOCK_SIZE, &sf, strength, noise_levels);
   }
 
   if (is_key_frame) {  // Key frame should always be filtered.
@@ -1271,8 +1270,8 @@ int av1_temporal_filter(AV1_COMP *cpi, const int filter_frame_lookahead_idx,
       is_second_arf) {
     const int frame_height = frames[filter_frame_idx]->y_crop_height;
     const int frame_width = frames[filter_frame_idx]->y_crop_width;
-    const int block_height = block_size_high[block_size];
-    const int block_width = block_size_wide[block_size];
+    const int block_height = block_size_high[TF_BLOCK_SIZE];
+    const int block_width = block_size_wide[TF_BLOCK_SIZE];
     const int mb_rows = get_num_blocks(frame_height, block_height);
     const int mb_cols = get_num_blocks(frame_width, block_width);
     const int num_mbs = AOMMAX(1, mb_rows * mb_cols);
