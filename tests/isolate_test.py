@@ -152,7 +152,6 @@ class IsolateTest(IsolateBase):
       'child_isolated_files': [],
       'config_variables': {},
       'command': [],
-      'extra_variables': {},
       'files': {},
       'isolate_file': 'fake.isolate',
       'path_variables': {},
@@ -169,9 +168,6 @@ class IsolateTest(IsolateBase):
       'OS': sys.platform,
       'algo': 'sha-1',
       'config_variables': {},
-      'extra_variables': {
-        'foo': 42,
-      },
       'isolate_file': 'fake.isolate',
     }
     expected = {
@@ -180,9 +176,6 @@ class IsolateTest(IsolateBase):
       'child_isolated_files': [],
       'command': [],
       'config_variables': {},
-      'extra_variables': {
-        'foo': 42,
-      },
       'files': {},
       'isolate_file': 'fake.isolate',
       'path_variables': {},
@@ -194,10 +187,9 @@ class IsolateTest(IsolateBase):
   def test_variable_arg(self):
     parser = optparse.OptionParser()
     isolate.add_isolate_options(parser)
-    options, args = parser.parse_args(
-        ['--config-variable', 'Foo', 'bar',
-          '--path-variable', 'Baz=sub=string',
-          '--extra-variable', 'biz', 'b uz=a'])
+    options, args = parser.parse_args([
+        '--config-variable', 'Foo', 'bar', '--path-variable', 'Baz=sub=string'
+    ])
     isolate.process_isolate_options(parser, options, require_isolated=False)
 
     expected_path = {
@@ -206,13 +198,8 @@ class IsolateTest(IsolateBase):
     expected_config = {
       'Foo': 'bar',
     }
-    expected_extra = {
-      'biz': 'b uz=a',
-      'EXECUTABLE_SUFFIX': '.exe' if sys.platform == 'win32' else '',
-    }
     self.assertEqual(expected_path, options.path_variables)
     self.assertEqual(expected_config, options.config_variables)
-    self.assertEqual(expected_extra, options.extra_variables)
     self.assertEqual([], args)
 
   def test_variable_arg_fail(self):
@@ -275,7 +262,7 @@ class IsolateTest(IsolateBase):
     complete_state = isolate.CompleteState(
         None, isolate.SavedState('sha-1', self.cwd))
     complete_state.load_isolate(
-        six.text_type(self.cwd), six.text_type(isolate_file), {}, {}, {}, None,
+        six.text_type(self.cwd), six.text_type(isolate_file), {}, {}, None,
         False, False)
     self.assertEqual(expected, complete_state.saved_state.to_isolated())
 
@@ -326,7 +313,6 @@ class IsolateLoad(IsolateBase):
         'OS': 'linux',
         'chromeos': 1,
       }
-      extra_variables = {'foo': 'bar'}
       ignore_broken_items = False
       collapse_symlinks = False
     return Options()
@@ -419,9 +405,6 @@ class IsolateLoad(IsolateBase):
             'OS': 'linux',
             'chromeos': options.config_variables['chromeos'],
         },
-        'extra_variables': {
-            'foo': 'bar',
-        },
         'files': {
             os.path.join(u'tests', 'isolate', 'touch_root.py'): {
                 'm': 0o700,
@@ -488,9 +471,6 @@ class IsolateLoad(IsolateBase):
         'config_variables': {
             'OS': 'linux',
             'chromeos': 1,
-        },
-        'extra_variables': {
-            'foo': 'bar',
         },
         'files': {
             os.path.join(u'tests', 'isolate', 'touch_root.py'): {
@@ -563,9 +543,6 @@ class IsolateLoad(IsolateBase):
         'config_variables': {
             'OS': 'linux',
             'chromeos': 1,
-        },
-        'extra_variables': {
-            'foo': 'bar',
         },
         'files': {
             os.path.join(u'tests', 'isolate', 'touch_root.py'): {
@@ -647,9 +624,6 @@ class IsolateLoad(IsolateBase):
         'config_variables': {
             'OS': 'linux',
             'chromeos': 1,
-        },
-        'extra_variables': {
-            'foo': 'bar',
         },
         'files': {
             u'at_root': {
@@ -755,9 +729,6 @@ class IsolateLoad(IsolateBase):
         'config_variables': {
             'OS': 'linux',
             'chromeos': 1,
-        },
-        'extra_variables': {
-            'foo': 'bar',
         },
         'files': {
             os.path.join(u'tests', 'isolate', 'files1', 'subdir', '42.txt'): {
@@ -918,9 +889,6 @@ class IsolateLoad(IsolateBase):
         u'command': [u'python', u'split.py'],
         u'config_variables': {
             u'OS': u'linux',
-        },
-        u'extra_variables': {
-            u'foo': u'bar',
         },
         u'files': {
             os.path.join(u'files1', 'subdir', '42.txt'): {
@@ -1093,8 +1061,7 @@ class IsolateLoad(IsolateBase):
         'OS': config_os,
       }
       c.load_isolate(
-          six.text_type(self.cwd), root_isolate, {}, config, {}, None, False,
-          False)
+          six.text_type(self.cwd), root_isolate, {}, config, None, False, False)
       # Note that load_isolate() doesn't retrieve the meta data about each file.
       expected = {
           'algo': 'sha-1',
@@ -1215,29 +1182,33 @@ class IsolateLoad(IsolateBase):
       ],
     }
     isolate3 = {
-      'includes': [
-        '../1/isolate1.isolate',
-        '2/isolate2.isolate',
-      ],
-      'conditions': [
-        ['OS=="amiga"', {
-          'variables': {
-            'files': [
-              '<(PATH)/file_amiga',
+        'includes': [
+            '../1/isolate1.isolate',
+            '2/isolate2.isolate',
+        ],
+        'conditions': [
+            [
+                'OS=="amiga"',
+                {
+                    'variables': {
+                        'files': ['<(PATH)/file_amiga',],
+                    },
+                }
             ],
-          },
-        }],
-        ['OS=="mac"', {
-          'variables': {
-            'command': [
-              'foo', 'mac', '<(PATH)', '<(EXTRA)',
+            [
+                'OS=="mac"',
+                {
+                    'variables': {
+                        'command': [
+                            'foo',
+                            'mac',
+                            '<(PATH)',
+                        ],
+                        'files': ['<(PATH)/file_mac',],
+                    },
+                }
             ],
-            'files': [
-              '<(PATH)/file_mac',
-            ],
-          },
-        }],
-      ],
+        ],
     }
 
     def test_with_os(config_os, expected_files, command, relative_cwd):
@@ -1287,12 +1258,8 @@ class IsolateLoad(IsolateBase):
       paths = {
         'PATH': 'path/',
       }
-      extra = {
-        'EXTRA': 'indeed',
-      }
       c.load_isolate(
-          six.text_type(cwd), root_isolate, paths, config, extra, None, False,
-          False)
+          six.text_type(cwd), root_isolate, paths, config, None, False, False)
       # Note that load_isolate() doesn't retrieve the meta data about each file.
       expected = {
           'algo': 'sha-1',
@@ -1338,7 +1305,6 @@ class IsolateLoad(IsolateBase):
           'foo',
           'mac',
           os.path.join(u'..', '..', '..', '..', cwd_name, 'mac', 'path'),
-          'indeed',
         ],
         os.path.join(dir_name, u'mac', 'isolate', '3'))
     test_with_os(
@@ -1555,19 +1521,16 @@ class IsolateCommand(IsolateBase):
     self.assertEqual(expected_isolated, actual_isolated)
     isolated_data = json.loads(actual_isolated)
 
+
     with open(isolated_file + '.state', 'rb') as f:
       actual_isolated_state = f.read()
     expected_isolated_state = (
         '{"OS":"%s","algo":"sha-1","child_isolated_files":[],"command":["foo"],'
-        '"config_variables":{"OS":"dendy"},'
-        '"extra_variables":{"EXECUTABLE_SUFFIX":"%s"},"files":{},'
+        '"config_variables":{"OS":"dendy"},"files":{},'
         '"isolate_file":"x.isolate","path_variables":{},'
-        '"relative_cwd":".","root_dir":%s,"version":"%s"}'
-    ) % (
-      sys.platform,
-      '.exe' if sys.platform == 'win32' else '',
-      json.dumps(self.cwd),
-      isolate.SavedState.EXPECTED_VERSION)
+        '"relative_cwd":".","root_dir":%s,"version":"%s"}') % (
+            sys.platform, json.dumps(
+                self.cwd), isolate.SavedState.EXPECTED_VERSION)
     self.assertEqual(expected_isolated_state, actual_isolated_state)
     isolated_state_data = json.loads(actual_isolated_state)
 
