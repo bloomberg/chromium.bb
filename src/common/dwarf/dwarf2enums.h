@@ -95,22 +95,6 @@ enum DwarfTag {
   DW_TAG_unspecified_type = 0x3b,
   DW_TAG_partial_unit = 0x3c,
   DW_TAG_imported_unit = 0x3d,
-  // Reserved = 0x3e,
-  // DWARF 4
-  DW_TAG_condition = 0x3f,
-  DW_TAG_shared_type = 0x40,
-  DW_TAG_type_unit = 0x41,
-  DW_TAG_rvalue_reference_type = 0x42,
-  DW_TAG_template_alias = 0x43,
-  // DWARF 5
-  DW_TAG_coarray_type = 0x44,
-  DW_TAG_generic_subrange = 0x45,
-  DW_TAG_dynamic_type = 0x46,
-  DW_TAG_atomic_type = 0x47,
-  DW_TAG_call_site = 0x48,
-  DW_TAG_call_site_parameter = 0x49,
-  DW_TAG_skeleton_unit = 0x4a,
-  DW_TAG_immutable_type = 0x4b,
   // SGI/MIPS Extensions.
   DW_TAG_MIPS_loop = 0x4081,
   // HP extensions.  See:
@@ -165,32 +149,7 @@ enum DwarfForm {
   DW_FORM_sec_offset = 0x17,
   DW_FORM_exprloc = 0x18,
   DW_FORM_flag_present = 0x19,
-
-  // Added in DWARF 5:
-  DW_FORM_strx = 0x1a,
-  DW_FORM_addrx = 0x1b,
-  DW_FORM_ref_sup4 = 0x1c,
-  DW_FORM_strp_sup = 0x1d,
-  DW_FORM_data16 = 0x1e,
-  DW_FORM_line_strp = 0x1f,
-
-  // DWARF 4, but value out of order.
   DW_FORM_ref_sig8 = 0x20,
-
-  // Added in DWARF 5:
-  DW_FORM_implicit_const = 0x21,
-  DW_FORM_loclistx = 0x22,
-  DW_FORM_rnglistx = 0x23,
-  DW_FORM_ref_sup8 = 0x24,
-  DW_FORM_strx1 = 0x25,
-  DW_FORM_strx2 = 0x26,
-  DW_FORM_strx3 = 0x27,
-  DW_FORM_strx4 = 0x28,
-  DW_FORM_addrx1 = 0x29,
-  DW_FORM_addrx2 = 0x2a,
-  DW_FORM_addrx3 = 0x2b,
-  DW_FORM_addrx4 = 0x2c,
-
   // Extensions for Fission.  See http://gcc.gnu.org/wiki/DebugFission.
   DW_FORM_GNU_addr_index = 0x1f01,
   DW_FORM_GNU_str_index = 0x1f02
@@ -275,37 +234,6 @@ enum DwarfAttribute {
   DW_AT_call_line     = 0x59,
   // DWARF 4
   DW_AT_linkage_name  = 0x6e,
-  // DWARF 5
-  DW_AT_string_length_bit_size = 0x6f,
-  DW_AT_string_length_byte_size = 0x70,
-  DW_AT_rank = 0x71,
-  DW_AT_str_offsets_base = 0x72,
-  DW_AT_addr_base = 0x73,
-  DW_AT_rnglists_base = 0x74,
-  // Reserved = 0x75,
-  DW_AT_dwo_name = 0x76,
-  DW_AT_reference = 0x77,
-  DW_AT_rvalue_reference = 0x78,
-  DW_AT_macros = 0x79,
-  DW_AT_call_all_calls = 0x7a,
-  DW_AT_call_all_source_calls = 0x7b,
-  DW_AT_call_all_tail_calls = 0x7c,
-  DW_AT_call_return_pc = 0x7d,
-  DW_AT_call_value = 0x7e,
-  DW_AT_call_origin = 0x7f,
-  DW_AT_call_parameter = 0x80,
-  DW_AT_call_pc = 0x81,
-  DW_AT_call_tail_call = 0x82,
-  DW_AT_call_target = 0x83,
-  DW_AT_call_target_clobbered = 0x84,
-  DW_AT_call_data_location = 0x85,
-  DW_AT_call_data_value = 0x86,
-  DW_AT_noreturn = 0x87,
-  DW_AT_alignment = 0x88,
-  DW_AT_export_symbols = 0x89,
-  DW_AT_deleted = 0x8a,
-  DW_AT_defaulted = 0x8b,
-  DW_AT_loclists_base = 0x8c,
   // SGI/MIPS extensions.
   DW_AT_MIPS_fde = 0x2001,
   DW_AT_MIPS_loop_begin = 0x2002,
@@ -358,17 +286,6 @@ enum DwarfAttribute {
   DW_AT_PGI_lstride  = 0x3a02
 };
 
-// Unit header unit-type encodings.
-enum DwarfUnitTypes {
-  DW_UT_compile       = 0x01,
-  DW_UT_type          = 0x02,
-  DW_UT_partial       = 0x03,
-  DW_UT_skeleton      = 0x04,
-  DW_UT_split_compile = 0x05,
-  DW_UT_split_type    = 0x06,
-  DW_UT_lo_user       = 0x80,
-  DW_UT_hi_user       = 0xff
-};
 
 // Line number opcodes.
 enum DwarfLineNumberOps {
@@ -406,48 +323,6 @@ enum DwarfLineNumberExtendedOps {
   DW_LNE_HP_define_proc              = 0x20
 };
 
-// Line number header entries.
-enum DwarfLineNumberHeader {
-  DW_LNCT_path                       =0x1,
-  DW_LNCT_directory_index            =0x2,
-  DW_LNCT_timestamp                  =0x3,
-  DW_LNCT_size                       =0x4,
-  DW_LNCT_MD5                        =0x5,
-  DW_LNCT_lo_user                    =0x2000,
-  DW_LNCT_hi_user                    =0x3fff,
-};
-
-// Location list entry values. DWARF 5.
-enum DwarfLocationListEntry {
-  DW_LLE_end_of_list                 =0x00,
-  DW_LLE_base_addressx               =0x01,
-  DW_LLE_startx_endx                 =0x02,
-  DW_LLE_startx_length               =0x03,
-  DW_LLE_offset_pair                 =0x04,
-  DW_LLE_default_location            =0x05,
-  DW_LLE_base_address                =0x06,
-  DW_LLE_start_end                   =0x07,
-  DW_LLE_start_length                =0x08,
-};
-
-// Macro entry types.
-enum DwarfMacro {
-  DW_MACRO_define                    =0x01,
-  DW_MACRO_undef                     =0x02,
-  DW_MACRO_start_file                =0x03,
-  DW_MACRO_end_file                  =0x04,
-  DW_MACRO_define_strp               =0x05,
-  DW_MACRO_undef_strp                =0x06,
-  DW_MACRO_import                    =0x07,
-  DW_MACRO_define_sup                =0x08,
-  DW_MACRO_undef_sup                 =0x09,
-  DW_MACRO_import_sup                =0x0a,
-  DW_MACRO_define_strx               =0x0b,
-  DW_MACRO_undef_strx                =0x0c,
-  DW_MACRO_lo_user                   =0xe0,
-  DW_MACRO_hi_user                   =0xff,
-};
-
 // Type encoding names and codes
 enum DwarfEncoding {
   DW_ATE_address                     =0x1,
@@ -466,11 +341,6 @@ enum DwarfEncoding {
   DW_ATE_signed_fixed                =0xd,
   DW_ATE_unsigned_fixed              =0xe,
   DW_ATE_decimal_float               =0xf,
-  // DWARF4
-  DW_ATE_UTF                         =0x10,
-  // DWARF5
-  DW_ATE_UCS                         =0x11,
-  DW_ATE_ASCII                       =0x12,
   DW_ATE_lo_user                     =0x80,
   DW_ATE_hi_user                     =0xff
 };
@@ -630,18 +500,6 @@ enum DwarfOpcode {
   DW_OP_form_tls_address             =0x9b,
   DW_OP_call_frame_cfa               =0x9c,
   DW_OP_bit_piece                    =0x9d,
-  // DWARF4
-  DW_OP_implicit_value               =0x9e,
-  DW_OP_stack_value                  =0x9f,
-  DW_OP_addrx                        =0xa1,
-  DW_OP_constx                       =0xa2,
-  DW_OP_entry_value                  =0xa3,
-  DW_OP_const_type                   =0xa4,
-  DW_OP_regval_type                  =0xa5,
-  DW_OP_deref_type                   =0xa6,
-  DW_OP_xderef_type                  =0xa7,
-  DW_OP_convert                      =0xa8,
-  DW_OP_reinterpret                  =0xa9,
   DW_OP_lo_user                      =0xe0,
   DW_OP_hi_user                      =0xff,
   // GNU extensions
@@ -686,24 +544,8 @@ enum DwarfLanguage
     DW_LANG_ObjC_plus_plus           =0x0011,
     DW_LANG_UPC                      =0x0012,
     DW_LANG_D                        =0x0013,
-    DW_LANG__Python                  =0x0014,
-    DW_LANG_OpenCL                   =0x0015,
-    DW_LANG_Go                       =0x0016,
-    DW_LANG_Modula3                  =0x0017,
-    DW_LANG_Haskell                  =0x0018,
-    DW_LANG_C_plus_plus_03           =0x0019,
-    DW_LANG_C_plus_plus_11           =0x001a,
-    DW_LANG_OCaml                    =0x001b,
     DW_LANG_Rust                     =0x001c,
-    DW_LANG_C11                      =0x001d,
     DW_LANG_Swift                    =0x001e,
-    DW_LANG_Julia                    =0x001f,
-    DW_LANG_Dylan                    =0x0020,
-    DW_LANG_C_plus_plus_14           =0x0021,
-    DW_LANG_Fortran03                =0x0022,
-    DW_LANG_Fortran08                =0x0023,
-    DW_LANG_RenderScript             =0x0024,
-    DW_LANG_BLISS                    =0x0025,
     // Implementation-defined language code range.
     DW_LANG_lo_user = 0x8000,
     DW_LANG_hi_user = 0xffff,
@@ -717,63 +559,12 @@ enum DwarfLanguage
     DW_LANG_Upc                      =0x8765 // Unified Parallel C
   };
 
-// Identifier cases, used for DW_AT_identifier_case attribute.
-enum DwarfIdentifierCase {
-  DW_ID_case_sensitive               =0x00,
-  DW_ID_up_case                      =0x01,
-  DW_ID_down_case                    =0x02,
-  DW_ID_case_insensitive             =0x03,
-};
-
-// Calling convention encodings. Used for the DW_AT_calling_convention
-// attribute.
-enum DwarfCallingConvention {
-  DW_CC_normal                       =0x01,
-  DW_CC_program                      =0x02,
-  DW_CC_nocall                       =0x03,
-  DW_CC_pass_by_reference            =0x04,
-  DW_CC_pass_by_value                =0x05,
-  DW_CC_lo_user                      =0x40,
-  DW_CC_hi_user                      =0xff,
-};
-
-
 // Inline codes.  These are values for DW_AT_inline.
 enum DwarfInline {
   DW_INL_not_inlined                 =0x0,
   DW_INL_inlined                     =0x1,
   DW_INL_declared_not_inlined        =0x2,
   DW_INL_declared_inlined            =0x3
-};
-
-// Array ordering with the DW_AT_ordering attribute.
-enum DwarfOrdering {
-  DW_ORD_row_major                   =0x00,
-  DW_ORD_col_major                   =0x01
-};
-
-// Discriminant values for the DW_AT_discr_list attribute.
-enum DwarfDiscriminant {
-  DW_DSC_label                       =0x00,
-  DW_DSC_range                       =0x01,
-};
-
-// Name index table encodings.
-enum DwarfNameIndex {
-  DW_IDX_compile_unit                =1,
-  DW_IDX_type_unit                   =2,
-  DW_IDX_die_offset                  =3,
-  DW_IDX_parent                      =4,
-  DW_IDX_type_hash                   =5,
-  DW_IDX_lo_user                     =0x2000,
-  DW_IDX_hi_user                     =0x3fff,
-};
-
-// Defaulted member encodings for use with the DW_AT_defaulted attribute.
-enum DwarfDefaulted {
-  DW_DEFAULTED_no                    =0x00,
-  DW_DEFAULTED_in_class              =0x01,
-  DW_DEFAULTED_out_of_class          =0x02
 };
 
 // Call Frame Info instructions.
@@ -818,18 +609,6 @@ enum DwarfCFI
     DW_CFA_GNU_args_size = 0x2e,
     DW_CFA_GNU_negative_offset_extended = 0x2f
   };
-
-// Range list entries.
-enum DwarfRangeListEntry {
-  DW_RLE_end_of_list                 =0x00,
-  DW_RLE_base_addressx               =0x01,
-  DW_RLE_startx_endx                 =0x02,
-  DW_RLE_startx_length               =0x03,
-  DW_RLE_offset_pair                 =0x04,
-  DW_RLE_base_address                =0x05,
-  DW_RLE_start_end                   =0x06,
-  DW_RLE_start_length                =0x07,
-};
 
 // Exception handling 'z' augmentation letters.
 enum DwarfZAugmentationCodes {
