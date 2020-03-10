@@ -450,22 +450,33 @@ def MakeBuildTargetDict(package_name, build_branch):
     ValueError: if the Android build branch is invalid.
   """
   if constants.ANDROID_CONTAINER_PACKAGE_KEYWORD in package_name:
-    if build_branch == constants.ANDROID_MST_BUILD_BRANCH:
-      return constants.ANDROID_MST_BUILD_TARGETS
-    elif build_branch == constants.ANDROID_NYC_BUILD_BRANCH:
-      return constants.ANDROID_NYC_BUILD_TARGETS
-    elif build_branch == constants.ANDROID_PI_BUILD_BRANCH:
-      return constants.ANDROID_PI_BUILD_TARGETS
-    elif build_branch == constants.ANDROID_QT_BUILD_BRANCH:
-      return constants.ANDROID_QT_BUILD_TARGETS
-    raise ValueError('Unknown branch: %s' % build_branch)
+    target_list = {
+        constants.ANDROID_MST_BUILD_BRANCH:
+        constants.ANDROID_MST_BUILD_TARGETS,
+        constants.ANDROID_NYC_BUILD_BRANCH:
+        constants.ANDROID_NYC_BUILD_TARGETS,
+        constants.ANDROID_PI_BUILD_BRANCH:
+        constants.ANDROID_PI_BUILD_TARGETS,
+        constants.ANDROID_QT_BUILD_BRANCH:
+        constants.ANDROID_QT_BUILD_TARGETS,
+        constants.ANDROID_RVC_BUILD_BRANCH:
+        constants.ANDROID_RVC_BUILD_TARGETS,
+    }
   elif constants.ANDROID_VM_PACKAGE_KEYWORD in package_name:
-    if build_branch == constants.ANDROID_VMPI_BUILD_BRANCH:
-      return constants.ANDROID_VMPI_BUILD_TARGETS
-    elif build_branch == constants.ANDROID_VMMST_BUILD_BRANCH:
-      return constants.ANDROID_VMMST_BUILD_TARGETS
+    target_list = {
+        constants.ANDROID_VMPI_BUILD_BRANCH:
+        constants.ANDROID_VMPI_BUILD_TARGETS,
+        constants.ANDROID_VMMST_BUILD_BRANCH:
+        constants.ANDROID_VMMST_BUILD_TARGETS,
+        constants.ANDROID_VMRVC_BUILD_BRANCH:
+        constants.ANDROID_VMRVC_BUILD_TARGETS,
+    }
+  else:
+    raise ValueError('Unknown package: %s' % package_name)
+  target = target_list.get(build_branch)
+  if not target:
     raise ValueError('Unknown branch: %s' % build_branch)
-  raise ValueError('Unknown package: %s' % package_name)
+  return target
 
 
 def GetAndroidRevisionListLink(build_branch, old_android, new_android):
