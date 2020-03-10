@@ -801,6 +801,10 @@ void av1_apply_temporal_filter_others(
                                           noise_levels, pred, accum, count);
     }
   } else {  // Commonly used for low-resolution video.
+    if (subblock_filter_weights[0] == 0 && subblock_filter_weights[1] == 0 &&
+        subblock_filter_weights[2] == 0 && subblock_filter_weights[3] == 0) {
+      return;
+    }
     const int adj_strength = strength + 2 * (mbd->bd - 8);
     if (num_planes == 3 && TF_YUV_FILTER_WEIGHT_SCALE == 3) {
       av1_apply_temporal_filter_yuv(frame_to_filter, mbd, block_size, mb_row,
@@ -966,6 +970,7 @@ static FRAME_DIFF tf_do_filtering(
       for (int frame = 0; frame < num_frames; frame++) {
         if (frames[frame] == NULL) continue;
 
+        // Motion search.
         MV subblock_mvs[4] = { kZeroMv, kZeroMv, kZeroMv, kZeroMv };
         int subblock_filter_weights[4] = { 0, 0, 0, 0 };
         int block_error = INT_MAX;
@@ -986,24 +991,24 @@ static FRAME_DIFF tf_do_filtering(
             ref_mv = kZeroMv;
           }
         }
+
+        // Build predictor.
         int use_subblock = tf_get_filter_weight(
             block_error, subblock_errors, use_planewise_strategy, is_second_arf,
             subblock_filter_weights);
-        if (subblock_filter_weights[0] || subblock_filter_weights[1] ||
-            subblock_filter_weights[2] || subblock_filter_weights[3]) {
-          tf_build_predictor(frames[frame], mbd, block_size, mb_row, mb_col,
-                             num_planes, scale, use_subblock, subblock_mvs,
-                             pred);
-          if (frame == filter_frame_idx) {  // Frame to be filtered.
-            av1_apply_temporal_filter_self(mbd, block_size, num_planes,
-                                           subblock_filter_weights[0], pred,
-                                           accum, count);
-          } else {
-            av1_apply_temporal_filter_others(  // Other reference frames.
-                frame_to_filter, mbd, block_size, mb_row, mb_col, num_planes,
-                use_planewise_strategy, strength, use_subblock,
-                subblock_filter_weights, noise_levels, pred, accum, count);
-          }
+        tf_build_predictor(frames[frame], mbd, block_size, mb_row, mb_col,
+                           num_planes, scale, use_subblock, subblock_mvs, pred);
+
+        // Perform weighted averaging.
+        if (frame == filter_frame_idx) {  // Frame to be filtered.
+          av1_apply_temporal_filter_self(mbd, block_size, num_planes,
+                                         subblock_filter_weights[0], pred,
+                                         accum, count);
+        } else {  // Other reference frames.
+          av1_apply_temporal_filter_others(
+              frame_to_filter, mbd, block_size, mb_row, mb_col, num_planes,
+              use_planewise_strategy, strength, use_subblock,
+              subblock_filter_weights, noise_levels, pred, accum, count);
         }
       }
 
