@@ -53,7 +53,7 @@ class QuicConnectionFactoryImpl final : public QuicConnectionFactory {
     QuicConnection* connection;
     UdpSocket* socket;  // References one of the owned |sockets_|.
   };
-  std::map<IPEndpoint, OpenConnection, IPEndpointComparator> connections_;
+  std::map<IPEndpoint, OpenConnection> connections_;
 
   // NOTE: Must be provided in constructor and stored as an instance variable
   // rather than using the static accessor method to allow for UTs to mock this

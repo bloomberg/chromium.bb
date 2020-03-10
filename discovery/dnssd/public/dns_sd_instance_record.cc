@@ -205,11 +205,11 @@ bool operator<(const DnsSdInstanceRecord& lhs, const DnsSdInstanceRecord& rhs) {
   }
 
   if (lhs.address_v4_ != rhs.address_v4_) {
-    return IPEndpointComparator()(lhs.address_v4_, rhs.address_v4_);
+    return lhs.address_v4_ < rhs.address_v4_;
   }
 
   if (lhs.address_v6_ != rhs.address_v6_) {
-    return IPEndpointComparator()(lhs.address_v6_, rhs.address_v6_);
+    return lhs.address_v6_ < rhs.address_v6_;
   }
 
   return lhs.txt_ < rhs.txt_;

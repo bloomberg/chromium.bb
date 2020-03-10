@@ -60,6 +60,11 @@ class IPAddress {
 
   bool operator==(const IPAddress& o) const;
   bool operator!=(const IPAddress& o) const;
+
+  bool operator<(const IPAddress& other) const;
+  bool operator>(const IPAddress& other) const { return other < *this; }
+  bool operator<=(const IPAddress& other) const { return !(other < *this); }
+  bool operator>=(const IPAddress& other) const { return !(*this < other); }
   explicit operator bool() const;
 
   Version version() const { return version_; }
@@ -81,8 +86,6 @@ class IPAddress {
   static ErrorOr<IPAddress> Parse(const std::string& s);
 
  private:
-  friend class IPAddressComparator;
-
   Version version_;
   std::array<uint8_t, 16> bytes_;
 };
@@ -101,15 +104,16 @@ struct IPEndpoint {
 bool operator==(const IPEndpoint& a, const IPEndpoint& b);
 bool operator!=(const IPEndpoint& a, const IPEndpoint& b);
 
-class IPAddressComparator {
- public:
-  bool operator()(const IPAddress& a, const IPAddress& b) const;
-};
-
-class IPEndpointComparator {
- public:
-  bool operator()(const IPEndpoint& a, const IPEndpoint& b) const;
-};
+bool operator<(const IPEndpoint& a, const IPEndpoint& b);
+inline bool operator>(const IPEndpoint& a, const IPEndpoint& b) {
+  return b < a;
+}
+inline bool operator<=(const IPEndpoint& a, const IPEndpoint& b) {
+  return !(b > a);
+}
+inline bool operator>=(const IPEndpoint& a, const IPEndpoint& b) {
+  return !(a > b);
+}
 
 // Outputs a string of the form:
 //      123.234.34.56
