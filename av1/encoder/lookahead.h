@@ -113,6 +113,8 @@ struct lookahead_entry *av1_lookahead_peek(struct lookahead_ctx *ctx, int index,
 unsigned int av1_lookahead_depth(struct lookahead_ctx *ctx,
                                  COMPRESSOR_STAGE stage);
 
+int av1_lookahead_pop_sz(struct lookahead_ctx *ctx, COMPRESSOR_STAGE stage);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

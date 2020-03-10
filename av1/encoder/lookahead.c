@@ -200,3 +200,12 @@ unsigned int av1_lookahead_depth(struct lookahead_ctx *ctx,
   assert(read_ctx->valid == 1);
   return read_ctx->sz;
 }
+
+int av1_lookahead_pop_sz(struct lookahead_ctx *ctx, COMPRESSOR_STAGE stage) {
+  struct read_ctx *read_ctx = NULL;
+  assert(ctx != NULL);
+
+  read_ctx = &ctx->read_ctxs[stage];
+  assert(read_ctx->valid == 1);
+  return read_ctx->pop_sz;
+}
