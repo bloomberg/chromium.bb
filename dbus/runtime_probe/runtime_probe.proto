@@ -200,7 +200,7 @@ message Network {
     uint32 usb_vendor_id = 7;
     // Product ID, 16 bits
     uint32 usb_product_id = 8;
-    // Device revision, 8 bits
+    // Device Release Number, 16 bits.
     uint32 usb_bcd_device = 9;
 
     // The following are fields for SDIO. Every field name comes with
