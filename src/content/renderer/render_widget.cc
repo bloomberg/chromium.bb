@@ -1714,7 +1714,7 @@ bool RenderWidget::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
 
 void RenderWidget::Redraw() {
   if (layer_tree_view_)
-    layer_tree_view_->SetNeedsRedrawRect(gfx::Rect(size_));
+    layer_tree_view_->layer_tree_host()->SetNeedsRedrawRect(gfx::Rect(size_));
 }
 
 void RenderWidget::ResizeWebWidget() {
