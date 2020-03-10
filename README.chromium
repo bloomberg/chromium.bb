@@ -258,3 +258,7 @@ D. Local Modifications
     https://github.com/unicode-org/icu/pull/977
     https://github.com/unicode-org/icu/pull/914
     https://github.com/unicode-org/icu/pull/978
+
+12. Enable tracing of file but not resource, only for Chromium
+    to reduce performance impact/risk.
+  - patches/restrace.patch

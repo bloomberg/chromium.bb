@@ -38,6 +38,11 @@ config("icu_config") {
 
     # v8/Blink need to know whether Chromium's copy of ICU is used or not.
     "USE_CHROMIUM_ICU=1",
+
+    # Enable tracing to connect to UMA but disable tracing of resource
+    # to avoid performance issues.
+    "U_ENABLE_TRACING=1",
+    "U_ENABLE_RESOURCE_TRACING=0",
   ]
 
   if (!is_component_build) {
