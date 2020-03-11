@@ -23,14 +23,14 @@ per-file cros_sdk=file://CROS_OWNERS
 per-file repo=file://CROS_OWNERS
 
 # for the Goma client update
-per-file cipd_manifest.*=file://GOMA_OWNERS
+per-file cipd_manifest*=file://GOMA_OWNERS
 
 # LUCI related tooling
-per-file bb.*=file://LUCI_OWNERS
-per-file cipd.*=file://LUCI_OWNERS
-per-file cit.*=file://LUCI_OWNERS
-per-file led.*=file://LUCI_OWNERS
-per-file luci.*=file://LUCI_OWNERS
-per-file vpython.*=file://LUCI_OWNERS
+per-file bb*=file://LUCI_OWNERS
+per-file cipd*=file://LUCI_OWNERS
+per-file cit*=file://LUCI_OWNERS
+per-file led*=file://LUCI_OWNERS
+per-file luci*=file://LUCI_OWNERS
+per-file vpython*=file://LUCI_OWNERS
 
 # COMPONENT: Infra>SDK
