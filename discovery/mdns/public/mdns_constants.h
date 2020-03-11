@@ -44,8 +44,7 @@ constexpr uint16_t kDefaultMulticastPort = 5353;
 // network-order. This is a link-local multicast address, so messages will not
 // be forwarded outside local network. See RFC 6762, section 3.
 const IPAddress kDefaultMulticastGroupIPv4{224, 0, 0, 251};
-const IPEndpoint kDefaultMulticastGroupIPv4Endpoint{kDefaultMulticastGroupIPv4,
-                                                    kDefaultMulticastPort};
+const IPEndpoint kDefaultMulticastGroupIPv4Endpoint{{}, kDefaultMulticastPort};
 
 // IPv6 group address for joining mDNS multicast group. This is a link-local
 // multicast address, so messages will not be forwarded outside local network.
@@ -53,7 +52,7 @@ const IPEndpoint kDefaultMulticastGroupIPv4Endpoint{kDefaultMulticastGroupIPv4,
 const IPAddress kDefaultMulticastGroupIPv6{
     0xFF02, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x00FB,
 };
-const IPEndpoint kDefaultMulticastGroupIPv6Endpoint{kDefaultMulticastGroupIPv6,
+const IPEndpoint kDefaultMulticastGroupIPv6Endpoint{{0, 0, 0, 0, 0, 0, 0, 0},
                                                     kDefaultMulticastPort};
 
 // IPv4 group address for joining cast-specific site-local mDNS multicast group,
