@@ -752,7 +752,7 @@ static aom_codec_err_t set_encoder_config(AV1EncoderConfig *oxcf,
     case AOM_RC_LAST_PASS: oxcf->pass = 2; break;
   }
 
-  oxcf->lag_in_frames = cfg->g_lag_in_frames;
+  oxcf->lag_in_frames = clamp(cfg->g_lag_in_frames, 0, MAX_LAG_BUFFERS);
   oxcf->rc_mode = cfg->rc_end_usage;
 
   // Convert target bandwidth from Kbit/s to Bit/s
@@ -1927,7 +1927,8 @@ static aom_codec_err_t encoder_init(aom_codec_ctx_t *ctx,
         res = create_context_and_bufferpool(
             &priv->cpi_lap, &priv->buffer_pool_lap, &priv->oxcf, NULL,
             priv->frame_stats_buffer, LAP_STAGE, *num_lap_buffers,
-            lap_lag_in_frames, &priv->stats_buf_context);
+            clamp(lap_lag_in_frames, 0, MAX_LAG_BUFFERS),
+            &priv->stats_buf_context);
       }
     }
   }

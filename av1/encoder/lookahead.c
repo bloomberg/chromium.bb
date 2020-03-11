@@ -47,13 +47,7 @@ struct lookahead_ctx *av1_lookahead_init(
     unsigned int subsampling_y, int use_highbitdepth, unsigned int depth,
     const int border_in_pixels, int byte_alignment, int num_lap_buffers) {
   struct lookahead_ctx *ctx = NULL;
-  int lag_in_frames = clamp(depth, 1, MAX_LAG_BUFFERS);
-
-  // Clamp the lookahead queue depth
-  depth = clamp(depth, 0, MAX_LAG_BUFFERS);
-
-  // Clamp the LAP lag
-  num_lap_buffers = clamp(num_lap_buffers, 0, MAX_LAP_BUFFERS);
+  int lag_in_frames = AOMMAX(1, depth);
 
   // Add the lags to depth and clamp
   depth += num_lap_buffers;
