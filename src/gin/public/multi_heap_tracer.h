@@ -49,11 +49,6 @@ class GIN_EXPORT MultiHeapTracer : public v8::EmbedderHeapTracer {
   using WrapperFieldPairs = std::vector<WrapperFieldPair>;
     // Alias for a collection of WrapperFieldPair objects.
 
-  // CLASS METHODS
-  static MultiHeapTracer* From(v8::Isolate *isolate);
-    // Return the MultiHeapTracer object associated with the specified
-    // 'isolate', or 'nullptr' if there is no associated object.
-
   // CREATORS
   MultiHeapTracer();
     // Create a new MultiHeapTracer.
@@ -90,8 +85,6 @@ class GIN_EXPORT MultiHeapTracer : public v8::EmbedderHeapTracer {
     // ignore wrapper field pairs which don't match.  Tracers are expected to
     // store the field pairs they care about for later tracing when
     // 'AdvanceTracing' is called.
-
-  void TracePrologue() override;
 
   void TracePrologue(TraceFlags flags) override;
     // Notify all registered tracers that tracing will begin.

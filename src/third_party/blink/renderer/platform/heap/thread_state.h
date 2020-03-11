@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "gin/public/multi_heap_tracer.h"
 
 namespace v8 {
 class EmbedderGraph;
