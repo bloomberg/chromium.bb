@@ -36,9 +36,8 @@ from chromite.lib import toolchain_util
 
 # pylint: disable=protected-access
 
-
-_input_artifact = collections.namedtuple(
-    '_input_artifact', ['name', 'gs_locations'])
+_input_artifact = collections.namedtuple('_input_artifact',
+                                         ['name', 'gs_locations'])
 
 
 class ProfilesNameHelperTest(cros_test_lib.MockTempDirTestCase):
@@ -192,13 +191,15 @@ class PrepareBundleTest(cros_test_lib.RunCommandTempDirTestCase):
     self.chrome_package = 'chromeos-chrome'
     self.kernel_package = 'chromeos-kernel-3_14'
     self.chrome_PV = 'chromeos-base/chromeos-chrome-78.0.3893.0-r1'
-    self.chrome_ebuild = os.path.realpath(os.path.join(
-        os.path.dirname(__file__), '..', '..', 'src',
-        'third_party', 'chromiumos-overlay', os.path.dirname(self.chrome_PV),
-        'chromeos-chrome', '%s.ebuild' % os.path.basename(self.chrome_PV)))
+    self.chrome_ebuild = os.path.realpath(
+        os.path.join(
+            os.path.dirname(__file__), '..', '..',
+            'src', 'third_party', 'chromiumos-overlay',
+            os.path.dirname(self.chrome_PV), 'chromeos-chrome',
+            '%s.ebuild' % os.path.basename(self.chrome_PV)))
     self.chrome_CPV = portage_util.SplitCPV(self.chrome_PV)
-    self.glob = self.PatchObject(glob, 'glob',
-                                 return_value=[self.chrome_ebuild])
+    self.glob = self.PatchObject(
+        glob, 'glob', return_value=[self.chrome_ebuild])
     self.rc.AddCmdResult(partial_mock.In('rm'), returncode=0)
     self.obj = toolchain_util._CommonPrepareBundle('None')
     self.gs_context = self.PatchObject(self.obj, '_gs_context')
@@ -224,11 +225,10 @@ class CommonPrepareBundleTest(PrepareBundleTest):
 
   def test_GetArtifactVersionInGob(self):
     """Test that we look in the right place in GoB."""
-    self.assertRaises(ValueError,
-                      self.obj._GetArtifactVersionInGob, 'badarch')
+    self.assertRaises(ValueError, self.obj._GetArtifactVersionInGob, 'badarch')
 
-    self.assertEqual(self.data.decode('utf-8'),
-                     self.obj._GetArtifactVersionInGob(self.arch))
+    self.assertEqual(
+        self.data.decode('utf-8'), self.obj._GetArtifactVersionInGob(self.arch))
     self.fetch.assert_called_once_with(
         constants.EXTERNAL_GOB_HOST,
         'chromium/src/+/refs/tags/%s/chromeos/profiles/%s.afdo.newest.txt'
@@ -236,19 +236,21 @@ class CommonPrepareBundleTest(PrepareBundleTest):
 
     self.fetch.reset_mock()
     self.fetch.return_value = ''
-    self.assertRaises(RuntimeError,
-                      self.obj._GetArtifactVersionInGob, self.arch)
+    self.assertRaises(RuntimeError, self.obj._GetArtifactVersionInGob,
+                      self.arch)
     self.fetch.assert_called_once()
 
   def test_GetOrderfileName(self):
     """Test that GetOrderfileName finds the right answer."""
     vers = self.PatchObject(
-        self.obj, '_GetArtifactVersionInGob',
+        self.obj,
+        '_GetArtifactVersionInGob',
         return_value=('chromeos-chrome-amd64-silvermont-78-1111.0-'
                       '157000000-benchmark-78.0.3893.0-r1-redacted.afdo.xz'))
-    self.assertEqual('chromeos-chrome-orderfile-field-78-1111.0-'
-                     '157000000-benchmark-78.0.3893.0-r1.orderfile',
-                     self.obj._GetOrderfileName())
+    self.assertEqual(
+        'chromeos-chrome-orderfile-field-78-1111.0-'
+        '157000000-benchmark-78.0.3893.0-r1.orderfile',
+        self.obj._GetOrderfileName())
     vers.assert_called_once()
 
   def test_UpdateEbuildWithArtifacts(self):
@@ -258,14 +260,16 @@ class CommonPrepareBundleTest(PrepareBundleTest):
     info = toolchain_util._EbuildInfo(
         path=self.chrome_ebuild, CPV=self.chrome_CPV)
     info_9999 = toolchain_util._EbuildInfo(
-        path=os.path.realpath(os.path.join(
-            os.path.dirname(__file__), '..', '..', 'src', 'third_party',
-            'chromiumos-overlay', 'chromeos-base',
-            'chromeos-chrome', 'chromeos-chrome-9999.ebuild')),
+        path=os.path.realpath(
+            os.path.join(
+                os.path.dirname(__file__), '..', '..', 'src', 'third_party',
+                'chromiumos-overlay', 'chromeos-base', 'chromeos-chrome',
+                'chromeos-chrome-9999.ebuild')),
         CPV=portage_util.SplitCPV('chromeos-base/chromeos-chrome-9999'))
-    self.assertEqual([mock.call(info, {'var': 'val'}, uprev=True),
-                      mock.call(info_9999, {'var': 'val'}, uprev=False)],
-                     func.call_args_list)
+    self.assertEqual([
+        mock.call(info, {'var': 'val'}, uprev=True),
+        mock.call(info_9999, {'var': 'val'}, uprev=False)
+    ], func.call_args_list)
 
 
 class PrepBundLatestAFDOArtifactTest(PrepareBundleTest):
@@ -319,33 +323,33 @@ class PrepBundLatestAFDOArtifactTest(PrepareBundleTest):
     self.assertEqual(
         latest_orderfile,
         os.path.join(
-            self.gs_url,
-            'chromeos-chrome-orderfile-field-78-3877.0-1567418235-'
+            self.gs_url, 'chromeos-chrome-orderfile-field-78-3877.0-1567418235-'
             'benchmark-78.0.3893.0-r1.orderfile.xz'))
 
   def testFindLatestAfdoArtifactOnPriorBranch(self):
     """Test that we find a file from prior branch when we have none."""
     self.obj._ebuild_info['chromeos-chrome'] = toolchain_util._EbuildInfo(
-        path='path', CPV=portage_util.SplitCPV(
+        path='path',
+        CPV=portage_util.SplitCPV(
             'chromeos-base/chromeos-chrome-79.0.3900.0-r1'))
     latest_orderfile = self.obj._FindLatestAFDOArtifact(
         [self.gs_url], self.obj._RankValidOrderfiles)
     self.assertEqual(
         latest_orderfile,
         os.path.join(
-            self.gs_url,
-            'chromeos-chrome-orderfile-field-78-3877.0-1567418235-'
+            self.gs_url, 'chromeos-chrome-orderfile-field-78-3877.0-1567418235-'
             'benchmark-78.0.3893.0-r1.orderfile.xz'))
 
   def testFindLatestAFDOArtifactFailToFindAnyFiles(self):
     """Test function fails when no files on current branch."""
     self.obj._ebuild_info['chromeos-chrome'] = toolchain_util._EbuildInfo(
-        path='path', CPV=portage_util.SplitCPV(
+        path='path',
+        CPV=portage_util.SplitCPV(
             'chromeos-base/chromeos-chrome-80.0.3950.0-r1'))
     self.gsc_list.side_effect = gs.GSNoSuchKey('No files')
     with self.assertRaises(RuntimeError) as context:
-      self.obj._FindLatestAFDOArtifact(
-          [self.gs_url], self.obj._RankValidOrderfiles)
+      self.obj._FindLatestAFDOArtifact([self.gs_url],
+                                       self.obj._RankValidOrderfiles)
     self.assertEqual('No files for branch 80 found in %s' % self.gs_url,
                      str(context.exception))
 
@@ -358,8 +362,8 @@ class PrepBundLatestAFDOArtifactTest(PrepareBundleTest):
     ]
     self.gsc_list.return_value = mock_gs_list
     with self.assertRaises(RuntimeError) as context:
-      self.obj._FindLatestAFDOArtifact(
-          [self.gs_url], self.obj._RankValidBenchmarkProfiles)
+      self.obj._FindLatestAFDOArtifact([self.gs_url],
+                                       self.obj._RankValidBenchmarkProfiles)
     self.assertIn('No valid latest artifact was found', str(context.exception))
 
 
@@ -375,13 +379,15 @@ class PrepareForBuildHandlerTest(PrepareBundleTest):
         'chromeos-chrome-orderfile-field-78-3877.0-1567418235-'
         'benchmark-78.0.3893.0-r1.orderfile')
     self.PatchObject(
-        toolchain_util._CommonPrepareBundle, '_GetOrderfileName',
+        toolchain_util._CommonPrepareBundle,
+        '_GetOrderfileName',
         return_value=self.orderfile_name)
     self.PatchObject(
-        toolchain_util._CommonPrepareBundle, '_FindLatestOrderfileArtifact',
+        toolchain_util._CommonPrepareBundle,
+        '_FindLatestOrderfileArtifact',
         return_value=self.orderfile_name + toolchain_util.XZ_COMPRESSION_SUFFIX)
-    self.patch_ebuild = self.PatchObject(
-        toolchain_util._CommonPrepareBundle, '_PatchEbuild')
+    self.patch_ebuild = self.PatchObject(toolchain_util._CommonPrepareBundle,
+                                         '_PatchEbuild')
 
   def SetUpPrepare(self, artifact_type, input_artifacts):
     """Set up to test _Prepare${artifactType}."""
@@ -397,8 +403,9 @@ class PrepareForBuildHandlerTest(PrepareBundleTest):
 
   def testPrepareUnverifiedChromeLlvmOrderfileExists(self):
     """Test that PrepareUnverfiedChromeLlvmOrderfile works when POINTLESS."""
-    self.SetUpPrepare('UnverifiedChromeLlvmOrderfile', {
-        'UnverifiedChromeLlvmOrderfile': ['gs://publish/location']})
+    self.SetUpPrepare(
+        'UnverifiedChromeLlvmOrderfile',
+        {'UnverifiedChromeLlvmOrderfile': ['gs://publish/location']})
     self.assertEqual(toolchain_util.PrepareForBuildReturn.POINTLESS,
                      self.obj.Prepare())
     self.gs_context.Exists.assert_called_once_with(
@@ -406,8 +413,9 @@ class PrepareForBuildHandlerTest(PrepareBundleTest):
 
   def testPrepareUnverifiedChromeLlvmOrderfileMissing(self):
     """Test that PrepareUnverfiedChromeLlvmOrderfile works when NEEDED."""
-    self.SetUpPrepare('UnverifiedChromeLlvmOrderfile', {
-        'UnverifiedChromeLlvmOrderfile': ['gs://publish/location']})
+    self.SetUpPrepare(
+        'UnverifiedChromeLlvmOrderfile',
+        {'UnverifiedChromeLlvmOrderfile': ['gs://publish/location']})
     self.gsc_exists.return_value = False
     self.assertEqual(toolchain_util.PrepareForBuildReturn.NEEDED,
                      self.obj.Prepare())
@@ -416,10 +424,12 @@ class PrepareForBuildHandlerTest(PrepareBundleTest):
 
   def testPrepareVerifiedChromeLlvmOrderfileExists(self):
     """Test that PrepareVerfiedChromeLlvmOrderfile works when POINTLESS."""
-    self.SetUpPrepare('VerifiedChromeLlvmOrderfile', {
-        'UnverifiedChromeLlvmOrderfile': [
-            'gs://path/to/unvetted',
-            'gs://other/path/to/unvetted']})
+    self.SetUpPrepare(
+        'VerifiedChromeLlvmOrderfile', {
+            'UnverifiedChromeLlvmOrderfile': [
+                'gs://path/to/unvetted', 'gs://other/path/to/unvetted'
+            ]
+        })
     self.assertEqual(toolchain_util.PrepareForBuildReturn.POINTLESS,
                      self.obj.Prepare())
     self.gs_context.Exists.assert_called_once_with(
@@ -428,10 +438,12 @@ class PrepareForBuildHandlerTest(PrepareBundleTest):
 
   def testPrepareVerifiedChromeLlvmOrderfileMissing(self):
     """Test that PrepareVerfiedChromeLlvmOrderfile works when NEEDED."""
-    self.SetUpPrepare('VerifiedChromeLlvmOrderfile', {
-        'UnverifiedChromeLlvmOrderfile': [
-            'gs://path/to/unvetted',
-            'gs://other/path/to/unvetted']})
+    self.SetUpPrepare(
+        'VerifiedChromeLlvmOrderfile', {
+            'UnverifiedChromeLlvmOrderfile': [
+                'gs://path/to/unvetted', 'gs://other/path/to/unvetted'
+            ]
+        })
     self.gsc_exists.return_value = False
     self.assertEqual(toolchain_util.PrepareForBuildReturn.NEEDED,
                      self.obj.Prepare())
@@ -457,7 +469,8 @@ class BundleArtifactHandlerTest(PrepareBundleTest):
     self.gen_order = self.PatchObject(
         toolchain_util.GenerateChromeOrderfile, 'Bundle', new=_Bundle)
     self.PatchObject(
-        toolchain_util._CommonPrepareBundle, '_GetArtifactVersionInEbuild',
+        toolchain_util._CommonPrepareBundle,
+        '_GetArtifactVersionInEbuild',
         return_value=self.orderfile_name)
     self.PatchObject(
         toolchain_util, '_GetOrderfileName', return_value=self.orderfile_name)
@@ -469,8 +482,8 @@ class BundleArtifactHandlerTest(PrepareBundleTest):
     self.outdir = os.path.join(self.tempdir, 'tmp', 'output_dir')
     osutils.SafeMakedirs(self.outdir)
     self.obj = toolchain_util.BundleArtifactHandler(
-        self.artifact_type, self.chroot, self.sysroot, self.board,
-        self.outdir, self.additional_args)
+        self.artifact_type, self.chroot, self.sysroot, self.board, self.outdir,
+        self.additional_args)
     self.obj._gs_context = self.gs_context
 
   def testBundleUnverifiedChromeLlvmOrderfile(self):
@@ -486,25 +499,27 @@ class BundleArtifactHandlerTest(PrepareBundleTest):
     artifact = os.path.join(self.outdir, '%s.xz' % self.orderfile_name)
     self.assertEqual([artifact], self.obj.Bundle())
     self.copy2.assert_called_once_with(
-        os.path.join(self.chroot.path, 'build', self.board,
-                     'opt/google/chrome', '%s.xz' % self.orderfile_name),
-        artifact)
+        os.path.join(self.chroot.path, 'build', self.board, 'opt/google/chrome',
+                     '%s.xz' % self.orderfile_name), artifact)
 
   def testBundleChromeClangWarningsFile(self):
     """Test that BundleChromeClangWarningsFile works."""
+
     class mock_datetime(object):
       """Class for mocking datetime.datetime."""
+
       @staticmethod
       def strftime(_when, _fmt):
         return 'DATE'
+
       @staticmethod
       def now():
         return -1
 
     self.PatchObject(datetime, 'datetime', new=mock_datetime)
     self.SetUpBundle('ChromeClangWarningsFile')
-    artifact = os.path.join(
-        self.outdir, '%s.DATE.clang_tidy_warnings.tar.xz' % self.board)
+    artifact = os.path.join(self.outdir,
+                            '%s.DATE.clang_tidy_warnings.tar.xz' % self.board)
     self.assertEqual([artifact], self.obj.Bundle())
     self.copy2.assert_called_once_with(mock.ANY, artifact)
 
@@ -513,22 +528,27 @@ class BundleArtifactHandlerTest(PrepareBundleTest):
     llvm_version = '10.0_pre377782_p20200113-r14'
     llvm_clang_sha = 'a21beccea2020f950845cbb68db663d0737e174c'
     llvm_cpv = portage_util.SplitCPV('sys-devel/llvm-%s' % llvm_version)
-    self.PatchObject(self.obj, '_GetProfileNames', return_value=[
-        self.chroot.full_path(
-            self.sysroot, 'build', 'coverage_data', 'sys-libs', 'libcxxabi',
-            'raw_profiles', 'libcxxabi-10.0_pre3_1673101222_0.profraw')])
+    self.PatchObject(
+        self.obj,
+        '_GetProfileNames',
+        return_value=[
+            self.chroot.full_path(self.sysroot, 'build', 'coverage_data',
+                                  'sys-libs', 'libcxxabi', 'raw_profiles',
+                                  'libcxxabi-10.0_pre3_1673101222_0.profraw')
+        ])
     self.PatchObject(
         portage_util, 'FindPackageNameMatches', return_value=[llvm_cpv])
     self.rc.AddCmdResult(
-        partial_mock.In('clang'), returncode=0,
+        partial_mock.In('clang'),
+        returncode=0,
         stdout=('Chromium OS %s clang version 10.0.0 (/path/to/'
                 'llvm-project %s)\n' % (llvm_version, llvm_clang_sha)))
     base = '%s-%s' % (llvm_cpv.pv, llvm_clang_sha)
     artifacts = [
-        os.path.join(self.outdir, x) for x in (
-            '%s.llvm_metadata.json' % base,
-            'llvm_metadata.json',
-            '%s.llvm.profdata.tar.xz' % base)]
+        os.path.join(self.outdir, x)
+        for x in ('%s.llvm_metadata.json' % base, 'llvm_metadata.json',
+                  '%s.llvm.profdata.tar.xz' % base)
+    ]
     self.assertEqual(artifacts, self.obj.Bundle())
 
 
@@ -763,8 +783,8 @@ class GenerateChromeOrderfileTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(
         toolchain_util, '_GetOrderfileName', return_value=self.orderfile_name)
     self.test_obj = toolchain_util.GenerateChromeOrderfile(
-        self.board, self.out_dir, '/path/to/chrome_root',
-        self.chroot_dir, self.chroot_args)
+        self.board, self.out_dir, '/path/to/chrome_root', self.chroot_dir,
+        self.chroot_args)
 
   def testCheckArgumentsFail(self):
     """Test arguments checking fails without files existing."""
@@ -784,10 +804,7 @@ class GenerateChromeOrderfileTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(cros_build_lib, 'run')
     self.test_obj._GenerateChromeNM()
     cros_build_lib.run.assert_called_with(
-        cmd,
-        stdout=output,
-        enter_chroot=True,
-        chroot_args=self.chroot_args)
+        cmd, stdout=output, enter_chroot=True, chroot_args=self.chroot_args)
 
   def testPostProcessOrderfile(self):
     """Test post-processing orderfile is handled correctly."""
@@ -835,8 +852,8 @@ class GenerateChromeOrderfileTest(cros_test_lib.MockTempDirTestCase):
     # Make sure the tarballs are inside the output directory
     output_files = os.listdir(self.out_dir)
     self.assertIn(
-        self.orderfile_name + '.nm' +
-        toolchain_util.XZ_COMPRESSION_SUFFIX, output_files)
+        self.orderfile_name + '.nm' + toolchain_util.XZ_COMPRESSION_SUFFIX,
+        output_files)
     self.assertIn(
         self.orderfile_name + '.orderfile' +
         toolchain_util.XZ_COMPRESSION_SUFFIX, output_files)
@@ -983,8 +1000,10 @@ class CheckAFDOArtifactExistsTest(cros_test_lib.RunCommandTempDirTestCase):
     for exists in [False, True]:
       mock_exist = self.PatchObject(gs.GSContext, 'Exists', return_value=exists)
       ret = toolchain_util.CheckAFDOArtifactExists(
-          buildroot='buildroot', chrome_root='chrome_root',
-          target=target, board=board)
+          buildroot='buildroot',
+          chrome_root='chrome_root',
+          target=target,
+          board=board)
       self.assertEqual(exists, ret)
       mock_exist.assert_called_once_with(url_to_check)
 
@@ -995,9 +1014,8 @@ class CheckAFDOArtifactExistsTest(cros_test_lib.RunCommandTempDirTestCase):
     self._CheckExistCall(
         'orderfile_generate',
         os.path.join(
-            toolchain_util.ORDERFILE_GS_URL_UNVETTED,
-            self.orderfile_name + '.orderfile' +
-            toolchain_util.XZ_COMPRESSION_SUFFIX))
+            toolchain_util.ORDERFILE_GS_URL_UNVETTED, self.orderfile_name +
+            '.orderfile' + toolchain_util.XZ_COMPRESSION_SUFFIX))
 
   def testOrderfileVerifyAsTarget(self):
     """Test check orderfile for verification work properly."""
@@ -1323,9 +1341,8 @@ class GenerateBenchmarkAFDOProfile(cros_test_lib.MockTempDirTestCase):
     calls = [
         mock.call(
             toolchain_util.BENCHMARK_AFDO_GS_URL,
-            os.path.join(
-                self.output_dir,
-                chrome_binary + toolchain_util.BZ2_COMPRESSION_SUFFIX),
+            os.path.join(self.output_dir,
+                         chrome_binary + toolchain_util.BZ2_COMPRESSION_SUFFIX),
             rename=upload_name),
         mock.call(
             toolchain_util.BENCHMARK_AFDO_GS_URL,
@@ -1540,8 +1557,7 @@ class UploadReleaseChromeAFDOTest(cros_test_lib.MockTempDirTestCase):
                                                         benchmark_string)
     self.redacted_name = self.merged_name + '-redacted.afdo'
     self.output = os.path.join(
-        self.tempdir,
-        self.redacted_name + toolchain_util.XZ_COMPRESSION_SUFFIX)
+        self.tempdir, self.redacted_name + toolchain_util.XZ_COMPRESSION_SUFFIX)
     self.decompress = self.PatchObject(cros_build_lib, 'UncompressFile')
     self.compress = self.PatchObject(
         toolchain_util, '_CompressAFDOFiles', return_value=[self.output])
@@ -1565,33 +1581,39 @@ class UploadReleaseChromeAFDOTest(cros_test_lib.MockTempDirTestCase):
     toolchain_util._RedactAFDOProfile(input_name, output_name)
 
     redact_calls = [
-        mock.call([
-            'llvm-profdata',
-            'merge',
-            '-sample',
-            '-text',
-            input_name,
-            '-output',
-            input_to_text,
-        ],
-                  enter_chroot=True,
-                  print_cmd=True),
-        mock.call(['redact_textual_afdo_profile'],
-                  input=mock_file_obj,
-                  stdout=redacted_temp,
-                  enter_chroot=True,
-                  print_cmd=True),
-        mock.call([
-            'llvm-profdata',
-            'merge',
-            '-sample',
-            '-compbinary',
-            redacted_temp,
-            '-output',
-            output_name,
-        ],
-                  enter_chroot=True,
-                  print_cmd=True)
+        mock.call(
+            [
+                'llvm-profdata',
+                'merge',
+                '-sample',
+                '-text',
+                input_name,
+                '-output',
+                input_to_text,
+            ],
+            enter_chroot=True,
+            print_cmd=True,
+        ),
+        mock.call(
+            ['redact_textual_afdo_profile'],
+            input=mock_file_obj,
+            stdout=redacted_temp,
+            enter_chroot=True,
+            print_cmd=True,
+        ),
+        mock.call(
+            [
+                'llvm-profdata',
+                'merge',
+                '-sample',
+                '-compbinary',
+                redacted_temp,
+                '-output',
+                output_name,
+            ],
+            enter_chroot=True,
+            print_cmd=True,
+        )
     ]
     self.run_command.assert_has_calls(redact_calls)
 
@@ -1657,14 +1679,13 @@ class UploadReleaseChromeAFDOTest(cros_test_lib.MockTempDirTestCase):
     ret = toolchain_util._UploadReleaseChromeAFDO()
     self.assertEqual(verified_afdo, ret)
     # Check compress and upload.
-    self.compress.assert_called_once_with(
-        [os.path.join(verified_afdo)], None, self.tempdir,
-        toolchain_util.XZ_COMPRESSION_SUFFIX)
+    self.compress.assert_called_once_with([os.path.join(verified_afdo)], None,
+                                          self.tempdir,
+                                          toolchain_util.XZ_COMPRESSION_SUFFIX)
     self.upload.assert_called_once_with(
         toolchain_util.RELEASE_AFDO_GS_URL_VETTED,
-        os.path.join(
-            self.tempdir,
-            self.redacted_name + toolchain_util.XZ_COMPRESSION_SUFFIX))
+        os.path.join(self.tempdir,
+                     self.redacted_name + toolchain_util.XZ_COMPRESSION_SUFFIX))
 
 
 class UploadAndPublishVettedAFDOArtifactsTest(
