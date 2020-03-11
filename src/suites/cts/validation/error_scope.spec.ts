@@ -3,16 +3,21 @@ error scope validation tests.
 `;
 
 import { getGPU } from '../../../framework/gpu/implementation.js';
-import { Fixture, TestGroup, raceWithRejectOnTimeout } from '../../../framework/index.js';
+import { Fixture, TestGroup, assert, raceWithRejectOnTimeout } from '../../../framework/index.js';
 
 class F extends Fixture {
-  device: GPUDevice = undefined!;
+  _device: GPUDevice | undefined = undefined;
+
+  get device(): GPUDevice {
+    assert(this.device !== undefined);
+    return this.device;
+  }
 
   async init(): Promise<void> {
     super.init();
     const gpu = getGPU();
     const adapter = await gpu.requestAdapter();
-    this.device = await adapter.requestDevice();
+    this._device = await adapter.requestDevice();
   }
 
   createErrorBuffer(): void {

@@ -46,16 +46,26 @@ class DevicePool {
 const devicePool = new DevicePool();
 
 export class GPUTest extends Fixture {
-  device: GPUDevice = undefined!;
-  queue: GPUQueue = undefined!;
+  private objects: { device: GPUDevice; queue: GPUQueue } | undefined = undefined;
   initialized = false;
   private supportsSPIRV = true;
+
+  get device(): GPUDevice {
+    assert(this.objects !== undefined);
+    return this.objects.device;
+  }
+
+  get queue(): GPUQueue {
+    assert(this.objects !== undefined);
+    return this.objects.queue;
+  }
 
   async init(): Promise<void> {
     await super.init();
 
-    this.device = await devicePool.acquire();
-    this.queue = this.device.defaultQueue;
+    const device = await devicePool.acquire();
+    const queue = device.defaultQueue;
+    this.objects = { device, queue };
 
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     if (isSafari) {
@@ -63,17 +73,18 @@ export class GPUTest extends Fixture {
     }
 
     try {
-      await this.device.popErrorScope();
+      await device.popErrorScope();
       unreachable('There was an error scope on the stack at the beginning of the test');
     } catch (ex) {}
 
-    this.device.pushErrorScope('out-of-memory');
-    this.device.pushErrorScope('validation');
+    device.pushErrorScope('out-of-memory');
+    device.pushErrorScope('validation');
 
     this.initialized = true;
   }
 
   async finalize(): Promise<void> {
+    // Note: finalize is called even if init was unsuccessful.
     await super.finalize();
 
     if (this.initialized) {
@@ -90,8 +101,8 @@ export class GPUTest extends Fixture {
       }
     }
 
-    if (this.device) {
-      devicePool.release(this.device);
+    if (this.objects) {
+      devicePool.release(this.objects.device);
     }
   }
 
