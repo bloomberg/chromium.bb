@@ -31,6 +31,7 @@
 #include <services/service_manager/public/cpp/connector.h>
 #include <services/service_manager/public/cpp/service.h>
 #include <services/service_manager/public/cpp/local_interface_provider.h>
+#include <third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h>
 
 namespace service_manager {
 class ServiceBinding;
@@ -53,6 +54,8 @@ class ContentRendererClientImpl : public content::ContentRendererClient,
   public:
     ContentRendererClientImpl();
     ~ContentRendererClientImpl() final;
+
+    void RenderThreadStarted() override;
 
     void RenderViewCreated(content::RenderView *render_view) override;
         // Notifies that a new RenderView has been created.
@@ -86,6 +89,9 @@ class ContentRendererClientImpl : public content::ContentRendererClient,
         // true, then |plugin| will contain the created plugin, although it
         // could be NULL. If it returns false, the content layer will create
         // the plugin.
+
+    blink::ThreadSafeBrowserInterfaceBrokerProxy* GetInterfaceBroker() const;
+
   private:
     // service_manager::Service:
     void OnBindInterface(const service_manager::BindSourceInfo& source,
@@ -104,6 +110,7 @@ class ContentRendererClientImpl : public content::ContentRendererClient,
     mojo::PendingReceiver<service_manager::mojom::Connector> d_connector_request;
     std::unique_ptr<blpwtk2::ForwardingService> d_forward_service;
     std::unique_ptr<service_manager::ServiceBinding> d_service_binding;
+    scoped_refptr<blink::ThreadSafeBrowserInterfaceBrokerProxy> d_browser_interface_broker;
 
     DISALLOW_COPY_AND_ASSIGN(ContentRendererClientImpl);
 };

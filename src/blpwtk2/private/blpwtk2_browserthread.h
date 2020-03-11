@@ -33,6 +33,10 @@ namespace base {
 class SingleThreadTaskRunner;
 }  // close namespace base
 
+namespace content {
+  class ContentMainDelegate;
+}  // close namespace content
+
 namespace blpwtk2 {
 
 class BrowserMainRunner;
@@ -52,13 +56,15 @@ class BrowserThread : private base::PlatformThread::Delegate
 {
     // DATA
     sandbox::SandboxInterfaceInfo d_sandboxInfo;
+    content::ContentMainDelegate* d_delegate;
     BrowserMainRunner* d_mainRunner;
     base::PlatformThreadHandle d_threadHandle;
 
     void ThreadMain() override;
 
   public:
-    explicit BrowserThread(const sandbox::SandboxInterfaceInfo& sandboxInfo);
+    explicit BrowserThread(const sandbox::SandboxInterfaceInfo& sandboxInfo,
+      content::ContentMainDelegate* delegate);
     ~BrowserThread() final;
 
     void sync();
