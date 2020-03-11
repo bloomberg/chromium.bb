@@ -278,8 +278,8 @@ class RunSysrootCommandTest(cros_test_lib.RunCommandTestCase):
   def testRunSysrootCommand(self):
     """Tests RunSysrootCommand creates a proper command to run in sysroot."""
     command = ['./fuzz', '-rss_limit_mb=4096']
-    cros_fuzz.RunSysrootCommand(command)
     sysroot_path = _SetPathToSysroot()
+    cros_fuzz.RunSysrootCommand(command)
     expected_command = ['sudo', '--', 'chroot', sysroot_path]
     expected_command.extend(command)
     self.assertCommandCalled(expected_command, debug_level=logging.DEBUG)
