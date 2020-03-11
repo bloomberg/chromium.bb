@@ -163,7 +163,7 @@ g.test('from canvas', async t => {
   // support '2d' contexts on OffscreenCanvas.
   // In this situation, the case will be skipped.
   let imageCanvas;
-  if (document) {
+  if (typeof document !== 'undefined') {
     imageCanvas = document.createElement('canvas');
     imageCanvas.width = width;
     imageCanvas.height = height;
