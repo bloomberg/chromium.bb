@@ -11,12 +11,6 @@
 
 namespace gin {
 
-// CLASS METHODS
-MultiHeapTracer* MultiHeapTracer::From(v8::Isolate *isolate) {
-  PerIsolateData *isolate_data = PerIsolateData::From(isolate);
-  return isolate_data ? isolate_data->heap_tracer() : nullptr;
-}
-
 // CREATORS
 MultiHeapTracer::MultiHeapTracer()
   : is_tracing_(false),
@@ -62,14 +56,6 @@ void MultiHeapTracer::RegisterV8References(
                                 const WrapperFieldPairs& wrapper_field_pairs) {
   for (auto&& id_and_tracer : tracers_) {
     id_and_tracer.second->RegisterV8References(wrapper_field_pairs);
-  }
-}
-
-void MultiHeapTracer::TracePrologue() {
-  is_tracing_ = true;
-
-  for (auto&& id_and_tracer : tracers_) {
-    id_and_tracer.second->TracePrologue();
   }
 }
 
