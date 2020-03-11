@@ -672,6 +672,8 @@ class Tile : public Allocable {
 
   Array2D<int16_t>& cdef_index_;
   Array2D<TransformSize>& inter_transform_sizes_;
+  std::array<AlignedDynamicBuffer<uint8_t, kMaxAlignment>, kMaxPlanes>&
+      intra_prediction_buffer_;
   std::array<RestorationUnitInfo, kMaxPlanes> reference_unit_info_;
   // If |thread_pool_| is nullptr, the calling thread will do the parsing and
   // the decoding in one pass. If |thread_pool_| is not nullptr, then the main

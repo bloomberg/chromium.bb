@@ -422,6 +422,7 @@ Tile::Tile(int tile_number, const uint8_t* const data, size_t size,
       current_frame_(*current_frame),
       cdef_index_(frame_scratch_buffer->cdef_index),
       inter_transform_sizes_(frame_scratch_buffer->inter_transform_sizes),
+      intra_prediction_buffer_(frame_scratch_buffer->intra_prediction_buffer),
       thread_pool_(thread_pool),
       residual_buffer_pool_(frame_scratch_buffer->residual_buffer_pool.get()),
       tile_scratch_buffer_pool_(

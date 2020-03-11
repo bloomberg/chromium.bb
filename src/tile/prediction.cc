@@ -272,37 +272,69 @@ void Tile::IntraPrediction(const Block& block, Plane plane, int x, int y,
   const bool needs_top = use_filter_intra || kNeedsLeftAndTop.Contains(mode) ||
                          (is_directional_mode && prediction_angle < 180) ||
                          (mode == kPredictionModeDc && has_top);
+  const bool needs_left = use_filter_intra || kNeedsLeftAndTop.Contains(mode) ||
+                          (is_directional_mode && prediction_angle > 90) ||
+                          (mode == kPredictionModeDc && has_left);
+
+  const Pixel* top_row_src = buffer[y - 1];
+
+  // Determine if we need to retrieve the top row from
+  // |intra_prediction_buffer_|.
+  if ((needs_top || needs_left) &&
+      intra_prediction_buffer_[plane].get() != nullptr) {
+    // Superblock index of block.row4x4. block.row4x4 is always in luma
+    // dimension (no subsampling).
+    const int current_superblock_index =
+        block.row4x4 >> (sequence_header_.use_128x128_superblock ? 5 : 4);
+    // Superblock index of y - 1. y is in the plane dimension (chroma planes
+    // could be subsampled).
+    const int plane_shift = (sequence_header_.use_128x128_superblock ? 7 : 6) -
+                            subsampling_y_[plane];
+    const int top_row_superblock_index = (y - 1) >> plane_shift;
+    // If the superblock index of y - 1 is not that of the current superblock,
+    // then we will have to retrieve the top row from the
+    // |intra_prediction_buffer_|.
+    if (current_superblock_index != top_row_superblock_index) {
+      top_row_src =
+          reinterpret_cast<const Pixel*>(intra_prediction_buffer_[plane].get());
+    }
+  }
+
   if (needs_top) {
     // Compute top_row.
-    top_row[-1] = (has_top || has_left)
-                      ? buffer[has_top ? y - 1 : y][has_left ? x - 1 : x]
-                      : (1 << (bitdepth - 1));
+    if (has_top || has_left) {
+      const int left_index = has_left ? x - 1 : x;
+      top_row[-1] = has_top ? top_row_src[left_index] : buffer[y][left_index];
+    } else {
+      top_row[-1] = 1 << (bitdepth - 1);
+    }
     if (!has_top && has_left) {
       Memset(top_row, buffer[y][x - 1], top_size);
     } else if (!has_top && !has_left) {
       Memset(top_row, (1 << (bitdepth - 1)) - 1, top_size);
     } else {
       const int top_limit = std::min(max_x - x + 1, top_right_size);
-      memcpy(top_row, &buffer[y - 1][x], top_limit * sizeof(Pixel));
+      memcpy(top_row, &top_row_src[x], top_limit * sizeof(Pixel));
       // Even though it is safe to call Memset with a size of 0, accessing
-      // buffer[y - 1][top_limit - x + 1] is not allowed when this condition is
+      // top_row_src[top_limit - x + 1] is not allowed when this condition is
       // false.
       if (top_size - top_limit > 0) {
-        Memset(top_row + top_limit, buffer[y - 1][top_limit + x - 1],
+        Memset(top_row + top_limit, top_row_src[top_limit + x - 1],
                top_size - top_limit);
       }
     }
   }
-  const bool needs_left = use_filter_intra || kNeedsLeftAndTop.Contains(mode) ||
-                          (is_directional_mode && prediction_angle > 90) ||
-                          (mode == kPredictionModeDc && has_left);
   if (needs_left) {
     // Compute left_column.
-    left_column[-1] = (has_top || has_left)
-                          ? buffer[has_top ? y - 1 : y][has_left ? x - 1 : x]
-                          : (1 << (bitdepth - 1));
+    if (has_top || has_left) {
+      const int left_index = has_left ? x - 1 : x;
+      left_column[-1] =
+          has_top ? top_row_src[left_index] : buffer[y][left_index];
+    } else {
+      left_column[-1] = 1 << (bitdepth - 1);
+    }
     if (!has_left && has_top) {
-      Memset(left_column, buffer[y - 1][x], left_size);
+      Memset(left_column, top_row_src[x], left_size);
     } else if (!has_left && !has_top) {
       Memset(left_column, (1 << (bitdepth - 1)) + 1, left_size);
     } else {
