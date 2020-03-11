@@ -97,7 +97,7 @@ v8::Local<v8::Context> WebScriptBindings::CreateWebScriptContext(
     scoped_refptr<SecurityOrigin> blink_security_origin =
         SecurityOrigin::CreateFromString(security_origin.ToString());
     blink_security_origin->GrantUniversalAccess();
-    document->UpdateSecurityOrigin(blink_security_origin);
+    document->SetSecurityOrigin(blink_security_origin);
 
     return hs.Escape(context);
 }
