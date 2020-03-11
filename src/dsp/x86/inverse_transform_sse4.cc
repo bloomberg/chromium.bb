@@ -1695,7 +1695,8 @@ LIBGAV1_ALWAYS_INLINE void Identity4ColumnStoreToFrame(
   const __m128i v_eight = _mm_set1_epi16(8);
 
   if (tx_width == 4) {
-    for (int i = 0; i < tx_height; ++i) {
+    int i = 0;
+    do {
       const __m128i v_src = LoadLo8(&source[i * tx_width]);
       const __m128i v_src_mult = _mm_mulhrs_epi16(v_src, v_multiplier_fraction);
       const __m128i frame_data = Load4(dst);
@@ -1706,9 +1707,10 @@ LIBGAV1_ALWAYS_INLINE void Identity4ColumnStoreToFrame(
       const __m128i d = _mm_adds_epi16(c, b);
       Store4(dst, _mm_packus_epi16(d, d));
       dst += stride;
-    }
+    } while (++i < tx_height);
   } else {
-    for (int i = 0; i < tx_height; ++i) {
+    int i = 0;
+    do {
       const int row = i * tx_width;
       int j = 0;
       do {
@@ -1725,7 +1727,7 @@ LIBGAV1_ALWAYS_INLINE void Identity4ColumnStoreToFrame(
         j += 8;
       } while (j < tx_width);
       dst += stride;
-    }
+    } while (++i < tx_height);
   }
 }
 
@@ -1742,7 +1744,8 @@ LIBGAV1_ALWAYS_INLINE void Identity4RowColumnStoreToFrame(
       _mm_set1_epi16(kTransformRowMultiplier << 3);
 
   if (tx_width == 4) {
-    for (int i = 0; i < tx_height; ++i) {
+    int i = 0;
+    do {
       const __m128i v_src = LoadLo8(&source[i * tx_width]);
       const __m128i v_src_mult = _mm_mulhrs_epi16(v_src, v_multiplier_fraction);
       const __m128i frame_data = Load4(dst);
@@ -1756,9 +1759,10 @@ LIBGAV1_ALWAYS_INLINE void Identity4RowColumnStoreToFrame(
       const __m128i c = _mm_adds_epi16(frame_data16, b);
       Store4(dst, _mm_packus_epi16(c, c));
       dst += stride;
-    }
+    } while (++i < tx_height);
   } else {
-    for (int i = 0; i < tx_height; ++i) {
+    int i = 0;
+    do {
       const int row = i * tx_width;
       int j = 0;
       do {
@@ -1778,7 +1782,7 @@ LIBGAV1_ALWAYS_INLINE void Identity4RowColumnStoreToFrame(
         j += 8;
       } while (j < tx_width);
       dst += stride;
-    }
+    } while (++i < tx_height);
   }
 }
 
@@ -1846,7 +1850,8 @@ LIBGAV1_ALWAYS_INLINE void Identity8ColumnStoreToFrame_SSE4_1(
   uint8_t* dst = frame[start_y] + start_x;
   const __m128i v_eight = _mm_set1_epi16(8);
   if (tx_width == 4) {
-    for (int i = 0; i < tx_height; ++i) {
+    int i = 0;
+    do {
       const int row = i * tx_width;
       const __m128i v_src = LoadLo8(&source[row]);
       const __m128i v_dst_i = _mm_adds_epi16(v_src, v_src);
@@ -1857,9 +1862,10 @@ LIBGAV1_ALWAYS_INLINE void Identity8ColumnStoreToFrame_SSE4_1(
       const __m128i d = _mm_adds_epi16(c, b);
       Store4(dst, _mm_packus_epi16(d, d));
       dst += stride;
-    }
+    } while (++i < tx_height);
   } else {
-    for (int i = 0; i < tx_height; ++i) {
+    int i = 0;
+    do {
       const int row = i * tx_width;
       int j = 0;
       do {
@@ -1874,7 +1880,7 @@ LIBGAV1_ALWAYS_INLINE void Identity8ColumnStoreToFrame_SSE4_1(
         j += 8;
       } while (j < tx_width);
       dst += stride;
-    }
+    } while (++i < tx_height);
   }
 }
 
@@ -1946,7 +1952,8 @@ LIBGAV1_ALWAYS_INLINE void Identity16ColumnStoreToFrame_SSE4_1(
       _mm_set1_epi16(static_cast<int16_t>(kIdentity4MultiplierFraction << 4));
 
   if (tx_width == 4) {
-    for (int i = 0; i < tx_height; ++i) {
+    int i = 0;
+    do {
       const __m128i v_src = LoadLo8(&source[i * tx_width]);
       const __m128i v_src_mult = _mm_mulhrs_epi16(v_src, v_multiplier);
       const __m128i frame_data = Load4(dst);
@@ -1958,9 +1965,10 @@ LIBGAV1_ALWAYS_INLINE void Identity16ColumnStoreToFrame_SSE4_1(
       const __m128i d = _mm_adds_epi16(c, b);
       Store4(dst, _mm_packus_epi16(d, d));
       dst += stride;
-    }
+    } while (++i < tx_height);
   } else {
-    for (int i = 0; i < tx_height; ++i) {
+    int i = 0;
+    do {
       const int row = i * tx_width;
       int j = 0;
       do {
@@ -1977,7 +1985,7 @@ LIBGAV1_ALWAYS_INLINE void Identity16ColumnStoreToFrame_SSE4_1(
         j += 8;
       } while (j < tx_width);
       dst += stride;
-    }
+    } while (++i < tx_height);
   }
 }
 
@@ -2030,7 +2038,8 @@ LIBGAV1_ALWAYS_INLINE void Identity32ColumnStoreToFrame(
   uint8_t* dst = frame[start_y] + start_x;
   const __m128i v_two = _mm_set1_epi16(2);
 
-  for (int i = 0; i < tx_height; ++i) {
+  int i = 0;
+  do {
     const int row = i * tx_width;
     int j = 0;
     do {
@@ -2044,7 +2053,7 @@ LIBGAV1_ALWAYS_INLINE void Identity32ColumnStoreToFrame(
       j += 8;
     } while (j < tx_width);
     dst += stride;
-  }
+  } while (++i < tx_height);
 }
 
 //------------------------------------------------------------------------------
@@ -2809,10 +2818,12 @@ void Identity4TransformLoop_SSE4_1(TransformType tx_type, TransformSize tx_size,
     return;
   }
   assert(!is_row);
+  const int height = (non_zero_coeff_count == 1) ? 1 : tx_height;
   // Special case: Process row calculations during column transform call.
   if (tx_type == kTransformTypeIdentityIdentity &&
       (tx_size == kTransformSize4x4 || tx_size == kTransformSize8x4)) {
-    Identity4RowColumnStoreToFrame(frame, start_x, start_y, tx_width, 4, src);
+    Identity4RowColumnStoreToFrame(frame, start_x, start_y, tx_width, height,
+                                   src);
     return;
   }
 
@@ -2820,8 +2831,7 @@ void Identity4TransformLoop_SSE4_1(TransformType tx_type, TransformSize tx_size,
     FlipColumns<4>(src, tx_width);
   }
 
-  Identity4ColumnStoreToFrame(frame, start_x, start_y, tx_width,
-                              /*tx_height=*/4, src);
+  Identity4ColumnStoreToFrame(frame, start_x, start_y, tx_width, height, src);
 }
 
 void Identity8TransformLoop_SSE4_1(TransformType tx_type, TransformSize tx_size,
@@ -2884,8 +2894,9 @@ void Identity8TransformLoop_SSE4_1(TransformType tx_type, TransformSize tx_size,
     FlipColumns<8>(src, tx_width);
   }
 
-  Identity8ColumnStoreToFrame_SSE4_1(frame, start_x, start_y, tx_width,
-                                     /*tx_height=*/8, src);
+  const int height = (non_zero_coeff_count == 1) ? 1 : tx_height;
+  Identity8ColumnStoreToFrame_SSE4_1(frame, start_x, start_y, tx_width, height,
+                                     src);
 }
 
 void Identity16TransformLoop_SSE4_1(TransformType tx_type,
@@ -2923,8 +2934,9 @@ void Identity16TransformLoop_SSE4_1(TransformType tx_type,
   if (kTransformFlipColumnsMask.Contains(tx_type)) {
     FlipColumns<16>(src, tx_width);
   }
-  Identity16ColumnStoreToFrame_SSE4_1(frame, start_x, start_y, tx_width,
-                                      /*tx_height=*/16, src);
+  const int height = (non_zero_coeff_count == 1) ? 1 : tx_height;
+  Identity16ColumnStoreToFrame_SSE4_1(frame, start_x, start_y, tx_width, height,
+                                      src);
 }
 
 void Identity32TransformLoop_SSE4_1(TransformType tx_type,
@@ -2966,8 +2978,8 @@ void Identity32TransformLoop_SSE4_1(TransformType tx_type,
   }
 
   assert(!is_row);
-  Identity32ColumnStoreToFrame(frame, start_x, start_y, tx_width,
-                               /*tx_height=*/32, src);
+  const int height = (non_zero_coeff_count == 1) ? 1 : tx_height;
+  Identity32ColumnStoreToFrame(frame, start_x, start_y, tx_width, height, src);
 }
 
 void Wht4TransformLoop_SSE4_1(TransformType tx_type, TransformSize tx_size,
