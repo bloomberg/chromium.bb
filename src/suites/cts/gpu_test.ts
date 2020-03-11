@@ -37,9 +37,8 @@ class DevicePool {
   }
 
   release(device: GPUDevice): void {
-    assert(!!device, 'Tried to release without a device');
     assert(this.state === 'acquired');
-    this.device = device;
+    assert(device === this.device, 'Released device was the wrong device');
     this.state = 'free';
   }
 }
@@ -53,7 +52,8 @@ export class GPUTest extends Fixture {
   private supportsSPIRV = true;
 
   async init(): Promise<void> {
-    super.init();
+    await super.init();
+
     this.device = await devicePool.acquire();
     this.queue = this.device.defaultQueue;
 
@@ -74,7 +74,7 @@ export class GPUTest extends Fixture {
   }
 
   async finalize(): Promise<void> {
-    super.finalize();
+    await super.finalize();
 
     if (this.initialized) {
       const gpuValidationError = await this.device.popErrorScope();

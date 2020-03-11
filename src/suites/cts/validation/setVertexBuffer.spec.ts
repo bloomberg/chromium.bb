@@ -8,7 +8,8 @@ import { ValidationTest } from './validation_test.js';
 
 class F extends ValidationTest {
   async init(): Promise<void> {
-    await Promise.all([super.init(), this.initGLSL()]);
+    await super.init();
+    await this.initGLSL();
   }
 
   getVertexBuffer(): GPUBuffer {

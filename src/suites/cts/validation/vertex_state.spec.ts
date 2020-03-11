@@ -26,7 +26,8 @@ function clone<T extends GPUVertexStateDescriptor>(descriptor: T): T {
 
 class F extends ValidationTest {
   async init(): Promise<void> {
-    await Promise.all([super.init(), this.initGLSL()]);
+    await super.init();
+    await this.initGLSL();
   }
 
   getDescriptor(
