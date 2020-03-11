@@ -47,6 +47,20 @@ message DlcModuleList {
   string omaha_url = 2;
 }
 
+// This is the message that is returned from DLC Service via |GetState| method
+// and indicates what state a DLC is in.
+// TODO(crbug.com/1056269): Propagate error code as well to know reason for
+// failure when state is |NOT_INSTALLED|.
+message DlcState {
+  // This is the message that indicates what state a DLC is in.
+  enum State {
+    NOT_INSTALLED = 0;
+    INSTALLED = 1;
+    INSTALLING = 2;
+  }
+  State state = 1;
+}
+
 // This is the message that indicates how the install progress is running and
 // dlcservice will always end with |COMPLETE| or |FAILED| when finished.
 enum Status {
