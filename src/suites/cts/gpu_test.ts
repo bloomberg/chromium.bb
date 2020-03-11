@@ -32,10 +32,12 @@ class DevicePool {
       await this.initialize();
     }
 
-    return this.device!;
+    assert(!!this.device);
+    return this.device;
   }
 
   release(device: GPUDevice): void {
+    assert(!!device, 'Tried to release without a device');
     assert(this.state === 'acquired');
     this.device = device;
     this.state = 'free';
@@ -88,7 +90,9 @@ export class GPUTest extends Fixture {
       }
     }
 
-    devicePool.release(this.device);
+    if (this.device) {
+      devicePool.release(this.device);
+    }
   }
 
   async initGLSL(): Promise<void> {
