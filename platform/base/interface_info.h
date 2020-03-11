@@ -57,8 +57,11 @@ struct InterfaceInfo {
   // All IP addresses associated with the interface.
   std::vector<IPSubnet> addresses;
 
-  bool HasIpV4Address() const;
-  bool HasIpV6Address() const;
+  // Returns an IPAddress of the given type associated with this network
+  // interface, or the false IPAddress if the associated address family is not
+  // supported on this interface.
+  IPAddress GetIpAddressV4() const;
+  IPAddress GetIpAddressV6() const;
 
   InterfaceInfo();
   InterfaceInfo(NetworkInterfaceIndex index,
@@ -67,17 +70,6 @@ struct InterfaceInfo {
                 Type type,
                 std::vector<IPSubnet> addresses);
   ~InterfaceInfo();
-
- private:
-  enum HasEndpointTypeConfigured { True = 1, False = 0, Unknown = -1 };
-
-  // Stores whether a this interface has a given endpoint type configured. Used
-  // as part of SupportsIpV4() and SupportsIpV6() to prevent recalculation on
-  // each call.
-  mutable HasEndpointTypeConfigured v4_configured_ =
-      HasEndpointTypeConfigured::Unknown;
-  mutable HasEndpointTypeConfigured v6_configured_ =
-      HasEndpointTypeConfigured::Unknown;
 };
 
 // Human-readable output (e.g., for logging).

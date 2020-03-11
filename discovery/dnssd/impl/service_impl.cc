@@ -18,10 +18,10 @@ MdnsService::SupportedNetworkAddressFamily GetSupportedEndpointTypes(
     const InterfaceInfo& interface) {
   MdnsService::SupportedNetworkAddressFamily supported_types =
       MdnsService::kNoAddressFamily;
-  if (interface.HasIpV4Address()) {
+  if (interface.GetIpAddressV4()) {
     supported_types = supported_types | MdnsService::kUseIpV4Multicast;
   }
-  if (interface.HasIpV6Address()) {
+  if (interface.GetIpAddressV6()) {
     supported_types = supported_types | MdnsService::kUseIpV6Multicast;
   }
   return supported_types;
