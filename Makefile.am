@@ -472,6 +472,7 @@ endif
 src_client_linux_linux_client_unittest_shlib_SOURCES = \
 	$(src_testing_libtesting_a_SOURCES) \
 	src/client/linux/handler/exception_handler_unittest.cc \
+	src/client/linux/microdump_writer/microdump_writer_unittest.cc \
 	src/client/linux/minidump_writer/directory_reader_unittest.cc \
 	src/client/linux/minidump_writer/cpu_set_unittest.cc \
 	src/client/linux/minidump_writer/line_reader_unittest.cc \
@@ -500,10 +501,6 @@ src_client_linux_linux_client_unittest_shlib_SOURCES = \
 if ANDROID_HOST
 src_client_linux_linux_client_unittest_shlib_SOURCES += \
 	src/common/android/breakpad_getcontext.S
-endif
-if LINUX_HOST
-src_client_linux_linux_client_unittest_shlib_SOURCES += \
-	src/client/linux/microdump_writer/microdump_writer_unittest.cc
 endif
 
 src_client_linux_linux_client_unittest_shlib_CPPFLAGS = \
