@@ -48,7 +48,7 @@ WebDOMEvent WebDOMEvent::CreateCustomEvent(
   DCHECK (isolate);
   DCHECK (!(isolate->GetCurrentContext().IsEmpty()));
   ScriptState* state = ScriptState::Current(isolate);
-  customEvent->initCustomEvent(state, name, canBubble, cancelable, ScriptValue(state, std::move(value)));
+  customEvent->initCustomEvent(state, name, canBubble, cancelable, ScriptValue(isolate, std::move(value)));
   return WebDOMEvent(customEvent);
 }
 
