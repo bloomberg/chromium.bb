@@ -971,7 +971,7 @@ void InlineTextBoxPainter::PaintHighlightMarkerForeground(const PaintInfo& paint
     LayoutPoint textOrigin(boxOrigin.X(), boxOrigin.Y() + ascent);
     TextPainter textPainter(paintInfo.context, font, run, textOrigin, boxRect, inline_text_box_.IsHorizontal());
 
-    NodeHolder node_holder = GetNodeHolder(
+    DOMNodeId node_holder = GetNodeHolder(
         LineLayoutAPIShim::LayoutObjectFrom(inline_text_box_.GetLineLayoutItem())
             ->GetNode());
 
