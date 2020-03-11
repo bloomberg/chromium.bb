@@ -566,27 +566,31 @@ static AOM_INLINE void palette_rd_y(
     int *beat_best_rd, PICK_MODE_CONTEXT *ctx, uint8_t *blk_skip,
     uint8_t *tx_type_map, int *beat_best_pallette_rd) {
   optimize_palette_colors(color_cache, n_cache, n, 1, centroids);
-  int k = av1_remove_duplicates(centroids, n);
-  if (k < PALETTE_MIN_SIZE) {
+  const int num_unique_colors = av1_remove_duplicates(centroids, n);
+  if (num_unique_colors < PALETTE_MIN_SIZE) {
     // Too few unique colors to create a palette. And DC_PRED will work
     // well for that case anyway. So skip.
     return;
   }
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
-  if (cpi->common.seq_params.use_highbitdepth)
-    for (int i = 0; i < k; ++i)
+  if (cpi->common.seq_params.use_highbitdepth) {
+    for (int i = 0; i < num_unique_colors; ++i) {
       pmi->palette_colors[i] = clip_pixel_highbd(
           (int)centroids[i], cpi->common.seq_params.bit_depth);
-  else
-    for (int i = 0; i < k; ++i)
+    }
+  } else {
+    for (int i = 0; i < num_unique_colors; ++i) {
       pmi->palette_colors[i] = clip_pixel(centroids[i]);
-  pmi->palette_size[0] = k;
+    }
+  }
+  pmi->palette_size[0] = num_unique_colors;
   MACROBLOCKD *const xd = &x->e_mbd;
   uint8_t *const color_map = xd->plane[0].color_index_map;
   int block_width, block_height, rows, cols;
   av1_get_block_dimensions(bsize, 0, xd, &block_width, &block_height, &rows,
                            &cols);
-  av1_calc_indices(data, centroids, color_map, rows * cols, k, 1);
+  av1_calc_indices(data, centroids, color_map, rows * cols, num_unique_colors,
+                   1);
   extend_palette_color_map(color_map, cols, rows, block_width, block_height);
 
   const int palette_mode_cost =
