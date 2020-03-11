@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//third_party/blink/public/public_features.gni")
+import("//blpwtk2/blpwtk2.gni")
 
 all_devtools_files = [
   "front_end/accessibility/accessibilityNode.css",
