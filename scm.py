@@ -376,24 +376,30 @@ class GIT(object):
     return bool(GIT.Capture(['clean', '-df', relative_dir], cwd=cwd))
 
   @staticmethod
+  def ResolveCommit(cwd, rev):
+    if sys.platform.startswith('win'):
+      # Windows .bat scripts use ^ as escape sequence, which means we have to
+      # escape it with itself for every .bat invocation.
+      needle = '%s^^{commit}' % rev
+    else:
+      needle = '%s^{commit}' % rev
+    try:
+      return GIT.Capture(['rev-parse', '--quiet', '--verify', needle], cwd=cwd)
+    except subprocess2.CalledProcessError:
+      return None
+
+  @staticmethod
   def IsValidRevision(cwd, rev, sha_only=False):
     """Verifies the revision is a proper git revision.
 
     sha_only: Fail unless rev is a sha hash.
     """
-    if sys.platform.startswith('win'):
-      # Windows .bat scripts use ^ as escape sequence, which means we have to
-      # escape it with itself for every .bat invocation.
-      needle = '%s^^^^{commit}' % rev
-    else:
-      needle = '%s^{commit}' % rev
-    try:
-      sha = GIT.Capture(['rev-parse', '--verify', needle], cwd=cwd)
-      if sha_only:
-        return sha == rev.lower()
-      return True
-    except subprocess2.CalledProcessError:
+    sha = GIT.ResolveCommit(cwd, rev)
+    if sha is None:
       return False
+    if sha_only:
+      return sha == rev.lower()
+    return True
 
   @classmethod
   def AssertVersion(cls, min_version):

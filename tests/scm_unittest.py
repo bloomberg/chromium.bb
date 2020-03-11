@@ -92,6 +92,14 @@ class RealGitTest(fake_repos.FakeReposTestBase):
     else:
       self.skipTest('git fake repos not available')
 
+  def testResolveCommit(self):
+    self.assertIsNone(scm.GIT.ResolveCommit(self.cwd, 'zebra'))
+    self.assertIsNone(scm.GIT.ResolveCommit(self.cwd, 'r123456'))
+    first_rev = self.githash('repo_1', 1)
+    self.assertEqual(first_rev, scm.GIT.ResolveCommit(self.cwd, first_rev))
+    self.assertEqual(
+        self.githash('repo_1', 2), scm.GIT.ResolveCommit(self.cwd, 'HEAD'))
+
   def testIsValidRevision(self):
     # Sha1's are [0-9a-z]{32}, so starting with a 'z' or 'r' should always fail.
     self.assertFalse(scm.GIT.IsValidRevision(cwd=self.cwd, rev='zebra'))
