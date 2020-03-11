@@ -81,6 +81,7 @@ class Error {
 
     // Was unable to generate an RSA key.
     kRSAKeyGenerationFailure,
+    kRSAKeyParseError,
 
     // Was unable to initialize an EVP_PKEY type.
     kEVPInitializationError,

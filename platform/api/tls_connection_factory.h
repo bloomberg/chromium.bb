@@ -29,7 +29,7 @@ class TlsConnectionFactory {
    public:
     // Provides a new |connection| that resulted from listening on the local
     // socket. |der_x509_peer_cert| is the DER-encoded X509 certificate from the
-    // peer.
+    // peer if present, or empty if the peer didn't provide one.
     virtual void OnAccepted(TlsConnectionFactory* factory,
                             std::vector<uint8_t> der_x509_peer_cert,
                             std::unique_ptr<TlsConnection> connection) = 0;

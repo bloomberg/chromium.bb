@@ -37,21 +37,17 @@ class TlsConnectionPosix : public TlsConnection {
   IPEndpoint GetLocalEndpoint() const override;
   IPEndpoint GetRemoteEndpoint() const override;
 
+  // Registers |this| with the platform TlsDataRouterPosix.  This is called
+  // automatically by TlsConnectionFactoryPosix after the handshake completes.
+  void RegisterConnectionWithDataRouter(PlatformClientPosix* platform_client);
+
  protected:
   friend class TlsConnectionFactoryPosix;
 
-  TlsConnectionPosix(IPEndpoint local_address,
-                     TaskRunner* task_runner,
-                     PlatformClientPosix* platform_client =
-                         PlatformClientPosix::GetInstance());
-  TlsConnectionPosix(IPAddress::Version version,
-                     TaskRunner* task_runner,
-                     PlatformClientPosix* platform_client =
-                         PlatformClientPosix::GetInstance());
+  TlsConnectionPosix(IPEndpoint local_address, TaskRunner* task_runner);
+  TlsConnectionPosix(IPAddress::Version version, TaskRunner* task_runner);
   TlsConnectionPosix(std::unique_ptr<StreamSocket> socket,
-                     TaskRunner* task_runner,
-                     PlatformClientPosix* platform_client =
-                         PlatformClientPosix::GetInstance());
+                     TaskRunner* task_runner);
 
  private:
   // Called on any thread, to post a task to notify the Client that an |error|
@@ -59,7 +55,7 @@ class TlsConnectionPosix : public TlsConnection {
   void DispatchError(Error error);
 
   TaskRunner* const task_runner_;
-  PlatformClientPosix* const platform_client_;
+  PlatformClientPosix* platform_client_ = nullptr;
 
   Client* client_ = nullptr;
 

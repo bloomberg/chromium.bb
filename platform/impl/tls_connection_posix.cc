@@ -30,39 +30,23 @@ namespace openscreen {
 
 // TODO(jophba, rwkeane): implement write blocking/unblocking
 TlsConnectionPosix::TlsConnectionPosix(IPEndpoint local_address,
-                                       TaskRunner* task_runner,
-                                       PlatformClientPosix* platform_client)
+                                       TaskRunner* task_runner)
     : task_runner_(task_runner),
-      platform_client_(platform_client),
       socket_(std::make_unique<StreamSocketPosix>(local_address)) {
   OSP_DCHECK(task_runner_);
-  if (platform_client_) {
-    platform_client_->tls_data_router()->RegisterConnection(this);
-  }
 }
 
 TlsConnectionPosix::TlsConnectionPosix(IPAddress::Version version,
-                                       TaskRunner* task_runner,
-                                       PlatformClientPosix* platform_client)
+                                       TaskRunner* task_runner)
     : task_runner_(task_runner),
-      platform_client_(platform_client),
       socket_(std::make_unique<StreamSocketPosix>(version)) {
   OSP_DCHECK(task_runner_);
-  if (platform_client_) {
-    platform_client_->tls_data_router()->RegisterConnection(this);
-  }
 }
 
 TlsConnectionPosix::TlsConnectionPosix(std::unique_ptr<StreamSocket> socket,
-                                       TaskRunner* task_runner,
-                                       PlatformClientPosix* platform_client)
-    : task_runner_(task_runner),
-      platform_client_(platform_client),
-      socket_(std::move(socket)) {
+                                       TaskRunner* task_runner)
+    : task_runner_(task_runner), socket_(std::move(socket)) {
   OSP_DCHECK(task_runner_);
-  if (platform_client_) {
-    platform_client_->tls_data_router()->RegisterConnection(this);
-  }
 }
 
 TlsConnectionPosix::~TlsConnectionPosix() {
@@ -72,36 +56,33 @@ TlsConnectionPosix::~TlsConnectionPosix() {
 }
 
 void TlsConnectionPosix::TryReceiveMessage() {
-  const int bytes_available = SSL_pending(ssl_.get());
-  if (bytes_available > 0) {
-    // NOTE: the pending size of the data block available is not a guarantee
-    // that it will receive only bytes_available or even
-    // any data, since not all pending bytes are application data.
-    std::vector<uint8_t> block(bytes_available);
+  OSP_DCHECK(ssl_);
+  constexpr int kMaxApplicationDataBytes = 4096;
+  std::vector<uint8_t> block(kMaxApplicationDataBytes);
+  const int bytes_read =
+      SSL_read(ssl_.get(), block.data(), kMaxApplicationDataBytes);
 
-    const int bytes_read = SSL_read(ssl_.get(), block.data(), bytes_available);
-
-    // Read operator was not successful, either due to a closed connection,
-    // an error occurred, or we have to take an action.
-    if (bytes_read <= 0) {
-      const Error error = GetSSLError(ssl_.get(), bytes_read);
-      if (!error.ok() && (error != Error::Code::kAgain)) {
-        DispatchError(error);
-      }
-      return;
+  // Read operator was not successful, either due to a closed connection,
+  // no application data available, an error occurred, or we have to take an
+  // action.
+  if (bytes_read <= 0) {
+    const Error error = GetSSLError(ssl_.get(), bytes_read);
+    if (!error.ok() && (error != Error::Code::kAgain)) {
+      DispatchError(error);
     }
-
-    block.resize(bytes_read);
-
-    task_runner_->PostTask([weak_this = weak_factory_.GetWeakPtr(),
-                            moved_block = std::move(block)]() mutable {
-      if (auto* self = weak_this.get()) {
-        if (auto* client = self->client_) {
-          client->OnRead(self, std::move(moved_block));
-        }
-      }
-    });
+    return;
   }
+
+  block.resize(bytes_read);
+
+  task_runner_->PostTask([weak_this = weak_factory_.GetWeakPtr(),
+                          moved_block = std::move(block)]() mutable {
+    if (auto* self = weak_this.get()) {
+      if (auto* client = self->client_) {
+        client->OnRead(self, std::move(moved_block));
+      }
+    }
+  });
 }
 
 void TlsConnectionPosix::SetClient(Client* client) {
@@ -128,6 +109,13 @@ IPEndpoint TlsConnectionPosix::GetRemoteEndpoint() const {
   absl::optional<IPEndpoint> endpoint = socket_->remote_address();
   OSP_DCHECK(endpoint.has_value());
   return endpoint.value();
+}
+
+void TlsConnectionPosix::RegisterConnectionWithDataRouter(
+    PlatformClientPosix* platform_client) {
+  OSP_DCHECK(!platform_client_);
+  platform_client_ = platform_client;
+  platform_client_->tls_data_router()->RegisterConnection(this);
 }
 
 void TlsConnectionPosix::SendAvailableBytes() {

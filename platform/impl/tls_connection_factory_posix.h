@@ -61,6 +61,11 @@ class TlsConnectionFactoryPosix : public TlsConnectionFactory,
   // factory.
   void Initialize();
 
+  // Handles their respective SSL handshake calls.  These will continue to be
+  // scheduled on |task_runner_| until the handshake completes.
+  void Connect(std::unique_ptr<TlsConnectionPosix> connection);
+  void Accept(std::unique_ptr<TlsConnectionPosix> connection);
+
   // Called on any thread, to post a task to notify the Client that a connection
   // failure or other error has occurred.
   void DispatchConnectionFailed(const IPEndpoint& remote_endpoint);

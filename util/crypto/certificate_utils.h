@@ -35,6 +35,11 @@ ErrorOr<std::vector<uint8_t>> ExportCertificate(const X509& certificate);
 ErrorOr<bssl::UniquePtr<X509>> ImportCertificate(const uint8_t* der_x509_cert,
                                                  int der_x509_cert_length);
 
+// Parses a DER-encoded RSAPrivateKey (RFC 3447).
+ErrorOr<bssl::UniquePtr<EVP_PKEY>> ImportRSAPrivateKey(
+    const uint8_t* der_rsa_private_key,
+    int key_length);
+
 std::string GetSpkiTlv(X509* cert);
 
 ErrorOr<uint64_t> ParseDerUint64(ASN1_INTEGER* asn1int);

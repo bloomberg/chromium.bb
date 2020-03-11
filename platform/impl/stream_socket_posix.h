@@ -23,7 +23,9 @@ class StreamSocketPosix : public StreamSocket {
  public:
   StreamSocketPosix(IPAddress::Version version);
   StreamSocketPosix(const IPEndpoint& local_endpoint);
-  StreamSocketPosix(SocketAddressPosix local_address, int file_descriptor);
+  StreamSocketPosix(SocketAddressPosix local_address,
+                    IPEndpoint remote_address,
+                    int file_descriptor);
 
   // StreamSocketPosix is non-copyable, due to directly managing the file
   // descriptor.
@@ -57,7 +59,7 @@ class StreamSocketPosix : public StreamSocket {
   bool EnsureInitialized();
   Error Initialize();
 
-  Error CloseOnError(Error::Code error_code);
+  Error CloseOnError(Error error);
   Error ReportSocketClosedError();
 
   constexpr static int kUnsetHandleFd = -1;

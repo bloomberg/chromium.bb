@@ -122,6 +122,8 @@ std::ostream& operator<<(std::ostream& os, const Error::Code& code) {
       return os << "Failure: FatalSSLError";
     case Error::Code::kRSAKeyGenerationFailure:
       return os << "Failure: RSAKeyGenerationFailure";
+    case Error::Code::kRSAKeyParseError:
+      return os << "Failure: RSAKeyParseError";
     case Error::Code::kEVPInitializationError:
       return os << "Failure: EVPInitializationError";
     case Error::Code::kCertificateCreationError:

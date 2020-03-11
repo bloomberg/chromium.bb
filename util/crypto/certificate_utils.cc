@@ -120,6 +120,24 @@ ErrorOr<bssl::UniquePtr<X509>> ImportCertificate(const uint8_t* der_x509_cert,
   return certificate;
 }
 
+ErrorOr<bssl::UniquePtr<EVP_PKEY>> ImportRSAPrivateKey(
+    const uint8_t* der_rsa_private_key,
+    int key_length) {
+  if (!der_rsa_private_key || key_length == 0) {
+    return Error::Code::kParameterInvalid;
+  }
+
+  CBS cbs;
+  CBS_init(&cbs, der_rsa_private_key, key_length);
+  RSA* rsa = RSA_parse_private_key(&cbs);
+  if (!rsa) {
+    return Error::Code::kRSAKeyParseError;
+  }
+  bssl::UniquePtr<EVP_PKEY> pkey(EVP_PKEY_new());
+  EVP_PKEY_assign_RSA(pkey.get(), rsa);
+  return pkey;
+}
+
 std::string GetSpkiTlv(X509* cert) {
   int len = i2d_X509_PUBKEY(cert->cert_info->key, nullptr);
   if (len <= 0) {
