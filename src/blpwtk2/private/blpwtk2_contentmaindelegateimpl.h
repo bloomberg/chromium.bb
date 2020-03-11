@@ -32,6 +32,7 @@
 
 namespace blpwtk2 {
 class ContentBrowserClientImpl;
+class ContentRendererClientImpl;
 class RendererInfoMap;
 
                         // =============================
@@ -69,6 +70,9 @@ class ContentMainDelegateImpl : public content::ContentMainDelegate {
 
     // Return nullptr if ContentBrowserClient does not exist
     ContentBrowserClientImpl* GetContentBrowserClientImpl();
+
+    // Return nullptr if ContentRendererClient does not exist
+    const ContentRendererClientImpl* GetContentRendererClientImpl() const;
 };
 
 }  // close namespace blpwtk2
