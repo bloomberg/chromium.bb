@@ -142,6 +142,15 @@ class SmokeTests(unittest.TestCase):
       with self.assertRaises(ValueError):
         subp.check_output(TEST_COMMAND, stdout=subp.PIPE)
 
+  def test_print_exception(self):
+    cmd = TEST_COMMAND + ['--fail', '--stdout']
+    with self.assertRaises(subprocess2.CalledProcessError) as e:
+      subprocess2.check_output(cmd)
+    exception_str = str(e.exception)
+    self.assertIn(' '.join(cmd), exception_str)
+    self.assertIn(str(e.exception.returncode), exception_str)
+    self.assertIn(e.exception.stdout.decode('utf-8', 'ignore'), exception_str)
+
   @_run_test()
   def test_check_output_throw_stdout(self, c, cmd, un, subp):
     with self.assertRaises(subp.CalledProcessError) as e:

@@ -48,7 +48,11 @@ class CalledProcessError(subprocess.CalledProcessError):
         ' '.join(self.cmd), self.returncode)
     if self.cwd:
       out += ' in ' + self.cwd
-    return '\n'.join(filter(None, (out, self.stdout, self.stderr)))
+    if self.stdout:
+      out += '\n' + self.stdout.decode('utf-8', 'ignore')
+    if self.stderr:
+      out += '\n' + self.stderr.decode('utf-8', 'ignore')
+    return out
 
 
 class CygwinRebaseError(CalledProcessError):
