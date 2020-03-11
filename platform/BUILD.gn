@@ -165,6 +165,7 @@ source_set("test") {
     "test/fake_udp_socket.cc",
     "test/fake_udp_socket.h",
     "test/mock_tls_connection.h",
+    "test/mock_udp_socket.h",
     "test/trace_logging_helpers.h",
   ]
 

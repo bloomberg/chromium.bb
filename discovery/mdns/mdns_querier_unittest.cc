@@ -19,6 +19,7 @@
 #include "platform/base/udp_packet.h"
 #include "platform/test/fake_clock.h"
 #include "platform/test/fake_task_runner.h"
+#include "platform/test/mock_udp_socket.h"
 
 namespace openscreen {
 namespace discovery {
@@ -38,27 +39,6 @@ ACTION_P(PartialCompareRecords, expected) {
   EXPECT_TRUE(actual.dns_type() == expected.dns_type());
   EXPECT_TRUE(actual.rdata() == expected.rdata());
 }
-
-class MockUdpSocket : public UdpSocket {
- public:
-  MOCK_METHOD(bool, IsIPv4, (), (const, override));
-  MOCK_METHOD(bool, IsIPv6, (), (const, override));
-  MOCK_METHOD(IPEndpoint, GetLocalEndpoint, (), (const, override));
-  MOCK_METHOD(void, Bind, (), (override));
-  MOCK_METHOD(void,
-              SetMulticastOutboundInterface,
-              (NetworkInterfaceIndex),
-              (override));
-  MOCK_METHOD(void,
-              JoinMulticastGroup,
-              (const IPAddress&, NetworkInterfaceIndex),
-              (override));
-  MOCK_METHOD(void,
-              SendMessage,
-              (const void*, size_t, const IPEndpoint&),
-              (override));
-  MOCK_METHOD(void, SetDscp, (DscpMode), (override));
-};
 
 class MockRecordChangedCallback : public MdnsRecordChangedCallback {
  public:
