@@ -69,7 +69,7 @@ enum Status {
   FAILED = 2;
 }
 
-// This message is sent from DLC Service via OnStatusInstall signal.
+// This message is sent from DLC Service via OnInstallStatus signal.
 //
 // Throughout the install progress, dlcservice will signal out this message.
 message InstallStatus {
