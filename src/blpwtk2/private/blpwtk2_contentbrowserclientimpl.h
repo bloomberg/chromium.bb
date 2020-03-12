@@ -130,6 +130,14 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
     // Returns the user agent.  Content may cache this value.
     std::string GetUserAgent() override;
 
+  void OnNetworkServiceCreated(
+      network::mojom::NetworkService* network_service) override;
+
+  mojo::Remote<network::mojom::NetworkContext> CreateNetworkContext(
+      content::BrowserContext* context,
+      bool in_memory,
+      const base::FilePath& relative_partition_path) override;
+
 };
 
 }  // close namespace blpwtk2

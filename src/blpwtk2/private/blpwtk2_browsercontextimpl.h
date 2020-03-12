@@ -26,6 +26,7 @@
 #include <blpwtk2_config.h>
 #include <blpwtk2_profile.h>
 #include <blpwtk2_prefstore.h>
+#include <blpwtk2_requestcontextmanager.h>
 
 #include <base/memory/ref_counted.h>
 #include <content/public/browser/browser_context.h>
@@ -69,6 +70,7 @@ class BrowserContextImpl final : public base::RefCounted<BrowserContextImpl>
     std::unique_ptr<PrefService> d_prefService;
     scoped_refptr<PrefStore> d_userPrefs;
     std::unique_ptr<net::ProxyConfig> d_proxyConfig;
+    std::unique_ptr<RequestContextManager> d_requestContextManager;
     int d_numWebViews;
     bool d_isDestroyed;
     bool d_devToolsServerLaunched;
@@ -87,6 +89,11 @@ class BrowserContextImpl final : public base::RefCounted<BrowserContextImpl>
     void incrementWebViewCount();
     void decrementWebViewCount();
     void launchDevToolsServerIfNecessary();
+
+    mojo::Remote<::network::mojom::NetworkContext> CreateNetworkContext(
+      bool in_memory,
+      const base::FilePath& relative_partition_path,
+      std::string user_agent);
 
     net::ProxyConfig *proxyConfig() { return d_proxyConfig.get(); }
 
