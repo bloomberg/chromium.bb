@@ -716,8 +716,8 @@ def _get_luci_context_access_token(local_auth):
       headers={'Content-Type': 'application/json'})
   if resp.status != 200:
     logging.error(
-        'local_auth: Failed to grab access token from LUCI context server: %r',
-        content)
+        'local_auth: Failed to grab access token for %s from LUCI context '
+        'server: %r', local_auth.default_account_id, content)
     return None
 
   try:
