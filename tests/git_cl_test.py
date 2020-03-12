@@ -887,19 +887,16 @@ class TestGitCl(unittest.TestCase):
         (('DownloadGerritHook', False), ''),
       ]
     if squash:
-      if force or not issue:
-        if not force:
-          calls += [
-            ((['RunEditor'],), description),
-          ]
+      if not force and not issue:
+        calls += [
+          ((['RunEditor'],), description),
+        ]
       # user wants to edit description
       if edit_description:
         calls += [
           ((['RunEditor'],), edit_description),
         ]
       ref_to_push = 'abcdef0123456789'
-      calls += [
-      ]
 
       if custom_cl_base is None:
         calls += [
@@ -1322,18 +1319,18 @@ class TestGitCl(unittest.TestCase):
         original_title='Initial upload',
         change_id='Ixxx')
 
-  def test_gerrit_upload_force_sets_bug_if_wrong_changeid(self):
+  def test_gerrit_upload_corrects_wrong_change_id(self):
     self._run_gerrit_upload_test(
-        ['-b', '10000', '-f', '-m', 'Title'],
-        u'desc=\n\nChange-Id: Ixxxx\n\nChange-Id: Izzzz\nBug: 10000',
+        ['-b', '10000', '-m', 'Title', '--edit-description'],
+        u'desc=\n\nBug: 10000\nChange-Id: Ixxxx',
         [],
-        force=True,
         issue='123456',
         expected_upstream_ref='origin/master',
+        edit_description='desc=\n\nBug: 10000\nChange-Id: Izzzz',
         fetched_description='desc=\n\nChange-Id: Ixxxx',
         original_title='Title',
         title='Title',
-        change_id='Izzzz')
+        change_id='Ixxxx')
 
   def test_gerrit_upload_force_sets_fixed(self):
     self._run_gerrit_upload_test(

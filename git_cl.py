@@ -2304,41 +2304,20 @@ class Changelist(object):
           message = change_desc.description
 
         change_id = self._GetChangeDetail()['change_id']
-        while True:
-          footer_change_ids = git_footers.get_footer_change_id(message)
-          if footer_change_ids == [change_id]:
-            break
-          if not footer_change_ids:
-            message = git_footers.add_footer_change_id(message, change_id)
-            print('WARNING: appended missing Change-Id to change description.')
-            continue
-          # There is already a valid footer but with different or several ids.
-          # Doing this automatically is non-trivial as we don't want to lose
-          # existing other footers, yet we want to append just 1 desired
-          # Change-Id. Thus, just create a new footer, but let user verify the
-          # new description.
-          message = '%s\n\nChange-Id: %s' % (message, change_id)
-          change_desc = ChangeDescription(message, bug=bug, fixed=fixed)
-          if not options.force:
-            print(
-                'WARNING: change %s has Change-Id footer(s):\n'
-                '  %s\n'
-                'but change has Change-Id %s, according to Gerrit.\n'
-                'Please, check the proposed correction to the description, '
-                'and edit it if necessary but keep the "Change-Id: %s" footer\n'
-                % (self.GetIssue(), '\n  '.join(footer_change_ids), change_id,
-                   change_id))
-            confirm_or_exit(action='edit')
-            change_desc.prompt()
 
-          message = change_desc.description
-          if not message:
-            DieWithError("Description is empty. Aborting...")
-
-          # Continue the while loop.
-        # Sanity check of this code - we should end up with proper message
-        # footer.
-        assert [change_id] == git_footers.get_footer_change_id(message)
+        # Make sure that the Change-Id in the description matches the one
+        # fetched from Gerrit.
+        footer_change_ids = git_footers.get_footer_change_id(message)
+        if footer_change_ids != [change_id]:
+          if footer_change_ids:
+            # Remove any existing Change-Id footers since they don't match the
+            # expected change_id footer.
+            message = git_footers.remove_footer(message, 'Change-Id')
+          # Add the expected Change-Id footer.
+          message = git_footers.add_footer_change_id(message, change_id)
+          print('WARNING: Change-Id has been set to Change-Id fetched from '
+                'Gerrit. Use `git cl issue 0` if you want to clear it and '
+                'set a new one.')
         change_desc = ChangeDescription(message, bug=bug, fixed=fixed)
       else:  # if not self.GetIssue()
         change_desc = ChangeDescription(message, bug=bug, fixed=fixed)
