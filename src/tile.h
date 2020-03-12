@@ -133,6 +133,12 @@ class Tile : public Allocable {
     return row4x4 > row4x4_start_ && column4x4 > column4x4_start_;
   }
 
+  bool IsBottomRightInside(int row4x4, int column4x4) const {
+    assert(row4x4 >= row4x4_start_);
+    assert(column4x4 >= column4x4_start_);
+    return row4x4 < row4x4_end_ && column4x4 < column4x4_end_;
+  }
+
   BlockParameters** BlockParametersAddress(int row4x4, int column4x4) const {
     return block_parameters_holder_.Address(row4x4, column4x4);
   }

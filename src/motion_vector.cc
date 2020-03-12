@@ -274,22 +274,21 @@ void ScanPoint(const Tile::Block& block, int delta_row, int delta_column,
 //
 // The |zero_mv_context| output parameter may be null. If |zero_mv_context| is
 // not null, the function may set |*zero_mv_context|.
-void AddTemporalReferenceMvCandidate(const Tile::Block& block, int delta_row,
-                                     int delta_column, bool is_compound,
+void AddTemporalReferenceMvCandidate(const Tile::Block& block,
+                                     const int reference_offset[2], int mv_row,
+                                     int mv_column, bool is_compound,
                                      int* const zero_mv_context,
                                      int* const num_mv_found) {
-  const int mv_row = (block.row4x4 + delta_row) | 1;
-  const int mv_column = (block.column4x4 + delta_column) | 1;
-  if (!block.tile.IsInside(mv_row, mv_column)) return;
   const int x8 = mv_column >> 1;
   const int y8 = mv_row >> 1;
-  if (delta_row == 0 && delta_column == 0) {
-    *zero_mv_context = 1;
-  }
-  const BlockParameters& bp = *block.bp;
   const TemporalMotionField& motion_field = block.tile.motion_field();
   const MotionVector& temporal_mv = motion_field.mv[y8][x8];
-  if (temporal_mv.mv[0] == kInvalidMvValue) return;
+  if (temporal_mv.mv[0] == kInvalidMvValue) {
+    if (*zero_mv_context == -1) {
+      *zero_mv_context = 1;
+    }
+    return;
+  }
   const int temporal_reference_offset = motion_field.reference_offset[y8][x8];
   PredictionParameters& prediction_parameters =
       *block.bp->prediction_parameters;
@@ -298,25 +297,26 @@ void AddTemporalReferenceMvCandidate(const Tile::Block& block, int delta_row,
   assert(temporal_reference_offset <= kMaxFrameDistance);
   CandidateMotionVector* const ref_mv_stack =
       prediction_parameters.ref_mv_stack;
+  CandidateMotionVector candidate_mv = {};
   if (is_compound) {
-    CandidateMotionVector candidate_mv = {};
     for (int i = 0; i < 2; ++i) {
-      const int reference_offset = GetRelativeDistance(
-          block.tile.frame_header().order_hint,
-          block.tile.current_frame().order_hint(bp.reference_frame[i]),
-          block.tile.sequence_header().order_hint_shift_bits);
-      if (reference_offset != 0) {
-        GetMvProjection(temporal_mv, reference_offset,
+      if (reference_offset[i] != 0) {
+        GetMvProjection(temporal_mv, reference_offset[i],
                         temporal_reference_offset, &candidate_mv.mv[i]);
         LowerMvPrecision(block, &candidate_mv.mv[i]);
       }
     }
-    if (delta_row == 0 && delta_column == 0) {
-      *zero_mv_context = static_cast<int>(
-          std::abs(candidate_mv.mv[0].mv[0] - global_mv[0].mv[0]) >= 16 ||
-          std::abs(candidate_mv.mv[0].mv[1] - global_mv[0].mv[1]) >= 16 ||
-          std::abs(candidate_mv.mv[1].mv[0] - global_mv[1].mv[0]) >= 16 ||
-          std::abs(candidate_mv.mv[1].mv[1] - global_mv[1].mv[1]) >= 16);
+    if (*zero_mv_context == -1) {
+      int max_difference =
+          std::max(std::abs(candidate_mv.mv[0].mv[0] - global_mv[0].mv[0]),
+                   std::abs(candidate_mv.mv[0].mv[1] - global_mv[0].mv[1]));
+      max_difference =
+          std::max(max_difference,
+                   std::abs(candidate_mv.mv[1].mv[0] - global_mv[1].mv[0]));
+      max_difference =
+          std::max(max_difference,
+                   std::abs(candidate_mv.mv[1].mv[1] - global_mv[1].mv[1]));
+      *zero_mv_context = static_cast<int>(max_difference >= 16);
     }
     auto result =
         std::find_if(ref_mv_stack, ref_mv_stack + *num_mv_found,
@@ -335,25 +335,21 @@ void AddTemporalReferenceMvCandidate(const Tile::Block& block, int delta_row,
     return;
   }
   assert(!is_compound);
-  MotionVector candidate_mv = {};
-  const int reference_offset = GetRelativeDistance(
-      block.tile.frame_header().order_hint,
-      block.tile.current_frame().order_hint(bp.reference_frame[0]),
-      block.tile.sequence_header().order_hint_shift_bits);
-  if (reference_offset != 0) {
-    GetMvProjection(temporal_mv, reference_offset, temporal_reference_offset,
-                    &candidate_mv);
-    LowerMvPrecision(block, &candidate_mv);
+  if (reference_offset[0] != 0) {
+    GetMvProjection(temporal_mv, reference_offset[0], temporal_reference_offset,
+                    &candidate_mv.mv[0]);
+    LowerMvPrecision(block, &candidate_mv.mv[0]);
   }
-  if (delta_row == 0 && delta_column == 0) {
-    *zero_mv_context = static_cast<int>(
-        std::abs(candidate_mv.mv[0] - global_mv[0].mv[0]) >= 16 ||
-        std::abs(candidate_mv.mv[1] - global_mv[0].mv[1]) >= 16);
+  if (*zero_mv_context == -1) {
+    const int max_difference =
+        std::max(std::abs(candidate_mv.mv[0].mv[0] - global_mv[0].mv[0]),
+                 std::abs(candidate_mv.mv[0].mv[1] - global_mv[0].mv[1]));
+    *zero_mv_context = static_cast<int>(max_difference >= 16);
   }
   auto result =
       std::find_if(ref_mv_stack, ref_mv_stack + *num_mv_found,
                    [&candidate_mv](const CandidateMotionVector& ref_mv) {
-                     return ref_mv.mv[0] == candidate_mv;
+                     return ref_mv.mv[0] == candidate_mv.mv[0];
                    });
   if (result != ref_mv_stack + *num_mv_found) {
     prediction_parameters.IncreaseWeight(std::distance(ref_mv_stack, result),
@@ -361,7 +357,7 @@ void AddTemporalReferenceMvCandidate(const Tile::Block& block, int delta_row,
     return;
   }
   if (*num_mv_found >= kMaxRefMvStackSize) return;
-  ref_mv_stack[*num_mv_found] = {{candidate_mv, {}}};
+  ref_mv_stack[*num_mv_found] = candidate_mv;
   prediction_parameters.SetWeightIndexStackEntry(*num_mv_found, 2);
   ++*num_mv_found;
 }
@@ -371,7 +367,10 @@ bool IsWithinTheSame64x64Block(const Tile::Block& block, int delta_row,
                                int delta_column) {
   const int row = (block.row4x4 & 15) + delta_row;
   const int column = (block.column4x4 & 15) + delta_column;
-  return row >= 0 && row < 16 && column >= 0 && column < 16;
+  // |block.height4x4| is at least 2 for all elements in |kTemporalScanMask|.
+  // So |row| are all non-negative.
+  assert(row >= 0);
+  return row < 16 && column >= 0 && column < 16;
 }
 
 constexpr BitMaskSet kTemporalScanMask(kBlock8x8, kBlock8x16, kBlock8x32,
@@ -386,15 +385,38 @@ void TemporalScan(const Tile::Block& block, bool is_compound,
                   int* const zero_mv_context, int* const num_mv_found) {
   const int step_w = (block.width4x4 >= 16) ? 4 : 2;
   const int step_h = (block.height4x4 >= 16) ? 4 : 2;
-  for (int row = 0; row < std::min(static_cast<int>(block.height4x4), 16);
-       row += step_h) {
-    for (int column = 0;
-         column < std::min(static_cast<int>(block.width4x4), 16);
-         column += step_w) {
-      AddTemporalReferenceMvCandidate(block, row, column, is_compound,
-                                      zero_mv_context, num_mv_found);
-    }
+  const int row_start = block.row4x4 | 1;
+  const int column_start = block.column4x4 | 1;
+  const int row_end =
+      row_start + std::min(static_cast<int>(block.height4x4), 16);
+  const int column_end =
+      column_start + std::min(static_cast<int>(block.width4x4), 16);
+  int reference_offset[2];
+  reference_offset[0] = GetRelativeDistance(
+      block.tile.frame_header().order_hint,
+      block.tile.current_frame().order_hint(block.bp->reference_frame[0]),
+      block.tile.sequence_header().order_hint_shift_bits);
+  if (is_compound) {
+    reference_offset[1] = GetRelativeDistance(
+        block.tile.frame_header().order_hint,
+        block.tile.current_frame().order_hint(block.bp->reference_frame[1]),
+        block.tile.sequence_header().order_hint_shift_bits);
   }
+  int mv_row = row_start;
+  do {
+    int mv_column = column_start;
+    do {
+      // Both horizontal and vertical offsets are positive. Only bottom and
+      // right boundaries need to be checked.
+      if (block.tile.IsBottomRightInside(mv_row, mv_column)) {
+        AddTemporalReferenceMvCandidate(block, reference_offset, mv_row,
+                                        mv_column, is_compound, zero_mv_context,
+                                        num_mv_found);
+      }
+      mv_column += step_w;
+    } while (mv_column < column_end);
+    mv_row += step_h;
+  } while (mv_row < row_end);
   if (kTemporalScanMask.Contains(block.size)) {
     const int temporal_sample_positions[3][2] = {
         {block.height4x4, -2},
@@ -404,8 +426,14 @@ void TemporalScan(const Tile::Block& block, bool is_compound,
       const int row = temporal_sample_position[0];
       const int column = temporal_sample_position[1];
       if (!IsWithinTheSame64x64Block(block, row, column)) continue;
-      AddTemporalReferenceMvCandidate(block, row, column, is_compound,
-                                      zero_mv_context, num_mv_found);
+      const int mv_row = row_start + row;
+      const int mv_column = column_start + column;
+      // IsWithinTheSame64x64Block() guarantees the reference block is inside
+      // the top and left boundary.
+      if (!block.tile.IsBottomRightInside(mv_row, mv_column)) continue;
+      AddTemporalReferenceMvCandidate(block, reference_offset, mv_row,
+                                      mv_column, is_compound, zero_mv_context,
+                                      num_mv_found);
     }
   }
 }
@@ -701,9 +729,12 @@ void FindMvStack(const Tile::Block& block, bool is_compound,
   const int nearest_matches =
       static_cast<int>(found_row_match) + static_cast<int>(found_column_match);
   prediction_parameters.nearest_mv_count = num_mv_found;
-  contexts->zero_mv = 0;
   if (block.tile.frame_header().use_ref_frame_mvs) {
+    // Initialize to invalid value, and it will be set when temporal mv is zero.
+    contexts->zero_mv = -1;
     TemporalScan(block, is_compound, &contexts->zero_mv, &num_mv_found);
+  } else {
+    contexts->zero_mv = 0;
   }
   bool dummy_bool = false;
   ScanPoint(block, -1, -1, is_compound, &dummy_bool, &found_row_match,
