@@ -537,6 +537,10 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
     // Setup path to dictionary files.
     setupDictionaryFiles(dictionaryPath);
 
+    if (isHost) {
+        base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+        command_line->AppendSwitchASCII("enable-features", "NetworkServiceInProcess");
+    }
     // Create a process host if we necessary.
     if (isHost && Statics::isRendererMainThreadMode()) {
         // Apply command line switches to content.
