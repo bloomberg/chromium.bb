@@ -685,12 +685,12 @@ inline int16x8_t ScaleNoise(const int16x8_t noise, const int16x8_t scaling,
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
 
 template <int bitdepth, typename GrainType, typename Pixel>
-void BlendNoiseWithImageLuma_NEON(const void* noise_image_ptr, int min_value,
-                                  int max_luma, int scaling_shift, int width,
-                                  int height, const uint8_t scaling_lut_y[256],
-                                  const void* source_plane_y,
-                                  ptrdiff_t source_stride_y, void* dest_plane_y,
-                                  ptrdiff_t dest_stride_y) {
+void BlendNoiseWithImageLuma_NEON(
+    const void* noise_image_ptr, int min_value, int max_luma, int scaling_shift,
+    int width, int height, int start_height,
+    const uint8_t scaling_lut_y[kScalingLookupTableSize],
+    const void* source_plane_y, ptrdiff_t source_stride_y, void* dest_plane_y,
+    ptrdiff_t dest_stride_y) {
   const auto* noise_image =
       static_cast<const Array2D<GrainType>*>(noise_image_ptr);
   const auto* in_y_row = static_cast<const Pixel*>(source_plane_y);
@@ -716,7 +716,8 @@ void BlendNoiseWithImageLuma_NEON(const void* noise_image_ptr, int min_value,
       const int16x8_t orig = GetSignedSource8(&in_y_row[x]);
       const int16x8_t scaling =
           GetScalingFactors<bitdepth, Pixel>(scaling_lut_y, &in_y_row[x]);
-      int16x8_t noise = GetSignedSource8(&(noise_image[kPlaneY][y][x]));
+      int16x8_t noise =
+          GetSignedSource8(&(noise_image[kPlaneY][y + start_height][x]));
 
       if (bitdepth == 8) {
         noise = ScaleNoise(noise, scaling, scaling_shift_vect16);
@@ -760,11 +761,12 @@ inline int16x8_t BlendChromaValsWithCfl(
 template <int bitdepth, typename GrainType, typename Pixel>
 LIBGAV1_ALWAYS_INLINE void BlendChromaPlaneWithCfl_NEON(
     const Array2D<GrainType>& noise_image, int min_value, int max_chroma,
-    int width, int height, int subsampling_x, int subsampling_y,
-    int scaling_shift, const uint8_t scaling_lut[kScalingLookupTableSize],
-    const Pixel* in_y_row, ptrdiff_t source_stride_y,
-    const Pixel* in_chroma_row, ptrdiff_t source_stride_chroma,
-    Pixel* out_chroma_row, ptrdiff_t dest_stride) {
+    int width, int height, int start_height, int subsampling_x,
+    int subsampling_y, int scaling_shift,
+    const uint8_t scaling_lut[kScalingLookupTableSize], const Pixel* in_y_row,
+    ptrdiff_t source_stride_y, const Pixel* in_chroma_row,
+    ptrdiff_t source_stride_chroma, Pixel* out_chroma_row,
+    ptrdiff_t dest_stride) {
   const int16x8_t floor = vdupq_n_s16(min_value);
   const int16x8_t ceiling = vdupq_n_s16(max_chroma);
   Pixel luma_buffer[16];
@@ -782,8 +784,8 @@ LIBGAV1_ALWAYS_INLINE void BlendChromaPlaneWithCfl_NEON(
   // Writing to this buffer avoids the cost of doing 8 lane lookups in a row
   // in GetScalingFactors.
   Pixel average_luma_buffer[8];
-  // Blend kPlaneU. Looping over one plane at a time is faster in higher
-  // resolutions, despite re-computing luma.
+  assert(start_height % 2 == 0);
+  start_height >>= subsampling_y;
   int y = 0;
   do {
     int x = 0;
@@ -798,7 +800,8 @@ LIBGAV1_ALWAYS_INLINE void BlendChromaPlaneWithCfl_NEON(
       const int16x8_t blended =
           BlendChromaValsWithCfl<bitdepth, GrainType, Pixel>(
               average_luma_buffer, scaling_lut, &in_chroma_row[x],
-              &(noise_image[y][x]), scaling_shift_vect16, scaling_shift_vect32);
+              &(noise_image[y + start_height][x]), scaling_shift_vect16,
+              scaling_shift_vect32);
 
       // In 8bpp, when params_.clip_to_restricted_range == false, we can replace
       // clipping with vqmovun_s16, but it's not likely to be worth copying the
@@ -820,7 +823,8 @@ LIBGAV1_ALWAYS_INLINE void BlendChromaPlaneWithCfl_NEON(
       const int16x8_t blended =
           BlendChromaValsWithCfl<bitdepth, GrainType, Pixel>(
               average_luma_buffer, scaling_lut, &in_chroma_row[x],
-              &(noise_image[y][x]), scaling_shift_vect16, scaling_shift_vect32);
+              &(noise_image[y + start_height][x]), scaling_shift_vect16,
+              scaling_shift_vect32);
       // In 8bpp, when params_.clip_to_restricted_range == false, we can replace
       // clipping with vqmovun_s16, but it's not likely to be worth copying the
       // function for just that case.
@@ -839,8 +843,9 @@ LIBGAV1_ALWAYS_INLINE void BlendChromaPlaneWithCfl_NEON(
 template <int bitdepth, typename GrainType, typename Pixel>
 void BlendNoiseWithImageChromaWithCfl_NEON(
     Plane plane, const FilmGrainParams& params, const void* noise_image_ptr,
-    int min_value, int max_chroma, int width, int height, int subsampling_x,
-    int subsampling_y, const uint8_t scaling_lut[kScalingLookupTableSize],
+    int min_value, int max_chroma, int width, int height, int start_height,
+    int subsampling_x, int subsampling_y,
+    const uint8_t scaling_lut[kScalingLookupTableSize],
     const void* source_plane_y, ptrdiff_t source_stride_y,
     const void* source_plane_uv, ptrdiff_t source_stride_uv,
     void* dest_plane_uv, ptrdiff_t dest_stride_uv) {
@@ -856,9 +861,9 @@ void BlendNoiseWithImageChromaWithCfl_NEON(
   // Looping over one plane at a time is faster in higher resolutions, despite
   // re-computing luma.
   BlendChromaPlaneWithCfl_NEON<bitdepth, GrainType, Pixel>(
-      noise_image[plane], min_value, max_chroma, width, height, subsampling_x,
-      subsampling_y, params.chroma_scaling, scaling_lut, in_y, source_stride_y,
-      in_uv, source_stride_uv, out_uv, dest_stride_uv);
+      noise_image[plane], min_value, max_chroma, width, height, start_height,
+      subsampling_x, subsampling_y, params.chroma_scaling, scaling_lut, in_y,
+      source_stride_y, in_uv, source_stride_uv, out_uv, dest_stride_uv);
 }
 
 }  // namespace
@@ -890,12 +895,13 @@ inline int16x8_t BlendChromaValsNoCfl(
 
 LIBGAV1_ALWAYS_INLINE void BlendChromaPlane8bpp_NEON(
     const Array2D<int8_t>& noise_image, int min_value, int max_chroma,
-    int width, int height, int subsampling_x, int subsampling_y,
-    int scaling_shift, int chroma_offset, int chroma_multiplier,
-    int luma_multiplier, const uint8_t scaling_lut[kScalingLookupTableSize],
-    const uint8_t* in_y_row, ptrdiff_t source_stride_y,
-    const uint8_t* in_chroma_row, ptrdiff_t source_stride_chroma,
-    uint8_t* out_chroma_row, ptrdiff_t dest_stride) {
+    int width, int height, int start_height, int subsampling_x,
+    int subsampling_y, int scaling_shift, int chroma_offset,
+    int chroma_multiplier, int luma_multiplier,
+    const uint8_t scaling_lut[kScalingLookupTableSize], const uint8_t* in_y_row,
+    ptrdiff_t source_stride_y, const uint8_t* in_chroma_row,
+    ptrdiff_t source_stride_chroma, uint8_t* out_chroma_row,
+    ptrdiff_t dest_stride) {
   const int16x8_t floor = vdupq_n_s16(min_value);
   const int16x8_t ceiling = vdupq_n_s16(max_chroma);
   // In 8bpp, the maximum upscaled noise is 127*255 = 0x7E81, which is safe
@@ -909,6 +915,7 @@ LIBGAV1_ALWAYS_INLINE void BlendChromaPlane8bpp_NEON(
   uint8_t luma_buffer[16];
   const int16x8_t offset = vdupq_n_s16(chroma_offset << 5);
 
+  start_height >>= subsampling_y;
   int y = 0;
   do {
     int x = 0;
@@ -917,8 +924,9 @@ LIBGAV1_ALWAYS_INLINE void BlendChromaPlane8bpp_NEON(
       const int16x8_t average_luma = vreinterpretq_s16_u16(
           GetAverageLuma(&in_y_row[luma_x], subsampling_x));
       const int16x8_t blended = BlendChromaValsNoCfl(
-          scaling_lut, &in_chroma_row[x], &(noise_image[y][x]), average_luma,
-          scaling_shift_vect, offset, luma_multiplier, chroma_multiplier);
+          scaling_lut, &in_chroma_row[x], &(noise_image[y + start_height][x]),
+          average_luma, scaling_shift_vect, offset, luma_multiplier,
+          chroma_multiplier);
       // In 8bpp, when params_.clip_to_restricted_range == false, we can
       // replace clipping with vqmovun_s16, but the gain would be small.
       StoreUnsigned8(&out_chroma_row[x],
@@ -939,8 +947,9 @@ LIBGAV1_ALWAYS_INLINE void BlendChromaPlane8bpp_NEON(
       const int16x8_t average_luma =
           vreinterpretq_s16_u16(GetAverageLuma(luma_buffer, subsampling_x));
       const int16x8_t blended = BlendChromaValsNoCfl(
-          scaling_lut, &in_chroma_row[x], &(noise_image[y][x]), average_luma,
-          scaling_shift_vect, offset, luma_multiplier, chroma_multiplier);
+          scaling_lut, &in_chroma_row[x], &(noise_image[y + start_height][x]),
+          average_luma, scaling_shift_vect, offset, luma_multiplier,
+          chroma_multiplier);
       StoreUnsigned8(&out_chroma_row[x],
                      vreinterpretq_u16_s16(Clip3(blended, floor, ceiling)));
       // End of right edge iteration.
@@ -955,8 +964,9 @@ LIBGAV1_ALWAYS_INLINE void BlendChromaPlane8bpp_NEON(
 // This function is for the case params_.chroma_scaling_from_luma == false.
 void BlendNoiseWithImageChroma8bpp_NEON(
     Plane plane, const FilmGrainParams& params, const void* noise_image_ptr,
-    int min_value, int max_chroma, int width, int height, int subsampling_x,
-    int subsampling_y, const uint8_t scaling_lut[kScalingLookupTableSize],
+    int min_value, int max_chroma, int width, int height, int start_height,
+    int subsampling_x, int subsampling_y,
+    const uint8_t scaling_lut[kScalingLookupTableSize],
     const void* source_plane_y, ptrdiff_t source_stride_y,
     const void* source_plane_uv, ptrdiff_t source_stride_uv,
     void* dest_plane_uv, ptrdiff_t dest_stride_uv) {
@@ -973,7 +983,7 @@ void BlendNoiseWithImageChroma8bpp_NEON(
   const int multiplier =
       (plane == kPlaneU) ? params.u_multiplier : params.v_multiplier;
   BlendChromaPlane8bpp_NEON(noise_image[plane], min_value, max_chroma, width,
-                            height, subsampling_x, subsampling_y,
+                            height, start_height, subsampling_x, subsampling_y,
                             params.chroma_scaling, offset, multiplier,
                             luma_multiplier, scaling_lut, in_y, source_stride_y,
                             in_uv, source_stride_uv, out_uv, dest_stride_uv);

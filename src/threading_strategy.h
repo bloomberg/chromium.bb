@@ -67,6 +67,10 @@ class ThreadingStrategy {
   // multi-threading.
   ThreadPool* post_filter_thread_pool() const { return thread_pool_.get(); }
 
+  // Returns a pointer to the ThreadPool that is to be used for film grain
+  // synthesis and blending.
+  ThreadPool* film_grain_thread_pool() const { return thread_pool_.get(); }
+
  private:
   std::unique_ptr<ThreadPool> thread_pool_;
   int tile_thread_count_;

@@ -25,9 +25,12 @@
 #include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
 #include "src/utils/array_2d.h"
+#include "src/utils/blocking_counter.h"
 #include "src/utils/common.h"
 #include "src/utils/compiler_attributes.h"
+#include "src/utils/constants.h"
 #include "src/utils/logging.h"
+#include "src/utils/threadpool.h"
 
 namespace libgav1 {
 
@@ -232,26 +235,25 @@ constexpr int16_t kGaussianSequence[/*2048*/] = {
 static_assert(sizeof(kGaussianSequence) / sizeof(kGaussianSequence[0]) == 2048,
               "");
 
+// The number of rows in a contiguous group computed by a single worker thread
+// before checking for the next available group.
+constexpr int kFrameChunkHeight = 8;
+
 // |width| and |height| refer to the plane, not the frame, meaning any
 // subsampling should be applied by the caller.
 template <typename Pixel>
-inline void CopyImagePlane(const void* source_plane, ptrdiff_t source_stride,
-                           int width, int height, void* dest_plane,
+inline void CopyImagePlane(const uint8_t* source_plane, ptrdiff_t source_stride,
+                           int width, int height, uint8_t* dest_plane,
                            ptrdiff_t dest_stride) {
   // If it's the same buffer there's nothing to do.
   if (source_plane == dest_plane) return;
-  const auto* in_plane = static_cast<const Pixel*>(source_plane);
-  source_stride /= sizeof(Pixel);
-  auto* out_plane = static_cast<Pixel*>(dest_plane);
-  dest_stride /= sizeof(Pixel);
 
-  const Pixel* in_row = in_plane;
-  Pixel* out_row = out_plane;
   int y = 0;
   do {
-    memcpy(out_row, in_row, width * sizeof(*out_row));
-    in_row += source_stride;
-    out_row += dest_stride;
+    memcpy(dest_plane, source_plane,
+           width * sizeof(Pixel) * sizeof(dest_plane[0]));
+    source_plane += source_stride;
+    dest_plane += dest_stride;
   } while (++y < height);
 }
 
@@ -261,7 +263,8 @@ template <int bitdepth>
 FilmGrain<bitdepth>::FilmGrain(const FilmGrainParams& params,
                                bool is_monochrome,
                                bool color_matrix_is_identity, int subsampling_x,
-                               int subsampling_y, int width, int height)
+                               int subsampling_y, int width, int height,
+                               ThreadPool* thread_pool)
     : params_(params),
       is_monochrome_(is_monochrome),
       color_matrix_is_identity_(color_matrix_is_identity),
@@ -269,9 +272,11 @@ FilmGrain<bitdepth>::FilmGrain(const FilmGrainParams& params,
       subsampling_y_(subsampling_y),
       width_(width),
       height_(height),
-      chroma_width_((subsampling_x != 0) ? kMinChromaWidth : kMaxChromaWidth),
-      chroma_height_((subsampling_y != 0) ? kMinChromaHeight
-                                          : kMaxChromaHeight) {}
+      template_uv_width_((subsampling_x != 0) ? kMinChromaWidth
+                                              : kMaxChromaWidth),
+      template_uv_height_((subsampling_y != 0) ? kMinChromaHeight
+                                               : kMaxChromaHeight),
+      thread_pool_(thread_pool) {}
 
 template <int bitdepth>
 bool FilmGrain<bitdepth>::Init() {
@@ -294,8 +299,8 @@ bool FilmGrain<bitdepth>::Init() {
     ASAN_POISON_MEMORY_REGION(luma_grain_, sizeof(luma_grain_));
   }
   if (!is_monochrome_) {
-    GenerateChromaGrains(params_, chroma_width_, chroma_height_, u_grain_,
-                         v_grain_);
+    GenerateChromaGrains(params_, template_uv_width_, template_uv_height_,
+                         u_grain_, v_grain_);
     if (params_.auto_regression_coeff_lag > 0 || use_luma) {
       dsp->film_grain.chroma_auto_regression[static_cast<int>(
           use_luma)][params_.auto_regression_coeff_lag](
@@ -523,12 +528,103 @@ void FilmGrain<bitdepth>::ConstructNoiseImage(
 }
 
 template <int bitdepth>
+void FilmGrain<bitdepth>::BlendNoiseChromaWorker(
+    const dsp::Dsp& dsp, const Plane* planes, int num_planes,
+    std::atomic<int>* job_counter, int min_value, int max_chroma,
+    const uint8_t* source_plane_y, ptrdiff_t source_stride_y,
+    const uint8_t* source_plane_u, ptrdiff_t source_stride_u,
+    const uint8_t* source_plane_v, ptrdiff_t source_stride_v,
+    uint8_t* dest_plane_u, ptrdiff_t dest_stride_u, uint8_t* dest_plane_v,
+    ptrdiff_t dest_stride_v) {
+  assert(num_planes > 0);
+  const int full_jobs_per_plane = height_ / kFrameChunkHeight;
+  const int remainder_job_height = height_ & (kFrameChunkHeight - 1);
+  const int total_full_jobs = full_jobs_per_plane * num_planes;
+  // If the frame height is not a multiple of kFrameChunkHeight, one job with
+  // a smaller number of rows is necessary at the end of each plane.
+  const int total_jobs =
+      total_full_jobs + ((remainder_job_height == 0) ? 0 : num_planes);
+  int job_index;
+  // Each job corresponds to a slice of kFrameChunkHeight rows in the luma
+  // plane. dsp->blend_noise_chroma handles subsampling.
+  // This loop body handles a slice of one plane or the other, depending on
+  // which are active. That way, threads working on consecutive jobs will keep
+  // the same region of luma source in working memory.
+  while ((job_index = job_counter->fetch_add(1, std::memory_order_relaxed)) <
+         total_jobs) {
+    const Plane plane = planes[job_index % num_planes];
+    const int slice_index = job_index / num_planes;
+    const int start_height = slice_index * kFrameChunkHeight;
+    const int job_height = std::min(height_ - start_height, kFrameChunkHeight);
+
+    const auto* source_cursor_y = reinterpret_cast<const Pixel*>(
+        source_plane_y + start_height * source_stride_y);
+    const uint8_t* scaling_lut_uv;
+    const uint8_t* source_plane_uv;
+    ptrdiff_t source_stride_uv;
+    uint8_t* dest_plane_uv;
+    ptrdiff_t dest_stride_uv;
+
+    if (plane == kPlaneU) {
+      scaling_lut_uv = scaling_lut_u_;
+      source_plane_uv = source_plane_u;
+      source_stride_uv = source_stride_u;
+      dest_plane_uv = dest_plane_u;
+      dest_stride_uv = dest_stride_u;
+    } else {
+      assert(plane == kPlaneV);
+      scaling_lut_uv = scaling_lut_v_;
+      source_plane_uv = source_plane_v;
+      source_stride_uv = source_stride_v;
+      dest_plane_uv = dest_plane_v;
+      dest_stride_uv = dest_stride_v;
+    }
+    const auto* source_cursor_uv = reinterpret_cast<const Pixel*>(
+        source_plane_uv + (start_height >> subsampling_y_) * source_stride_uv);
+    auto* dest_cursor_uv = reinterpret_cast<Pixel*>(
+        dest_plane_uv + (start_height >> subsampling_y_) * dest_stride_uv);
+    dsp.film_grain.blend_noise_chroma[params_.chroma_scaling_from_luma](
+        plane, params_, noise_image_, min_value, max_chroma, width_, job_height,
+        start_height, subsampling_x_, subsampling_y_, scaling_lut_uv,
+        source_cursor_y, source_stride_y, source_cursor_uv, source_stride_uv,
+        dest_cursor_uv, dest_stride_uv);
+  }
+}
+
+template <int bitdepth>
+void FilmGrain<bitdepth>::BlendNoiseLumaWorker(
+    const dsp::Dsp& dsp, std::atomic<int>* job_counter, int min_value,
+    int max_luma, const uint8_t* source_plane_y, ptrdiff_t source_stride_y,
+    uint8_t* dest_plane_y, ptrdiff_t dest_stride_y) {
+  const int total_full_jobs = height_ / kFrameChunkHeight;
+  const int remainder_job_height = height_ & (kFrameChunkHeight - 1);
+  const int total_jobs =
+      total_full_jobs + static_cast<int>(remainder_job_height > 0);
+  int job_index;
+  // Each job is some number of rows in a plane.
+  while ((job_index = job_counter->fetch_add(1, std::memory_order_relaxed)) <
+         total_jobs) {
+    const int start_height = job_index * kFrameChunkHeight;
+    const int job_height = std::min(height_ - start_height, kFrameChunkHeight);
+
+    const auto* source_cursor_y = reinterpret_cast<const Pixel*>(
+        source_plane_y + start_height * source_stride_y);
+    auto* dest_cursor_y =
+        reinterpret_cast<Pixel*>(dest_plane_y + start_height * dest_stride_y);
+    dsp.film_grain.blend_noise_luma(
+        noise_image_, min_value, max_luma, params_.chroma_scaling, width_,
+        job_height, start_height, scaling_lut_y_, source_cursor_y,
+        source_stride_y, dest_cursor_y, dest_stride_y);
+  }
+}
+
+template <int bitdepth>
 bool FilmGrain<bitdepth>::AddNoise(
-    const void* source_plane_y, ptrdiff_t source_stride_y,
-    const void* source_plane_u, ptrdiff_t source_stride_u,
-    const void* source_plane_v, ptrdiff_t source_stride_v, void* dest_plane_y,
-    ptrdiff_t dest_stride_y, void* dest_plane_u, ptrdiff_t dest_stride_u,
-    void* dest_plane_v, ptrdiff_t dest_stride_v) {
+    const uint8_t* source_plane_y, ptrdiff_t source_stride_y,
+    const uint8_t* source_plane_u, ptrdiff_t source_stride_u,
+    const uint8_t* source_plane_v, ptrdiff_t source_stride_v,
+    uint8_t* dest_plane_y, ptrdiff_t dest_stride_y, uint8_t* dest_plane_u,
+    ptrdiff_t dest_stride_u, uint8_t* dest_plane_v, ptrdiff_t dest_stride_v) {
   if (!Init()) {
     LIBGAV1_DLOG(ERROR, "Init() failed.");
     return false;
@@ -613,56 +709,110 @@ bool FilmGrain<bitdepth>::AddNoise(
     max_luma = (256 << (bitdepth - 8)) - 1;
     max_chroma = max_luma;
   }
+
+  // Handle all chroma planes first because luma source may be altered in place.
   if (!is_monochrome_) {
+    // This is done in a strange way but Vector can't be passed by copy to the
+    // lambda capture that spawns the thread.
+    Plane planes_to_blend[2];
+    int num_planes = 0;
     if (params_.chroma_scaling_from_luma) {
-      dsp->film_grain.blend_noise_chroma[params_.chroma_scaling_from_luma](
-          kPlaneU, params_, noise_image_, min_value, max_chroma, width_,
-          height_, subsampling_x_, subsampling_y_, scaling_lut_u_,
-          source_plane_y, source_stride_y, source_plane_u, source_stride_u,
-          dest_plane_u, dest_stride_u);
-      dsp->film_grain.blend_noise_chroma[params_.chroma_scaling_from_luma](
-          kPlaneV, params_, noise_image_, min_value, max_chroma, width_,
-          height_, subsampling_x_, subsampling_y_, scaling_lut_v_,
-          source_plane_y, source_stride_y, source_plane_v, source_stride_v,
-          dest_plane_v, dest_stride_v);
+      // Both noise planes are computed from the luma scaling lookup table.
+      planes_to_blend[num_planes++] = kPlaneU;
+      planes_to_blend[num_planes++] = kPlaneV;
     } else {
+      const int height_uv = RightShiftWithRounding(height_, subsampling_y_);
+      const int width_uv = RightShiftWithRounding(width_, subsampling_x_);
+
+      // Noise is applied according to a lookup table defined by pieceiwse
+      // linear "points." If the lookup table is empty, that corresponds to
+      // outputting zero noise.
       if (params_.num_u_points == 0) {
-        const int chroma_width = (width_ + subsampling_x_) >> subsampling_x_;
-        const int chroma_height = (height_ + subsampling_y_) >> subsampling_y_;
-        CopyImagePlane<Pixel>(source_plane_u, source_stride_u, chroma_width,
-                              chroma_height, dest_plane_u, dest_stride_u);
+        CopyImagePlane<Pixel>(source_plane_u, source_stride_u, width_uv,
+                              height_uv, dest_plane_u, dest_stride_u);
       } else {
-        dsp->film_grain.blend_noise_chroma[params_.chroma_scaling_from_luma](
-            kPlaneU, params_, noise_image_, min_value, max_chroma, width_,
-            height_, subsampling_x_, subsampling_y_, scaling_lut_u_,
-            source_plane_y, source_stride_y, source_plane_u, source_stride_u,
-            dest_plane_u, dest_stride_u);
+        planes_to_blend[num_planes++] = kPlaneU;
       }
       if (params_.num_v_points == 0) {
-        const int chroma_width = (width_ + subsampling_x_) >> subsampling_x_;
-        const int chroma_height = (height_ + subsampling_y_) >> subsampling_y_;
-        CopyImagePlane<Pixel>(source_plane_v, source_stride_v, chroma_width,
-                              chroma_height, dest_plane_v, dest_stride_v);
+        CopyImagePlane<Pixel>(source_plane_v, source_stride_v, width_uv,
+                              height_uv, dest_plane_v, dest_stride_v);
       } else {
+        planes_to_blend[num_planes++] = kPlaneV;
+      }
+    }
+    if (thread_pool_ != nullptr && num_planes > 0) {
+      const int num_workers = thread_pool_->num_threads();
+      BlockingCounter pending_workers(num_workers);
+      std::atomic<int> job_counter(0);
+      for (int i = 0; i < num_workers; ++i) {
+        thread_pool_->Schedule([this, dsp, &pending_workers, planes_to_blend,
+                                num_planes, &job_counter, min_value, max_chroma,
+                                source_plane_y, source_stride_y, source_plane_u,
+                                source_stride_u, source_plane_v,
+                                source_stride_v, dest_plane_u, dest_stride_u,
+                                dest_plane_v, dest_stride_v]() {
+          BlendNoiseChromaWorker(
+              *dsp, planes_to_blend, num_planes, &job_counter, min_value,
+              max_chroma, source_plane_y, source_stride_y, source_plane_u,
+              source_stride_u, source_plane_v, source_stride_v, dest_plane_u,
+              dest_stride_u, dest_plane_v, dest_stride_v);
+          pending_workers.Decrement();
+        });
+      }
+      BlendNoiseChromaWorker(*dsp, planes_to_blend, num_planes, &job_counter,
+                             min_value, max_chroma, source_plane_y,
+                             source_stride_y, source_plane_u, source_stride_u,
+                             source_plane_v, source_stride_v, dest_plane_u,
+                             dest_stride_u, dest_plane_v, dest_stride_v);
+
+      pending_workers.Wait();
+    } else {
+      // Single threaded.
+      if (params_.num_u_points > 0 || params_.chroma_scaling_from_luma) {
+        dsp->film_grain.blend_noise_chroma[params_.chroma_scaling_from_luma](
+            kPlaneU, params_, noise_image_, min_value, max_chroma, width_,
+            height_, /*start_height=*/0, subsampling_x_, subsampling_y_,
+            scaling_lut_u_, source_plane_y, source_stride_y, source_plane_u,
+            source_stride_u, dest_plane_u, dest_stride_u);
+      }
+      if (params_.num_v_points > 0 || params_.chroma_scaling_from_luma) {
         dsp->film_grain.blend_noise_chroma[params_.chroma_scaling_from_luma](
             kPlaneV, params_, noise_image_, min_value, max_chroma, width_,
-            height_, subsampling_x_, subsampling_y_, scaling_lut_v_,
-            source_plane_y, source_stride_y, source_plane_v, source_stride_v,
-            dest_plane_v, dest_stride_v);
+            height_, /*start_height=*/0, subsampling_x_, subsampling_y_,
+            scaling_lut_v_, source_plane_y, source_stride_y, source_plane_v,
+            source_stride_v, dest_plane_v, dest_stride_v);
       }
     }
   }
-
   if (use_luma) {
-    dsp->film_grain.blend_noise_luma(
-        noise_image_, min_value, max_luma, params_.chroma_scaling, width_,
-        height_, scaling_lut_y_, source_plane_y, source_stride_y, dest_plane_y,
-        dest_stride_y);
-  } else {
-    if (source_plane_y != dest_plane_y) {
-      CopyImagePlane<Pixel>(source_plane_y, source_stride_y, width_, height_,
-                            dest_plane_y, dest_stride_y);
+    if (thread_pool_ != nullptr) {
+      const int num_workers = thread_pool_->num_threads();
+      BlockingCounter pending_workers(num_workers);
+      std::atomic<int> job_counter(0);
+      for (int i = 0; i < num_workers; ++i) {
+        thread_pool_->Schedule(
+            [this, dsp, &pending_workers, &job_counter, min_value, max_luma,
+             source_plane_y, source_stride_y, dest_plane_y, dest_stride_y]() {
+              BlendNoiseLumaWorker(*dsp, &job_counter, min_value, max_luma,
+                                   source_plane_y, source_stride_y,
+                                   dest_plane_y, dest_stride_y);
+              pending_workers.Decrement();
+            });
+      }
+
+      BlendNoiseLumaWorker(*dsp, &job_counter, min_value, max_luma,
+                           source_plane_y, source_stride_y, dest_plane_y,
+                           dest_stride_y);
+      pending_workers.Wait();
+    } else {
+      dsp->film_grain.blend_noise_luma(
+          noise_image_, min_value, max_luma, params_.chroma_scaling, width_,
+          height_, /*start_height=*/0, scaling_lut_y_, source_plane_y,
+          source_stride_y, dest_plane_y, dest_stride_y);
     }
+  } else {
+    CopyImagePlane<Pixel>(source_plane_y, source_stride_y, width_, height_,
+                          dest_plane_y, dest_stride_y);
   }
 
   return true;

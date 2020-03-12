@@ -23,6 +23,7 @@
 
 #include "src/dsp/common.h"
 #include "src/dsp/constants.h"
+#include "src/dsp/film_grain_common.h"
 #include "src/utils/cpu.h"
 #include "src/utils/types.h"
 
@@ -691,13 +692,13 @@ using ConstructNoiseImageOverlapFunc =
 // |num_points| can be between 0 and 15. When 0, the lookup table is set to
 // zero.
 // |point_value| and |point_scaling| have |num_points| valid elements.
-using InitializeScalingLutFunc = void (*)(int num_points,
-                                          const uint8_t point_value[],
-                                          const uint8_t point_scaling[],
-                                          uint8_t scaling_lut[256]);
+using InitializeScalingLutFunc = void (*)(
+    int num_points, const uint8_t point_value[], const uint8_t point_scaling[],
+    uint8_t scaling_lut[kScalingLookupTableSize]);
 
 // Blend noise with image. Section 7.18.3.5, third code block.
-// |width| and |height| are the dimensions of the frame.
+// |width| is the width of each row, while |height| is how many rows to compute.
+// |start_height| is an offset for the noise image, to support multithreading.
 // |min_value|, |max_luma|, and |max_chroma| are computed by the caller of these
 // functions, according to the code in the spec.
 // |source_plane_y| and |source_plane_uv| are the plane buffers of the decoded
@@ -710,16 +711,18 @@ using InitializeScalingLutFunc = void (*)(int num_points,
 // |scaling_shift| is applied as a right shift after scaling, so that scaling
 // down is possible. It is found in FilmGrainParams, but supplied directly to
 // BlendNoiseWithImageLumaFunc because it's the only member used.
-using BlendNoiseWithImageLumaFunc = void (*)(
-    const void* noise_image_ptr, int min_value, int max_value,
-    int scaling_shift, int width, int height, const uint8_t scaling_lut_y[256],
-    const void* source_plane_y, ptrdiff_t source_stride_y, void* dest_plane_y,
-    ptrdiff_t dest_stride_y);
+using BlendNoiseWithImageLumaFunc =
+    void (*)(const void* noise_image_ptr, int min_value, int max_value,
+             int scaling_shift, int width, int height, int start_height,
+             const uint8_t scaling_lut_y[kScalingLookupTableSize],
+             const void* source_plane_y, ptrdiff_t source_stride_y,
+             void* dest_plane_y, ptrdiff_t dest_stride_y);
 
 using BlendNoiseWithImageChromaFunc = void (*)(
     Plane plane, const FilmGrainParams& params, const void* noise_image_ptr,
-    int min_value, int max_value, int width, int height, int subsampling_x,
-    int subsampling_y, const uint8_t scaling_lut[256],
+    int min_value, int max_value, int width, int height, int start_height,
+    int subsampling_x, int subsampling_y,
+    const uint8_t scaling_lut[kScalingLookupTableSize],
     const void* source_plane_y, ptrdiff_t source_stride_y,
     const void* source_plane_uv, ptrdiff_t source_stride_uv,
     void* dest_plane_uv, ptrdiff_t dest_stride_uv);

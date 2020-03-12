@@ -361,7 +361,7 @@ StatusCode DecoderImpl::DecodeFrame(EncodedFrame* const encoded_frame) {
   }
   RefCountedBufferPtr film_grain_frame;
   status = ApplyFilmGrain(sequence_header, frame_header, current_frame,
-                          &film_grain_frame);
+                          &film_grain_frame, /*thread_pool=*/nullptr);
   if (status != kStatusOk) {
     return status;
   }
@@ -460,8 +460,17 @@ StatusCode DecoderImpl::DecodeTemporalUnit(const TemporalUnit& temporal_unit,
       }
       displayable_frame = std::move(current_frame);
       RefCountedBufferPtr film_grain_frame;
-      status = ApplyFilmGrain(obu->sequence_header(), obu->frame_header(),
-                              displayable_frame, &film_grain_frame);
+      std::unique_ptr<FrameScratchBuffer> frame_scratch_buffer =
+          frame_scratch_buffer_pool_.Get();
+      if (frame_scratch_buffer == nullptr) {
+        LIBGAV1_DLOG(ERROR, "Error when getting FrameScratchBuffer.");
+        return kStatusOutOfMemory;
+      }
+      status = ApplyFilmGrain(
+          obu->sequence_header(), obu->frame_header(), displayable_frame,
+          &film_grain_frame,
+          frame_scratch_buffer->threading_strategy.film_grain_thread_pool());
+      frame_scratch_buffer_pool_.Release(std::move(frame_scratch_buffer));
       if (status != kStatusOk) return status;
       displayable_frame = std::move(film_grain_frame);
     }
@@ -1088,7 +1097,7 @@ StatusCode DecoderImpl::ApplyFilmGrain(
     const ObuSequenceHeader& sequence_header,
     const ObuFrameHeader& frame_header,
     const RefCountedBufferPtr& displayable_frame,
-    RefCountedBufferPtr* film_grain_frame) {
+    RefCountedBufferPtr* film_grain_frame, ThreadPool* thread_pool) {
   if (!sequence_header.film_grain_params_present ||
       !displayable_frame->film_grain_params().apply_grain ||
       (settings_.post_filter_mask & 0x10) == 0) {
@@ -1137,12 +1146,13 @@ StatusCode DecoderImpl::ApplyFilmGrain(
       kMatrixCoefficientsIdentity;
 #if LIBGAV1_MAX_BITDEPTH >= 10
   if (displayable_frame->buffer()->bitdepth() > 8) {
-    FilmGrain<10> film_grain(
-        displayable_frame->film_grain_params(),
-        displayable_frame->buffer()->is_monochrome(), color_matrix_is_identity,
-        displayable_frame->buffer()->subsampling_x(),
-        displayable_frame->buffer()->subsampling_y(),
-        displayable_frame->upscaled_width(), displayable_frame->frame_height());
+    FilmGrain<10> film_grain(displayable_frame->film_grain_params(),
+                             displayable_frame->buffer()->is_monochrome(),
+                             color_matrix_is_identity,
+                             displayable_frame->buffer()->subsampling_x(),
+                             displayable_frame->buffer()->subsampling_y(),
+                             displayable_frame->upscaled_width(),
+                             displayable_frame->frame_height(), thread_pool);
     if (!film_grain.AddNoise(displayable_frame->buffer()->data(kPlaneY),
                              displayable_frame->buffer()->stride(kPlaneY),
                              displayable_frame->buffer()->data(kPlaneU),
@@ -1161,12 +1171,13 @@ StatusCode DecoderImpl::ApplyFilmGrain(
     return kStatusOk;
   }
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
-  FilmGrain<8> film_grain(
-      displayable_frame->film_grain_params(),
-      displayable_frame->buffer()->is_monochrome(), color_matrix_is_identity,
-      displayable_frame->buffer()->subsampling_x(),
-      displayable_frame->buffer()->subsampling_y(),
-      displayable_frame->upscaled_width(), displayable_frame->frame_height());
+  FilmGrain<8> film_grain(displayable_frame->film_grain_params(),
+                          displayable_frame->buffer()->is_monochrome(),
+                          color_matrix_is_identity,
+                          displayable_frame->buffer()->subsampling_x(),
+                          displayable_frame->buffer()->subsampling_y(),
+                          displayable_frame->upscaled_width(),
+                          displayable_frame->frame_height(), thread_pool);
   if (!film_grain.AddNoise(displayable_frame->buffer()->data(kPlaneY),
                            displayable_frame->buffer()->stride(kPlaneY),
                            displayable_frame->buffer()->data(kPlaneU),

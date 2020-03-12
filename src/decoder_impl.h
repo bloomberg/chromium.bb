@@ -188,7 +188,8 @@ class DecoderImpl : public Allocable {
   StatusCode ApplyFilmGrain(const ObuSequenceHeader& sequence_header,
                             const ObuFrameHeader& frame_header,
                             const RefCountedBufferPtr& displayable_frame,
-                            RefCountedBufferPtr* film_grain_frame);
+                            RefCountedBufferPtr* film_grain_frame,
+                            ThreadPool* thread_pool);
 
   bool IsNewSequenceHeader(const ObuParser& obu);
   bool IsFrameParallel() const { return frame_threads_ > 1; }

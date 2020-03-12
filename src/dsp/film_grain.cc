@@ -20,6 +20,7 @@
 #include <cstdint>
 #include <cstring>
 #include <new>
+#include <vector>
 
 #include "src/dsp/common.h"
 #include "src/dsp/constants.h"
@@ -495,12 +496,12 @@ void ConstructNoiseImageOverlap_C(const void* noise_stripes_buffer, int width,
 }
 
 template <int bitdepth, typename GrainType, typename Pixel>
-void BlendNoiseWithImageLuma_C(const void* noise_image_ptr, int min_value,
-                               int max_luma, int scaling_shift, int width,
-                               int height, const uint8_t scaling_lut_y[256],
-                               const void* source_plane_y,
-                               ptrdiff_t source_stride_y, void* dest_plane_y,
-                               ptrdiff_t dest_stride_y) {
+void BlendNoiseWithImageLuma_C(
+    const void* noise_image_ptr, int min_value, int max_luma, int scaling_shift,
+    int width, int height, int start_height,
+    const uint8_t scaling_lut_y[kScalingLookupTableSize],
+    const void* source_plane_y, ptrdiff_t source_stride_y, void* dest_plane_y,
+    ptrdiff_t dest_stride_y) {
   const auto* noise_image =
       static_cast<const Array2D<GrainType>*>(noise_image_ptr);
   const auto* in_y = static_cast<const Pixel*>(source_plane_y);
@@ -513,7 +514,7 @@ void BlendNoiseWithImageLuma_C(const void* noise_image_ptr, int min_value,
     int x = 0;
     do {
       const int orig = in_y[y * source_stride_y + x];
-      int noise = noise_image[kPlaneY][y][x];
+      int noise = noise_image[kPlaneY][y + start_height][x];
       noise = RightShiftWithRounding(
           ScaleLut<bitdepth>(scaling_lut_y, orig) * noise, scaling_shift);
       out_y[y * dest_stride_y + x] = Clip3(orig + noise, min_value, max_luma);
@@ -525,8 +526,9 @@ void BlendNoiseWithImageLuma_C(const void* noise_image_ptr, int min_value,
 template <int bitdepth, typename GrainType, typename Pixel>
 void BlendNoiseWithImageChroma_C(
     Plane plane, const FilmGrainParams& params, const void* noise_image_ptr,
-    int min_value, int max_chroma, int width, int height, int subsampling_x,
-    int subsampling_y, const uint8_t scaling_lut_uv[256],
+    int min_value, int max_chroma, int width, int height, int start_height,
+    int subsampling_x, int subsampling_y,
+    const uint8_t scaling_lut_uv[kScalingLookupTableSize],
     const void* source_plane_y, ptrdiff_t source_stride_y,
     const void* source_plane_uv, ptrdiff_t source_stride_uv,
     void* dest_plane_uv, ptrdiff_t dest_stride_uv) {
@@ -550,6 +552,7 @@ void BlendNoiseWithImageChroma_C(
       (plane == kPlaneU) ? params.u_multiplier : params.v_multiplier;
 
   const int scaling_shift = params.chroma_scaling;
+  start_height >>= subsampling_y;
   int y = 0;
   do {
     int x = 0;
@@ -571,7 +574,7 @@ void BlendNoiseWithImageChroma_C(
       const int merged =
           Clip3((combined >> 6) + LeftShift(offset, bitdepth - 8), 0,
                 (1 << bitdepth) - 1);
-      int noise = noise_image[plane][y][x];
+      int noise = noise_image[plane][y + start_height][x];
       noise = RightShiftWithRounding(
           ScaleLut<bitdepth>(scaling_lut_uv, merged) * noise, scaling_shift);
       out_uv[y * dest_stride_uv + x] =
@@ -585,8 +588,9 @@ void BlendNoiseWithImageChroma_C(
 template <int bitdepth, typename GrainType, typename Pixel>
 void BlendNoiseWithImageChromaWithCfl_C(
     Plane plane, const FilmGrainParams& params, const void* noise_image_ptr,
-    int min_value, int max_chroma, int width, int height, int subsampling_x,
-    int subsampling_y, const uint8_t scaling_lut[256],
+    int min_value, int max_chroma, int width, int height, int start_height,
+    int subsampling_x, int subsampling_y,
+    const uint8_t scaling_lut[kScalingLookupTableSize],
     const void* source_plane_y, ptrdiff_t source_stride_y,
     const void* source_plane_uv, ptrdiff_t source_stride_uv,
     void* dest_plane_uv, ptrdiff_t dest_stride_uv) {
@@ -602,6 +606,7 @@ void BlendNoiseWithImageChromaWithCfl_C(
   const int chroma_width = (width + subsampling_x) >> subsampling_x;
   const int chroma_height = (height + subsampling_y) >> subsampling_y;
   const int scaling_shift = params.chroma_scaling;
+  start_height >>= subsampling_y;
   int y = 0;
   do {
     int x = 0;
@@ -619,7 +624,7 @@ void BlendNoiseWithImageChromaWithCfl_C(
         average_luma = in_y[luma_y * source_stride_y + luma_x];
       }
       const int orig_uv = in_uv[y * source_stride_uv + x];
-      int noise_uv = noise_image[plane][y][x];
+      int noise_uv = noise_image[plane][y + start_height][x];
       noise_uv = RightShiftWithRounding(
           ScaleLut<bitdepth>(scaling_lut, average_luma) * noise_uv,
           scaling_shift);

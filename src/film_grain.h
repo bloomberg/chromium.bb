@@ -17,17 +17,21 @@
 #ifndef LIBGAV1_SRC_FILM_GRAIN_H_
 #define LIBGAV1_SRC_FILM_GRAIN_H_
 
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <type_traits>
 
 #include "src/dsp/common.h"
+#include "src/dsp/dsp.h"
 #include "src/dsp/film_grain_common.h"
 #include "src/utils/array_2d.h"
 #include "src/utils/constants.h"
 #include "src/utils/cpu.h"
+#include "src/utils/threadpool.h"
 #include "src/utils/types.h"
+#include "src/utils/vector.h"
 
 namespace libgav1 {
 
@@ -68,7 +72,7 @@ class FilmGrain {
 
   FilmGrain(const FilmGrainParams& params, bool is_monochrome,
             bool color_matrix_is_identity, int subsampling_x, int subsampling_y,
-            int width, int height);
+            int width, int height, ThreadPool* thread_pool);
 
   // Note: These static methods are declared public so that the unit tests can
   // call them.
@@ -90,12 +94,12 @@ class FilmGrain {
                                   Array2D<GrainType>* noise_image);
 
   // Combines the film grain with the image data.
-  bool AddNoise(const void* source_plane_y, ptrdiff_t source_stride_y,
-                const void* source_plane_u, ptrdiff_t source_stride_u,
-                const void* source_plane_v, ptrdiff_t source_stride_v,
-                void* dest_plane_y, ptrdiff_t dest_stride_y, void* dest_plane_u,
-                ptrdiff_t dest_stride_u, void* dest_plane_v,
-                ptrdiff_t dest_stride_v);
+  bool AddNoise(const uint8_t* source_plane_y, ptrdiff_t source_stride_y,
+                const uint8_t* source_plane_u, ptrdiff_t source_stride_u,
+                const uint8_t* source_plane_v, ptrdiff_t source_stride_v,
+                uint8_t* dest_plane_y, ptrdiff_t dest_stride_y,
+                uint8_t* dest_plane_u, ptrdiff_t dest_stride_u,
+                uint8_t* dest_plane_v, ptrdiff_t dest_stride_v);
 
  private:
   using Pixel =
@@ -108,21 +112,47 @@ class FilmGrain {
 
   bool AllocateNoiseImage();
 
+  void BlendNoiseChromaWorker(
+      const dsp::Dsp& dsp, const Plane* planes, int num_planes,
+      std::atomic<int>* job_counter, int min_value, int max_chroma,
+      const uint8_t* source_plane_y, ptrdiff_t source_stride_y,
+      const uint8_t* source_plane_u, ptrdiff_t source_stride_u,
+      const uint8_t* source_plane_v, ptrdiff_t source_stride_v,
+      uint8_t* dest_plane_u, ptrdiff_t dest_stride_u, uint8_t* dest_plane_v,
+      ptrdiff_t dest_stride_v);
+
+  void BlendNoiseLumaWorker(const dsp::Dsp& dsp, std::atomic<int>* job_counter,
+                            int min_value, int max_luma,
+                            const uint8_t* source_plane_y,
+                            ptrdiff_t source_stride_y, uint8_t* dest_plane_y,
+                            ptrdiff_t dest_stride_y);
+
   const FilmGrainParams& params_;
   const bool is_monochrome_;
   const bool color_matrix_is_identity_;
   const int subsampling_x_;
   const int subsampling_y_;
+  // Frame width and height.
   const int width_;
   const int height_;
-  const int chroma_width_;
-  const int chroma_height_;
-  // The luma_grain array contains white noise generated for luma.
+  // Section 7.18.3.3, Dimensions of the noise templates for chroma, which are
+  // known as CbGrain and CrGrain.
+  // These templates are used to construct the noise image for each plane by
+  // copying 32x32 blocks with pseudorandom offsets, into "noise stripes."
+  // The noise template known as LumaGrain array is an 82x73 block.
+  // The height and width of the templates for chroma become 44 and 38 under
+  // subsampling, respectively.
+  //  For more details see:
+  // A. Norkin and N. Birkbeck, "Film Grain Synthesis for AV1 Video Codec," 2018
+  // Data Compression Conference, Snowbird, UT, 2018, pp. 3-12.
+  const int template_uv_width_;
+  const int template_uv_height_;
+  // LumaGrain. The luma_grain array contains white noise generated for luma.
   // The array size is fixed but subject to further optimization for SIMD.
   GrainType luma_grain_[kLumaHeight * kLumaWidth];
-  // The maximum size of the u_grain and v_grain arrays is
+  // CbGrain and CrGrain. The maximum size of the u_grain and v_grain arrays is
   // kMaxChromaHeight * kMaxChromaWidth. The actual size is
-  // chroma_height_ * chroma_width_.
+  // template_uv_height_ * template_uv_width_.
   GrainType u_grain_[kMaxChromaHeight * kMaxChromaWidth];
   GrainType v_grain_[kMaxChromaHeight * kMaxChromaWidth];
   // Scaling lookup tables.
@@ -155,6 +185,7 @@ class FilmGrain {
   std::unique_ptr<GrainType[]> noise_buffer_;
 
   Array2D<GrainType> noise_image_[kMaxPlanes];
+  ThreadPool* const thread_pool_;
 };
 
 }  // namespace libgav1
