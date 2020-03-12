@@ -6,7 +6,6 @@
 
 #include <array>
 #include <chrono>  // NOLINT
-#include <thread>  // NOLINT
 
 #include "cast/standalone_receiver/simple_message_port.h"
 #include "cast/standalone_receiver/streaming_playback_controller.h"
@@ -41,8 +40,8 @@ namespace {
 // application as: 1) the TYPE of the content changes (interactive, low-latency
 // versus smooth, higher-latency buffered video watching); and 2) the networking
 // environment reliability changes.
-
-constexpr std::chrono::milliseconds kDemoTargetPlayoutDelay{400};
+constexpr std::chrono::milliseconds kTargetPlayoutDelay =
+    kDefaultTargetPlayoutDelay;
 
 const Offer kDemoOffer{
     /* .cast_mode = */ CastMode{},
@@ -53,7 +52,7 @@ const Offer kDemoOffer{
                         /* .codec_name = */ "opus",
                         /* .rtp_payload_type = */ RtpPayloadType::kAudioOpus,
                         /* .ssrc = */ 1,
-                        /* .target_delay */ kDemoTargetPlayoutDelay,
+                        /* .target_delay */ kTargetPlayoutDelay,
                         /* .aes_key = */
                         {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
                          0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f},
@@ -73,7 +72,7 @@ const Offer kDemoOffer{
                /* .codec_name = */ "vp8",
                /* .rtp_payload_type = */ RtpPayloadType::kVideoVp8,
                /* .ssrc = */ 50001,
-               /* .target_delay */ kDemoTargetPlayoutDelay,
+               /* .target_delay */ kTargetPlayoutDelay,
                /* .aes_key = */
                {0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19,
                 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f},
@@ -94,23 +93,21 @@ const Offer kDemoOffer{
         /* .resolutions = */ {},
         /* .error_recovery_mode = */ ""}}};
 
-// The UDP socket port receiving packets from the Sender.
-constexpr int kCastStreamingPort = 2344;
-
 // End of Receiver Configuration.
 ////////////////////////////////////////////////////////////////////////////////
 
 void RunStandaloneReceiver(TaskRunnerImpl* task_runner,
-                           const IPAddress& address) {
+                           const IPEndpoint& receive_endpoint) {
   // Create the Environment that holds the required injected dependencies
   // (clock, task runner) used throughout the system, and owns the UDP socket
   // over which all communication occurs with the Sender.
-  const IPEndpoint receive_endpoint{address, kCastStreamingPort};
-
   auto env =
       std::make_unique<Environment>(&Clock::now, task_runner, receive_endpoint);
   auto port = std::make_unique<SimpleMessagePort>();
   auto* raw_port = port.get();
+
+  // This may differ from the receive_endpoint (e.g., if the OS auto-assigned
+  // the address and/or port).
   const auto endpoint = env->GetBoundLocalEndpoint();
 
   ReceiverSession::Preferences preferences{
@@ -136,61 +133,94 @@ void RunStandaloneReceiver(TaskRunnerImpl* task_runner,
                << "...";
 
   // Run the event loop until an exit is requested (e.g., the video player GUI
-  // window is closed, a SIGTERM is intercepted, or whatever other appropriate
-  // user indication that shutdown is requested).
-  task_runner->RunUntilStopped();
+  // window is closed, a SIGINT or SIGTERM is received, or whatever other
+  // appropriate user indication that shutdown is requested).
+  task_runner->RunUntilSignaled();
 }
 
 }  // namespace
 }  // namespace cast
 }  // namespace openscreen
 
+namespace {
+
+void LogUsage(const char* argv0) {
+  constexpr char kExecutableTag[] = "argv[0]";
+  constexpr char kUsageMessage[] = R"(
+    usage: argv[0] <options>
+
+      --address=addr[:port]
+           Specify the LOCAL IPv4 or IPv6 address and port to bind to (e.g.,
+           192.168.1.22:9999 or [::1]:12345). This is used to bind to a specific
+           network interface. Or, use the ANY address (0.0.0.0) to attempt to
+           bind to all interfaces (but this mode does not work reliably on some
+           platforms).
+
+           Default if not set: 127.0.0.1 (and default Cast Streaming port 2344)
+
+      --tracing: Enable performance tracing logging.
+  )";
+  std::string message = kUsageMessage;
+  message.replace(message.find(kExecutableTag), strlen(kExecutableTag), argv0);
+  OSP_LOG_ERROR << message;
+}
+
+}  // namespace
+
 int main(int argc, char* argv[]) {
   using openscreen::Clock;
+  using openscreen::ErrorOr;
+  using openscreen::IPAddress;
+  using openscreen::IPEndpoint;
   using openscreen::PlatformClientPosix;
-  using openscreen::TaskRunner;
   using openscreen::TaskRunnerImpl;
 
-  struct option argument_options[] = {
+  openscreen::SetLogLevel(openscreen::LogLevel::kInfo);
+
+  const struct option argument_options[] = {
       {"address", required_argument, nullptr, 'a'},
-      {"tracing", no_argument, nullptr, 't'}};
+      {"tracing", no_argument, nullptr, 't'},
+      {"help", no_argument, nullptr, 'h'},
+      {nullptr, 0, nullptr, 0}};
 
-  struct Arguments {
-    openscreen::IPAddress address;
-    bool is_tracing_enabled = false;
-  };
-
-  Arguments arguments;
+  IPEndpoint receive_endpoint{IPAddress::kV4LoopbackAddress,
+                              openscreen::cast::kDefaultCastStreamingPort};
+  std::unique_ptr<openscreen::TextTraceLoggingPlatform> trace_logger;
   int ch = -1;
-  while ((ch = getopt_long(argc, argv, "a:t", argument_options, nullptr)) !=
+  while ((ch = getopt_long(argc, argv, "a:th", argument_options, nullptr)) !=
          -1) {
     switch (ch) {
       case 'a': {
-        auto error_or_address = openscreen::IPAddress::Parse(optarg);
-        if (error_or_address.is_error()) {
-          OSP_LOG_ERROR << "Invalid IP address given, exiting...";
-          return -1;
+        const ErrorOr<IPEndpoint> parsed_endpoint = IPEndpoint::Parse(optarg);
+        if (parsed_endpoint.is_value()) {
+          receive_endpoint = parsed_endpoint.value();
+        } else {
+          const ErrorOr<IPAddress> parsed_address = IPAddress::Parse(optarg);
+          if (parsed_address.is_value()) {
+            receive_endpoint.address = parsed_address.value();
+          } else {
+            OSP_LOG_ERROR << "Invalid --address specified: " << optarg;
+            return 1;
+          }
         }
-        arguments.address = std::move(error_or_address.value());
-      } break;
+        break;
+      }
       case 't':
-        arguments.is_tracing_enabled = true;
+        trace_logger = std::make_unique<openscreen::TextTraceLoggingPlatform>();
+        break;
+      case 'h':
+        LogUsage(argv[0]);
+        return 1;
     }
   }
 
-  std::unique_ptr<openscreen::TextTraceLoggingPlatform> platform;
-  if (arguments.is_tracing_enabled) {
-    platform = std::make_unique<openscreen::TextTraceLoggingPlatform>();
-  }
-
-  openscreen::SetLogLevel(openscreen::LogLevel::kInfo);
   auto* const task_runner = new TaskRunnerImpl(&Clock::now);
   PlatformClientPosix::Create(Clock::duration{50}, Clock::duration{50},
                               std::unique_ptr<TaskRunnerImpl>(task_runner));
 
   // Runs until the process is interrupted.  Safe to pass |task_runner| as it
   // will not be destroyed by ShutDown() until this exits.
-  openscreen::cast::RunStandaloneReceiver(task_runner, arguments.address);
+  openscreen::cast::RunStandaloneReceiver(task_runner, receive_endpoint);
   PlatformClientPosix::ShutDown();
   return 0;
 }

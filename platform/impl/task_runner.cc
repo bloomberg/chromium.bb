@@ -4,11 +4,31 @@
 
 #include "platform/impl/task_runner.h"
 
+#include <csignal>
 #include <thread>
 
 #include "util/logging.h"
 
 namespace openscreen {
+
+namespace {
+
+// This is mutated by the signal handler installed by RunUntilSignaled(), and is
+// checked by RunUntilStopped().
+//
+// Per the C++14 spec, passing visible changes to memory between a signal
+// handler and a program thread must be done through a volatile variable.
+volatile enum {
+  kNotRunning,
+  kNotSignaled,
+  kSignaled
+} g_signal_state = kNotRunning;
+
+void OnReceivedSignal(int signal) {
+  g_signal_state = kSignaled;
+}
+
+}  // namespace
 
 TaskRunnerImpl::TaskRunnerImpl(ClockNowFunctionPtr now_function,
                                TaskWaiter* event_waiter,
@@ -59,11 +79,15 @@ void TaskRunnerImpl::RunUntilStopped() {
   is_running_ = true;
 
   // Main loop: Run until the |is_running_| flag is set back to false by the
-  // "quit task" posted by RequestStopSoon().
+  // "quit task" posted by RequestStopSoon(), or the process received a
+  // termination signal.
   while (is_running_) {
     ScheduleDelayedTasks();
     if (GrabMoreRunnableTasks()) {
       RunRunnableTasks();
+    }
+    if (g_signal_state == kSignaled) {
+      is_running_ = false;
     }
   }
 
@@ -81,6 +105,20 @@ void TaskRunnerImpl::RunUntilStopped() {
   }
 
   task_runner_thread_id_ = std::thread::id();
+}
+
+void TaskRunnerImpl::RunUntilSignaled() {
+  OSP_CHECK_EQ(g_signal_state, kNotRunning)
+      << __func__ << " may not be invoked concurrently.";
+  g_signal_state = kNotSignaled;
+  const auto old_sigint_handler = std::signal(SIGINT, &OnReceivedSignal);
+  const auto old_sigterm_handler = std::signal(SIGTERM, &OnReceivedSignal);
+
+  RunUntilStopped();
+
+  std::signal(SIGINT, old_sigint_handler);
+  std::signal(SIGTERM, old_sigterm_handler);
+  g_signal_state = kNotRunning;
 }
 
 void TaskRunnerImpl::RequestStopSoon() {

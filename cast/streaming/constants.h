@@ -21,6 +21,11 @@ namespace cast {
 // capture from the source until presentation at the receiver.
 constexpr std::chrono::milliseconds kDefaultTargetPlayoutDelay(400);
 
+// Default UDP port, bound at the Receiver, for Cast Streaming. An
+// implementation is required to use the port specified by the Receiver in its
+// ANSWER control message, which may or may not match this port number here.
+constexpr int kDefaultCastStreamingPort = 2344;
+
 // Target number of milliseconds between the sending of RTCP reports.  Both
 // senders and receivers regularly send RTCP reports to their peer.
 constexpr std::chrono::milliseconds kRtcpReportInterval(500);

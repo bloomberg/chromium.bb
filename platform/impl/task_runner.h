@@ -63,6 +63,11 @@ class TaskRunnerImpl final : public TaskRunner {
   // called.
   void RunUntilStopped();
 
+  // Blocks the current thread, executing tasks from the queue with the desired
+  // timing; and does not return until some time after the current process is
+  // signaled with SIGINT or SIGTERM, or after RequestStopSoon() is called.
+  void RunUntilSignaled();
+
   // Thread-safe method for requesting the TaskRunner to stop running after all
   // non-delayed tasks in the queue have run. This behavior allows final
   // clean-up tasks to be executed before the TaskRunner stops.
