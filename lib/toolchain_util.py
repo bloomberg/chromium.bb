@@ -1447,6 +1447,13 @@ class PrepareForBuildHandler(_CommonPrepareBundle):
     # Always build this artifact.
     return PrepareForBuildReturn.NEEDED
 
+  def _PrepareUnverifiedChromeBenchmarkPerfFile(self):
+    """Prepare to build Chrome benchmark perf.data file."""
+    # TODO(crbug/1019868): Check to see if the perf.data file for this Chrome
+    # version already exists.
+    # For now, build this artifact.
+    return PrepareForBuildReturn.NEEDED
+
   def _PrepareUnverifiedChromeBenchmarkAfdoFile(self):
     # TODO(crbug/1019868): implement benchmark-afdo-generate
     return PrepareForBuildReturn.UNKNOWN
@@ -1848,6 +1855,14 @@ class BundleArtifactHandler(_CommonPrepareBundle):
       cros_build_lib.CreateTarball(artifact, cwd=tempdir, inputs=[basename])
       files.append(artifact)
     return files
+
+  def _BundleUnverifiedChromeBenchmarkPerfFile(self):
+    """Bundle the unverified chrome benchmark perf.data file.
+
+    The perf.data file is created in the HW Test, so we have nothing to do at
+    this time.
+    """
+    return []
 
   def _BundleUnverifiedChromeBenchmarkAfdoFile(self):
     # TODO(crbug/1019868): implement benchmark-afdo-generate.

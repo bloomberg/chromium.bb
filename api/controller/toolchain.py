@@ -45,6 +45,10 @@ _TOOLCHAIN_ARTIFACT_HANDLERS = {
         _Handlers('UnverifiedChromeBenchmarkAfdoFile',
                   toolchain_util.PrepareForBuild,
                   toolchain_util.BundleArtifacts),
+    BuilderConfig.Artifacts.UNVERIFIED_CHROME_BENCHMARK_PERF_FILE:
+        _Handlers('UnverifiedChromeBenchmarkPerfFile',
+                  toolchain_util.PrepareForBuild,
+                  toolchain_util.BundleArtifacts),
     BuilderConfig.Artifacts.VERIFIED_CHROME_BENCHMARK_AFDO_FILE:
         _Handlers('VerifiedChromeBenchmarkAfdoFile',
                   toolchain_util.PrepareForBuild,
