@@ -171,6 +171,12 @@ ContentMainDelegateImpl::GetContentBrowserClientImpl() {
       d_contentBrowserClient.get());
 }
 
+const ContentRendererClientImpl* ContentMainDelegateImpl::GetContentRendererClientImpl() const
+{
+  return static_cast<const ContentRendererClientImpl*>(
+      d_contentRendererClient.get());
+}
+
 }  // close namespace blpwtk2
 
 // vim: ts=4 et
