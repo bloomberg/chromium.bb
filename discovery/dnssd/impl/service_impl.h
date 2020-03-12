@@ -28,16 +28,16 @@ class ServiceImpl final : public DnsSdService {
   ~ServiceImpl() override;
 
   // DnsSdService overrides.
-  DnsSdQuerier* GetQuerier() override { return &querier_; }
-  DnsSdPublisher* GetPublisher() override { return &publisher_; }
+  DnsSdQuerier* GetQuerier() override { return querier_.get(); }
+  DnsSdPublisher* GetPublisher() override { return publisher_.get(); }
 
  private:
   TaskRunner* const task_runner_;
 
   std::unique_ptr<MdnsService> mdns_service_;
 
-  QuerierImpl querier_;
-  PublisherImpl publisher_;
+  std::unique_ptr<QuerierImpl> querier_;
+  std::unique_ptr<PublisherImpl> publisher_;
 };
 
 }  // namespace discovery

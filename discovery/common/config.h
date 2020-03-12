@@ -25,6 +25,10 @@ struct Config {
   // NOTE: This is expected to be -1 in all production scenarios and only be a
   // different value during testing.
   int new_query_announcement_count = -1;
+
+  // Determines whether querying and publishing of services is enabled.
+  bool enable_querying = true;
+  bool enable_publication = true;
 };
 
 }  // namespace discovery

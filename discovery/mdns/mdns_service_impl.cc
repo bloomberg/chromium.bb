@@ -78,16 +78,21 @@ MdnsServiceImpl::MdnsServiceImpl(
       socket_v4_.get() ? socket_v4_.get() : socket_v6_.get();
   OSP_DCHECK(socket_ptr);
   sender_ = std::make_unique<MdnsSender>(socket_ptr);
-  querier_ = std::make_unique<MdnsQuerier>(
-      sender_.get(), &receiver_, task_runner_, now_function_, &random_delay_,
-      reporting_client_, config);
-  probe_manager_ = std::make_unique<MdnsProbeManagerImpl>(
-      sender_.get(), &receiver_, &random_delay_, task_runner_, now_function_);
-  publisher_ = std::make_unique<MdnsPublisher>(
-      sender_.get(), probe_manager_.get(), task_runner_, now_function_, config);
-  responder_ = std::make_unique<MdnsResponder>(
-      publisher_.get(), probe_manager_.get(), sender_.get(), &receiver_,
-      task_runner_, &random_delay_);
+  if (config.enable_querying) {
+    querier_ = std::make_unique<MdnsQuerier>(
+        sender_.get(), &receiver_, task_runner_, now_function_, &random_delay_,
+        reporting_client_, config);
+  }
+  if (config.enable_publication) {
+    probe_manager_ = std::make_unique<MdnsProbeManagerImpl>(
+        sender_.get(), &receiver_, &random_delay_, task_runner_, now_function_);
+    publisher_ =
+        std::make_unique<MdnsPublisher>(sender_.get(), probe_manager_.get(),
+                                        task_runner_, now_function_, config);
+    responder_ = std::make_unique<MdnsResponder>(
+        publisher_.get(), probe_manager_.get(), sender_.get(), &receiver_,
+        task_runner_, &random_delay_);
+  }
 
   receiver_.Start();
 

@@ -47,9 +47,15 @@ ServiceImpl::ServiceImpl(TaskRunner* task_runner,
                               reporting_client,
                               config,
                               config.interface.index,
-                              GetSupportedEndpointTypes(config.interface))),
-      querier_(mdns_service_.get(), task_runner_),
-      publisher_(mdns_service_.get(), reporting_client, task_runner_) {}
+                              GetSupportedEndpointTypes(config.interface))) {
+  if (config.enable_querying) {
+    querier_ = std::make_unique<QuerierImpl>(mdns_service_.get(), task_runner_);
+  }
+  if (config.enable_publication) {
+    publisher_ = std::make_unique<PublisherImpl>(
+        mdns_service_.get(), reporting_client, task_runner_);
+  }
+}
 
 ServiceImpl::~ServiceImpl() {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
