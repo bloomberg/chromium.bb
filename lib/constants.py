@@ -1163,6 +1163,7 @@ VM_IMAGE_TAR = '%s.tar.xz' % VM_IMAGE_NAME
 VM_DISK_PREFIX = 'chromiumos_qemu_disk.bin'
 VM_MEM_PREFIX = 'chromiumos_qemu_mem.bin'
 VM_NUM_RETRIES = 0
+TAST_VM_NUM_RETRIES = 3
 TAST_VM_TEST_RESULTS = 'tast_vm_test_results_%(attempt)s'
 BASE_GUEST_VM_DIR = 'guest-vm-base'
 TEST_GUEST_VM_DIR = 'guest-vm-test'

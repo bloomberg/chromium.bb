@@ -110,7 +110,7 @@ class SimpleBuilder(generic_builders.Builder):
     # devserver) in parallel: https://crbug.com/779267
     if config.tast_vm_tests:
       try:
-        self._RunStage(generic_stages.RetryStage, constants.VM_NUM_RETRIES,
+        self._RunStage(generic_stages.RetryStage, constants.TAST_VM_NUM_RETRIES,
                        tast_test_stages.TastVMTestStage, board,
                        builder_run=builder_run)
       except Exception as e:
