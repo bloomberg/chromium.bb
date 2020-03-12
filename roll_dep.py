@@ -265,6 +265,8 @@ def main():
   except Error as e:
     sys.stderr.write('error: %s\n' % e)
     return 2 if isinstance(e, AlreadyRolledError) else 1
+  except subprocess.CalledProcessError:
+    return 1
 
   print('')
   if not reviewers:

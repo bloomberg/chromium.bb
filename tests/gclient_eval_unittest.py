@@ -663,6 +663,37 @@ class RevisionTest(unittest.TestCase):
     ]
     self.assert_gets_and_sets_revision(before, after)
 
+  def test_revision_multiline_strings(self):
+    deps = [
+        'deps = {',
+        '  "src/dep": "https://example.com/dep.git@"',
+        '             "deadbeef",',
+        '}',
+    ]
+    with self.assertRaises(ValueError) as e:
+      local_scope = gclient_eval.Exec('\n'.join(deps))
+      gclient_eval.SetRevision(local_scope, 'src/dep', 'deadfeed')
+    self.assertEqual(
+        'Can\'t update value for src/dep. Multiline strings and implicitly '
+        'concatenated strings are not supported.\n'
+        'Consider reformatting the DEPS file.',
+        str(e.exception))
+
+  def test_revision_implicitly_concatenated_strings(self):
+    deps = [
+        'deps = {',
+        '  "src/dep": "https://example.com" + "/dep.git@" "deadbeef",',
+        '}',
+    ]
+    with self.assertRaises(ValueError) as e:
+      local_scope = gclient_eval.Exec('\n'.join(deps))
+      gclient_eval.SetRevision(local_scope, 'src/dep', 'deadfeed')
+    self.assertEqual(
+        'Can\'t update value for src/dep. Multiline strings and implicitly '
+        'concatenated strings are not supported.\n'
+        'Consider reformatting the DEPS file.',
+        str(e.exception))
+
   def test_revision_inside_dict(self):
     before = [
         'deps = {',

@@ -759,6 +759,14 @@ def SetRevision(gclient_dict, dep_name, new_revision):
     if isinstance(node, ast.BinOp):
       node = node.right
 
+    token = tokens[node.lineno, node.col_offset][1][1:-1]
+    if isinstance(node, ast.Str) and token != node.s:
+      raise ValueError(
+          'Can\'t update value for %s. Multiline strings and implicitly '
+          'concatenated strings are not supported.\n'
+          'Consider reformatting the DEPS file.' % dep_key)
+
+
     if not isinstance(node, ast.Call) and not isinstance(node, ast.Str):
       raise ValueError(
           "Unsupported dependency revision format. Please file a bug to the "
