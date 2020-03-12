@@ -253,6 +253,14 @@ void TooltipController::OnWindowDestroyed(aura::Window* window) {
   }
 }
 
+void TooltipController::OnWindowVisibilityChanged(aura::Window* window, bool visible) {
+  if (!visible && tooltip_window_ == window) {
+    tooltip_->Hide();
+    tooltip_shown_timeout_map_.erase(tooltip_window_);
+    SetTooltipWindow(NULL);
+  }
+}
+
 void TooltipController::OnWindowPropertyChanged(aura::Window* window,
                                                 const void* key,
                                                 intptr_t old) {
@@ -275,6 +283,17 @@ void TooltipController::UpdateIfRequired() {
       IsDragDropInProgress() || !IsCursorVisible()) {
     tooltip_->Hide();
     return;
+  } else if (tooltip_window_) {
+    POINT point;
+    ::GetCursorPos(&point);
+    HWND cur_hwnd = WindowFromPoint(point);
+    HWND parent_hwnd = tooltip_->GetParentHwnd();
+
+    if (cur_hwnd != parent_hwnd) {
+      tooltip_->Hide();
+      SetTooltipWindow(NULL);
+      return;
+    }
   }
 
   base::string16 tooltip_text;

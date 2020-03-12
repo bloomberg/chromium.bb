@@ -29,6 +29,8 @@ class VIEWS_EXPORT TooltipWin : public Tooltip {
   // HandleNotify() is forwarded from DesktopWindowTreeHostWin to keep the
   // native tooltip in sync.
   bool HandleNotify(int w_param, NMHDR* l_param, LRESULT* l_result);
+  static void SetTooltipStyle(HFONT font);
+  HWND GetParentHwnd() override;
 
  private:
   // Ensures |tooltip_hwnd_| is valid. Returns true if valid, false if there
