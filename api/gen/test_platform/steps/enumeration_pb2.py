@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='test_platform.steps',
   syntax='proto3',
   serialized_options=_b('Z=go.chromium.org/chromiumos/infra/proto/go/test_platform/steps'),
-  serialized_pb=_b('\n%test_platform/steps/enumeration.proto\x12\x13test_platform.steps\x1a chromite/api/test_metadata.proto\x1a\x1btest_platform/request.proto\"\x87\x02\n\x13\x45numerationRequests\x12\x39\n\x08requests\x18\x01 \x03(\x0b\x32\'.test_platform.steps.EnumerationRequest\x12U\n\x0ftagged_requests\x18\x02 \x03(\x0b\x32<.test_platform.steps.EnumerationRequests.TaggedRequestsEntry\x1a^\n\x13TaggedRequestsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x36\n\x05value\x18\x02 \x01(\x0b\x32\'.test_platform.steps.EnumerationRequest:\x02\x38\x01\"\x8f\x02\n\x14\x45numerationResponses\x12;\n\tresponses\x18\x01 \x03(\x0b\x32(.test_platform.steps.EnumerationResponse\x12X\n\x10tagged_responses\x18\x02 \x03(\x0b\x32>.test_platform.steps.EnumerationResponses.TaggedResponsesEntry\x1a`\n\x14TaggedResponsesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x37\n\x05value\x18\x02 \x01(\x0b\x32(.test_platform.steps.EnumerationResponse:\x02\x38\x01\"\x82\x01\n\x12\x45numerationRequest\x12\x38\n\x08metadata\x18\x01 \x01(\x0b\x32&.test_platform.Request.Params.Metadata\x12\x32\n\ttest_plan\x18\x04 \x01(\x0b\x32\x1f.test_platform.Request.TestPlan\"\xf8\x02\n\x13\x45numerationResponse\x12Y\n\x14\x61utotest_invocations\x18\x02 \x03(\x0b\x32;.test_platform.steps.EnumerationResponse.AutotestInvocation\x1a\x85\x02\n\x12\x41utotestInvocation\x12(\n\x04test\x18\x01 \x01(\x0b\x32\x1a.chromite.api.AutotestTest\x12\x11\n\ttest_args\x18\x02 \x01(\t\x12\x14\n\x0c\x64isplay_name\x18\x03 \x01(\t\x12\x66\n\x0eresult_keyvals\x18\x04 \x03(\x0b\x32N.test_platform.steps.EnumerationResponse.AutotestInvocation.ResultKeyvalsEntry\x1a\x34\n\x12ResultKeyvalsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x42?Z=go.chromium.org/chromiumos/infra/proto/go/test_platform/stepsb\x06proto3')
+  serialized_pb=_b('\n%test_platform/steps/enumeration.proto\x12\x13test_platform.steps\x1a chromite/api/test_metadata.proto\x1a\x1btest_platform/request.proto\"\x87\x02\n\x13\x45numerationRequests\x12\x39\n\x08requests\x18\x01 \x03(\x0b\x32\'.test_platform.steps.EnumerationRequest\x12U\n\x0ftagged_requests\x18\x02 \x03(\x0b\x32<.test_platform.steps.EnumerationRequests.TaggedRequestsEntry\x1a^\n\x13TaggedRequestsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x36\n\x05value\x18\x02 \x01(\x0b\x32\'.test_platform.steps.EnumerationRequest:\x02\x38\x01\"\x8f\x02\n\x14\x45numerationResponses\x12;\n\tresponses\x18\x01 \x03(\x0b\x32(.test_platform.steps.EnumerationResponse\x12X\n\x10tagged_responses\x18\x02 \x03(\x0b\x32>.test_platform.steps.EnumerationResponses.TaggedResponsesEntry\x1a`\n\x14TaggedResponsesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x37\n\x05value\x18\x02 \x01(\x0b\x32(.test_platform.steps.EnumerationResponse:\x02\x38\x01\"\x82\x01\n\x12\x45numerationRequest\x12\x38\n\x08metadata\x18\x01 \x01(\x0b\x32&.test_platform.Request.Params.Metadata\x12\x32\n\ttest_plan\x18\x04 \x01(\x0b\x32\x1f.test_platform.Request.TestPlan\"\x8f\x03\n\x13\x45numerationResponse\x12Y\n\x14\x61utotest_invocations\x18\x02 \x03(\x0b\x32;.test_platform.steps.EnumerationResponse.AutotestInvocation\x12\x15\n\rerror_summary\x18\x03 \x01(\t\x1a\x85\x02\n\x12\x41utotestInvocation\x12(\n\x04test\x18\x01 \x01(\x0b\x32\x1a.chromite.api.AutotestTest\x12\x11\n\ttest_args\x18\x02 \x01(\t\x12\x14\n\x0c\x64isplay_name\x18\x03 \x01(\t\x12\x66\n\x0eresult_keyvals\x18\x04 \x03(\x0b\x32N.test_platform.steps.EnumerationResponse.AutotestInvocation.ResultKeyvalsEntry\x1a\x34\n\x12ResultKeyvalsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x42?Z=go.chromium.org/chromiumos/infra/proto/go/test_platform/stepsb\x06proto3')
   ,
   dependencies=[chromite_dot_api_dot_test__metadata__pb2.DESCRIPTOR,test__platform_dot_request__pb2.DESCRIPTOR,])
 
@@ -249,8 +249,8 @@ _ENUMERATIONRESPONSE_AUTOTESTINVOCATION_RESULTKEYVALSENTRY = _descriptor.Descrip
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1123,
-  serialized_end=1175,
+  serialized_start=1146,
+  serialized_end=1198,
 )
 
 _ENUMERATIONRESPONSE_AUTOTESTINVOCATION = _descriptor.Descriptor(
@@ -300,8 +300,8 @@ _ENUMERATIONRESPONSE_AUTOTESTINVOCATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=914,
-  serialized_end=1175,
+  serialized_start=937,
+  serialized_end=1198,
 )
 
 _ENUMERATIONRESPONSE = _descriptor.Descriptor(
@@ -318,6 +318,13 @@ _ENUMERATIONRESPONSE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='error_summary', full_name='test_platform.steps.EnumerationResponse.error_summary', index=1,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -331,7 +338,7 @@ _ENUMERATIONRESPONSE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=799,
-  serialized_end=1175,
+  serialized_end=1198,
 )
 
 _ENUMERATIONREQUESTS_TAGGEDREQUESTSENTRY.fields_by_name['value'].message_type = _ENUMERATIONREQUEST
