@@ -64,7 +64,7 @@ void BrowserThread::ThreadMain()
     // those assertions.
     base::ShadowingAtExitManager atExitManager;
 
-    d_mainRunner = new BrowserMainRunner(d_sandboxInfo);
+    d_mainRunner = new BrowserMainRunner(d_sandboxInfo, d_delegate);
 
     // Allow the main thread to continue executing, after the
     // ShadowingAtExitManager has been fully constructed and installed, and
@@ -80,8 +80,10 @@ void BrowserThread::ThreadMain()
     delete d_mainRunner;
 }
 
-BrowserThread::BrowserThread(const sandbox::SandboxInterfaceInfo& sandboxInfo)
+BrowserThread::BrowserThread(const sandbox::SandboxInterfaceInfo& sandboxInfo,
+    content::ContentMainDelegate* delegate)
     : d_sandboxInfo(sandboxInfo)
+    , d_delegate(delegate)
 {
     base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
                               base::WaitableEvent::InitialState::NOT_SIGNALED);
