@@ -840,15 +840,12 @@ class TestGitCl(unittest.TestCase):
         ]
 
     calls += [
-      ((['git', 'rev-parse', 'HEAD'],), '12345'),
-    ]
-
-    calls += [
       ((['git', 'diff', '--no-ext-diff', '--stat', '-l100000', '-C50'] +
          ([custom_cl_base] if custom_cl_base else
           [ancestor_revision, 'HEAD']),),
        '+dat'),
     ]
+
     return calls
 
   def _gerrit_upload_calls(self, description, reviewers, squash,
@@ -1595,7 +1592,7 @@ class TestGitCl(unittest.TestCase):
     actual = []
     for orig, reviewers, tbrs, _expected in data:
       obj = git_cl.ChangeDescription(orig)
-      obj.update_reviewers(reviewers, tbrs)
+      obj.update_reviewers(reviewers, tbrs, None, None, None)
       actual.append(obj.description)
     self.assertEqual(expected, actual)
 

@@ -1348,15 +1348,9 @@ class Changelist(object):
       self.issue = None
       self.patchset = None
 
-  def GetChange(self, upstream_branch, description):
-    if not self.GitSanityChecks(upstream_branch):
-      DieWithError('\nGit sanity check failure')
-
-    root = settings.GetRoot()
-    # We use the sha1 of HEAD as a name of this change.
-    name = RunGitWithCode(['rev-parse', 'HEAD'])[1].strip()
+  def GetAffectedFiles(self, upstream):
     try:
-      files = scm.GIT.CaptureStatus(root, upstream_branch)
+      return [f for _, f in scm.GIT.CaptureStatus(settings.GetRoot(), upstream)]
     except subprocess2.CalledProcessError:
       DieWithError(
           ('\nFailed to diff against upstream branch %s\n\n'
@@ -1364,21 +1358,7 @@ class Changelist(object):
            'tracking branch, please run\n'
            '    git branch --set-upstream-to origin/master %s\n'
            'or replace origin/master with the relevant branch') %
-          (upstream_branch, self.GetBranch()))
-
-    issue = self.GetIssue()
-    patchset = self.GetPatchset()
-
-    author = self.GetAuthor()
-    return presubmit_support.GitChange(
-        name,
-        description,
-        root,
-        files,
-        issue,
-        patchset,
-        author,
-        upstream=upstream_branch)
+          (upstream, self.GetBranch()))
 
   def UpdateDescription(self, description, force=False):
     assert self.GetIssue(), 'issue is required to update description'
@@ -1497,34 +1477,33 @@ class Changelist(object):
         description = options.title + '\n\n' + message
 
     # Apply watchlists on upload.
-    change = self.GetChange(base_branch, description)
-    watchlist = watchlists.Watchlists(change.RepositoryRoot())
-    files = [f.LocalPath() for f in change.AffectedFiles()]
+    watchlist = watchlists.Watchlists(settings.GetRoot())
+    files = self.GetAffectedFiles(base_branch)
     if not options.bypass_watchlists:
       self.ExtendCC(watchlist.GetWatchersForPaths(files))
 
     if options.reviewers or options.tbrs or options.add_owners_to:
       # Set the reviewer list now so that presubmit checks can access it.
       change_description = ChangeDescription(description)
-      change_description.update_reviewers(options.reviewers,
-                                          options.tbrs,
-                                          options.add_owners_to,
-                                          change)
+      change_description.update_reviewers(
+          options.reviewers, options.tbrs, options.add_owners_to, files,
+          self.GetAuthor())
       description = change_description.description
 
     if not options.bypass_hooks:
-      hook_results = self.RunHook(committing=False,
-                                  may_prompt=not options.force,
-                                  verbose=options.verbose,
-                                  parallel=options.parallel,
-                                  upstream=base_branch,
-                                  description=description,
-                                  all_files=False)
+      hook_results = self.RunHook(
+          committing=False,
+          may_prompt=not options.force,
+          verbose=options.verbose,
+          parallel=options.parallel,
+          upstream=base_branch,
+          description=description,
+          all_files=False)
       self.ExtendCC(hook_results['more_cc'])
 
     print_stats(git_diff_args)
     ret = self.CMDUploadChange(
-        options, git_diff_args, custom_cl_base, change, description)
+        options, git_diff_args, custom_cl_base, description)
     if not ret:
       self._GitSetBranchConfigValue(
           'last-upload-hash', RunGit(['rev-parse', 'HEAD']).strip())
@@ -2258,7 +2237,7 @@ class Changelist(object):
     return push_stdout
 
   def CMDUploadChange(
-      self, options, git_diff_args, custom_cl_base, change, message):
+      self, options, git_diff_args, custom_cl_base, message):
     """Upload the current branch to Gerrit."""
     if options.squash is None:
       # Load default for user, repo, squash=true, in this order.
@@ -2341,9 +2320,6 @@ class Changelist(object):
           assert len(change_ids) == 1
         change_id = change_ids[0]
 
-      if options.reviewers or options.tbrs or options.add_owners_to:
-        change_desc.update_reviewers(options.reviewers, options.tbrs,
-                                     options.add_owners_to, change)
       if options.preserve_tryjobs:
         change_desc.set_preserve_tryjobs()
 
@@ -2364,9 +2340,6 @@ class Changelist(object):
         DownloadGerritHook(False)
         change_desc.set_description(
             self._AddChangeIdToCommitMessage(message, git_diff_args))
-      if options.reviewers or options.tbrs or options.add_owners_to:
-        change_desc.update_reviewers(options.reviewers, options.tbrs,
-                                     options.add_owners_to, change)
       ref_to_push = 'HEAD'
       # For no-squash mode, we assume the remote called "origin" is the one we
       # want. It is not worthwhile to support different workflows for
@@ -2385,10 +2358,6 @@ class Changelist(object):
       print('You can also use `git squash-branch` to squash these into a '
             'single commit.')
       confirm_or_exit(action='upload')
-
-    if options.reviewers or options.tbrs or options.add_owners_to:
-      change_desc.update_reviewers(options.reviewers, options.tbrs,
-                                   options.add_owners_to, change)
 
     reviewers = sorted(change_desc.get_reviewers())
     cc = []
@@ -2704,7 +2673,8 @@ class ChangeDescription(object):
       lines.pop(-1)
     self._description_lines = lines
 
-  def update_reviewers(self, reviewers, tbrs, add_owners_to=None, change=None):
+  def update_reviewers(
+      self, reviewers, tbrs, add_owners_to, affected_files, author_email):
     """Rewrites the R=/TBR= line(s) as a single line each.
 
     Args:
@@ -2719,7 +2689,7 @@ class ChangeDescription(object):
     assert isinstance(tbrs, list), tbrs
 
     assert add_owners_to in (None, 'TBR', 'R'), add_owners_to
-    assert not add_owners_to or change, add_owners_to
+    assert not add_owners_to or affected_files, add_owners_to
 
     if not reviewers and not tbrs and not add_owners_to:
       return
@@ -2748,12 +2718,12 @@ class ChangeDescription(object):
 
     # Next, maybe fill in OWNERS coverage gaps to either tbrs/reviewers.
     if add_owners_to:
-      owners_db = owners.Database(change.RepositoryRoot(),
+      owners_db = owners.Database(settings.GetRoot(),
                                   fopen=open, os_path=os.path)
-      missing_files = owners_db.files_not_covered_by(change.LocalPaths(),
+      missing_files = owners_db.files_not_covered_by(affected_files,
                                                      (tbrs | reviewers))
       LOOKUP[add_owners_to].update(
-        owners_db.reviewers_for(missing_files, change.author_email))
+        owners_db.reviewers_for(missing_files, author_email))
 
     # If any folks ended up in both groups, remove them from tbrs.
     tbrs -= reviewers
@@ -4034,8 +4004,7 @@ def CMDlint(parser, args):
   os.chdir(settings.GetRoot())
   try:
     cl = Changelist()
-    change = cl.GetChange(cl.GetCommonAncestorWithUpstream(), '')
-    files = [f.LocalPath() for f in change.AffectedFiles()]
+    files = cl.GetAffectedFiles(cl.GetCommonAncestorWithUpstream())
     if not files:
       print('Cannot lint an empty CL')
       return 1
@@ -4414,9 +4383,10 @@ def CMDsplit(parser, args):
   def WrappedCMDupload(args):
     return CMDupload(OptionParser(), args)
 
-  return split_cl.SplitCl(options.description_file, options.comment_file,
-                          Changelist, WrappedCMDupload, options.dry_run,
-                          options.cq_dry_run, options.enable_auto_submit)
+  return split_cl.SplitCl(
+      options.description_file, options.comment_file, Changelist,
+      WrappedCMDupload, options.dry_run, options.cq_dry_run,
+      options.enable_auto_submit, settings.GetRoot())
 
 
 @subcommand.usage('DEPRECATED')
@@ -4929,22 +4899,28 @@ def CMDowners(parser, args):
     # Default to diffing against the common ancestor of the upstream branch.
     base_branch = cl.GetCommonAncestorWithUpstream()
 
-  change = cl.GetChange(base_branch, '')
-  affected_files = [f.LocalPath() for f in change.AffectedFiles()]
+  root = settings.GetRoot()
+  affected_files = cl.GetAffectedFiles(base_branch)
 
   if options.batch:
-    db = owners.Database(change.RepositoryRoot(), open, os.path)
+    db = owners.Database(root, open, os.path)
     print('\n'.join(db.reviewers_for(affected_files, author)))
     return 0
 
+  owner_files = [f for f in affected_files if 'OWNERS' in os.path.basename(f)]
+  original_owner_files = {
+      f: scm.GIT.GetOldContents(root, f, base_branch).splitlines()
+      for f in owner_files}
+
   return owners_finder.OwnersFinder(
       affected_files,
-      change.RepositoryRoot(),
+      root,
       author,
       [] if options.ignore_current else cl.GetReviewers(),
-      fopen=open, os_path=os.path,
+      fopen=open,
+      os_path=os.path,
       disable_color=options.no_color,
-      override_files=change.OriginalOwnersFiles(),
+      override_files=original_owner_files,
       ignore_author=options.ignore_self).run()
 
 
