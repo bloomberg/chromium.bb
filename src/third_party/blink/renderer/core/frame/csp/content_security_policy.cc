@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/core/html/html_script_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
@@ -1372,6 +1373,8 @@ bool ContentSecurityPolicy::ShouldBypassMainWorld(
   // This can be called before we enter v8, hence the context might be empty,
   // which implies we are not in an isolated world.
   if (v8_context.IsEmpty())
+    return false;
+  if (!ScriptState::AccessCheck(v8_context))
     return false;
 
   DOMWrapperWorld& world = DOMWrapperWorld::Current(isolate);
