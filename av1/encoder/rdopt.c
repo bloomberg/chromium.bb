@@ -4281,8 +4281,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     valid_refs[frame - 1] = x->search_ref_frame[frame];
     if (!valid_refs[frame - 1]) {
       valid_refs[frame - 1] = (!prune_ref_by_selective_ref_frame(
-          cpi, x, refs, cm->cur_frame->ref_display_order_hint,
-          cm->current_frame.display_order_hint));
+          cpi, x, refs, cm->cur_frame->ref_display_order_hint));
     }
   }
 
