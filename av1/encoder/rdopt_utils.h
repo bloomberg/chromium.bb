@@ -334,24 +334,31 @@ static INLINE int check_txfm_eval(MACROBLOCK *const x, BLOCK_SIZE bsize,
   // Derive aggressiveness factor for gating the transform search
   // Lower value indicates more aggressiveness. Be more conservative (high
   // value) for (i) low quantizers (ii) regions where prediction is poor
-  const int scale[4] = { INT_MAX, 3, 3, 2 };
-
-  int aggr_factor =
-      AOMMAX(1, ((MAXQ - x->qindex) * 2 + QINDEX_RANGE / 2) >> QINDEX_BITS);
+  const int scale[5] = { INT_MAX, 4, 3, 3, 2 };
+  const int qslope = 2 * (!is_luma_only);
+  int aggr_factor = 1;
+  if (!is_luma_only) {
+    aggr_factor = AOMMAX(
+        1, ((MAXQ - x->qindex) * qslope + QINDEX_RANGE / 2) >> QINDEX_BITS);
+  }
   if (best_skip_rd >
       (x->source_variance << (num_pels_log2_lookup[bsize] + RDDIV_BITS)))
     aggr_factor *= scale[level];
+  // For level setting 1, be more conservative for luma only case even when
+  // prediction is good
+  else if ((level <= 1) && !is_luma_only)
+    aggr_factor *= 2;
 
   // Be more conservative for luma only cases (called from compound type rd)
   // since best_skip_rd is computed after and skip_rd is computed (with 8-bit
   // prediction signals blended for WEDGE/DIFFWTD rather than 16-bit) before
   // interpolation filter search
-  const int luma_mul[4] = { INT_MAX, 16, 15, 11 };
-  int mul_factor = is_luma_only ? luma_mul[level] : 8;
+  const int luma_mul[5] = { INT_MAX, 32, 29, 20, 17 };
+  int mul_factor = is_luma_only ? luma_mul[level] : 16;
   int64_t rd_thresh =
       (best_skip_rd == INT64_MAX)
           ? best_skip_rd
-          : (int64_t)(best_skip_rd * aggr_factor * mul_factor >> 3);
+          : (int64_t)(best_skip_rd * aggr_factor * mul_factor >> 4);
   if (skip_rd > rd_thresh) eval_txfm = 0;
   return eval_txfm;
 }

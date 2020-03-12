@@ -1502,8 +1502,9 @@ static int64_t motion_mode_rd(
       rd_stats->rdcost = est_rd;
       if (rd_stats->rdcost < *best_est_rd) {
         *best_est_rd = rd_stats->rdcost;
+        assert(sse_y >= 0);
         ref_skip_rd[1] = cpi->sf.inter_sf.txfm_rd_gate_level
-                             ? RDCOST(x->rdmult, mode_rate, sse_y)
+                             ? RDCOST(x->rdmult, mode_rate, (sse_y << 4))
                              : INT64_MAX;
       }
       if (cm->current_frame.reference_mode == SINGLE_REFERENCE) {
@@ -1531,7 +1532,7 @@ static int64_t motion_mode_rd(
         // model_rd_sb_fn and compound type rd
         sse_y = ROUND_POWER_OF_TWO(sse_y, (xd->bd - 8) * 2);
         skip_rd = RDCOST(x->rdmult, rd_stats->rate, curr_sse);
-        skip_rdy = RDCOST(x->rdmult, rd_stats->rate, sse_y);
+        skip_rdy = RDCOST(x->rdmult, rd_stats->rate, (sse_y << 4));
         int eval_txfm = check_txfm_eval(x, bsize, ref_skip_rd[0], skip_rd,
                                         cpi->sf.inter_sf.txfm_rd_gate_level, 0);
         if (!eval_txfm) continue;

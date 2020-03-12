@@ -1041,7 +1041,7 @@ static int64_t masked_compound_type_rd(
   *rs2 += get_interinter_compound_mask_rate(x, mbmi);
   best_rd_cur += RDCOST(x->rdmult, *rs2 + rate_mv, 0);
   assert(cur_sse != UINT64_MAX);
-  int64_t skip_rd_cur = RDCOST(x->rdmult, *rs2 + rate_mv, cur_sse);
+  int64_t skip_rd_cur = RDCOST(x->rdmult, *rs2 + rate_mv, (cur_sse << 4));
 
   // Although the true rate_mv might be different after motion search, but it
   // is unlikely to be the best mode considering the transform rd cost and other
@@ -1329,7 +1329,8 @@ int av1_compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
       int eval_txfm = 1;
       // Check if the mode is good enough based on skip rd
       if (cpi->sf.inter_sf.txfm_rd_gate_level) {
-        int64_t skip_rd = RDCOST(x->rdmult, rs2 + *rate_mv, sse_y[best_type]);
+        int64_t skip_rd =
+            RDCOST(x->rdmult, rs2 + *rate_mv, (sse_y[best_type] << 4));
         eval_txfm = check_txfm_eval(x, bsize, ref_skip_rd, skip_rd,
                                     cpi->sf.inter_sf.txfm_rd_gate_level, 1);
       }
@@ -1387,7 +1388,7 @@ int av1_compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
           // Check if the mode is good enough based on skip rd
           if (cpi->sf.inter_sf.txfm_rd_gate_level) {
             int64_t sse_y = compute_sse_plane(x, xd, PLANE_TYPE_Y, bsize);
-            int64_t skip_rd = RDCOST(x->rdmult, rs2 + *rate_mv, sse_y);
+            int64_t skip_rd = RDCOST(x->rdmult, rs2 + *rate_mv, (sse_y << 4));
             eval_txfm = check_txfm_eval(x, bsize, ref_skip_rd, skip_rd,
                                         cpi->sf.inter_sf.txfm_rd_gate_level, 1);
           }
