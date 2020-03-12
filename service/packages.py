@@ -294,21 +294,6 @@ def uprev_versioned_package(package, build_targets, refs, chroot):
   return _UPREV_FUNCS[package.cp](build_targets, refs, chroot)
 
 
-# TODO(evanhernandez): Remove this. Only a quick hack for testing.
-@uprevs_versioned_package('sample/sample')
-def uprev_sample(*_args, **_kwargs):
-  """Mimics an uprev by changing files in sandbox repos.
-
-  See: uprev_versioned_package.
-  """
-  paths = [
-      os.path.join(constants.SOURCE_ROOT, 'infra/dummies', repo, 'sample.txt')
-      for repo in ('general-sandbox', 'merge-sandbox')
-  ]
-
-  return UprevVersionedPackageResult().add_result('1.2.3', paths)
-
-
 @uprevs_versioned_package('afdo/kernel-profiles')
 def uprev_kernel_afdo(*_args, **_kwargs):
   """Updates kernel ebuilds with versions from kernel_afdo.json.
