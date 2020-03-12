@@ -34,7 +34,7 @@ namespace {
 // Number of extra bits of precision in warped filtering.
 constexpr int kWarpedDiffPrecisionBits = 10;
 
-// Warp prediction output ranges.
+// Warp prediction output ranges from WarpTest.ShowRange.
 // Bitdepth:  8 Input range:            [       0,      255]
 //   8bpp intermediate offset: 16384.
 //   intermediate range:                [    4399,    61009]
