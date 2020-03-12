@@ -33,7 +33,7 @@ constexpr int kSubPixelMask = (1 << kSubPixelBits) - 1;
 constexpr int kHorizontalOffset = 3;
 constexpr int kVerticalOffset = 3;
 
-// Compound prediction output ranges.
+// Compound prediction output ranges from ConvolveTest.ShowRange.
 // Bitdepth:  8 Input range:            [       0,      255]
 //   intermediate range:                [   -7140,    23460]
 //   first pass output range:           [   -1785,     5865]
