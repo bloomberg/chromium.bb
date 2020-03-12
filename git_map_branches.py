@@ -140,9 +140,8 @@ class BranchMapper(object):
       # This is a blocking get which waits for the remote CL status to be
       # retrieved.
       for cl, status in status_info:
-        self.__status_info[cl.GetBranch()] = (cl.GetIssueURL(),
-                                              color_for_status(status),
-                                              status)
+        self.__status_info[cl.GetBranch()] = (cl.GetIssueURL(short=True),
+                                              color_for_status(status), status)
 
     roots = set()
 

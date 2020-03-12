@@ -129,6 +129,12 @@ settings = None
 _IS_BEING_TESTED = False
 
 
+_KNOWN_GERRIT_TO_SHORT_URLS = {
+    'https://chrome-internal-review.googlesource.com': 'https://crrev.com/i',
+    'https://chromium-review.googlesource.com': 'https://crrev.com/c',
+}
+
+
 def DieWithError(message, change_desc=None):
   if change_desc:
     SaveDescriptionBackup(change_desc)
@@ -1257,12 +1263,15 @@ class Changelist(object):
       self.lookedup_issue = True
     return self.issue
 
-  def GetIssueURL(self):
+  def GetIssueURL(self, short=False):
     """Get the URL for a particular issue."""
     issue = self.GetIssue()
     if not issue:
       return None
-    return '%s/%s' % (self.GetCodereviewServer(), issue)
+    server = self.GetCodereviewServer()
+    if short:
+      server = _KNOWN_GERRIT_TO_SHORT_URLS.get(server, server)
+    return '%s/%s' % (server, issue)
 
   def FetchDescription(self, pretty=False):
     assert self.GetIssue(), 'issue is required to query Gerrit'
@@ -3783,7 +3792,7 @@ def CMDstatus(parser, args):
       c, status = next(output)
       branch_statuses[c.GetBranch()] = status
     status = branch_statuses.pop(branch)
-    url = cl.GetIssueURL()
+    url = cl.GetIssueURL(short=True)
     if url and (not status or status == 'error'):
       # The issue probably doesn't exist anymore.
       url += ' (broken)'

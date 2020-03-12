@@ -249,6 +249,18 @@ class TestGitClBasic(unittest.TestCase):
     self.assertEqual(
         set([(changes[0], 'waiting'), (changes[1], 'error')]), actual)
 
+  def test_get_issue_url(self):
+    cl = git_cl.Changelist(issue=123)
+    cl._gerrit_server = 'https://example.com'
+    self.assertEqual(cl.GetIssueURL(), 'https://example.com/123')
+    self.assertEqual(cl.GetIssueURL(short=True), 'https://example.com/123')
+
+    cl = git_cl.Changelist(issue=123)
+    cl._gerrit_server = 'https://chromium-review.googlesource.com'
+    self.assertEqual(cl.GetIssueURL(),
+                     'https://chromium-review.googlesource.com/123')
+    self.assertEqual(cl.GetIssueURL(short=True), 'https://crrev.com/c/123')
+
   def test_set_preserve_tryjobs(self):
     d = git_cl.ChangeDescription('Simple.')
     d.set_preserve_tryjobs()
