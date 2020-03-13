@@ -125,7 +125,7 @@ void ComputeSuperRes_SSE4_1(const void* source, const int upscaled_width,
     ComputeSuperRes8(src, &dst[x], step, &p);
   }
   // The below code can overwrite at most 3 bytes and overread at most 7.
-  // kSuperResBorder accounts for this.
+  // kSuperResHorizontalBorder accounts for this.
   for (; x < upscaled_width; x += 4) {
     ComputeSuperRes4(src, &dst[x], step, &p);
   }

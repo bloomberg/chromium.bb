@@ -408,7 +408,11 @@ class PostFilter {
   void GetDeblockFilterParams(uint8_t level, int* outer_thresh,
                               int* inner_thresh, int* hev_thresh) const;
   // Applies super resolution for the |buffers| for 4*|rows4x4| rows of each
-  // plane.
+  // plane. If in_place is true, the line buffer will not be used and the
+  // SuperRes output will be written to a row above the input row. If in_place
+  // is false, the line buffer will be used to store a copy of the input and the
+  // output will be written to the same row as the input row.
+  template <bool in_place>
   void ApplySuperRes(const std::array<uint8_t*, kMaxPlanes>& buffers,
                      const std::array<int, kMaxPlanes>& strides, int rows4x4,
                      int8_t chroma_subsampling_y,
@@ -509,7 +513,7 @@ class PostFilter {
   const int window_buffer_height_;
   // Pointer to the line buffer used by ApplySuperRes(). If SuperRes is on, then
   // the buffer will be large enough to hold one downscaled row +
-  // kSuperResBorder.
+  // kSuperResHorizontalBorder.
   uint8_t* const superres_line_buffer_;
   const BlockParametersHolder& block_parameters_;
   // Frame buffer to hold cdef filtered frame.
@@ -522,6 +526,9 @@ class PostFilter {
   // A view into |frame_buffer_| that points to the output of the CDEF filtered
   // planes (to facilitate in-place CDEF filtering).
   uint8_t* cdef_buffer_[kMaxPlanes];
+  // A view into |frame_buffer_| that points to the planes after the SuperRes
+  // filter is applied (to facilitate in-place SuperRes).
+  uint8_t* superres_buffer_[kMaxPlanes];
   // A view into |frame_buffer_| that points to the output of the Loop Restored
   // planes (to facilitate in-place Loop Restoration).
   uint8_t* loop_restoration_buffer_[kMaxPlanes];

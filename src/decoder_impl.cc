@@ -49,13 +49,15 @@ namespace {
 constexpr int kMaxBlockWidth4x4 = 32;
 constexpr int kMaxBlockHeight4x4 = 32;
 
-// Computes the bottom border size in pixels. If CDEF or loop restoration is
-// enabled, adds extra border pixels to compensate for the buffer shift in the
-// PostFilter constructor.
-int GetBottomBorderPixels(const bool do_cdef, const bool do_restoration) {
+// Computes the bottom border size in pixels. If CDEF, loop restoration or
+// SuperRes is enabled, adds extra border pixels to facilitate those steps to
+// happen nearly in-place (a few extra rows instead of an entire frame buffer).
+int GetBottomBorderPixels(const bool do_cdef, const bool do_restoration,
+                          const bool do_superres) {
   int border = kBorderPixels;
   if (do_cdef) border += 2 * kCdefBorder;
   if (do_restoration) border += 2 * kRestorationBorder;
+  if (do_superres) border += 2 * kSuperResVerticalBorder;
   return border;
 }
 
@@ -273,7 +275,8 @@ StatusCode DecoderImpl::ParseAndEnqueue() {
                              sequence_header.color_config.subsampling_x,
                              sequence_header.color_config.subsampling_y);
       const int max_bottom_border =
-          GetBottomBorderPixels(/*do_cdef=*/true, /*do_restoration=*/true);
+          GetBottomBorderPixels(/*do_cdef=*/true, /*do_restoration=*/true,
+                                /*do_superres=*/true);
       // TODO(vigneshv): This may not be the right place to call this callback
       // for the frame parallel case. Investigate and fix it.
       if (!buffer_pool_.OnFrameBufferSizeChanged(
@@ -413,7 +416,8 @@ StatusCode DecoderImpl::DecodeTemporalUnit(const TemporalUnit& temporal_unit,
                              sequence_header.color_config.subsampling_x,
                              sequence_header.color_config.subsampling_y);
       const int max_bottom_border =
-          GetBottomBorderPixels(/*do_cdef=*/true, /*do_restoration=*/true);
+          GetBottomBorderPixels(/*do_cdef=*/true, /*do_restoration=*/true,
+                                /*do_superres=*/true);
       if (!buffer_pool_.OnFrameBufferSizeChanged(
               sequence_header.color_config.bitdepth, image_format,
               sequence_header.max_frame_width, sequence_header.max_frame_height,
@@ -602,9 +606,17 @@ StatusCode DecoderImpl::DecodeTiles(
                              : kMaxPlanes;
   const bool do_restoration = PostFilter::DoRestoration(
       frame_header.loop_restoration, settings_.post_filter_mask, num_planes);
+  const bool do_superres =
+      PostFilter::DoSuperRes(frame_header, settings_.post_filter_mask);
   // Use kBorderPixels for the left, right, and top borders. Only the bottom
-  // border may need to be bigger.
-  const int bottom_border = GetBottomBorderPixels(do_cdef, do_restoration);
+  // border may need to be bigger. SuperRes border is needed only if we are
+  // applying SuperRes in-place which is being done only in single threaded
+  // mode.
+  const int bottom_border = GetBottomBorderPixels(
+      do_cdef, do_restoration,
+      do_superres &&
+          frame_scratch_buffer->threading_strategy.post_filter_thread_pool() ==
+              nullptr);
   if (!AllocateCurrentFrame(current_frame, sequence_header.color_config,
                             frame_header, kBorderPixels, kBorderPixels,
                             kBorderPixels, bottom_border)) {
@@ -787,14 +799,15 @@ StatusCode DecoderImpl::DecodeTiles(
     }
   }
 
-  if (PostFilter::DoSuperRes(frame_header, settings_.post_filter_mask)) {
+  if (do_superres) {
     const int num_threads =
         1 + ((threading_strategy.post_filter_thread_pool() == nullptr)
                  ? 0
                  : threading_strategy.post_filter_thread_pool()->num_threads());
     const size_t superres_line_buffer_size =
         num_threads *
-        ((MultiplyBy4(frame_header.columns4x4) + MultiplyBy2(kSuperResBorder)) *
+        ((MultiplyBy4(frame_header.columns4x4) +
+          MultiplyBy2(kSuperResHorizontalBorder)) *
          (sequence_header.color_config.bitdepth == 8 ? sizeof(uint8_t)
                                                      : sizeof(uint16_t)));
     if (!frame_scratch_buffer->superres_line_buffer.Resize(
