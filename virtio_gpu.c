@@ -89,7 +89,7 @@ static void virtio_gpu_add_combination(struct driver *drv, uint32_t drm_format,
 {
 	struct virtio_gpu_priv *priv = (struct virtio_gpu_priv *)drv->priv;
 
-	if (priv->has_3d) {
+	if (priv->has_3d && priv->caps.max_version >= 1) {
 		if ((use_flags & BO_USE_RENDERING) &&
 		    !virtio_gpu_supports_format(&priv->caps.v1.render, drm_format)) {
 			drv_log("Skipping unsupported render format: %d\n", drm_format);
