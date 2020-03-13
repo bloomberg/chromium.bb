@@ -779,7 +779,7 @@ void ToolkitImpl::setTraceThreshold(unsigned int timeoutMS)
 // patch section: multi-heap tracer
 int ToolkitImpl::addV8HeapTracer(EmbedderHeapTracer *tracer)
 {
-    auto *multiHeapTracer = ThreadState::Current()->GetMultiHeapTracer();
+    auto *multiHeapTracer = blink::ThreadState::Current()->GetMultiHeapTracer();
 
     // As 'multiHeapTracer' never sees 'tracer' directly, we have to configure
     // its 'isolate' member manually.
@@ -804,7 +804,7 @@ int ToolkitImpl::addV8HeapTracer(EmbedderHeapTracer *tracer)
 
 void ToolkitImpl::removeV8HeapTracer(int embedder_id)
 {
-    auto *multiHeapTracer = ThreadState::Current()->GetMultiHeapTracer();
+    auto *multiHeapTracer = blink::ThreadState::Current()->GetMultiHeapTracer();
     multiHeapTracer->RemoveHeapTracer(embedder_id);
 
     DCHECK(1 == d_heapTracers.count(embedder_id));
@@ -814,7 +814,7 @@ void ToolkitImpl::removeV8HeapTracer(int embedder_id)
 
 void ToolkitImpl::setIsolate(v8::EmbedderHeapTracer *tracer)
 {
-    auto *multiHeapTracer = ThreadState::Current()->GetMultiHeapTracer();
+    auto *multiHeapTracer = blink::ThreadState::Current()->GetMultiHeapTracer();
     multiHeapTracer->SetIsolate(tracer);
 }
 
