@@ -271,93 +271,88 @@ void ScanPoint(const Tile::Block& block, int delta_row, int delta_column,
 }
 
 // 7.10.2.6.
-void AddTemporalReferenceMvCandidate(const Tile::Block& block,
-                                     const int reference_offset[2], int mv_row,
-                                     int mv_column, bool is_compound,
-                                     int* const zero_mv_context,
-                                     int* const num_mv_found) {
-  const int x8 = mv_column >> 1;
-  const int y8 = mv_row >> 1;
-  const Tile& tile = block.tile;
-  const TemporalMotionField& motion_field = tile.motion_field();
-  const MotionVector& temporal_mv = motion_field.mv[y8][x8];
-  if (temporal_mv.mv[0] == kInvalidMvValue) {
-    if (*zero_mv_context == -1) {
-      *zero_mv_context = 1;
-    }
+void AddTemporalReferenceMvCandidate(
+    const ObuFrameHeader& frame_header, const int reference_offsets[2],
+    const MotionVector* const temporal_mvs,
+    const int* const temporal_reference_offsets, int count, bool is_compound,
+    int* const zero_mv_context, int* const num_mv_found,
+    PredictionParameters* const prediction_parameters) {
+  const MotionVector* const global_mv = prediction_parameters->global_mv;
+  CandidateMotionVector* const ref_mv_stack =
+      prediction_parameters->ref_mv_stack;
+  int index = 0;
+  if (is_compound) {
+    do {
+      assert(temporal_reference_offsets[index] > 0);
+      assert(temporal_reference_offsets[index] <= kMaxFrameDistance);
+      CandidateMotionVector candidate_mv = {};
+      for (int i = 0; i < 2; ++i) {
+        if (reference_offsets[i] != 0) {
+          GetMvProjection(temporal_mvs[index], reference_offsets[i],
+                          temporal_reference_offsets[index],
+                          &candidate_mv.mv[i]);
+          LowerMvPrecision(frame_header, &candidate_mv.mv[i]);
+        }
+      }
+      if (*zero_mv_context == -1) {
+        int max_difference =
+            std::max(std::abs(candidate_mv.mv[0].mv[0] - global_mv[0].mv[0]),
+                     std::abs(candidate_mv.mv[0].mv[1] - global_mv[0].mv[1]));
+        max_difference =
+            std::max(max_difference,
+                     std::abs(candidate_mv.mv[1].mv[0] - global_mv[1].mv[0]));
+        max_difference =
+            std::max(max_difference,
+                     std::abs(candidate_mv.mv[1].mv[1] - global_mv[1].mv[1]));
+        *zero_mv_context = static_cast<int>(max_difference >= 16);
+      }
+      const auto result =
+          std::find_if(ref_mv_stack, ref_mv_stack + *num_mv_found,
+                       [&candidate_mv](const CandidateMotionVector& ref_mv) {
+                         return ref_mv == candidate_mv;
+                       });
+      if (result != ref_mv_stack + *num_mv_found) {
+        prediction_parameters->IncreaseWeight(
+            std::distance(ref_mv_stack, result), 2);
+        continue;
+      }
+      if (*num_mv_found >= kMaxRefMvStackSize) continue;
+      ref_mv_stack[*num_mv_found] = candidate_mv;
+      prediction_parameters->SetWeightIndexStackEntry(*num_mv_found, 2);
+      ++*num_mv_found;
+    } while (++index < count);
     return;
   }
-  const int temporal_reference_offset = motion_field.reference_offset[y8][x8];
-  PredictionParameters& prediction_parameters =
-      *block.bp->prediction_parameters;
-  const MotionVector* const global_mv = prediction_parameters.global_mv;
-  assert(temporal_reference_offset > 0);
-  assert(temporal_reference_offset <= kMaxFrameDistance);
-  CandidateMotionVector* const ref_mv_stack =
-      prediction_parameters.ref_mv_stack;
-  CandidateMotionVector candidate_mv = {};
-  if (is_compound) {
-    for (int i = 0; i < 2; ++i) {
-      if (reference_offset[i] != 0) {
-        GetMvProjection(temporal_mv, reference_offset[i],
-                        temporal_reference_offset, &candidate_mv.mv[i]);
-        LowerMvPrecision(tile.frame_header(), &candidate_mv.mv[i]);
-      }
+  do {
+    assert(temporal_reference_offsets[index] > 0);
+    assert(temporal_reference_offsets[index] <= kMaxFrameDistance);
+    CandidateMotionVector candidate_mv = {};
+    if (reference_offsets[0] != 0) {
+      GetMvProjection(temporal_mvs[index], reference_offsets[0],
+                      temporal_reference_offsets[index], &candidate_mv.mv[0]);
+      LowerMvPrecision(frame_header, &candidate_mv.mv[0]);
     }
     if (*zero_mv_context == -1) {
-      int max_difference =
+      const int max_difference =
           std::max(std::abs(candidate_mv.mv[0].mv[0] - global_mv[0].mv[0]),
                    std::abs(candidate_mv.mv[0].mv[1] - global_mv[0].mv[1]));
-      max_difference =
-          std::max(max_difference,
-                   std::abs(candidate_mv.mv[1].mv[0] - global_mv[1].mv[0]));
-      max_difference =
-          std::max(max_difference,
-                   std::abs(candidate_mv.mv[1].mv[1] - global_mv[1].mv[1]));
       *zero_mv_context = static_cast<int>(max_difference >= 16);
     }
-    auto result =
+    const auto result =
         std::find_if(ref_mv_stack, ref_mv_stack + *num_mv_found,
                      [&candidate_mv](const CandidateMotionVector& ref_mv) {
-                       return ref_mv == candidate_mv;
+                       return ref_mv.mv[0] == candidate_mv.mv[0];
                      });
     if (result != ref_mv_stack + *num_mv_found) {
-      prediction_parameters.IncreaseWeight(std::distance(ref_mv_stack, result),
-                                           2);
-      return;
+      prediction_parameters->IncreaseWeight(std::distance(ref_mv_stack, result),
+                                            2);
+      continue;
     }
-    if (*num_mv_found >= kMaxRefMvStackSize) return;
+    if (*num_mv_found >= kMaxRefMvStackSize) continue;
     ref_mv_stack[*num_mv_found] = candidate_mv;
-    prediction_parameters.SetWeightIndexStackEntry(*num_mv_found, 2);
+    prediction_parameters->SetWeightIndexStackEntry(*num_mv_found, 2);
     ++*num_mv_found;
-    return;
-  }
-  assert(!is_compound);
-  if (reference_offset[0] != 0) {
-    GetMvProjection(temporal_mv, reference_offset[0], temporal_reference_offset,
-                    &candidate_mv.mv[0]);
-    LowerMvPrecision(tile.frame_header(), &candidate_mv.mv[0]);
-  }
-  if (*zero_mv_context == -1) {
-    const int max_difference =
-        std::max(std::abs(candidate_mv.mv[0].mv[0] - global_mv[0].mv[0]),
-                 std::abs(candidate_mv.mv[0].mv[1] - global_mv[0].mv[1]));
-    *zero_mv_context = static_cast<int>(max_difference >= 16);
-  }
-  auto result =
-      std::find_if(ref_mv_stack, ref_mv_stack + *num_mv_found,
-                   [&candidate_mv](const CandidateMotionVector& ref_mv) {
-                     return ref_mv.mv[0] == candidate_mv.mv[0];
-                   });
-  if (result != ref_mv_stack + *num_mv_found) {
-    prediction_parameters.IncreaseWeight(std::distance(ref_mv_stack, result),
-                                         2);
-    return;
-  }
-  if (*num_mv_found >= kMaxRefMvStackSize) return;
-  ref_mv_stack[*num_mv_found] = candidate_mv;
-  prediction_parameters.SetWeightIndexStackEntry(*num_mv_found, 2);
-  ++*num_mv_found;
+  } while (++index < count);
 }
 
 // Part of 7.10.2.5.
@@ -390,17 +385,16 @@ void TemporalScan(const Tile::Block& block, bool is_compound,
   const int column_end =
       column_start + std::min(static_cast<int>(block.width4x4), 16);
   const Tile& tile = block.tile;
-  int reference_offset[2];
-  reference_offset[0] = GetRelativeDistance(
-      tile.frame_header().order_hint,
-      tile.current_frame().order_hint(block.bp->reference_frame[0]),
-      tile.sequence_header().order_hint_shift_bits);
-  if (is_compound) {
-    reference_offset[1] = GetRelativeDistance(
-        tile.frame_header().order_hint,
-        tile.current_frame().order_hint(block.bp->reference_frame[1]),
-        tile.sequence_header().order_hint_shift_bits);
-  }
+  const TemporalMotionField& motion_field = tile.motion_field();
+  const int stride = motion_field.mv.columns();
+  const MotionVector* motion_field_mv = motion_field.mv[0];
+  const int8_t* motion_field_reference_offset =
+      motion_field.reference_offset[0];
+  constexpr int kMaxTemporalMvCandidates = 19;
+  MotionVector temporal_mvs[kMaxTemporalMvCandidates];
+  int temporal_reference_offsets[kMaxTemporalMvCandidates];
+  int count = 0;
+  int offset = stride * (row_start >> 1);
   int mv_row = row_start;
   do {
     int mv_column = column_start;
@@ -408,12 +402,22 @@ void TemporalScan(const Tile::Block& block, bool is_compound,
       // Both horizontal and vertical offsets are positive. Only bottom and
       // right boundaries need to be checked.
       if (tile.IsBottomRightInside(mv_row, mv_column)) {
-        AddTemporalReferenceMvCandidate(block, reference_offset, mv_row,
-                                        mv_column, is_compound, zero_mv_context,
-                                        num_mv_found);
+        const int x8 = mv_column >> 1;
+        const MotionVector temporal_mv = motion_field_mv[offset + x8];
+        const int temporal_reference_offset =
+            motion_field_reference_offset[offset + x8];
+        if (temporal_mv.mv[0] == kInvalidMvValue) {
+          if (mv_row == row_start && mv_column == column_start) {
+            *zero_mv_context = 1;
+          }
+        } else {
+          temporal_mvs[count] = temporal_mv;
+          temporal_reference_offsets[count++] = temporal_reference_offset;
+        }
       }
       mv_column += step_w;
     } while (mv_column < column_end);
+    offset += stride * step_h >> 1;
     mv_row += step_h;
   } while (mv_row < row_end);
   if (kTemporalScanMask.Contains(block.size)) {
@@ -421,19 +425,50 @@ void TemporalScan(const Tile::Block& block, bool is_compound,
         {block.height4x4, -2},
         {block.height4x4, block.width4x4},
         {block.height4x4 - 2, block.width4x4}};
-    for (const auto& temporal_sample_position : temporal_sample_positions) {
-      const int row = temporal_sample_position[0];
-      const int column = temporal_sample_position[1];
+    // Getting the address of an element in Array2D is slow. Precalculate the
+    // offsets.
+    int temporal_sample_offsets[3];
+    temporal_sample_offsets[0] = stride * ((row_start + block.height4x4) >> 1) +
+                                 ((column_start - 2) >> 1);
+    temporal_sample_offsets[1] =
+        temporal_sample_offsets[0] + ((block.width4x4 + 2) >> 1);
+    temporal_sample_offsets[2] = temporal_sample_offsets[1] - stride;
+    for (int i = 0; i < 3; i++) {
+      const int row = temporal_sample_positions[i][0];
+      const int column = temporal_sample_positions[i][1];
       if (!IsWithinTheSame64x64Block(block, row, column)) continue;
       const int mv_row = row_start + row;
       const int mv_column = column_start + column;
       // IsWithinTheSame64x64Block() guarantees the reference block is inside
       // the top and left boundary.
       if (!tile.IsBottomRightInside(mv_row, mv_column)) continue;
-      AddTemporalReferenceMvCandidate(block, reference_offset, mv_row,
-                                      mv_column, is_compound, zero_mv_context,
-                                      num_mv_found);
+      const MotionVector temporal_mv =
+          motion_field_mv[temporal_sample_offsets[i]];
+      const int temporal_reference_offset =
+          motion_field_reference_offset[temporal_sample_offsets[i]];
+      if (temporal_mv.mv[0] != kInvalidMvValue) {
+        temporal_mvs[count] = temporal_mv;
+        temporal_reference_offsets[count++] = temporal_reference_offset;
+      }
     }
+  }
+  if (count != 0) {
+    BlockParameters* bp = block.bp;
+    int reference_offsets[2];
+    reference_offsets[0] = GetRelativeDistance(
+        tile.frame_header().order_hint,
+        tile.current_frame().order_hint(bp->reference_frame[0]),
+        tile.sequence_header().order_hint_shift_bits);
+    if (is_compound) {
+      reference_offsets[1] = GetRelativeDistance(
+          tile.frame_header().order_hint,
+          tile.current_frame().order_hint(bp->reference_frame[1]),
+          tile.sequence_header().order_hint_shift_bits);
+    }
+    AddTemporalReferenceMvCandidate(
+        tile.frame_header(), reference_offsets, temporal_mvs,
+        temporal_reference_offsets, count, is_compound, zero_mv_context,
+        num_mv_found, &(*bp->prediction_parameters));
   }
 }
 
