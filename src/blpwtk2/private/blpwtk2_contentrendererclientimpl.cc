@@ -73,7 +73,7 @@ ContentRendererClientImpl::~ContentRendererClientImpl()
 void ContentRendererClientImpl::RenderThreadStarted()
 {
     if (!d_spellcheck) {
-        d_spellcheck.reset(new SpellCheck(&d_registry, this));
+        d_spellcheck.reset(new SpellCheck(this));
     }
 }
 
