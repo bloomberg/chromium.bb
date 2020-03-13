@@ -868,6 +868,17 @@ class TestGitCl(unittest.TestCase):
       self.mockGit.config['gerrit.override-squash-uploads'] = (
           'true' if squash_mode == 'override_squash' else 'false')
 
+    # If issue is given, then description is fetched from Gerrit instead.
+    if issue is None:
+      if squash:
+        title = 'Initial_upload'
+    else:
+      if not title:
+        calls += [
+          ((['git', 'show', '-s', '--format=%s', 'HEAD'],), ''),
+          (('ask_for_data', 'Title for patchset []: '), 'User input'),
+        ]
+        title = 'User_input'
     if not git_footers.get_footer_change_id(description) and not squash:
       calls += [
         (('DownloadGerritHook', False), ''),
@@ -934,17 +945,6 @@ class TestGitCl(unittest.TestCase):
         ref_suffix = '%notify=NONE'
         metrics_arguments.append('notify=NONE')
 
-    # If issue is given, then description is fetched from Gerrit instead.
-    if issue is None:
-      if squash:
-        title = 'Initial_upload'
-    else:
-      if not title:
-        calls += [
-          ((['git', 'show', '-s', '--format=%s', 'HEAD'],), ''),
-          (('ask_for_data', 'Title for patchset []: '), 'User input'),
-        ]
-        title = 'User_input'
     if title:
       ref_suffix += ',m=' + title
       metrics_arguments.append('m')
@@ -1297,7 +1297,7 @@ class TestGitCl(unittest.TestCase):
     self._run_gerrit_upload_test(
         ['-r', 'foo@example.com', '--send-mail'],
         'desc ✔\n\nBUG=\n\nChange-Id: I123456789',
-        reviewers=['foo@example.com'],
+        ['foo@example.com'],
         squash=False,
         squash_mode='override_nosquash',
         notify=True,
