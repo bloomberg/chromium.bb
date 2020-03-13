@@ -423,13 +423,17 @@ class PostFilter {
   // a height of 4*|sb4x4|.
   void ApplyDeblockFilterForOneSuperBlockRow(int row4x4, int sb4x4);
 
+  // Helper function used by ApplyCdefForOneSuperBlockRow to avoid some code
+  // duplication.
+  void ApplyCdefForOneSuperBlockRowHelper(int row4x4, int block_height4x4);
   // Applies cdef filtering for the superblock row starting at |row4x4| with a
   // height of 4*|sb4x4|.
-  void ApplyCdefForOneSuperBlockRow(int row4x4, int sb4x4);
+  void ApplyCdefForOneSuperBlockRow(int row4x4, int sb4x4, bool is_last_row);
 
   // Applies SuperRes for the superblock row starting at |row4x4| with a height
   // of 4*|sb4x4|.
-  void ApplySuperResForOneSuperBlockRow(int row4x4, int sb4x4);
+  void ApplySuperResForOneSuperBlockRow(int row4x4, int sb4x4,
+                                        bool is_last_row);
 
   // Sets up the |deblock_buffer_| for loop restoration.
   void SetupDeblockBuffer(int row4x4_start, int sb4x4);

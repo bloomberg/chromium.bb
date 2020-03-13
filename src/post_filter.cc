@@ -45,6 +45,8 @@ constexpr uint8_t kCdefUvDirection[2][2][8] = {
 constexpr int kDeblockedRowsForLoopRestoration[2][4] = {{54, 55, 56, 57},
                                                         {26, 27, 28, 29}};
 
+constexpr int kStep64x64 = 16;  // =64/4.
+
 // The following example illustrates how ExtendFrame() extends a frame.
 // Suppose the frame width is 8 and height is 4, and left, right, top, and
 // bottom are all equal to 3.
@@ -319,53 +321,33 @@ int PostFilter::ApplyFilteringForOneSuperBlockRow(int row4x4, int sb4x4,
   if (DoDeblock()) {
     ApplyDeblockFilterForOneSuperBlockRow(row4x4, sb4x4);
   }
-  // CDEF and subsequent filters lag by 1 superblock row relative to deblocking
-  // (since deblocking the current superblock row could change the pixels in the
-  // previous superblock row).
-  const int previous_row4x4 = row4x4 - sb4x4;
-  if (previous_row4x4 >= 0) {
-    if (DoRestoration() && DoCdef()) {
-      SetupDeblockBuffer(previous_row4x4, sb4x4);
-    }
-    if (DoCdef()) {
-      ApplyCdefForOneSuperBlockRow(previous_row4x4, sb4x4);
-    }
-    if (DoSuperRes()) {
-      ApplySuperResForOneSuperBlockRow(previous_row4x4, sb4x4);
-    }
-    if (DoRestoration()) {
-      CopyBordersForOneSuperBlockRow(previous_row4x4, sb4x4, true);
-      ApplyLoopRestorationForOneSuperBlockRow(previous_row4x4, sb4x4);
-    }
-    if (frame_header_.refresh_frame_flags != 0 && DoBorderExtensionInLoop()) {
-      CopyBordersForOneSuperBlockRow(previous_row4x4, sb4x4, false);
-    }
+  if (DoRestoration() && DoCdef()) {
+    SetupDeblockBuffer(row4x4, sb4x4);
   }
-  if (is_last_row) {
-    if (DoRestoration() && DoCdef()) {
-      SetupDeblockBuffer(row4x4, sb4x4);
-    }
-    if (DoCdef()) {
-      ApplyCdefForOneSuperBlockRow(row4x4, sb4x4);
-    }
-    if (DoSuperRes()) {
-      ApplySuperResForOneSuperBlockRow(row4x4, sb4x4);
-    }
-    if (DoRestoration()) {
-      CopyBordersForOneSuperBlockRow(row4x4, sb4x4, true);
-      ApplyLoopRestorationForOneSuperBlockRow(row4x4, sb4x4);
+  if (DoCdef()) {
+    ApplyCdefForOneSuperBlockRow(row4x4, sb4x4, is_last_row);
+  }
+  if (DoSuperRes()) {
+    ApplySuperResForOneSuperBlockRow(row4x4, sb4x4, is_last_row);
+  }
+  if (DoRestoration()) {
+    CopyBordersForOneSuperBlockRow(row4x4, sb4x4, true);
+    ApplyLoopRestorationForOneSuperBlockRow(row4x4, sb4x4);
+    if (is_last_row) {
       // Loop restoration operates with a lag of 8 rows. So make sure to cover
       // all the rows of the last superblock row.
       CopyBordersForOneSuperBlockRow(row4x4 + sb4x4, 16, true);
       ApplyLoopRestorationForOneSuperBlockRow(row4x4 + sb4x4, 16);
     }
-    if (frame_header_.refresh_frame_flags != 0 && DoBorderExtensionInLoop()) {
-      CopyBordersForOneSuperBlockRow(row4x4, sb4x4, false);
+  }
+  if (frame_header_.refresh_frame_flags != 0 && DoBorderExtensionInLoop()) {
+    CopyBordersForOneSuperBlockRow(row4x4, sb4x4, false);
+    if (is_last_row) {
       CopyBordersForOneSuperBlockRow(row4x4 + sb4x4, 16, false);
     }
-    if (!DoBorderExtensionInLoop()) {
-      ExtendBordersForReferenceFrame();
-    }
+  }
+  if (is_last_row && !DoBorderExtensionInLoop()) {
+    ExtendBordersForReferenceFrame();
   }
   return is_last_row ? height_ : progress_row_;
 }
@@ -856,20 +838,19 @@ void PostFilter::ApplyCdefForOneUnit(uint16_t* cdef_block, const int index,
 template <typename Pixel>
 void PostFilter::ApplyCdefForOneRowInWindow(const int row4x4,
                                             const int column4x4_start) {
-  const int step_64x64 = 16;  // = 64/4.
   uint16_t cdef_block[kRestorationProcessingUnitSizeWithBorders *
                       kRestorationProcessingUnitSizeWithBorders * 3];
 
   for (int column4x4_64x64 = 0;
        column4x4_64x64 < std::min(DivideBy4(window_buffer_width_),
                                   frame_header_.columns4x4 - column4x4_start);
-       column4x4_64x64 += step_64x64) {
+       column4x4_64x64 += kStep64x64) {
     const int column4x4 = column4x4_start + column4x4_64x64;
     const int index = cdef_index_[DivideBy16(row4x4)][DivideBy16(column4x4)];
     const int block_width4x4 =
-        std::min(step_64x64, frame_header_.columns4x4 - column4x4);
+        std::min(kStep64x64, frame_header_.columns4x4 - column4x4);
     const int block_height4x4 =
-        std::min(step_64x64, frame_header_.rows4x4 - row4x4);
+        std::min(kStep64x64, frame_header_.rows4x4 - row4x4);
 
     ApplyCdefForOneUnit<Pixel>(cdef_block, index, block_width4x4,
                                block_height4x4, row4x4, column4x4);
@@ -885,7 +866,6 @@ void PostFilter::ApplyCdefThreaded() {
   const int window_buffer_plane_size =
       window_buffer_width_ * window_buffer_height_ * pixel_size_;
   const int window_buffer_height4x4 = DivideBy4(window_buffer_height_);
-  const int step_64x64 = 16;  // = 64/4.
   for (int row4x4 = 0; row4x4 < frame_header_.rows4x4;
        row4x4 += window_buffer_height4x4) {
     const int actual_window_height4x4 =
@@ -899,7 +879,7 @@ void PostFilter::ApplyCdefThreaded() {
       BlockingCounter pending_jobs(jobs_for_threadpool);
       int job_count = 0;
       for (int row64x64 = 0; row64x64 < actual_window_height4x4;
-           row64x64 += step_64x64) {
+           row64x64 += kStep64x64) {
         if (job_count < jobs_for_threadpool) {
           thread_pool_->Schedule(
               [this, row4x4, column4x4, row64x64, &pending_jobs]() {
@@ -936,49 +916,98 @@ void PostFilter::ApplyCdefThreaded() {
   }
 }
 
-void PostFilter::ApplySuperResForOneSuperBlockRow(int row4x4_start, int sb4x4) {
+void PostFilter::ApplySuperResForOneSuperBlockRow(int row4x4_start, int sb4x4,
+                                                  bool is_last_row) {
   assert(row4x4_start >= 0);
   assert(DoSuperRes());
-  const int num_rows4x4 = std::min(sb4x4, frame_header_.rows4x4 - row4x4_start);
+  // If not doing cdef, then LR needs two rows of border with superres applied.
+  const int num_rows_extra = (DoCdef() || !DoRestoration()) ? 0 : 2;
   std::array<uint8_t*, kMaxPlanes> buffers;
   std::array<int, kMaxPlanes> strides;
   std::array<int, kMaxPlanes> rows;
+  // Apply superres for the last 8-num_rows_extra rows of the previous
+  // superblock.
+  if (row4x4_start > 0) {
+    const int row4x4 = row4x4_start - 2;
+    for (int plane = 0; plane < planes_; ++plane) {
+      const int row =
+          (MultiplyBy4(row4x4) >> subsampling_y_[plane]) + num_rows_extra;
+      const ptrdiff_t row_offset = row * frame_buffer_.stride(plane);
+      buffers[plane] = cdef_buffer_[plane] + row_offset;
+      strides[plane] = frame_buffer_.stride(plane);
+      // Note that the |num_rows_extra| subtraction is done after the value is
+      // subsampled since we always need to work on |num_rows_extra| extra rows
+      // irrespective of the plane subsampling.
+      rows[plane] = (8 >> subsampling_y_[plane]) - num_rows_extra;
+    }
+    ApplySuperRes<true>(buffers, strides, rows, /*line_buffer_offset=*/0);
+  }
+  // Apply superres for the current superblock row (except for the last
+  // 8-num_rows_extra rows).
+  const int num_rows4x4 =
+      std::min(sb4x4, frame_header_.rows4x4 - row4x4_start) -
+      (is_last_row ? 0 : 2);
   for (int plane = 0; plane < planes_; ++plane) {
     const ptrdiff_t row_offset =
         (MultiplyBy4(row4x4_start) >> subsampling_y_[plane]) *
         frame_buffer_.stride(plane);
     buffers[plane] = cdef_buffer_[plane] + row_offset;
     strides[plane] = frame_buffer_.stride(plane);
-    rows[plane] = MultiplyBy4(num_rows4x4) >> subsampling_y_[plane];
+    // Note that the |num_rows_extra| subtraction is done after the value is
+    // subsampled since we always need to work on |num_rows_extra| extra rows
+    // irrespective of the plane subsampling.
+    rows[plane] = (MultiplyBy4(num_rows4x4) >> subsampling_y_[plane]) +
+                  (is_last_row ? 0 : num_rows_extra);
   }
-  ApplySuperRes<true>(buffers, strides, rows,
-                      /*line_buffer_offset=*/0);
+  ApplySuperRes<true>(buffers, strides, rows, /*line_buffer_offset=*/0);
 }
 
-void PostFilter::ApplyCdefForOneSuperBlockRow(int row4x4_start, int sb4x4) {
-  assert(row4x4_start >= 0);
-  assert(DoCdef());
-  static constexpr int step_64x64 = 16;
-  for (int y = 0; y < sb4x4; y += step_64x64) {
-    const int row4x4 = row4x4_start + y;
-    if (row4x4 >= frame_header_.rows4x4) break;
-    for (int column4x4 = 0; column4x4 < frame_header_.columns4x4;
-         column4x4 += step_64x64) {
-      const int index = cdef_index_[DivideBy16(row4x4)][DivideBy16(column4x4)];
-      const int block_width4x4 =
-          std::min(step_64x64, frame_header_.columns4x4 - column4x4);
-      const int block_height4x4 =
-          std::min(step_64x64, frame_header_.rows4x4 - row4x4);
+void PostFilter::ApplyCdefForOneSuperBlockRowHelper(int row4x4,
+                                                    int block_height4x4) {
+  for (int column4x4 = 0; column4x4 < frame_header_.columns4x4;
+       column4x4 += kStep64x64) {
+    const int index = cdef_index_[DivideBy16(row4x4)][DivideBy16(column4x4)];
+    const int block_width4x4 =
+        std::min(kStep64x64, frame_header_.columns4x4 - column4x4);
 
 #if LIBGAV1_MAX_BITDEPTH >= 10
-      if (bitdepth_ >= 10) {
-        ApplyCdefForOneUnit<uint16_t>(cdef_block_, index, block_width4x4,
-                                      block_height4x4, row4x4, column4x4);
-        continue;
-      }
+    if (bitdepth_ >= 10) {
+      ApplyCdefForOneUnit<uint16_t>(cdef_block_, index, block_width4x4,
+                                    block_height4x4, row4x4, column4x4);
+      continue;
+    }
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
-      ApplyCdefForOneUnit<uint8_t>(cdef_block_, index, block_width4x4,
-                                   block_height4x4, row4x4, column4x4);
+    ApplyCdefForOneUnit<uint8_t>(cdef_block_, index, block_width4x4,
+                                 block_height4x4, row4x4, column4x4);
+  }
+}
+
+void PostFilter::ApplyCdefForOneSuperBlockRow(int row4x4_start, int sb4x4,
+                                              bool is_last_row) {
+  assert(row4x4_start >= 0);
+  assert(DoCdef());
+  for (int y = 0; y < sb4x4; y += kStep64x64) {
+    const int row4x4 = row4x4_start + y;
+    if (row4x4 >= frame_header_.rows4x4) return;
+
+    // Apply cdef for the last 8 rows of the previous superblock row.
+    // One exception: If the superblock size is 128x128 and is_last_row is true,
+    // then we simply apply cdef for the entire superblock row without any lag.
+    // In that case, apply cdef for the previous superblock row only during the
+    // first iteration (y == 0).
+    if (row4x4 > 0 && (!is_last_row || y == 0)) {
+      assert(row4x4 >= 16);
+      ApplyCdefForOneSuperBlockRowHelper(row4x4 - 2, 2);
+    }
+
+    // Apply cdef for the current superblock row. If this is the last superblock
+    // row we apply cdef for all the rows, otherwise we leave out the last 8
+    // rows.
+    const int block_height4x4 =
+        std::min(kStep64x64, frame_header_.rows4x4 - row4x4);
+    const int height4x4 = block_height4x4 - (is_last_row ? 0 : 2);
+    if (height4x4 > 0) {
+      ApplyCdefForOneSuperBlockRowHelper(row4x4, height4x4);
     }
   }
 }
