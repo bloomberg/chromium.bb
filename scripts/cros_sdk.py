@@ -41,8 +41,6 @@ from chromite.lib import toolchain
 from chromite.utils import key_value_store
 
 
-cros_build_lib.STRICT_SUDO = True
-
 COMPRESSION_PREFERENCE = ('xz', 'bz2')
 
 # TODO(zbehan): Remove the dependency on these, reimplement them in python
@@ -850,6 +848,8 @@ def _CreateParser(sdk_latest_version, bootstrap_latest_version):
 
 
 def main(argv):
+  # Turn on strict sudo checks.
+  cros_build_lib.STRICT_SUDO = True
   conf = key_value_store.LoadFile(
       os.path.join(constants.SOURCE_ROOT, constants.SDK_VERSION_FILE),
       ignore_missing=True)
