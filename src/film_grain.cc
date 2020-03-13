@@ -745,7 +745,7 @@ bool FilmGrain<bitdepth>::AddNoise(
       BlockingCounter pending_workers(num_workers);
       std::atomic<int> job_counter(0);
       for (int i = 0; i < num_workers; ++i) {
-        thread_pool_->Schedule([this, dsp, &pending_workers, planes_to_blend,
+        thread_pool_->Schedule([this, dsp, &pending_workers, &planes_to_blend,
                                 num_planes, &job_counter, min_value, max_chroma,
                                 source_plane_y, source_stride_y, source_plane_u,
                                 source_stride_u, source_plane_v,
