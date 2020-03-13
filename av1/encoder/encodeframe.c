@@ -2816,14 +2816,17 @@ static bool rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
 
 BEGIN_PARTITION_SEARCH:
   if (x->must_find_valid_partition) {
-    do_square_split = bsize_at_least_8x8;
-    partition_none_allowed = has_rows && has_cols;
+    do_square_split = bsize_at_least_8x8 && (blksize > min_partition_size);
+    partition_none_allowed =
+        has_rows && has_cols && (blksize >= min_partition_size);
     partition_horz_allowed =
         has_cols && bsize_at_least_8x8 && cpi->oxcf.enable_rect_partitions &&
+        (blksize > min_partition_size) &&
         get_plane_block_size(get_partition_subsize(bsize, PARTITION_HORZ), xss,
                              yss) != BLOCK_INVALID;
     partition_vert_allowed =
         has_rows && bsize_at_least_8x8 && cpi->oxcf.enable_rect_partitions &&
+        (blksize > min_partition_size) &&
         get_plane_block_size(get_partition_subsize(bsize, PARTITION_VERT), xss,
                              yss) != BLOCK_INVALID;
     terminate_partition_search = 0;
@@ -4627,11 +4630,10 @@ static AOM_INLINE void encode_rd_sb(AV1_COMP *cpi, ThreadData *td,
       float features[FEATURE_SIZE_MAX_MIN_PART_PRED] = { 0.0f };
 
       av1_get_max_min_partition_features(cpi, x, mi_row, mi_col, features);
-      max_sq_size =
-          AOMMIN(av1_predict_max_partition(cpi, x, features), max_sq_size);
+      max_sq_size = AOMMAX(
+          AOMMIN(av1_predict_max_partition(cpi, x, features), max_sq_size),
+          min_sq_size);
     }
-
-    min_sq_size = AOMMIN(min_sq_size, max_sq_size);
 
     const int num_passes = cpi->oxcf.sb_multipass_unit_test ? 2 : 1;
 
