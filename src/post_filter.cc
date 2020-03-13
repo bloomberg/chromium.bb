@@ -156,53 +156,34 @@ void CopyPlane(const uint8_t* source, int source_stride, const int width,
 }
 
 template <typename Pixel>
-void CopyRows(const Pixel* src, const ptrdiff_t src_stride,
-              const int block_width, const int unit_width,
-              const bool is_frame_top, const bool is_frame_bottom,
-              const bool is_frame_left, const bool is_frame_right,
-              const bool copy_top, const int num_rows, uint16_t* dst,
-              const ptrdiff_t dst_stride) {
-  if (is_frame_top || is_frame_bottom) {
-    if (is_frame_bottom) dst -= kCdefBorder;
-    for (int y = 0; y < num_rows; ++y) {
-      Memset(dst, PostFilter::kCdefLargeValue, unit_width + 2 * kCdefBorder);
-      dst += dst_stride;
+void CopyRowForCdef(const Pixel* src, int block_width, int unit_width,
+                    bool is_frame_left, bool is_frame_right,
+                    uint16_t* const dst) {
+  if (sizeof(src[0]) == sizeof(dst[0])) {
+    if (is_frame_left) {
+      Memset(dst - kCdefBorder, PostFilter::kCdefLargeValue, kCdefBorder);
+    } else {
+      memcpy(dst - kCdefBorder, src - kCdefBorder,
+             kCdefBorder * sizeof(dst[0]));
     }
-  } else {
-    if (copy_top) {
-      src -= kCdefBorder * src_stride;
-      dst += kCdefBorder;
+    memcpy(dst, src, block_width * sizeof(dst[0]));
+    if (is_frame_right) {
+      Memset(dst + block_width, PostFilter::kCdefLargeValue,
+             unit_width + kCdefBorder - block_width);
+    } else {
+      memcpy(dst + block_width, src + block_width,
+             (unit_width + kCdefBorder - block_width) * sizeof(dst[0]));
     }
-    for (int y = 0; y < num_rows; ++y) {
-      if (sizeof(src[0]) == sizeof(dst[0])) {
-        if (is_frame_left) {
-          Memset(dst - kCdefBorder, PostFilter::kCdefLargeValue, kCdefBorder);
-        } else {
-          memcpy(dst - kCdefBorder, src - kCdefBorder,
-                 kCdefBorder * sizeof(dst[0]));
-        }
-        memcpy(dst, src, block_width * sizeof(dst[0]));
-        if (is_frame_right) {
-          Memset(dst + block_width, PostFilter::kCdefLargeValue,
-                 unit_width + kCdefBorder - block_width);
-        } else {
-          memcpy(dst + block_width, src + block_width,
-                 (unit_width + kCdefBorder - block_width) * sizeof(dst[0]));
-        }
-      } else {
-        for (int x = -kCdefBorder; x < 0; ++x) {
-          dst[x] = is_frame_left ? PostFilter::kCdefLargeValue : src[x];
-        }
-        for (int x = 0; x < block_width; ++x) {
-          dst[x] = src[x];
-        }
-        for (int x = block_width; x < unit_width + kCdefBorder; ++x) {
-          dst[x] = is_frame_right ? PostFilter::kCdefLargeValue : src[x];
-        }
-      }
-      dst += dst_stride;
-      src += src_stride;
-    }
+    return;
+  }
+  for (int x = -kCdefBorder; x < 0; ++x) {
+    dst[x] = is_frame_left ? PostFilter::kCdefLargeValue : src[x];
+  }
+  for (int x = 0; x < block_width; ++x) {
+    dst[x] = src[x];
+  }
+  for (int x = block_width; x < unit_width + kCdefBorder; ++x) {
+    dst[x] = is_frame_right ? PostFilter::kCdefLargeValue : src[x];
   }
 }
 
@@ -2008,24 +1989,45 @@ void PostFilter::PrepareCdefBlock(int block_width4x4, int block_height4x4,
     const int src_stride = frame_buffer_.stride(plane) / sizeof(Pixel);
     const Pixel* src_buffer =
         reinterpret_cast<const Pixel*>(source_buffer_[plane]) +
-        start_y * src_stride + start_x;
-    // Copy to the top 2 rows.
-    CopyRows(src_buffer, src_stride, block_width, unit_width, is_frame_top,
-             false, is_frame_left, is_frame_right, true, kCdefBorder, cdef_src,
-             cdef_stride);
-    cdef_src += kCdefBorder * cdef_stride + kCdefBorder;
+        (start_y - (is_frame_top ? 0 : kCdefBorder)) * src_stride + start_x;
+
+    // All the copying code will use negative indices for populating the left
+    // border. So the starting point is set to kCdefBorder.
+    cdef_src += kCdefBorder;
+
+    // Copy the top 2 rows.
+    for (int y = 0; y < kCdefBorder; ++y) {
+      if (is_frame_top) {
+        Memset(cdef_src - kCdefBorder, PostFilter::kCdefLargeValue,
+               unit_width + 2 * kCdefBorder);
+      } else {
+        CopyRowForCdef(src_buffer, block_width, unit_width, is_frame_left,
+                       is_frame_right, cdef_src);
+        src_buffer += src_stride;
+      }
+      cdef_src += cdef_stride;
+    }
 
     // Copy the body.
-    CopyRows(src_buffer, src_stride, block_width, unit_width, false, false,
-             is_frame_left, is_frame_right, false, block_height, cdef_src,
-             cdef_stride);
-    src_buffer += block_height * src_stride;
-    cdef_src += block_height * cdef_stride;
+    for (int y = 0; y < block_height; ++y) {
+      CopyRowForCdef(src_buffer, block_width, unit_width, is_frame_left,
+                     is_frame_right, cdef_src);
+      cdef_src += cdef_stride;
+      src_buffer += src_stride;
+    }
 
-    // Copy to bottom rows.
-    CopyRows(src_buffer, src_stride, block_width, unit_width, false,
-             is_frame_bottom, is_frame_left, is_frame_right, false,
-             kCdefBorder + unit_height - block_height, cdef_src, cdef_stride);
+    // Copy the bottom 2 rows.
+    for (int y = 0; y < kCdefBorder + unit_height - block_height; ++y) {
+      if (is_frame_bottom) {
+        Memset(cdef_src - kCdefBorder, PostFilter::kCdefLargeValue,
+               unit_width + 2 * kCdefBorder);
+      } else {
+        CopyRowForCdef(src_buffer, block_width, unit_width, is_frame_left,
+                       is_frame_right, cdef_src);
+        src_buffer += src_stride;
+      }
+      cdef_src += cdef_stride;
+    }
   }
 }
 
