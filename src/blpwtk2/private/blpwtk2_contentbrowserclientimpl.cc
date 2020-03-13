@@ -167,17 +167,7 @@ mojo::OutgoingInvitation* ContentBrowserClientImpl::GetClientInvitation() const
 std::vector<service_manager::Manifest>
 ContentBrowserClientImpl::GetExtraServiceManifests()
 {
-    // needed for chrome services
-    auto manifests = GetChromeBuiltinServiceManifests();
-    manifests.push_back(
-        service_manager::ManifestBuilder()
-            .WithServiceName(chrome::mojom::kRendererServiceName)
-            .ExposeCapability("browser",
-                              service_manager::Manifest::InterfaceList<
-                                  spellcheck::mojom::SpellChecker>())
-            .RequireCapability(chrome::mojom::kServiceName, "renderer")
-            .Build());
-    return manifests;
+    return GetChromeBuiltinServiceManifests();;
 }
 
 base::Optional<service_manager::Manifest> ContentBrowserClientImpl::GetServiceManifestOverlay(
