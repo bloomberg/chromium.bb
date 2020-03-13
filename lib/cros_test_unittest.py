@@ -355,16 +355,15 @@ class CrOSTesterTast(CrOSTesterBase):
     osutils.SafeMakedirs(tast_bin_dir)
     self._tester.Run()
     self.assertCommandContains([
-        os.path.join(tast_bin_dir, 'tast'), 'run', '-build=false',
-        '-waituntilready', '-remoterunner=%s'
-        % os.path.join(tast_bin_dir, 'remote_test_runner'),
+        os.path.join(tast_bin_dir,
+                     'tast'), 'run', '-build=false', '-waituntilready',
+        '-remoterunner=%s' % os.path.join(tast_bin_dir, 'remote_test_runner'),
         '-remotebundledir=%s' % os.path.join(tast_cache_dir,
                                              'tast-remote-tests-cros/usr',
                                              'libexec/tast/bundles/remote'),
-        '-remotedatadir=%s' % os.path.join(tast_cache_dir,
-                                           'tast-remote-tests-cros/usr',
-                                           'share/tast/data'),
-        '-ephemeraldevserver=false', '-keyfile', '/tmp/.ssh/testing_rsa',
+        '-remotedatadir=%s' % os.path.join(
+            tast_cache_dir, 'tast-remote-tests-cros/usr', 'share/tast/data'),
+        '-ephemeraldevserver=true', '-keyfile', '/tmp/.ssh/testing_rsa',
         '-extrauseflags=tast_vm', 'localhost:9222', 'ui.ChromeLogin'
     ])
 

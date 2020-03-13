@@ -13,6 +13,7 @@ import sys
 
 from chromite.cli.cros import cros_chrome_sdk
 from chromite.lib import chrome_util
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import device
@@ -294,11 +295,18 @@ class CrOSTest(object):
           '-remoterunner=%s' % remote_runner_path,
           '-remotebundledir=%s' % remote_bundle_dir,
           '-remotedatadir=%s' % remote_data_dir,
-          # The dev server has trouble downloading assets from Google Storage
-          # from outside the chroot.
-          '-ephemeraldevserver=false',
-          '-keyfile', private_key,
+          '-ephemeraldevserver=true',
+          '-keyfile',
+          private_key,
       ]
+      # Tast may make calls to gsutil during the tests. If we're outside the
+      # chroot, we may not have gsutil on PATH. So push chromite's copy of
+      # gsutil onto path during the test.
+      gsutil_dir = constants.CHROMITE_SCRIPTS_DIR
+      extra_env = {'PATH': os.environ.get('PATH', '') + ':' + gsutil_dir}
+    else:
+      extra_env = None
+
     if self.test_timeout > 0:
       cmd += ['-timeout=%d' % self.test_timeout]
     if self._device.is_vm:
@@ -314,7 +322,9 @@ class CrOSTest(object):
       cmd += [self._device.device]
     cmd += self.tast
     return cros_build_lib.run(
-        cmd, dryrun=self.dryrun,
+        cmd,
+        dryrun=self.dryrun,
+        extra_env=extra_env,
         enter_chroot=need_chroot and not cros_build_lib.IsInsideChroot())
 
   def _RunTests(self):
