@@ -110,7 +110,7 @@ PrintViewManagerBase::PrintViewManagerBase(content::WebContents* web_contents)
     : PrintManager(web_contents),
       printing_rfh_(nullptr),
       printing_succeeded_(false),
-      queue_(g_print_job_manager->queue()),
+      queue_(g_print_job_manager->queue()) {
   DCHECK(queue_);
   printing_enabled_.Init(
       prefs::kPrintingEnabled,
