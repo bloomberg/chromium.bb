@@ -166,6 +166,7 @@ void PrintViewManager::PrintPreviewDone() {
   if (print_preview_state_ == NOT_PREVIEWING)
     return;
 
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 // Send OnPrintPreviewDialogClosed message for 'afterprint' event.
 #if defined(OS_WIN)
   // On Windows, we always send OnPrintPreviewDialogClosed. It's ok to dispatch
@@ -178,7 +179,7 @@ void PrintViewManager::PrintPreviewDone() {
   // dispatch 'afterprint' event.
   bool send_message = !is_switching_to_system_dialog_;
 #endif
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+
   if (send_message)
     GetPrintRenderFrame(print_preview_rfh_)->OnPrintPreviewDialogClosed();
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -232,9 +233,10 @@ bool PrintViewManager::PrintPreview(
   if (IsInterstitialOrCrashed())
     return false;
 
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   GetPrintRenderFrame(rfh)->InitiatePrintPreview(std::move(print_renderer),
                                                  has_selection);
-
+#endif
   DCHECK(!print_preview_rfh_);
   print_preview_rfh_ = rfh;
   print_preview_state_ = USER_INITIATED_PREVIEW;
