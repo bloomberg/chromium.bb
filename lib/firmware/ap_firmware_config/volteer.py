@@ -14,7 +14,7 @@ BUILD_WORKON_PACKAGES = None
 BUILD_PACKAGES = ('chromeos-bootimage',)
 
 # TODO: Remove this line once VBoot is working on Volteer.
-__use_flashrom__ = True
+DEPLOY_SERVO_FORCE_FLASHROM = True
 
 
 def get_commands(servo):

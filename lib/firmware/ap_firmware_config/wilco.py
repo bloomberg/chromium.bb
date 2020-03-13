@@ -9,7 +9,7 @@ from __future__ import print_function
 from chromite.lib import cros_logging as logging
 
 # TODO(b/143241417): Use futility anytime flashing over ssh to avoid failures.
-use_futility_ssh = True
+DEPLOY_SSH_FORCE_FUTILITY = True
 
 
 def is_fast_required(_use_futility, servo):
