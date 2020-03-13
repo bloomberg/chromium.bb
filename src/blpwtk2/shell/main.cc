@@ -186,26 +186,29 @@ void testAccessDOMFromWebScriptContext(const v8::Global<v8::Context>& webScriptC
         v8::Local<v8::Context> ctxt = mainFrame->mainWorldScriptContext();
         v8::Context::Scope contextScope(ctxt);
 
-        domWindow = ctxt->Global()->Get(
+        domWindow = ctxt->Global()->Get(ctxt,
             v8::String::NewFromUtf8(
-                isolate, "window").ToLocalChecked());
-        domDocument = ctxt->Global()->Get(
+                isolate, "window").ToLocalChecked()).ToLocalChecked();
+        domDocument = ctxt->Global()->Get(ctxt,
             v8::String::NewFromUtf8(
-                isolate, "document").ToLocalChecked());
+                isolate, "document").ToLocalChecked()).ToLocalChecked();
     }
 
     {
         v8::Local<v8::Context> ctxt = webScriptContext.Get(isolate);
         v8::Context::Scope contextScope(ctxt);
 
-        ctxt->Global()->Set(
+        v8::Maybe<bool> maybe = ctxt->Global()->Set(ctxt,
             v8::String::NewFromUtf8(
                 isolate, "domWindow").ToLocalChecked(),
                 domWindow);
-        ctxt->Global()->Set(
+        maybe = ctxt->Global()->Set(ctxt,
             v8::String::NewFromUtf8(
                 isolate, "domDocument").ToLocalChecked(),
                 domDocument);
+        if (!maybe.IsJust() || !maybe.FromJust()) {
+            std::cout << "testAccessDOMFromWebScriptContext failed" << std::endl;
+        }
 
         static const char SCRIPT[] =
             "domWindow.location + domDocument.body.innerHTML;\n";
