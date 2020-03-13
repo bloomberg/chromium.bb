@@ -25,6 +25,7 @@
 #include <blpwtk2_browsercontextimpl.h>
 #include <blpwtk2_browsermainrunner.h>
 #include <blpwtk2_contentbrowserclientimpl.h>
+#include <blpwtk2_contentrendererclientimpl.h>
 
 #include <blpwtk2_gpudatalogger.h>
 #include <blpwtk2_browserthread.h>
@@ -460,7 +461,7 @@ void ToolkitImpl::startMessageLoop(const sandbox::SandboxInterfaceInfo& sandboxI
         // If the browser is to run in the application thread, we simply
         // create an instance of BrowserMainRunner.  It will create a
         // message loop on the current thread.
-        d_browserMainRunner.reset(new BrowserMainRunner(sandboxInfo));
+        d_browserMainRunner.reset(new BrowserMainRunner(sandboxInfo, &d_mainDelegate));
     }
 
     // Initialize the main message pump.  This effectively installs the hooks
@@ -491,7 +492,7 @@ std::string ToolkitImpl::createProcessHost(
 
     // If this process is the host and the main thread is being used by the
     // renderer, we need to create another thread to run the process host.
-    d_browserThread.reset(new BrowserThread(sandboxInfo));
+    d_browserThread.reset(new BrowserThread(sandboxInfo, &d_mainDelegate));
 
     // Normally we let the embedder call createHostChannel() to create a
     // process host.  Since the browser code is running in this process, there
@@ -572,6 +573,10 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
     // Setup path to dictionary files.
     setupDictionaryFiles(dictionaryPath);
 
+    if (isHost) {
+        base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+        command_line->AppendSwitchASCII("enable-features", "NetworkServiceInProcess");
+    }
     // Create a process host if we necessary.
     if (isHost && Statics::isRendererMainThreadMode()) {
         // Apply command line switches to content.
@@ -632,24 +637,7 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
             *base::CommandLine::ForCurrentProcess();
         std::string process_type =
             command_line.GetSwitchValueASCII(switches::kProcessType);
-        // Chromium 62 checks field trials. Without the following initialization, there will be a failure with the following calls:
- 	    // base::FieldTrialList::GetInitiallyActiveFieldTrials(...) Line 719
-        // from: variations::ChildProcessFieldTrialSyncer::InitFieldTrialObserving(...) Line 34
- 	    // from: content::ChildThreadImpl::Init(...) Line 618
-
-        // The following code is adapted from InitializeFieldTrialAndFeatureList(..) in content_main_runner.cc
-        //
-        // Initialize statistical testing infrastructure.  We set the entropy
-        // provider to nullptr to disallow non-browser processes from creating
-        // their own one-time randomized trials; they should be created in the
-        // browser process.
         field_trial_list.reset(new base::FieldTrialList(nullptr));
-
-        // Run this logic on all child processes. Zygotes will run this at a
-        // later point in time when the command line has been updated.
-        base::FieldTrialList::CreateTrialsFromCommandLine(
-            command_line, switches::kFieldTrialHandle, -1);
-
         std::unique_ptr<base::FeatureList> feature_list(
             new base::FeatureList);
         base::FieldTrialList::CreateFeaturesFromCommandLine(
@@ -689,7 +677,6 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
         d_isolateHolder->isolate()->Enter();
     }
 
-    ui::InitializeInputMethod();
     setDefaultLocaleIfWindowsLocaleIsNotSupported();
 }
 
@@ -794,7 +781,12 @@ Profile *ToolkitImpl::getProfile(int pid, bool launchDevtoolsServer)
 {
     // TODO(imran): Return the browser context in ORIGINAL thread mode
     DCHECK(Statics::isRendererMainThreadMode());
-    return new ProfileImpl(d_messagePump, pid, launchDevtoolsServer);
+    const ContentRendererClientImpl* rendererClient =
+        d_mainDelegate.GetContentRendererClientImpl();
+    DCHECK(rendererClient);
+    blink::ThreadSafeBrowserInterfaceBrokerProxy* broker = rendererClient->GetInterfaceBroker();
+    DCHECK(broker);
+    return new ProfileImpl(d_messagePump, pid, launchDevtoolsServer, broker);
 }
 
 bool ToolkitImpl::preHandleMessage(const NativeMsg *msg)

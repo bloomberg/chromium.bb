@@ -164,6 +164,7 @@ BrowserContextImpl::BrowserContextImpl(const std::string& dataDir)
     d_proxyConfig = std::make_unique<net::ProxyConfig>();
     d_proxyConfig->proxy_rules().type =
         net::ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME;
+    d_requestContextManager = std::make_unique<RequestContextManager>();
 }
 
 BrowserContextImpl::~BrowserContextImpl()
@@ -207,6 +208,15 @@ BrowserContextImpl::~BrowserContextImpl()
     d_isDestroyed = true;
 
     ShutdownStoragePartitions();
+}
+
+mojo::Remote<::network::mojom::NetworkContext>
+BrowserContextImpl::CreateNetworkContext(bool in_memory,
+                                         const base::FilePath& relative_partition_path,
+                                         std::string user_agent)
+{
+    return d_requestContextManager->CreateNetworkContext(
+        in_memory, relative_partition_path, std::move(user_agent));
 }
 
 URLRequestContextGetterImpl* BrowserContextImpl::requestContextGetter() const

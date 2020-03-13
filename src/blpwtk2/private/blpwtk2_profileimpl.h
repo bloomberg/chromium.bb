@@ -33,6 +33,8 @@
 #include <base/compiler_specific.h>
 #include <ipc/ipc_sender.h>
 #include <mojo/public/cpp/bindings/binding.h>
+#include <mojo/public/cpp/bindings/remote.h>
+#include <third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h>
 
 #include <string>
 
@@ -63,7 +65,7 @@ class ProcessClientDelegate;
 // See blpwtk2_toolkit.h for an explanation about the threads.
 class ProfileImpl : public Profile, public mojom::ProcessClient {
     // DATA
-    mojom::ProcessHostPtr d_hostPtr;
+    mojo::Remote<mojom::ProcessHost> d_hostPtr;
     int d_numWebViews;
     unsigned int d_processId;
     MainMessagePump *d_pump;
@@ -83,7 +85,8 @@ class ProfileImpl : public Profile, public mojom::ProcessClient {
     // CREATORS
     explicit ProfileImpl(MainMessagePump *pump,
                          unsigned int     pid,
-                         bool             launchDevToolsServer);
+                         bool             launchDevToolsServer,
+                         blink::ThreadSafeBrowserInterfaceBrokerProxy* broker);
         // Create a new instance of ProfileImpl.  If 'pid' is specified, the
         // profile will be bound to a RenderProcessHost that is coupled with
         // a RenderProcess running on process 'pid'.

@@ -60,7 +60,8 @@ Profile *ProfileImpl::anyInstance()
 
 ProfileImpl::ProfileImpl(MainMessagePump *pump,
                          unsigned int     pid,
-                         bool             launchDevToolsServer)
+                         bool             launchDevToolsServer,
+                         blink::ThreadSafeBrowserInterfaceBrokerProxy* broker)
     : d_numWebViews(0)
     , d_processId(pid)
     , d_pump(pump)
@@ -70,13 +71,7 @@ ProfileImpl::ProfileImpl(MainMessagePump *pump,
     static const std::string SERVICE_NAME("content_browser");
     g_instances.insert(this);
 
-    auto* connection = content::ServiceManagerConnection::GetForProcess();
-    if (connection) {
-        mojo::Remote<mojom::ProcessHost> process_host;
-        connection->GetConnector()->Connect(SERVICE_NAME,
-            process_host.BindNewPipeAndPassReceiver());
-    }
-
+    broker->GetInterface(d_hostPtr.BindNewPipeAndPassReceiver());
     DCHECK(0 != pid);
 
     d_hostPtr->bindProcess(

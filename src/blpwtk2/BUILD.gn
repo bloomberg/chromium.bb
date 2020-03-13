@@ -191,6 +191,8 @@ shared_library("blpwtk2") {
     "private/blpwtk2_renderwebview.h",
     "private/blpwtk2_requestinterceptorimpl.cc",
     "private/blpwtk2_requestinterceptorimpl.h",
+    "private/blpwtk2_requestcontextmanager.cc",
+    "private/blpwtk2_requestcontextmanager.h",
     "private/blpwtk2_resourcecontextimpl.cc",
     "private/blpwtk2_resourcecontextimpl.h",
     "private/blpwtk2_resourcerequestjob.cc",

@@ -31,8 +31,11 @@
 #include <base/message_loop/message_loop.h>
 #include <base/message_loop/message_loop_current.h>
 #include <base/strings/string_number_conversions.h>
+#include <base/task/post_task.h>
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include <chrome/browser/printing/print_job_manager.h>
+#include <components/discardable_memory/service/discardable_shared_memory_manager.h>
+#include <content/app/service_manager_environment.h>
 #include <content/browser/scheduler/browser_task_executor.h>
 #include <content/public/browser/browser_main_runner.h>
 #include <content/public/common/content_switches.h>
@@ -42,6 +45,7 @@
 #include <ui/display/screen.h>
 #include <base/threading/thread_restrictions.h>
 #include <content/browser/startup_helper.h>
+#include <services/tracing/public/cpp/trace_startup.h>
 
 namespace printing {
 extern PrintJobManager* g_print_job_manager;
@@ -54,18 +58,40 @@ namespace blpwtk2 {
                         // -----------------------
 
 BrowserMainRunner::BrowserMainRunner(
-        const sandbox::SandboxInterfaceInfo& sandboxInfo)
+        const sandbox::SandboxInterfaceInfo& sandboxInfo,
+        content::ContentMainDelegate* delegate)
     : d_mainParams(*base::CommandLine::ForCurrentProcess())
     , d_sandboxInfo(sandboxInfo)
+    , d_delegate(delegate)
 {
     Statics::initBrowserMainThread();
+    if (d_delegate->ShouldCreateFeatureList()) {
+      // This is intentionally leaked since it needs to live for the duration
+      // of the process and there's no benefit in cleaning it up at exit.
+      base::FieldTrialList* leaked_field_trial_list =
+          content::SetUpFieldTrialsAndFeatureList().release();
+      ANNOTATE_LEAKING_OBJECT_PTR(leaked_field_trial_list);
+      ignore_result(leaked_field_trial_list);
+      d_delegate->PostFieldTrialInitialization();
+    }
 
     d_mainParams.sandbox_info = &d_sandboxInfo;
     content::BrowserTaskExecutor::Create();
     base::ThreadPoolInstance::Create("Browser");
     d_impl = content::BrowserMainRunner::Create();
+
+    // https://chromium.googlesource.com/chromium/src/+/71c9d0a0174a4ec37db019b87ab86aaee3a81509%5E%21/#F0
+    content::BrowserTaskExecutor::PostFeatureListSetup();
+    tracing::InitTracingPostThreadPoolStartAndFeatureList();
+    d_service_manager_environment = std::make_unique<content::ServiceManagerEnvironment>(
+        content::BrowserTaskExecutor::CreateIOThread());
+    d_startup_data = d_service_manager_environment->CreateBrowserStartupData();
+    d_mainParams.startup_data = d_startup_data.get();
+
     int rc = d_impl->Initialize(d_mainParams);
     DCHECK(-1 == rc);  // it returns -1 for success!!
+    d_discardable_shared_memory_manager =
+      std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
 
     Statics::browserMainTaskRunner = base::ThreadTaskRunnerHandle::Get();
 

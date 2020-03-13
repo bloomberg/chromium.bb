@@ -51,6 +51,7 @@
 #include "services/service_manager/public/cpp/service_binding.h"
 #include <skia/ext/fontmgr_default.h>
 #include <third_party/skia/include/core/SkFontMgr.h>
+#include <third_party/blink/public/platform/platform.h>
 #include <third_party/blink/public/platform/web_url_error.h>
 #include <third_party/blink/public/platform/web_url_request.h>
 #include <third_party/blink/public/web/web_plugin_params.h>
@@ -82,6 +83,15 @@ void ContentRendererClientImpl::RenderThreadStarted()
     if (!d_spellcheck) {
         d_spellcheck.reset(new SpellCheck(&d_registry, this));
     }
+}
+
+void ContentRendererClientImpl::RenderThreadStarted() {
+    d_browser_interface_broker = blink::Platform::Current()->GetBrowserInterfaceBroker();
+}
+
+blink::ThreadSafeBrowserInterfaceBrokerProxy* ContentRendererClientImpl::GetInterfaceBroker() const
+{
+    return d_browser_interface_broker.get();
 }
 
 void ContentRendererClientImpl::RenderViewCreated(
