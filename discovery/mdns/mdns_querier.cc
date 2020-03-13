@@ -200,30 +200,40 @@ void MdnsQuerier::OnMessageReceived(const MdnsMessage& message) {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
   OSP_DCHECK(message.type() == MessageType::Response);
 
-  // Add any records that are relevant for this querier.
-  bool found_relevant_records = false;
-  for (const MdnsRecord& record : message.answers()) {
-    if (ShouldAnswerRecordBeProcessed(record)) {
-      ProcessRecord(record);
-      found_relevant_records = true;
-    }
-  }
-
   OSP_DVLOG << "Received mDNS Response message with "
             << message.answers().size() << " answers and "
             << message.additional_records().size()
             << " additional records. Processing...";
+
+  // Add any records that are relevant for this querier.
+  bool found_relevant_records = false;
+  int processed_count = 0;
+  for (const MdnsRecord& record : message.answers()) {
+    if (ShouldAnswerRecordBeProcessed(record)) {
+      ProcessRecord(record);
+      OSP_DVLOG << "\tProcessing answer record for domain '"
+                << record.name().ToString() << "' of type '"
+                << record.dns_type() << "'...";
+      found_relevant_records = true;
+      processed_count++;
+    }
+  }
 
   // If any of the message's answers are relevant, add all additional records.
   // Else, since the message has already been received and parsed, use any
   // individual records relevant to this querier to update the cache.
   for (const MdnsRecord& record : message.additional_records()) {
     if (found_relevant_records || ShouldAnswerRecordBeProcessed(record)) {
+      OSP_DVLOG << "\tProcessing additional record for domain '"
+                << record.name().ToString() << "' of type '"
+                << record.dns_type() << "'...";
       ProcessRecord(record);
+      processed_count++;
     }
   }
 
-  OSP_DVLOG << "\tmDNS Response processed!";
+  OSP_DVLOG << "\tmDNS Response processed (" << processed_count
+            << " records accepted)!";
 
   // TODO(crbug.com/openscreen/83): Check authority records.
   // TODO(crbug.com/openscreen/84): Cap size of cache, to avoid memory blowups

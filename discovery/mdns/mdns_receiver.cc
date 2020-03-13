@@ -69,14 +69,18 @@ void MdnsReceiver::OnRead(UdpSocket* socket,
     return;
   }
 
-  OSP_DVLOG << "Received new mDNS Message";
   if (message.type() == MessageType::Response) {
     for (ResponseClient* client : response_clients_) {
       client->OnMessageReceived(message);
     }
+    if (response_clients_.empty()) {
+      OSP_DVLOG << "Response message dropped. No response client registered...";
+    }
   } else {
     if (query_callback_) {
       query_callback_(message, packet.source());
+    } else {
+      OSP_DVLOG << "Query message dropped. No query client registered...";
     }
   }
 }
