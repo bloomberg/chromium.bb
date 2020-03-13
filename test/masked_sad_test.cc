@@ -189,6 +189,9 @@ void MaskedSADTestBase::runMaskedSADTest(int run_times) {
     for (int j = 0; j < MAX_SB_SIZE * MAX_SB_SIZE; j++) {
       src_ptr[j] = rnd.Rand8();
       ref_ptr[j] = rnd.Rand8();
+      (ref_ptr + kBlockSize)[j] = rnd.Rand8();
+      (ref_ptr + 2 * kBlockSize)[j] = rnd.Rand8();
+      (ref_ptr + 3 * kBlockSize)[j] = rnd.Rand8();
       second_pred_ptr[j] = rnd.Rand8();
       msk_ptr[j] = ((rnd.Rand8() & 0x7f) > 64) ? rnd.Rand8() & 0x3f : 64;
       assert(msk_ptr[j] <= 64);
