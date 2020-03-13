@@ -2769,7 +2769,8 @@ static bool rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
   save_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);
 
   const int try_intra_cnn_split =
-      frame_is_intra_only(cm) && cpi->sf.part_sf.intra_cnn_split &&
+      !cpi->is_screen_content_type && frame_is_intra_only(cm) &&
+      cpi->sf.part_sf.intra_cnn_split &&
       cm->seq_params.sb_size >= BLOCK_64X64 && bsize <= BLOCK_64X64 &&
       bsize >= BLOCK_8X8 && mi_row + mi_size_high[bsize] <= cm->mi_rows &&
       mi_col + mi_size_wide[bsize] <= cm->mi_cols;
@@ -2784,6 +2785,7 @@ static bool rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
   // Use simple_motion_search to prune partitions. This must be done prior to
   // PARTITION_SPLIT to propagate the initial mvs to a smaller blocksize.
   const int try_split_only =
+      !cpi->is_screen_content_type &&
       cpi->sf.part_sf.simple_motion_search_split && do_square_split &&
       bsize >= BLOCK_8X8 && mi_row + mi_size_high[bsize] <= cm->mi_rows &&
       mi_col + mi_size_wide[bsize] <= cm->mi_cols && !frame_is_intra_only(cm) &&
@@ -2797,6 +2799,7 @@ static bool rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
   }
 
   const int try_prune_rect =
+      !cpi->is_screen_content_type &&
       cpi->sf.part_sf.simple_motion_search_prune_rect &&
       !frame_is_intra_only(cm) && do_rectangular_split &&
       (do_square_split || partition_none_allowed ||
@@ -2868,9 +2871,11 @@ BEGIN_PARTITION_SEARCH:
 
   // PARTITION_NONE
   if (is_le_min_sq_part && has_rows && has_cols) partition_none_allowed = 1;
+  assert(terminate_partition_search == 0);
   int64_t part_none_rd = INT64_MAX;
-  if (!terminate_partition_search && partition_none_allowed &&
-      !is_gt_max_sq_part) {
+  if (cpi->is_screen_content_type)
+    partition_none_allowed = has_rows && has_cols;
+  if (partition_none_allowed && !is_gt_max_sq_part) {
     int pt_cost = 0;
     if (bsize_at_least_8x8) {
       pt_cost = partition_cost[PARTITION_NONE] < INT_MAX
