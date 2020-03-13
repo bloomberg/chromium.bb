@@ -2302,7 +2302,7 @@ static int64_t handle_inter_mode(
       continue;
     }
     if (prune_modes_based_on_tpl && !ref_match_found_in_above_nb &&
-        !ref_match_found_in_left_nb) {
+        !ref_match_found_in_left_nb && (ref_best_rd != INT64_MAX)) {
       if (prune_modes_based_on_tpl_stats(inter_cost_info_from_tpl, refs,
                                          ref_mv_idx, this_mode))
         continue;
