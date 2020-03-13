@@ -344,6 +344,10 @@ int main(int argc, char* argv[]) {
       }
       if (options.limit > 0 && options.limit == decoded_frames) {
         limit_reached = true;
+        if (input_buffer != nullptr) {
+          input_buffers.ReleaseInputBuffer(input_buffer);
+        }
+        input_buffer = nullptr;
       }
     }
   } while (input_buffer != nullptr ||
