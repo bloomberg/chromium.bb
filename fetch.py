@@ -55,12 +55,10 @@ class Checkout(object):
     self.root = root
 
   def exists(self):
+    """Check does this checkout already exist on desired location"""
     pass
 
   def init(self):
-    pass
-
-  def sync(self):
     pass
 
   def run(self, cmd, return_stdout=False, **kwargs):
