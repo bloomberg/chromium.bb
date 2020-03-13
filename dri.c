@@ -87,6 +87,7 @@ static int import_into_minigbm(struct dri_driver *dri, struct bo *bo)
 {
 	uint32_t handle;
 	int ret, modifier_upper, modifier_lower, num_planes, i, j;
+	off_t dmabuf_sizes[DRV_MAX_PLANES];
 	__DRIimage *plane_image = NULL;
 
 	if (dri->image_extension->queryImage(bo->priv, __DRI_IMAGE_ATTRIB_MODIFIER_UPPER,
@@ -125,6 +126,15 @@ static int import_into_minigbm(struct dri_driver *dri, struct bo *bo)
 			goto cleanup;
 		}
 
+		dmabuf_sizes[i] = lseek(prime_fd, 0, SEEK_END);
+		if (dmabuf_sizes[i] == (off_t)-1) {
+			ret = -errno;
+			close(prime_fd);
+			goto cleanup;
+		}
+
+		lseek(prime_fd, 0, SEEK_SET);
+
 		ret = drmPrimeFDToHandle(bo->drv->fd, prime_fd, &handle);
 
 		close(prime_fd);
@@ -139,13 +149,24 @@ static int import_into_minigbm(struct dri_driver *dri, struct bo *bo)
 		bo->meta.strides[i] = stride;
 		bo->meta.offsets[i] = offset;
 
-		/* Not setting sizes[i] and total_size as these are not
-		 * provided by DRI. The best way to "approximate" would be
-		 * what drv_bo_import does, but I see nothing in the minigbm
-		 * core that needs it. */
-
 		if (plane_image)
 			dri->image_extension->destroyImage(plane_image);
+	}
+
+	for (i = 0; i < num_planes; ++i) {
+		off_t next_plane = dmabuf_sizes[i];
+		for (j = 0; j < num_planes; ++j) {
+			if (bo->meta.offsets[j] < next_plane &&
+			    bo->meta.offsets[j] > bo->meta.offsets[i] &&
+			    bo->handles[j].u32 == bo->handles[i].u32)
+				next_plane = bo->meta.offsets[j];
+		}
+
+		bo->meta.sizes[i] = next_plane - bo->meta.offsets[i];
+
+		/* This is kind of misleading if different planes use
+		   different dmabufs. */
+		bo->meta.total_size += bo->meta.sizes[i];
 	}
 
 	return 0;
