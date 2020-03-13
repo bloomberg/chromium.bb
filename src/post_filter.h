@@ -434,9 +434,6 @@ class PostFilter {
   // Sets up the |deblock_buffer_| for loop restoration.
   void SetupDeblockBuffer(int row4x4_start, int sb4x4);
 
-  // Copies the borders necessary for loop restoration.
-  void CopyBorderForRestoration(int row4x4, int sb4x4);
-
   // Applies loop restoration for the superblock row starting at |row4x4_start|
   // with a height of 4*|sb4x4|.
   void ApplyLoopRestorationForOneSuperBlockRow(int row4x4_start, int sb4x4);
@@ -444,9 +441,15 @@ class PostFilter {
   // Extend frame boundary for inter frame convolution and referencing if the
   // frame will be saved as a reference frame.
   void ExtendBordersForReferenceFrame();
-  // Same as above but does it only for the row starting at |row4x4| with a
-  // height of |sb4x4| (accounting for loop restoration offsets).
-  void ExtendBordersForReferenceFrame(int row4x4, int sb4x4);
+
+  // Copies the border for one superblock row. If |for_loop_restoration| is
+  // true, then it assumes that the border extension is being performed for the
+  // input of the loop restoration process. If |for_loop_restoration| is false,
+  // then it assumes that the border extension is being performed for using the
+  // current frame as a reference frame. In this case, |progress_row_| is also
+  // updated.
+  void CopyBordersForOneSuperBlockRow(int row4x4, int sb4x4,
+                                      bool for_loop_restoration);
 
   // Returns true if we can perform border extension in loop (i.e.) without
   // waiting until the entire frame is decoded. If intra_block_copy is true, we
