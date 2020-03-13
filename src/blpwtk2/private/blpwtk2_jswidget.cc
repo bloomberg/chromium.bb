@@ -23,6 +23,7 @@
 #include <blpwtk2_jswidget.h>
 
 #include <base/bind.h>
+#include <base/logging.h>
 #include <base/message_loop/message_loop.h>
 #include <third_party/blink/public/web/web_document.h>
 #include <third_party/blink/public/web/web_dom_event.h>
@@ -38,11 +39,14 @@ static v8::Handle<v8::Object> ToV8(v8::Isolate* isolate, const blink::WebRect& r
 {
     // TODO: make a template for this
     v8::Handle<v8::Object> result = v8::Object::New(isolate);
-    result->Set(v8::String::NewFromUtf8(isolate, "x").ToLocalChecked(), v8::Integer::New(isolate, rc.x));
-    result->Set(v8::String::NewFromUtf8(isolate, "y").ToLocalChecked(), v8::Integer::New(isolate, rc.y));
-    result->Set(v8::String::NewFromUtf8(isolate, "width").ToLocalChecked(), v8::Integer::New(isolate, rc.width));
-    result->Set(v8::String::NewFromUtf8(isolate, "height").ToLocalChecked(), v8::Integer::New(isolate, rc.height));
+    v8::Local<v8::Context> context = v8::Context::New(isolate);
+    v8::Maybe<bool> maybe = result->Set(context, v8::String::NewFromUtf8(isolate, "x").ToLocalChecked(), v8::Integer::New(isolate, rc.x));
+    maybe = result->Set(context, v8::String::NewFromUtf8(isolate, "y").ToLocalChecked(), v8::Integer::New(isolate, rc.y));
+    maybe = result->Set(context, v8::String::NewFromUtf8(isolate, "width").ToLocalChecked(), v8::Integer::New(isolate, rc.width));
+    maybe = result->Set(context, v8::String::NewFromUtf8(isolate, "height").ToLocalChecked(), v8::Integer::New(isolate, rc.height));
 
+    if (!maybe.IsJust() || !maybe.FromJust())
+      LOG(WARNING) << "Failed to set x, y, width, height in jswidget ToV8().";
     return result;
 }
 
@@ -78,7 +82,7 @@ bool JsWidget::Initialize(blink::WebPluginContainer* container)
 void JsWidget::Destroy()
 {
     if (d_container) {
-        base::MessageLoopCurrent::Get()->task_runner()->DeleteSoon(FROM_HERE, this);
+        base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 
         d_container = nullptr;
     }
@@ -109,16 +113,18 @@ void JsWidget::UpdateGeometry(
       // invoking JsWidget from Document::UpdateStyleAndLayout. we'd use
       // blink::ScriptForbiddenScope::AllowUserAgentScript to allow script.
       blink::ScriptForbiddenScope::AllowUserAgentScript alllow_script;
-      detailObj->Set(v8::String::NewFromUtf8(isolate, "windowRect").ToLocalChecked(),
+      v8::Maybe<bool> maybe = detailObj->Set(context, v8::String::NewFromUtf8(isolate, "windowRect").ToLocalChecked(),
                      ToV8(isolate, windowRect));
-      detailObj->Set(v8::String::NewFromUtf8(isolate, "clipRect").ToLocalChecked(),
+      maybe = detailObj->Set(context, v8::String::NewFromUtf8(isolate, "clipRect").ToLocalChecked(),
                      ToV8(isolate, clipRect));
-      detailObj->Set(v8::String::NewFromUtf8(isolate, "unobscuredRect").ToLocalChecked(),
+      maybe = detailObj->Set(context, v8::String::NewFromUtf8(isolate, "unobscuredRect").ToLocalChecked(),
                      ToV8(isolate, unobscuredRect));
-      detailObj->Set(v8::String::NewFromUtf8(isolate, "isVisible").ToLocalChecked(),
+      maybe = detailObj->Set(context, v8::String::NewFromUtf8(isolate, "isVisible").ToLocalChecked(),
                      v8::Boolean::New(isolate, isVisible));
-      detailObj->Set(v8::String::NewFromUtf8(isolate, "frameRect").ToLocalChecked(),
+      maybe = detailObj->Set(context, v8::String::NewFromUtf8(isolate, "frameRect").ToLocalChecked(),
                      ToV8(isolate, windowRect));
+      if (!maybe.IsJust() || !maybe.FromJust())
+          LOG(WARNING) << "Failed to set geometry value for jswidget.";
     }
 
     blink::WebDOMEvent event = blink::WebDOMEvent::CreateCustomEvent(isolate, "bbOnUpdateGeometry", false, false,
@@ -144,8 +150,10 @@ void JsWidget::UpdateVisibility(bool isVisible)
     {
       // See the explanation of AllowUserAgentScript above
       blink::ScriptForbiddenScope::AllowUserAgentScript alllow_script;
-      detailObj->Set(v8::String::NewFromUtf8(isolate, "isVisible").ToLocalChecked(),
+      v8::Maybe<bool> maybe = detailObj->Set(context, v8::String::NewFromUtf8(isolate, "isVisible").ToLocalChecked(),
                      v8::Boolean::New(isolate, isVisible));
+      if (!maybe.IsJust() || !maybe.FromJust())
+          LOG(WARNING) << "Failed to update visibility for jswidget.";
     }
 
     blink::WebDOMEvent event = blink::WebDOMEvent::CreateCustomEvent(isolate, "bbOnUpdateVisibility", false, false,
