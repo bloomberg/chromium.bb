@@ -179,6 +179,7 @@ typedef struct {
   int num_stats_used_for_gfu_boost;
   // Total number of stats required by gfu_boost calculation.
   int num_stats_required_for_gfu_boost;
+  int next_is_fwd_key;
 } RATE_CONTROL;
 
 struct AV1_COMP;

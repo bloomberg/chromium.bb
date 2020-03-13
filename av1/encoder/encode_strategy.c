@@ -419,23 +419,23 @@ static struct lookahead_entry *setup_arf_frame(
 }
 
 // Determine whether there is a forced keyframe pending in the lookahead buffer
-static int is_forced_keyframe_pending(struct lookahead_ctx *lookahead,
-                                      const int up_to_index,
-                                      const COMPRESSOR_STAGE compressor_stage) {
+int is_forced_keyframe_pending(struct lookahead_ctx *lookahead,
+                               const int up_to_index,
+                               const COMPRESSOR_STAGE compressor_stage) {
   for (int i = 0; i <= up_to_index; i++) {
     const struct lookahead_entry *e =
         av1_lookahead_peek(lookahead, i, compressor_stage);
     if (e == NULL) {
       // We have reached the end of the lookahead buffer and not early-returned
       // so there isn't a forced key-frame pending.
-      return 0;
+      return -1;
     } else if (e->flags == AOM_EFLAG_FORCE_KF) {
-      return 1;
+      return (i + 1);
     } else {
       continue;
     }
   }
-  return 0;  // Never reached
+  return -1;  // Never reached
 }
 
 // Check if we should encode an ARF or internal ARF.  If not, try a LAST
@@ -452,8 +452,11 @@ static struct lookahead_entry *choose_frame_source(
 
   // Should we encode an alt-ref frame.
   int arf_src_index = get_arf_src_index(&cpi->gf_group, cpi->oxcf.pass);
-  if (arf_src_index && is_forced_keyframe_pending(cpi->lookahead, arf_src_index,
-                                                  cpi->compressor_stage)) {
+  // TODO(Aasaipriya): Forced key frames need to be fixed when rc_mode != AOM_Q
+  if (arf_src_index &&
+      (is_forced_keyframe_pending(cpi->lookahead, arf_src_index,
+                                  cpi->compressor_stage) != -1) &&
+      cpi->oxcf.rc_mode != AOM_Q) {
     arf_src_index = 0;
     *flush = 1;
   }
