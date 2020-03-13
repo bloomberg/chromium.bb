@@ -26,7 +26,6 @@ class GenerateStatefulPayloadTest(cros_test_lib.RunCommandTempDirTestCase):
         'outfile', self.tempdir)
     self.PatchObject(image_lib, 'LoopbackPartitions', return_value=self.image)
 
-  @cros_test_lib.pytestmark_requires_sudo
   def testGenerateStatefulPayload(self):
     """Test correct arguments propagated to tar call."""
 

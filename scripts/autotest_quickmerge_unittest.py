@@ -117,7 +117,6 @@ class PackageNameParsingTest(cros_test_lib.TestCase):
 class RsyncCommandTest(cros_test_lib.RunCommandTestCase):
   """Test autotest_quickmerge.RsyncQuickmerge."""
 
-  @cros_test_lib.pytestmark_requires_sudo
   def testRsyncQuickmergeCommand(self):
     """Test that RsyncQuickMerge makes correct call to sudo_run"""
     include_file_name = 'an_include_file_name'

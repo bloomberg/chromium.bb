@@ -93,14 +93,12 @@ class DlcGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):
     self.assertEqual(generator.image_dir,
                      os.path.join(self.tempdir, _IMAGE_DIR, _ID, _PACKAGE))
 
-  @cros_test_lib.pytestmark_requires_sudo
   def testSquashOwnerships(self):
     """Test build_dlc.SquashOwnershipsTest"""
     self.GetDlcGenerator().SquashOwnerships(self.tempdir)
     self.assertCommandContains(['chown', '-R', '0:0'])
     self.assertCommandContains(['find'])
 
-  @cros_test_lib.pytestmark_requires_sudo
   def testCreateExt4Image(self):
     """Test CreateExt4Image to make sure it runs with valid parameters."""
     copy_dir_mock = self.PatchObject(osutils, 'CopyDirContents')
@@ -122,7 +120,6 @@ class DlcGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):
         mount_opts=('loop', 'rw'))
     umount_mock.assert_called_once_with(partial_mock.HasString('mount_point'))
 
-  @cros_test_lib.pytestmark_requires_sudo
   def testCreateSquashfsImage(self):
     """Test that creating squashfs commands are run with correct parameters."""
     copy_dir_mock = self.PatchObject(osutils, 'CopyDirContents')

@@ -18,7 +18,6 @@ from chromite.lib import moblab_vm
 from chromite.lib import osutils
 
 
-@cros_test_lib.pytestmark_requires_sudo
 class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
   """Tests for MoablabVm class."""
 

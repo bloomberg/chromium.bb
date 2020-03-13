@@ -24,7 +24,6 @@ if cros_build_lib.IsInsideChroot():
 class ChrootUtilTest(cros_test_lib.RunCommandTempDirTestCase):
   """Test class for the chroot_util functions."""
 
-  @cros_test_lib.pytestmark_requires_sudo
   def testEmerge(self):
     """Tests correct invocation of emerge."""
     packages = ['foo-app/bar', 'sys-baz/clap']

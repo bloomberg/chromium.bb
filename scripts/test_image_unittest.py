@@ -76,7 +76,6 @@ class FindImageTest(TestImageTest):
 class MainTest(TestImageTest):
   """Test the main invocation of the script."""
 
-  @cros_test_lib.pytestmark_requires_sudo
   def testChdir(self):
     """Verify the CWD is in a temp directory."""
 
@@ -111,7 +110,6 @@ class MainTest(TestImageTest):
     self.assertEqual(0, test_image.main(argv))
     self.assertEqual('/tmp', os.getcwd())
 
-  @cros_test_lib.pytestmark_requires_sudo
   def testBoardAndDirectory(self):
     """Verify that "--board", "--test_results_root" are passed to the tests."""
 

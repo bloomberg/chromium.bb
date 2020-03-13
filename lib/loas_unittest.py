@@ -15,7 +15,6 @@ from chromite.lib import loas
 from chromite.lib import partial_mock
 
 
-@cros_test_lib.pytestmark_requires_sudo
 class TestLoas(cros_test_lib.MockTestCase):
   """General tests for the LOAS module"""
 

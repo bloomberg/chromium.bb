@@ -54,7 +54,6 @@ try:
   pytestmark_passes_when_run_alone = pytest.mark.passes_when_run_alone
   pytestmark_redirected_stdin_error = pytest.mark.redirected_stdin_error
   pytestmark_requires_portage = pytest.mark.requires_portage
-  pytestmark_requires_sudo = pytest.mark.requires_sudo
   pytestmark_sigterm = pytest.mark.sigterm
   pytestmark_skip = pytest.mark.skip
   pytestmark_skipif = pytest.mark.skipif
@@ -71,7 +70,6 @@ except (ImportError, AttributeError):
   pytestmark_passes_when_run_alone = null_decorator
   pytestmark_redirected_stdin_error = null_decorator
   pytestmark_requires_portage = null_decorator
-  pytestmark_requires_sudo = null_decorator
   pytestmark_sigterm = null_decorator
   pytestmark_skip = null_decorator
   pytestmark_skipif = lambda condition, reason=None: None

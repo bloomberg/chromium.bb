@@ -144,7 +144,6 @@ class CreateVmTest(cros_test_lib.RunCommandTestCase):
                      image.CreateVm('board'))
 
 
-@cros_test_lib.pytestmark_requires_sudo
 class ImageTestTest(cros_test_lib.RunCommandTempDirTestCase):
   """Image Test tests."""
 

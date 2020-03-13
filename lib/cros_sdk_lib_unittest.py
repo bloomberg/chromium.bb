@@ -118,7 +118,6 @@ class TestIsChrootReady(cros_test_lib.MockTestCase):
     self.assertTrue(cros_sdk_lib.IsChrootReady('/'))
 
 
-@cros_test_lib.pytestmark_requires_sudo
 class TestFindVolumeGroupForDevice(cros_test_lib.MockTempDirTestCase):
   """Tests the FindVolumeGroupForDevice function."""
 
@@ -192,7 +191,6 @@ class TestFindVolumeGroupForDevice(cros_test_lib.MockTempDirTestCase):
       self.assertEqual(vg, 'cros_chroot_000')
 
 
-@cros_test_lib.pytestmark_requires_sudo
 class TestMountChroot(cros_test_lib.MockTempDirTestCase):
   """Tests various partial setups for MountChroot."""
 
@@ -474,7 +472,6 @@ class TestFindChrootMountSource(cros_test_lib.MockTempDirTestCase):
     self.assertEqual(lv, 'lv_name')
 
 
-@cros_test_lib.pytestmark_requires_sudo
 class TestCleanupChrootMount(cros_test_lib.MockTempDirTestCase):
   """Tests the CleanupChrootMount function."""
 
