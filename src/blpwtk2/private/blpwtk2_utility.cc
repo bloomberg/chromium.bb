@@ -73,7 +73,6 @@ std::string getGpuInfo() {
     gpuInfo.SetString("gpu_device_string", content::GpuDataManagerImpl::GetInstance()->GetGPUInfoForHardwareGpu().active_gpu().device_string);
     gpuInfo.SetString("gpu_vendor", content::GpuDataManagerImpl::GetInstance()->GetGPUInfoForHardwareGpu().active_gpu().vendor_string);
     gpuInfo.SetString("gpu_driver_vendor", content::GpuDataManagerImpl::GetInstance()->GetGPUInfoForHardwareGpu().active_gpu().driver_vendor);
-    gpuInfo.SetString("gpu_driver_date", content::GpuDataManagerImpl::GetInstance()->GetGPUInfoForHardwareGpu().active_gpu().driver_date);
     gpuInfo.SetBoolean("gpu_active", content::GpuDataManagerImpl::GetInstance()->GetGPUInfoForHardwareGpu().active_gpu().active);
     gpuInfo.SetBoolean("software_rendering", content::GpuDataManagerImpl::GetInstance()->GetGPUInfoForHardwareGpu().software_rendering);
 
