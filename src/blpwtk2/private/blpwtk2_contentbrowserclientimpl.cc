@@ -181,6 +181,23 @@ std::string ContentBrowserClientImpl::GetUserAgent()
     return content::BuildUserAgentFromProduct("BlpWtk/" BB_PATCH_VERSION " Chrome/" CHROMIUM_VERSION);
 }
 
+void ContentBrowserClientImpl::OnNetworkServiceCreated(
+    network::mojom::NetworkService* network_service)
+{
+    return content::ContentBrowserClient::OnNetworkServiceCreated(network_service);
+}
+
+mojo::Remote<network::mojom::NetworkContext>
+ContentBrowserClientImpl::CreateNetworkContext(
+    content::BrowserContext* context,
+    bool in_memory,
+    const base::FilePath& relative_partition_path)
+{
+    DCHECK(context);
+    BrowserContextImpl* pContextImpl = static_cast<BrowserContextImpl*>(context);
+    return pContextImpl->CreateNetworkContext(in_memory, relative_partition_path, GetUserAgent());
+}
+
 }  // close namespace blpwtk2
 
 // vim: ts=4 et
