@@ -34,9 +34,7 @@ def is_fast_required(use_futility, servo):
   Returns:
     bool: True if fast is necessary, False otherwise.
   """
-  if use_futility and servo.version == servo_lib.SERVO_V4_CCD:
-    return True
-  return False
+  return use_futility and servo.version == servo_lib.SERVO_V4_CCD
 
 
 def get_commands(servo):

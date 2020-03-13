@@ -27,10 +27,8 @@ def is_fast_required(_use_futility, servo):
   Returns:
     bool: True if fast is necessary, False otherwise.
   """
-  if servo.is_micro:
-    # servo_v4_with_servo_micro or servo_micro
-    return True
-  return False
+  # servo_v4_with_servo_micro or servo_micro
+  return servo.is_micro
 
 
 def get_commands(servo):

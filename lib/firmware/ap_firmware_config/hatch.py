@@ -23,27 +23,6 @@ BUILD_PACKAGES = BUILD_WORKON_PACKAGES + (
 )
 
 
-def is_fast_required(_use_futility, _servo):
-  """Returns true if --fast is necessary to flash successfully.
-
-  The configurations in this function consistently fail on the verify step,
-  adding --fast removes verification of the flash and allows these configs to
-  flash properly. Meant to be a temporary hack, remove when b/143240576 is
-  fixed and other boards don't need the function. Not a problem for any
-  configuration of this board.
-
-  Args:
-    _use_futility (bool): True if futility is to be used, False if
-      flashrom.
-    _servo (servo_lib.Servo): The servo connected to the target DUT.
-
-  Returns:
-    bool: True if fast is necessary, False otherwise. Always False for
-      this board.
-  """
-  return False
-
-
 def get_commands(servo):
   """Get specific flash commands for hatch
 

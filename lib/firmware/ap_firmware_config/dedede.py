@@ -22,24 +22,6 @@ BUILD_PACKAGES = BUILD_WORKON_PACKAGES + (
 )
 
 
-def is_fast_required(_use_futility, _servo):
-  """Returns true if --fast is necessary to flash successfully.
-
-  The configurations in this function consistently fail on the verify step,
-  adding --fast removes verification of the flash and allows these configs to
-  flash properly. Meant to be a temporary hack until b/143240576 is fixed.
-
-  Args:
-    _use_futility (bool): True if futility is to be used, False if
-      flashrom.
-    _servo (str): The type name of the servo device being used.
-
-  Returns:
-    bool: True if fast is necessary, False otherwise.
-  """
-  return False
-
-
 def get_commands(servo):
   """Get specific flash commands for octopus
 
