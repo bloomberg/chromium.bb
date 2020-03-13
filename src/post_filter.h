@@ -407,15 +407,15 @@ class PostFilter {
   void InitDeblockFilterParams();  // Part of 7.14.4.
   void GetDeblockFilterParams(uint8_t level, int* outer_thresh,
                               int* inner_thresh, int* hev_thresh) const;
-  // Applies super resolution for the |buffers| for 4*|rows4x4| rows of each
+  // Applies super resolution for the |buffers| for |rows[plane]| rows of each
   // plane. If in_place is true, the line buffer will not be used and the
   // SuperRes output will be written to a row above the input row. If in_place
   // is false, the line buffer will be used to store a copy of the input and the
   // output will be written to the same row as the input row.
   template <bool in_place>
   void ApplySuperRes(const std::array<uint8_t*, kMaxPlanes>& buffers,
-                     const std::array<int, kMaxPlanes>& strides, int rows4x4,
-                     int8_t chroma_subsampling_y,
+                     const std::array<int, kMaxPlanes>& strides,
+                     const std::array<int, kMaxPlanes>& rows,
                      size_t line_buffer_offset);  // Section 7.16.
   void ApplySuperResThreaded();
 
