@@ -20,7 +20,6 @@
 #include <cstdint>
 #include <cstring>
 #include <new>
-#include <vector>
 
 #include "src/dsp/common.h"
 #include "src/dsp/constants.h"
