@@ -11,7 +11,6 @@ import argparse
 import glob
 import optparse  # pylint: disable=deprecated-module
 import os
-import sys
 
 from chromite.cbuildbot import cbuildbot_run
 from chromite.lib import cgroups
@@ -28,9 +27,6 @@ from chromite.lib import parallel
 from chromite.lib import partial_mock
 from chromite.lib.buildstore import FakeBuildStore
 from chromite.scripts import cbuildbot
-
-
-assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # pylint: disable=protected-access
