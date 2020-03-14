@@ -53,16 +53,16 @@ struct MotionVector : public Allocable {
   };
 };
 
-union CandidateMotionVector {
-  CandidateMotionVector() = default;
-  CandidateMotionVector(const CandidateMotionVector& mv) = default;
+union CompoundMotionVector {
+  CompoundMotionVector() = default;
+  CompoundMotionVector(const CompoundMotionVector& mv) = default;
 
-  CandidateMotionVector& operator=(const CandidateMotionVector& rhs) {
+  CompoundMotionVector& operator=(const CompoundMotionVector& rhs) {
     mv64 = rhs.mv64;
     return *this;
   }
 
-  bool operator==(const CandidateMotionVector& rhs) const {
+  bool operator==(const CompoundMotionVector& rhs) const {
     return mv64 == rhs.mv64;
   }
 
@@ -103,10 +103,14 @@ struct PaletteModeInfo {
 // the block itself (for example, some of the variables in BlockParameters are
 // used to compute the context for reading elements in the subsequent blocks).
 struct PredictionParameters : public Allocable {
-  // Restore the index in the unsorted |ref_mv_stack| from the least 3 bits of
-  // sorted |weight_index_stack|.
+  // Restore the index in the unsorted mv stack from the least 3 bits of sorted
+  // |weight_index_stack|.
+  const MotionVector& reference_mv(int stack_index) const {
+    return ref_mv_stack[7 - (weight_index_stack[stack_index] & 7)];
+  }
   const MotionVector& reference_mv(int stack_index, int mv_index) const {
-    return ref_mv_stack[7 - (weight_index_stack[stack_index] & 7)].mv[mv_index];
+    return compound_ref_mv_stack[7 - (weight_index_stack[stack_index] & 7)]
+        .mv[mv_index];
   }
 
   void IncreaseWeight(ptrdiff_t index, int weight) {
@@ -133,9 +137,12 @@ struct PredictionParameters : public Allocable {
   bool mask_is_inverse;
   MotionMode motion_mode;
   CompoundPredictionType compound_prediction_type;
-  // |ref_mv_stack| is not sorted after construction. reference_mv() must be
-  // called to get the correct element.
-  CandidateMotionVector ref_mv_stack[kMaxRefMvStackSize];
+  union {
+    // |ref_mv_stack| and |compound_ref_mv_stack| are not sorted after
+    // construction. reference_mv() must be called to get the correct element.
+    MotionVector ref_mv_stack[kMaxRefMvStackSize];
+    CompoundMotionVector compound_ref_mv_stack[kMaxRefMvStackSize];
+  };
   // The least 3 bits of |weight_index_stack| store the index information, and
   // the other bits store the weight. The index information is actually 7 -
   // index to make the descending order sort stable (preserves the original
@@ -147,7 +154,7 @@ struct PredictionParameters : public Allocable {
   // the mvs are compared with this bonus weight to determine their contexts. We
   // replace this procedure by introducing |nearest_mv_count|, which records the
   // count of the nearest mvs. Since all the nearest mvs are in the beginning of
-  // |ref_mv_stack|, the index of a mv in |ref_mv_stack| can be compared with
+  // the mv stack, the index of a mv in the mv stack can be compared with
   // |nearest_mv_count| to get that mv's context.
   int nearest_mv_count;
   int ref_mv_count;
@@ -185,7 +192,7 @@ struct BlockParameters : public Allocable {
   //  2 - U plane (both directions).
   //  3 - V plane (both directions).
   uint8_t deblock_filter_level[kFrameLfCount];
-  CandidateMotionVector mv;
+  CompoundMotionVector mv;
   PaletteModeInfo palette_mode_info;
   // When |Tile::split_parse_and_decode_| is true, each block gets its own
   // instance of |prediction_parameters|. When it is false, all the blocks point
