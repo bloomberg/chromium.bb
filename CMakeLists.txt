@@ -17,6 +17,7 @@ cmake_minimum_required(VERSION 3.7.1 FATAL_ERROR)
 
 # libgav1 requires C++11.
 set(CMAKE_CXX_STANDARD 11)
+set(ABSL_CXX_STANDARD 11)
 
 project(libgav1 CXX)
 
