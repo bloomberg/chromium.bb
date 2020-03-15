@@ -455,6 +455,7 @@ static void set_good_speed_features_framesize_independent(
     // TODO(any): Experiment with the early exit mechanism for speeds 0, 1 and 2
     // and clean-up the speed feature
     sf->inter_sf.perform_best_rd_based_gating_for_chroma = 1;
+    sf->inter_sf.prune_inter_modes_based_on_tpl = boosted ? 0 : 1;
     sf->inter_sf.prune_comp_search_by_single_result = boosted ? 4 : 2;
     sf->inter_sf.prune_motion_mode_level = boosted ? 2 : 3;
     sf->inter_sf.selective_ref_frame = 4;
@@ -514,6 +515,7 @@ static void set_good_speed_features_framesize_independent(
     sf->inter_sf.txfm_rd_gate_level =
         (boosted || cm->allow_screen_content_tools) ? 0 : 3;
 
+    sf->inter_sf.prune_inter_modes_based_on_tpl = boosted ? 0 : 2;
     sf->inter_sf.disable_smooth_interintra = 1;
 
     sf->interp_sf.cb_pred_filter_search = 1;
@@ -575,7 +577,7 @@ static void set_good_speed_features_framesize_independent(
     sf->part_sf.ext_partition_eval_thresh =
         cm->allow_screen_content_tools ? BLOCK_8X8 : BLOCK_16X16;
 
-    sf->inter_sf.prune_inter_modes_based_on_tpl = boosted ? 0 : 1;
+    sf->inter_sf.prune_inter_modes_based_on_tpl = boosted ? 0 : 3;
     sf->inter_sf.disable_interinter_wedge = 1;
     sf->inter_sf.disable_obmc = 1;
     sf->inter_sf.disable_onesided_comp = 1;

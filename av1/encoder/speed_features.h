@@ -657,6 +657,8 @@ typedef struct INTER_MODE_SPEED_FEATURES {
   int disable_sb_level_mv_cost_upd;
 
   // Prune inter modes based on tpl stats
+  // 0 : no pruning
+  // 1 - 3 indicate increasing aggressiveness in order.
   int prune_inter_modes_based_on_tpl;
 
   // Model based breakout after interpolation filter search

@@ -2173,19 +2173,25 @@ static AOM_INLINE void get_block_level_tpl_stats(
 
 static AOM_INLINE int prune_modes_based_on_tpl_stats(
     PruneInfoFromTpl *inter_cost_info_from_tpl, const int *refs, int ref_mv_idx,
-    const PREDICTION_MODE this_mode) {
+    const PREDICTION_MODE this_mode, int prune_mode_level) {
+  int have_newmv = have_newmv_in_inter_mode(this_mode);
+  if ((prune_mode_level < 3) && have_newmv) return 0;
+
+  const int prune_level_idx[3] = { 0, 1, 1 };
+  int prune_level = prune_level_idx[prune_mode_level - 1];
   int64_t cur_inter_cost;
 
   int is_globalmv = (this_mode == GLOBALMV) || (this_mode == GLOBAL_GLOBALMV);
   int prune_index = is_globalmv ? MAX_REF_MV_SEARCH : ref_mv_idx;
 
   // Thresholds used for pruning:
-  // Lower value indicates aggressive pruning for ref_mv indices 1, 2 and for
-  // GLOBAL/GLOBAL_GLOBALMV. Higher value indicates conservative pruning for
-  // ref_mv_idx 0. 'prune_index' 0, 1, 2 corresponds to ref_mv indices 0, 1
-  // and 2. prune_index 3 corresponds to GLOBALMV/GLOBAL_GLOBALMV
-  const int tpl_inter_mode_prune_mul_factor[MAX_REF_MV_SEARCH + 1] = { 3, 2, 2,
-                                                                       2 };
+  // Lower value indicates aggressive pruning and higher value indicates
+  // conservative pruning which is set based on ref_mv_idx and speed feature.
+  // 'prune_index' 0, 1, 2 corresponds to ref_mv indices 0, 1 and 2. prune_index
+  // 3 corresponds to GLOBALMV/GLOBAL_GLOBALMV
+  const int tpl_inter_mode_prune_mul_factor[2][MAX_REF_MV_SEARCH + 1] = {
+    { 3, 3, 3, 2 }, { 3, 2, 2, 2 }
+  };
 
   int is_comp_pred = (refs[1] > INTRA_FRAME);
 
@@ -2205,7 +2211,9 @@ static AOM_INLINE int prune_modes_based_on_tpl_stats(
   // best_inter_cost
   int64_t best_inter_cost = inter_cost_info_from_tpl->best_inter_cost;
   if (cur_inter_cost >
-      ((tpl_inter_mode_prune_mul_factor[prune_index] * best_inter_cost) >> 1))
+      ((tpl_inter_mode_prune_mul_factor[prune_level][prune_index] *
+        best_inter_cost) >>
+       1))
     return 1;
   return 0;
 }
@@ -2303,8 +2311,9 @@ static int64_t handle_inter_mode(
     }
     if (prune_modes_based_on_tpl && !ref_match_found_in_above_nb &&
         !ref_match_found_in_left_nb && (ref_best_rd != INT64_MAX)) {
-      if (prune_modes_based_on_tpl_stats(inter_cost_info_from_tpl, refs,
-                                         ref_mv_idx, this_mode))
+      if (prune_modes_based_on_tpl_stats(
+              inter_cost_info_from_tpl, refs, ref_mv_idx, this_mode,
+              cpi->sf.inter_sf.prune_inter_modes_based_on_tpl))
         continue;
     }
     av1_init_rd_stats(rd_stats);
