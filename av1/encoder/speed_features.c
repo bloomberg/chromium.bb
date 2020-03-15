@@ -813,6 +813,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
 
     sf->tx_sf.tx_type_search.prune_mode = PRUNE_2D_MORE;
     sf->tx_sf.use_inter_txb_hash = 0;
+    sf->tx_sf.refine_fast_tx_search_results = 0;
 
     sf->rd_sf.optimize_coefficients = NO_TRELLIS_OPT;
     sf->rd_sf.simple_model_rd_from_var = 1;
@@ -1042,6 +1043,7 @@ static AOM_INLINE void init_tx_sf(TX_SPEED_FEATURES *tx_sf) {
   tx_sf->adaptive_txb_search_level = 0;
   tx_sf->use_intra_txb_hash = 0;
   tx_sf->use_inter_txb_hash = 1;
+  tx_sf->refine_fast_tx_search_results = 1;
 }
 
 static AOM_INLINE void init_rd_sf(RD_CALC_SPEED_FEATURES *rd_sf,

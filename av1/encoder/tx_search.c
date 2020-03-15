@@ -3154,7 +3154,7 @@ static int64_t select_tx_size_and_type(const AV1_COMP *cpi, MACROBLOCK *x,
   // If fast_tx_search is true, only DCT and 1D DCT were tested in
   // select_inter_block_yrd() above. Do a better search for tx type with
   // tx sizes already decided.
-  if (fast_tx_search) {
+  if (fast_tx_search && cpi->sf.tx_sf.refine_fast_tx_search_results) {
     if (!inter_block_yrd(cpi, x, rd_stats, bsize, ref_best_rd, FTXS_NONE))
       return INT64_MAX;
   }
