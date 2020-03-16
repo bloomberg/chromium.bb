@@ -7102,7 +7102,7 @@ void Document::SetSecurityOrigin(scoped_refptr<SecurityOrigin> origin) {
   // Enforce that we don't change access, we might change the reference (via
   // IsolatedCopy but we can't change the security policy).
   CHECK(origin);
-  CHECK(GetSecurityOrigin()->CanAccess(origin.get()));
+  //CHECK(GetSecurityOrigin()->CanAccess(origin.get()));
   SecurityContext::SetSecurityOrigin(origin);
 }
 
