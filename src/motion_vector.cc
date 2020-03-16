@@ -142,10 +142,10 @@ void SearchStack(const Tile::Block& block, const BlockParameters& mv_bp,
   *found_new_mv |= kPredictionModeNewMvMask.Contains(mv_bp.y_mode);
   *found_match = true;
   MotionVector* const ref_mv_stack = prediction_parameters.ref_mv_stack;
-  auto result = std::find_if(ref_mv_stack, ref_mv_stack + *num_mv_found,
-                             [&candidate_mv](const MotionVector& ref_mv) {
-                               return ref_mv == candidate_mv;
-                             });
+  const auto result = std::find_if(ref_mv_stack, ref_mv_stack + *num_mv_found,
+                                   [&candidate_mv](const MotionVector& ref_mv) {
+                                     return ref_mv == candidate_mv;
+                                   });
   if (result != ref_mv_stack + *num_mv_found) {
     prediction_parameters.IncreaseWeight(std::distance(ref_mv_stack, result),
                                          weight);
@@ -178,7 +178,7 @@ void CompoundSearchStack(const Tile::Block& block, const BlockParameters& mv_bp,
   *found_match = true;
   CompoundMotionVector* const compound_ref_mv_stack =
       prediction_parameters.compound_ref_mv_stack;
-  auto result =
+  const auto result =
       std::find_if(compound_ref_mv_stack, compound_ref_mv_stack + *num_mv_found,
                    [&candidate_mv](const CompoundMotionVector& ref_mv) {
                      return ref_mv == candidate_mv;
@@ -298,10 +298,10 @@ void AddTemporalReferenceMvCandidate(
     int* const zero_mv_context, int* const num_mv_found,
     PredictionParameters* const prediction_parameters) {
   const MotionVector* const global_mv = prediction_parameters->global_mv;
-  int index = 0;
   if (is_compound) {
     CompoundMotionVector* const compound_ref_mv_stack =
         prediction_parameters->compound_ref_mv_stack;
+    int index = 0;
     do {
       assert(temporal_reference_offsets[index] > 0);
       assert(temporal_reference_offsets[index] <= kMaxFrameDistance);
@@ -344,15 +344,37 @@ void AddTemporalReferenceMvCandidate(
     return;
   }
   MotionVector* const ref_mv_stack = prediction_parameters->ref_mv_stack;
+  if (reference_offsets[0] == 0) {
+    if (*zero_mv_context == -1) {
+      const int max_difference =
+          std::max(std::abs(global_mv[0].mv[0]), std::abs(global_mv[0].mv[1]));
+      *zero_mv_context = static_cast<int>(max_difference >= 16);
+    }
+    const MotionVector candidate_mv = {};
+    const auto result =
+        std::find_if(ref_mv_stack, ref_mv_stack + *num_mv_found,
+                     [&candidate_mv](const MotionVector& ref_mv) {
+                       return ref_mv == candidate_mv;
+                     });
+    if (result != ref_mv_stack + *num_mv_found) {
+      prediction_parameters->IncreaseWeight(std::distance(ref_mv_stack, result),
+                                            2 * count);
+      return;
+    }
+    if (*num_mv_found >= kMaxRefMvStackSize) return;
+    ref_mv_stack[*num_mv_found] = candidate_mv;
+    prediction_parameters->SetWeightIndexStackEntry(*num_mv_found, 2 * count);
+    ++*num_mv_found;
+    return;
+  }
+  int index = 0;
   do {
     assert(temporal_reference_offsets[index] > 0);
     assert(temporal_reference_offsets[index] <= kMaxFrameDistance);
-    MotionVector candidate_mv = {};
-    if (reference_offsets[0] != 0) {
-      GetMvProjection(temporal_mvs[index], reference_offsets[0],
-                      temporal_reference_offsets[index], &candidate_mv);
-      LowerMvPrecision(frame_header, &candidate_mv);
-    }
+    MotionVector candidate_mv;
+    GetMvProjection(temporal_mvs[index], reference_offsets[0],
+                    temporal_reference_offsets[index], &candidate_mv);
+    LowerMvPrecision(frame_header, &candidate_mv);
     if (*zero_mv_context == -1) {
       const int max_difference =
           std::max(std::abs(candidate_mv.mv[0] - global_mv[0].mv[0]),
@@ -474,7 +496,7 @@ void TemporalScan(const Tile::Block& block, bool is_compound,
     }
   }
   if (count != 0) {
-    BlockParameters* bp = block.bp;
+    BlockParameters* const bp = block.bp;
     int reference_offsets[2];
     reference_offsets[0] = GetRelativeDistance(
         tile.frame_header().order_hint,
