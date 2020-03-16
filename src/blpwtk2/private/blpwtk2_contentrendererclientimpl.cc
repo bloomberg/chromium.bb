@@ -161,11 +161,9 @@ bool ContentRendererClientImpl::Dispatch(IPC::Message *msg)
     return false;
 }
 
-bool ContentRendererClientImpl::BindFrameSinkProvider(
-    content::mojom::FrameSinkProviderRequest request)
+bool ContentRendererClientImpl::ShouldBindFrameSinkProvider()
 {
     if (Statics::rendererUIEnabled) {
-        RenderCompositorFactory::GetInstance()->Bind(std::move(request));
         return true;
     }
 

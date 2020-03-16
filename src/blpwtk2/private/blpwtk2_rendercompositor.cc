@@ -55,8 +55,8 @@
 #include <content/renderer/render_thread_impl.h>
 #include <content/renderer/renderer_blink_platform_impl.h>
 #include <services/service_manager/public/cpp/connector.h>
-#include <services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h>
-#include <services/ws/public/cpp/gpu/context_provider_command_buffer.h>
+#include <services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h>
+#include <services/viz/public/cpp/gpu/context_provider_command_buffer.h>
 
 namespace blpwtk2 {
 
@@ -64,9 +64,9 @@ class RenderCompositorFrameSinkImpl;
 
 class RenderFrameSinkProviderImpl : public content::mojom::FrameSinkProvider {
 
-    mojo::Binding<content::mojom::FrameSinkProvider> d_binding;
-    content::mojom::FrameSinkProviderPtr d_default_frame_sink_provider;
-
+    mojo::Receiver<content::mojom::FrameSinkProvider> d_binding;  //d_receiver
+    mojo::Remote<content::mojom::FrameSinkProvider> d_default_frame_sink_provider;
+    
     scoped_refptr<base::SingleThreadTaskRunner> d_main_task_runner, d_compositor_task_runner;
     gpu::GpuMemoryBufferManager *d_gpu_memory_buffer_manager = nullptr;
 
@@ -78,7 +78,7 @@ class RenderFrameSinkProviderImpl : public content::mojom::FrameSinkProvider {
     std::unique_ptr<viz::OutputDeviceBacking> d_software_output_device_backing;
 
     scoped_refptr<gpu::GpuChannelHost> d_gpu_channel;
-    scoped_refptr<ws::ContextProviderCommandBuffer> d_worker_context_provider;
+    scoped_refptr<viz::ContextProviderCommandBuffer> d_worker_context_provider;
 
     struct CompositorData {
         CompositorData(gpu::SurfaceHandle gpu_surface_handle)
@@ -96,14 +96,14 @@ class RenderFrameSinkProviderImpl : public content::mojom::FrameSinkProvider {
 
     void CreateForWidgetOnCompositor(
         int32_t widget_id,
-        viz::mojom::CompositorFrameSinkRequest compositor_frame_sink_request,
-        viz::mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client,
+        mojo::PendingReceiver<::viz::mojom::CompositorFrameSink> compositor_frame_sink_receiver,
+        mojo::PendingRemote<::viz::mojom::CompositorFrameSinkClient> compositor_frame_sink_client,
         scoped_refptr<gpu::GpuChannelHost> gpu_channel);
 
     void DelegateToDefaultFrameSinkProviderOnMain(
         int32_t widget_id,
-        viz::mojom::CompositorFrameSinkRequest compositor_frame_sink_request,
-        viz::mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client);
+        mojo::PendingReceiver<::viz::mojom::CompositorFrameSink> compositor_frame_sink_receiver,
+        mojo::PendingRemote<::viz::mojom::CompositorFrameSinkClient> compositor_frame_sink_client);
 
 public:
 
@@ -141,11 +141,11 @@ public:
         return d_software_output_device_backing.get();
     }
 
-    scoped_refptr<ws::ContextProviderCommandBuffer> worker_context_provider() {
+    scoped_refptr<viz::ContextProviderCommandBuffer> worker_context_provider() {
         return d_worker_context_provider;
     }
 
-    void Bind(content::mojom::FrameSinkProviderRequest request);
+    void Bind(mojo::PendingReceiver<content::mojom::FrameSinkProvider> receiver);
     void Unbind();
 
     void RegisterCompositor(int32_t widget_id, gpu::SurfaceHandle gpu_surface_handle);
@@ -156,12 +156,12 @@ public:
     // content::mojom::FrameSinkProvider overrides:
     void CreateForWidget(
         int32_t widget_id,
-        viz::mojom::CompositorFrameSinkRequest compositor_frame_sink_request,
-        viz::mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client) override;
+        mojo::PendingReceiver<::viz::mojom::CompositorFrameSink> compositor_frame_sink_receiver,
+        mojo::PendingRemote<::viz::mojom::CompositorFrameSinkClient> compositor_frame_sink_client) override;
     void RegisterRenderFrameMetadataObserver(
         int32_t widget_id,
-        content::mojom::RenderFrameMetadataObserverClientRequest render_frame_metadata_observer_client_request,
-        content::mojom::RenderFrameMetadataObserverPtr observer) override;
+        mojo::PendingReceiver<::content::mojom::RenderFrameMetadataObserverClient> render_frame_metadata_observer_client_receiver,
+        mojo::PendingRemote<::content::mojom::RenderFrameMetadataObserver> render_frame_metadata_observer) override;
 };
 
 class RenderCompositorFrameSinkImpl : public viz::mojom::CompositorFrameSink,
@@ -171,8 +171,8 @@ class RenderCompositorFrameSinkImpl : public viz::mojom::CompositorFrameSink,
 
     RenderFrameSinkProviderImpl& d_context;
 
-    mojo::Binding<viz::mojom::CompositorFrameSink> d_binding;
-    viz::mojom::CompositorFrameSinkClientPtr d_client;
+    mojo::Receiver<viz::mojom::CompositorFrameSink> d_binding; //d_receiver
+    mojo::Remote<viz::mojom::CompositorFrameSinkClient> d_client;
 
     viz::FrameSinkId d_frame_sink_id;
 
@@ -186,7 +186,7 @@ class RenderCompositorFrameSinkImpl : public viz::mojom::CompositorFrameSink,
     bool d_added_frame_observer = false;
     bool d_client_wants_animate_only_begin_frames = false;
     std::vector<viz::ReturnedResource> d_resources_to_reclaim;
-    base::flat_map<uint32_t, gfx::PresentationFeedback> d_presentation_feedbacks;
+    base::flat_map<uint32_t, viz::FrameTimingDetails> d_presentation_feedbacks;
 
     void UpdateNeedsBeginFrameSource();
     void UpdateVSyncParameters(base::TimeTicks timebase, base::TimeDelta interval);
@@ -206,8 +206,8 @@ class RenderCompositorFrameSinkImpl : public viz::mojom::CompositorFrameSink,
         uint64_t submit_time,
         const SubmitCompositorFrameSyncCallback callback) override;
     void DidNotProduceFrame(const viz::BeginFrameAck& ack) override;
-    void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
-                                 const viz::SharedBitmapId& id) override;
+    void DidAllocateSharedBitmap(base::ReadOnlySharedMemoryRegion region,
+                                 const gpu::Mailbox& id) override;
     void DidDeleteSharedBitmap(const viz::SharedBitmapId& id) override;
 
     // viz::HostFrameSinkClient overrides:
@@ -221,10 +221,9 @@ class RenderCompositorFrameSinkImpl : public viz::mojom::CompositorFrameSink,
     void SetTreeActivationCallback(base::RepeatingClosure callback) override {}
     void DidReceiveCompositorFrameAck() override;
     void DidPresentCompositorFrame(
-        uint32_t presentation_token,
-        const gfx::PresentationFeedback& feedback) override;
+        uint32_t frame_token,
+      const viz::FrameTimingDetails& details) override;
     void DidLoseLayerTreeFrameSink() override {}
-    void DidNotNeedBeginFrame() override {}
     void OnDraw(const gfx::Transform& transform,
                 const gfx::Rect& viewport,
                 bool resourceless_software_draw,
@@ -249,8 +248,8 @@ public:
         scoped_refptr<base::SingleThreadTaskRunner> task_runner,
         gfx::Size size,
         bool visible,
-        viz::mojom::CompositorFrameSinkRequest compositor_frame_sink_request,
-        viz::mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client);
+        mojo::PendingReceiver<::viz::mojom::CompositorFrameSink> compositor_frame_sink_receiver,
+        mojo::PendingRemote<::viz::mojom::CompositorFrameSinkClient> compositor_frame_sink_client);
     ~RenderCompositorFrameSinkImpl() override;
 
     void SetVisible(bool visible);
@@ -301,14 +300,14 @@ RenderCompositorFactory::~RenderCompositorFactory()
             std::move(d_frame_sink_provider));
 }
 
-void RenderCompositorFactory::Bind(content::mojom::FrameSinkProviderRequest request)
+void RenderCompositorFactory::Bind(mojo::PendingReceiver<content::mojom::FrameSinkProvider> receiver)
 {
     d_compositor_task_runner->
         PostTask(
             FROM_HERE,
             base::BindOnce(&RenderFrameSinkProviderImpl::Bind,
                 base::Unretained(d_frame_sink_provider.get()),
-                std::move(request)));
+                std::move(receiver)));
 }
 
 void RenderCompositorFactory::Unbind()
@@ -431,13 +430,10 @@ RenderFrameSinkProviderImpl::RenderFrameSinkProviderImpl()
     content::RenderThreadImpl *render_thread =
         content::RenderThreadImpl::current();
 
-    d_main_task_runner = base::MessageLoopCurrent::Get()->task_runner();
+    d_main_task_runner = base::ThreadTaskRunnerHandle::Get();
     d_compositor_task_runner = render_thread->compositor_task_runner();
 
-    render_thread->GetConnector()->
-        BindInterface(
-            content::RenderThreadImpl::current_blink_platform_impl()->GetBrowserServiceName(),
-            mojo::MakeRequest(&d_default_frame_sink_provider));
+    render_thread->BindHostReceiver(d_default_frame_sink_provider.BindNewPipeAndPassReceiver());
 }
 
 RenderFrameSinkProviderImpl::~RenderFrameSinkProviderImpl()
@@ -463,14 +459,14 @@ void RenderFrameSinkProviderImpl::Init(
     d_software_output_device_backing = std::make_unique<viz::OutputDeviceBacking>();
 }
 
-void RenderFrameSinkProviderImpl::Bind(content::mojom::FrameSinkProviderRequest request)
+void RenderFrameSinkProviderImpl::Bind(mojo::PendingReceiver<content::mojom::FrameSinkProvider> receiver)
 {
-    d_binding.Bind(std::move(request), d_compositor_task_runner);
+    d_binding.Bind(std::move(receiver), d_compositor_task_runner);
 }
 
 void RenderFrameSinkProviderImpl::Unbind()
 {
-    d_binding.Close();
+    d_binding.reset();
 }
 
 void RenderFrameSinkProviderImpl::RegisterCompositor(
@@ -523,8 +519,8 @@ void RenderFrameSinkProviderImpl::ResizeCompositor(int32_t widget_id, gfx::Size 
 
 void RenderFrameSinkProviderImpl::CreateForWidget(
     int32_t widget_id,
-    viz::mojom::CompositorFrameSinkRequest compositor_frame_sink_request,
-    viz::mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client)
+    mojo::PendingReceiver<::viz::mojom::CompositorFrameSink> compositor_frame_sink_receiver,
+    mojo::PendingRemote<::viz::mojom::CompositorFrameSinkClient> compositor_frame_sink_client)
 {
     d_main_task_runner->
         PostTask(
@@ -536,14 +532,14 @@ void RenderFrameSinkProviderImpl::CreateForWidget(
                     &RenderFrameSinkProviderImpl::CreateForWidgetOnCompositor,
                     base::Unretained(this),
                     widget_id,
-                    std::move(compositor_frame_sink_request),
+                    std::move(compositor_frame_sink_receiver),
                     std::move(compositor_frame_sink_client))));
 }
 
 void RenderFrameSinkProviderImpl::RegisterRenderFrameMetadataObserver(
     int32_t widget_id,
-    content::mojom::RenderFrameMetadataObserverClientRequest render_frame_metadata_observer_client_request,
-    content::mojom::RenderFrameMetadataObserverPtr observer)
+    mojo::PendingReceiver<::content::mojom::RenderFrameMetadataObserverClient> render_frame_metadata_observer_client_receiver,
+    mojo::PendingRemote<::content::mojom::RenderFrameMetadataObserver> render_frame_metadata_observer)
 {
 }
 
@@ -565,8 +561,8 @@ void RenderFrameSinkProviderImpl::EstablishGpuChannelSyncOnMain(
 
 void RenderFrameSinkProviderImpl::CreateForWidgetOnCompositor(
     int32_t widget_id,
-    viz::mojom::CompositorFrameSinkRequest compositor_frame_sink_request,
-    viz::mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client,
+    mojo::PendingReceiver<::viz::mojom::CompositorFrameSink> compositor_frame_sink_receiver,
+    mojo::PendingRemote<::viz::mojom::CompositorFrameSinkClient> compositor_frame_sink_client,
     scoped_refptr<gpu::GpuChannelHost> gpu_channel)
 {
     auto it = d_compositor_data.find(widget_id);
@@ -578,7 +574,7 @@ void RenderFrameSinkProviderImpl::CreateForWidgetOnCompositor(
                     &RenderFrameSinkProviderImpl::DelegateToDefaultFrameSinkProviderOnMain,
                     base::Unretained(this),
                     widget_id,
-                    std::move(compositor_frame_sink_request),
+                    std::move(compositor_frame_sink_receiver),
                     std::move(compositor_frame_sink_client)));
         return;
     }
@@ -609,7 +605,7 @@ void RenderFrameSinkProviderImpl::CreateForWidgetOnCompositor(
             attributes.enable_gles2_interface          = support_gles2_interface;
             attributes.enable_raster_interface         = support_raster_interface;
 
-            d_worker_context_provider = new ws::ContextProviderCommandBuffer(
+            d_worker_context_provider = new viz::ContextProviderCommandBuffer(
                 d_gpu_channel,
                 d_gpu_memory_buffer_manager,
                 content::kGpuStreamIdDefault,
@@ -621,7 +617,7 @@ void RenderFrameSinkProviderImpl::CreateForWidgetOnCompositor(
                 support_grcontext,
                 gpu::SharedMemoryLimits(),
                 attributes,
-                ws::command_buffer_metrics::ContextType::RENDER_WORKER);
+                viz::command_buffer_metrics::ContextType::RENDER_WORKER);
 
             if (d_worker_context_provider->BindToCurrentThread()
                     != gpu::ContextResult::kSuccess) {
@@ -641,18 +637,18 @@ void RenderFrameSinkProviderImpl::CreateForWidgetOnCompositor(
             d_compositor_task_runner,
             it->second.size,
             it->second.visible,
-            std::move(compositor_frame_sink_request),
+            std::move(compositor_frame_sink_receiver),
             std::move(compositor_frame_sink_client));
 }
 
 void RenderFrameSinkProviderImpl::DelegateToDefaultFrameSinkProviderOnMain(
-        int32_t widget_id,
-        viz::mojom::CompositorFrameSinkRequest compositor_frame_sink_request,
-        viz::mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client)
+    int32_t widget_id,
+    mojo::PendingReceiver<::viz::mojom::CompositorFrameSink> compositor_frame_sink_receiver,
+    mojo::PendingRemote<::viz::mojom::CompositorFrameSinkClient> compositor_frame_sink_client)
 {
     d_default_frame_sink_provider->CreateForWidget(
         widget_id,
-        std::move(compositor_frame_sink_request),
+        std::move(compositor_frame_sink_receiver),
         std::move(compositor_frame_sink_client));
 }
 
@@ -664,14 +660,12 @@ RenderCompositorFrameSinkImpl::RenderCompositorFrameSinkImpl(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     gfx::Size size,
     bool visible,
-    viz::mojom::CompositorFrameSinkRequest compositor_frame_sink_request,
-    viz::mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client)
+    mojo::PendingReceiver<::viz::mojom::CompositorFrameSink> compositor_frame_sink_receiver,
+    mojo::PendingRemote<::viz::mojom::CompositorFrameSinkClient> compositor_frame_sink_client)
 : d_context(context)
-, d_binding(this)
+, d_binding(this, std::move(compositor_frame_sink_receiver))
+, d_client(std::move(compositor_frame_sink_client))
 {
-    d_binding.Bind(std::move(compositor_frame_sink_request), task_runner);
-    d_client = std::move(compositor_frame_sink_client);
-
     d_frame_sink_id = d_context.frame_sink_id_allocator()->NextFrameSinkId();
     d_context.host_frame_sink_manager()->RegisterFrameSinkId(
         d_frame_sink_id, this, viz::ReportFirstSurfaceActivation::kNo);
@@ -687,12 +681,12 @@ RenderCompositorFrameSinkImpl::RenderCompositorFrameSinkImpl(
         d_begin_frame_source.get(), d_frame_sink_id);
 
     //
-    scoped_refptr<ws::ContextProviderCommandBuffer> worker_context_provider =
+    scoped_refptr<viz::ContextProviderCommandBuffer> worker_context_provider =
         gpu_channel                          ?
         d_context.worker_context_provider() :
         nullptr;
 
-    scoped_refptr<ws::ContextProviderCommandBuffer> context_provider;
+    scoped_refptr<viz::ContextProviderCommandBuffer> context_provider;
 
     if (worker_context_provider) {
         constexpr bool automatic_flushes = false;
@@ -713,7 +707,7 @@ RenderCompositorFrameSinkImpl::RenderCompositorFrameSinkImpl(
         attributes.enable_gles2_interface          = support_gles2_interface;
         attributes.enable_raster_interface         = support_raster_interface;
 
-        context_provider = new ws::ContextProviderCommandBuffer(
+        context_provider = new viz::ContextProviderCommandBuffer(
             gpu_channel,
             d_context.gpu_memory_buffer_manager(),
             content::kGpuStreamIdDefault,
@@ -725,7 +719,7 @@ RenderCompositorFrameSinkImpl::RenderCompositorFrameSinkImpl(
             support_grcontext,
             gpu::SharedMemoryLimits(),
             attributes,
-            ws::command_buffer_metrics::ContextType::BROWSER_COMPOSITOR);
+            viz::command_buffer_metrics::ContextType::BROWSER_COMPOSITOR);
 
         if (context_provider->BindToCurrentThread()
                 != gpu::ContextResult::kSuccess) {
@@ -784,8 +778,7 @@ RenderCompositorFrameSinkImpl::RenderCompositorFrameSinkImpl(
             context_provider,
             worker_context_provider,
             task_runner,
-            d_context.gpu_memory_buffer_manager(),
-            false);
+            d_context.gpu_memory_buffer_manager());
 
     d_layer_tree_frame_sink->BindToClient(this);
 }
@@ -886,10 +879,10 @@ void RenderCompositorFrameSinkImpl::DidNotProduceFrame(const viz::BeginFrameAck&
 }
 
 void RenderCompositorFrameSinkImpl::DidAllocateSharedBitmap(
-    mojo::ScopedSharedBufferHandle buffer,
-    const viz::SharedBitmapId& id)
+    base::ReadOnlySharedMemoryRegion region,
+    const gpu::Mailbox& id)
 {
-    d_layer_tree_frame_sink->DidAllocateSharedBitmap(std::move(buffer), id);
+    d_layer_tree_frame_sink->DidAllocateSharedBitmap(std::move(region), id);
 }
 
 void RenderCompositorFrameSinkImpl::DidDeleteSharedBitmap(const viz::SharedBitmapId& id)
@@ -923,10 +916,10 @@ void RenderCompositorFrameSinkImpl::DidReceiveCompositorFrameAck()
 }
 
 void RenderCompositorFrameSinkImpl::DidPresentCompositorFrame(
-    uint32_t presentation_token,
-    const gfx::PresentationFeedback& feedback)
+    uint32_t frame_token,
+    const viz::FrameTimingDetails& details)
 {
-    d_presentation_feedbacks.insert({ presentation_token, feedback });
+    d_presentation_feedbacks.insert({ frame_token, details });
 }
 
 void RenderCompositorFrameSinkImpl::OnBeginFrame(const viz::BeginFrameArgs& args)
