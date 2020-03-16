@@ -83,9 +83,7 @@ void ContentRendererClientImpl::RenderThreadStarted()
     if (!d_spellcheck) {
         d_spellcheck.reset(new SpellCheck(this));
     }
-}
 
-void ContentRendererClientImpl::RenderThreadStarted() {
     d_browser_interface_broker = blink::Platform::Current()->GetBrowserInterfaceBroker();
 }
 
