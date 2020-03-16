@@ -95,8 +95,7 @@ class ContentRendererClientImpl : public content::ContentRendererClient,
 
     bool Dispatch(IPC::Message *msg) override;
 
-    bool BindFrameSinkProvider(
-        content::mojom::FrameSinkProviderRequest request) override;
+    bool ShouldBindFrameSinkProvider() override;
 
 
     blink::ThreadSafeBrowserInterfaceBrokerProxy* GetInterfaceBroker() const;

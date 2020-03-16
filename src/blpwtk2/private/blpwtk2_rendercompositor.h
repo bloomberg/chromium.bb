@@ -66,7 +66,7 @@ class RenderCompositorFactory {
 
     ~RenderCompositorFactory();
 
-    void Bind(content::mojom::FrameSinkProviderRequest request);
+    void Bind(mojo::PendingReceiver<content::mojom::FrameSinkProvider> receiver);
     void Unbind();
 
     std::unique_ptr<RenderCompositor> CreateCompositor(

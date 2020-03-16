@@ -309,6 +309,7 @@ class RenderWebView final : public WebView
                                       bool up,
                                       bool down) override {}
     void FallbackCursorModeSetCursorVisibility(bool visible) override {}
+    gfx::Size GetRootWidgetViewportSize() override;
 
     // content::InputRouterImplClient overrides:
     content::mojom::WidgetInputHandler* GetWidgetInputHandler() override;
@@ -340,12 +341,11 @@ class RenderWebView final : public WebView
 
     // ui::internal::InputMethodDelegate overrides:
     ui::EventDispatchDetails DispatchKeyEventPostIME(
-        ui::KeyEvent* key_event,
-        DispatchKeyEventPostIMECallback ack_callback) override;
+        ui::KeyEvent* key_event) override;
 
     // ui::TextInputClient overrides:
     void SetCompositionText(const ui::CompositionText& composition) override;
-    void ConfirmCompositionText() override;
+    void ConfirmCompositionText(bool keep_selection) override;
     void ClearCompositionText() override;
     void InsertText(const base::string16& text) override;
     void InsertChar(const ui::KeyEvent& event) override;
@@ -411,7 +411,8 @@ class RenderWebView final : public WebView
     // Mouse locking:
     void OnLockMouse(
         bool user_gesture,
-        bool privileged);
+        bool privileged,
+        bool request_unadjusted_movement);
     void OnUnlockMouse();
 
     // Cursor:
@@ -492,7 +493,7 @@ class RenderWebView final : public WebView
     void showTooltip();
     void hideTooltip();
     void updateTooltip();
-    void onSessionChange(WPARAM status_code);
+    void onSessionChange(WPARAM status_code, const bool* is_current_session);
     void forceRedrawWindow(int attempts);
 
 #if defined(BLPWTK2_FEATURE_RUBBERBAND)
