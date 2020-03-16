@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "absl/types/span.h"
+#include "cast/streaming/bandwidth_estimator.h"
 #include "cast/streaming/environment.h"
 #include "cast/streaming/ssrc.h"
 #include "platform/api/time.h"
@@ -37,10 +38,8 @@ namespace cast {
 // packets can be sent together as one larger transmission unit, and this can be
 // critical for good performance over shared-medium networks (such as 802.11
 // WiFi). https://en.wikipedia.org/wiki/Frame-bursting
-//
-// TODO(crbug.com/openscreen/55): Implement bandwidth estimator for congestion
-// control in soon-upcoming CL.
-class SenderPacketRouter : public Environment::PacketConsumer {
+class SenderPacketRouter : public BandwidthEstimator,
+                           public Environment::PacketConsumer {
  public:
   class Sender {
    public:

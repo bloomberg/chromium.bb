@@ -85,6 +85,8 @@ source_set("receiver") {
 
 source_set("sender") {
   sources = [
+    "bandwidth_estimator.cc",
+    "bandwidth_estimator.h",
     "compound_rtcp_parser.cc",
     "compound_rtcp_parser.h",
     "rtp_packetizer.cc",
@@ -107,6 +109,7 @@ source_set("unittests") {
 
   sources = [
     "answer_messages_unittest.cc",
+    "bandwidth_estimator_unittest.cc",
     "compound_rtcp_builder_unittest.cc",
     "compound_rtcp_parser_unittest.cc",
     "expanded_value_base_unittest.cc",

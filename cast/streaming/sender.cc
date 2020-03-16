@@ -165,9 +165,6 @@ Sender::EnqueueFrameResult Sender::EnqueueFrame(const EncodedFrame& frame) {
     packet_router_->RequestRtcpSend(rtcp_session_.receiver_ssrc());
   }
 
-  // TODO(crbug.com/openscreen/55): Report the "flight plan" to the bandwidth
-  // estimator (when congestion control is implemented in a soon-upcoming CL).
-
   // Re-activate RTP sending if it was suspended.
   packet_router_->RequestRtpSend(rtcp_session_.receiver_ssrc());
 
@@ -177,9 +174,11 @@ Sender::EnqueueFrameResult Sender::EnqueueFrame(const EncodedFrame& frame) {
 void Sender::OnReceivedRtcpPacket(Clock::time_point arrival_time,
                                   absl::Span<const uint8_t> packet) {
   rtcp_packet_arrival_time_ = arrival_time;
-  // This will invoke zero or more of the OnReceiverXYZ() methods in the current
-  // call stack:
-  rtcp_parser_.Parse(packet, last_enqueued_frame_id_);
+  // This call to Parse() invoke zero or more of the OnReceiverXYZ() methods in
+  // the current call stack:
+  if (rtcp_parser_.Parse(packet, last_enqueued_frame_id_)) {
+    packet_router_->OnRtcpReceived(arrival_time, round_trip_time_);
+  }
 }
 
 absl::Span<uint8_t> Sender::GetRtcpPacketForImmediateSend(
@@ -520,8 +519,8 @@ void Sender::CancelPendingFrame(FrameId frame_id) {
     return;  // Frame was already canceled.
   }
 
-  // TODO(crbug.com/openscreen/55): Record the "Frame ACK" to the bandwidth
-  // estimator (when congestion control is implemented in a soon-upcoming CL).
+  packet_router_->OnPayloadReceived(
+      slot->frame->data.size(), rtcp_packet_arrival_time_, round_trip_time_);
 
   slot->frame.reset();
   OSP_DCHECK_GT(num_frames_in_flight_, 0);

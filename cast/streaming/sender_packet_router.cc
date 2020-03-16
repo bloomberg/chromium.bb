@@ -5,6 +5,7 @@
 #include "cast/streaming/sender_packet_router.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "cast/streaming/constants.h"
 #include "cast/streaming/packet_util.h"
@@ -31,7 +32,10 @@ SenderPacketRouter::SenderPacketRouter(Environment* environment,
 SenderPacketRouter::SenderPacketRouter(Environment* environment,
                                        int max_packets_per_burst,
                                        milliseconds burst_interval)
-    : environment_(environment),
+    : BandwidthEstimator(max_packets_per_burst,
+                         burst_interval,
+                         environment->now()),
+      environment_(environment),
       packet_buffer_size_(environment->GetMaxPacketSize()),
       packet_buffer_(new uint8_t[packet_buffer_size_]),
       max_packets_per_burst_(max_packets_per_burst),
@@ -162,9 +166,8 @@ void SenderPacketRouter::SendBurstOfPackets() {
       burst_time, max_packets_per_burst_ - num_rtcp_packets_sent);
   last_burst_time_ = burst_time;
 
-  // TODO(crbug.com/openscreen/55): Provide bandwidth estimator with metrics in
-  // a soon-upcoming CL.
-  (void)num_rtp_packets_sent;
+  BandwidthEstimator::OnBurstComplete(
+      num_rtcp_packets_sent + num_rtp_packets_sent, burst_time);
 
   ScheduleNextBurst();
 }

@@ -151,9 +151,13 @@ class LoopingFileSender final : public SimulatedAudioCapturer::Client,
       const auto seconds_part = duration_cast<seconds>(elapsed);
       const auto millis_part =
           duration_cast<milliseconds>(elapsed - seconds_part);
-      fprintf(stdout, "At %01" PRId64 ".%03ds in file.\r",
+      const int bandwidth_kbps =
+          std::max(packet_router_.ComputeNetworkBandwidth() / 1024, 0);
+      fprintf(stdout,
+              "At %01" PRId64
+              ".%03ds in file (est. network bandwidth: %d kbps).          \r",
               static_cast<int64_t>(seconds_part.count()),
-              static_cast<int>(millis_part.count()));
+              static_cast<int>(millis_part.count()), bandwidth_kbps);
       fflush(stdout);
       last_console_update_ = capture_time;
     }
