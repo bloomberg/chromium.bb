@@ -437,6 +437,7 @@
 
 == vmrvc_android_pfq ==
   master-vmrvc-android-pfq
+    eve-arc-r-vmrvc-android-pfq
     hatch-arc-r-vmrvc-android-pfq
 
 == tryjob ==
@@ -793,6 +794,7 @@
   eve-arc-r-payloads-tryjob
   eve-arc-r-release-tryjob
   eve-arc-r-unittest-stress
+  eve-arc-r-vmrvc-android-pfq-tryjob
   eve-arcnext-full-tryjob
   eve-arcnext-llvm-next-toolchain-tryjob
   eve-arcnext-llvm-toolchain-tryjob
@@ -1567,6 +1569,7 @@
   master-vmpi-android-pfq-tryjob
     eve-arcvm-mesa-virgl-next-vmpi-android-pfq-tryjob
   master-vmrvc-android-pfq-tryjob
+    eve-arc-r-vmrvc-android-pfq-tryjob
     hatch-arc-r-vmrvc-android-pfq-tryjob
   mistral-factory-mistral-12361.B-factorybranch-tryjob
   mistral-full-tryjob
