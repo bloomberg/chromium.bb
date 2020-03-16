@@ -40,6 +40,7 @@
 #include "client/linux/handler/exception_handler.h"
 #include "client/linux/handler/microdump_extra_info.h"
 #include "client/linux/microdump_writer/microdump_writer.h"
+#include "common/linux/breakpad_getcontext.h"
 #include "common/linux/eintr_wrapper.h"
 #include "common/linux/ignore_ret.h"
 #include "common/scoped_ptr.h"

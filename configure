@@ -650,6 +650,8 @@ LINUX_HOST_FALSE
 LINUX_HOST_TRUE
 WARN_CXXFLAGS
 HAVE_CXX11
+HAVE_GETCONTEXT_FALSE
+HAVE_GETCONTEXT_TRUE
 PTHREAD_CFLAGS
 PTHREAD_LIBS
 PTHREAD_CC
@@ -6650,7 +6652,7 @@ fi
 
 done
 
-for ac_func in arc4random getrandom
+for ac_func in arc4random getcontext getrandom
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -6661,6 +6663,14 @@ _ACEOF
 
 fi
 done
+
+ if test "x$ac_cv_func_getcontext" = xyes; then
+  HAVE_GETCONTEXT_TRUE=
+  HAVE_GETCONTEXT_FALSE='#'
+else
+  HAVE_GETCONTEXT_TRUE='#'
+  HAVE_GETCONTEXT_FALSE=
+fi
 
 
 
@@ -7858,6 +7868,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${am__fastdepCXX_TRUE}" && test -z "${am__fastdepCXX_FALSE}"; then
   as_fn_error $? "conditional \"am__fastdepCXX\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_GETCONTEXT_TRUE}" && test -z "${HAVE_GETCONTEXT_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_GETCONTEXT\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LINUX_HOST_TRUE}" && test -z "${LINUX_HOST_FALSE}"; then

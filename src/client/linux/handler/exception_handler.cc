@@ -87,6 +87,7 @@
 #include <vector>
 
 #include "common/basictypes.h"
+#include "common/linux/breakpad_getcontext.h"
 #include "common/linux/linux_libc_support.h"
 #include "common/memory_allocator.h"
 #include "client/linux/log/log.h"

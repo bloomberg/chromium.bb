@@ -73,7 +73,8 @@ AC_HEADER_STDC
 AC_SYS_LARGEFILE
 AX_PTHREAD
 AC_CHECK_HEADERS([a.out.h sys/random.h])
-AC_CHECK_FUNCS([arc4random getrandom])
+AC_CHECK_FUNCS([arc4random getcontext getrandom])
+AM_CONDITIONAL([HAVE_GETCONTEXT], [test "x$ac_cv_func_getcontext" = xyes])
 
 AX_CXX_COMPILE_STDCXX(11, noext, mandatory)
 

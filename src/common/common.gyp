@@ -33,7 +33,13 @@
         'defines': ['HAVE_MACH_O_NLIST_H'],
       }],
       ['OS=="linux"', {
-        'defines': ['HAVE_A_OUT_H'],
+        # Assume glibc.
+        'defines': ['HAVE_A_OUT_H', 'HAVE_GETCONTEXT'],
+        'sources!': [
+          'linux/breakpad_getcontext.S',
+          'linux/breakpad_getcontext.h',
+          'linux/breakpad_getcontext_unittest.cc',
+        ],
       }],
       ['OS!="android"', {'sources/': [['exclude', '(^|/)android/']]}],
       ['OS!="linux"', {'sources/': [['exclude', '(^|/)linux/']]}],
@@ -47,13 +53,11 @@
       'target_name': 'common',
       'type': 'static_library',
       'sources': [
-        'android/breakpad_getcontext.S',
         'android/include/elf.h',
         'android/include/link.h',
         'android/include/stab.h',
         'android/include/sys/procfs.h',
         'android/include/sys/user.h',
-        'android/include/ucontext.h',
         'android/testing/include/wchar.h',
         'android/testing/mkdtemp.h',
         'android/testing/pthread_fixes.h',
@@ -87,6 +91,8 @@
         'dwarf_line_to_module.h',
         'language.cc',
         'language.h',
+        'linux/breakpad_getcontext.S',
+        'linux/breakpad_getcontext.h',
         'linux/crc32.cc',
         'linux/crc32.h',
         'linux/dump_symbols.cc',
@@ -201,7 +207,6 @@
       'target_name': 'common_unittests',
       'type': 'executable',
       'sources': [
-        'android/breakpad_getcontext_unittest.cc',
         'byte_cursor_unittest.cc',
         'dwarf/bytereader_unittest.cc',
         'dwarf/dwarf2diehandler_unittest.cc',
@@ -210,6 +215,7 @@
         'dwarf_cfi_to_module_unittest.cc',
         'dwarf_cu_to_module_unittest.cc',
         'dwarf_line_to_module_unittest.cc',
+        'linux/breakpad_getcontext_unittest.cc',
         'linux/dump_symbols_unittest.cc',
         'linux/elf_core_dump_unittest.cc',
         'linux/elf_symbols_to_module_unittest.cc',
