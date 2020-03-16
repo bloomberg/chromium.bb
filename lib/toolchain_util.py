@@ -456,6 +456,14 @@ def _GetBenchmarkAFDOName(buildroot, board):
   arch = portage_util.PortageqEnvvar('ARCH', board=board, allow_undefined=True)
   afdo_spec = {'package': cpv.package, 'arch': arch, 'version': cpv.version}
   afdo_file = CHROME_BENCHMARK_AFDO_FILE % afdo_spec
+  try:
+    _ParseBenchmarkProfileName(afdo_file)
+  except ProfilesNameHelperError:
+    # We want to avoid uploading a profile with an unparsable name. There's no
+    # reason to upload a profile with unparsable name because no builds can
+    # use it anyway. See crbug.com/1048725 for such instances.
+    raise ValueError(
+        'Invalid to use %s as AFDO name because of unparsable' % afdo_file)
   return afdo_file
 
 
