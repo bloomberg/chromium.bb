@@ -262,3 +262,10 @@ D. Local Modifications
 12. Enable tracing of file but not resource, only for Chromium
     to reduce performance impact/risk.
   - patches/restrace.patch
+
+13. Patch tracing of BreakIterator/BreakEngine creation
+  - patches/breakiteratortrace.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-20991
+  - upstream PR:
+    https://github.com/unicode-org/icu/pull/1014

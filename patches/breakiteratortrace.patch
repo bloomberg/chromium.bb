@@ -1,0 +1,278 @@
+diff --git a/source/common/brkiter.cpp b/source/common/brkiter.cpp
+index 3d1366a6..b9b6ca65 100644
+--- a/source/common/brkiter.cpp
++++ b/source/common/brkiter.cpp
+@@ -38,6 +38,7 @@
+ #include "uresimp.h"
+ #include "uassert.h"
+ #include "ubrkimpl.h"
++#include "utracimp.h"
+ #include "charstr.h"
+ 
+ // *****************************************************************************
+@@ -412,14 +413,23 @@ BreakIterator::makeInstance(const Locale& loc, int32_t kind, UErrorCode& status)
+     BreakIterator *result = NULL;
+     switch (kind) {
+     case UBRK_CHARACTER:
+-        result = BreakIterator::buildInstance(loc, "grapheme", status);
++        {
++            UTRACE_ENTRY(UTRACE_UBRK_CREATE_CHARACTER);
++            result = BreakIterator::buildInstance(loc, "grapheme", status);
++            UTRACE_EXIT_STATUS(status);
++        }
+         break;
+     case UBRK_WORD:
+-        result = BreakIterator::buildInstance(loc, "word", status);
++        {
++            UTRACE_ENTRY(UTRACE_UBRK_CREATE_WORD);
++            result = BreakIterator::buildInstance(loc, "word", status);
++            UTRACE_EXIT_STATUS(status);
++        }
+         break;
+     case UBRK_LINE:
+-        uprv_strcpy(lbType, "line");
+         {
++            UTRACE_ENTRY(UTRACE_UBRK_CREATE_LINE);
++            uprv_strcpy(lbType, "line");
+             char lbKeyValue[kKeyValueLenMax] = {0};
+             UErrorCode kvStatus = U_ZERO_ERROR;
+             int32_t kLen = loc.getKeywordValue("lb", lbKeyValue, kKeyValueLenMax, kvStatus);
+@@ -427,13 +437,17 @@ BreakIterator::makeInstance(const Locale& loc, int32_t kind, UErrorCode& status)
+                 uprv_strcat(lbType, "_");
+                 uprv_strcat(lbType, lbKeyValue);
+             }
++            result = BreakIterator::buildInstance(loc, lbType, status);
++
++            UTRACE_DATA1(UTRACE_INFO, "lb=%s", lbKeyValue);
++            UTRACE_EXIT_STATUS(status);
+         }
+-        result = BreakIterator::buildInstance(loc, lbType, status);
+         break;
+     case UBRK_SENTENCE:
+-        result = BreakIterator::buildInstance(loc, "sentence", status);
+-#if !UCONFIG_NO_FILTERED_BREAK_ITERATION
+         {
++            UTRACE_ENTRY(UTRACE_UBRK_CREATE_SENTENCE);
++            result = BreakIterator::buildInstance(loc, "sentence", status);
++#if !UCONFIG_NO_FILTERED_BREAK_ITERATION
+             char ssKeyValue[kKeyValueLenMax] = {0};
+             UErrorCode kvStatus = U_ZERO_ERROR;
+             int32_t kLen = loc.getKeywordValue("ss", ssKeyValue, kKeyValueLenMax, kvStatus);
+@@ -444,11 +458,16 @@ BreakIterator::makeInstance(const Locale& loc, int32_t kind, UErrorCode& status)
+                     delete fbiBuilder;
+                 }
+             }
+-        }
+ #endif
++            UTRACE_EXIT_STATUS(status);
++        }
+         break;
+     case UBRK_TITLE:
+-        result = BreakIterator::buildInstance(loc, "title", status);
++        {
++            UTRACE_ENTRY(UTRACE_UBRK_CREATE_TITLE);
++            result = BreakIterator::buildInstance(loc, "title", status);
++            UTRACE_EXIT_STATUS(status);
++        }
+         break;
+     default:
+         status = U_ILLEGAL_ARGUMENT_ERROR;
+diff --git a/source/common/dictbe.cpp b/source/common/dictbe.cpp
+index 41fb5929..ce6c97a8 100644
+--- a/source/common/dictbe.cpp
++++ b/source/common/dictbe.cpp
+@@ -18,6 +18,7 @@
+ #include "unicode/uniset.h"
+ #include "unicode/chariter.h"
+ #include "unicode/ubrk.h"
++#include "utracimp.h"
+ #include "uvectr32.h"
+ #include "uvector.h"
+ #include "uassert.h"
+@@ -194,6 +195,8 @@ ThaiBreakEngine::ThaiBreakEngine(DictionaryMatcher *adoptDictionary, UErrorCode
+     : DictionaryBreakEngine(),
+       fDictionary(adoptDictionary)
+ {
++    UTRACE_ENTRY(UTRACE_UBRK_CREATE_BREAK_ENGINE);
++    UTRACE_DATA1(UTRACE_INFO, "dictbe=%s", "Thai");
+     fThaiWordSet.applyPattern(UNICODE_STRING_SIMPLE("[[:Thai:]&[:LineBreak=SA:]]"), status);
+     if (U_SUCCESS(status)) {
+         setCharacters(fThaiWordSet);
+@@ -213,6 +216,7 @@ ThaiBreakEngine::ThaiBreakEngine(DictionaryMatcher *adoptDictionary, UErrorCode
+     fEndWordSet.compact();
+     fBeginWordSet.compact();
+     fSuffixSet.compact();
++    UTRACE_EXIT_STATUS(status);
+ }
+ 
+ ThaiBreakEngine::~ThaiBreakEngine() {
+@@ -436,6 +440,8 @@ LaoBreakEngine::LaoBreakEngine(DictionaryMatcher *adoptDictionary, UErrorCode &s
+     : DictionaryBreakEngine(),
+       fDictionary(adoptDictionary)
+ {
++    UTRACE_ENTRY(UTRACE_UBRK_CREATE_BREAK_ENGINE);
++    UTRACE_DATA1(UTRACE_INFO, "dictbe=%s", "Laoo");
+     fLaoWordSet.applyPattern(UNICODE_STRING_SIMPLE("[[:Laoo:]&[:LineBreak=SA:]]"), status);
+     if (U_SUCCESS(status)) {
+         setCharacters(fLaoWordSet);
+@@ -452,6 +458,7 @@ LaoBreakEngine::LaoBreakEngine(DictionaryMatcher *adoptDictionary, UErrorCode &s
+     fMarkSet.compact();
+     fEndWordSet.compact();
+     fBeginWordSet.compact();
++    UTRACE_EXIT_STATUS(status);
+ }
+ 
+ LaoBreakEngine::~LaoBreakEngine() {
+@@ -632,6 +639,8 @@ BurmeseBreakEngine::BurmeseBreakEngine(DictionaryMatcher *adoptDictionary, UErro
+     : DictionaryBreakEngine(),
+       fDictionary(adoptDictionary)
+ {
++    UTRACE_ENTRY(UTRACE_UBRK_CREATE_BREAK_ENGINE);
++    UTRACE_DATA1(UTRACE_INFO, "dictbe=%s", "Mymr");
+     fBurmeseWordSet.applyPattern(UNICODE_STRING_SIMPLE("[[:Mymr:]&[:LineBreak=SA:]]"), status);
+     if (U_SUCCESS(status)) {
+         setCharacters(fBurmeseWordSet);
+@@ -645,6 +654,7 @@ BurmeseBreakEngine::BurmeseBreakEngine(DictionaryMatcher *adoptDictionary, UErro
+     fMarkSet.compact();
+     fEndWordSet.compact();
+     fBeginWordSet.compact();
++    UTRACE_EXIT_STATUS(status);
+ }
+ 
+ BurmeseBreakEngine::~BurmeseBreakEngine() {
+@@ -825,6 +835,8 @@ KhmerBreakEngine::KhmerBreakEngine(DictionaryMatcher *adoptDictionary, UErrorCod
+     : DictionaryBreakEngine(),
+       fDictionary(adoptDictionary)
+ {
++    UTRACE_ENTRY(UTRACE_UBRK_CREATE_BREAK_ENGINE);
++    UTRACE_DATA1(UTRACE_INFO, "dictbe=%s", "Khmr");
+     fKhmerWordSet.applyPattern(UNICODE_STRING_SIMPLE("[[:Khmr:]&[:LineBreak=SA:]]"), status);
+     if (U_SUCCESS(status)) {
+         setCharacters(fKhmerWordSet);
+@@ -850,6 +862,7 @@ KhmerBreakEngine::KhmerBreakEngine(DictionaryMatcher *adoptDictionary, UErrorCod
+     fEndWordSet.compact();
+     fBeginWordSet.compact();
+ //    fSuffixSet.compact();
++    UTRACE_EXIT_STATUS(status);
+ }
+ 
+ KhmerBreakEngine::~KhmerBreakEngine() {
+@@ -1045,6 +1058,8 @@ foundBest:
+ static const uint32_t kuint32max = 0xFFFFFFFF;
+ CjkBreakEngine::CjkBreakEngine(DictionaryMatcher *adoptDictionary, LanguageType type, UErrorCode &status)
+ : DictionaryBreakEngine(), fDictionary(adoptDictionary) {
++    UTRACE_ENTRY(UTRACE_UBRK_CREATE_BREAK_ENGINE);
++    UTRACE_DATA1(UTRACE_INFO, "dictbe=%s", "Hani");
+     // Korean dictionary only includes Hangul syllables
+     fHangulWordSet.applyPattern(UNICODE_STRING_SIMPLE("[\\uac00-\\ud7a3]"), status);
+     fHanWordSet.applyPattern(UNICODE_STRING_SIMPLE("[:Han:]"), status);
+@@ -1066,6 +1081,7 @@ CjkBreakEngine::CjkBreakEngine(DictionaryMatcher *adoptDictionary, LanguageType
+             setCharacters(cjSet);
+         }
+     }
++    UTRACE_EXIT_STATUS(status);
+ }
+ 
+ CjkBreakEngine::~CjkBreakEngine(){
+diff --git a/source/common/rbbi.cpp b/source/common/rbbi.cpp
+index 01dae48d..d0e9dc1c 100644
+--- a/source/common/rbbi.cpp
++++ b/source/common/rbbi.cpp
+@@ -1111,7 +1111,7 @@ static icu::UInitOnce gRBBIInitOnce = U_INITONCE_INITIALIZER;
+  * Release all static memory held by breakiterator.
+  */
+ U_CDECL_BEGIN
+-static UBool U_CALLCONV rbbi_cleanup(void) {
++UBool U_CALLCONV rbbi_cleanup(void) {
+     delete gLanguageBreakFactories;
+     gLanguageBreakFactories = nullptr;
+     delete gEmptyString;
+diff --git a/source/common/rbbidata.h b/source/common/rbbidata.h
+index b7de6ce0..7b9b8d82 100644
+--- a/source/common/rbbidata.h
++++ b/source/common/rbbidata.h
+@@ -192,6 +192,8 @@ private:
+ 
+ U_NAMESPACE_END
+ 
++U_CFUNC UBool rbbi_cleanup(void);
++
+ #endif /* C++ */
+ 
+ #endif
+diff --git a/source/common/unicode/utrace.h b/source/common/unicode/utrace.h
+index 5afcd9f4..5b4a0497 100644
+--- a/source/common/unicode/utrace.h
++++ b/source/common/unicode/utrace.h
+@@ -177,6 +177,71 @@ typedef enum UTraceFunctionNumber {
+     UTRACE_RES_DATA_LIMIT,
+ #endif  // U_HIDE_INTERNAL_API
+ 
++#ifndef U_HIDE_DRAFT_API
++    /**
++     * The lowest break iterator location.
++     * @draft ICU 67
++     */
++    UTRACE_UBRK_START=0x4000,
++
++    /**
++     * Indicates that a character instance of break iterator was created.
++     *
++     * @draft ICU 67
++     */
++    UTRACE_UBRK_CREATE_CHARACTER = UTRACE_UBRK_START,
++
++    /**
++     * Indicates that a word instance of break iterator was created.
++     *
++     * @draft ICU 67
++     */
++    UTRACE_UBRK_CREATE_WORD,
++
++    /**
++     * Indicates that a line instance of break iterator was created.
++     *
++     * Provides one C-style string to UTraceData: the lb value ("",
++     * "loose", "strict", or "normal").
++     *
++     * @draft ICU 67
++     */
++    UTRACE_UBRK_CREATE_LINE,
++
++    /**
++     * Indicates that a sentence instance of break iterator was created.
++     *
++     * @draft ICU 67
++     */
++    UTRACE_UBRK_CREATE_SENTENCE,
++
++    /**
++     * Indicates that a title instance of break iterator was created.
++     *
++     * @draft ICU 67
++     */
++    UTRACE_UBRK_CREATE_TITLE,
++
++    /**
++     * Indicates that an internal dictionary break engine was created.
++     *
++     * Provides one C-style string to UTraceData: the script code of what
++     * the break engine cover ("Hani", "Khmr", "Laoo", "Mymr", or "Thai").
++     *
++     * @draft ICU 67
++     */
++    UTRACE_UBRK_CREATE_BREAK_ENGINE,
++
++#endif  // U_HIDE_DRAFT_API
++
++#ifndef U_HIDE_INTERNAL_API
++    /**
++     * One more than the highest normal break iterator trace location.
++     * @internal The numeric value may change over time, see ICU ticket #12420.
++     */
++    UTRACE_UBRK_LIMIT,
++#endif  // U_HIDE_INTERNAL_API
++
+ } UTraceFunctionNumber;
+ 
+ /**
