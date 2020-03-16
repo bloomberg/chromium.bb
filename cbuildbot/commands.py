@@ -896,7 +896,7 @@ def RunUnitTests(buildroot,
                  extra_env=None,
                  build_stage=True,
                  chroot_args=None):
-  cmd = ['cros_run_unit_tests', '--board=%s' % board]
+  cmd = ['cros_run_unit_tests', '--board=%s' % board, '--jobs=10']
 
   if blacklist:
     cmd += ['--blacklist_packages=%s' % ' '.join(blacklist)]

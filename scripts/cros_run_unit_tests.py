@@ -65,6 +65,12 @@ def ParseArgs(argv):
                            'packages that could be installed on target board '
                            'without assuming that any packages have actually '
                            'been merged yet.')
+  parser.add_argument(
+      '-j',
+      '--jobs',
+      type=int,
+      default=multiprocessing.cpu_count(),
+      help='The limit for the number of possible concurrent jobs.')
 
   options = parser.parse_args(argv)
   options.Freeze()
@@ -146,8 +152,8 @@ def main(argv):
       return 1
 
   try:
-    chroot_util.RunUnittests(sysroot, pkg_with_test, extra_env=env,
-                             jobs=min(10, multiprocessing.cpu_count()))
+    chroot_util.RunUnittests(
+        sysroot, pkg_with_test, extra_env=env, jobs=opts.jobs)
   except cros_build_lib.RunCommandError:
     logging.error('Unittests failed.')
     return 1

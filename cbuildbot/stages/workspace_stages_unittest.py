@@ -764,7 +764,7 @@ class WorkspaceUnitTestStageTest(WorkspaceStageBase):
         [
             mock.call(
                 ['/mnt/host/source/chromite/bin/cros_run_unit_tests',
-                 '--board=board'],
+                 '--board=board', '--jobs=10'],
                 enter_chroot=True,
                 chroot_args=['--cache-dir', '/cache'],
                 extra_env={'USE': '-cros-debug chrome_internal'},
