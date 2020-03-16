@@ -714,8 +714,15 @@ int av1_handle_inter_intra_mode(const AV1_COMP *const cpi, MACROBLOCK *const x,
                                         mask, bw, &tmp_rate_mv, 0);
       if (mbmi->mv[0].as_int != tmp_mv.as_int) {
         mbmi->mv[0].as_int = tmp_mv.as_int;
+        // Set ref_frame[1] to NONE_FRAME temporarily so that the intra
+        // predictor is not calculated again in av1_enc_build_inter_predictor().
+        mbmi->ref_frame[1] = NONE_FRAME;
         av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, orig_dst, bsize,
                                       AOM_PLANE_Y, AOM_PLANE_Y);
+        mbmi->ref_frame[1] = INTRA_FRAME;
+        av1_combine_interintra(xd, bsize, 0, xd->plane[AOM_PLANE_Y].dst.buf,
+                               xd->plane[AOM_PLANE_Y].dst.stride, intrapred,
+                               bw);
         model_rd_sb_fn[MODELRD_TYPE_MASKED_COMPOUND](
             cpi, bsize, x, xd, 0, 0, &rate_sum, &dist_sum, &skip_txfm_sb,
             &skip_sse_sb, NULL, NULL, NULL);
