@@ -34,8 +34,8 @@ void ConvolveInit_SSE4_1();
 // optimization being enabled, signal the sse4 implementation should be used.
 #if LIBGAV1_ENABLE_SSE4_1
 
-#ifndef LIBGAV1_Dsp8bpp_Convolve2D
-// #define LIBGAV1_Dsp8bpp_Convolve2D LIBGAV1_CPU_SSE4_1
+#ifndef LIBGAV1_Dsp8bpp_ConvolveCompoundCopy
+#define LIBGAV1_Dsp8bpp_ConvolveCompoundCopy LIBGAV1_CPU_SSE4_1
 #endif
 
 #endif  // LIBGAV1_ENABLE_SSE4_1
