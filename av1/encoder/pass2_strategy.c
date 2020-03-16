@@ -2051,101 +2051,64 @@ static int get_projected_kf_boost(AV1_COMP *cpi) {
   return projected_kf_boost;
 }
 
-static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
-  RATE_CONTROL *const rc = &cpi->rc;
+static int define_kf_interval(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
+                              double *kf_group_err,
+                              int num_frames_to_detect_scenecut) {
   TWO_PASS *const twopass = &cpi->twopass;
-  GF_GROUP *const gf_group = &cpi->gf_group;
-  FRAME_INFO *const frame_info = &cpi->frame_info;
-  AV1_COMMON *const cm = &cpi->common;
-  CurrentFrame *const current_frame = &cm->current_frame;
+  RATE_CONTROL *const rc = &cpi->rc;
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
-  const FIRSTPASS_STATS first_frame = *this_frame;
-  FIRSTPASS_STATS next_frame;
-  FIRSTPASS_STATS last_frame;
-  av1_zero(next_frame);
-
-  rc->frames_since_key = 0;
-
-  // Reset the GF group data structures.
-  av1_zero(*gf_group);
-
-  // Clear the alt ref active flag and last group multi arf flags as they
-  // can never be set for a key frame.
-  rc->source_alt_ref_active = 0;
-
-  // KF is always a GF so clear frames till next gf counter.
-  rc->frames_till_gf_update_due = 0;
-  rc->intervals_till_gf_calculate_due = 0;
-
-  rc->frames_to_key = 1;
-
-  int num_frames_to_app_forced_key = detect_app_forced_key(cpi);
-
-  if (has_no_stats_stage(cpi)) {
-    rc->this_key_frame_forced =
-        current_frame->frame_number != 0 && rc->frames_to_key == 0;
-    if (num_frames_to_app_forced_key != -1)
-      rc->frames_to_key = num_frames_to_app_forced_key;
-    else
-      rc->frames_to_key = AOMMAX(1, cpi->oxcf.key_freq);
-    correct_frames_to_key(cpi);
-    rc->kf_boost = DEFAULT_KF_BOOST;
-    rc->source_alt_ref_active = 0;
-    gf_group->update_type[0] = KF_UPDATE;
-    return;
-  }
-  int i, j;
-  const FIRSTPASS_STATS *const start_position = twopass->stats_in;
-  int kf_bits = 0;
-  double decay_accumulator = 1.0;
-  double zero_motion_accumulator = 1.0;
-  double boost_score = 0.0;
-  double kf_raw_err = 0.0;
-  double kf_mod_err = 0.0;
-  double kf_group_err = 0.0;
   double recent_loop_decay[FRAMES_TO_CHECK_DECAY];
-  double sr_accumulator = 0.0;
-  int num_frames_to_check = cpi->oxcf.key_freq;
+  FIRSTPASS_STATS last_frame;
+  double decay_accumulator = 1.0;
+  int i = 0, j;
+  int frames_to_key = 1;
+  int frames_since_key = rc->frames_since_key + 1;
+  FRAME_INFO *const frame_info = &cpi->frame_info;
+  int num_stats_used_for_kf_boost = 1;
+  int scenecut_detected = 0;
 
-  rc->num_stats_used_for_kf_boost = 1;
-  // Is this a forced key frame by interval.
-  rc->this_key_frame_forced = rc->next_key_frame_forced;
+  int num_frames_to_next_key = detect_app_forced_key(cpi);
 
-  twopass->kf_group_bits = 0;        // Total bits available to kf group
-  twopass->kf_group_error_left = 0;  // Group modified error score.
+  if (num_frames_to_detect_scenecut == 0) {
+    if (num_frames_to_next_key != -1)
+      return num_frames_to_next_key;
+    else
+      return rc->frames_to_key;
+  }
 
-  kf_raw_err = this_frame->intra_error;
-  kf_mod_err = calculate_modified_err(frame_info, twopass, oxcf, this_frame);
+  if (num_frames_to_next_key != -1)
+    num_frames_to_detect_scenecut =
+        AOMMIN(num_frames_to_detect_scenecut, num_frames_to_next_key);
 
   // Initialize the decay rates for the recent frames to check
   for (j = 0; j < FRAMES_TO_CHECK_DECAY; ++j) recent_loop_decay[j] = 1.0;
 
-  if (num_frames_to_app_forced_key != -1)
-    num_frames_to_check = num_frames_to_app_forced_key;
-  // Find the next keyframe.
   i = 0;
   while (twopass->stats_in < twopass->stats_buf_ctx->stats_in_end &&
-         rc->frames_to_key < num_frames_to_check) {
+         frames_to_key < num_frames_to_detect_scenecut) {
     // Accumulate total number of stats available till next key frame
-    rc->num_stats_used_for_kf_boost++;
+    num_stats_used_for_kf_boost++;
 
     // Accumulate kf group error.
-    kf_group_err +=
-        calculate_modified_err(frame_info, twopass, oxcf, this_frame);
+    if (kf_group_err != NULL)
+      *kf_group_err +=
+          calculate_modified_err(frame_info, twopass, oxcf, this_frame);
 
     // Load the next frame's stats.
     last_frame = *this_frame;
     input_stats(twopass, this_frame);
 
     // Provided that we are not at the end of the file...
-    if (cpi->oxcf.auto_key &&
+    if (cpi->rc.enable_scenecut_detection && cpi->oxcf.auto_key &&
         twopass->stats_in < twopass->stats_buf_ctx->stats_in_end) {
       double loop_decay_rate;
 
       // Check for a scene cut.
       if (test_candidate_kf(twopass, &last_frame, this_frame, twopass->stats_in,
-                            rc->frames_to_key, oxcf->rc_mode))
+                            frames_since_key, oxcf->rc_mode)) {
+        scenecut_detected = 1;
         break;
+      }
 
       // How fast is the prediction quality decaying?
       loop_decay_rate =
@@ -2162,32 +2125,102 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
       // Special check for transition or high motion followed by a
       // static scene.
       if (detect_transition_to_still(cpi, i, cpi->oxcf.key_freq - i,
-                                     loop_decay_rate, decay_accumulator))
+                                     loop_decay_rate, decay_accumulator)) {
+        scenecut_detected = 1;
         break;
+      }
 
       // Step on to the next frame.
-      ++rc->frames_to_key;
+      ++frames_to_key;
+      ++frames_since_key;
 
       // If we don't have a real key frame within the next two
       // key_freq intervals then break out of the loop.
-      if (rc->frames_to_key >= 2 * cpi->oxcf.key_freq) break;
+      if (frames_to_key >= 2 * cpi->oxcf.key_freq) break;
     } else {
-      ++rc->frames_to_key;
+      ++frames_to_key;
+      ++frames_since_key;
     }
     ++i;
   }
 
-  /*
-   * When lap_enabled forcing frames_to_key as key_freq,
-   * since all frame stats are not available.
-   */
-  if (cpi->lap_enabled) {
+  if (kf_group_err != NULL)
+    rc->num_stats_used_for_kf_boost = num_stats_used_for_kf_boost;
+
+  if (cpi->lap_enabled && !scenecut_detected)
+    frames_to_key = num_frames_to_next_key;
+
+  return frames_to_key;
+}
+
+static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
+  RATE_CONTROL *const rc = &cpi->rc;
+  TWO_PASS *const twopass = &cpi->twopass;
+  GF_GROUP *const gf_group = &cpi->gf_group;
+  FRAME_INFO *const frame_info = &cpi->frame_info;
+  AV1_COMMON *const cm = &cpi->common;
+  CurrentFrame *const current_frame = &cm->current_frame;
+  const AV1EncoderConfig *const oxcf = &cpi->oxcf;
+  const FIRSTPASS_STATS first_frame = *this_frame;
+  FIRSTPASS_STATS next_frame;
+  av1_zero(next_frame);
+
+  rc->frames_since_key = 0;
+
+  // Reset the GF group data structures.
+  av1_zero(*gf_group);
+
+  // Clear the alt ref active flag and last group multi arf flags as they
+  // can never be set for a key frame.
+  rc->source_alt_ref_active = 0;
+
+  // KF is always a GF so clear frames till next gf counter.
+  rc->frames_till_gf_update_due = 0;
+
+  rc->frames_to_key = 1;
+
+  if (has_no_stats_stage(cpi)) {
+    int num_frames_to_app_forced_key = detect_app_forced_key(cpi);
+    rc->this_key_frame_forced =
+        current_frame->frame_number != 0 && rc->frames_to_key == 0;
     if (num_frames_to_app_forced_key != -1)
       rc->frames_to_key = num_frames_to_app_forced_key;
     else
       rc->frames_to_key = AOMMAX(1, cpi->oxcf.key_freq);
     correct_frames_to_key(cpi);
+    rc->kf_boost = DEFAULT_KF_BOOST;
+    rc->source_alt_ref_active = 0;
+    gf_group->update_type[0] = KF_UPDATE;
+    return;
   }
+  int i;
+  const FIRSTPASS_STATS *const start_position = twopass->stats_in;
+  int kf_bits = 0;
+  double zero_motion_accumulator = 1.0;
+  double boost_score = 0.0;
+  double kf_raw_err = 0.0;
+  double kf_mod_err = 0.0;
+  double kf_group_err = 0.0;
+  double sr_accumulator = 0.0;
+  int frames_to_key;
+  // Is this a forced key frame by interval.
+  rc->this_key_frame_forced = rc->next_key_frame_forced;
+
+  twopass->kf_group_bits = 0;        // Total bits available to kf group
+  twopass->kf_group_error_left = 0;  // Group modified error score.
+
+  kf_raw_err = this_frame->intra_error;
+  kf_mod_err = calculate_modified_err(frame_info, twopass, oxcf, this_frame);
+
+  frames_to_key =
+      define_kf_interval(cpi, this_frame, &kf_group_err, oxcf->key_freq);
+
+  if (frames_to_key != -1)
+    rc->frames_to_key = AOMMIN(oxcf->key_freq, frames_to_key);
+  else
+    rc->frames_to_key = oxcf->key_freq;
+
+  if (cpi->lap_enabled) correct_frames_to_key(cpi);
 
   // If there is a max kf interval set by the user we must obey it.
   // We already breakout of the loop above at 2x max.
@@ -2539,11 +2572,22 @@ void av1_get_second_pass_params(AV1_COMP *cpi,
   if (rc->frames_till_gf_update_due == 0) {
     assert(cpi->common.current_frame.frame_number == 0 ||
            gf_group->index == gf_group->size);
-    int num_frames_to_app_forced_key = detect_app_forced_key(cpi);
-    if (num_frames_to_app_forced_key != -1)
-      rc->frames_to_key = num_frames_to_app_forced_key;
+    const FIRSTPASS_STATS *const start_position = twopass->stats_in;
+    int num_frames_to_detect_scenecut, frames_to_key;
+    if (cpi->lap_enabled && cpi->rc.enable_scenecut_detection)
+      num_frames_to_detect_scenecut = MAX_GF_LENGTH_LAP + 1;
+    else
+      num_frames_to_detect_scenecut = 0;
+    frames_to_key = define_kf_interval(cpi, &this_frame, NULL,
+                                       num_frames_to_detect_scenecut);
+    reset_fpf_position(twopass, start_position);
+    if (frames_to_key != -1)
+      rc->frames_to_key = AOMMIN(rc->frames_to_key, frames_to_key);
 
-    int max_gop_length = (cpi->oxcf.lag_in_frames >= 32) ? MAX_GF_INTERVAL : 16;
+    int max_gop_length = (cpi->oxcf.lag_in_frames >= 32 &&
+                          is_stat_consumption_stage_twopass(cpi))
+                             ? MAX_GF_INTERVAL
+                             : MAX_GF_LENGTH_LAP;
     if (rc->intervals_till_gf_calculate_due == 0) {
       calculate_gf_length(cpi, max_gop_length, MAX_NUM_GF_INTERVALS);
     }
@@ -2567,7 +2611,6 @@ void av1_get_second_pass_params(AV1_COMP *cpi,
       }
     }
     define_gf_group(cpi, &this_frame, frame_params, max_gop_length, 1);
-
     rc->frames_till_gf_update_due = rc->baseline_gf_interval;
     cpi->num_gf_group_show_frames = 0;
     assert(gf_group->index == 0);

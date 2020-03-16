@@ -47,6 +47,7 @@ extern "C" {
 #define MIN_GF_INTERVAL 4
 #define MAX_GF_INTERVAL 32
 #define FIXED_GF_INTERVAL 8  // Used in some testing modes only
+#define MAX_GF_LENGTH_LAP 16
 
 #define MAX_NUM_GF_INTERVALS 15
 
@@ -184,6 +185,7 @@ typedef struct {
   // Total number of stats required by gfu_boost calculation.
   int num_stats_required_for_gfu_boost;
   int next_is_fwd_key;
+  int enable_scenecut_detection;
 } RATE_CONTROL;
 
 struct AV1_COMP;

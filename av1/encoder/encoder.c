@@ -2993,6 +2993,10 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf, BufferPool *const pool,
 
   av1_rc_init(&cpi->oxcf, oxcf->pass, &cpi->rc);
 
+  cpi->rc.enable_scenecut_detection = 1;
+  if (cpi->lap_enabled &&
+      (num_lap_buffers < (MAX_GF_LENGTH_LAP + SCENE_CUT_KEY_TEST_INTERVAL + 1)))
+    cpi->rc.enable_scenecut_detection = 0;
   init_frame_info(&cpi->frame_info, cm);
 
   cm->current_frame.frame_number = 0;
