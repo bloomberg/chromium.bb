@@ -55,6 +55,7 @@ from __future__ import print_function
 
 import argparse
 import errno
+import fnmatch
 import os
 import sys
 
@@ -163,13 +164,17 @@ def ReadTargets(log, show_all):
     return targets_dict.values()
 
 
-def GetExtension(target):
+def GetExtension(target, extra_patterns):
   """Return the file extension that best represents a target.
 
   For targets that generate multiple outputs it is important to return a
   consistent 'canonical' extension. Ultimately the goal is to group build steps
   by type."""
   for output in target.targets:
+    if extra_patterns:
+      for fn_pattern in extra_patterns.split(';'):
+        if fnmatch.fnmatch(output, '*' + fn_pattern + '*'):
+          return fn_pattern
     # Not a true extension, but a good grouping.
     if output.endswith('type_mappings'):
       extension = 'type_mappings'
@@ -196,7 +201,7 @@ def GetExtension(target):
   return extension
 
 
-def SummarizeEntries(entries):
+def SummarizeEntries(entries, extra_step_types):
     """Print a summary of the passed in list of Target objects."""
 
     # Create a list that is in order by time stamp and has entries for the
@@ -273,7 +278,7 @@ def SummarizeEntries(entries):
     weighted_time_by_ext = {}
     # Scan through all of the targets to build up per-extension statistics.
     for target in entries:
-      extension = GetExtension(target)
+      extension = GetExtension(target, extra_step_types)
       time_by_ext[extension] = time_by_ext.get(extension, 0) + target.Duration()
       weighted_time_by_ext[extension] = weighted_time_by_ext.get(extension,
               0) + target.WeightedDuration()
@@ -301,6 +306,10 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-C', dest='build_directory',
                         help='Build directory.')
+    parser.add_argument(
+        '-s',
+        '--step-types',
+        help='semicolon separated fnmatch patterns for build-step grouping')
     parser.add_argument('--log-file',
                         help="specific ninja log file to analyze.")
     args, _extra_args = parser.parse_known_args()
@@ -308,11 +317,20 @@ def main():
         log_file = os.path.join(args.build_directory, log_file)
     if args.log_file:
         log_file = args.log_file
+    if not args.step_types:
+      # Offer a convenient way to add extra step types automatically, including
+      # when this script is run by autoninja. get() returns None if the variable
+      # isn't set.
+      args.step_types = os.environ.get('chromium_step_types')
+    if args.step_types:
+      # Make room for the extra build types.
+      global long_ext_count
+      long_ext_count += len(args.step_types.split(';'))
 
     try:
       with open(log_file, 'r') as log:
         entries = ReadTargets(log, False)
-        SummarizeEntries(entries)
+        SummarizeEntries(entries, args.step_types)
     except IOError:
       print('Log file %r not found, no build summary created.' % log_file)
       return errno.ENOENT
