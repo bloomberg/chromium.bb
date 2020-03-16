@@ -1768,19 +1768,13 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       if (inter_mv_mode == this_mode || comp_pred) continue;
       if (mode_checked[inter_mv_mode][ref_frame] &&
           frame_mv[this_mode][ref_frame].as_int ==
-              frame_mv[inter_mv_mode][ref_frame].as_int &&
-          frame_mv[inter_mv_mode][ref_frame].as_int == 0) {
+              frame_mv[inter_mv_mode][ref_frame].as_int) {
         skip_this_mv = 1;
         break;
       }
     }
 
     if (skip_this_mv) continue;
-
-    if (this_mode != NEARESTMV && !comp_pred &&
-        frame_mv[this_mode][ref_frame].as_int ==
-            frame_mv[NEARESTMV][ref_frame].as_int)
-      continue;
 
     mi->mode = this_mode;
     mi->mv[0].as_int = frame_mv[this_mode][ref_frame].as_int;
