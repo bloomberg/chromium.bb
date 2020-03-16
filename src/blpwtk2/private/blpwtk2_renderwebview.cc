@@ -184,15 +184,12 @@ RenderWebView::RenderWebView(ProfileImpl              *profile,
         new content::InputRouterImpl(
             this, this, this, content::InputRouter::Config()));
 
-    content::mojom::WidgetInputHandlerHostPtr input_handler_host_ptr;
-    auto widgetInputHandlerHostRequest = mojo::MakeRequest(&input_handler_host_ptr);
-
+    mojo::PendingRemote<content::mojom::WidgetInputHandlerHost> input_handler_host;
     content::RenderWidget::FromRoutingID(routingId)->
         SetupWidgetInputHandler(
-            mojo::MakeRequest(&d_widgetInputHandler), std::move(input_handler_host_ptr));
+            mojo::MakeRequest(&d_widgetInputHandler), std::move(input_handler_host));
 
-    d_inputRouterImpl->BindHost(
-        std::move(widgetInputHandlerHostRequest), true);
+    d_inputRouterImpl->BindNewFrameHost();
 
     updateFocus();
 
@@ -792,33 +789,15 @@ void RenderWebView::updateGeometry()
 
     content::VisualProperties params = {};
     params.new_size = size;
-    params.compositor_viewport_pixel_size = size;
+    params.compositor_viewport_pixel_rect = d_geometry;
     params.visible_viewport_size = size;
-    params.display_mode = blink::kWebDisplayModeBrowser;
+    params.display_mode = blink::mojom::DisplayMode::kBrowser;
     params.local_surface_id_allocation = d_compositor->GetLocalSurfaceIdAllocation();
     GetNativeViewScreenInfo(&params.screen_info, d_hwnd.get());
 
-    // `WidgetMsg_SynchronizeVisualProperties` is ignored most of the time,
-    // but needs to be allowed here:
-    content::RenderViewImpl *rv =
-            content::RenderViewImpl::FromRoutingID(d_renderViewRoutingId);
-
-    if (rv) {
-        content::RenderWidget *rw = rv->GetWidget();
-
-        rw->bbIgnoreSynchronizeVisualPropertiesIPC(false);
-
-        dispatchToRenderWidget(
-                WidgetMsg_SynchronizeVisualProperties(d_renderWidgetRoutingId,
-                    params));
-
-        rw->bbIgnoreSynchronizeVisualPropertiesIPC(true);
-    }
-    else {
-        dispatchToRenderWidget(
-                WidgetMsg_SynchronizeVisualProperties(d_renderWidgetRoutingId,
-                    params));
-    }
+    dispatchToRenderWidget(
+            WidgetMsg_UpdateVisualProperties(d_renderWidgetRoutingId,
+                params));
 }
 
 void RenderWebView::updateFocus()
@@ -1011,7 +990,7 @@ void RenderWebView::updateTooltip()
     }
 }
 
-void RenderWebView::onSessionChange(WPARAM status_code)
+void RenderWebView::onSessionChange(WPARAM status_code, const bool* is_current_session)
 {
     // Direct3D presents are ignored while the screen is locked, so force the
     // window to be redrawn on unlock.
@@ -1067,7 +1046,7 @@ void RenderWebView::destroy()
     d_pendingDestroy = true;
     d_delegate = nullptr;
 
-    base::MessageLoopCurrent::Get()->task_runner()->DeleteSoon(FROM_HERE, this);
+    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
 WebFrame *RenderWebView::mainFrame()
@@ -1585,9 +1564,6 @@ void RenderWebView::notifyRoutingId(int id)
 
     d_renderViewObserver = new RenderViewObserver(rv, this);
 
-    // Ignore `WidgetMsg_SynchronizeVisualProperties` sent from the browser:
-    rv->GetWidget()->bbIgnoreSynchronizeVisualPropertiesIPC(true);
-
     // Create a RenderCompositor that is associated with this
     // content::RenderWidget:
     d_compositor = RenderCompositorFactory::GetInstance()->CreateCompositor(
@@ -1618,14 +1594,11 @@ void RenderWebView::notifyRoutingId(int id)
         new content::InputRouterImpl(
             this, this, this, content::InputRouter::Config()));
 
-    content::mojom::WidgetInputHandlerHostPtr input_handler_host_ptr;
-    auto widgetInputHandlerHostRequest = mojo::MakeRequest(&input_handler_host_ptr);
-
+    mojo::PendingRemote<content::mojom::WidgetInputHandlerHost> input_handler_host;
     rv->GetWidget()->SetupWidgetInputHandler(
-        mojo::MakeRequest(&d_widgetInputHandler), std::move(input_handler_host_ptr));
+        mojo::MakeRequest(&d_widgetInputHandler), std::move(input_handler_host));
 
-    d_inputRouterImpl->BindHost(
-        std::move(widgetInputHandlerHostRequest), true);
+    d_inputRouterImpl->BindNewFrameHost();
 
     updateFocus();
 
@@ -1708,6 +1681,10 @@ bool RenderWebView::IsAutoscrollInProgress()
     return false;
 }
 
+gfx::Size RenderWebView::GetRootWidgetViewportSize()
+{
+  return d_geometry.size();
+}
 
 // content::InputRouterImplClient overrides:
 content::mojom::WidgetInputHandler* RenderWebView::GetWidgetInputHandler()
@@ -1736,8 +1713,7 @@ bool RenderWebView::NeedsBeginFrameForFlingProgress()
 
 // ui::internal::InputMethodDelegate overrides:
 ui::EventDispatchDetails RenderWebView::DispatchKeyEventPostIME(
-    ui::KeyEvent* key_event,
-    DispatchKeyEventPostIMECallback ack_callback)
+    ui::KeyEvent* key_event)
 {
     if (!key_event->handled()) {
         if (d_inputRouterImpl) {
@@ -1749,7 +1725,6 @@ ui::EventDispatchDetails RenderWebView::DispatchKeyEventPostIME(
                     &RenderWebView::onKeyboardEventAck,
                     base::Unretained(this)));
         }
-        RunDispatchKeyEventPostIMECallback(key_event, std::move(ack_callback));
     }
 
     return ui::EventDispatchDetails();
@@ -1768,8 +1743,14 @@ void RenderWebView::SetCompositionText(const ui::CompositionText& composition)
     d_hasCompositionText = !composition.text.empty();
 }
 
-void RenderWebView::ConfirmCompositionText()
+void RenderWebView::ConfirmCompositionText(bool keep_selection)
 {
+    // TODO Modify this function so that when keep_selection is
+    // true, the selection is not changed when text committed
+    if (keep_selection) {
+        NOTIMPLEMENTED_LOG_ONCE();
+    }
+
     if (d_hasCompositionText) {
         d_widgetInputHandler->
             ImeFinishComposingText(false);
@@ -2093,7 +2074,8 @@ void RenderWebView::DragSourceSystemEnded()
 // IPC message handlers:
 void RenderWebView::OnLockMouse(
     bool user_gesture,
-    bool privileged)
+    bool privileged,
+    bool request_unadjusted_movement)
 {
     if (GetCapture() != d_hwnd.get()) {
         SetCapture(d_hwnd.get());
@@ -2120,7 +2102,7 @@ void RenderWebView::OnSetCursor(const content::WebCursor& cursor)
 
         HCURSOR platformCursor = NULL;
 
-        if (d_currentCursor.info().type != blink::WebCursorInfo::kTypeCustom) {
+        if (d_currentCursor.info().type != ui::CursorType::kCustom) {
             auto native_cursor = d_currentCursor.GetNativeCursor();
             d_cursorLoader->SetPlatformCursor(&native_cursor);
 
@@ -2235,7 +2217,7 @@ void RenderWebView::OnStartDragging(
     const gfx::Vector2d& bitmap_offset_in_dip,
     const content::DragEventSourceInfo& event_info)
 {
-    base::MessageLoopCurrent::Get()->task_runner()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&RenderWebView::onStartDraggingImpl,
             base::Unretained(this),
