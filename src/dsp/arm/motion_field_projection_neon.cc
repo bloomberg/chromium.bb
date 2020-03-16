@@ -92,9 +92,9 @@ inline int16x8_t MvProjectionClip(const int16x8_t mv, int numerator,
   return vmaxq_s16(clamp, vnegq_s16(projection_mv_clamp));
 }
 
-inline void GetMvProjectionNoClamp(const int32x4_t mv[2], int numerator,
-                                   const int16x8_t denominator,
-                                   int16x8_t projection_mv[2]) {
+inline void GetMvProjection(const int32x4_t mv[2], int numerator,
+                            const int16x8_t denominator,
+                            int16x8_t projection_mv[2]) {
   const int16x8_t mv0 = vreinterpretq_s16_s32(mv[0]);
   const int16x8_t mv1 = vreinterpretq_s16_s32(mv[1]);
   // Deinterlace
@@ -121,8 +121,7 @@ void GetPosition(const int8x8x4_t division_table[2],
   mvs[0] = vld1q_s32(mv_int + 0);
   mvs[1] = vld1q_s32(mv_int + 4);
   // reference_to_current_with_sign could be 0.
-  GetMvProjectionNoClamp(mvs, reference_to_current_with_sign, denorm,
-                         projection_mv);
+  GetMvProjection(mvs, reference_to_current_with_sign, denorm, projection_mv);
   // Do not update the motion vector if the block position is not valid or
   // if position_x8 is outside the current range of x8_start and x8_end.
   // Note that position_y8 will always be within the range of y8_start and
@@ -381,8 +380,8 @@ void MotionFieldProjectionKernel_NEON(
               reference_offsets[source_reference_type[x8]];
           MotionVector projection_mv;
           // reference_to_current_with_sign could be 0.
-          GetMvProjectionNoClamp(mv[x8], reference_to_current_with_sign,
-                                 reference_offset, &projection_mv);
+          GetMvProjection(mv[x8], reference_to_current_with_sign,
+                          reference_offset, &projection_mv);
           // Do not update the motion vector if the block position is not valid
           // or if position_x8 is outside the current range of x8_start and
           // x8_end. Note that position_y8 will always be within the range of

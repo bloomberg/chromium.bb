@@ -56,21 +56,6 @@ void LowerMvPrecision(const ObuFrameHeader& frame_header,
   }
 }
 
-// 7.9.3.
-void GetMvProjection(const MotionVector& mv, int numerator, int denominator,
-                     MotionVector* const projection_mv) {
-  assert(denominator > 0);
-  assert(denominator <= kMaxFrameDistance);
-  numerator = Clip3(numerator, -kMaxFrameDistance, kMaxFrameDistance);
-  for (int i = 0; i < 2; ++i) {
-    projection_mv->mv[i] = Clip3(
-        RightShiftWithRoundingSigned(
-            mv.mv[i] * numerator * kProjectionMvDivisionLookup[denominator],
-            14),
-        -kProjectionMvClamp, kProjectionMvClamp);
-  }
-}
-
 // 7.10.2.1.
 void SetupGlobalMv(const Tile::Block& block, int index,
                    MotionVector* const mv) {
@@ -498,15 +483,19 @@ void TemporalScan(const Tile::Block& block, bool is_compound,
   if (count != 0) {
     BlockParameters* const bp = block.bp;
     int reference_offsets[2];
-    reference_offsets[0] = GetRelativeDistance(
+    const int offset_0 = GetRelativeDistance(
         tile.frame_header().order_hint,
         tile.current_frame().order_hint(bp->reference_frame[0]),
         tile.sequence_header().order_hint_shift_bits);
+    reference_offsets[0] =
+        Clip3(offset_0, -kMaxFrameDistance, kMaxFrameDistance);
     if (is_compound) {
-      reference_offsets[1] = GetRelativeDistance(
+      const int offset_1 = GetRelativeDistance(
           tile.frame_header().order_hint,
           tile.current_frame().order_hint(bp->reference_frame[1]),
           tile.sequence_header().order_hint_shift_bits);
+      reference_offsets[1] =
+          Clip3(offset_1, -kMaxFrameDistance, kMaxFrameDistance);
     }
     AddTemporalReferenceMvCandidate(
         tile.frame_header(), reference_offsets, temporal_mvs,

@@ -399,9 +399,8 @@ inline int GetRelativeDistance(const unsigned int a, const unsigned int b,
 constexpr int ApplySign(int value, int sign) { return (value ^ sign) - sign; }
 
 // 7.9.3. (without the clamp for numerator and denominator).
-inline void GetMvProjectionNoClamp(const MotionVector& mv, int numerator,
-                                   int denominator,
-                                   MotionVector* projection_mv) {
+inline void GetMvProjection(const MotionVector& mv, int numerator,
+                            int denominator, MotionVector* projection_mv) {
   // Allow numerator and denominator to be 0 so that this function can be called
   // unconditionally. When either numerator or denominator is 0, |projection_mv|
   // will be 0, and this is what we want.

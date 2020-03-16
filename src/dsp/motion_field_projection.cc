@@ -80,8 +80,8 @@ void MotionFieldProjectionKernel_C(
       const int reference_offset = reference_offsets[source_reference_type[x8]];
       MotionVector projection_mv;
       // reference_to_current_with_sign could be 0.
-      GetMvProjectionNoClamp(mv[x8], reference_to_current_with_sign,
-                             reference_offset, &projection_mv);
+      GetMvProjection(mv[x8], reference_to_current_with_sign, reference_offset,
+                      &projection_mv);
       // Do not update the motion vector if the block position is not valid or
       // if position_x8 is outside the current range of x8_start and x8_end.
       // Note that position_y8 will always be within the range of y8_start and
