@@ -79,7 +79,7 @@ typedef struct {
 
 typedef struct {
   partition_variance part_variances;
-  v64x64 split[4];
+  v64x64 *split;
 } v128x128;
 
 typedef struct {
@@ -642,11 +642,14 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
   unsigned int y_sad = UINT_MAX;
   unsigned int y_sad_g = UINT_MAX;
   BLOCK_SIZE bsize = is_small_sb ? BLOCK_64X64 : BLOCK_128X128;
+  v64x64 *vt64x64 = NULL;
 
   // Ref frame used in partitioning.
   MV_REFERENCE_FRAME ref_frame_partition = LAST_FRAME;
 
+  CHECK_MEM_ERROR(cm, vt64x64, aom_malloc(sizeof(*vt64x64) * num_64x64_blocks));
   CHECK_MEM_ERROR(cm, vt, aom_malloc(sizeof(*vt)));
+  vt->split = vt64x64;
 
   int64_t thresholds[5] = { cpi->vbp_thresholds[0], cpi->vbp_thresholds[1],
                             cpi->vbp_thresholds[2], cpi->vbp_thresholds[3],
@@ -1012,6 +1015,7 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
   }
   chroma_check(cpi, x, bsize, y_sad, is_key_frame);
 
+  if (vt64x64) aom_free(vt64x64);
   if (vt2) aom_free(vt2);
   if (vt) aom_free(vt);
   return 0;
