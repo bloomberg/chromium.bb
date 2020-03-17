@@ -245,7 +245,7 @@ def UpdateChromiumReadmeWithUpstream(robo_configuration):
   with open("README.chromium", "r+") as f:
     readme = f.read()
   last_upstream_merge = "Last Upstream Merge:"
-  merge_date= check_output(["git", "log", "-1","--date=format:%b %d %Y",
+  merge_date = check_output(["git", "log", "-1","--date=format:%b %d %Y",
                             "--format=%cd", merge_sha1])
   readme = re.sub(r"(Last Upstream Merge:).*\n",
                   r"\1 %s, %s" % (merge_sha1, merge_date),
@@ -254,3 +254,70 @@ def UpdateChromiumReadmeWithUpstream(robo_configuration):
     f.write(readme)
   AddAndCommit(robo_configuration,
                robo_configuration.readme_chromium_commit_title())
+
+def HasGerritIssueNumber(robo_configuration):
+  """Return True if and only if this branch has been pushed for review."""
+  robo_configuration.chdir_to_ffmpeg_home();
+  return os.system(
+          "git cl issue 2>/dev/null |grep Issue |grep None >/dev/null") != 0
+
+def IsUploadedForReview(robo_configuration):
+  """Check if the local branch is already uploaded."""
+  robo_configuration.chdir_to_ffmpeg_home();
+  if not HasGerritIssueNumber(robo_configuration):
+    log("No Gerrit issue number exsts.")
+    return False
+
+  if not IsWorkingDirectoryClean():
+    log("Working directory is not clean -- commit changes and update CL");
+    return False
+
+  # Has been uploaded for review.  Might or might not have been landed yet.
+  return True
+
+def IsUploadedForReviewAndLanded(robo_configuration):
+  """Check if the local sushi branch has been uploaded for review, and has also
+  been landed."""
+  robo_configuration.chdir_to_ffmpeg_home();
+  if not IsUploadedForReview(robo_configuration):
+    log("Is not uploaded for review")
+    return False
+  # See if origin/sushi and local/sushi are the same.  This check by itself
+  # isn't sufficient, since it would return true any time the two are in sync.
+  diff = check_output(["git", "diff",
+               "origin/" + robo_configuration.sushi_branch_name(),
+               robo_configuration.sushi_branch_name()]).strip()
+  return not diff
+
+@RequiresCleanWorkingDirectory
+def UploadForReview(robo_configuration):
+  """Assuming that tests pass (we can't check), upload to review."""
+  robo_configuration.chdir_to_ffmpeg_home();
+  if IsUploadedForReview(robo_configuration):
+    raise Exception(
+            "Sushi branch is already uploaded for review!  (try git cl web)")
+  log("Uploading sushi branch for review.")
+  os.system("git cl upload")
+
+@RequiresCleanWorkingDirectory
+def TryFakeDepsRoll(robo_configuration):
+  """Start a deps roll against the sushi branch, and -1 it."""
+  log("Considering starting a fake deps roll")
+
+  # Make sure that we've landed the sushi commits.  Note that this can happen if
+  # somebody re-runs robosushi after we upload the commits to Gerrit, but before
+  # they've been reviewed and landed.  This way, we provide a meaningful error.
+  if not IsUploadedForReviewAndLanded(robo_configuration):
+    raise Exception("Cannot start a fake deps roll until gerrit review lands!")
+
+  robo_configuration.chdir_to_ffmpeg_home();
+  sha1 = check_output("git", "show", "-1", "--format=%P").strip()
+  if not sha1:
+    raise Exception("Cannot get sha1 of HEAD for fakes dep roll")
+
+  robo_configuration.chdir_to_chrome_src()
+  # TODO: make sure that there's not a deps roll in progress, else we'll keep
+  # doing this every time we're run.
+  # TODO: get mad otherwise.
+  check_output(["roll-deps.py", "third_party/ffmpeg", sha1])
+  # TODO: -1 it.
