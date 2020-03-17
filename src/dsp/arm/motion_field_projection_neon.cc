@@ -71,38 +71,36 @@ inline int16x8_t LoadDivision(const int8x8x4_t division_table[2],
   return vorrq_s16(denorm0, denorm1);
 }
 
-inline int16x4_t MvProjection(const int16x4_t mv, int numerator,
-                              const int16x8_t denominator) {
-  const int32x4_t m0 = vmull_n_s16(mv, numerator);
-  const int32x4_t m2 = vmulq_s32(m0, vreinterpretq_s32_s16(denominator));
+inline int16x4_t MvProjection(const int16x4_t mv, const int16x4_t denominator,
+                              const int numerator) {
+  const int32x4_t m0 = vmull_s16(mv, denominator);
+  const int32x4_t m = vmulq_n_s32(m0, numerator);
   // Subtract the sign bit to round towards zero.
-  const int32x4_t sub_sign = vsraq_n_s32(m2, m2, 31);
+  const int32x4_t sub_sign = vsraq_n_s32(m, m, 31);
   return vqrshrn_n_s32(sub_sign, 14);
 }
 
-inline int16x8_t MvProjectionClip(const int16x8_t mv, int numerator,
-                                  const int16x8x2_t denominator) {
+inline int16x8_t MvProjectionClip(const int16x8_t mv,
+                                  const int16x8_t denominator,
+                                  const int numerator) {
   const int16x8_t projection_mv_clamp = vdupq_n_s16(kProjectionMvClamp);
   const int16x4_t mv0 = vget_low_s16(mv);
   const int16x4_t mv1 = vget_high_s16(mv);
-  const int16x4_t m0 = MvProjection(mv0, numerator, denominator.val[0]);
-  const int16x4_t m1 = MvProjection(mv1, numerator, denominator.val[1]);
+  const int16x4_t m0 = MvProjection(mv0, vget_low_s16(denominator), numerator);
+  const int16x4_t m1 = MvProjection(mv1, vget_high_s16(denominator), numerator);
   const int16x8_t m = vcombine_s16(m0, m1);
   const int16x8_t clamp = vminq_s16(m, projection_mv_clamp);
   return vmaxq_s16(clamp, vnegq_s16(projection_mv_clamp));
 }
 
-inline void GetMvProjection(const int32x4_t mv[2], int numerator,
-                            const int16x8_t denominator,
-                            int16x8_t projection_mv[2]) {
+inline void GetMvProjection(const int32x4_t mv[2], const int16x8_t denominator,
+                            const int numerator, int16x8_t projection_mv[2]) {
   const int16x8_t mv0 = vreinterpretq_s16_s32(mv[0]);
   const int16x8_t mv1 = vreinterpretq_s16_s32(mv[1]);
   // Deinterlace
   const int16x8x2_t mvs = vuzpq_s16(mv0, mv1);
-  // Expand to 32-bit
-  const int16x8x2_t denom = vzipq_s16(denominator, vdupq_n_s16(0));
-  projection_mv[0] = MvProjectionClip(mvs.val[0], numerator, denom);
-  projection_mv[1] = MvProjectionClip(mvs.val[1], numerator, denom);
+  projection_mv[0] = MvProjectionClip(mvs.val[0], denominator, numerator);
+  projection_mv[1] = MvProjectionClip(mvs.val[1], denominator, numerator);
 }
 
 void GetPosition(const int8x8x4_t division_table[2],
@@ -121,7 +119,7 @@ void GetPosition(const int8x8x4_t division_table[2],
   mvs[0] = vld1q_s32(mv_int + 0);
   mvs[1] = vld1q_s32(mv_int + 4);
   // reference_to_current_with_sign could be 0.
-  GetMvProjection(mvs, reference_to_current_with_sign, denorm, projection_mv);
+  GetMvProjection(mvs, denorm, reference_to_current_with_sign, projection_mv);
   // Do not update the motion vector if the block position is not valid or
   // if position_x8 is outside the current range of x8_start and x8_end.
   // Note that position_y8 will always be within the range of y8_start and

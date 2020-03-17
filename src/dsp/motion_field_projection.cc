@@ -112,30 +112,22 @@ void MotionFieldProjectionKernel_C(
         //  !defined(LIBGAV1_Dsp10bpp_MotionFieldProjectionKernel))
 
 void Init8bpp() {
+#if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS || \
+    !defined(LIBGAV1_Dsp8bpp_MotionFieldProjectionKernel)
   Dsp* const dsp = dsp_internal::GetWritableDspTable(8);
   assert(dsp != nullptr);
-#if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
-  dsp->motion_field_projection_kernel = MotionFieldProjectionKernel_C;
-#else  // !LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
-  static_cast<void>(dsp);
-#ifndef LIBGAV1_Dsp8bpp_MotionFieldProjectionKernel
   dsp->motion_field_projection_kernel = MotionFieldProjectionKernel_C;
 #endif
-#endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
 }
 
 #if LIBGAV1_MAX_BITDEPTH >= 10
 void Init10bpp() {
+#if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS || \
+    !defined(LIBGAV1_Dsp10bpp_MotionFieldProjectionKernel)
   Dsp* const dsp = dsp_internal::GetWritableDspTable(10);
   assert(dsp != nullptr);
-#if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
-  dsp->motion_field_projection_kernel = MotionFieldProjectionKernel_C;
-#else  // !LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
-  static_cast<void>(dsp);
-#ifndef LIBGAV1_Dsp10bpp_MotionFieldProjectionKernel
   dsp->motion_field_projection_kernel = MotionFieldProjectionKernel_C;
 #endif
-#endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
 }
 #endif
 
