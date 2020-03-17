@@ -817,7 +817,8 @@ class Storage(object):
         if self._aborted:
           raise Aborted()
         stream = zip_compress(item.content(), item.compression_level)
-        data = ''.join(stream)
+        # In Python3, zlib.compress returns a byte object instead of str.
+        data = six.b('').join(stream)
       except Exception as exc:
         logging.error('Failed to zip \'%s\': %s', item, exc)
         channel.send_exception()
@@ -1229,7 +1230,9 @@ def get_storage(server_ref):
   Returns:
     Instance of Storage.
   """
-  assert isinstance(server_ref, isolate_storage.ServerRef), repr(server_ref)
+  # Handle the specific internal use case.
+  assert (isinstance(server_ref, isolate_storage.ServerRef) or
+          type(server_ref).__name__ == 'ServerRef'), repr(server_ref)
   return Storage(isolate_storage.get_storage_api(server_ref))
 
 

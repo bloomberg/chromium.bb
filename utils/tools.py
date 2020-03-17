@@ -365,7 +365,7 @@ def write_json(filepath_or_handle, data, dense):
   if hasattr(filepath_or_handle, 'write'):
     json.dump(data, filepath_or_handle, **kwargs)
   else:
-    with open(filepath_or_handle, 'wb') as f:
+    with open(filepath_or_handle, 'w') as f:
       json.dump(data, f, **kwargs)
 
 

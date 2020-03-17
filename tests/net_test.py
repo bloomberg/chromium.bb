@@ -163,7 +163,7 @@ class HttpServiceTest(RetryLoopMockedTest):
     def mock_perform_request(request):
       self.assertTrue(
           request.get_full_url().startswith(service_url + request_url))
-      self.assertEqual('', request.body)
+      self.assertEqual(b'', request.body)
       return net_utils.make_fake_response(response, request.get_full_url())
 
     service = self.mocked_http_service(url=service_url,
@@ -174,7 +174,7 @@ class HttpServiceTest(RetryLoopMockedTest):
   def test_request_PUT_success(self):
     service_url = 'http://example.com'
     request_url = '/some_request'
-    request_body = 'data_body'
+    request_body = b'data_body'
     response_body = b'True'
     content_type = 'application/octet-stream'
 
