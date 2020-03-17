@@ -5,14 +5,6 @@
 
 """Library containing functions to execute auto-update on a remote device.
 
-TODO(xixuan): Make this lib support other update logics, including:
-  auto-update CrOS images for DUT
-  beaglebones for servo
-  stage images to servo usb
-  install custom CrOS images for chaos lab
-  install firmware images with FAFT
-  install android/brillo
-
 ChromiumOSUpdater includes:
   ----Check-----
   * Check functions, including kernel/version/cgpt check.
