@@ -982,8 +982,7 @@ def CreateAndUploadPayload(payload, sign=True, verify=True):
 
 
 def GenerateUpdatePayload(tgt_image, payload, src_image=None, work_dir=None,
-                          private_key=None, check=None,
-                          out_metadata_hash_file=None):
+                          private_key=None, check=None):
   """Generates output payload and verifies its integrity if needed.
 
   Args:
@@ -995,7 +994,6 @@ def GenerateUpdatePayload(tgt_image, payload, src_image=None, work_dir=None,
         responsibility to cleanup this directory after this function returns.
     private_key: The private key to sign the payload.
     check: If True, it will check the integrity of the generated payload.
-    out_metadata_hash_file: The output metadata hash file.
   """
   if path_util.DetermineCheckout().type != path_util.CHECKOUT_TYPE_REPO:
     raise Error('Need a chromeos checkout to generate payloads.')
@@ -1009,12 +1007,6 @@ def GenerateUpdatePayload(tgt_image, payload, src_image=None, work_dir=None,
     paygen = PaygenPayload(payload, work_dir, sign=private_key is not None,
                            verify=check, private_key=private_key)
     paygen.Run()
-
-    # TODO(ahassani): These are basically a hack because devserver is still need
-    # the metadata hash file to sign it. But signing logic has been moved to
-    # paygen and in the future this is not needed anymore.
-    if out_metadata_hash_file:
-      shutil.copy(paygen.metadata_hash_file, out_metadata_hash_file)
 
 
 def GenerateUpdatePayloadPropertiesFile(payload, output=None):
