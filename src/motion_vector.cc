@@ -41,17 +41,17 @@ void LowerMvPrecision(const ObuFrameHeader& frame_header,
   if (frame_header.allow_high_precision_mv) return;
   if (frame_header.force_integer_mv != 0) {
     for (auto& mv : mvs->mv) {
-      const int value = (std::abs(static_cast<int>(mv)) + 3) & ~7;
-      const int sign = mv >> 15;
-      mv = ApplySign(value, sign);
+      // The next line is equivalent to:
+      // const int value = (std::abs(static_cast<int>(mv)) + 3) & ~7;
+      // const int sign = mv >> 15;
+      // mv = ApplySign(value, sign);
+      mv = (mv + 3 - (mv >> 15)) & ~7;
     }
   } else {
     for (auto& mv : mvs->mv) {
-      if ((mv & 1) != 0) {
-        // The next line is equivalent to:
-        // if (mv > 0) { --mv; } else { ++mv; }
-        mv -= (mv >> 15) | 1;
-      }
+      // The next line is equivalent to:
+      // if ((mv & 1) != 0) mv += (mv > 0) ? -1 : 1;
+      mv = (mv - (mv >> 15)) & ~1;
     }
   }
 }
