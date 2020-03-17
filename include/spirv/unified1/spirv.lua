@@ -1,4 +1,4 @@
--- Copyright (c) 2014-2019 The Khronos Group Inc.
+-- Copyright (c) 2014-2020 The Khronos Group Inc.
 -- 
 -- Permission is hereby granted, free of charge, to any person obtaining a copy
 -- of this software and/or associated documentation files (the "Materials"),
@@ -702,6 +702,7 @@ spv = {
         Invocation = 4,
         QueueFamily = 5,
         QueueFamilyKHR = 5,
+        ShaderCallKHR = 6,
     },
 
     GroupOperation = {

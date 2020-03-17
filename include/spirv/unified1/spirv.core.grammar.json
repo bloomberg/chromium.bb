@@ -1,6 +1,6 @@
 {
   "copyright" : [
-    "Copyright (c) 2014-2016 The Khronos Group Inc.",
+    "Copyright (c) 2014-2020 The Khronos Group Inc.",
     "",
     "Permission is hereby granted, free of charge, to any person obtaining a copy",
     "of this software and/or associated documentation files (the \"Materials\"),",
@@ -10128,6 +10128,11 @@
           "value" : 5,
           "capabilities" : [ "VulkanMemoryModel" ],
           "version" : "1.5"
+        },
+        {
+          "enumerant" : "ShaderCallKHR",
+          "value" : 6,
+          "capabilities" : [ "RayTracingProvisionalKHR" ]
         }
       ]
     },
