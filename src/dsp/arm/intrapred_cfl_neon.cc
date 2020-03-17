@@ -284,8 +284,7 @@ inline uint8x8_t Combine8(const int16x8_t luma, const int alpha,
                           const int16x8_t dc) {
   const int16x8_t la = vmulq_n_s16(luma, alpha);
   // Subtract the sign bit to round towards zero.
-  const int16x8_t sub_sign = vsubq_s16(
-      la, vreinterpretq_s16_u16(vshrq_n_u16(vreinterpretq_u16_s16(la), 15)));
+  const int16x8_t sub_sign = vsraq_n_s16(la, la, 15);
   // Shift and accumulate.
   const int16x8_t result = vrsraq_n_s16(dc, sub_sign, 6);
   return vqmovun_s16(result);
