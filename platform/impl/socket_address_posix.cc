@@ -14,15 +14,10 @@ namespace openscreen {
 SocketAddressPosix::SocketAddressPosix(const struct sockaddr& address) {
   if (address.sa_family == AF_INET) {
     memcpy(&internal_address_, &address, sizeof(struct sockaddr_in));
-    endpoint_.address = IPAddress(IPAddress::Version::kV4,
-                                  reinterpret_cast<const uint8_t*>(
-                                      &internal_address_.v4.sin_addr.s_addr));
-    endpoint_.port = ntohs(internal_address_.v4.sin_port);
+    RecomputeEndpoint(IPAddress::Version::kV4);
   } else if (address.sa_family == AF_INET6) {
     memcpy(&internal_address_, &address, sizeof(struct sockaddr_in6));
-    endpoint_.address = IPAddress(IPAddress::Version::kV6,
-                                  internal_address_.v6.sin6_addr.s6_addr);
-    endpoint_.port = ntohs(internal_address_.v6.sin6_port);
+    RecomputeEndpoint(IPAddress::Version::kV6);
   } else {
     OSP_NOTREACHED() << "Unknown address type";
   }
@@ -82,4 +77,25 @@ socklen_t SocketAddressPosix::size() const {
       return 0;
   }
 }
+
+void SocketAddressPosix::RecomputeEndpoint() {
+  RecomputeEndpoint(endpoint_.address.version());
+}
+
+void SocketAddressPosix::RecomputeEndpoint(IPAddress::Version version) {
+  switch (version) {
+    case IPAddress::Version::kV4:
+      endpoint_.address = IPAddress(IPAddress::Version::kV4,
+                                    reinterpret_cast<const uint8_t*>(
+                                        &internal_address_.v4.sin_addr.s_addr));
+      endpoint_.port = ntohs(internal_address_.v4.sin_port);
+      break;
+    case IPAddress::Version::kV6:
+      endpoint_.address = IPAddress(IPAddress::Version::kV6,
+                                    internal_address_.v6.sin6_addr.s6_addr);
+      endpoint_.port = ntohs(internal_address_.v6.sin6_port);
+      break;
+  }
+}
+
 }  // namespace openscreen

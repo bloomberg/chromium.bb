@@ -14,6 +14,8 @@ source_set("certificate") {
     "certificate/cast_cert_validator_internal.h",
     "certificate/cast_crl.cc",
     "certificate/cast_crl.h",
+    "certificate/cast_trust_store.cc",
+    "certificate/cast_trust_store.h",
     "certificate/types.cc",
     "certificate/types.h",
   ]

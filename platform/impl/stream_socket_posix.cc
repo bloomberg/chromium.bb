@@ -82,6 +82,7 @@ ErrorOr<std::unique_ptr<StreamSocket>> StreamSocketPosix::Accept() {
     return CloseOnError(
         Error(Error::Code::kSocketAcceptFailure, strerror(errno)));
   }
+  new_remote_address.RecomputeEndpoint();
 
   return ErrorOr<std::unique_ptr<StreamSocket>>(
       std::make_unique<StreamSocketPosix>(local_address_.value(),
@@ -212,7 +213,7 @@ bool StreamSocketPosix::EnsureInitialized() {
     return Initialize() == Error::None();
   }
 
-  return is_initialized_;
+  return handle_.fd != kUnsetHandleFd && is_initialized_;
 }
 
 Error StreamSocketPosix::Initialize() {

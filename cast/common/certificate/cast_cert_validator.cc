@@ -17,24 +17,12 @@
 
 #include "cast/common/certificate/cast_cert_validator_internal.h"
 #include "cast/common/certificate/cast_crl.h"
+#include "cast/common/certificate/cast_trust_store.h"
+#include "util/logging.h"
 
 namespace openscreen {
 namespace cast {
 namespace {
-
-// -------------------------------------------------------------------------
-// Cast trust anchors.
-// -------------------------------------------------------------------------
-
-// There are two trusted roots for Cast certificate chains:
-//
-//   (1) CN=Cast Root CA    (kCastRootCaDer)
-//   (2) CN=Eureka Root CA  (kEurekaRootCaDer)
-//
-// These constants are defined by the files included next:
-
-#include "cast/common/certificate/cast_root_ca_cert_der-inc.h"
-#include "cast/common/certificate/eureka_root_ca_der-inc.h"
 
 // Returns the OID for the Audio-Only Cast policy
 // (1.3.6.1.4.1.11129.2.5.2) in DER form.
@@ -140,27 +128,6 @@ CastDeviceCertPolicy GetAudioPolicy(const std::vector<X509*>& path) {
 }
 
 }  // namespace
-
-class CastTrustStore {
- public:
-  // Singleton for the Cast trust store for legacy networkingPrivate use.
-  static CastTrustStore* GetInstance() {
-    static CastTrustStore* store = new CastTrustStore();
-    return store;
-  }
-
-  CastTrustStore() {
-    trust_store_.certs.emplace_back(MakeTrustAnchor(kCastRootCaDer));
-    trust_store_.certs.emplace_back(MakeTrustAnchor(kEurekaRootCaDer));
-  }
-  ~CastTrustStore() = default;
-
-  TrustStore* trust_store() { return &trust_store_; }
-
- private:
-  TrustStore trust_store_;
-  OSP_DISALLOW_COPY_AND_ASSIGN(CastTrustStore);
-};
 
 Error VerifyDeviceCert(const std::vector<std::string>& der_certs,
                        const DateTime& time,

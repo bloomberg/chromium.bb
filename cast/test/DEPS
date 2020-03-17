@@ -2,4 +2,6 @@ include_rules = [
   '+cast/common',
   '+cast/receiver',
   '+cast/sender',
+
+  '+platform/impl',
 ]

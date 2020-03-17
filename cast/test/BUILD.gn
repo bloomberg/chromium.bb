@@ -24,6 +24,27 @@ source_set("unittests") {
 }
 
 if (is_posix && !build_with_chromium) {
+  source_set("e2e_tests") {
+    testonly = true
+    sources = [
+      "cast_socket_e2e_test.cc",
+    ]
+
+    deps = [
+      "../../platform",
+      "../../third_party/abseil",
+      "../../third_party/boringssl",
+      "../../third_party/googletest:gtest",
+      "../../util",
+      "../common:certificate",
+      "../common:channel",
+      "../common:test_helpers",
+      "../receiver:channel",
+      "../receiver:test_helpers",
+      "../sender:channel",
+    ]
+  }
+
   executable("make_crl_tests") {
     testonly = true
     sources = [

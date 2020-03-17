@@ -33,7 +33,9 @@ SenderSocketFactory::SenderSocketFactory(Client* client,
   OSP_DCHECK(task_runner);
 }
 
-SenderSocketFactory::~SenderSocketFactory() = default;
+SenderSocketFactory::~SenderSocketFactory() {
+  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
+}
 
 void SenderSocketFactory::set_factory(TlsConnectionFactory* factory) {
   OSP_DCHECK(factory);
@@ -43,6 +45,7 @@ void SenderSocketFactory::set_factory(TlsConnectionFactory* factory) {
 void SenderSocketFactory::Connect(const IPEndpoint& endpoint,
                                   DeviceMediaPolicy media_policy,
                                   CastSocket::Client* client) {
+  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
   OSP_DCHECK(client);
   auto it = FindPendingConnection(endpoint);
   if (it == pending_connections_.end()) {

@@ -26,6 +26,11 @@ bssl::UniquePtr<X509> MakeTrustAnchor(const uint8_t (&data)[N]) {
   return bssl::UniquePtr<X509>{d2i_X509(nullptr, &dptr, N)};
 }
 
+inline bssl::UniquePtr<X509> MakeTrustAnchor(const std::vector<uint8_t>& data) {
+  const uint8_t* dptr = data.data();
+  return bssl::UniquePtr<X509>{d2i_X509(nullptr, &dptr, data.size())};
+}
+
 struct ConstDataSpan;
 struct DateTime;
 

@@ -120,6 +120,7 @@ if (!build_with_chromium && is_posix) {
     testonly = true
     public_deps = [
       "cast/common:discovery_e2e_test",
+      "cast/test:e2e_tests",
       "third_party/googletest:gtest_main",
     ]
   }

@@ -59,12 +59,15 @@ TlsConnectionFactoryPosix::TlsConnectionFactoryPosix(
   OSP_DCHECK(task_runner_);
 }
 
-TlsConnectionFactoryPosix::~TlsConnectionFactoryPosix() = default;
+TlsConnectionFactoryPosix::~TlsConnectionFactoryPosix() {
+  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
+}
 
 // TODO(rwkeane): Add support for resuming sessions.
 // TODO(rwkeane): Integrate with Auth.
 void TlsConnectionFactoryPosix::Connect(const IPEndpoint& remote_address,
                                         const TlsConnectOptions& options) {
+  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
   TRACE_SCOPED(TraceCategory::kSsl, "TlsConnectionFactoryPosix::Connect");
   IPAddress::Version version = remote_address.address.version();
   std::unique_ptr<TlsConnectionPosix> connection(
@@ -93,6 +96,7 @@ void TlsConnectionFactoryPosix::Connect(const IPEndpoint& remote_address,
 
 void TlsConnectionFactoryPosix::SetListenCredentials(
     const TlsCredentials& credentials) {
+  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
   EnsureInitialized();
 
   ErrorOr<bssl::UniquePtr<X509>> cert = ImportCertificate(
@@ -114,6 +118,7 @@ void TlsConnectionFactoryPosix::SetListenCredentials(
 
 void TlsConnectionFactoryPosix::Listen(const IPEndpoint& local_address,
                                        const TlsListenOptions& options) {
+  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
   // Credentials must be set before Listen() is called.
   OSP_DCHECK(listen_credentials_set_);
 
