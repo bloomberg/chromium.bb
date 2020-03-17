@@ -125,6 +125,17 @@ def DebugInfoTest(sysroot_path):
   return result.returncode == 0
 
 
+def ChromitePytest():
+  """Run Pytest tests in Chromite.
+
+  Returns:
+    bool: True iff all tests passed, False otherwise.
+  """
+  cmd = ['pytest', constants.CHROMITE_DIR]
+  result = cros_build_lib.run(cmd, check=False)
+  return result.returncode == 0
+
+
 def CreateMoblabVm(workspace_dir, chroot_dir, image_dir):
   """Create the moblab VMs.
 

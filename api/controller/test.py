@@ -137,6 +137,17 @@ def ChromiteUnitTest(_input_proto, _output_proto, _config):
     return controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY
 
 
+@faux.empty_success
+@faux.empty_completed_unsuccessfully_error
+@validate.validation_complete
+def ChromitePytest(_input_proto, _output_proto, _config):
+  """Run the chromite unit tests."""
+  if test.ChromitePytest():
+    return controller.RETURN_CODE_SUCCESS
+  else:
+    return controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY
+
+
 @faux.all_empty
 @validate.require('sysroot.path', 'sysroot.build_target.name', 'chrome_root')
 @validate.validation_complete
