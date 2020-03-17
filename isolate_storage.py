@@ -22,9 +22,6 @@ from utils import net
 
 import isolated_format
 
-# third_party/
-import six
-
 try:
   import grpc # for error codes
   from utils import grpc_proxy
@@ -254,7 +251,7 @@ def guard_memory_use(server, content, size):
   this function sleeps in 0.1s increments until memory usage falls
   below the maximum.
   """
-  if isinstance(content, (six.string_types, list)):
+  if isinstance(content, (basestring, list)):
     # Memory is already used, too late.
     with server._lock:
       server._memory_use += size
@@ -302,9 +299,7 @@ class IsolateServer(StorageApi):
 
   def __init__(self, server_ref):
     super(IsolateServer, self).__init__()
-    # Handle the specific internal use case.
-    assert (isinstance(server_ref, ServerRef) or
-            type(server_ref).__name__ == 'ServerRef'), repr(server_ref)
+    assert isinstance(server_ref, ServerRef), repr(server_ref)
     self._server_ref = server_ref
     algo_name = server_ref.hash_algo_name
     self._namespace_dict = {
@@ -503,9 +498,8 @@ class IsolateServer(StorageApi):
       net.HttpResponse compatible object, with 'read' and 'get_header' calls.
     """
     assert isinstance(offset, int)
-    # json.dumps in Python3 doesn't support bytes.
     data = {
-        'digest': six.ensure_str(digest, encoding='utf-8'),
+        'digest': digest.encode('utf-8'),
         'namespace': self._namespace_dict,
         'offset': offset,
     }
@@ -541,7 +535,7 @@ class IsolateServer(StorageApi):
       content = base64.b64encode(content)
       data = {
           'upload_ticket': push_state.preupload_status['upload_ticket'],
-          'content': six.ensure_str(content),
+          'content': content,
       }
       response = net.url_read_json(url=url, data=data)
       return response is not None and response.get('ok')
@@ -715,9 +709,7 @@ def get_storage_api(server_ref):
   Returns:
     Instance of StorageApi subclass.
   """
-  # Handle the specific internal use case.
-  assert (isinstance(server_ref, ServerRef) or
-          type(server_ref).__name__ == 'ServerRef'), repr(server_ref)
+  assert isinstance(server_ref, ServerRef), repr(server_ref)
   if _grpc_proxy is not None:
     return IsolateServerGrpc(server_ref.url, _grpc_proxy)
   return IsolateServer(server_ref)
