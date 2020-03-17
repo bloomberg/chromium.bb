@@ -431,6 +431,9 @@ typedef struct PARTITION_SPEED_FEATURES {
 
   // Prune 1:4 partition search based on winner info from split partitions
   int prune_4_partition_using_split_info;
+
+  // Prune AB partition search using split and HORZ/VERT info
+  int prune_ab_partition_using_split_info;
 } PARTITION_SPEED_FEATURES;
 
 typedef struct MV_SPEED_FEATURES {

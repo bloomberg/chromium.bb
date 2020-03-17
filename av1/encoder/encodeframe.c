@@ -2590,6 +2590,32 @@ typedef struct {
   bool vert_win;
 } RD_RECT_PART_WIN_INFO;
 
+// Decide whether to evaluate the AB partition specified by part_type based on
+// split and HORZ/VERT info
+int evaluate_ab_partition_based_on_split(
+    PC_TREE *pc_tree, PARTITION_TYPE rect_part,
+    RD_RECT_PART_WIN_INFO *rect_part_win_info, int qindex, int split_idx1,
+    int split_idx2) {
+  int num_win = 0;
+  // Threshold for number of winners
+  // Conservative pruning for high quantizers
+  int num_win_thresh = 3 * (2 * (MAXQ - qindex) / MAXQ);
+  bool sub_part_win = (rect_part_win_info == NULL)
+                          ? (pc_tree->partitioning == rect_part)
+                          : (rect_part == PARTITION_HORZ)
+                                ? rect_part_win_info->horz_win
+                                : rect_part_win_info->vert_win;
+  num_win += (sub_part_win) ? 1 : 0;
+  num_win +=
+      (pc_tree->split[split_idx1]->partitioning == PARTITION_NONE) ? 1 : 0;
+  num_win +=
+      (pc_tree->split[split_idx2]->partitioning == PARTITION_NONE) ? 1 : 0;
+  if (num_win < num_win_thresh) {
+    return 0;
+  }
+  return 1;
+}
+
 // TODO(jinging,jimbankoski,rbultje): properly skip partition types that are
 // unlikely to be selected depending on previous rate-distortion optimization
 // results, for encoding speed-up.
@@ -3353,6 +3379,12 @@ BEGIN_PARTITION_SEARCH:
   verta_partition_allowed &= cpi->oxcf.enable_ab_partitions;
   vertb_partition_allowed &= cpi->oxcf.enable_ab_partitions;
 
+  if (cpi->sf.part_sf.prune_ab_partition_using_split_info &&
+      horza_partition_allowed) {
+    horza_partition_allowed &= evaluate_ab_partition_based_on_split(
+        pc_tree, PARTITION_HORZ, rect_part_win_info, x->qindex, 0, 1);
+  }
+
   // PARTITION_HORZ_A
   if (!terminate_partition_search && partition_horz_allowed &&
       horza_partition_allowed && !is_gt_max_sq_part) {
@@ -3399,6 +3431,13 @@ BEGIN_PARTITION_SEARCH:
 #endif
     restore_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);
   }
+
+  if (cpi->sf.part_sf.prune_ab_partition_using_split_info &&
+      horzb_partition_allowed) {
+    horzb_partition_allowed &= evaluate_ab_partition_based_on_split(
+        pc_tree, PARTITION_HORZ, rect_part_win_info, x->qindex, 2, 3);
+  }
+
   // PARTITION_HORZ_B
   if (!terminate_partition_search && partition_horz_allowed &&
       horzb_partition_allowed && !is_gt_max_sq_part) {
@@ -3441,6 +3480,12 @@ BEGIN_PARTITION_SEARCH:
     restore_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);
   }
 
+  if (cpi->sf.part_sf.prune_ab_partition_using_split_info &&
+      verta_partition_allowed) {
+    verta_partition_allowed &= evaluate_ab_partition_based_on_split(
+        pc_tree, PARTITION_VERT, rect_part_win_info, x->qindex, 0, 2);
+  }
+
   // PARTITION_VERT_A
   if (!terminate_partition_search && partition_vert_allowed &&
       verta_partition_allowed && !is_gt_max_sq_part) {
@@ -3481,6 +3526,13 @@ BEGIN_PARTITION_SEARCH:
 #endif
     restore_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);
   }
+
+  if (cpi->sf.part_sf.prune_ab_partition_using_split_info &&
+      vertb_partition_allowed) {
+    vertb_partition_allowed &= evaluate_ab_partition_based_on_split(
+        pc_tree, PARTITION_VERT, rect_part_win_info, x->qindex, 1, 3);
+  }
+
   // PARTITION_VERT_B
   if (!terminate_partition_search && partition_vert_allowed &&
       vertb_partition_allowed && !is_gt_max_sq_part) {
