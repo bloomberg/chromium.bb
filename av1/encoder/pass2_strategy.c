@@ -1077,7 +1077,7 @@ static void calculate_gf_length(AV1_COMP *cpi, int max_gop_length,
 
   if (has_no_stats_stage(cpi)) {
     for (i = 0; i < MAX_NUM_GF_INTERVALS; i++) {
-      rc->gf_intervals[i] = MAX_GF_INTERVAL;
+      rc->gf_intervals[i] = AOMMIN(rc->max_gf_interval, max_gop_length);
     }
     rc->cur_gf_index = 0;
     rc->intervals_till_gf_calculate_due = MAX_NUM_GF_INTERVALS;
