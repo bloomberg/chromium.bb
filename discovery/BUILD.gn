@@ -98,6 +98,8 @@ source_set("dnssd") {
 
 source_set("public") {
   sources = [
+    "public/dns_sd_service_factory.h",
+    "public/dns_sd_service_publisher.h",
     "public/dns_sd_service_watcher.h",
   ]
 

@@ -30,7 +30,7 @@ MdnsService::SupportedNetworkAddressFamily GetSupportedEndpointTypes(
 }  // namespace
 
 // static
-SerialDeletePtr<DnsSdService> DnsSdService::Create(
+SerialDeletePtr<DnsSdService> CreateDnsSdService(
     TaskRunner* task_runner,
     ReportingClient* reporting_client,
     const Config& config) {

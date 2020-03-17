@@ -9,8 +9,8 @@
 #include "cast/common/public/service_info.h"
 #include "discovery/common/config.h"
 #include "discovery/common/reporting_client.h"
-#include "discovery/dnssd/public/dns_sd_publisher.h"
-#include "discovery/dnssd/public/dns_sd_service.h"
+#include "discovery/public/dns_sd_service_factory.h"
+#include "discovery/public/dns_sd_service_publisher.h"
 #include "discovery/public/dns_sd_service_watcher.h"
 #include "gtest/gtest.h"
 #include "platform/api/logging.h"
@@ -39,57 +39,30 @@ constexpr int kMaxCheckLoopIterations = 25;
 }  // namespace
 
 // Publishes new service instances.
-class Publisher : public discovery::DnsSdPublisher::Client {
+class Publisher : public discovery::DnsSdServicePublisher<ServiceInfo> {
  public:
   Publisher(discovery::DnsSdService* service)
-      : dnssd_publisher_(service->GetPublisher()) {
+      : DnsSdServicePublisher<ServiceInfo>(service,
+                                           kCastV2ServiceId,
+                                           ServiceInfoToDnsSdRecord) {
     OSP_LOG << "Initializing Publisher...\n";
   }
 
   ~Publisher() override = default;
 
-  Error Register(const ServiceInfo& info) {
-    if (!info.IsValid()) {
-      OSP_LOG << "Invalid record provided to Register\n";
-      return Error::Code::kParameterInvalid;
-    }
-
-    return dnssd_publisher_->Register(ServiceInfoToDnsSdRecord(info), this);
-  }
-
-  Error UpdateRegistration(const ServiceInfo& info) {
-    if (!info.IsValid()) {
-      return Error::Code::kParameterInvalid;
-    }
-
-    return dnssd_publisher_->UpdateRegistration(ServiceInfoToDnsSdRecord(info));
-  }
-
-  ErrorOr<int> DeregisterAll() {
-    return dnssd_publisher_->DeregisterAll(kCastV2ServiceId);
-  }
-
-  absl::optional<std::string> GetClaimedInstanceId(
-      const std::string& requested_id) {
-    auto it = instance_ids_.find(requested_id);
-    if (it == instance_ids_.end()) {
-      return absl::nullopt;
-    } else {
-      return it->second;
-    }
+  bool IsInstanceIdClaimed(const std::string& requested_id) {
+    auto it =
+        std::find(instance_ids_.begin(), instance_ids_.end(), requested_id);
+    return it != instance_ids_.end();
   }
 
  private:
   // DnsSdPublisher::Client overrides.
-  void OnInstanceClaimed(
-      const discovery::DnsSdInstanceRecord& requested_record,
-      const discovery::DnsSdInstanceRecord& claimed_record) override {
-    instance_ids_.emplace(requested_record.instance_id(),
-                          claimed_record.instance_id());
+  void OnInstanceClaimed(const std::string& requested_id) override {
+    instance_ids_.push_back(requested_id);
   }
 
-  discovery::DnsSdPublisher* const dnssd_publisher_;
-  std::map<std::string, std::string> instance_ids_;
+  std::vector<std::string> instance_ids_;
 };
 
 // Receives incoming services and outputs their results to stdout.
@@ -205,8 +178,8 @@ class DiscoveryE2ETest : public testing::Test {
 
   void SetUpService(const discovery::Config& config) {
     OSP_DCHECK(!dnssd_service_.get());
-    dnssd_service_ = discovery::DnsSdService::Create(
-        task_runner_, &reporting_client_, config);
+    dnssd_service_ =
+        discovery::CreateDnsSdService(task_runner_, &reporting_client_, config);
     receiver_ = std::make_unique<Receiver>(dnssd_service_.get());
     publisher_ = std::make_unique<Publisher>(dnssd_service_.get());
   }
@@ -308,22 +281,22 @@ class DiscoveryE2ETest : public testing::Test {
   void CheckForClaimedIds(ServiceInfo service_info,
                           std::atomic_bool* has_been_seen,
                           int attempts) {
-    if (publisher_->GetClaimedInstanceId(service_info.GetInstanceId()) ==
-        absl::nullopt) {
-      if (attempts++ > kMaxCheckLoopIterations) {
-        OSP_NOTREACHED() << "Service " << service_info.friendly_name
-                         << " publication failed.";
-      }
-      task_runner_->PostTaskWithDelay(
-          [this, info = std::move(service_info), has_been_seen,
-           attempts]() mutable {
-            CheckForClaimedIds(std::move(info), has_been_seen, attempts);
-          },
-          kCheckLoopSleepTime);
-    } else {
+    if (publisher_->IsInstanceIdClaimed(service_info.GetInstanceId())) {
       // TODO(crbug.com/openscreen/110): Log the published service instance.
       *has_been_seen = true;
+      return;
     }
+
+    if (attempts++ > kMaxCheckLoopIterations) {
+      OSP_NOTREACHED() << "Service " << service_info.friendly_name
+                       << " publication failed.";
+    }
+    task_runner_->PostTaskWithDelay(
+        [this, info = std::move(service_info), has_been_seen,
+         attempts]() mutable {
+          CheckForClaimedIds(std::move(info), has_been_seen, attempts);
+        },
+        kCheckLoopSleepTime);
   }
 
   void CheckForPublishedService(ServiceInfo service_info,

@@ -31,12 +31,6 @@ class DnsSdService {
  public:
   virtual ~DnsSdService() = default;
 
-  // Creates a new DnsSdService instance, to be owned by the caller. On failure,
-  // return nullptr.
-  static SerialDeletePtr<DnsSdService> Create(TaskRunner* task_runner,
-                                              ReportingClient* reporting_client,
-                                              const Config& config);
-
   // Returns the DnsSdQuerier owned by this DnsSdService. If queries are not
   // supported, returns nullptr.
   virtual DnsSdQuerier* GetQuerier() = 0;
