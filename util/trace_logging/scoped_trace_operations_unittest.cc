@@ -40,9 +40,8 @@ TEST(TraceLoggingInternalTest, TestMacroStyleInitializationTrue) {
 
   {
     uint8_t temp[sizeof(SynchronousTraceLogger)];
-    auto ptr = true ? TraceInstanceHelper<SynchronousTraceLogger>::Create(
-                          temp, category, "Name", __FILE__, line)
-                    : TraceInstanceHelper<SynchronousTraceLogger>::Empty();
+    auto ptr = TraceInstanceHelper<SynchronousTraceLogger>::Create(
+        temp, category, "Name", __FILE__, line);
     std::this_thread::sleep_for(std::chrono::milliseconds(delay_in_ms));
     auto ids = ScopedTraceOperation::hierarchy();
     EXPECT_NE(ids.current, kEmptyTraceId);
@@ -58,10 +57,7 @@ TEST(TraceLoggingInternalTest, TestMacroStyleInitializationFalse) {
   EXPECT_CALL(platform, LogTrace(_, _, _, _, _, _, _)).Times(0);
 
   {
-    uint8_t temp[sizeof(SynchronousTraceLogger)];
-    auto ptr = false ? TraceInstanceHelper<SynchronousTraceLogger>::Create(
-                           temp, category, "Name", __FILE__, line)
-                     : TraceInstanceHelper<SynchronousTraceLogger>::Empty();
+    auto ptr = TraceInstanceHelper<SynchronousTraceLogger>::Empty();
     auto ids = ScopedTraceOperation::hierarchy();
     EXPECT_EQ(ids.current, kEmptyTraceId);
     EXPECT_EQ(ids.parent, kEmptyTraceId);
