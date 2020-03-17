@@ -146,7 +146,7 @@ ClassOptionality ToOperandClassAndOptionality(const std::string& operandKind, co
         } else if (operandKind == "LiteralSpecConstantOpInteger") {
             type = OperandLiteralNumber;
         } else if (operandKind == "LiteralContextDependentNumber") {
-            type = OperandVariableLiterals;
+            type = OperandAnySizeLiteralNumber;
         } else if (operandKind == "SourceLanguage") {
             type = OperandSource;
         } else if (operandKind == "ExecutionModel") {
