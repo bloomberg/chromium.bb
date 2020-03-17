@@ -291,8 +291,9 @@ bool FilmGrain<bitdepth>::Init() {
     // If params_.auto_regression_coeff_lag is 0, the filter is the identity
     // filter and therefore can be skipped.
     if (params_.auto_regression_coeff_lag > 0) {
-      dsp->film_grain.luma_auto_regression[params_.auto_regression_coeff_lag](
-          params_, luma_grain_);
+      dsp->film_grain
+          .luma_auto_regression[params_.auto_regression_coeff_lag - 1](
+              params_, luma_grain_);
     }
   } else {
     // Have AddressSanitizer warn if luma_grain_ is used.

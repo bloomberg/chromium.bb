@@ -1075,14 +1075,12 @@ void Init8bpp() {
   Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth8);
   assert(dsp != nullptr);
 
-  // LumaAutoRegressionFunc[auto_regression_coeff_lag]
-  // Luma autoregression should never be called when lag is 0.
-  dsp->film_grain.luma_auto_regression[0] = nullptr;
-  dsp->film_grain.luma_auto_regression[1] =
+  // LumaAutoRegressionFunc
+  dsp->film_grain.luma_auto_regression[0] =
       ApplyAutoRegressiveFilterToLumaGrain_NEON<8, int8_t, 1>;
-  dsp->film_grain.luma_auto_regression[2] =
+  dsp->film_grain.luma_auto_regression[1] =
       ApplyAutoRegressiveFilterToLumaGrain_NEON<8, int8_t, 2>;
-  dsp->film_grain.luma_auto_regression[3] =
+  dsp->film_grain.luma_auto_regression[2] =
       ApplyAutoRegressiveFilterToLumaGrain_NEON<8, int8_t, 3>;
 
   // ChromaAutoRegressionFunc[use_luma][auto_regression_coeff_lag]
@@ -1127,14 +1125,12 @@ void Init10bpp() {
   Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth10);
   assert(dsp != nullptr);
 
-  // LumaAutoRegressionFunc[auto_regression_coeff_lag]
-  // Luma autoregression should never be called when lag is 0.
-  dsp->film_grain.luma_auto_regression[0] = nullptr;
-  dsp->film_grain.luma_auto_regression[1] =
+  // LumaAutoRegressionFunc
+  dsp->film_grain.luma_auto_regression[0] =
       ApplyAutoRegressiveFilterToLumaGrain_NEON<10, int16_t, 1>;
-  dsp->film_grain.luma_auto_regression[2] =
+  dsp->film_grain.luma_auto_regression[1] =
       ApplyAutoRegressiveFilterToLumaGrain_NEON<10, int16_t, 2>;
-  dsp->film_grain.luma_auto_regression[3] =
+  dsp->film_grain.luma_auto_regression[2] =
       ApplyAutoRegressiveFilterToLumaGrain_NEON<10, int16_t, 3>;
 
   // ChromaAutoRegressionFunc[use_luma][auto_regression_coeff_lag][subsampling]

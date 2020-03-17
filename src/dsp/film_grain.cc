@@ -638,13 +638,11 @@ void Init8bpp() {
   assert(dsp != nullptr);
 #if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
   // LumaAutoRegressionFunc
-  // Luma autoregression should never be called when lag is 0.
-  dsp->film_grain.luma_auto_regression[0] = nullptr;
+  dsp->film_grain.luma_auto_regression[0] =
+      ApplyAutoRegressiveFilterToLumaGrain_C<8, int8_t>;
   dsp->film_grain.luma_auto_regression[1] =
       ApplyAutoRegressiveFilterToLumaGrain_C<8, int8_t>;
   dsp->film_grain.luma_auto_regression[2] =
-      ApplyAutoRegressiveFilterToLumaGrain_C<8, int8_t>;
-  dsp->film_grain.luma_auto_regression[3] =
       ApplyAutoRegressiveFilterToLumaGrain_C<8, int8_t>;
 
   // ChromaAutoRegressionFunc
@@ -691,13 +689,11 @@ void Init8bpp() {
 #else  // !LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
   static_cast<void>(dsp);
 #ifndef LIBGAV1_Dsp8bpp_FilmGrainAutoregressionLuma
-  // Luma autoregression should never be called when lag is 0.
-  dsp->film_grain.luma_auto_regression[0] = nullptr;
+  dsp->film_grain.luma_auto_regression[0] =
+      ApplyAutoRegressiveFilterToLumaGrain_C<8, int8_t>;
   dsp->film_grain.luma_auto_regression[1] =
       ApplyAutoRegressiveFilterToLumaGrain_C<8, int8_t>;
   dsp->film_grain.luma_auto_regression[2] =
-      ApplyAutoRegressiveFilterToLumaGrain_C<8, int8_t>;
-  dsp->film_grain.luma_auto_regression[3] =
       ApplyAutoRegressiveFilterToLumaGrain_C<8, int8_t>;
 #endif
 #ifndef LIBGAV1_Dsp8bpp_FilmGrainAutoregressionChroma
@@ -754,13 +750,11 @@ void Init10bpp() {
 #if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
 
   // LumaAutoRegressionFunc
-  // Luma autoregression should never be called when lag is 0.
-  dsp->film_grain.luma_auto_regression[0] = nullptr;
+  dsp->film_grain.luma_auto_regression[0] =
+      ApplyAutoRegressiveFilterToLumaGrain_C<10, int16_t>;
   dsp->film_grain.luma_auto_regression[1] =
       ApplyAutoRegressiveFilterToLumaGrain_C<10, int16_t>;
   dsp->film_grain.luma_auto_regression[2] =
-      ApplyAutoRegressiveFilterToLumaGrain_C<10, int16_t>;
-  dsp->film_grain.luma_auto_regression[3] =
       ApplyAutoRegressiveFilterToLumaGrain_C<10, int16_t>;
 
   // ChromaAutoRegressionFunc
@@ -807,13 +801,11 @@ void Init10bpp() {
 #else  // !LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
   static_cast<void>(dsp);
 #ifndef LIBGAV1_Dsp10bpp_FilmGrainAutoregressionLuma
-  // Luma autoregression should never be called when lag is 0.
-  dsp->film_grain.luma_auto_regression[0] = nullptr;
+  dsp->film_grain.luma_auto_regression[0] =
+      ApplyAutoRegressiveFilterToLumaGrain_C<10, int16_t>;
   dsp->film_grain.luma_auto_regression[1] =
       ApplyAutoRegressiveFilterToLumaGrain_C<10, int16_t>;
   dsp->film_grain.luma_auto_regression[2] =
-      ApplyAutoRegressiveFilterToLumaGrain_C<10, int16_t>;
-  dsp->film_grain.luma_auto_regression[3] =
       ApplyAutoRegressiveFilterToLumaGrain_C<10, int16_t>;
 #endif
 #ifndef LIBGAV1_Dsp10bpp_FilmGrainAutoregressionChroma

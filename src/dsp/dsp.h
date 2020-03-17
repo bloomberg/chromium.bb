@@ -636,7 +636,9 @@ constexpr int kNumAutoRegressionLags = 4;
 // params.auto_regression_coeff_lag is 0.
 using LumaAutoRegressionFunc = void (*)(const FilmGrainParams& params,
                                         void* luma_grain_buffer);
-using LumaAutoRegressionFuncs = LumaAutoRegressionFunc[kNumAutoRegressionLags];
+// Function index is auto_regression_coeff_lag - 1.
+using LumaAutoRegressionFuncs =
+    LumaAutoRegressionFunc[kNumAutoRegressionLags - 1];
 
 // Applies an auto-regressive filter to the white noise in u_grain and v_grain.
 // Section 7.18.3.3, third code block
