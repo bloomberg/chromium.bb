@@ -95,11 +95,10 @@ class FilmGrain {
 
   // Combines the film grain with the image data.
   bool AddNoise(const uint8_t* source_plane_y, ptrdiff_t source_stride_y,
-                const uint8_t* source_plane_u, ptrdiff_t source_stride_u,
-                const uint8_t* source_plane_v, ptrdiff_t source_stride_v,
-                uint8_t* dest_plane_y, ptrdiff_t dest_stride_y,
-                uint8_t* dest_plane_u, ptrdiff_t dest_stride_u,
-                uint8_t* dest_plane_v, ptrdiff_t dest_stride_v);
+                const uint8_t* source_plane_u, const uint8_t* source_plane_v,
+                ptrdiff_t source_stride_uv, uint8_t* dest_plane_y,
+                ptrdiff_t dest_stride_y, uint8_t* dest_plane_u,
+                uint8_t* dest_plane_v, ptrdiff_t dest_stride_uv);
 
  private:
   using Pixel =
@@ -112,14 +111,15 @@ class FilmGrain {
 
   bool AllocateNoiseImage();
 
-  void BlendNoiseChromaWorker(
-      const dsp::Dsp& dsp, const Plane* planes, int num_planes,
-      std::atomic<int>* job_counter, int min_value, int max_chroma,
-      const uint8_t* source_plane_y, ptrdiff_t source_stride_y,
-      const uint8_t* source_plane_u, ptrdiff_t source_stride_u,
-      const uint8_t* source_plane_v, ptrdiff_t source_stride_v,
-      uint8_t* dest_plane_u, ptrdiff_t dest_stride_u, uint8_t* dest_plane_v,
-      ptrdiff_t dest_stride_v);
+  void BlendNoiseChromaWorker(const dsp::Dsp& dsp, const Plane* planes,
+                              int num_planes, std::atomic<int>* job_counter,
+                              int min_value, int max_chroma,
+                              const uint8_t* source_plane_y,
+                              ptrdiff_t source_stride_y,
+                              const uint8_t* source_plane_u,
+                              const uint8_t* source_plane_v,
+                              ptrdiff_t source_stride_uv, uint8_t* dest_plane_u,
+                              uint8_t* dest_plane_v, ptrdiff_t dest_stride_uv);
 
   void BlendNoiseLumaWorker(const dsp::Dsp& dsp, std::atomic<int>* job_counter,
                             int min_value, int max_luma,

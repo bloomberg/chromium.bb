@@ -533,10 +533,9 @@ void FilmGrain<bitdepth>::BlendNoiseChromaWorker(
     const dsp::Dsp& dsp, const Plane* planes, int num_planes,
     std::atomic<int>* job_counter, int min_value, int max_chroma,
     const uint8_t* source_plane_y, ptrdiff_t source_stride_y,
-    const uint8_t* source_plane_u, ptrdiff_t source_stride_u,
-    const uint8_t* source_plane_v, ptrdiff_t source_stride_v,
-    uint8_t* dest_plane_u, ptrdiff_t dest_stride_u, uint8_t* dest_plane_v,
-    ptrdiff_t dest_stride_v) {
+    const uint8_t* source_plane_u, const uint8_t* source_plane_v,
+    ptrdiff_t source_stride_uv, uint8_t* dest_plane_u, uint8_t* dest_plane_v,
+    ptrdiff_t dest_stride_uv) {
   assert(num_planes > 0);
   const int full_jobs_per_plane = height_ / kFrameChunkHeight;
   const int remainder_job_height = height_ & (kFrameChunkHeight - 1);
@@ -562,23 +561,17 @@ void FilmGrain<bitdepth>::BlendNoiseChromaWorker(
         source_plane_y + start_height * source_stride_y);
     const uint8_t* scaling_lut_uv;
     const uint8_t* source_plane_uv;
-    ptrdiff_t source_stride_uv;
     uint8_t* dest_plane_uv;
-    ptrdiff_t dest_stride_uv;
 
     if (plane == kPlaneU) {
       scaling_lut_uv = scaling_lut_u_;
       source_plane_uv = source_plane_u;
-      source_stride_uv = source_stride_u;
       dest_plane_uv = dest_plane_u;
-      dest_stride_uv = dest_stride_u;
     } else {
       assert(plane == kPlaneV);
       scaling_lut_uv = scaling_lut_v_;
       source_plane_uv = source_plane_v;
-      source_stride_uv = source_stride_v;
       dest_plane_uv = dest_plane_v;
-      dest_stride_uv = dest_stride_v;
     }
     const auto* source_cursor_uv = reinterpret_cast<const Pixel*>(
         source_plane_uv + (start_height >> subsampling_y_) * source_stride_uv);
@@ -622,10 +615,9 @@ void FilmGrain<bitdepth>::BlendNoiseLumaWorker(
 template <int bitdepth>
 bool FilmGrain<bitdepth>::AddNoise(
     const uint8_t* source_plane_y, ptrdiff_t source_stride_y,
-    const uint8_t* source_plane_u, ptrdiff_t source_stride_u,
-    const uint8_t* source_plane_v, ptrdiff_t source_stride_v,
-    uint8_t* dest_plane_y, ptrdiff_t dest_stride_y, uint8_t* dest_plane_u,
-    ptrdiff_t dest_stride_u, uint8_t* dest_plane_v, ptrdiff_t dest_stride_v) {
+    const uint8_t* source_plane_u, const uint8_t* source_plane_v,
+    ptrdiff_t source_stride_uv, uint8_t* dest_plane_y, ptrdiff_t dest_stride_y,
+    uint8_t* dest_plane_u, uint8_t* dest_plane_v, ptrdiff_t dest_stride_uv) {
   if (!Init()) {
     LIBGAV1_DLOG(ERROR, "Init() failed.");
     return false;
@@ -729,14 +721,14 @@ bool FilmGrain<bitdepth>::AddNoise(
       // linear "points." If the lookup table is empty, that corresponds to
       // outputting zero noise.
       if (params_.num_u_points == 0) {
-        CopyImagePlane<Pixel>(source_plane_u, source_stride_u, width_uv,
-                              height_uv, dest_plane_u, dest_stride_u);
+        CopyImagePlane<Pixel>(source_plane_u, source_stride_uv, width_uv,
+                              height_uv, dest_plane_u, dest_stride_uv);
       } else {
         planes_to_blend[num_planes++] = kPlaneU;
       }
       if (params_.num_v_points == 0) {
-        CopyImagePlane<Pixel>(source_plane_v, source_stride_v, width_uv,
-                              height_uv, dest_plane_v, dest_stride_v);
+        CopyImagePlane<Pixel>(source_plane_v, source_stride_uv, width_uv,
+                              height_uv, dest_plane_v, dest_stride_uv);
       } else {
         planes_to_blend[num_planes++] = kPlaneV;
       }
@@ -749,22 +741,21 @@ bool FilmGrain<bitdepth>::AddNoise(
         thread_pool_->Schedule([this, dsp, &pending_workers, &planes_to_blend,
                                 num_planes, &job_counter, min_value, max_chroma,
                                 source_plane_y, source_stride_y, source_plane_u,
-                                source_stride_u, source_plane_v,
-                                source_stride_v, dest_plane_u, dest_stride_u,
-                                dest_plane_v, dest_stride_v]() {
+                                source_plane_v, source_stride_uv, dest_plane_u,
+                                dest_plane_v, dest_stride_uv]() {
           BlendNoiseChromaWorker(
               *dsp, planes_to_blend, num_planes, &job_counter, min_value,
               max_chroma, source_plane_y, source_stride_y, source_plane_u,
-              source_stride_u, source_plane_v, source_stride_v, dest_plane_u,
-              dest_stride_u, dest_plane_v, dest_stride_v);
+              source_plane_v, source_stride_uv, dest_plane_u, dest_plane_v,
+              dest_stride_uv);
           pending_workers.Decrement();
         });
       }
       BlendNoiseChromaWorker(*dsp, planes_to_blend, num_planes, &job_counter,
                              min_value, max_chroma, source_plane_y,
-                             source_stride_y, source_plane_u, source_stride_u,
-                             source_plane_v, source_stride_v, dest_plane_u,
-                             dest_stride_u, dest_plane_v, dest_stride_v);
+                             source_stride_y, source_plane_u, source_plane_v,
+                             source_stride_uv, dest_plane_u, dest_plane_v,
+                             dest_stride_uv);
 
       pending_workers.Wait();
     } else {
@@ -774,14 +765,14 @@ bool FilmGrain<bitdepth>::AddNoise(
             kPlaneU, params_, noise_image_, min_value, max_chroma, width_,
             height_, /*start_height=*/0, subsampling_x_, subsampling_y_,
             scaling_lut_u_, source_plane_y, source_stride_y, source_plane_u,
-            source_stride_u, dest_plane_u, dest_stride_u);
+            source_stride_uv, dest_plane_u, dest_stride_uv);
       }
       if (params_.num_v_points > 0 || params_.chroma_scaling_from_luma) {
         dsp->film_grain.blend_noise_chroma[params_.chroma_scaling_from_luma](
             kPlaneV, params_, noise_image_, min_value, max_chroma, width_,
             height_, /*start_height=*/0, subsampling_x_, subsampling_y_,
             scaling_lut_v_, source_plane_y, source_stride_y, source_plane_v,
-            source_stride_v, dest_plane_v, dest_stride_v);
+            source_stride_uv, dest_plane_v, dest_stride_uv);
       }
     }
   }

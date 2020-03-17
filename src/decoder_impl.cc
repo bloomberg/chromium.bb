@@ -1157,6 +1157,12 @@ StatusCode DecoderImpl::ApplyFilmGrain(
   const bool color_matrix_is_identity =
       sequence_header.color_config.matrix_coefficients ==
       kMatrixCoefficientsIdentity;
+  assert(displayable_frame->buffer()->stride(kPlaneU) ==
+         displayable_frame->buffer()->stride(kPlaneV));
+  const int input_stride_uv = displayable_frame->buffer()->stride(kPlaneU);
+  assert((*film_grain_frame)->buffer()->stride(kPlaneU) ==
+         (*film_grain_frame)->buffer()->stride(kPlaneV));
+  const int output_stride_uv = (*film_grain_frame)->buffer()->stride(kPlaneU);
 #if LIBGAV1_MAX_BITDEPTH >= 10
   if (displayable_frame->buffer()->bitdepth() > 8) {
     FilmGrain<10> film_grain(displayable_frame->film_grain_params(),
@@ -1166,18 +1172,15 @@ StatusCode DecoderImpl::ApplyFilmGrain(
                              displayable_frame->buffer()->subsampling_y(),
                              displayable_frame->upscaled_width(),
                              displayable_frame->frame_height(), thread_pool);
-    if (!film_grain.AddNoise(displayable_frame->buffer()->data(kPlaneY),
-                             displayable_frame->buffer()->stride(kPlaneY),
-                             displayable_frame->buffer()->data(kPlaneU),
-                             displayable_frame->buffer()->stride(kPlaneU),
-                             displayable_frame->buffer()->data(kPlaneV),
-                             displayable_frame->buffer()->stride(kPlaneV),
-                             (*film_grain_frame)->buffer()->data(kPlaneY),
-                             (*film_grain_frame)->buffer()->stride(kPlaneY),
-                             (*film_grain_frame)->buffer()->data(kPlaneU),
-                             (*film_grain_frame)->buffer()->stride(kPlaneU),
-                             (*film_grain_frame)->buffer()->data(kPlaneV),
-                             (*film_grain_frame)->buffer()->stride(kPlaneV))) {
+    if (!film_grain.AddNoise(
+            displayable_frame->buffer()->data(kPlaneY),
+            displayable_frame->buffer()->stride(kPlaneY),
+            displayable_frame->buffer()->data(kPlaneU),
+            displayable_frame->buffer()->data(kPlaneV), input_stride_uv,
+            (*film_grain_frame)->buffer()->data(kPlaneY),
+            (*film_grain_frame)->buffer()->stride(kPlaneY),
+            (*film_grain_frame)->buffer()->data(kPlaneU),
+            (*film_grain_frame)->buffer()->data(kPlaneV), output_stride_uv)) {
       LIBGAV1_DLOG(ERROR, "film_grain.AddNoise() failed.");
       return kStatusOutOfMemory;
     }
@@ -1191,18 +1194,15 @@ StatusCode DecoderImpl::ApplyFilmGrain(
                           displayable_frame->buffer()->subsampling_y(),
                           displayable_frame->upscaled_width(),
                           displayable_frame->frame_height(), thread_pool);
-  if (!film_grain.AddNoise(displayable_frame->buffer()->data(kPlaneY),
-                           displayable_frame->buffer()->stride(kPlaneY),
-                           displayable_frame->buffer()->data(kPlaneU),
-                           displayable_frame->buffer()->stride(kPlaneU),
-                           displayable_frame->buffer()->data(kPlaneV),
-                           displayable_frame->buffer()->stride(kPlaneV),
-                           (*film_grain_frame)->buffer()->data(kPlaneY),
-                           (*film_grain_frame)->buffer()->stride(kPlaneY),
-                           (*film_grain_frame)->buffer()->data(kPlaneU),
-                           (*film_grain_frame)->buffer()->stride(kPlaneU),
-                           (*film_grain_frame)->buffer()->data(kPlaneV),
-                           (*film_grain_frame)->buffer()->stride(kPlaneV))) {
+  if (!film_grain.AddNoise(
+          displayable_frame->buffer()->data(kPlaneY),
+          displayable_frame->buffer()->stride(kPlaneY),
+          displayable_frame->buffer()->data(kPlaneU),
+          displayable_frame->buffer()->data(kPlaneV), input_stride_uv,
+          (*film_grain_frame)->buffer()->data(kPlaneY),
+          (*film_grain_frame)->buffer()->stride(kPlaneY),
+          (*film_grain_frame)->buffer()->data(kPlaneU),
+          (*film_grain_frame)->buffer()->data(kPlaneV), output_stride_uv)) {
     LIBGAV1_DLOG(ERROR, "film_grain.AddNoise() failed.");
     return kStatusOutOfMemory;
   }
