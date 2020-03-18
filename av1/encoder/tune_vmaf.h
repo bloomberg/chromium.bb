@@ -15,11 +15,9 @@
 #include "aom_scale/yv12config.h"
 #include "av1/encoder/encoder.h"
 
-void av1_vmaf_blk_preprocessing(const AV1_COMP *cpi,
-                                YV12_BUFFER_CONFIG *source);
+void av1_vmaf_blk_preprocessing(AV1_COMP *cpi, YV12_BUFFER_CONFIG *source);
 
-void av1_vmaf_frame_preprocessing(const AV1_COMP *cpi,
-                                  YV12_BUFFER_CONFIG *source);
+void av1_vmaf_frame_preprocessing(AV1_COMP *cpi, YV12_BUFFER_CONFIG *source);
 
 void av1_set_mb_vmaf_rdmult_scaling(AV1_COMP *cpi);
 

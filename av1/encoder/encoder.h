@@ -1131,6 +1131,7 @@ typedef struct AV1_COMP {
   double *vmaf_rdmult_scaling_factors;
   double last_frame_ysse;
   double last_frame_vmaf;
+  double last_frame_unsharp_amount;
 #endif
 
   int use_svc;

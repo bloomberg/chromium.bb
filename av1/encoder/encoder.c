@@ -3194,6 +3194,7 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf, BufferPool *const pool,
     CHECK_MEM_ERROR(cm, cpi->vmaf_rdmult_scaling_factors,
                     aom_calloc(num_rows * num_cols,
                                sizeof(*cpi->vmaf_rdmult_scaling_factors)));
+    cpi->last_frame_unsharp_amount = 0.0;
   }
 #endif
 
