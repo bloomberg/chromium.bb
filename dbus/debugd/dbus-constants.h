@@ -21,6 +21,7 @@ const char kGetNetworkStatus[] = "GetNetworkStatus";
 const char kGetPerfOutput[] = "GetPerfOutput";
 const char kGetPerfOutputFd[] = "GetPerfOutputFd";
 const char kStopPerf[] = "StopPerf";
+const char kGetIpAddrs[] = "GetIpAddrs";
 const char kGetRoutes[] = "GetRoutes";
 const char kSetDebugMode[] = "SetDebugMode";
 const char kSystraceStart[] = "SystraceStart";
