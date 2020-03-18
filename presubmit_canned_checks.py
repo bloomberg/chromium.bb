@@ -688,7 +688,8 @@ def GetUnitTests(
 
 
 def GetUnitTestsRecursively(input_api, output_api, directory,
-                            whitelist, blacklist):
+                            whitelist, blacklist, run_on_python2=True,
+                            run_on_python3=True):
   """Gets all files in the directory tree (git repo) that match the whitelist.
 
   Restricts itself to only find files within the Change's source repo, not
@@ -714,7 +715,9 @@ def GetUnitTestsRecursively(input_api, output_api, directory,
           % (found, whitelist, blacklist, directory))
     ]
 
-  return GetUnitTests(input_api, output_api, tests)
+  return GetUnitTests(input_api, output_api, tests,
+                      run_on_python2=run_on_python2,
+                      run_on_python3=run_on_python3)
 
 
 def GetPythonUnitTests(input_api, output_api, unit_tests):
