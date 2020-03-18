@@ -287,6 +287,7 @@ class CrOSTesterAutotest(CrOSTesterBase):
         '--results_dir', '/mnt/host/source/test_results',
         '--ssh_private_key', '/mnt/host/source/.ssh/testing_rsa'])
 
+  @cros_test_lib.pytestmark_output_test
   @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=False)
   def testOutsideChrootAutotest(self, check_inside_chroot_mock):
     """Tests running an autotest from outside the chroot."""
