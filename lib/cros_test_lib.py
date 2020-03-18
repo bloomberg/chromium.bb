@@ -45,6 +45,7 @@ from chromite.utils import outcap
 # add pytestmarks directly in test files.
 try:
   import pytest  # pylint: disable=import-error
+  pytest_skip = pytest.skip
   pytestmark_config_skew_test = pytest.mark.config_skew_test
   pytestmark_inside_only = pytest.mark.inside_only
   pytestmark_legacy_slow = pytest.mark.legacy_slow
@@ -61,6 +62,7 @@ except (ImportError, AttributeError):
   # If Pytest is not present, or too old to allow pytest.mark,
   # define custom pytestmarks as null functions for test files to use.
   null_decorator = lambda obj: obj
+  pytest_skip = lambda allow_module_level: True
   pytestmark_config_skew_test = null_decorator
   pytestmark_inside_only = null_decorator
   pytestmark_legacy_slow = null_decorator
