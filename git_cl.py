@@ -1447,6 +1447,62 @@ class Changelist(object):
       p = subprocess2.Popen(['vpython', PRESUBMIT_SUPPORT] + args)
       p.wait()
 
+  def _GetDescriptionForUpload(self, options, git_diff_args, files):
+    # Get description message for upload.
+    if self.GetIssue():
+      description = self.FetchDescription()
+    elif options.message:
+      description = options.message
+    else:
+      description = _create_description_from_log(git_diff_args)
+      if options.title and options.squash:
+        description = options.title + '\n\n' + message
+
+    # Extract bug number from branch name.
+    bug = options.bug
+    fixed = options.fixed
+    match = re.match(r'(?P<type>bug|fix(?:e[sd])?)[_-]?(?P<bugnum>\d+)',
+                     self.GetBranch())
+    if not bug and not fixed and match:
+      if match.group('type') == 'bug':
+        bug = match.group('bugnum')
+      else:
+        fixed = match.group('bugnum')
+
+    change_description = ChangeDescription(description, bug, fixed)
+
+    # Set the reviewer list now so that presubmit checks can access it.
+    if options.reviewers or options.tbrs or options.add_owners_to:
+      change_description.update_reviewers(
+          options.reviewers, options.tbrs, options.add_owners_to, files,
+          self.GetAuthor())
+
+    return change_description
+
+  def _GetTitleForUpload(self, options):
+    # When not squashing, just return options.title.
+    if not options.squash:
+      return options.title
+
+    # On first upload, patchset title is always this string, while options.title
+    # gets converted to first line of message.
+    if not self.GetIssue():
+      return 'Initial upload'
+
+    # When uploading subsequent patchsets, options.message is taken as the title
+    # if options.title is not provided.
+    if options.title:
+      return options.title
+    if options.message:
+      return options.message.strip()
+
+    # Use the subject of the last commit as title by default.
+    title = RunGit(
+        ['show', '-s', '--format=%s', 'HEAD']).strip()
+    if options.force:
+      return title
+    return ask_for_data('Title for patchset [%s]: ' % title) or title
+
   def CMDUpload(self, options, git_diff_args, orig_args):
     """Uploads a change to codereview."""
     custom_cl_base = None
@@ -1466,30 +1522,13 @@ class Changelist(object):
     self.EnsureAuthenticated(force=options.force)
     self.EnsureCanUploadPatchset(force=options.force)
 
-    # Get description message for upload.
-    if self.GetIssue():
-      description = self.FetchDescription()
-    elif options.message:
-      description = options.message
-    else:
-      description = _create_description_from_log(git_diff_args)
-      if options.title and options.squash:
-        description = options.title + '\n\n' + message
-
     # Apply watchlists on upload.
     watchlist = watchlists.Watchlists(settings.GetRoot())
     files = self.GetAffectedFiles(base_branch)
     if not options.bypass_watchlists:
       self.ExtendCC(watchlist.GetWatchersForPaths(files))
 
-    if options.reviewers or options.tbrs or options.add_owners_to:
-      # Set the reviewer list now so that presubmit checks can access it.
-      change_description = ChangeDescription(description)
-      change_description.update_reviewers(
-          options.reviewers, options.tbrs, options.add_owners_to, files,
-          self.GetAuthor())
-      description = change_description.description
-
+    change_desc = self._GetDescriptionForUpload(options, git_diff_args, files)
     if not options.bypass_hooks:
       hook_results = self.RunHook(
           committing=False,
@@ -1497,19 +1536,20 @@ class Changelist(object):
           verbose=options.verbose,
           parallel=options.parallel,
           upstream=base_branch,
-          description=description,
+          description=change_desc.description,
           all_files=False)
       self.ExtendCC(hook_results['more_cc'])
 
     print_stats(git_diff_args)
     ret = self.CMDUploadChange(
-        options, git_diff_args, custom_cl_base, description)
+        options, git_diff_args, custom_cl_base, change_desc)
     if not ret:
       self._GitSetBranchConfigValue(
           'last-upload-hash', RunGit(['rev-parse', 'HEAD']).strip())
       # Run post upload hooks, if specified.
       if settings.GetRunPostUploadHook():
-        self.RunPostUploadHook(options.verbose, base_branch, description)
+        self.RunPostUploadHook(
+            options.verbose, base_branch, change_desc.description)
 
       # Upload all dependencies if specified.
       if options.dependencies:
@@ -2237,7 +2277,7 @@ class Changelist(object):
     return push_stdout
 
   def CMDUploadChange(
-      self, options, git_diff_args, custom_cl_base, message):
+      self, options, git_diff_args, custom_cl_base, change_desc):
     """Upload the current branch to Gerrit."""
     if options.squash is None:
       # Load default for user, repo, squash=true, in this order.
@@ -2245,101 +2285,42 @@ class Changelist(object):
 
     remote, remote_branch = self.GetRemoteBranch()
     branch = GetTargetRef(remote, remote_branch, options.target_branch)
-    # This may be None; default fallback value is determined in logic below.
-    title = options.title
-
-    # Extract bug number from branch name.
-    bug = options.bug
-    fixed = options.fixed
-    match = re.match(r'(?P<type>bug|fix(?:e[sd])?)[_-]?(?P<bugnum>\d+)',
-                     self.GetBranch())
-    if not bug and not fixed and match:
-      if match.group('type') == 'bug':
-        bug = match.group('bugnum')
-      else:
-        fixed = match.group('bugnum')
 
     if options.squash:
       self._GerritCommitMsgHookCheck(offer_removal=not options.force)
       if self.GetIssue():
-        if not title:
-          if options.message:
-            # When uploading a subsequent patchset, -m|--message is taken
-            # as the patchset title if --title was not provided.
-            title = options.message.strip()
-          else:
-            default_title = RunGit(
-                ['show', '-s', '--format=%s', 'HEAD']).strip()
-            if options.force:
-              title = default_title
-            else:
-              title = ask_for_data(
-                  'Title for patchset [%s]: ' % default_title) or default_title
-
         # User requested to change description
         if options.edit_description:
-          change_desc = ChangeDescription(message, bug=bug, fixed=fixed)
           change_desc.prompt()
-          message = change_desc.description
-
         change_id = self._GetChangeDetail()['change_id']
-
-        # Make sure that the Change-Id in the description matches the one
-        # fetched from Gerrit.
-        footer_change_ids = git_footers.get_footer_change_id(message)
-        if footer_change_ids != [change_id]:
-          if footer_change_ids:
-            # Remove any existing Change-Id footers since they don't match the
-            # expected change_id footer.
-            message = git_footers.remove_footer(message, 'Change-Id')
-          # Add the expected Change-Id footer.
-          message = git_footers.add_footer_change_id(message, change_id)
-          print('WARNING: Change-Id has been set to Change-Id fetched from '
-                'Gerrit. Use `git cl issue 0` if you want to clear it and '
-                'set a new one.')
-        change_desc = ChangeDescription(message, bug=bug, fixed=fixed)
+        change_desc.ensure_change_id(change_id)
       else:  # if not self.GetIssue()
-        change_desc = ChangeDescription(message, bug=bug, fixed=fixed)
         if not options.force:
           change_desc.prompt()
-
-        # On first upload, patchset title is always this string, while
-        # --title flag gets converted to first line of message.
-        title = 'Initial upload'
-        if not change_desc.description:
-          DieWithError("Description is empty. Aborting...")
         change_ids = git_footers.get_footer_change_id(change_desc.description)
-        if len(change_ids) > 1:
-          DieWithError('too many Change-Id footers, at most 1 allowed.')
-        if not change_ids:
-          # Generate the Change-Id automatically.
-          change_desc.set_description(git_footers.add_footer_change_id(
-              change_desc.description,
-              GenerateGerritChangeId(change_desc.description)))
-          change_ids = git_footers.get_footer_change_id(change_desc.description)
-          assert len(change_ids) == 1
-        change_id = change_ids[0]
+        if len(change_ids) == 1:
+          change_id = change_ids[0]
+        else:
+          change_id = GenerateGerritChangeId(change_desc.description)
+          change_desc.ensure_change_id(change_id)
 
       if options.preserve_tryjobs:
         change_desc.set_preserve_tryjobs()
 
       remote, upstream_branch = self.FetchUpstreamTuple(self.GetBranch())
-      parent = self._ComputeParent(remote, upstream_branch, custom_cl_base,
-                                   options.force, change_desc)
+      parent = self._ComputeParent(
+          remote, upstream_branch, custom_cl_base, options.force, change_desc)
       tree = RunGit(['rev-parse', 'HEAD:']).strip()
       with gclient_utils.temporary_file() as desc_tempfile:
         gclient_utils.FileWrite(desc_tempfile, change_desc.description)
         ref_to_push = RunGit(
             ['commit-tree', tree, '-p', parent, '-F', desc_tempfile]).strip()
     else:  # if not options.squash
-      change_desc = ChangeDescription(message)
-      if not change_desc.description:
-        DieWithError("Description is empty. Aborting...")
-
       if not git_footers.get_footer_change_id(change_desc.description):
         DownloadGerritHook(False)
         change_desc.set_description(
-            self._AddChangeIdToCommitMessage(message, git_diff_args))
+            self._AddChangeIdToCommitMessage(
+                change_desc.description, git_diff_args))
       ref_to_push = 'HEAD'
       # For no-squash mode, we assume the remote called "origin" is the one we
       # want. It is not worthwhile to support different workflows for
@@ -2347,7 +2328,6 @@ class Changelist(object):
       parent = 'origin/%s' % branch
       change_id = git_footers.get_footer_change_id(change_desc.description)[0]
 
-    assert change_desc
     SaveDescriptionBackup(change_desc)
     commits = RunGitSilent(['rev-list', '%s..%s' % (parent,
                                                     ref_to_push)]).splitlines()
@@ -2399,6 +2379,7 @@ class Changelist(object):
     # TODO(tandrii): options.message should be posted as a comment
     # if --send-mail is set on non-initial upload as Rietveld used to do it.
 
+    title = self._GetTitleForUpload(options)
     if title:
       # Punctuation and whitespace in |title| must be percent-encoded.
       refspec_opts.append('m=' + gerrit_util.PercentEncodeForGitRef(title))
@@ -2672,6 +2653,21 @@ class ChangeDescription(object):
     while lines and not lines[-1]:
       lines.pop(-1)
     self._description_lines = lines
+
+  def ensure_change_id(self, change_id):
+    description = self.description
+    footer_change_ids = git_footers.get_footer_change_id(description)
+    # Make sure that the Change-Id in the description matches the given one.
+    if footer_change_ids != [change_id]:
+      if footer_change_ids:
+        # Remove any existing Change-Id footers since they don't match the
+        # expected change_id footer.
+        description = git_footers.remove_footer(description, 'Change-Id')
+        print('WARNING: Change-Id has been set to %s. Use `git cl issue 0` '
+              'if you want to set a new one.')
+      # Add the expected Change-Id footer.
+      description = git_footers.add_footer_change_id(description, change_id)
+      self.set_description(description)
 
   def update_reviewers(
       self, reviewers, tbrs, add_owners_to, affected_files, author_email):
