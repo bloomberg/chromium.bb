@@ -845,6 +845,7 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
           'strict_toolchain_checks']),
       latest_toolchain=True,
       enable_skylab_hw_tests=True,
+      debuginfo_test=True,
   )
 
   site_config.AddTemplate(

@@ -177,9 +177,12 @@ class SimpleBuilder(generic_builders.Builder):
     early_stage_list = [
         [test_stages.UnitTestStage, board],
     ]
-    stage_list = [
-        [test_stages.DebugInfoTestStage, board],
-    ]
+
+    stage_list = []
+    if config.debuginfo_test:
+      stage_list += [
+          [test_stages.DebugInfoTestStage, board],
+      ]
 
     # Skip most steps if we're a compilecheck builder.
     if builder_run.config.compilecheck or builder_run.options.compilecheck:

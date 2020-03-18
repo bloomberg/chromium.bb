@@ -841,6 +841,9 @@ def DefaultSettings():
       # Test CLs to verify they're ready for the commit queue.
       pre_cq=False,
 
+      # If True, run DebugInfoTest stage.
+      debuginfo_test=False,
+
       # Runs the tests that the signer would run. This should only be set if
       # 'recovery' is in images.
       signer_tests=False,
