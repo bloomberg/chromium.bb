@@ -206,7 +206,7 @@ class CookiesAuthenticator(Authenticator):
       return subprocess2.check_output(
           ['git', 'config', '--path', 'http.cookiefile']).strip()
     except subprocess2.CalledProcessError:
-      return os.path.join(os.environ['HOME'], '.gitcookies')
+      return os.path.expanduser(os.path.join('~', '.gitcookies'))
 
   @classmethod
   def _get_gitcookies(cls):

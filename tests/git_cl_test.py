@@ -45,6 +45,8 @@ import git_new_branch
 import scm
 import subprocess2
 
+NETRC_FILENAME = '_netrc' if sys.platform == 'win32' else '.netrc'
+
 
 def callError(code=1, cmd='', cwd='', stdout=b'', stderr=b''):
   return subprocess2.CalledProcessError(code, cmd, cwd, stdout, stderr)
@@ -155,10 +157,12 @@ def CookiesAuthenticatorMockFactory(hosts_with_creds=None, same_auth=False):
       pass
     @classmethod
     def get_gitcookies_path(cls):
-      return '~/.gitcookies'
+      return os.path.join('~', '.gitcookies')
+
     @classmethod
     def get_netrc_path(cls):
-      return '~/.netrc'
+      return os.path.join('~', NETRC_FILENAME)
+
     def _get_auth_for_host(self, host):
       if same_auth:
         return same_auth
@@ -633,13 +637,16 @@ class GitCookiesCheckerTest(unittest.TestCase):
 
   @mock.patch(
       'git_cl.gerrit_util.CookiesAuthenticator.get_gitcookies_path',
-      return_value='~/.gitcookies')
+      return_value=os.path.join('~', '.gitcookies'))
   def test_report(self, *_mocks):
     self.test_analysis()
     self.assertTrue(self.c.find_and_report_problems())
     with open(os.path.join(os.path.dirname(__file__),
                            'git_cl_creds_check_report.txt')) as f:
-      expected = f.read()
+      expected = f.read() % {
+          'sep': os.sep,
+      }
+
     def by_line(text):
       return [l.rstrip() for l in text.rstrip().splitlines()]
     self.maxDiff = 10000  # pylint: disable=attribute-defined-outside-init
@@ -1026,69 +1033,97 @@ class TestGitCl(unittest.TestCase):
     ]
 
     final_description = final_description or post_amend_description.strip()
+
+    date_format = ('03/16/17 20:00:41'
+                   if sys.platform == 'win32' and sys.version_info.major == 2
+                   else 'Thu Mar 16 20:00:41 2017')
+    trace_name = os.path.join('TRACES_DIR', '20170316T200041.000000')
+
     # Trace-related calls
     calls += [
         # Write a description with context for the current trace.
-        ((['FileWrite', 'TRACES_DIR/20170316T200041.000000-README',
-           'Thu Mar 16 20:00:41 2017\n'
-           '%(short_hostname)s-review.googlesource.com\n'
-           '%(change_id)s\n'
-           '%(title)s\n'
-           '%(description)s\n'
-           '1000\n'
-           '0\n'
-           '%(trace_name)s' % {
-             'short_hostname': short_hostname,
-             'change_id': change_id,
-             'description': final_description,
-             'title': title or '<untitled>',
-             'trace_name': 'TRACES_DIR/20170316T200041.000000',
-           }],),
-         None,
+        (
+            ([
+                'FileWrite', trace_name + '-README',
+                '%(date)s\n'
+                '%(short_hostname)s-review.googlesource.com\n'
+                '%(change_id)s\n'
+                '%(title)s\n'
+                '%(description)s\n'
+                '1000\n'
+                '0\n'
+                '%(trace_name)s' % {
+                    'date': date_format,
+                    'short_hostname': short_hostname,
+                    'change_id': change_id,
+                    'description': final_description,
+                    'title': title or '<untitled>',
+                    'trace_name': trace_name,
+                }
+            ], ),
+            None,
         ),
         # Read traces and shorten git hashes.
-        ((['os.path.isfile', 'TEMP_DIR/trace-packet'],),
-         True,
+        (
+            (['os.path.isfile',
+              os.path.join('TEMP_DIR', 'trace-packet')], ),
+            True,
         ),
-        ((['FileRead', 'TEMP_DIR/trace-packet'],),
-         ('git-hash: 0123456789012345678901234567890123456789\n'
-          'git-hash: abcdeabcdeabcdeabcdeabcdeabcdeabcdeabcde\n'),
+        (
+            (['FileRead', os.path.join('TEMP_DIR', 'trace-packet')], ),
+            ('git-hash: 0123456789012345678901234567890123456789\n'
+             'git-hash: abcdeabcdeabcdeabcdeabcdeabcdeabcdeabcde\n'),
         ),
-        ((['FileWrite', 'TEMP_DIR/trace-packet',
-           'git-hash: 012345\n'
-           'git-hash: abcdea\n'],),
-         None,
+        (
+            ([
+                'FileWrite',
+                os.path.join('TEMP_DIR', 'trace-packet'), 'git-hash: 012345\n'
+                'git-hash: abcdea\n'
+            ], ),
+            None,
         ),
         # Make zip file for the git traces.
-        ((['make_archive', 'TRACES_DIR/20170316T200041.000000-traces', 'zip',
-           'TEMP_DIR'],),
-         None,
+        (
+            (['make_archive', trace_name + '-traces', 'zip', 'TEMP_DIR'], ),
+            None,
         ),
         # Collect git config and gitcookies.
-        ((['git', 'config', '-l'],),
-         'git-config-output',
+        (
+            (['git', 'config', '-l'], ),
+            'git-config-output',
         ),
-        ((['FileWrite', 'TEMP_DIR/git-config', 'git-config-output'],),
-         None,
+        (
+            ([
+                'FileWrite',
+                os.path.join('TEMP_DIR', 'git-config'), 'git-config-output'
+            ], ),
+            None,
         ),
-        ((['os.path.isfile', '~/.gitcookies'],),
-         gitcookies_exists,
+        (
+            (['os.path.isfile',
+              os.path.join('~', '.gitcookies')], ),
+            gitcookies_exists,
         ),
     ]
     if gitcookies_exists:
       calls += [
-          ((['FileRead', '~/.gitcookies'],),
-           'gitcookies 1/SECRET',
+          (
+              (['FileRead', os.path.join('~', '.gitcookies')], ),
+              'gitcookies 1/SECRET',
           ),
-          ((['FileWrite', 'TEMP_DIR/gitcookies', 'gitcookies REDACTED'],),
-           None,
+          (
+              ([
+                  'FileWrite',
+                  os.path.join('TEMP_DIR', 'gitcookies'), 'gitcookies REDACTED'
+              ], ),
+              None,
           ),
       ]
     calls += [
         # Make zip file for the git config and gitcookies.
-        ((['make_archive', 'TRACES_DIR/20170316T200041.000000-git-info', 'zip',
-           'TEMP_DIR'],),
-         None,
+        (
+            (['make_archive', trace_name + '-git-info', 'zip', 'TEMP_DIR'], ),
+            None,
         ),
     ]
 
@@ -1840,10 +1875,13 @@ class TestGitCl(unittest.TestCase):
     self.assertEqual(
         'Credentials for the following hosts are required:\n'
         '  chromium-review.googlesource.com\n'
-        'These are read from ~/.gitcookies (or legacy ~/.netrc)\n'
+        'These are read from ~%(sep)s.gitcookies '
+        '(or legacy ~%(sep)s%(netrc)s)\n'
         'You can (re)generate your credentials by visiting '
-        'https://chromium-review.googlesource.com/new-password\n',
-        sys.stderr.getvalue())
+        'https://chromium-review.googlesource.com/new-password\n' % {
+            'sep': os.sep,
+            'netrc': NETRC_FILENAME,
+        }, sys.stderr.getvalue())
 
   def test_gerrit_ensure_authenticated_conflict(self):
     cl = self._test_gerrit_ensure_authenticated_common(auth={
@@ -2221,29 +2259,29 @@ class TestGitCl(unittest.TestCase):
 
   def test_GerritCommitMsgHookCheck_custom_hook(self):
     cl = self._common_GerritCommitMsgHookCheck()
-    self.calls += [
-        ((['exists', '.git/hooks/commit-msg'],), True),
-        ((['FileRead', '.git/hooks/commit-msg'],),
-         '#!/bin/sh\necho "custom hook"')
-    ]
+    self.calls += [((['exists',
+                      os.path.join('.git', 'hooks', 'commit-msg')], ), True),
+                   ((['FileRead',
+                      os.path.join('.git', 'hooks', 'commit-msg')], ),
+                    '#!/bin/sh\necho "custom hook"')]
     cl._GerritCommitMsgHookCheck(offer_removal=True)
 
   def test_GerritCommitMsgHookCheck_not_exists(self):
     cl = self._common_GerritCommitMsgHookCheck()
     self.calls += [
-        ((['exists', '.git/hooks/commit-msg'],), False),
+        ((['exists', os.path.join('.git', 'hooks', 'commit-msg')], ), False),
     ]
     cl._GerritCommitMsgHookCheck(offer_removal=True)
 
   def test_GerritCommitMsgHookCheck(self):
     cl = self._common_GerritCommitMsgHookCheck()
     self.calls += [
-        ((['exists', '.git/hooks/commit-msg'],), True),
-        ((['FileRead', '.git/hooks/commit-msg'],),
+        ((['exists', os.path.join('.git', 'hooks', 'commit-msg')], ), True),
+        ((['FileRead', os.path.join('.git', 'hooks', 'commit-msg')], ),
          '...\n# From Gerrit Code Review\n...\nadd_ChangeId()\n'),
         (('ask_for_data', 'Do you want to remove it now? [Yes/No]: '), 'Yes'),
-        ((['rm_file_or_tree', '.git/hooks/commit-msg'],),
-         ''),
+        ((['rm_file_or_tree',
+           os.path.join('.git', 'hooks', 'commit-msg')], ), ''),
     ]
     cl._GerritCommitMsgHookCheck(offer_removal=True)
 
@@ -2362,8 +2400,8 @@ class TestGitCl(unittest.TestCase):
       if dirname == os.path.expanduser('~'):
         dirname = '~'
       base = os.path.basename(path)
-      if base in ('.netrc', '.gitcookies'):
-        return self._mocked_call('os.path.exists', '%s/%s' % (dirname, base))
+      if base in (NETRC_FILENAME, '.gitcookies'):
+        return self._mocked_call('os.path.exists', os.path.join(dirname, base))
       # git cl also checks for existence other files not relevant to this test.
       return None
     mock.patch(
@@ -2376,13 +2414,15 @@ class TestGitCl(unittest.TestCase):
     mock.patch('git_cl._GitCookiesChecker.get_hosts_with_creds',
               lambda _, include_netrc=False: []).start()
     self.calls = [
-      ((['git', 'config', '--path', 'http.cookiefile'],), CERR1),
-      ((['git', 'config', '--global', 'http.cookiefile'],), CERR1),
-      (('os.path.exists', '~/.netrc'), True),
-      (('ask_for_data', 'Press Enter to setup .gitcookies, '
-        'or Ctrl+C to abort'), ''),
-      ((['git', 'config', '--global', 'http.cookiefile',
-         os.path.expanduser('~/.gitcookies')], ), ''),
+        ((['git', 'config', '--path', 'http.cookiefile'], ), CERR1),
+        ((['git', 'config', '--global', 'http.cookiefile'], ), CERR1),
+        (('os.path.exists', os.path.join('~', NETRC_FILENAME)), True),
+        (('ask_for_data', 'Press Enter to setup .gitcookies, '
+          'or Ctrl+C to abort'), ''),
+        (([
+            'git', 'config', '--global', 'http.cookiefile',
+            os.path.expanduser(os.path.join('~', '.gitcookies'))
+        ], ), ''),
     ]
     self.assertEqual(0, git_cl.main(['creds-check']))
     self.assertTrue(
@@ -2396,15 +2436,19 @@ class TestGitCl(unittest.TestCase):
     self._common_creds_check_mocks()
     mock.patch('git_cl._GitCookiesChecker.get_hosts_with_creds',
               lambda _, include_netrc=False: []).start()
+    custom_cookie_path = ('C:\\.gitcookies'
+                          if sys.platform == 'win32' else '/custom/.gitcookies')
     self.calls = [
-      ((['git', 'config', '--path', 'http.cookiefile'],), CERR1),
-      ((['git', 'config', '--global', 'http.cookiefile'],),
-       '/custom/.gitcookies'),
-      (('os.path.exists', '/custom/.gitcookies'), False),
-      (('ask_for_data', 'Reconfigure git to use default .gitcookies? '
-                        'Press Enter to reconfigure, or Ctrl+C to abort'), ''),
-      ((['git', 'config', '--global', 'http.cookiefile',
-         os.path.expanduser('~/.gitcookies')], ), ''),
+        ((['git', 'config', '--path', 'http.cookiefile'], ), CERR1),
+        ((['git', 'config', '--global', 'http.cookiefile'], ),
+         custom_cookie_path),
+        (('os.path.exists', custom_cookie_path), False),
+        (('ask_for_data', 'Reconfigure git to use default .gitcookies? '
+          'Press Enter to reconfigure, or Ctrl+C to abort'), ''),
+        (([
+            'git', 'config', '--global', 'http.cookiefile',
+            os.path.expanduser(os.path.join('~', '.gitcookies'))
+        ], ), ''),
     ]
     self.assertEqual(0, git_cl.main(['creds-check']))
     self.assertIn(
@@ -3611,6 +3655,8 @@ class CMDFormatTestCase(unittest.TestCase):
 
   def testClangFormatDiff(self):
     git_cl.settings.GetFormatFullByDefault.return_value = False
+    # A valid file is required, so use this test.
+    clang_format.FindClangFormatToolInChromiumTree.return_value = __file__
     mock_opts = mock.Mock(full=False, dry_run=True, diff=False)
 
     # Diff

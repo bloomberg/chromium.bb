@@ -80,7 +80,6 @@ def CommonChecks(input_api, output_api, tests_to_black_list, run_on_python3):
     print('Warning: skipping most unit tests on Windows')
     tests_to_black_list = [
         r'.*auth_test\.py$',
-        r'.*git_cl_test\.py$',
         r'.*git_common_test\.py$',
         r'.*git_hyper_blame_test\.py$',
         r'.*git_map_test\.py$',

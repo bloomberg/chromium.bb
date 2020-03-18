@@ -22,7 +22,7 @@
     chrome-internal.googlesource.com    git-example.chromium.org but google.com recommended
     chromium.googlesource.com           git-example.google.com but chromium.org recommended
 
-  You can manually remove corresponding lines in your ~/.gitcookies file and visit the following URLs with correct account to generate correct credential lines:
+  You can manually remove corresponding lines in your ~%(sep)s.gitcookies file and visit the following URLs with correct account to generate correct credential lines:
 
     https://chrome-internal-review.googlesource.com/new-password
     https://chromium-review.googlesource.com/new-password
