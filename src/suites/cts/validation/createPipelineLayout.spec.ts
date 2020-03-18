@@ -17,17 +17,17 @@ g.test('number of dynamic buffers exceeds the maximum value', async t => {
   const { type, visibility } = t.params;
   const maxDynamicCount = kBindingTypeInfo[type as GPUBindingType].maxDynamicCount;
 
-  const maxDynamicBufferBindings: GPUBindGroupLayoutBinding[] = [];
+  const maxDynamicBufferBindings: GPUBindGroupLayoutEntry[] = [];
   for (let binding = 0; binding < maxDynamicCount; binding++) {
     maxDynamicBufferBindings.push({ binding, visibility, type, hasDynamicOffset: true });
   }
 
   const maxDynamicBufferBindGroupLayout = t.device.createBindGroupLayout({
-    bindings: maxDynamicBufferBindings,
+    entries: maxDynamicBufferBindings,
   });
 
   const goodDescriptor = {
-    bindings: [{ binding: 0, visibility, type, hasDynamicOffset: false }],
+    entries: [{ binding: 0, visibility, type, hasDynamicOffset: false }],
   };
 
   const goodPipelineLayoutDescriptor = {
@@ -42,7 +42,7 @@ g.test('number of dynamic buffers exceeds the maximum value', async t => {
 
   // Check dynamic buffers exceed maximum in pipeline layout.
   const badDescriptor = clone(goodDescriptor);
-  badDescriptor.bindings[0].hasDynamicOffset = true;
+  badDescriptor.entries[0].hasDynamicOffset = true;
 
   const badPipelineLayoutDescriptor = {
     bindGroupLayouts: [
@@ -68,7 +68,7 @@ g.test('visibility and dynamic offsets', t => {
   const info = kBindingTypeInfo[type as GPUBindingType];
 
   const descriptor = {
-    bindings: [{ binding: 0, visibility, type, hasDynamicOffset }],
+    entries: [{ binding: 0, visibility, type, hasDynamicOffset }],
   };
 
   let success = true;
@@ -90,7 +90,7 @@ g.test('visibility and dynamic offsets', t => {
 
 g.test('number of bind group layouts exceeds the maximum value', async t => {
   const bindGroupLayoutDescriptor: GPUBindGroupLayoutDescriptor = {
-    bindings: [],
+    entries: [],
   };
 
   // 4 is the maximum number of bind group layouts.

@@ -68,7 +68,7 @@ g.test('storeOp controls whether 1x1 drawn quad is stored', async t => {
   });
   encoder.copyTextureToBuffer(
     { texture: renderTexture },
-    { buffer: dstBuffer, rowPitch: 256, imageHeight: 1 },
+    { buffer: dstBuffer, bytesPerRow: 256 },
     { width: 1, height: 1, depth: 1 }
   );
   t.device.defaultQueue.submit([encoder.finish()]);

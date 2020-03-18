@@ -81,7 +81,7 @@ g.test('it is invalid to draw in a render pass with missing bind groups', async 
   const uniformBuffer = t.getUniformBuffer();
 
   const bindGroupLayout1 = t.device.createBindGroupLayout({
-    bindings: [
+    entries: [
       {
         binding: 0,
         visibility: GPUShaderStage.VERTEX,
@@ -91,7 +91,7 @@ g.test('it is invalid to draw in a render pass with missing bind groups', async 
   });
 
   const bindGroup1 = t.device.createBindGroup({
-    bindings: [
+    entries: [
       {
         binding: 0,
         resource: {
@@ -103,7 +103,7 @@ g.test('it is invalid to draw in a render pass with missing bind groups', async 
   });
 
   const bindGroupLayout2 = t.device.createBindGroupLayout({
-    bindings: [
+    entries: [
       {
         binding: 0,
         visibility: GPUShaderStage.FRAGMENT,
@@ -113,7 +113,7 @@ g.test('it is invalid to draw in a render pass with missing bind groups', async 
   });
 
   const bindGroup2 = t.device.createBindGroup({
-    bindings: [
+    entries: [
       {
         binding: 0,
         resource: {

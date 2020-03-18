@@ -21,13 +21,13 @@ g.test('memcpy', async t => {
   src.setSubData(0, data);
 
   const bgl = t.device.createBindGroupLayout({
-    bindings: [
+    entries: [
       { binding: 0, visibility: 4, type: 'storage-buffer' },
       { binding: 1, visibility: 4, type: 'storage-buffer' },
     ],
   });
   const bg = t.device.createBindGroup({
-    bindings: [
+    entries: [
       { binding: 0, resource: { buffer: src, offset: 0, size: 4 } },
       { binding: 1, resource: { buffer: dst, offset: 0, size: 4 } },
     ],

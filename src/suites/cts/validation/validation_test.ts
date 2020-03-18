@@ -21,7 +21,8 @@ export function resourceBindingMatches(b: GPUBindingType, r: BindingResourceType
       return r === 'sampled-textureview';
     case 'sampler':
       return r === 'sampler';
-    case 'storage-texture':
+    case 'readonly-storage-texture':
+    case 'writeonly-storage-texture':
       return r === 'storage-textureview';
     case 'uniform-buffer':
       return r === 'uniform-buffer';

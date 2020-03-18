@@ -50,8 +50,8 @@ class F extends ValidationTest {
 export const g = new TestGroup(F);
 
 g.test('dynamic offsets passed but not expected/compute pass', async t => {
-  const bindGroupLayout = t.device.createBindGroupLayout({ bindings: [] });
-  const bindGroup = t.device.createBindGroup({ layout: bindGroupLayout, bindings: [] });
+  const bindGroupLayout = t.device.createBindGroupLayout({ entries: [] });
+  const bindGroup = t.device.createBindGroup({ layout: bindGroupLayout, entries: [] });
 
   const { type } = t.params;
   const dynamicOffsets = [0];
@@ -94,7 +94,7 @@ g.test('dynamic offsets match expectations in pass encoder', async t => {
   const BINDING_SIZE = 9;
 
   const bindGroupLayout = t.device.createBindGroupLayout({
-    bindings: [
+    entries: [
       {
         binding: 0,
         visibility: GPUShaderStage.COMPUTE | GPUShaderStage.FRAGMENT,
@@ -122,7 +122,7 @@ g.test('dynamic offsets match expectations in pass encoder', async t => {
 
   const bindGroup = t.device.createBindGroup({
     layout: bindGroupLayout,
-    bindings: [
+    entries: [
       {
         binding: 0,
         resource: {

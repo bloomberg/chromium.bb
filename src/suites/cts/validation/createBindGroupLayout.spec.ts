@@ -22,7 +22,7 @@ export const g = new TestGroup(ValidationTest);
 
 g.test('some binding index was specified more than once', async t => {
   const goodDescriptor = {
-    bindings: [
+    entries: [
       { binding: 0, visibility: GPUShaderStage.COMPUTE, type: C.BindingType.StorageBuffer },
       { binding: 1, visibility: GPUShaderStage.COMPUTE, type: C.BindingType.StorageBuffer },
     ],
@@ -32,7 +32,7 @@ g.test('some binding index was specified more than once', async t => {
   t.device.createBindGroupLayout(goodDescriptor);
 
   const badDescriptor = clone(goodDescriptor);
-  badDescriptor.bindings[1].binding = 0;
+  badDescriptor.entries[1].binding = 0;
 
   // Binding index 0 can't be specified twice.
   t.expectValidationError(() => {
@@ -42,14 +42,14 @@ g.test('some binding index was specified more than once', async t => {
 
 g.test('Visibility of bindings can be 0', async t => {
   t.device.createBindGroupLayout({
-    bindings: [{ binding: 0, visibility: 0, type: 'storage-buffer' }],
+    entries: [{ binding: 0, visibility: 0, type: 'storage-buffer' }],
   });
 });
 
 g.test('number of dynamic buffers exceeds the maximum value', async t => {
   const { type, maxDynamicBufferCount } = t.params;
 
-  const maxDynamicBufferBindings: GPUBindGroupLayoutBinding[] = [];
+  const maxDynamicBufferBindings: GPUBindGroupLayoutEntry[] = [];
   for (let i = 0; i < maxDynamicBufferCount; i++) {
     maxDynamicBufferBindings.push({
       binding: i,
@@ -60,7 +60,7 @@ g.test('number of dynamic buffers exceeds the maximum value', async t => {
   }
 
   const goodDescriptor = {
-    bindings: [
+    entries: [
       ...maxDynamicBufferBindings,
       {
         binding: maxDynamicBufferBindings.length,
@@ -76,7 +76,7 @@ g.test('number of dynamic buffers exceeds the maximum value', async t => {
 
   // Dynamic buffers exceed maximum in a bind group layout.
   const badDescriptor = clone(goodDescriptor);
-  badDescriptor.bindings[maxDynamicBufferCount].hasDynamicOffset = true;
+  badDescriptor.entries[maxDynamicBufferCount].hasDynamicOffset = true;
 
   t.expectValidationError(() => {
     t.device.createBindGroupLayout(badDescriptor);
@@ -91,7 +91,7 @@ g.test('dynamic set to true is allowed only for buffers', async t => {
   const success = kBindingTypeInfo[type].type === 'buffer';
 
   const descriptor = {
-    bindings: [{ binding: 0, visibility: GPUShaderStage.FRAGMENT, type, hasDynamicOffset: true }],
+    entries: [{ binding: 0, visibility: GPUShaderStage.FRAGMENT, type, hasDynamicOffset: true }],
   };
 
   t.expectValidationError(() => {
@@ -155,7 +155,7 @@ g.test('max resources per stage/in bind group layout', async t => {
   const { maxedVisibility, extraVisibility } = t.params;
   const maxedCount = kPerStageBindingLimits[kBindingTypeInfo[maxedType].perStageLimitType];
 
-  const maxResourceBindings: GPUBindGroupLayoutBinding[] = [];
+  const maxResourceBindings: GPUBindGroupLayoutEntry[] = [];
   for (let i = 0; i < maxedCount; i++) {
     maxResourceBindings.push({
       binding: i,
@@ -164,13 +164,13 @@ g.test('max resources per stage/in bind group layout', async t => {
     });
   }
 
-  const goodDescriptor = { bindings: maxResourceBindings };
+  const goodDescriptor = { entries: maxResourceBindings };
 
   // Control
   t.device.createBindGroupLayout(goodDescriptor);
 
   const newDescriptor = clone(goodDescriptor);
-  newDescriptor.bindings.push({
+  newDescriptor.entries.push({
     binding: maxedCount,
     visibility: extraVisibility,
     type: extraType,
@@ -192,7 +192,7 @@ g.test('max resources per stage/in pipeline layout', async t => {
   const { maxedVisibility, extraVisibility } = t.params;
   const maxedCount = kPerStageBindingLimits[kBindingTypeInfo[maxedType].perStageLimitType];
 
-  const maxResourceBindings: GPUBindGroupLayoutBinding[] = [];
+  const maxResourceBindings: GPUBindGroupLayoutEntry[] = [];
   for (let i = 0; i < maxedCount; i++) {
     maxResourceBindings.push({
       binding: i,
@@ -201,13 +201,13 @@ g.test('max resources per stage/in pipeline layout', async t => {
     });
   }
 
-  const goodLayout = t.device.createBindGroupLayout({ bindings: maxResourceBindings });
+  const goodLayout = t.device.createBindGroupLayout({ entries: maxResourceBindings });
 
   // Control
   t.device.createPipelineLayout({ bindGroupLayouts: [goodLayout] });
 
   const extraLayout = t.device.createBindGroupLayout({
-    bindings: [{ binding: 0, visibility: extraVisibility, type: extraType }],
+    entries: [{ binding: 0, visibility: extraVisibility, type: extraType }],
   });
 
   // Some binding types use the same limit, e.g. 'storage-buffer' and 'readonly-storage-buffer'.

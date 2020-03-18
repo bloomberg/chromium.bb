@@ -27,8 +27,7 @@ class F extends ValidationTest {
       format = 'rgba8unorm',
     } = options;
     return {
-      size: { width, height, depth: 1 },
-      arrayLayerCount,
+      size: { width, height, depth: arrayLayerCount },
       mipLevelCount,
       sampleCount,
       dimension: '2d',

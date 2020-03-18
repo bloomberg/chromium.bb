@@ -22,7 +22,7 @@ g.test('compute pass test that sampled texture is cleared', async t => {
   const sampler = t.device.createSampler();
 
   const bindGroupLayout = t.device.createBindGroupLayout({
-    bindings: [
+    entries: [
       { binding: 0, visibility: GPUShaderStage.COMPUTE, type: 'sampled-texture' },
       { binding: 1, visibility: GPUShaderStage.COMPUTE, type: 'storage-buffer' },
       { binding: 2, visibility: GPUShaderStage.COMPUTE, type: 'sampler' },
@@ -54,7 +54,7 @@ g.test('compute pass test that sampled texture is cleared', async t => {
   // create bindgroup
   const bindGroup = t.device.createBindGroup({
     layout: bindGroupLayout,
-    bindings: [
+    entries: [
       { binding: 0, resource: texture.createView() },
       { binding: 1, resource: { buffer: bufferTex, offset: 0, size: 4 * 256 * 256 } },
       { binding: 2, resource: sampler },

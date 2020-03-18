@@ -89,9 +89,9 @@ class F extends GPUTest {
     const imageBitmap = imageBitmapCopyView.imageBitmap;
     const dstTexture = dstTextureCopyView.texture;
 
-    const rowPitchValue = calculateRowPitch(imageBitmap.width, bytesPerPixel);
+    const bytesPerRow = calculateRowPitch(imageBitmap.width, bytesPerPixel);
     const testBuffer = this.device.createBuffer({
-      size: rowPitchValue * imageBitmap.height,
+      size: bytesPerRow * imageBitmap.height,
       usage: GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST,
     });
 
@@ -99,7 +99,7 @@ class F extends GPUTest {
 
     encoder.copyTextureToBuffer(
       { texture: dstTexture, mipLevel: 0, origin: { x: 0, y: 0, z: 0 } },
-      { buffer: testBuffer, rowPitch: rowPitchValue, imageHeight: 0 },
+      { buffer: testBuffer, bytesPerRow },
       { width: imageBitmap.width, height: imageBitmap.height, depth: 1 }
     );
     this.device.defaultQueue.submit([encoder.finish()]);

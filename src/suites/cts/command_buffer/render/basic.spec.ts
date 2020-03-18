@@ -33,7 +33,7 @@ g.test('clear', async t => {
   pass.endPass();
   encoder.copyTextureToBuffer(
     { texture: colorAttachment, mipLevel: 0, origin: { x: 0, y: 0, z: 0 } },
-    { buffer: dst, rowPitch: 256, imageHeight: 1 },
+    { buffer: dst, bytesPerRow: 256 },
     { width: 1, height: 1, depth: 1 }
   );
   t.device.defaultQueue.submit([encoder.finish()]);

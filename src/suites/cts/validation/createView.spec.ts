@@ -29,8 +29,7 @@ class F extends ValidationTest {
     } = options;
 
     return this.device.createTexture({
-      size: { width, height, depth: 1 },
-      arrayLayerCount,
+      size: { width, height, depth: arrayLayerCount },
       mipLevelCount,
       sampleCount,
       dimension: '2d',

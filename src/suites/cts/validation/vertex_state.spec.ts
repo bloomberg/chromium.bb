@@ -427,11 +427,11 @@ g.test('check out of bounds on number of vertex attributes on a single vertex bu
 });
 
 g.test('check out of bounds on number of vertex attributes across vertex buffers', async t => {
-  const vertexBuffers: GPUVertexBufferLayoutDescriptor[] = [];
+  const vertexBuffers = [];
   for (let i = 0; i < MAX_VERTEX_ATTRIBUTES; i++) {
     vertexBuffers.push({
       arrayStride: 0,
-      attributes: [{ format: 'float', offset: 0, shaderLocation: i }],
+      attributes: [{ format: C.VertexFormat.Float, offset: 0, shaderLocation: i }],
     });
   }
 
@@ -444,7 +444,7 @@ g.test('check out of bounds on number of vertex attributes across vertex buffers
   {
     // Test vertex attribute number exceed the limit
     vertexBuffers[MAX_VERTEX_ATTRIBUTES - 1].attributes.push({
-      format: 'float',
+      format: C.VertexFormat.Float,
       offset: 0,
       shaderLocation: MAX_VERTEX_ATTRIBUTES,
     });
