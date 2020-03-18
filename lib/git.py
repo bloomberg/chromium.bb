@@ -1178,8 +1178,8 @@ def RevertPath(git_repo, filename, rev):
 # git. Disable the nags from pylint.
 # pylint: disable=redefined-builtin
 def Log(git_repo, format=None, after=None, until=None,
-        reverse=False, date=None, max_count=None, rev='HEAD',
-        paths=None):
+        reverse=False, date=None, max_count=None, grep=None,
+        rev='HEAD', paths=None):
   """Return git log output for the given arguments.
 
   For more detailed description of the parameters, run `git help log`.
@@ -1192,6 +1192,7 @@ def Log(git_repo, format=None, after=None, until=None,
     reverse: If true, set --reverse flag.
     date: Passed directly to --date flag.
     max_count: Passed directly to --max-count flag.
+    grep: Passed directly to --grep flag.
     rev: Commit (or revision range) to log.
     paths: List of paths to log commits for (enumerated after final -- ).
 
@@ -1211,6 +1212,8 @@ def Log(git_repo, format=None, after=None, until=None,
     cmd.append('--date=%s' % date)
   if max_count:
     cmd.append('--max-count=%s' % max_count)
+  if grep:
+    cmd.append('--grep=%s' % grep)
   cmd.append(rev)
   if paths:
     cmd.append('--')

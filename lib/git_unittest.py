@@ -314,11 +314,15 @@ class LogTest(cros_test_lib.RunCommandTestCase):
   def testAllArgs(self):
     git.Log('git/repo/path', format='format:"%cd"',
             after='1996-01-01', until='1997-01-01', reverse=True,
-            date='unix', paths=['my/path'])
+            date='unix', max_count='1',
+            grep='^Change-ID: I9f701664d849197cf183fc1fb46f7523095c359c$',
+            rev='m/master', paths=['my/path'])
     self.assertCommandContains(
         [
             'git', 'log', '--format=format:"%cd"', '--after=1996-01-01',
-            '--until=1997-01-01', '--reverse', '--date=unix',
+            '--until=1997-01-01', '--reverse', '--date=unix', '--max-count=1',
+            '--grep=^Change-ID: I9f701664d849197cf183fc1fb46f7523095c359c$',
+            'm/master',
             '--', 'my/path',
         ], cwd='git/repo/path')
 
