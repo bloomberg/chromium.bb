@@ -2127,80 +2127,80 @@ static AOM_INLINE void get_block_level_tpl_stats(
 
   assert(IMPLIES(gf_group->size > 0, gf_group->index < gf_group->size));
   const int tpl_idx = gf_group->index;
-  TplDepFrame *tpl_frame = &cpi->tpl_frame[tpl_idx];
-  TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
+  const TplDepFrame *tpl_frame = &cpi->tpl_frame[tpl_idx];
+  if (!tpl_frame->is_valid) return;
 
+  const TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
   const int mi_wide = mi_size_wide[bsize];
   const int mi_high = mi_size_high[bsize];
-  if (tpl_frame->is_valid) {
-    int64_t best_inter_cost = INT64_MAX;
-    int tpl_stride = tpl_frame->stride;
-    const int step = 1 << cpi->tpl_stats_block_mis_log2;
-    const int mi_col_sr =
-        coded_to_superres_mi(mi_col, cm->superres_scale_denominator);
-    const int mi_col_end_sr =
-        coded_to_superres_mi(mi_col + mi_wide, cm->superres_scale_denominator);
-    const int mi_cols_sr = av1_pixels_to_mi(cm->superres_upscaled_width);
+  const int tpl_stride = tpl_frame->stride;
+  const int step = 1 << cpi->tpl_stats_block_mis_log2;
+  const int mi_col_sr =
+      coded_to_superres_mi(mi_col, cm->superres_scale_denominator);
+  const int mi_col_end_sr =
+      coded_to_superres_mi(mi_col + mi_wide, cm->superres_scale_denominator);
+  const int mi_cols_sr = av1_pixels_to_mi(cm->superres_upscaled_width);
 
-    for (int row = mi_row; row < mi_row + mi_high; row += step) {
-      for (int col = mi_col_sr; col < mi_col_end_sr; col += step) {
-        if (row >= cm->mi_rows || col >= mi_cols_sr) continue;
-        TplDepStats *this_stats =
-            &tpl_stats[av1_tpl_ptr_pos(cpi, row, col, tpl_stride)];
+  for (int row = mi_row; row < AOMMIN(mi_row + mi_high, cm->mi_rows);
+       row += step) {
+    for (int col = mi_col_sr; col < AOMMIN(mi_col_end_sr, mi_cols_sr);
+         col += step) {
+      const TplDepStats *this_stats =
+          &tpl_stats[av1_tpl_ptr_pos(cpi, row, col, tpl_stride)];
 
-        // Sums up the inter cost of corresponding ref frames
-        for (int ref_idx = 0; ref_idx < INTER_REFS_PER_FRAME; ref_idx++) {
-          inter_cost_info_from_tpl->ref_inter_cost[ref_idx] +=
-              this_stats->pred_error[ref_idx];
-        }
+      // Sums up the inter cost of corresponding ref frames
+      for (int ref_idx = 0; ref_idx < INTER_REFS_PER_FRAME; ref_idx++) {
+        inter_cost_info_from_tpl->ref_inter_cost[ref_idx] +=
+            this_stats->pred_error[ref_idx];
       }
     }
-
-    // Computes the best inter cost (minimum inter_cost)
-    for (int ref_idx = 0; ref_idx < INTER_REFS_PER_FRAME; ref_idx++) {
-      int64_t cur_inter_cost =
-          inter_cost_info_from_tpl->ref_inter_cost[ref_idx];
-      // For invalid ref frames, cur_inter_cost = 0 and has to be handled while
-      // calculating the minimum inter_cost
-      if (cur_inter_cost != 0 && (cur_inter_cost < best_inter_cost) &&
-          (valid_refs[ref_idx]))
-        best_inter_cost = cur_inter_cost;
-    }
-    inter_cost_info_from_tpl->best_inter_cost = best_inter_cost;
   }
+
+  // Computes the best inter cost (minimum inter_cost)
+  int64_t best_inter_cost = INT64_MAX;
+  for (int ref_idx = 0; ref_idx < INTER_REFS_PER_FRAME; ref_idx++) {
+    const int64_t cur_inter_cost =
+        inter_cost_info_from_tpl->ref_inter_cost[ref_idx];
+    // For invalid ref frames, cur_inter_cost = 0 and has to be handled while
+    // calculating the minimum inter_cost
+    if (cur_inter_cost != 0 && (cur_inter_cost < best_inter_cost) &&
+        valid_refs[ref_idx])
+      best_inter_cost = cur_inter_cost;
+  }
+  inter_cost_info_from_tpl->best_inter_cost = best_inter_cost;
 }
 #endif
 
 static AOM_INLINE int prune_modes_based_on_tpl_stats(
     PruneInfoFromTpl *inter_cost_info_from_tpl, const int *refs, int ref_mv_idx,
     const PREDICTION_MODE this_mode, int prune_mode_level) {
-  int have_newmv = have_newmv_in_inter_mode(this_mode);
+  const int have_newmv = have_newmv_in_inter_mode(this_mode);
   if ((prune_mode_level < 3) && have_newmv) return 0;
 
-  const int prune_level_idx[3] = { 0, 1, 1 };
-  int prune_level = prune_level_idx[prune_mode_level - 1];
+  static const int prune_level_idx[3] = { 0, 1, 1 };
+  const int prune_level = prune_level_idx[prune_mode_level - 1];
   int64_t cur_inter_cost;
 
-  int is_globalmv = (this_mode == GLOBALMV) || (this_mode == GLOBAL_GLOBALMV);
-  int prune_index = is_globalmv ? MAX_REF_MV_SEARCH : ref_mv_idx;
+  const int is_globalmv =
+      (this_mode == GLOBALMV) || (this_mode == GLOBAL_GLOBALMV);
+  const int prune_index = is_globalmv ? MAX_REF_MV_SEARCH : ref_mv_idx;
 
   // Thresholds used for pruning:
   // Lower value indicates aggressive pruning and higher value indicates
   // conservative pruning which is set based on ref_mv_idx and speed feature.
   // 'prune_index' 0, 1, 2 corresponds to ref_mv indices 0, 1 and 2. prune_index
   // 3 corresponds to GLOBALMV/GLOBAL_GLOBALMV
-  const int tpl_inter_mode_prune_mul_factor[2][MAX_REF_MV_SEARCH + 1] = {
+  static const int tpl_inter_mode_prune_mul_factor[2][MAX_REF_MV_SEARCH + 1] = {
     { 3, 3, 3, 2 }, { 3, 2, 2, 2 }
   };
 
-  int is_comp_pred = (refs[1] > INTRA_FRAME);
-
+  const int is_comp_pred = (refs[1] > INTRA_FRAME);
   if (!is_comp_pred) {
     cur_inter_cost = inter_cost_info_from_tpl->ref_inter_cost[refs[0] - 1];
   } else {
-    int64_t inter_cost_ref0 =
+    const int64_t inter_cost_ref0 =
         inter_cost_info_from_tpl->ref_inter_cost[refs[0] - 1];
-    int64_t inter_cost_ref1 =
+    const int64_t inter_cost_ref1 =
         inter_cost_info_from_tpl->ref_inter_cost[refs[1] - 1];
     // Choose maximum inter_cost among inter_cost_ref0 and inter_cost_ref1 for
     // more aggressive pruning
@@ -2209,7 +2209,7 @@ static AOM_INLINE int prune_modes_based_on_tpl_stats(
 
   // Prune the mode if cur_inter_cost is greater than threshold times
   // best_inter_cost
-  int64_t best_inter_cost = inter_cost_info_from_tpl->best_inter_cost;
+  const int64_t best_inter_cost = inter_cost_info_from_tpl->best_inter_cost;
   if (cur_inter_cost >
       ((tpl_inter_mode_prune_mul_factor[prune_level][prune_index] *
         best_inter_cost) >>
@@ -2238,7 +2238,7 @@ static int64_t handle_inter_mode(
   const GF_GROUP *const gf_group = &cpi->gf_group;
   const int tpl_idx = gf_group->index;
   TplDepFrame *tpl_frame = &cpi->tpl_frame[tpl_idx];
-  int prune_modes_based_on_tpl =
+  const int prune_modes_based_on_tpl =
       cpi->sf.inter_sf.prune_inter_modes_based_on_tpl && tpl_frame->is_valid;
   int i;
   const int refs[2] = { mbmi->ref_frame[0],
@@ -2281,11 +2281,8 @@ static int64_t handle_inter_mode(
   int ref_match_found_in_above_nb = 0;
   int ref_match_found_in_left_nb = 0;
   if (prune_modes_based_on_tpl) {
-    const int total_mi_cols = cm->mi_cols;
-    ref_match_found_in_above_nb =
-        find_ref_match_in_above_nbs(total_mi_cols, xd);
-    const int total_mi_rows = cm->mi_rows;
-    ref_match_found_in_left_nb = find_ref_match_in_left_nbs(total_mi_rows, xd);
+    ref_match_found_in_above_nb = find_ref_match_in_above_nbs(cm->mi_cols, xd);
+    ref_match_found_in_left_nb = find_ref_match_in_left_nbs(cm->mi_rows, xd);
   }
 
   // First, perform a simple translation search for each of the indices. If
@@ -2302,9 +2299,6 @@ static int64_t handle_inter_mode(
   const int base_rate =
       args->ref_frame_cost + args->single_comp_cost + ref_mv_cost;
   for (int ref_mv_idx = 0; ref_mv_idx < ref_set; ++ref_mv_idx) {
-    mode_info[ref_mv_idx].full_search_mv.as_int = INVALID_MV;
-    mode_info[ref_mv_idx].mv.as_int = INVALID_MV;
-    mode_info[ref_mv_idx].rd = INT64_MAX;
     if (!mask_check_bit(idx_mask, ref_mv_idx)) {
       // MV did not perform well in simple translation search. Skip it.
       continue;
@@ -2316,6 +2310,10 @@ static int64_t handle_inter_mode(
               cpi->sf.inter_sf.prune_inter_modes_based_on_tpl))
         continue;
     }
+
+    mode_info[ref_mv_idx].full_search_mv.as_int = INVALID_MV;
+    mode_info[ref_mv_idx].mv.as_int = INVALID_MV;
+    mode_info[ref_mv_idx].rd = INT64_MAX;
     av1_init_rd_stats(rd_stats);
 
     mbmi->interinter_comp.type = COMPOUND_AVERAGE;
@@ -4295,32 +4293,27 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   // Need to tweak the threshold for hdres speed 0 & 1.
   const int mi_row = xd->mi_row;
   const int mi_col = xd->mi_col;
-  // x->search_ref_frame[id] = 1 => no pruning in
-  // prune_ref_by_selective_ref_frame()
-  // x->search_ref_frame[id] = 0  => ref frame can be pruned in
-  // prune_ref_by_selective_ref_frame()
-  // Populating valid_refs[idx] = 1 ensures that
-  // 'inter_cost_info_from_tpl.best_inter_cost' does not correspond to a pruned
-  // ref frame
-  int valid_refs[INTER_REFS_PER_FRAME];
-  memset(valid_refs, 0, sizeof(valid_refs));
-
-  for (MV_REFERENCE_FRAME frame = LAST_FRAME; frame < REF_FRAMES; frame++) {
-    MV_REFERENCE_FRAME refs[2] = { frame, NONE_FRAME };
-    valid_refs[frame - 1] = x->search_ref_frame[frame];
-    if (!valid_refs[frame - 1]) {
-      valid_refs[frame - 1] = (!prune_ref_by_selective_ref_frame(
-          cpi, x, refs, cm->cur_frame->ref_display_order_hint));
-    }
-  }
 
   // Obtain the relevant tpl stats for pruning inter modes
   PruneInfoFromTpl inter_cost_info_from_tpl;
-  inter_cost_info_from_tpl.best_inter_cost = 0;
-  memset(inter_cost_info_from_tpl.ref_inter_cost, 0,
-         sizeof(inter_cost_info_from_tpl.ref_inter_cost));
 #if !CONFIG_REALTIME_ONLY
   if (cpi->sf.inter_sf.prune_inter_modes_based_on_tpl) {
+    // x->search_ref_frame[id] = 1 => no pruning in
+    // prune_ref_by_selective_ref_frame()
+    // x->search_ref_frame[id] = 0  => ref frame can be pruned in
+    // prune_ref_by_selective_ref_frame()
+    // Populating valid_refs[idx] = 1 ensures that
+    // 'inter_cost_info_from_tpl.best_inter_cost' does not correspond to a
+    // pruned ref frame.
+    int valid_refs[INTER_REFS_PER_FRAME];
+    for (MV_REFERENCE_FRAME frame = LAST_FRAME; frame < REF_FRAMES; frame++) {
+      const MV_REFERENCE_FRAME refs[2] = { frame, NONE_FRAME };
+      valid_refs[frame - 1] =
+          x->search_ref_frame[frame] ||
+          !prune_ref_by_selective_ref_frame(
+              cpi, x, refs, cm->cur_frame->ref_display_order_hint);
+    }
+    av1_zero(inter_cost_info_from_tpl);
     get_block_level_tpl_stats(cpi, bsize, mi_row, mi_col, valid_refs,
                               &inter_cost_info_from_tpl);
   }
