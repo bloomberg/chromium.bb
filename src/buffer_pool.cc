@@ -175,33 +175,38 @@ RefCountedBufferPtr BufferPool::GetFreeBuffer() {
   // DecoderImpl::ApplyFilmGrain can happen from multiple threads at the same
   // time. So this function has to be thread safe.
   // TODO(b/142583029): Investigate if the GetFreeBuffer() call in
-  // DecoderImpl::GetFreeBuffer() call can be serialized so that this function
+  // DecoderImpl::ApplyFilmGrain() call can be serialized so that this function
   // need not be thread safe.
-  std::lock_guard<std::mutex> lock(mutex_);
+  std::unique_lock<std::mutex> lock(mutex_);
   for (auto buffer : buffers_) {
     if (!buffer->in_use_) {
       buffer->in_use_ = true;
       buffer->progress_row_ = -1;
-      buffer->SetFrameState(kFrameStateUnknown);
+      buffer->frame_state_ = kFrameStateUnknown;
+      lock.unlock();
       return RefCountedBufferPtr(buffer, RefCountedBuffer::ReturnToBufferPool);
     }
   }
+  lock.unlock();
   auto* const buffer = new (std::nothrow) RefCountedBuffer();
   if (buffer == nullptr) {
     LIBGAV1_DLOG(ERROR, "Failed to allocate a new reference counted buffer.");
-    return RefCountedBufferPtr();
-  }
-  if (!buffers_.push_back(buffer)) {
-    LIBGAV1_DLOG(
-        ERROR,
-        "Failed to push the new reference counted buffer into the vector.");
-    delete buffer;
     return RefCountedBufferPtr();
   }
   buffer->SetBufferPool(this);
   buffer->in_use_ = true;
   buffer->progress_row_ = -1;
   buffer->SetFrameState(kFrameStateUnknown);
+  lock.lock();
+  const bool ok = buffers_.push_back(buffer);
+  lock.unlock();
+  if (!ok) {
+    LIBGAV1_DLOG(
+        ERROR,
+        "Failed to push the new reference counted buffer into the vector.");
+    delete buffer;
+    return RefCountedBufferPtr();
+  }
   return RefCountedBufferPtr(buffer, RefCountedBuffer::ReturnToBufferPool);
 }
 
