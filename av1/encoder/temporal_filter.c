@@ -89,7 +89,7 @@ static int tf_motion_search(AV1_COMP *cpi,
   const int do_reset_fractional_mv = 1;
   SUBPEL_MOTION_SEARCH_PARAMS ms_params;
 
-  const int sadperbit16 = mb->sadperbit16;
+  const int sadperbit = mb->sadperbit;
   const search_site_config ss_cfg = cpi->ss_cfg[SS_CFG_LOOKAHEAD];
   const SEARCH_METHODS full_search_method = NSTEP;
   const int step_param = av1_init_search_range(
@@ -123,7 +123,7 @@ static int tf_motion_search(AV1_COMP *cpi,
   int block_error = INT_MAX;
   mb->mv_cost_type = mv_cost_type;
   av1_full_pixel_search(cpi, mb, block_size, start_mv, step_param,
-                        full_search_method, 1, sadperbit16,
+                        full_search_method, 1, sadperbit,
                         cond_cost_list(cpi, cost_list), &baseline_mv, 0,
                         &ss_cfg, &mb->best_mv.as_fullmv, NULL);
   // Since we are merely refining the result from full pixel search, we don't
@@ -165,7 +165,7 @@ static int tf_motion_search(AV1_COMP *cpi,
         av1_set_mv_search_range(&mb->mv_limits, &baseline_mv);
         mb->mv_cost_type = mv_cost_type;
         av1_full_pixel_search(cpi, mb, subblock_size, start_mv, step_param,
-                              full_search_method, 1, sadperbit16,
+                              full_search_method, 1, sadperbit,
                               cond_cost_list(cpi, cost_list), &baseline_mv, 0,
                               &ss_cfg, &mb->best_mv.as_fullmv, NULL);
         // Since we are merely refining the result from full pixel search, we

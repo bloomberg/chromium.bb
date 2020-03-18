@@ -2734,7 +2734,7 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
 
     int step_param = cpi->mv_step_param;
     FULLPEL_MV start_mv = get_fullmv_from_mv(&dv_ref.as_mv);
-    const int sadpb = x->sadperbit16;
+    const int sadpb = x->sadperbit;
     int cost_list[5];
     int bestsme = av1_full_pixel_search(
         cpi, x, bsize, start_mv, step_param, cpi->sf.mv_sf.search_method, 0,

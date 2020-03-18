@@ -312,14 +312,11 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
 }
 
 // Values are now correlated to quantizer.
-static int sad_per_bit16lut_8[QINDEX_RANGE];
-static int sad_per_bit4lut_8[QINDEX_RANGE];
-static int sad_per_bit16lut_10[QINDEX_RANGE];
-static int sad_per_bit4lut_10[QINDEX_RANGE];
-static int sad_per_bit16lut_12[QINDEX_RANGE];
-static int sad_per_bit4lut_12[QINDEX_RANGE];
+static int sad_per_bit_lut_8[QINDEX_RANGE];
+static int sad_per_bit_lut_10[QINDEX_RANGE];
+static int sad_per_bit_lut_12[QINDEX_RANGE];
 
-static void init_me_luts_bd(int *bit16lut, int *bit4lut, int range,
+static void init_me_luts_bd(int *bit16lut, int range,
                             aom_bit_depth_t bit_depth) {
   int i;
   // Initialize the sad lut tables using a formulaic calculation for now.
@@ -328,17 +325,13 @@ static void init_me_luts_bd(int *bit16lut, int *bit4lut, int range,
   for (i = 0; i < range; i++) {
     const double q = av1_convert_qindex_to_q(i, bit_depth);
     bit16lut[i] = (int)(0.0418 * q + 2.4107);
-    bit4lut[i] = (int)(0.063 * q + 2.742);
   }
 }
 
 void av1_init_me_luts(void) {
-  init_me_luts_bd(sad_per_bit16lut_8, sad_per_bit4lut_8, QINDEX_RANGE,
-                  AOM_BITS_8);
-  init_me_luts_bd(sad_per_bit16lut_10, sad_per_bit4lut_10, QINDEX_RANGE,
-                  AOM_BITS_10);
-  init_me_luts_bd(sad_per_bit16lut_12, sad_per_bit4lut_12, QINDEX_RANGE,
-                  AOM_BITS_12);
+  init_me_luts_bd(sad_per_bit_lut_8, QINDEX_RANGE, AOM_BITS_8);
+  init_me_luts_bd(sad_per_bit_lut_10, QINDEX_RANGE, AOM_BITS_10);
+  init_me_luts_bd(sad_per_bit_lut_12, QINDEX_RANGE, AOM_BITS_12);
 }
 
 static const int rd_boost_factor[16] = { 64, 32, 32, 32, 24, 16, 12, 12,
@@ -446,18 +439,9 @@ static int compute_rd_thresh_factor(int qindex, aom_bit_depth_t bit_depth) {
 
 void av1_initialize_me_consts(const AV1_COMP *cpi, MACROBLOCK *x, int qindex) {
   switch (cpi->common.seq_params.bit_depth) {
-    case AOM_BITS_8:
-      x->sadperbit16 = sad_per_bit16lut_8[qindex];
-      x->sadperbit4 = sad_per_bit4lut_8[qindex];
-      break;
-    case AOM_BITS_10:
-      x->sadperbit16 = sad_per_bit16lut_10[qindex];
-      x->sadperbit4 = sad_per_bit4lut_10[qindex];
-      break;
-    case AOM_BITS_12:
-      x->sadperbit16 = sad_per_bit16lut_12[qindex];
-      x->sadperbit4 = sad_per_bit4lut_12[qindex];
-      break;
+    case AOM_BITS_8: x->sadperbit = sad_per_bit_lut_8[qindex]; break;
+    case AOM_BITS_10: x->sadperbit = sad_per_bit_lut_10[qindex]; break;
+    case AOM_BITS_12: x->sadperbit = sad_per_bit_lut_12[qindex]; break;
     default:
       assert(0 && "bit_depth should be AOM_BITS_8, AOM_BITS_10 or AOM_BITS_12");
   }

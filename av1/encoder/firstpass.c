@@ -232,10 +232,10 @@ static AOM_INLINE void first_pass_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
   int step_param = 3 + sr;
   int cost_list[5];
 
-  tmp_err = av1_full_pixel_search(
-      cpi, x, bsize, start_mv, step_param, NSTEP, 0, x->sadperbit16,
-      cond_cost_list(cpi, cost_list), ref_mv, 0, &cpi->ss_cfg[SS_CFG_FPF],
-      &x->best_mv.as_fullmv, NULL);
+  tmp_err = av1_full_pixel_search(cpi, x, bsize, start_mv, step_param, NSTEP, 0,
+                                  x->sadperbit, cond_cost_list(cpi, cost_list),
+                                  ref_mv, 0, &cpi->ss_cfg[SS_CFG_FPF],
+                                  &x->best_mv.as_fullmv, NULL);
 
   if (tmp_err < INT_MAX) {
     tmp_err = av1_get_mvpred_sse(x, &x->best_mv.as_fullmv, ref_mv, &v_fn_ptr) +

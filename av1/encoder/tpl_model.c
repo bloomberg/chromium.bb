@@ -129,7 +129,7 @@ static uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
   TPL_SPEED_FEATURES *tpl_sf = &cpi->sf.tpl_sf;
   const SEARCH_METHODS search_method = mv_sf->search_method;
   int step_param;
-  int sadpb = x->sadperbit16;
+  int sadpb = x->sadperbit;
   uint32_t bestsme = UINT_MAX;
   int distortion;
   uint32_t sse;

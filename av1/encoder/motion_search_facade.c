@@ -123,7 +123,7 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
   else
     start_mv = get_fullmv_from_mv(&ref_mv);
 
-  const int sadpb = x->sadperbit16;
+  const int sadpb = x->sadperbit;
   int cost_list[5];
   int_mv second_best_mv;
   x->best_mv.as_int = second_best_mv.as_int = INVALID_MV;
@@ -296,7 +296,7 @@ void av1_joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   int_mv *best_int_mv = &x->best_mv;
 
   const int search_range = SEARCH_RANGE_8P;
-  const int sadpb = x->sadperbit16;
+  const int sadpb = x->sadperbit;
   // Allow joint search multiple times iteratively for each reference frame
   // and break out of the search loop if it couldn't find a better mv.
   for (ite = 0; ite < 4; ite++) {
@@ -481,7 +481,7 @@ void av1_compound_single_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   }
 
   int bestsme = INT_MAX;
-  int sadpb = x->sadperbit16;
+  int sadpb = x->sadperbit;
   int_mv *best_int_mv = &x->best_mv;
   int search_range = SEARCH_RANGE_8P;
 
@@ -691,7 +691,7 @@ void av1_simple_motion_search(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
   const FullMvLimits tmp_mv_limits = x->mv_limits;
   const SEARCH_METHODS search_methods = cpi->sf.mv_sf.search_method;
   const int do_mesh_search = 0;
-  const int sadpb = x->sadperbit16;
+  const int sadpb = x->sadperbit;
   int cost_list[5];
   const int ref_idx = 0;
   int var;
