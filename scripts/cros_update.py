@@ -30,6 +30,7 @@ import time
 import traceback
 
 from chromite.lib import auto_updater
+from chromite.lib import auto_updater_transfer
 from chromite.lib import commandline
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -232,7 +233,8 @@ class CrOSUpdateTrigger(object):
             original_payload_dir=original_payload_dir,
             yes=True,
             payload_filename=self.payload_filename,
-            clobber_stateful=self.clobber_stateful)
+            clobber_stateful=self.clobber_stateful,
+            transfer_class=auto_updater_transfer.LocalTransfer)
 
         # Allow fall back if the quick provision does not succeed.
         invoke_autoupdate = True

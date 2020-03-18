@@ -10,6 +10,7 @@ from __future__ import print_function
 import mock
 
 from chromite.lib import auto_updater
+from chromite.lib import auto_updater_transfer
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import remote_access
@@ -28,7 +29,8 @@ class CrosUpdateTest(cros_test_lib.RunCommandTestCase):
         original_build='foo-original-build', static_url='foo-static',
         devserver_url='foo-devserver-url')
     self._cros_updater = auto_updater.ChromiumOSUpdater(
-        mock.MagicMock(work_dir='foo-dir'), 'foo-build-name', 'foo-payload-dir')
+        mock.MagicMock(work_dir='foo-dir'), 'foo-build-name', 'foo-payload-dir',
+        transfer_class=auto_updater_transfer.LocalTransfer)
 
   def test_GetOriginalPayloadDir(self):
     """Tests getting the original payload directory."""

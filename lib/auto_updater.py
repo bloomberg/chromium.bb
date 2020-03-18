@@ -151,19 +151,21 @@ class ChromiumOSUpdater(BaseUpdater):
 
   PAYLOAD_DIR_NAME = 'payloads'
 
-  def __init__(self, device, build_name, payload_dir, dev_dir='',
-               log_file=None, tempdir=None, original_payload_dir=None,
-               clobber_stateful=True, local_devserver=False, yes=False,
-               do_rootfs_update=True, do_stateful_update=True,
-               reboot=True, disable_verification=False,
+  def __init__(self, device, build_name, payload_dir, transfer_class,
+               dev_dir='', log_file=None, tempdir=None,
+               original_payload_dir=None, clobber_stateful=True,
+               local_devserver=False, yes=False, do_rootfs_update=True,
+               do_stateful_update=True, reboot=True, disable_verification=False,
                send_payload_in_parallel=False, payload_filename=None,
-               experimental_au=False, transfer_class=None, staging_server=None):
+               experimental_au=False, staging_server=None):
     """Initialize a ChromiumOSUpdater for auto-update a chromium OS device.
 
     Args:
       device: the ChromiumOSDevice to be updated.
       build_name: the target update version for the device.
       payload_dir: the directory of payload(s).
+      transfer_class: A reference to any subclass of
+          auto_updater_transfer.Transfer class.
       dev_dir: the directory of the nebraska that runs the CrOS auto-update.
       log_file: The file to save running logs.
       tempdir: the temp directory in caller, not in the device. For example,
@@ -196,12 +198,10 @@ class ChromiumOSUpdater(BaseUpdater):
           in parallel. The default is False.
       experimental_au: Use experimental features of auto updater instead. It
           should be deprecated once crbug.com/872441 is fixed.
-      transfer_class: A reference to any subclass of
-          auto_updater_transfer.Transfer class.
       staging_server: URL (str) of the server that's staging the payload files.
           Assuming transfer_class is None, if value for staging_server is None
-          or empty, an auto_updater_transfer.LocalTransfer instance is created.
-          If not, then an auto_updater_transfer.LabTransfer instance is created.
+          or empty, an auto_updater_transfer.LocalTransfer reference must be
+          passed through the transfer_class parameter.
     """
     super(ChromiumOSUpdater, self).__init__(device, payload_dir)
 
@@ -252,30 +252,20 @@ class ChromiumOSUpdater(BaseUpdater):
   def is_au_endtoendtest(self):
     return self.payload_filename is not None
 
-  def _CreateTransferObject(self, transfer_class=None):
+  def _CreateTransferObject(self, transfer_class):
     """Create the correct Transfer class.
 
     Args:
       transfer_class: A variable that contains a reference to one of the
-          Transfer classes in auto_updater_transfer. If transfer_class is None,
-          then an instance of auto_updater_transfer.LocalTransfer (if
-          self._staging_server is None) or auto_updater_transfer.LabTransfer
-          will be created.
+          Transfer classes in auto_updater_transfer.
     """
-    # TODO(crbug.com/1062046): All callers of ChromiumOSUpdater should pass
-    # the transfer_class parameter so that the following code block can be
-    # simplified.
+    assert issubclass(transfer_class, auto_updater_transfer.Transfer)
 
     # Determine if staging_server needs to be passed as an argument to
     # class_ref.
     cls_kwargs = {}
     if self._staging_server:
       cls_kwargs['staging_server'] = self._staging_server
-      if transfer_class is None:
-        transfer_class = auto_updater_transfer.LabTransfer
-    else:
-      if transfer_class is None:
-        transfer_class = auto_updater_transfer.LocalTransfer
 
     return transfer_class(
         device=self.device, payload_dir=self.payload_dir,
