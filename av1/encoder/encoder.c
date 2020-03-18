@@ -866,6 +866,11 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
   aom_free(cpi->td.mb.mbmi_ext);
   cpi->td.mb.mbmi_ext = NULL;
 
+  if (cpi->td.vt64x64) {
+    aom_free(cpi->td.vt64x64);
+    cpi->td.vt64x64 = NULL;
+  }
+
   av1_free_ref_frame_buffers(cm->buffer_pool);
   av1_free_txb_buf(cpi);
   av1_free_context_buffers(cm);
@@ -3604,6 +3609,7 @@ void av1_remove_compressor(AV1_COMP *cpi) {
       aom_free(thread_data->td->above_pred_buf);
       aom_free(thread_data->td->left_pred_buf);
       aom_free(thread_data->td->wsrc_buf);
+      aom_free(thread_data->td->vt64x64);
 
       aom_free(thread_data->td->inter_modes_info);
       for (int x = 0; x < 2; x++) {
@@ -5396,6 +5402,21 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
   set_size_dependent_vars(cpi, &q, &bottom_index, &top_index);
   q_low = bottom_index;
   q_high = top_index;
+  if (cpi->sf.part_sf.partition_search_type == VAR_BASED_PARTITION) {
+    const int num_64x64_blocks =
+        (cm->seq_params.sb_size == BLOCK_64X64) ? 1 : 4;
+    if (cpi->td.vt64x64) {
+      if (num_64x64_blocks != cpi->td.num_64x64_blocks) {
+        aom_free(cpi->td.vt64x64);
+        cpi->td.vt64x64 = NULL;
+      }
+    }
+    if (!cpi->td.vt64x64) {
+      CHECK_MEM_ERROR(cm, cpi->td.vt64x64,
+                      aom_malloc(sizeof(*cpi->td.vt64x64) * num_64x64_blocks));
+      cpi->td.num_64x64_blocks = num_64x64_blocks;
+    }
+  }
 
   if (cpi->sf.tx_sf.tx_type_search.prune_tx_type_using_stats &&
       cm->current_frame.frame_type == KEY_FRAME) {

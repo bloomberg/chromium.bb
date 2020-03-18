@@ -35,7 +35,8 @@ void av1_set_variance_partition_thresholds(AV1_COMP *cpi, int q,
                                            int content_state);
 
 int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
-                                      MACROBLOCK *x, int mi_row, int mi_col);
+                                      ThreadData *td, MACROBLOCK *x, int mi_row,
+                                      int mi_col);
 
 #ifdef __cplusplus
 }  // extern "C"

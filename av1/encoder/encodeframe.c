@@ -4429,7 +4429,7 @@ static AOM_INLINE void encode_nonrd_sb(AV1_COMP *cpi, ThreadData *td,
     set_fixed_partitioning(cpi, tile_info, mi, mi_row, mi_col, bsize);
   } else if (sf->part_sf.partition_search_type == VAR_BASED_PARTITION) {
     set_offsets_without_segment_id(cpi, tile_info, x, mi_row, mi_col, sb_size);
-    av1_choose_var_based_partitioning(cpi, tile_info, x, mi_row, mi_col);
+    av1_choose_var_based_partitioning(cpi, tile_info, td, x, mi_row, mi_col);
   }
   assert(sf->part_sf.partition_search_type == FIXED_PARTITION || seg_skip ||
          cpi->partition_search_skippable_frame ||
@@ -4706,7 +4706,7 @@ static AOM_INLINE void encode_rd_sb(AV1_COMP *cpi, ThreadData *td,
 
   if (sf->part_sf.partition_search_type == VAR_BASED_PARTITION) {
     set_offsets_without_segment_id(cpi, tile_info, x, mi_row, mi_col, sb_size);
-    av1_choose_var_based_partitioning(cpi, tile_info, x, mi_row, mi_col);
+    av1_choose_var_based_partitioning(cpi, tile_info, td, x, mi_row, mi_col);
     rd_use_partition(cpi, td, tile_data, mi, tp, mi_row, mi_col, sb_size,
                      &dummy_rate, &dummy_dist, 1, pc_root);
   }
@@ -4967,6 +4967,7 @@ void av1_alloc_tile_data(AV1_COMP *cpi) {
   CHECK_MEM_ERROR(
       cm, cpi->tile_data,
       aom_memalign(32, tile_cols * tile_rows * sizeof(*cpi->tile_data)));
+
   cpi->allocated_tiles = tile_cols * tile_rows;
 }
 

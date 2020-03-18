@@ -483,6 +483,14 @@ static AOM_INLINE void create_enc_workers(AV1_COMP *cpi, int num_workers) {
           cm, thread_data->td->mbmi_ext,
           aom_calloc(sb_mi_size, sizeof(*thread_data->td->mbmi_ext)));
 
+      if (cpi->sf.part_sf.partition_search_type == VAR_BASED_PARTITION) {
+        const int num_64x64_blocks =
+            (cm->seq_params.sb_size == BLOCK_64X64) ? 1 : 4;
+        CHECK_MEM_ERROR(
+            cm, thread_data->td->vt64x64,
+            aom_malloc(sizeof(*thread_data->td->vt64x64) * num_64x64_blocks));
+      }
+
       // Create threads
       if (!winterface->reset(worker))
         aom_internal_error(&cm->error, AOM_CODEC_ERROR,
