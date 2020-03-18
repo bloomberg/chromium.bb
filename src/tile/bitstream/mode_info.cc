@@ -116,8 +116,8 @@ int DecodeSegmentId(int diff, int reference, int max) {
 // which records the count of the nearest mvs. Since all the nearest mvs are in
 // the beginning of the mv stack, the |index| of a mv in the mv stack can be
 // compared with |nearest_mv_count| to get that mv's context.
-int GetRefMvIndexContext(int count, int nearest_mv_count, int index) {
-  if (index + 1 >= count || index + 1 < nearest_mv_count) {
+int GetRefMvIndexContext(int nearest_mv_count, int index) {
+  if (index + 1 < nearest_mv_count) {
     return 0;
   }
   if (index + 1 == nearest_mv_count) {
@@ -979,11 +979,10 @@ void Tile::ReadRefMvIndex(const Block& block) {
       static_cast<int>(kPredictionModeHasNearMvMask.Contains(bp.y_mode));
   prediction_parameters.ref_mv_index = start;
   for (int i = start; i < start + 2; ++i) {
-    if (prediction_parameters.ref_mv_count <= i + 1) continue;
+    if (prediction_parameters.ref_mv_count <= i + 1) break;
     // drl_mode in the spec.
     const bool ref_mv_index_bit = reader_.ReadSymbol(
         symbol_decoder_context_.ref_mv_index_cdf[GetRefMvIndexContext(
-            prediction_parameters.ref_mv_count,
             prediction_parameters.nearest_mv_count, i)]);
     prediction_parameters.ref_mv_index = i + static_cast<int>(ref_mv_index_bit);
     if (!ref_mv_index_bit) return;
