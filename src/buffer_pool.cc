@@ -196,7 +196,7 @@ RefCountedBufferPtr BufferPool::GetFreeBuffer() {
   buffer->SetBufferPool(this);
   buffer->in_use_ = true;
   buffer->progress_row_ = -1;
-  buffer->SetFrameState(kFrameStateUnknown);
+  buffer->frame_state_ = kFrameStateUnknown;
   lock.lock();
   const bool ok = buffers_.push_back(buffer);
   lock.unlock();
