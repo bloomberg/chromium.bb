@@ -147,6 +147,7 @@ enum {
   kMaxThreads = 32,
   kLoopFilterMaxModeDeltas = 2,
   kMaxCdefStrengths = 8,
+  kCdefLargeValue = 0x4000,  // Used to indicate where CDEF is not available.
   kMaxTileColumns = 64,
   kMaxTileRows = 64,
   kMaxOperatingPoints = 32,

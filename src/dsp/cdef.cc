@@ -20,8 +20,10 @@
 #include <cstdint>
 #include <cstring>
 
+#include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
 #include "src/utils/common.h"
+#include "src/utils/constants.h"
 
 namespace libgav1 {
 namespace dsp {
@@ -103,15 +105,6 @@ void CdefDirection_C(const void* const source, ptrdiff_t stride,
 #if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS ||     \
     !defined(LIBGAV1_Dsp8bpp_CdefFilter) || \
     (LIBGAV1_MAX_BITDEPTH >= 10 && !defined(LIBGAV1_Dsp10bpp_CdefFilter))
-constexpr uint16_t kCdefLargeValue = 0x4000;
-
-constexpr uint8_t kPrimaryTaps[2][2] = {{4, 2}, {3, 3}};
-
-constexpr uint8_t kSecondaryTaps[2] = {2, 1};
-
-constexpr int8_t kCdefDirections[8][2][2] = {
-    {{-1, 1}, {-2, 2}}, {{0, 1}, {-1, 2}}, {{0, 1}, {0, 2}}, {{0, 1}, {1, 2}},
-    {{1, 1}, {2, 2}},   {{1, 0}, {2, 1}},  {{1, 0}, {2, 0}}, {{1, 0}, {2, -1}}};
 
 int Constrain(int diff, int threshold, int damping) {
   if (threshold == 0) return 0;
@@ -161,7 +154,7 @@ void CdefFilter_C(const void* const source, const ptrdiff_t source_stride,
           // value == kCdefLargeValue.
           if (value != kCdefLargeValue) {
             sum += Constrain(value - pixel_value, primary_strength, damping) *
-                   kPrimaryTaps[(primary_strength >> coeff_shift) & 1][k];
+                   kCdefPrimaryTaps[(primary_strength >> coeff_shift) & 1][k];
             max_value = std::max(value, max_value);
             min_value = std::min(value, min_value);
           }
@@ -175,7 +168,7 @@ void CdefFilter_C(const void* const source, const ptrdiff_t source_stride,
             if (value != kCdefLargeValue) {
               sum +=
                   Constrain(value - pixel_value, secondary_strength, damping) *
-                  kSecondaryTaps[k];
+                  kCdefSecondaryTaps[k];
               max_value = std::max(value, max_value);
               min_value = std::min(value, min_value);
             }

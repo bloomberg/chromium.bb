@@ -14,6 +14,7 @@
 #include "src/post_filter.h"
 #include "src/utils/blocking_counter.h"
 #include "src/utils/compiler_attributes.h"
+#include "src/utils/constants.h"
 
 namespace libgav1 {
 namespace {
@@ -30,14 +31,14 @@ void CopyRowForCdef(const Pixel* src, int block_width, int unit_width,
                     uint16_t* const dst) {
   if (sizeof(src[0]) == sizeof(dst[0])) {
     if (is_frame_left) {
-      Memset(dst - kCdefBorder, PostFilter::kCdefLargeValue, kCdefBorder);
+      Memset(dst - kCdefBorder, kCdefLargeValue, kCdefBorder);
     } else {
       memcpy(dst - kCdefBorder, src - kCdefBorder,
              kCdefBorder * sizeof(dst[0]));
     }
     memcpy(dst, src, block_width * sizeof(dst[0]));
     if (is_frame_right) {
-      Memset(dst + block_width, PostFilter::kCdefLargeValue,
+      Memset(dst + block_width, kCdefLargeValue,
              unit_width + kCdefBorder - block_width);
     } else {
       memcpy(dst + block_width, src + block_width,
@@ -46,22 +47,17 @@ void CopyRowForCdef(const Pixel* src, int block_width, int unit_width,
     return;
   }
   for (int x = -kCdefBorder; x < 0; ++x) {
-    dst[x] = is_frame_left ? PostFilter::kCdefLargeValue : src[x];
+    dst[x] = is_frame_left ? static_cast<uint16_t>(kCdefLargeValue) : src[x];
   }
   for (int x = 0; x < block_width; ++x) {
     dst[x] = src[x];
   }
   for (int x = block_width; x < unit_width + kCdefBorder; ++x) {
-    dst[x] = is_frame_right ? PostFilter::kCdefLargeValue : src[x];
+    dst[x] = is_frame_right ? static_cast<uint16_t>(kCdefLargeValue) : src[x];
   }
 }
 
 }  // namespace
-
-#if !LIBGAV1_CXX17
-// Static data member definitions.
-constexpr int PostFilter::kCdefLargeValue;
-#endif
 
 uint8_t* PostFilter::GetCdefBufferAndStride(const int start_x,
                                             const int start_y, const int plane,
@@ -121,7 +117,7 @@ void PostFilter::PrepareCdefBlock(int block_width4x4, int block_height4x4,
     // Copy the top 2 rows.
     for (int y = 0; y < kCdefBorder; ++y) {
       if (is_frame_top) {
-        Memset(cdef_src - kCdefBorder, PostFilter::kCdefLargeValue,
+        Memset(cdef_src - kCdefBorder, kCdefLargeValue,
                unit_width + 2 * kCdefBorder);
       } else {
         CopyRowForCdef(src_buffer, block_width, unit_width, is_frame_left,
@@ -142,7 +138,7 @@ void PostFilter::PrepareCdefBlock(int block_width4x4, int block_height4x4,
     // Copy the bottom 2 rows.
     for (int y = 0; y < kCdefBorder + unit_height - block_height; ++y) {
       if (is_frame_bottom) {
-        Memset(cdef_src - kCdefBorder, PostFilter::kCdefLargeValue,
+        Memset(cdef_src - kCdefBorder, kCdefLargeValue,
                unit_width + 2 * kCdefBorder);
       } else {
         CopyRowForCdef(src_buffer, block_width, unit_width, is_frame_left,

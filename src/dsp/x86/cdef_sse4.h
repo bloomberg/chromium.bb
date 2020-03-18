@@ -32,6 +32,7 @@ void CdefInit_SSE4_1();
 
 #if LIBGAV1_ENABLE_SSE4_1
 #define LIBGAV1_Dsp8bpp_CdefDirection LIBGAV1_CPU_SSE4_1
+#define LIBGAV1_Dsp8bpp_CdefFilter LIBGAV1_CPU_SSE4_1
 #endif  // LIBGAV1_ENABLE_SSE4_1
 
 #endif  // LIBGAV1_SRC_DSP_X86_CDEF_SSE4_H_

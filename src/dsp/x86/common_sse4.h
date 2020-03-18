@@ -103,6 +103,19 @@ inline __m128i Load4(const void* src) {
   return _mm_cvtsi32_si128(val);
 }
 
+inline __m128i Load4x2(const void* src1, const void* src2) {
+  // With new compilers such as clang 8.0.0 we can use the new _mm_loadu_si32
+  // intrinsic. Both _mm_loadu_si32(src) and the code here are compiled into a
+  // movss instruction.
+  //
+  // Until compiler support of _mm_loadu_si32 is widespread, use of
+  // _mm_loadu_si32 is banned.
+  int val1, val2;
+  memcpy(&val1, src1, sizeof(val1));
+  memcpy(&val2, src2, sizeof(val2));
+  return _mm_insert_epi32(_mm_cvtsi32_si128(val1), val2, 1);
+}
+
 inline __m128i LoadLo8(const void* a) {
   return _mm_loadl_epi64(static_cast<const __m128i*>(a));
 }

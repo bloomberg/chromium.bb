@@ -60,6 +60,12 @@ enum SubsamplingType : uint8_t {
 
 extern const uint16_t kSgrScaleParameter[16][2];
 
+extern const uint8_t kCdefPrimaryTaps[2][2];
+
+extern const uint8_t kCdefSecondaryTaps[2];
+
+extern const int8_t kCdefDirections[8][2][2];
+
 }  // namespace libgav1
 
 #endif  // LIBGAV1_SRC_DSP_CONSTANTS_H_
