@@ -222,7 +222,12 @@ static int ogg_replace_stream(AVFormatContext *s, uint32_t serial, int nsegs)
         uint8_t magic[8];
         int64_t pos = avio_tell(s->pb);
         avio_skip(s->pb, nsegs);
+#if 0  // Chromium: Check size. http://crbug.com/1054229
         avio_read(s->pb, magic, sizeof(magic));
+#else
+        if (avio_read(s->pb, magic, sizeof(magic)) != sizeof(magic))
+            return AVERROR_INVALIDDATA;
+#endif
         avio_seek(s->pb, pos, SEEK_SET);
         codec = ogg_find_codec(magic, sizeof(magic));
         if (!codec) {
