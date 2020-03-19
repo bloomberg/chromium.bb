@@ -3977,8 +3977,8 @@ static void set_mv_search_params(AV1_COMP *cpi) {
   }
 }
 
-static void set_screen_content_options(const AV1_COMP *const cpi,
-                                       FeatureFlags *const features) {
+void av1_set_screen_content_options(const AV1_COMP *const cpi,
+                                    FeatureFlags *const features) {
   const AV1_COMMON *const cm = &cpi->common;
 
   if (cm->seq_params.force_screen_content_tools != 2) {
@@ -4046,14 +4046,10 @@ static void set_screen_content_options(const AV1_COMP *const cpi,
 static void set_size_independent_vars(AV1_COMP *cpi) {
   int i;
   AV1_COMMON *const cm = &cpi->common;
-  FeatureFlags *const features = &cm->features;
   for (i = LAST_FRAME; i <= ALTREF_FRAME; ++i) {
     cm->global_motion[i] = default_warp_params;
   }
   cpi->gm_info.search_done = 0;
-
-  if (frame_is_intra_only(cm)) set_screen_content_options(cpi, features);
-  cpi->is_screen_content_type = (features->allow_screen_content_tools != 0);
 
   av1_set_speed_features_framesize_independent(cpi, cpi->speed);
   av1_set_rd_speed_thresholds(cpi);

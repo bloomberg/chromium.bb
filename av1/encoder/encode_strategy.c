@@ -1111,6 +1111,8 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
   frame_input.source = code_arf ? &cpi->alt_ref_buffer : &source->img;
   frame_input.last_source = last_source != NULL ? &last_source->img : NULL;
   frame_input.ts_duration = source->ts_end - source->ts_start;
+  // Save unfiltered source. It is used in av1_get_second_pass_params().
+  cpi->unfiltered_source = frame_input.source;
 
   *time_stamp = source->ts_start;
   *time_end = source->ts_end;
@@ -1266,8 +1268,6 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
 #endif
   }
 
-  // Save unfiltered source.
-  cpi->unfiltered_source = frame_input.source;
 #if CONFIG_REALTIME_ONLY
   if (av1_encode(cpi, dest, &frame_input, &frame_params, &frame_results) !=
       AOM_CODEC_OK) {
