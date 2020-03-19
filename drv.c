@@ -54,6 +54,9 @@ extern const struct backend backend_radeon;
 #ifdef DRV_ROCKCHIP
 extern const struct backend backend_rockchip;
 #endif
+#ifdef DRV_SYNAPTICS
+extern const struct backend backend_synaptics;
+#endif
 #ifdef DRV_TEGRA
 extern const struct backend backend_tegra;
 #endif
@@ -103,6 +106,9 @@ static const struct backend *drv_get_backend(int fd)
 #endif
 #ifdef DRV_ROCKCHIP
 		&backend_rockchip,
+#endif
+#ifdef DRV_SYNAPTICS
+		&backend_synaptics,
 #endif
 #ifdef DRV_TEGRA
 		&backend_tegra,
