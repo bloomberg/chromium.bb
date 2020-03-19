@@ -19,6 +19,7 @@ e.g.,
 
 from __future__ import print_function
 
+import collections
 import json
 import os
 import sys
@@ -41,14 +42,14 @@ def get_all_package_objects(board):
   """
   db = portage_util.PortageDB(root=os.path.join('/build', board))
 
-  result = {}
+  result = collections.defaultdict(set)
   for package in db.InstalledPackages():
-    objects = [
+    objects = (
         '/' + path for typ, path in package.ListContents() if typ == package.OBJ
-    ]
-    objects.sort()
-    result['%s/%s' % (package.category, package.package)] = objects
-  return result
+    )
+    result['%s/%s' % (package.category, package.package)].update(objects)
+
+  return {k: sorted(v) for k, v in result.items()}
 
 
 def main(argv):
