@@ -63,9 +63,6 @@ static unsigned int tx_domain_dist_types[3][MODE_EVAL_TYPES] = { { 0, 2, 0 },
                                                                  { 1, 2, 0 },
                                                                  { 2, 2, 0 } };
 
-// Indicates number of winner simple translation modes to be used
-static unsigned int num_winner_motion_modes[3] = { 0, 10, 3 };
-
 // Threshold values to be used for disabling coeff RD-optimization
 // based on block MSE
 // TODO(any): Experiment the threshold logic based on variance metric
@@ -102,11 +99,6 @@ static TX_SIZE_SEARCH_METHOD tx_size_search_methods[3][MODE_EVAL_TYPES] = {
 static unsigned int predict_skip_levels[3][MODE_EVAL_TYPES] = { { 0, 0, 0 },
                                                                 { 1, 1, 1 },
                                                                 { 1, 2, 1 } };
-
-// scaling values to be used for gating wedge/compound segment based on best
-// approximate rd
-static int comp_type_rd_threshold_mul[3] = { 1, 11, 12 };
-static int comp_type_rd_threshold_div[3] = { 3, 16, 16 };
 
 // Intra only frames, golden frames (except alt ref overlays) and
 // alt ref frames tend to be coded at a higher than ambient quality
@@ -1230,10 +1222,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
     cpi->find_fractional_mv_step = av1_return_max_sub_pixel_mv;
   else if (cpi->oxcf.motion_vector_unit_test == 2)
     cpi->find_fractional_mv_step = av1_return_min_sub_pixel_mv;
-  cpi->max_comp_type_rd_threshold_mul =
-      comp_type_rd_threshold_mul[sf->inter_sf.prune_comp_type_by_comp_avg];
-  cpi->max_comp_type_rd_threshold_div =
-      comp_type_rd_threshold_div[sf->inter_sf.prune_comp_type_by_comp_avg];
 
   // assert ensures that tx_domain_dist_level is accessed correctly
   assert(cpi->sf.rd_sf.tx_domain_dist_thres_level >= 0 &&
@@ -1247,12 +1235,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   memcpy(cpi->use_transform_domain_distortion,
          tx_domain_dist_types[cpi->sf.rd_sf.tx_domain_dist_level],
          sizeof(cpi->use_transform_domain_distortion));
-
-  // Update the number of winner motion modes to be used appropriately
-  cpi->num_winner_motion_modes =
-      num_winner_motion_modes[cpi->sf.winner_mode_sf
-                                  .motion_mode_for_winner_cand];
-  assert(cpi->num_winner_motion_modes <= MAX_WINNER_MOTION_MODES);
 
   // assert ensures that coeff_opt_dist_thresholds is accessed correctly
   assert(cpi->sf.rd_sf.perform_coeff_opt >= 0 &&

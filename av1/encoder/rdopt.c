@@ -4167,6 +4167,9 @@ static AOM_INLINE void evaluate_motion_mode_for_winner_candidates(
   }
 }
 
+// Indicates number of winner simple translation modes to be used
+static unsigned int num_winner_motion_modes[3] = { 0, 10, 3 };
+
 void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                                MACROBLOCK *x, RD_STATS *rd_cost,
                                const BLOCK_SIZE bsize, PICK_MODE_CONTEXT *ctx,
@@ -4204,7 +4207,12 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                                NULL,
                                { { { 0 }, { { 0 } }, { 0 }, 0, 0, 0, 0 } },
                                0 };
-  const int max_winner_motion_mode_cand = cpi->num_winner_motion_modes;
+  // Indicates the appropriate number of simple translation winner modes for
+  // exhaustive motion mode evaluation
+  const int max_winner_motion_mode_cand =
+      num_winner_motion_modes[cpi->sf.winner_mode_sf
+                                  .motion_mode_for_winner_cand];
+  assert(max_winner_motion_mode_cand <= MAX_WINNER_MOTION_MODES);
   motion_mode_candidate motion_mode_cand;
   motion_mode_best_st_candidate best_motion_mode_cands;
   // Initializing the number of motion mode candidates to zero.

@@ -1187,6 +1187,11 @@ static int64_t masked_compound_type_rd(
   return rd;
 }
 
+// scaling values to be used for gating wedge/compound segment based on best
+// approximate rd
+static int comp_type_rd_threshold_mul[3] = { 1, 11, 12 };
+static int comp_type_rd_threshold_div[3] = { 3, 16, 16 };
+
 int av1_compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
                          BLOCK_SIZE bsize, int_mv *cur_mv, int mode_search_mask,
                          int masked_compound_used, const BUFFER_SET *orig_dst,
@@ -1436,10 +1441,18 @@ int av1_compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
       // Handle masked compound types
       update_mbmi_for_compound_type(mbmi, cur_type);
       rs2 = masked_type_cost[cur_type];
+      // Factors to control gating of compound type selection based on best
+      // approximate rd so far
+      const int max_comp_type_rd_threshold_mul =
+          comp_type_rd_threshold_mul[cpi->sf.inter_sf
+                                         .prune_comp_type_by_comp_avg];
+      const int max_comp_type_rd_threshold_div =
+          comp_type_rd_threshold_div[cpi->sf.inter_sf
+                                         .prune_comp_type_by_comp_avg];
       // Evaluate COMPOUND_WEDGE / COMPOUND_DIFFWTD if approximated cost is
       // within threshold
-      int64_t approx_rd = ((*rd / cpi->max_comp_type_rd_threshold_div) *
-                           cpi->max_comp_type_rd_threshold_mul);
+      int64_t approx_rd = ((*rd / max_comp_type_rd_threshold_div) *
+                           max_comp_type_rd_threshold_mul);
 
       if (approx_rd < ref_best_rd) {
         const int64_t tmp_rd_thresh = AOMMIN(*rd, rd_thresh);

@@ -1029,11 +1029,6 @@ typedef struct AV1_COMP {
   // Mark which ref frames can be skipped for encoding current frame druing RDO.
   int prune_ref_frame_mask;
 
-  // Factors to control gating of compound type selection based on best
-  // approximate rd so far
-  int max_comp_type_rd_threshold_mul;
-  int max_comp_type_rd_threshold_div;
-
   // Threshold of transform domain distortion
   // Index 0: Default mode evaluation, Winner mode processing is not applicable
   // (Eg : IntraBc).
@@ -1126,10 +1121,6 @@ typedef struct AV1_COMP {
   // Indicate nearest references w.r.t. current frame in past and future
   int8_t nearest_past_ref;
   int8_t nearest_future_ref;
-
-  // Indicates the number of simple translation winner modes for exhaustive
-  // motion mode evaluation
-  int num_winner_motion_modes;
 
   // TODO(sdeng): consider merge the following arrays.
   double *tpl_rdmult_scaling_factors;
