@@ -18,6 +18,41 @@ extern "C" {
 
 struct AV1_COMP;
 struct EncodeFrameParams;
+// structure of accumulated stats and features in a gf group
+typedef struct {
+  double gf_group_err;
+  double gf_group_raw_error;
+  double gf_group_skip_pct;
+  double gf_group_inactive_zone_rows;
+
+  double mv_ratio_accumulator;
+  double decay_accumulator;
+  double zero_motion_accumulator;
+  double loop_decay_rate;
+  double last_loop_decay_rate;
+  double this_frame_mv_in_out;
+  double mv_in_out_accumulator;
+  double abs_mv_in_out_accumulator;
+
+  double avg_sr_coded_error;
+  double avg_tr_coded_error;
+  double avg_pcnt_second_ref;
+  double avg_pcnt_third_ref;
+  double avg_pcnt_third_ref_nolast;
+  double avg_new_mv_count;
+  double avg_wavelet_energy;
+  double avg_raw_err_stdev;
+  int non_zero_stdev_count;
+
+  unsigned int allow_alt_ref;
+} GF_GROUP_STATS;
+
+typedef struct {
+  double frame_err;
+  double frame_coded_error;
+  double frame_sr_coded_error;
+  double frame_tr_coded_error;
+} GF_FRAME_STATS;
 
 void av1_init_second_pass(struct AV1_COMP *cpi);
 

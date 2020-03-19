@@ -32,6 +32,8 @@
 
 #define DEFAULT_KF_BOOST 2300
 #define DEFAULT_GF_BOOST 2000
+#define GROUP_ADAPTIVE_MAXQ 1
+static void init_gf_stats(GF_GROUP_STATS *gf_stats);
 
 // Calculate an active area of the image that discounts formatting
 // bars and partially discounts other 0 energy areas.
@@ -305,20 +307,18 @@ static double get_prediction_decay_rate(const FRAME_INFO *frame_info,
 // Function to test for a condition where a complex transition is followed
 // by a static section. For example in slide shows where there is a fade
 // between slides. This is to help with more optimal kf and gf positioning.
-static int detect_transition_to_still(AV1_COMP *cpi, int frame_interval,
-                                      int still_interval,
-                                      double loop_decay_rate,
-                                      double last_decay_rate) {
-  TWO_PASS *const twopass = &cpi->twopass;
-  RATE_CONTROL *const rc = &cpi->rc;
-
+static int detect_transition_to_still(TWO_PASS *const twopass,
+                                      const int min_gf_interval,
+                                      const int frame_interval,
+                                      const int still_interval,
+                                      const double loop_decay_rate,
+                                      const double last_decay_rate) {
   // Break clause to detect very still sections after motion
   // For example a static image after a fade or other transition
   // instead of a clean scene cut.
-  if (frame_interval > rc->min_gf_interval && loop_decay_rate >= 0.999 &&
+  if (frame_interval > min_gf_interval && loop_decay_rate >= 0.999 &&
       last_decay_rate < 0.9) {
     int j;
-
     // Look ahead a few frames to see if static condition persists...
     for (j = 0; j < still_interval; ++j) {
       const FIRSTPASS_STATS *stats = &twopass->stats_in[j];
@@ -326,18 +326,16 @@ static int detect_transition_to_still(AV1_COMP *cpi, int frame_interval,
 
       if (stats->pcnt_inter - stats->pcnt_motion < 0.999) break;
     }
-
     // Only if it does do we signal a transition to still.
     return j == still_interval;
   }
-
   return 0;
 }
 
 // This function detects a flash through the high relative pcnt_second_ref
 // score in the frame following a flash frame. The offset passed in should
 // reflect this.
-static int detect_flash(const TWO_PASS *twopass, int offset) {
+static int detect_flash(const TWO_PASS *twopass, const int offset) {
   const FIRSTPASS_STATS *const next_frame = read_frame_stats(twopass, offset);
 
   // What we are looking for here is a situation where there is a
@@ -352,16 +350,13 @@ static int detect_flash(const TWO_PASS *twopass, int offset) {
 
 // Update the motion related elements to the GF arf boost calculation.
 static void accumulate_frame_motion_stats(const FIRSTPASS_STATS *stats,
-                                          double *mv_in_out,
-                                          double *mv_in_out_accumulator,
-                                          double *abs_mv_in_out_accumulator,
-                                          double *mv_ratio_accumulator) {
+                                          GF_GROUP_STATS *gf_stats) {
   const double pct = stats->pcnt_motion;
 
   // Accumulate Motion In/Out of frame stats.
-  *mv_in_out = stats->mv_in_out_count * pct;
-  *mv_in_out_accumulator += *mv_in_out;
-  *abs_mv_in_out_accumulator += fabs(*mv_in_out);
+  gf_stats->this_frame_mv_in_out = stats->mv_in_out_count * pct;
+  gf_stats->mv_in_out_accumulator += gf_stats->this_frame_mv_in_out;
+  gf_stats->abs_mv_in_out_accumulator += fabs(gf_stats->this_frame_mv_in_out);
 
   // Accumulate a measure of how uniform (or conversely how random) the motion
   // field is (a ratio of abs(mv) / mv).
@@ -371,11 +366,120 @@ static void accumulate_frame_motion_stats(const FIRSTPASS_STATS *stats,
     const double mvc_ratio =
         fabs(stats->mvc_abs) / DOUBLE_DIVIDE_CHECK(fabs(stats->MVc));
 
-    *mv_ratio_accumulator +=
+    gf_stats->mv_ratio_accumulator +=
         pct * (mvr_ratio < stats->mvr_abs ? mvr_ratio : stats->mvr_abs);
-    *mv_ratio_accumulator +=
+    gf_stats->mv_ratio_accumulator +=
         pct * (mvc_ratio < stats->mvc_abs ? mvc_ratio : stats->mvc_abs);
   }
+}
+
+static void accumulate_this_frame_stats(const FIRSTPASS_STATS *stats,
+                                        const double mod_frame_err,
+                                        GF_GROUP_STATS *gf_stats) {
+  gf_stats->gf_group_err += mod_frame_err;
+#if GROUP_ADAPTIVE_MAXQ
+  gf_stats->gf_group_raw_error += stats->coded_error;
+#endif
+  gf_stats->gf_group_skip_pct += stats->intra_skip_pct;
+  gf_stats->gf_group_inactive_zone_rows += stats->inactive_zone_rows;
+}
+
+static void accumulate_next_frame_stats(
+    const FIRSTPASS_STATS *stats, const FRAME_INFO *frame_info,
+    TWO_PASS *const twopass, const int flash_detected,
+    const int frames_since_key, const int cur_idx, const int can_disable_arf,
+    const int min_gf_interval, GF_GROUP_STATS *gf_stats) {
+  accumulate_frame_motion_stats(stats, gf_stats);
+  // sum up the metric values of current gf group
+  gf_stats->avg_sr_coded_error += stats->sr_coded_error;
+  gf_stats->avg_tr_coded_error += stats->tr_coded_error;
+  gf_stats->avg_pcnt_second_ref += stats->pcnt_second_ref;
+  gf_stats->avg_pcnt_third_ref += stats->pcnt_third_ref;
+  gf_stats->avg_new_mv_count += stats->new_mv_count;
+  gf_stats->avg_wavelet_energy += stats->frame_avg_wavelet_energy;
+  if (fabs(stats->raw_error_stdev) > 0.000001) {
+    gf_stats->non_zero_stdev_count++;
+    gf_stats->avg_raw_err_stdev += stats->raw_error_stdev;
+  }
+
+  // Accumulate the effect of prediction quality decay
+  if (!flash_detected) {
+    gf_stats->last_loop_decay_rate = gf_stats->loop_decay_rate;
+    gf_stats->loop_decay_rate = get_prediction_decay_rate(frame_info, stats);
+
+    gf_stats->decay_accumulator =
+        gf_stats->decay_accumulator * gf_stats->loop_decay_rate;
+
+    // Monitor for static sections.
+    if ((frames_since_key + cur_idx - 1) > 1) {
+      gf_stats->zero_motion_accumulator =
+          AOMMIN(gf_stats->zero_motion_accumulator,
+                 get_zero_motion_factor(frame_info, stats));
+    }
+
+    // Break clause to detect very still sections after motion. For example,
+    // a static image after a fade or other transition.
+    if (can_disable_arf &&
+        detect_transition_to_still(twopass, min_gf_interval, cur_idx, 5,
+                                   gf_stats->loop_decay_rate,
+                                   gf_stats->last_loop_decay_rate)) {
+      gf_stats->allow_alt_ref = 0;
+    }
+  }
+}
+
+static void average_gf_stats(const int total_frame,
+                             const FIRSTPASS_STATS *last_stat,
+                             GF_GROUP_STATS *gf_stats) {
+  if (total_frame) {
+    gf_stats->avg_sr_coded_error /= total_frame;
+    gf_stats->avg_tr_coded_error /= total_frame;
+    gf_stats->avg_pcnt_second_ref /= total_frame;
+    if (total_frame - 1) {
+      gf_stats->avg_pcnt_third_ref_nolast =
+          (gf_stats->avg_pcnt_third_ref - last_stat->pcnt_third_ref) /
+          (total_frame - 1);
+    } else {
+      gf_stats->avg_pcnt_third_ref_nolast =
+          gf_stats->avg_pcnt_third_ref / total_frame;
+    }
+    gf_stats->avg_pcnt_third_ref /= total_frame;
+    gf_stats->avg_new_mv_count /= total_frame;
+    gf_stats->avg_wavelet_energy /= total_frame;
+  }
+
+  if (gf_stats->non_zero_stdev_count)
+    gf_stats->avg_raw_err_stdev /= gf_stats->non_zero_stdev_count;
+}
+
+static void get_features_from_gf_stats(const GF_GROUP_STATS *gf_stats,
+                                       const GF_FRAME_STATS *first_frame,
+                                       const GF_FRAME_STATS *last_frame,
+                                       const int num_mbs,
+                                       const int constrained_gf_group,
+                                       const int kf_zeromotion_pct,
+                                       const int num_frames, float *features) {
+  *features++ = (float)gf_stats->abs_mv_in_out_accumulator;
+  *features++ = (float)(gf_stats->avg_new_mv_count / num_mbs);
+  *features++ = (float)gf_stats->avg_pcnt_second_ref;
+  *features++ = (float)gf_stats->avg_pcnt_third_ref;
+  *features++ = (float)gf_stats->avg_pcnt_third_ref_nolast;
+  *features++ = (float)(gf_stats->avg_sr_coded_error / num_mbs);
+  *features++ = (float)(gf_stats->avg_tr_coded_error / num_mbs);
+  *features++ = (float)(gf_stats->avg_wavelet_energy / num_mbs);
+  *features++ = (float)(constrained_gf_group);
+  *features++ = (float)gf_stats->decay_accumulator;
+  *features++ = (float)(first_frame->frame_coded_error / num_mbs);
+  *features++ = (float)(first_frame->frame_sr_coded_error / num_mbs);
+  *features++ = (float)(first_frame->frame_tr_coded_error / num_mbs);
+  *features++ = (float)(first_frame->frame_err / num_mbs);
+  *features++ = (float)(kf_zeromotion_pct);
+  *features++ = (float)(last_frame->frame_coded_error / num_mbs);
+  *features++ = (float)(last_frame->frame_sr_coded_error / num_mbs);
+  *features++ = (float)(last_frame->frame_tr_coded_error / num_mbs);
+  *features++ = (float)num_frames;
+  *features++ = (float)gf_stats->mv_ratio_accumulator;
+  *features++ = (float)gf_stats->non_zero_stdev_count;
 }
 
 #define BOOST_FACTOR 12.5
@@ -488,12 +592,9 @@ int av1_calc_arf_boost(const TWO_PASS *twopass, const RATE_CONTROL *rc,
                        int b_frames, int *num_fpstats_used,
                        int *num_fpstats_required) {
   int i;
+  GF_GROUP_STATS gf_stats;
+  init_gf_stats(&gf_stats);
   double boost_score = (double)NORMAL_BOOST;
-  double mv_ratio_accumulator = 0.0;
-  double decay_accumulator = 1.0;
-  double this_frame_mv_in_out = 0.0;
-  double mv_in_out_accumulator = 0.0;
-  double abs_mv_in_out_accumulator = 0.0;
   int arf_boost;
   int flash_detected = 0;
   if (num_fpstats_used) *num_fpstats_used = 0;
@@ -504,9 +605,7 @@ int av1_calc_arf_boost(const TWO_PASS *twopass, const RATE_CONTROL *rc,
     if (this_frame == NULL) break;
 
     // Update the motion related elements to the boost calculation.
-    accumulate_frame_motion_stats(
-        this_frame, &this_frame_mv_in_out, &mv_in_out_accumulator,
-        &abs_mv_in_out_accumulator, &mv_ratio_accumulator);
+    accumulate_frame_motion_stats(this_frame, &gf_stats);
 
     // We want to discount the flash frame itself and the recovery
     // frame that follows as both will have poor scores.
@@ -515,15 +614,17 @@ int av1_calc_arf_boost(const TWO_PASS *twopass, const RATE_CONTROL *rc,
 
     // Accumulate the effect of prediction quality decay.
     if (!flash_detected) {
-      decay_accumulator *= get_prediction_decay_rate(frame_info, this_frame);
-      decay_accumulator = decay_accumulator < MIN_DECAY_FACTOR
-                              ? MIN_DECAY_FACTOR
-                              : decay_accumulator;
+      gf_stats.decay_accumulator *=
+          get_prediction_decay_rate(frame_info, this_frame);
+      gf_stats.decay_accumulator = gf_stats.decay_accumulator < MIN_DECAY_FACTOR
+                                       ? MIN_DECAY_FACTOR
+                                       : gf_stats.decay_accumulator;
     }
 
-    boost_score += decay_accumulator *
-                   calc_frame_boost(rc, frame_info, this_frame,
-                                    this_frame_mv_in_out, GF_MAX_BOOST);
+    boost_score +=
+        gf_stats.decay_accumulator *
+        calc_frame_boost(rc, frame_info, this_frame,
+                         gf_stats.this_frame_mv_in_out, GF_MAX_BOOST);
     if (num_fpstats_used) (*num_fpstats_used)++;
   }
 
@@ -531,21 +632,14 @@ int av1_calc_arf_boost(const TWO_PASS *twopass, const RATE_CONTROL *rc,
 
   // Reset for backward looking loop.
   boost_score = 0.0;
-  mv_ratio_accumulator = 0.0;
-  decay_accumulator = 1.0;
-  this_frame_mv_in_out = 0.0;
-  mv_in_out_accumulator = 0.0;
-  abs_mv_in_out_accumulator = 0.0;
-
+  init_gf_stats(&gf_stats);
   // Search backward towards last gf position.
   for (i = -1; i >= -b_frames; --i) {
     const FIRSTPASS_STATS *this_frame = read_frame_stats(twopass, i + offset);
     if (this_frame == NULL) break;
 
     // Update the motion related elements to the boost calculation.
-    accumulate_frame_motion_stats(
-        this_frame, &this_frame_mv_in_out, &mv_in_out_accumulator,
-        &abs_mv_in_out_accumulator, &mv_ratio_accumulator);
+    accumulate_frame_motion_stats(this_frame, &gf_stats);
 
     // We want to discount the the flash frame itself and the recovery
     // frame that follows as both will have poor scores.
@@ -554,15 +648,17 @@ int av1_calc_arf_boost(const TWO_PASS *twopass, const RATE_CONTROL *rc,
 
     // Cumulative effect of prediction quality decay.
     if (!flash_detected) {
-      decay_accumulator *= get_prediction_decay_rate(frame_info, this_frame);
-      decay_accumulator = decay_accumulator < MIN_DECAY_FACTOR
-                              ? MIN_DECAY_FACTOR
-                              : decay_accumulator;
+      gf_stats.decay_accumulator *=
+          get_prediction_decay_rate(frame_info, this_frame);
+      gf_stats.decay_accumulator = gf_stats.decay_accumulator < MIN_DECAY_FACTOR
+                                       ? MIN_DECAY_FACTOR
+                                       : gf_stats.decay_accumulator;
     }
 
-    boost_score += decay_accumulator *
-                   calc_frame_boost(rc, frame_info, this_frame,
-                                    this_frame_mv_in_out, GF_MAX_BOOST);
+    boost_score +=
+        gf_stats.decay_accumulator *
+        calc_frame_boost(rc, frame_info, this_frame,
+                         gf_stats.this_frame_mv_in_out, GF_MAX_BOOST);
     if (num_fpstats_used) (*num_fpstats_used)++;
   }
   arf_boost += (int)boost_score;
@@ -882,13 +978,9 @@ static INLINE int is_almost_static(double gf_zero_motion, int kf_zero_motion) {
 
 #define ARF_ABS_ZOOM_THRESH 4.4
 static INLINE int detect_gf_cut(AV1_COMP *cpi, int frame_index, int cur_start,
-                                int flash_detected, double loop_decay_rate,
-                                double last_loop_decay_rate,
-                                int active_max_gf_interval,
+                                int flash_detected, int active_max_gf_interval,
                                 int active_min_gf_interval,
-                                double zero_motion_accumulator,
-                                double mv_ratio_accumulator,
-                                double abs_mv_in_out_accumulator) {
+                                GF_GROUP_STATS *gf_stats) {
   RATE_CONTROL *const rc = &cpi->rc;
   TWO_PASS *const twopass = &cpi->twopass;
   // Motion breakout threshold for loop below depends on image size.
@@ -898,8 +990,9 @@ static INLINE int detect_gf_cut(AV1_COMP *cpi, int frame_index, int cur_start,
   if (!flash_detected) {
     // Break clause to detect very still sections after motion. For example,
     // a static image after a fade or other transition.
-    if (detect_transition_to_still(cpi, frame_index - cur_start, 5,
-                                   loop_decay_rate, last_loop_decay_rate)) {
+    if (detect_transition_to_still(
+            twopass, rc->min_gf_interval, frame_index - cur_start, 5,
+            gf_stats->loop_decay_rate, gf_stats->last_loop_decay_rate)) {
       return 1;
     }
   }
@@ -909,15 +1002,16 @@ static INLINE int detect_gf_cut(AV1_COMP *cpi, int frame_index, int cur_start,
       // If possible don't break very close to a kf
       (rc->frames_to_key - frame_index >= rc->min_gf_interval) &&
       ((frame_index - cur_start) & 0x01) && !flash_detected &&
-      (mv_ratio_accumulator > mv_ratio_accumulator_thresh ||
-       abs_mv_in_out_accumulator > ARF_ABS_ZOOM_THRESH)) {
+      (gf_stats->mv_ratio_accumulator > mv_ratio_accumulator_thresh ||
+       gf_stats->abs_mv_in_out_accumulator > ARF_ABS_ZOOM_THRESH)) {
     return 1;
   }
 
   // If almost totally static, we will not use the the max GF length later,
   // so we can continue for more frames.
   if (((frame_index - cur_start) >= active_max_gf_interval + 1) &&
-      !is_almost_static(zero_motion_accumulator, twopass->kf_zeromotion_pct)) {
+      !is_almost_static(gf_stats->zero_motion_accumulator,
+                        twopass->kf_zeromotion_pct)) {
     return 1;
   }
   return 0;
@@ -1071,7 +1165,6 @@ int determine_high_err_gf(double *errs, int *is_high, double *si, int len,
   return reset;
 }
 
-#define GROUP_ADAPTIVE_MAXQ 1
 #if GROUP_ADAPTIVE_MAXQ
 #define RC_FACTOR_MIN 0.75
 #define RC_FACTOR_MAX 1.25
@@ -1173,16 +1266,7 @@ static void calculate_gf_length(AV1_COMP *cpi, int max_gop_length,
   FRAME_INFO *frame_info = &cpi->frame_info;
   int i;
 
-  double mv_ratio_accumulator = 0.0;
-  double zero_motion_accumulator = 1.0;
-
-  double this_frame_mv_in_out = 0.0;
-  double mv_in_out_accumulator = 0.0;
-  double abs_mv_in_out_accumulator = 0.0;
-
   int flash_detected;
-  double loop_decay_rate = 1.00;
-  double last_loop_decay_rate = 1.00;
 
   aom_clear_system_state();
   av1_zero(next_frame);
@@ -1208,6 +1292,8 @@ static void calculate_gf_length(AV1_COMP *cpi, int max_gop_length,
   int cur_start = 0, cur_last;
   int cut_here;
   int prev_lows = 0;
+  GF_GROUP_STATS gf_stats;
+  init_gf_stats(&gf_stats);
   while (count_cuts < max_intervals + 1) {
     ++i;
 
@@ -1229,30 +1315,18 @@ static void calculate_gf_length(AV1_COMP *cpi, int max_gop_length,
         count_cuts++;
         break;
       }
-      // Update the motion related elements to the boost calculation.
-      accumulate_frame_motion_stats(
-          &next_frame, &this_frame_mv_in_out, &mv_in_out_accumulator,
-          &abs_mv_in_out_accumulator, &mv_ratio_accumulator);
-
       // Test for the case where there is a brief flash but the prediction
       // quality back to an earlier frame is then restored.
       flash_detected = detect_flash(twopass, 0);
-      // Monitor for static sections.
-      if (!flash_detected) {
-        last_loop_decay_rate = loop_decay_rate;
-        loop_decay_rate = get_prediction_decay_rate(frame_info, &next_frame);
+      // TODO(bohanli): remove redundant accumulations here, or unify
+      // this and the ones in define_gf_group
+      accumulate_next_frame_stats(&next_frame, frame_info, twopass,
+                                  flash_detected, rc->frames_since_key, i, 0,
+                                  rc->min_gf_interval, &gf_stats);
 
-        if ((rc->frames_since_key + i - 1) > 1) {
-          zero_motion_accumulator =
-              AOMMIN(zero_motion_accumulator,
-                     get_zero_motion_factor(frame_info, &next_frame));
-        }
-      }
-      cut_here =
-          detect_gf_cut(cpi, i, cur_start, flash_detected, loop_decay_rate,
-                        last_loop_decay_rate, active_max_gf_interval,
-                        active_min_gf_interval, zero_motion_accumulator,
-                        mv_ratio_accumulator, abs_mv_in_out_accumulator);
+      cut_here = detect_gf_cut(cpi, i, cur_start, flash_detected,
+                               active_max_gf_interval, active_min_gf_interval,
+                               &gf_stats);
     }
     if (cut_here) {
       cur_last = i - 1;  // the current last frame in the gf group
@@ -1275,6 +1349,10 @@ static void calculate_gf_length(AV1_COMP *cpi, int max_gop_length,
             after_pad = n - cur_last - 1;
             assert(after_pad >= 0);
             break;
+          } else if (start_pos + n - 1 <
+                     twopass->stats_buf_ctx->stats_in_start) {
+            before_pad = cur_start - n - 1;
+            continue;
           }
           errs[n + before_pad - cur_start] = (start_pos + n - 1)->coded_error;
         }
@@ -1310,15 +1388,7 @@ static void calculate_gf_length(AV1_COMP *cpi, int max_gop_length,
       i = cur_last;
 
       // reset accumulators
-      mv_ratio_accumulator = 0.0;
-      zero_motion_accumulator = 1.0;
-
-      this_frame_mv_in_out = 0.0;
-      mv_in_out_accumulator = 0.0;
-      abs_mv_in_out_accumulator = 0.0;
-
-      loop_decay_rate = 1.00;
-      last_loop_decay_rate = 1.00;
+      init_gf_stats(&gf_stats);
     }
   }
 
@@ -1446,6 +1516,35 @@ static INLINE void set_baseline_gf_interval(AV1_COMP *cpi, int arf_position,
   }
 }
 
+// initialize GF_GROUP_STATS
+static void init_gf_stats(GF_GROUP_STATS *gf_stats) {
+  gf_stats->gf_group_err = 0.0;
+  gf_stats->gf_group_raw_error = 0.0;
+  gf_stats->gf_group_skip_pct = 0.0;
+  gf_stats->gf_group_inactive_zone_rows = 0.0;
+
+  gf_stats->mv_ratio_accumulator = 0.0;
+  gf_stats->decay_accumulator = 1.0;
+  gf_stats->zero_motion_accumulator = 1.0;
+  gf_stats->loop_decay_rate = 1.0;
+  gf_stats->last_loop_decay_rate = 1.0;
+  gf_stats->this_frame_mv_in_out = 0.0;
+  gf_stats->mv_in_out_accumulator = 0.0;
+  gf_stats->abs_mv_in_out_accumulator = 0.0;
+
+  gf_stats->avg_sr_coded_error = 0.0;
+  gf_stats->avg_tr_coded_error = 0.0;
+  gf_stats->avg_pcnt_second_ref = 0.0;
+  gf_stats->avg_pcnt_third_ref = 0.0;
+  gf_stats->avg_pcnt_third_ref_nolast = 0.0;
+  gf_stats->avg_new_mv_count = 0.0;
+  gf_stats->avg_wavelet_energy = 0.0;
+  gf_stats->avg_raw_err_stdev = 0.0;
+  gf_stats->non_zero_stdev_count = 0;
+
+  gf_stats->allow_alt_ref = 0;
+}
+
 // Analyse and define a gf/arf group.
 #define MAX_GF_BOOST 5400
 static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
@@ -1460,29 +1559,6 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   GF_GROUP *gf_group = &cpi->gf_group;
   FRAME_INFO *frame_info = &cpi->frame_info;
   int i;
-
-  double gf_group_err = 0.0;
-#if GROUP_ADAPTIVE_MAXQ
-  double gf_group_raw_error = 0.0;
-#endif
-  double gf_group_skip_pct = 0.0;
-  double gf_group_inactive_zone_rows = 0.0;
-  double gf_first_frame_err = 0.0;
-  double mod_frame_err = 0.0;
-
-  double mv_ratio_accumulator = 0.0;
-  double decay_accumulator = 1.0;
-  double zero_motion_accumulator = 1.0;
-
-  double loop_decay_rate = 1.00;
-  double last_loop_decay_rate = 1.00;
-
-  double this_frame_mv_in_out = 0.0;
-  double mv_in_out_accumulator = 0.0;
-  double abs_mv_in_out_accumulator = 0.0;
-
-  unsigned int allow_alt_ref = is_altref_enabled(cpi);
-  const int can_disable_arf = (oxcf->gf_min_pyr_height == MIN_PYRAMID_LVL);
 
   int flash_detected;
   int64_t gf_group_bits;
@@ -1511,26 +1587,33 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
     correct_frames_to_key(cpi);
   }
 
+  GF_GROUP_STATS gf_stats;
+  init_gf_stats(&gf_stats);
+  GF_FRAME_STATS first_frame_stats, last_frame_stats;
+
+  gf_stats.allow_alt_ref = is_altref_enabled(cpi);
+  const int can_disable_arf = (oxcf->gf_min_pyr_height == MIN_PYRAMID_LVL);
+
   // Load stats for the current frame.
-  mod_frame_err = calculate_modified_err(frame_info, twopass, oxcf, this_frame);
+  double mod_frame_err =
+      calculate_modified_err(frame_info, twopass, oxcf, this_frame);
 
   // Note the error of the frame at the start of the group. This will be
   // the GF frame error if we code a normal gf.
-  gf_first_frame_err = mod_frame_err;
-
-  const double first_frame_coded_error = this_frame->coded_error;
-  const double first_frame_sr_coded_error = this_frame->sr_coded_error;
-  const double first_frame_tr_coded_error = this_frame->tr_coded_error;
+  first_frame_stats.frame_err = mod_frame_err;
+  first_frame_stats.frame_coded_error = this_frame->coded_error;
+  first_frame_stats.frame_sr_coded_error = this_frame->sr_coded_error;
+  first_frame_stats.frame_tr_coded_error = this_frame->tr_coded_error;
 
   // If this is a key frame or the overlay from a previous arf then
   // the error score / cost of this frame has already been accounted for.
   if (arf_active_or_kf) {
-    gf_group_err -= gf_first_frame_err;
+    gf_stats.gf_group_err -= first_frame_stats.frame_err;
 #if GROUP_ADAPTIVE_MAXQ
-    gf_group_raw_error -= this_frame->coded_error;
+    gf_stats.gf_group_raw_error -= this_frame->coded_error;
 #endif
-    gf_group_skip_pct -= this_frame->intra_skip_pct;
-    gf_group_inactive_zone_rows -= this_frame->inactive_zone_rows;
+    gf_stats.gf_group_skip_pct -= this_frame->intra_skip_pct;
+    gf_stats.gf_group_inactive_zone_rows -= this_frame->inactive_zone_rows;
   }
 
   // TODO(urvang): Try logic to vary min and max interval based on q.
@@ -1538,80 +1621,35 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   const int active_max_gf_interval =
       AOMMIN(rc->max_gf_interval, max_gop_length);
 
-  double avg_sr_coded_error = 0;
-  double avg_tr_coded_error = 0;
-
-  double avg_pcnt_second_ref = 0;
-  double avg_pcnt_third_ref = 0;
-
-  double avg_new_mv_count = 0;
-
-  double avg_wavelet_energy = 0;
-
-  double avg_raw_err_stdev = 0;
-  int non_zero_stdev_count = 0;
-
   i = 0;
   // get the determined gf group length from rc->gf_intervals
   while (i < rc->gf_intervals[rc->cur_gf_index]) {
     ++i;
-
     // Accumulate error score of frames in this gf group.
     mod_frame_err =
         calculate_modified_err(frame_info, twopass, oxcf, this_frame);
-    gf_group_err += mod_frame_err;
-#if GROUP_ADAPTIVE_MAXQ
-    gf_group_raw_error += this_frame->coded_error;
-#endif
-    gf_group_skip_pct += this_frame->intra_skip_pct;
-    gf_group_inactive_zone_rows += this_frame->inactive_zone_rows;
+    // accumulate stats for this frame
+    accumulate_this_frame_stats(this_frame, mod_frame_err, &gf_stats);
 
+    // read in the next frame
     if (EOF == input_stats(twopass, &next_frame)) break;
 
     // Test for the case where there is a brief flash but the prediction
     // quality back to an earlier frame is then restored.
     flash_detected = detect_flash(twopass, 0);
 
-    // Update the motion related elements to the boost calculation.
-    accumulate_frame_motion_stats(
-        &next_frame, &this_frame_mv_in_out, &mv_in_out_accumulator,
-        &abs_mv_in_out_accumulator, &mv_ratio_accumulator);
-    // sum up the metric values of current gf group
-    avg_sr_coded_error += next_frame.sr_coded_error;
-    avg_tr_coded_error += next_frame.tr_coded_error;
-    avg_pcnt_second_ref += next_frame.pcnt_second_ref;
-    avg_pcnt_third_ref += next_frame.pcnt_third_ref;
-    avg_new_mv_count += next_frame.new_mv_count;
-    avg_wavelet_energy += next_frame.frame_avg_wavelet_energy;
-    if (fabs(next_frame.raw_error_stdev) > 0.000001) {
-      non_zero_stdev_count++;
-      avg_raw_err_stdev += next_frame.raw_error_stdev;
-    }
+    // accumulate stats for next frame
+    accumulate_next_frame_stats(
+        &next_frame, frame_info, twopass, flash_detected, rc->frames_since_key,
+        i, can_disable_arf, rc->min_gf_interval, &gf_stats);
 
-    // Accumulate the effect of prediction quality decay.
-    if (!flash_detected) {
-      last_loop_decay_rate = loop_decay_rate;
-      loop_decay_rate = get_prediction_decay_rate(frame_info, &next_frame);
-
-      decay_accumulator = decay_accumulator * loop_decay_rate;
-
-      // Monitor for static sections.
-      if ((rc->frames_since_key + i - 1) > 1) {
-        zero_motion_accumulator =
-            AOMMIN(zero_motion_accumulator,
-                   get_zero_motion_factor(frame_info, &next_frame));
-      }
-
-      // Break clause to detect very still sections after motion. For example,
-      // a static image after a fade or other transition.
-      if (can_disable_arf &&
-          detect_transition_to_still(cpi, i, 5, loop_decay_rate,
-                                     last_loop_decay_rate)) {
-        allow_alt_ref = 0;
-      }
-    }
     *this_frame = next_frame;
   }
+  // save the errs for the last frame
+  last_frame_stats.frame_coded_error = next_frame.coded_error;
+  last_frame_stats.frame_sr_coded_error = next_frame.sr_coded_error;
+  last_frame_stats.frame_tr_coded_error = next_frame.tr_coded_error;
+
   if (is_final_pass) {
     rc->intervals_till_gf_calculate_due--;
     rc->cur_gf_index++;
@@ -1623,26 +1661,8 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   const int num_mbs = (cpi->oxcf.resize_mode != RESIZE_NONE) ? cpi->initial_mbs
                                                              : cpi->common.MBs;
   assert(num_mbs > 0);
-  const double last_frame_coded_error = next_frame.coded_error;
-  const double last_frame_sr_coded_error = next_frame.sr_coded_error;
-  const double last_frame_tr_coded_error = next_frame.tr_coded_error;
-  double avg_pcnt_third_ref_nolast = avg_pcnt_third_ref;
-  if (i) {
-    avg_sr_coded_error /= i;
-    avg_tr_coded_error /= i;
-    avg_pcnt_second_ref /= i;
-    if (i - 1) {
-      avg_pcnt_third_ref_nolast =
-          (avg_pcnt_third_ref - next_frame.pcnt_third_ref) / (i - 1);
-    } else {
-      avg_pcnt_third_ref_nolast = avg_pcnt_third_ref / i;
-    }
-    avg_pcnt_third_ref /= i;
-    avg_new_mv_count /= i;
-    avg_wavelet_energy /= i;
-  }
 
-  if (non_zero_stdev_count) avg_raw_err_stdev /= non_zero_stdev_count;
+  average_gf_stats(i, &next_frame, &gf_stats);
 
   // Disable internal ARFs for "still" gf groups.
   //   zero_motion_accumulator: minimum percentage of (0,0) motion;
@@ -1651,17 +1671,18 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   //                            motion error per block of each frame.
   const int can_disable_internal_arfs =
       (oxcf->gf_min_pyr_height <= MIN_PYRAMID_LVL + 1);
-  if (can_disable_internal_arfs && zero_motion_accumulator > MIN_ZERO_MOTION &&
-      avg_sr_coded_error / num_mbs < MAX_SR_CODED_ERROR &&
-      avg_raw_err_stdev < MAX_RAW_ERR_VAR) {
+  if (can_disable_internal_arfs &&
+      gf_stats.zero_motion_accumulator > MIN_ZERO_MOTION &&
+      gf_stats.avg_sr_coded_error / num_mbs < MAX_SR_CODED_ERROR &&
+      gf_stats.avg_raw_err_stdev < MAX_RAW_ERR_VAR) {
     cpi->internal_altref_allowed = 0;
   }
 
   int use_alt_ref;
   if (can_disable_arf) {
-    use_alt_ref = !is_almost_static(zero_motion_accumulator,
+    use_alt_ref = !is_almost_static(gf_stats.zero_motion_accumulator,
                                     twopass->kf_zeromotion_pct) &&
-                  allow_alt_ref && (i < cpi->oxcf.lag_in_frames) &&
+                  gf_stats.allow_alt_ref && (i < cpi->oxcf.lag_in_frames) &&
                   (i >= MIN_GF_INTERVAL) &&
                   (cpi->oxcf.gf_max_pyr_height > MIN_PYRAMID_LVL);
 
@@ -1669,33 +1690,10 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
     if (use_alt_ref && cpi->oxcf.rc_mode == AOM_Q &&
         cpi->oxcf.cq_level <= 200) {
       aom_clear_system_state();
-
-      /* clang-format off */
-    // Generate features.
-    const float features[] = {
-      (float)abs_mv_in_out_accumulator,
-      (float)(avg_new_mv_count / num_mbs),
-      (float)avg_pcnt_second_ref,
-      (float)avg_pcnt_third_ref,
-      (float)avg_pcnt_third_ref_nolast,
-      (float)(avg_sr_coded_error / num_mbs),
-      (float)(avg_tr_coded_error / num_mbs),
-      (float)(avg_wavelet_energy / num_mbs),
-      (float)(rc->constrained_gf_group),
-      (float)decay_accumulator,
-      (float)(first_frame_coded_error / num_mbs),
-      (float)(first_frame_sr_coded_error / num_mbs),
-      (float)(first_frame_tr_coded_error / num_mbs),
-      (float)(gf_first_frame_err / num_mbs),
-      (float)(twopass->kf_zeromotion_pct),
-      (float)(last_frame_coded_error / num_mbs),
-      (float)(last_frame_sr_coded_error / num_mbs),
-      (float)(last_frame_tr_coded_error / num_mbs),
-      (float)i,
-      (float)mv_ratio_accumulator,
-      (float)non_zero_stdev_count
-    };
-      /* clang-format on */
+      float features[21];
+      get_features_from_gf_stats(
+          &gf_stats, &first_frame_stats, &last_frame_stats, num_mbs,
+          rc->constrained_gf_group, twopass->kf_zeromotion_pct, i, features);
       // Infer using ML model.
       float score;
       av1_nn_predict(features, &av1_use_flat_gop_nn_config, 1, &score);
@@ -1703,7 +1701,8 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
     }
   } else {
     assert(cpi->oxcf.gf_max_pyr_height > MIN_PYRAMID_LVL);
-    use_alt_ref = allow_alt_ref && (i < cpi->oxcf.lag_in_frames) && (i > 2);
+    use_alt_ref =
+        gf_stats.allow_alt_ref && (i < cpi->oxcf.lag_in_frames) && (i > 2);
   }
 
 #define REDUCE_GF_LENGTH_THRESH 4
@@ -1801,7 +1800,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   reset_fpf_position(twopass, start_pos);
 
   // Calculate the bits to be allocated to the gf/arf group as a whole
-  gf_group_bits = calculate_total_gf_group_bits(cpi, gf_group_err);
+  gf_group_bits = calculate_total_gf_group_bits(cpi, gf_stats.gf_group_err);
   rc->gf_group_bits = gf_group_bits;
 
 #if GROUP_ADAPTIVE_MAXQ
@@ -1813,11 +1812,12 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   if ((cpi->oxcf.rc_mode != AOM_Q) && (rc->baseline_gf_interval > 1)) {
     const int vbr_group_bits_per_frame =
         (int)(gf_group_bits / rc->baseline_gf_interval);
-    const double group_av_err = gf_group_raw_error / rc->baseline_gf_interval;
+    const double group_av_err =
+        gf_stats.gf_group_raw_error / rc->baseline_gf_interval;
     const double group_av_skip_pct =
-        gf_group_skip_pct / rc->baseline_gf_interval;
+        gf_stats.gf_group_skip_pct / rc->baseline_gf_interval;
     const double group_av_inactive_zone =
-        ((gf_group_inactive_zone_rows * 2) /
+        ((gf_stats.gf_group_inactive_zone_rows * 2) /
          (rc->baseline_gf_interval * (double)cm->mb_rows));
 
     int tmp_q;
@@ -1845,7 +1845,8 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
 #endif
 
   // Adjust KF group bits and error remaining.
-  if (is_final_pass) twopass->kf_group_error_left -= (int64_t)gf_group_err;
+  if (is_final_pass)
+    twopass->kf_group_error_left -= (int64_t)gf_stats.gf_group_err;
 
   // Set up the structure of this Group-Of-Pictures (same as GF_GROUP)
   av1_gop_setup_structure(cpi, frame_params);
@@ -2124,8 +2125,9 @@ static int define_kf_interval(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
 
       // Special check for transition or high motion followed by a
       // static scene.
-      if (detect_transition_to_still(cpi, i, cpi->oxcf.key_freq - i,
-                                     loop_decay_rate, decay_accumulator)) {
+      if (detect_transition_to_still(twopass, rc->min_gf_interval, i,
+                                     cpi->oxcf.key_freq - i, loop_decay_rate,
+                                     decay_accumulator)) {
         scenecut_detected = 1;
         break;
       }
