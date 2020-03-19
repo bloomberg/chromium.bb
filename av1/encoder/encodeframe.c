@@ -4333,8 +4333,8 @@ static void source_content_sb(AV1_COMP *cpi, MACROBLOCK *x, int shift) {
   int src_ystride = cpi->source->y_stride;
   uint8_t *last_src_y = cpi->last_source->y_buffer;
   int last_src_ystride = cpi->last_source->y_stride;
-  uint64_t avg_source_sse_threshold = 100000;       // ~5*5*(64*64)
-  uint64_t avg_source_sse_threshold_high = 800000;  // ~14*14*(64*64)
+  uint64_t avg_source_sse_threshold = 100000;        // ~5*5*(64*64)
+  uint64_t avg_source_sse_threshold_high = 1000000;  // ~15*15*(64*64)
   uint64_t sum_sq_thresh = 10000;  // sum = sqrt(thresh / 64*64)) ~1.5
 #if CONFIG_AV1_HIGHBITDEPTH
   MACROBLOCKD *xd = &x->e_mbd;
@@ -4346,7 +4346,7 @@ static void source_content_sb(AV1_COMP *cpi, MACROBLOCK *x, int shift) {
                                        last_src_ystride, &tmp_sse);
   // Note: tmp_sse - tmp_variance = ((sum * sum) >> 12)
   // Detect large lighting change.
-  if (tmp_variance < (tmp_sse >> 2) && (tmp_sse - tmp_variance) > sum_sq_thresh)
+  if (tmp_variance < (tmp_sse >> 1) && (tmp_sse - tmp_variance) > sum_sq_thresh)
     x->content_state_sb = kLowVarHighSumdiff;
   else if (tmp_sse < avg_source_sse_threshold)
     x->content_state_sb = kLowSad;
