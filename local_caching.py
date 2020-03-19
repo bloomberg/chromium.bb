@@ -656,6 +656,7 @@ class DiskContentAddressedCache(ContentAddressedCache):
         # Don't want to keep broken cache dir.
         file_path.rmtree(self.cache_dir)
         fs.makedirs(self.cache_dir)
+        self._free_disk = file_path.get_free_space(self.cache_dir)
     if time_fn:
       self._lru.time_fn = time_fn
     if trim:
