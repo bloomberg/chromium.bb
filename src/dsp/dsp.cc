@@ -94,6 +94,7 @@ void DspInit() {
       MaskBlendInit_SSE4_1();
       ObmcInit_SSE4_1();
       SuperResInit_SSE4_1();
+      WarpInit_SSE4_1();
       WeightMaskInit_SSE4_1();
     }
 #endif  // LIBGAV1_ENABLE_SSE4_1
