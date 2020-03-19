@@ -62,10 +62,6 @@ struct FrameScratchBuffer {
   // for every 32x32 for chroma with subsampling). The indices of the rows that
   // are stored are specified in |kDeblockedRowsForLoopRestoration|.
   YuvBuffer deblock_buffer;
-  // Buffer used to store the unfiltered pixels that are necessary for decoding
-  // the next superblock row (for the intra prediction process).
-  std::array<AlignedDynamicBuffer<uint8_t, kMaxAlignment>, kMaxPlanes>
-      intra_prediction_buffer;
   TileScratchBufferPool tile_scratch_buffer_pool;
   // TODO(vigneshv): This is part of the frame scratch buffer for now. This will
   // have to change or move to DecoderImpl when frame parallel mode with

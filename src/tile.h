@@ -78,7 +78,7 @@ class Tile : public Allocable {
        const SegmentationMap* prev_segment_ids, PostFilter* post_filter,
        BlockParametersHolder* block_parameters, const dsp::Dsp* dsp,
        ThreadPool* thread_pool, BlockingCounterWithStatus* pending_tiles,
-       bool frame_parallel);
+       bool frame_parallel, bool use_intra_prediction_buffer);
 
   // Move only.
   Tile(Tile&& tile) noexcept;
@@ -234,6 +234,12 @@ class Tile : public Allocable {
   // decoding jobs for the superblock to the bottom-left and the superblock to
   // the right of this superblock (if it is allowed).
   void DecodeSuperBlock(int row_index, int column_index, int block_width4x4);
+
+  // If |use_intra_prediction_buffer_| is true, then this function copies the
+  // last row of the superblockrow starting at |row4x4| into the
+  // |intra_prediction_buffer_| (which may be used by the intra prediction
+  // process for the next superblock row).
+  void PopulateIntraPredictionBuffer(int row4x4);
 
   uint16_t* GetPartitionCdf(int row4x4, int column4x4, BlockSize block_size);
   bool ReadPartition(int row4x4, int column4x4, BlockSize block_size,
@@ -678,8 +684,6 @@ class Tile : public Allocable {
 
   Array2D<int16_t>& cdef_index_;
   Array2D<TransformSize>& inter_transform_sizes_;
-  std::array<AlignedDynamicBuffer<uint8_t, kMaxAlignment>, kMaxPlanes>&
-      intra_prediction_buffer_;
   std::array<RestorationUnitInfo, kMaxPlanes> reference_unit_info_;
   // If |thread_pool_| is nullptr, the calling thread will do the parsing and
   // the decoding in one pass. If |thread_pool_| is not nullptr, then the main
@@ -704,6 +708,12 @@ class Tile : public Allocable {
   bool build_bit_mask_when_parsing_;
   bool initialized_;
   const bool frame_parallel_;
+  const bool use_intra_prediction_buffer_;
+  // Buffer used to store the unfiltered pixels that are necessary for decoding
+  // the next superblock row (for the intra prediction process). Used only if
+  // |use_intra_prediction_buffer_| is true.
+  std::array<AlignedDynamicBuffer<uint8_t, kMaxAlignment>, kMaxPlanes>
+      intra_prediction_buffer_;
 };
 
 struct Tile::Block {

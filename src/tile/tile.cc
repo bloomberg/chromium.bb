@@ -386,7 +386,8 @@ Tile::Tile(int tile_number, const uint8_t* const data, size_t size,
            PostFilter* const post_filter,
            BlockParametersHolder* const block_parameters_holder,
            const dsp::Dsp* const dsp, ThreadPool* const thread_pool,
-           BlockingCounterWithStatus* const pending_tiles, bool frame_parallel)
+           BlockingCounterWithStatus* const pending_tiles, bool frame_parallel,
+           bool use_intra_prediction_buffer)
     : number_(tile_number),
       data_(data),
       size_(size),
@@ -422,7 +423,6 @@ Tile::Tile(int tile_number, const uint8_t* const data, size_t size,
       current_frame_(*current_frame),
       cdef_index_(frame_scratch_buffer->cdef_index),
       inter_transform_sizes_(frame_scratch_buffer->inter_transform_sizes),
-      intra_prediction_buffer_(frame_scratch_buffer->intra_prediction_buffer),
       thread_pool_(thread_pool),
       residual_buffer_pool_(frame_scratch_buffer->residual_buffer_pool.get()),
       tile_scratch_buffer_pool_(
@@ -430,7 +430,8 @@ Tile::Tile(int tile_number, const uint8_t* const data, size_t size,
       pending_tiles_(pending_tiles),
       build_bit_mask_when_parsing_(false),
       initialized_(false),
-      frame_parallel_(frame_parallel) {
+      frame_parallel_(frame_parallel),
+      use_intra_prediction_buffer_(use_intra_prediction_buffer) {
   row_ = number_ / frame_header.tile_info.tile_columns;
   column_ = number_ % frame_header.tile_info.tile_columns;
   row4x4_start_ = frame_header.tile_info.tile_row_start[row_];
@@ -545,6 +546,22 @@ bool Tile::Init() {
       return false;
     }
   }
+  if (use_intra_prediction_buffer_) {
+    for (int plane = 0; plane < PlaneCount(); ++plane) {
+      const size_t intra_prediction_buffer_size =
+          (MultiplyBy4(column4x4_end_ - column4x4_start_) >>
+           subsampling_x_[plane]) *
+          (sequence_header_.color_config.bitdepth == 8 ? sizeof(uint8_t)
+                                                       : sizeof(uint16_t));
+      if (!intra_prediction_buffer_[plane].Resize(
+              intra_prediction_buffer_size)) {
+        LIBGAV1_DLOG(
+            ERROR, "Failed to allocate intra prediction buffer for plane %d.\n",
+            plane);
+        return false;
+      }
+    }
+  }
   if (frame_header_.use_ref_frame_mvs) {
     assert(sequence_header_.enable_order_hint);
     SetupMotionField(frame_header_, current_frame_, reference_frames_,
@@ -575,6 +592,10 @@ bool Tile::ProcessSuperBlockRow(int row4x4,
   }
   if (save_symbol_decoder_context && row4x4 + block_width4x4 >= row4x4_end_) {
     SaveSymbolDecoderContext();
+  }
+  if (processing_mode == kProcessingModeDecodeOnly ||
+      processing_mode == kProcessingModeParseAndDecode) {
+    PopulateIntraPredictionBuffer(row4x4);
   }
   return true;
 }
@@ -790,6 +811,37 @@ void Tile::DecodeSuperBlock(int row_index, int column_index,
   if (no_pending_jobs) {
     // We are done parsing and decoding this tile.
     pending_tiles_->Decrement(job_succeeded);
+  }
+}
+
+void Tile::PopulateIntraPredictionBuffer(int row4x4) {
+  const int block_width4x4 = kNum4x4BlocksWide[SuperBlockSize()];
+  if (!use_intra_prediction_buffer_ || row4x4 + block_width4x4 >= row4x4_end_) {
+    return;
+  }
+  for (int plane = 0; plane < PlaneCount(); ++plane) {
+    const int row_to_copy =
+        (MultiplyBy4(row4x4 + block_width4x4) >> subsampling_y_[plane]) - 1;
+    const size_t pixels_to_copy =
+        (MultiplyBy4(column4x4_end_ - column4x4_start_) >>
+         subsampling_x_[plane]) *
+        (sequence_header_.color_config.bitdepth == 8 ? sizeof(uint8_t)
+                                                     : sizeof(uint16_t));
+    const size_t column_start =
+        MultiplyBy4(column4x4_start_) >> subsampling_x_[plane];
+    void* start;
+#if LIBGAV1_MAX_BITDEPTH >= 10
+    if (sequence_header_.color_config.bitdepth > 8) {
+      Array2DView<uint16_t> buffer(
+          buffer_[plane].rows(), buffer_[plane].columns() / sizeof(uint16_t),
+          reinterpret_cast<uint16_t*>(&buffer_[plane][0][0]));
+      start = &buffer[row_to_copy][column_start];
+    } else  // NOLINT
+#endif
+    {
+      start = &buffer_[plane][row_to_copy][column_start];
+    }
+    memcpy(intra_prediction_buffer_[plane].get(), start, pixels_to_copy);
   }
 }
 

@@ -61,36 +61,6 @@ int GetBottomBorderPixels(const bool do_cdef, const bool do_restoration,
   return border;
 }
 
-// Copies the last row of pixels from the superblock row at |row4x4| into
-// |frame_scratch_buffer->intra_prediction_buffer|. If the superblock row is the
-// last one, then nothing is copied.
-void CopyUnfilteredPixelsForIntraPrediction(
-    const ObuSequenceHeader& sequence_header,
-    const ObuFrameHeader& frame_header, int row4x4, int block_size4x4,
-    PostFilter* const post_filter,
-    FrameScratchBuffer* const frame_scratch_buffer) {
-  if (row4x4 + block_size4x4 >= frame_header.rows4x4) return;
-  const int num_planes = sequence_header.color_config.is_monochrome
-                             ? kMaxPlanesMonochrome
-                             : kMaxPlanes;
-  for (int plane = 0; plane < num_planes; ++plane) {
-    const int subsampling_x =
-        (plane == kPlaneY) ? 0 : sequence_header.color_config.subsampling_x;
-    const int subsampling_y =
-        (plane == kPlaneY) ? 0 : sequence_header.color_config.subsampling_y;
-    const int row_to_copy =
-        (MultiplyBy4(row4x4 + block_size4x4) >> subsampling_y) - 1;
-    const size_t pixels_to_copy =
-        (MultiplyBy4(frame_header.columns4x4) >> subsampling_x) *
-        (sequence_header.color_config.bitdepth == 8 ? sizeof(uint8_t)
-                                                    : sizeof(uint16_t));
-    memcpy(frame_scratch_buffer->intra_prediction_buffer[plane].get(),
-           post_filter->GetUnfilteredBuffer(plane) +
-               row_to_copy * post_filter->frame_buffer().stride(plane),
-           pixels_to_copy);
-  }
-}
-
 }  // namespace
 
 // static
@@ -817,31 +787,6 @@ StatusCode DecoderImpl::DecodeTiles(
     }
   }
 
-  // Use |frame_scratch_buffer->intra_prediction_buffer| to store the unfiltered
-  // pixels for the intra prediction of the next superblock row. This is done
-  // only when one of the following conditions are true:
-  //   * frame_parallel is true.
-  //   * settings_.threads == 1.
-  // In the non-frame-parallel multi-threaded case, we do not run the post
-  // filters in the decode loop. So this buffer is not used.
-  if (IsFrameParallel() || settings_.threads == 1) {
-    for (int plane = 0; plane < num_planes; ++plane) {
-      const int subsampling =
-          (plane == kPlaneY) ? 0 : sequence_header.color_config.subsampling_x;
-      const size_t intra_prediction_buffer_size =
-          ((MultiplyBy4(frame_header.columns4x4) >> subsampling) *
-           (sequence_header.color_config.bitdepth == 8 ? sizeof(uint8_t)
-                                                       : sizeof(uint16_t)));
-      if (!frame_scratch_buffer->intra_prediction_buffer[plane].Resize(
-              intra_prediction_buffer_size)) {
-        LIBGAV1_DLOG(
-            ERROR, "Failed to allocate intra prediction buffer for plane %d.\n",
-            plane);
-        return kStatusOutOfMemory;
-      }
-    }
-  }
-
   PostFilter post_filter(
       frame_header, sequence_header, &frame_scratch_buffer->loop_filter_mask,
       frame_scratch_buffer->cdef_index,
@@ -852,6 +797,15 @@ StatusCode DecoderImpl::DecodeTiles(
       frame_scratch_buffer->threaded_window_buffer.get(),
       frame_scratch_buffer->superres_line_buffer.get(),
       settings_.post_filter_mask);
+  // The Tile class must make use of a separate buffer to store the unfiltered
+  // pixels for the intra prediction of the next superblock row. This is done
+  // only when one of the following conditions are true:
+  //   * frame_parallel is true.
+  //   * settings_.threads == 1.
+  // In the non-frame-parallel multi-threaded case, we do not run the post
+  // filters in the decode loop. So this buffer need not be used.
+  const bool use_intra_prediction_buffer =
+      IsFrameParallel() || settings_.threads == 1;
   SymbolDecoderContext saved_symbol_decoder_context;
   int tile_index = 0;
   BlockingCounterWithStatus pending_tiles(tile_count);
@@ -887,7 +841,7 @@ StatusCode DecoderImpl::DecodeTiles(
           frame_scratch_buffer, wedge_masks_, &saved_symbol_decoder_context,
           prev_segment_ids, &post_filter, &block_parameters_holder, dsp,
           threading_strategy.row_thread_pool(tile_index++), &pending_tiles,
-          IsFrameParallel()));
+          IsFrameParallel(), use_intra_prediction_buffer));
       if (tile == nullptr) {
         LIBGAV1_DLOG(ERROR, "Failed to allocate tile.");
         return kStatusOutOfMemory;
@@ -942,9 +896,6 @@ StatusCode DecoderImpl::DecodeTilesNonFrameParallel(
         return kLibgav1StatusUnknownError;
       }
     }
-    CopyUnfilteredPixelsForIntraPrediction(sequence_header, frame_header,
-                                           row4x4, block_width4x4, post_filter,
-                                           frame_scratch_buffer);
     post_filter->ApplyFilteringForOneSuperBlockRow(
         row4x4, block_width4x4,
         row4x4 + block_width4x4 >= frame_header.rows4x4);
@@ -1070,9 +1021,6 @@ StatusCode DecoderImpl::DecodeTilesFrameParallel(
         return kStatusUnknownError;
       }
     }
-    CopyUnfilteredPixelsForIntraPrediction(sequence_header, frame_header,
-                                           row4x4, block_width4x4, post_filter,
-                                           frame_scratch_buffer);
     const int progress_row = post_filter->ApplyFilteringForOneSuperBlockRow(
         row4x4, block_width4x4,
         row4x4 + block_width4x4 >= frame_header.rows4x4);
