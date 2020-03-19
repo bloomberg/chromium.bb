@@ -591,7 +591,8 @@ CHROME_PN = 'chromeos-chrome'
 CHROME_CP = '%s/%s' % (CHROME_CN, CHROME_PN)
 
 # Other packages to uprev while uprevving Chrome.
-OTHER_CHROME_PACKAGES = ['chromeos-base/chromium-source']
+OTHER_CHROME_PACKAGES = ['chromeos-base/chromium-source',
+                         'chromeos-base/chrome-icu']
 
 # Chrome use flags
 USE_CHROME_INTERNAL = 'chrome_internal'
