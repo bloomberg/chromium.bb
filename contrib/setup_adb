@@ -71,14 +71,6 @@ fi
 ssh_exec "android-sh -c 'cat > /data/misc/adb/adb_keys'" < ${ADB_KEY}
 ssh_exec "android-sh -c 'restorecon /data/misc/adb/adb_keys'"
 ssh_exec "android-sh -c 'setprop persist.sys.usb.config adb'"
-
-SDK_VERSION=`ssh_exec "android-sh -c 'getprop ro.build.version.sdk'"`
-# 25: Android N SDK version.
-if [ "${SDK_VERSION}" -ge 25 ]; then
-  # In N or later, init.usb.rc is updated so that persist.sys.usb.config
-  # is propagated to sys.usb.config only on booting.
-  # So, here manually propagate it so that adbd is triggered to start.
-  ssh_exec "android-sh -c 'setprop sys.usb.config adb'"
-fi
+ssh_exec "android-sh -c 'setprop sys.usb.config adb'"
 
 echo "INFO: ADB set up complete."
