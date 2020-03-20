@@ -2860,6 +2860,13 @@ def ApplyCustomOverrides(site_config):
           'sign_types': ['recovery', 'factory'],
       },
 
+      'trogdor-release': {
+          # Trogdor has no DUTs in the lab. (b/152055929)
+          'hw_tests': [],
+          'hw_tests_override': [],
+          'hw_tests_disabled_bug': 'b/152055929',
+      },
+
       'volteer-release': {
           'sign_types': ['recovery', 'factory'],
       },
