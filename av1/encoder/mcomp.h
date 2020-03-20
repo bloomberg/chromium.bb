@@ -104,11 +104,29 @@ enum {
   FAST_DIAMOND = 6
 } UENUM1BYTE(SEARCH_METHODS);
 
+typedef struct {
+  // The reference buffer
+  const struct buf_2d *ref;
+
+  // The source and predictors/mask used by translational search
+  const struct buf_2d *src;
+  const uint8_t *second_pred;
+  const uint8_t *mask;
+  int mask_stride;
+  int inv_mask;
+
+  // The weighted source and mask used by OBMC
+  const int32_t *wsrc;
+  const int32_t *obmc_mask;
+} MSBuffers;
+
 // This struct holds fullpixel motion search parameters that should be constant
 // during the search
 typedef struct {
   BLOCK_SIZE bsize;
   const aom_variance_fn_ptr_t *vfp;
+
+  MSBuffers ms_buffers;
 
   SEARCH_METHODS search_method;
   const search_site_config *search_sites;
@@ -123,14 +141,6 @@ typedef struct {
   const struct MESH_PATTERN *mesh_patterns[2];
 
   int is_intra_mode;
-
-  const struct buf_2d *src;
-  const struct buf_2d *ref;
-
-  const uint8_t *second_pred;
-  const uint8_t *mask;
-  int mask_stride;
-  int inv_mask;
 
   int fast_obmc_search;
 
@@ -211,7 +221,7 @@ void av1_intrabc_hash_search(const struct AV1_COMP *cpi, MACROBLOCK *x,
                              BLOCK_SIZE bsize, const MV *ref_mv, int *bestsme,
                              FULLPEL_MV *best_mv);
 
-int av1_obmc_full_pixel_search(const MACROBLOCK *x, const FULLPEL_MV start_mv,
+int av1_obmc_full_pixel_search(const FULLPEL_MV start_mv,
                                const FULLPEL_MOTION_SEARCH_PARAMS *ms_params,
                                const int step_param, FULLPEL_MV *best_mv);
 

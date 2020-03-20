@@ -32,20 +32,30 @@
 #include "av1/encoder/rdopt.h"
 #include "av1/encoder/reconinter_enc.h"
 
-// TODO(any): Adaptively adjust the regularization strength based on image size
-// and motion activity instead of using hard-coded values. It seems like we
-// roughly half the lambda for each increase in resolution
-// These are multiplier used to perform regularization in motion compensation
-// when x->mv_cost_type is set to MV_COST_L1.
-// LOWRES
-#define SSE_LAMBDA_LOWRES 2   // Used by mv_cost_err_fn
-#define SAD_LAMBDA_LOWRES 32  // Used by mvsad_err_cost during full pixel search
-// MIDRES
-#define SSE_LAMBDA_MIDRES 0   // Used by mv_cost_err_fn
-#define SAD_LAMBDA_MIDRES 15  // Used by mvsad_err_cost during full pixel search
-// HDRES
-#define SSE_LAMBDA_HDRES 1  // Used by mv_cost_err_fn
-#define SAD_LAMBDA_HDRES 8  // Used by mvsad_err_cost during full pixel search
+static INLINE void init_mv_cost_params(MV_COST_PARAMS *mv_cost_params,
+                                       const MACROBLOCK *x, const MV *ref_mv) {
+  mv_cost_params->ref_mv = ref_mv;
+  mv_cost_params->full_ref_mv = get_fullmv_from_mv(ref_mv);
+  mv_cost_params->error_per_bit = x->errorperbit;
+  mv_cost_params->sad_per_bit = x->sadperbit;
+  mv_cost_params->mvjcost = x->nmv_vec_cost;
+  mv_cost_params->mvcost[0] = x->mv_cost_stack[0];
+  mv_cost_params->mvcost[1] = x->mv_cost_stack[1];
+  mv_cost_params->mv_cost_type = x->mv_cost_type;
+}
+
+static INLINE void init_ms_buffers(MSBuffers *ms_buffers, const MACROBLOCK *x) {
+  ms_buffers->ref = &x->e_mbd.plane[0].pre[0];
+  ms_buffers->src = &x->plane[0].src;
+
+  ms_buffers->second_pred = NULL;
+  ms_buffers->mask = NULL;
+  ms_buffers->mask_stride = 0;
+  ms_buffers->inv_mask = 0;
+
+  ms_buffers->wsrc = x->wsrc_buf;
+  ms_buffers->obmc_mask = x->mask_buf;
+}
 
 void av1_make_default_fullpel_ms_params(
     FULLPEL_MOTION_SEARCH_PARAMS *ms_params, const struct AV1_COMP *cpi,
@@ -55,13 +65,7 @@ void av1_make_default_fullpel_ms_params(
   ms_params->bsize = bsize;
   ms_params->vfp = &cpi->fn_ptr[bsize];
 
-  ms_params->src = &x->plane[0].src;
-  ms_params->ref = &x->e_mbd.plane[0].pre[0];
-
-  ms_params->second_pred = NULL;
-  ms_params->mask = NULL;
-  ms_params->mask_stride = 0;
-  ms_params->inv_mask = 0;
+  init_ms_buffers(&ms_params->ms_buffers, x);
 
   ms_params->search_method = cpi->sf.mv_sf.search_method;
   ms_params->search_sites = search_sites;
@@ -80,14 +84,7 @@ void av1_make_default_fullpel_ms_params(
   av1_set_mv_search_range(&ms_params->mv_limits, ref_mv);
 
   // Mvcost params
-  ms_params->mv_cost_params.ref_mv = ref_mv;
-  ms_params->mv_cost_params.full_ref_mv = get_fullmv_from_mv(ref_mv);
-  ms_params->mv_cost_params.error_per_bit = x->errorperbit;
-  ms_params->mv_cost_params.sad_per_bit = x->sadperbit;
-  ms_params->mv_cost_params.mvjcost = x->nmv_vec_cost;
-  ms_params->mv_cost_params.mvcost[0] = x->mv_cost_stack[0];
-  ms_params->mv_cost_params.mvcost[1] = x->mv_cost_stack[1];
-  ms_params->mv_cost_params.mv_cost_type = x->mv_cost_type;
+  init_mv_cost_params(&ms_params->mv_cost_params, x, ref_mv);
 }
 
 void av1_make_default_subpel_ms_params(
@@ -104,13 +101,7 @@ void av1_make_default_subpel_ms_params(
   ms_params->do_reset_fractional_mv = do_reset_fractional_mv;
 
   // Mvcost params
-  ms_params->mv_cost_params.ref_mv = ref_mv;
-  ms_params->mv_cost_params.error_per_bit = x->errorperbit;
-  ms_params->mv_cost_params.sad_per_bit = x->sadperbit;
-  ms_params->mv_cost_params.mvjcost = x->nmv_vec_cost;
-  ms_params->mv_cost_params.mvcost[0] = x->mv_cost_stack[0];
-  ms_params->mv_cost_params.mvcost[1] = x->mv_cost_stack[1];
-  ms_params->mv_cost_params.mv_cost_type = x->mv_cost_type;
+  init_mv_cost_params(&ms_params->mv_cost_params, x, ref_mv);
 
   // Subpel variance params
   ms_params->var_params.vfp = &cpi->fn_ptr[bsize];
@@ -168,6 +159,20 @@ int av1_init_search_range(int size) {
 // ============================================================================
 //  Cost of motion vectors
 // ============================================================================
+// TODO(any): Adaptively adjust the regularization strength based on image size
+// and motion activity instead of using hard-coded values. It seems like we
+// roughly half the lambda for each increase in resolution
+// These are multiplier used to perform regularization in motion compensation
+// when x->mv_cost_type is set to MV_COST_L1.
+// LOWRES
+#define SSE_LAMBDA_LOWRES 2   // Used by mv_cost_err_fn
+#define SAD_LAMBDA_LOWRES 32  // Used by mvsad_err_cost during full pixel search
+// MIDRES
+#define SSE_LAMBDA_MIDRES 0   // Used by mv_cost_err_fn
+#define SAD_LAMBDA_MIDRES 15  // Used by mvsad_err_cost during full pixel search
+// HDRES
+#define SSE_LAMBDA_HDRES 1  // Used by mv_cost_err_fn
+#define SAD_LAMBDA_HDRES 8  // Used by mvsad_err_cost during full pixel search
 
 // Returns the rate of encoding the current motion vector based on the
 // joint_cost and comp_cost. joint_costs covers the cost of transmitting
@@ -398,8 +403,8 @@ static INLINE int get_mvpred_var_cost(
     const FULLPEL_MOTION_SEARCH_PARAMS *ms_params, const FULLPEL_MV *this_mv) {
   const aom_variance_fn_ptr_t *vfp = ms_params->vfp;
   const MV sub_this_mv = get_mv_from_fullmv(this_mv);
-  const struct buf_2d *const src = ms_params->src;
-  const struct buf_2d *const ref = ms_params->ref;
+  const struct buf_2d *const src = ms_params->ms_buffers.src;
+  const struct buf_2d *const ref = ms_params->ms_buffers.ref;
   const uint8_t *src_buf = src->buf;
   const int src_stride = src->stride;
   const int ref_stride = ref->stride;
@@ -424,6 +429,63 @@ static INLINE int get_mvpred_sad(const FULLPEL_MOTION_SEARCH_PARAMS *ms_params,
   const int src_stride = src->stride;
 
   return vfp->sdf(src_buf, src_stride, ref_address, ref_stride);
+}
+
+static INLINE int get_mvpred_compound_var_cost(
+    const FULLPEL_MOTION_SEARCH_PARAMS *ms_params, const FULLPEL_MV *this_mv) {
+  const aom_variance_fn_ptr_t *vfp = ms_params->vfp;
+  const struct buf_2d *const src = ms_params->ms_buffers.src;
+  const struct buf_2d *const ref = ms_params->ms_buffers.ref;
+  const uint8_t *src_buf = src->buf;
+  const int src_stride = src->stride;
+  const int ref_stride = ref->stride;
+
+  const uint8_t *mask = ms_params->ms_buffers.mask;
+  const uint8_t *second_pred = ms_params->ms_buffers.second_pred;
+  const int mask_stride = ms_params->ms_buffers.mask_stride;
+  const int invert_mask = ms_params->ms_buffers.inv_mask;
+  unsigned unused;
+  int bestsme;
+
+  if (mask) {
+    bestsme = vfp->msvf(src_buf, src_stride, 0, 0,
+                        get_buf_from_mv(ref, this_mv), ref_stride, second_pred,
+                        mask, mask_stride, invert_mask, &unused);
+  } else if (second_pred) {
+    bestsme = vfp->svaf(get_buf_from_mv(ref, this_mv), ref_stride, 0, 0,
+                        src_buf, src_stride, &unused, second_pred);
+  } else {
+    bestsme = vfp->vf(src_buf, src_stride, get_buf_from_mv(ref, this_mv),
+                      ref_stride, &unused);
+  }
+
+  const MV sub_this_mv = get_mv_from_fullmv(this_mv);
+  bestsme += mv_err_cost_(&sub_this_mv, &ms_params->mv_cost_params);
+
+  return bestsme;
+}
+
+static INLINE int get_mvpred_compound_sad(
+    const FULLPEL_MOTION_SEARCH_PARAMS *ms_params,
+    const struct buf_2d *const src, const uint8_t *const ref_address,
+    const int ref_stride) {
+  const aom_variance_fn_ptr_t *vfp = ms_params->vfp;
+  const uint8_t *src_buf = src->buf;
+  const int src_stride = src->stride;
+
+  const uint8_t *mask = ms_params->ms_buffers.mask;
+  const uint8_t *second_pred = ms_params->ms_buffers.second_pred;
+  const int mask_stride = ms_params->ms_buffers.mask_stride;
+  const int invert_mask = ms_params->ms_buffers.inv_mask;
+
+  if (mask) {
+    return vfp->msdf(src_buf, src_stride, ref_address, ref_stride, second_pred,
+                     mask, mask_stride, invert_mask);
+  } else if (second_pred) {
+    return vfp->sdaf(src_buf, src_stride, ref_address, ref_stride, second_pred);
+  } else {
+    return vfp->sdf(src_buf, src_stride, ref_address, ref_stride);
+  }
 }
 
 // Calculates and returns a sad+mvcost list around an integer best pel during
@@ -471,8 +533,8 @@ static AOM_FORCE_INLINE void calc_int_sad_list(
   static const FULLPEL_MV neighbors[4] = {
     { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 }
   };
-  const struct buf_2d *const src = ms_params->src;
-  const struct buf_2d *const ref = ms_params->ref;
+  const struct buf_2d *const src = ms_params->ms_buffers.src;
+  const struct buf_2d *const ref = ms_params->ms_buffers.ref;
   const int ref_stride = ref->stride;
   const int br = best_mv.row;
   const int bc = best_mv.col;
@@ -543,8 +605,8 @@ static int pattern_search(
   };
   int i, s, t;
 
-  const struct buf_2d *const src = ms_params->src;
-  const struct buf_2d *const ref = ms_params->ref;
+  const struct buf_2d *const src = ms_params->ms_buffers.src;
+  const struct buf_2d *const ref = ms_params->ms_buffers.ref;
   const int ref_stride = ref->stride;
   const int last_is_4 = num_candidates[0] == 4;
   int br, bc;
@@ -936,76 +998,19 @@ static int fast_dia_search(const FULLPEL_MV start_mv,
                        do_init_search, cost_list, best_mv);
 }
 
-static INLINE int get_mvpred_compound_var_cost(
-    const FULLPEL_MOTION_SEARCH_PARAMS *ms_params, const FULLPEL_MV *this_mv) {
-  const aom_variance_fn_ptr_t *vfp = ms_params->vfp;
-  const struct buf_2d *const src = ms_params->src;
-  const struct buf_2d *const ref = ms_params->ref;
-  const uint8_t *src_buf = src->buf;
-  const int src_stride = src->stride;
-  const int ref_stride = ref->stride;
-
-  const uint8_t *mask = ms_params->mask;
-  const uint8_t *second_pred = ms_params->second_pred;
-  const int mask_stride = ms_params->mask_stride;
-  const int invert_mask = ms_params->inv_mask;
-  unsigned unused;
-  int bestsme;
-
-  if (mask) {
-    bestsme = vfp->msvf(src_buf, src_stride, 0, 0,
-                        get_buf_from_mv(ref, this_mv), ref_stride, second_pred,
-                        mask, mask_stride, invert_mask, &unused);
-  } else if (second_pred) {
-    bestsme = vfp->svaf(get_buf_from_mv(ref, this_mv), ref_stride, 0, 0,
-                        src_buf, src_stride, &unused, second_pred);
-  } else {
-    bestsme = vfp->vf(src_buf, src_stride, get_buf_from_mv(ref, this_mv),
-                      ref_stride, &unused);
-  }
-
-  const MV sub_this_mv = get_mv_from_fullmv(this_mv);
-  bestsme += mv_err_cost_(&sub_this_mv, &ms_params->mv_cost_params);
-
-  return bestsme;
-}
-
-static INLINE int get_mvpred_compound_sad(
-    const FULLPEL_MOTION_SEARCH_PARAMS *ms_params,
-    const struct buf_2d *const src, const uint8_t *const ref_address,
-    const int ref_stride) {
-  const aom_variance_fn_ptr_t *vfp = ms_params->vfp;
-  const uint8_t *src_buf = src->buf;
-  const int src_stride = src->stride;
-
-  const uint8_t *mask = ms_params->mask;
-  const uint8_t *second_pred = ms_params->second_pred;
-  const int mask_stride = ms_params->mask_stride;
-  const int invert_mask = ms_params->inv_mask;
-
-  if (mask) {
-    return vfp->msdf(src_buf, src_stride, ref_address, ref_stride, second_pred,
-                     mask, mask_stride, invert_mask);
-  } else if (second_pred) {
-    return vfp->sdaf(src_buf, src_stride, ref_address, ref_stride, second_pred);
-  } else {
-    return vfp->sdf(src_buf, src_stride, ref_address, ref_stride);
-  }
-}
-
 static int diamond_search_sad(FULLPEL_MV start_mv,
                               const FULLPEL_MOTION_SEARCH_PARAMS *ms_params,
                               const int search_param, int *num00,
                               FULLPEL_MV *best_mv, FULLPEL_MV *second_best_mv) {
-  const struct buf_2d *const src = ms_params->src;
-  const struct buf_2d *const ref = ms_params->ref;
+  const struct buf_2d *const src = ms_params->ms_buffers.src;
+  const struct buf_2d *const ref = ms_params->ms_buffers.ref;
 
   const int ref_stride = ref->stride;
   const uint8_t *best_address;
 
   const aom_variance_fn_ptr_t *vfp = ms_params->vfp;
-  const uint8_t *mask = ms_params->mask;
-  const uint8_t *second_pred = ms_params->second_pred;
+  const uint8_t *mask = ms_params->ms_buffers.mask;
+  const uint8_t *second_pred = ms_params->ms_buffers.second_pred;
   const MV_COST_PARAMS *mv_cost_params = &ms_params->mv_cost_params;
 
   const search_site_config *cfg = ms_params->search_sites;
@@ -1176,8 +1181,8 @@ static int exhaustive_mesh_search(FULLPEL_MV start_mv,
                                   FULLPEL_MV *second_best_mv) {
   const aom_variance_fn_ptr_t *vfp = ms_params->vfp;
   const MV_COST_PARAMS *mv_cost_params = &ms_params->mv_cost_params;
-  const struct buf_2d *const src = ms_params->src;
-  const struct buf_2d *const ref = ms_params->ref;
+  const struct buf_2d *const src = ms_params->ms_buffers.src;
+  const struct buf_2d *const ref = ms_params->ms_buffers.ref;
   const int ref_stride = ref->stride;
   unsigned int best_sad = INT_MAX;
   int r, c, i;
@@ -1436,8 +1441,8 @@ int av1_full_pixel_search(const FULLPEL_MV start_mv,
 
   int var = 0;
 
-  assert(ms_params->second_pred == NULL && ms_params->mask == NULL &&
-         ms_params->mask_stride == 0 &&
+  assert(ms_params->ms_buffers.second_pred == NULL &&
+         ms_params->ms_buffers.mask == NULL &&
          "av1_full_pixel_search does not support compound pred");
 
   if (cost_list) {
@@ -1788,54 +1793,49 @@ unsigned int av1_int_pro_motion_estimation(const AV1_COMP *cpi, MACROBLOCK *x,
 // =============================================================================
 //  Fullpixel Motion Search: OBMC
 // =============================================================================
-static int get_obmc_mvpred_var(const MACROBLOCK *x, const int32_t *wsrc,
-                               const int32_t *mask, const FULLPEL_MV *best_mv,
-                               const MV *ref_mv,
-                               const aom_variance_fn_ptr_t *vfp) {
-  const MACROBLOCKD *const xd = &x->e_mbd;
-  const struct buf_2d *const in_what = xd->plane[0].pre;
-  const MV mv = get_mv_from_fullmv(best_mv);
-  const MV_COST_TYPE mv_cost_type = x->mv_cost_type;
+static INLINE int get_obmc_mvpred_var(
+    const FULLPEL_MOTION_SEARCH_PARAMS *ms_params, const FULLPEL_MV *this_mv) {
+  const aom_variance_fn_ptr_t *vfp = ms_params->vfp;
+  const MV_COST_PARAMS *mv_cost_params = &ms_params->mv_cost_params;
+  const MSBuffers *ms_buffers = &ms_params->ms_buffers;
+  const int32_t *wsrc = ms_buffers->wsrc;
+  const int32_t *mask = ms_buffers->obmc_mask;
+  const struct buf_2d *ref_buf = ms_buffers->ref;
+
+  const MV mv = get_mv_from_fullmv(this_mv);
   unsigned int unused;
 
-  return vfp->ovf(get_buf_from_mv(in_what, best_mv), in_what->stride, wsrc,
+  return vfp->ovf(get_buf_from_mv(ref_buf, this_mv), ref_buf->stride, wsrc,
                   mask, &unused) +
-         mv_err_cost(&mv, ref_mv, x->nmv_vec_cost,
-                     CONVERT_TO_CONST_MVCOST(x->mv_cost_stack), x->errorperbit,
-                     mv_cost_type);
+         mv_err_cost_(&mv, mv_cost_params);
 }
 
-static int obmc_refining_search_sad(const MACROBLOCK *x, const int32_t *wsrc,
-                                    const int32_t *mask, FULLPEL_MV *best_mv,
-                                    int error_per_bit, int search_range,
-                                    const aom_variance_fn_ptr_t *fn_ptr,
-                                    const MV *ref_mv) {
-  const MV neighbors[4] = { { -1, 0 }, { 0, -1 }, { 0, 1 }, { 1, 0 } };
-  const MACROBLOCKD *const xd = &x->e_mbd;
-  const struct buf_2d *const in_what = xd->plane[0].pre;
-  const FULLPEL_MV full_ref_mv = get_fullmv_from_mv(ref_mv);
-  unsigned int best_sad =
-      fn_ptr->osdf(get_buf_from_mv(in_what, best_mv), in_what->stride, wsrc,
-                   mask) +
-      mvsad_err_cost(best_mv, &full_ref_mv, x->nmv_vec_cost,
-                     CONVERT_TO_CONST_MVCOST(x->mv_cost_stack), error_per_bit,
-                     x->mv_cost_type);
+static int obmc_refining_search_sad(
+    const FULLPEL_MOTION_SEARCH_PARAMS *ms_params, FULLPEL_MV *best_mv) {
+  const aom_variance_fn_ptr_t *fn_ptr = ms_params->vfp;
+  const MV_COST_PARAMS *mv_cost_params = &ms_params->mv_cost_params;
+  const MSBuffers *ms_buffers = &ms_params->ms_buffers;
+  const int32_t *wsrc = ms_buffers->wsrc;
+  const int32_t *mask = ms_buffers->obmc_mask;
+  const struct buf_2d *ref_buf = ms_buffers->ref;
+  const FULLPEL_MV neighbors[4] = { { -1, 0 }, { 0, -1 }, { 0, 1 }, { 1, 0 } };
+  const int kSearchRange = 8;
 
-  int i, j;
+  unsigned int best_sad = fn_ptr->osdf(get_buf_from_mv(ref_buf, best_mv),
+                                       ref_buf->stride, wsrc, mask) +
+                          mvsad_err_cost_(best_mv, mv_cost_params);
 
-  for (i = 0; i < search_range; i++) {
+  for (int i = 0; i < kSearchRange; i++) {
     int best_site = -1;
 
-    for (j = 0; j < 4; j++) {
+    for (int j = 0; j < 4; j++) {
       const FULLPEL_MV mv = { best_mv->row + neighbors[j].row,
                               best_mv->col + neighbors[j].col };
-      if (av1_is_fullmv_in_range(&x->mv_limits, mv)) {
-        unsigned int sad = fn_ptr->osdf(get_buf_from_mv(in_what, &mv),
-                                        in_what->stride, wsrc, mask);
+      if (av1_is_fullmv_in_range(&ms_params->mv_limits, mv)) {
+        unsigned int sad = fn_ptr->osdf(get_buf_from_mv(ref_buf, &mv),
+                                        ref_buf->stride, wsrc, mask);
         if (sad < best_sad) {
-          sad += mvsad_err_cost(&mv, &full_ref_mv, x->nmv_vec_cost,
-                                CONVERT_TO_CONST_MVCOST(x->mv_cost_stack),
-                                error_per_bit, x->mv_cost_type);
+          sad += mvsad_err_cost_(&mv, mv_cost_params);
 
           if (sad < best_sad) {
             best_sad = sad;
@@ -1856,35 +1856,34 @@ static int obmc_refining_search_sad(const MACROBLOCK *x, const int32_t *wsrc,
 }
 
 static int obmc_diamond_search_sad(
-    const MACROBLOCK *x, const search_site_config *cfg, const int32_t *wsrc,
-    const int32_t *mask, FULLPEL_MV start_mv, FULLPEL_MV *best_mv,
-    int search_param, int sad_per_bit, int *num00,
-    const aom_variance_fn_ptr_t *fn_ptr, const MV *ref_mv) {
-  const MACROBLOCKD *const xd = &x->e_mbd;
-  const struct buf_2d *const in_what = xd->plane[0].pre;
+    const FULLPEL_MOTION_SEARCH_PARAMS *ms_params, FULLPEL_MV start_mv,
+    FULLPEL_MV *best_mv, int search_param, int *num00) {
+  const aom_variance_fn_ptr_t *fn_ptr = ms_params->vfp;
+  const search_site_config *cfg = ms_params->search_sites;
+  const MV_COST_PARAMS *mv_cost_params = &ms_params->mv_cost_params;
+  const MSBuffers *ms_buffers = &ms_params->ms_buffers;
+  const int32_t *wsrc = ms_buffers->wsrc;
+  const int32_t *mask = ms_buffers->obmc_mask;
+  const struct buf_2d *const ref_buf = ms_buffers->ref;
   // search_param determines the length of the initial step and hence the number
   // of iterations
   // 0 = initial step (MAX_FIRST_STEP) pel : 1 = (MAX_FIRST_STEP/2) pel, 2 =
   // (MAX_FIRST_STEP/4) pel... etc.
 
   const int tot_steps = MAX_MVSEARCH_STEPS - 1 - search_param;
-  const FULLPEL_MV full_ref_mv = get_fullmv_from_mv(ref_mv);
-  const uint8_t *best_address, *in_what_ref;
+  const uint8_t *best_address, *init_ref;
   int best_sad = INT_MAX;
   int best_site = 0;
   int step;
 
-  clamp_fullmv(&start_mv, &x->mv_limits);
-  in_what_ref = get_buf_from_mv(in_what, &start_mv);
-  best_address = in_what_ref;
+  clamp_fullmv(&start_mv, &ms_params->mv_limits);
+  best_address = init_ref = get_buf_from_mv(ref_buf, &start_mv);
   *num00 = 0;
   *best_mv = start_mv;
 
   // Check the starting position
-  best_sad = fn_ptr->osdf(best_address, in_what->stride, wsrc, mask) +
-             mvsad_err_cost(best_mv, &full_ref_mv, x->nmv_vec_cost,
-                            CONVERT_TO_CONST_MVCOST(x->mv_cost_stack),
-                            sad_per_bit, x->mv_cost_type);
+  best_sad = fn_ptr->osdf(best_address, ref_buf->stride, wsrc, mask) +
+             mvsad_err_cost_(best_mv, mv_cost_params);
 
   for (step = tot_steps; step >= 0; --step) {
     const search_site *const ss = cfg->ss[step];
@@ -1892,13 +1891,11 @@ static int obmc_diamond_search_sad(
     for (int idx = 1; idx <= cfg->searches_per_step[step]; ++idx) {
       const FULLPEL_MV mv = { best_mv->row + ss[idx].mv.row,
                               best_mv->col + ss[idx].mv.col };
-      if (av1_is_fullmv_in_range(&x->mv_limits, mv)) {
-        int sad = fn_ptr->osdf(best_address + ss[idx].offset, in_what->stride,
+      if (av1_is_fullmv_in_range(&ms_params->mv_limits, mv)) {
+        int sad = fn_ptr->osdf(best_address + ss[idx].offset, ref_buf->stride,
                                wsrc, mask);
         if (sad < best_sad) {
-          sad += mvsad_err_cost(&mv, &full_ref_mv, x->nmv_vec_cost,
-                                CONVERT_TO_CONST_MVCOST(x->mv_cost_stack),
-                                sad_per_bit, x->mv_cost_type);
+          sad += mvsad_err_cost_(&mv, mv_cost_params);
 
           if (sad < best_sad) {
             best_sad = sad;
@@ -1912,27 +1909,22 @@ static int obmc_diamond_search_sad(
       best_mv->row += ss[best_site].mv.row;
       best_mv->col += ss[best_site].mv.col;
       best_address += ss[best_site].offset;
-    } else if (best_address == in_what_ref) {
+    } else if (best_address == init_ref) {
       (*num00)++;
     }
   }
   return best_sad;
 }
 
-static int obmc_full_pixel_diamond(const MACROBLOCK *x,
-                                   const FULLPEL_MV start_mv, int step_param,
-                                   int sadpb, int do_refine,
-                                   const aom_variance_fn_ptr_t *fn_ptr,
-                                   const MV *ref_mv, FULLPEL_MV *best_mv,
-                                   const search_site_config *cfg) {
-  const int32_t *wsrc = x->wsrc_buf;
-  const int32_t *mask = x->mask_buf;
+static int obmc_full_pixel_diamond(
+    const FULLPEL_MOTION_SEARCH_PARAMS *ms_params, const FULLPEL_MV start_mv,
+    int step_param, int do_refine, FULLPEL_MV *best_mv) {
+  const search_site_config *cfg = ms_params->search_sites;
   FULLPEL_MV tmp_mv;
   int thissme, n, num00 = 0;
-  int bestsme = obmc_diamond_search_sad(x, cfg, wsrc, mask, start_mv, &tmp_mv,
-                                        step_param, sadpb, &n, fn_ptr, ref_mv);
-  if (bestsme < INT_MAX)
-    bestsme = get_obmc_mvpred_var(x, wsrc, mask, &tmp_mv, ref_mv, fn_ptr);
+  int bestsme =
+      obmc_diamond_search_sad(ms_params, start_mv, &tmp_mv, step_param, &n);
+  if (bestsme < INT_MAX) bestsme = get_obmc_mvpred_var(ms_params, &tmp_mv);
   *best_mv = tmp_mv;
 
   // If there won't be more n-step search, check to see if refining search is
@@ -1946,11 +1938,9 @@ static int obmc_full_pixel_diamond(const MACROBLOCK *x,
     if (num00) {
       num00--;
     } else {
-      thissme = obmc_diamond_search_sad(x, cfg, wsrc, mask, start_mv, &tmp_mv,
-                                        step_param + n, sadpb, &num00, fn_ptr,
-                                        ref_mv);
-      if (thissme < INT_MAX)
-        thissme = get_obmc_mvpred_var(x, wsrc, mask, &tmp_mv, ref_mv, fn_ptr);
+      thissme = obmc_diamond_search_sad(ms_params, start_mv, &tmp_mv,
+                                        step_param + n, &num00);
+      if (thissme < INT_MAX) thissme = get_obmc_mvpred_var(ms_params, &tmp_mv);
 
       // check to see if refining search is needed.
       if (num00 > further_steps - n) do_refine = 0;
@@ -1964,12 +1954,9 @@ static int obmc_full_pixel_diamond(const MACROBLOCK *x,
 
   // final 1-away diamond refining search
   if (do_refine) {
-    const int search_range = 8;
     tmp_mv = *best_mv;
-    thissme = obmc_refining_search_sad(x, wsrc, mask, &tmp_mv, sadpb,
-                                       search_range, fn_ptr, ref_mv);
-    if (thissme < INT_MAX)
-      thissme = get_obmc_mvpred_var(x, wsrc, mask, &tmp_mv, ref_mv, fn_ptr);
+    thissme = obmc_refining_search_sad(ms_params, &tmp_mv);
+    if (thissme < INT_MAX) thissme = get_obmc_mvpred_var(ms_params, &tmp_mv);
     if (thissme < bestsme) {
       bestsme = thissme;
       *best_mv = tmp_mv;
@@ -1978,31 +1965,19 @@ static int obmc_full_pixel_diamond(const MACROBLOCK *x,
   return bestsme;
 }
 
-int av1_obmc_full_pixel_search(const MACROBLOCK *x, const FULLPEL_MV start_mv,
+int av1_obmc_full_pixel_search(const FULLPEL_MV start_mv,
                                const FULLPEL_MOTION_SEARCH_PARAMS *ms_params,
                                const int step_param, FULLPEL_MV *best_mv) {
-  const aom_variance_fn_ptr_t *fn_ptr = ms_params->vfp;
-  const int sadpb = ms_params->mv_cost_params.sad_per_bit;
-  const MV *ref_mv = ms_params->mv_cost_params.ref_mv;
-
   if (!ms_params->fast_obmc_search) {
-    const search_site_config *search_sites = ms_params->search_sites;
-
     const int do_refine = 1;
-    const int bestsme =
-        obmc_full_pixel_diamond(x, start_mv, step_param, sadpb, do_refine,
-                                fn_ptr, ref_mv, best_mv, search_sites);
+    const int bestsme = obmc_full_pixel_diamond(ms_params, start_mv, step_param,
+                                                do_refine, best_mv);
     return bestsme;
   } else {
-    const int32_t *wsrc = x->wsrc_buf;
-    const int32_t *mask = x->mask_buf;
-    const int search_range = 8;
     *best_mv = start_mv;
-    clamp_fullmv(best_mv, &x->mv_limits);
-    int thissme = obmc_refining_search_sad(x, wsrc, mask, best_mv, sadpb,
-                                           search_range, fn_ptr, ref_mv);
-    if (thissme < INT_MAX)
-      thissme = get_obmc_mvpred_var(x, wsrc, mask, best_mv, ref_mv, fn_ptr);
+    clamp_fullmv(best_mv, &ms_params->mv_limits);
+    int thissme = obmc_refining_search_sad(ms_params, best_mv);
+    if (thissme < INT_MAX) thissme = get_obmc_mvpred_var(ms_params, best_mv);
     return thissme;
   }
 }

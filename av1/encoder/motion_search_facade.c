@@ -135,7 +135,7 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
           &x->best_mv.as_fullmv, &second_best_mv.as_fullmv);
       break;
     case OBMC_CAUSAL:
-      bestsme = av1_obmc_full_pixel_search(x, start_mv, &full_ms_params,
+      bestsme = av1_obmc_full_pixel_search(start_mv, &full_ms_params,
                                            step_param, &(x->best_mv.as_fullmv));
       break;
     default: assert(0 && "Invalid motion mode!\n");
