@@ -15,7 +15,6 @@ from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib.firmware import ap_firmware
 
-
 assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
@@ -54,6 +53,21 @@ To build the AP Firmware only for foo-variant:
         help='Sets the FW_NAME environment variable. Set to build only the '
              "specified variant's firmware.")
 
+    # TODO(saklein): Remove when added to base parser.
+    parser.add_argument(
+        '-n',
+        '--dry-run',
+        action='store_true',
+        default=False,
+        help='Perform a dry run, describing the steps without running them.')
+    parser.add_argument(
+        '-v',
+        '--verbose',
+        action='store_true',
+        default=False,
+        help='More verbose output than the default, but less than debug. An '
+             'alias for --log-level=info.')
+
   def Run(self):
     """Run cros build-ap."""
     self.options.Freeze()
@@ -61,6 +75,9 @@ To build the AP Firmware only for foo-variant:
     commandline.RunInsideChroot(self)
 
     try:
-      ap_firmware.build(self.build_target, self.options.fw_name)
+      ap_firmware.build(
+          self.build_target,
+          fw_name=self.options.fw_name,
+          dry_run=self.options.dry_run)
     except ap_firmware.Error as e:
       cros_build_lib.Die(e)
