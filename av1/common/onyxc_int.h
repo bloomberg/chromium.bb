@@ -367,9 +367,6 @@ typedef struct AV1Common {
 
   int context_update_tile_id;
 
-  // Scale of the current frame with respect to itself.
-  struct scale_factors sf_identity;
-
   // Buffer where previous frame is stored.
   RefCntBuffer *prev_frame;
 
@@ -397,6 +394,15 @@ typedef struct AV1Common {
   // have a remapped index for the same.
   int remapped_ref_idx[REF_FRAMES];
 
+  // Scale of the current frame with respect to itself.
+  // This is currently used for intra block copy, which behaves like an inter
+  // prediction mode, where the reference frame is the current frame itself.
+  struct scale_factors sf_identity;
+
+  // Scale factors of the reference frame with respect to the current frame.
+  // This is required for generating inter prediction and will be non-identity
+  // for a reference frame, if it has different dimensions than the coded
+  // dimensions of the current frame.
   struct scale_factors ref_scale_factors[REF_FRAMES];
 
   // For decoder, ref_frame_map[i] maps reference type 'i' to a pointer to
@@ -406,10 +412,26 @@ typedef struct AV1Common {
   // a pointer to the buffer in the buffer pool 'cm->buffer_pool.frame_bufs'.
   RefCntBuffer *ref_frame_map[REF_FRAMES];
 
-  FRAME_TYPE last_frame_type; /* last frame's frame type for motion search.*/
+  // Frame type of the last frame. May be used in some heuristics for speeding
+  // up the encoding.
+  // TODO(urvang): Used only by encoder (this variable and a few others in this
+  // struct). Ideally we should separate them out and move outside this struct.
+  FRAME_TYPE last_frame_type;
 
+  // If true, this frame is actually shown after decoding.
+  // If false, this frame is coded in the bitstream, but not shown. It is only
+  // used as a reference for other frames coded later.
   int show_frame;
-  int showable_frame;  // frame can be used as show existing frame in future
+
+  // If true, this frame can be used as a show-existing frame for other frames
+  // coded later.
+  // When 'show_frame' is true, this is always true for all non-keyframes.
+  // When 'show_frame' is false, this value is transmitted in the bitstream.
+  int showable_frame;
+
+  // If true, show an existing frame coded before, instead of actually coding a
+  // frame. The existing frame comes from one of the existing reference buffers,
+  // as signaled in the bitstream.
   int show_existing_frame;
 
   uint8_t disable_cdf_update;
