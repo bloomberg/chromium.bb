@@ -48,6 +48,7 @@ class UserAction(object):
   @staticmethod
   def __call__(opts):
     """Implement the action."""
+    raise RuntimeError('Internal error: action missing __call__ implementation')
 
 
 # How many connections we'll use in parallel.  We don't want this to be too high
@@ -622,9 +623,9 @@ class ActionAssign(_ActionSimpleParallelCLs):
   @staticmethod
   def init_subparser(parser):
     """Add arguments to this action's subparser."""
+    _ActionSimpleParallelCLs.init_subparser(parser)
     parser.add_argument('assignee',
                         help='The new assignee')
-    _ActionSimpleParallelCLs.init_subparser(parser)
 
   @staticmethod
   def _process_one(helper, cl, opts):
@@ -632,7 +633,7 @@ class ActionAssign(_ActionSimpleParallelCLs):
     helper.SetAssignee(cl, opts.assignee, dryrun=opts.dryrun)
 
 
-class ActionMessage(UserAction):
+class ActionMessage(_ActionSimpleParallelCLs):
   """Add a message to a CL"""
 
   COMMAND = 'message'
@@ -640,9 +641,9 @@ class ActionMessage(UserAction):
   @staticmethod
   def init_subparser(parser):
     """Add arguments to this action's subparser."""
+    _ActionSimpleParallelCLs.init_subparser(parser)
     parser.add_argument('message',
                         help='The message to post')
-    _ActionSimpleParallelCLs.init_subparser(parser)
 
   @staticmethod
   def _process_one(helper, cl, opts):
@@ -650,7 +651,7 @@ class ActionMessage(UserAction):
     helper.SetReview(cl, msg=opts.message, dryrun=opts.dryrun)
 
 
-class ActionTopic(UserAction):
+class ActionTopic(_ActionSimpleParallelCLs):
   """Set a topic for one or more CLs"""
 
   COMMAND = 'topic'
@@ -658,9 +659,9 @@ class ActionTopic(UserAction):
   @staticmethod
   def init_subparser(parser):
     """Add arguments to this action's subparser."""
+    _ActionSimpleParallelCLs.init_subparser(parser)
     parser.add_argument('topic',
                         help='The topic to set')
-    _ActionSimpleParallelCLs.init_subparser(parser)
 
   @staticmethod
   def _process_one(helper, cl, opts):
