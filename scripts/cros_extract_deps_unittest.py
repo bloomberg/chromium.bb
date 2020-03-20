@@ -7,10 +7,15 @@
 
 from __future__ import print_function
 
+import sys
+
 from chromite.lib import cros_test_lib
 from chromite.scripts import cros_extract_deps
 
 pytestmark = cros_test_lib.pytestmark_inside_only
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class FlattenDepTreeTest(cros_test_lib.TestCase):

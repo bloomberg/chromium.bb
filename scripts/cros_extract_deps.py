@@ -13,6 +13,7 @@ from __future__ import absolute_import
 
 import json
 import os
+import sys
 
 from chromite.lib.depgraph import DepGraphGenerator
 
@@ -21,6 +22,9 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import portage_util
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 def FlattenDepTree(deptree, pkgtable=None, parentcpv=None, get_cpe=False):
