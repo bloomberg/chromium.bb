@@ -12,6 +12,7 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 
 from chromite.lib import constants
@@ -30,6 +31,9 @@ from chromite.lib.paygen import paygen_payload_lib
 from chromite.lib.paygen import paygen_stateful_payload_lib
 
 from chromite.lib.xbuddy import artifact_info
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 DEVSERVER_STATIC_DIR = path_util.FromChrootPath(
