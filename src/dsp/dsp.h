@@ -769,6 +769,33 @@ using MotionFieldProjectionKernelFunc = void (*)(
     int reference_to_current_with_sign, int dst_sign, int y8_start, int y8_end,
     int x8_start, int x8_end, TemporalMotionField* motion_field);
 
+// Compound temporal motion vector projection function signature.
+// Section 7.9.3 and 7.10.2.10.
+// |temporal_mvs| is the set of temporal reference motion vectors.
+// |temporal_reference_offsets| specifies the number of frames covered by the
+// original motion vector.
+// |reference_offsets| specifies the number of frames to be covered by the
+// projected motion vector.
+// |count| is the number of the temporal motion vectors.
+// |candidate_mvs| is the set of projected motion vectors.
+using MvProjectionCompoundFunc = void (*)(
+    const MotionVector* temporal_mvs, const int8_t* temporal_reference_offsets,
+    const int reference_offsets[2], int count,
+    CompoundMotionVector* candidate_mvs);
+
+// Single temporal motion vector projection function signature.
+// Section 7.9.3 and 7.10.2.10.
+// |temporal_mvs| is the set of temporal reference motion vectors.
+// |temporal_reference_offsets| specifies the number of frames covered by the
+// original motion vector.
+// |reference_offset| specifies the number of frames to be covered by the
+// projected motion vector.
+// |count| is the number of the temporal motion vectors.
+// |candidate_mvs| is the set of projected motion vectors.
+using MvProjectionSingleFunc = void (*)(
+    const MotionVector* temporal_mvs, const int8_t* temporal_reference_offsets,
+    int reference_offset, int count, MotionVector* candidate_mvs);
+
 struct Dsp {
   IntraPredictorFuncs intra_predictors;
   DirectionalIntraPredictorZone1Func directional_intra_predictor_zone1;
@@ -786,6 +813,8 @@ struct Dsp {
   SuperResRowFunc super_res_row;
   LoopRestorationFuncs loop_restorations;
   MotionFieldProjectionKernelFunc motion_field_projection_kernel;
+  MvProjectionCompoundFunc mv_projection_compound[3];
+  MvProjectionSingleFunc mv_projection_single[3];
   ConvolveFuncs convolve;
   ConvolveScaleFuncs convolve_scale;
   WeightMaskFuncs weight_mask;

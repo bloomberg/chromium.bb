@@ -279,38 +279,35 @@ void ScanPoint(const Tile::Block& block, int delta_row, int delta_column,
 void AddTemporalReferenceMvCandidate(
     const ObuFrameHeader& frame_header, const int reference_offsets[2],
     const MotionVector* const temporal_mvs,
-    const int* const temporal_reference_offsets, int count, bool is_compound,
+    const int8_t* const temporal_reference_offsets, int count, bool is_compound,
     int* const zero_mv_context, int* const num_mv_found,
     PredictionParameters* const prediction_parameters) {
+  const int mv_projection_function_index =
+      frame_header.allow_high_precision_mv ? 2 : frame_header.force_integer_mv;
   const MotionVector* const global_mv = prediction_parameters->global_mv;
   if (is_compound) {
+    CompoundMotionVector candidate_mvs[kMaxTemporalMvCandidatesWithPadding];
+    const dsp::Dsp& dsp = *dsp::GetDspTable(8);
+    dsp.mv_projection_compound[mv_projection_function_index](
+        temporal_mvs, temporal_reference_offsets, reference_offsets, count,
+        candidate_mvs);
+    if (*zero_mv_context == -1) {
+      int max_difference =
+          std::max(std::abs(candidate_mvs[0].mv[0].mv[0] - global_mv[0].mv[0]),
+                   std::abs(candidate_mvs[0].mv[0].mv[1] - global_mv[0].mv[1]));
+      max_difference =
+          std::max(max_difference,
+                   std::abs(candidate_mvs[0].mv[1].mv[0] - global_mv[1].mv[0]));
+      max_difference =
+          std::max(max_difference,
+                   std::abs(candidate_mvs[0].mv[1].mv[1] - global_mv[1].mv[1]));
+      *zero_mv_context = static_cast<int>(max_difference >= 16);
+    }
     CompoundMotionVector* const compound_ref_mv_stack =
         prediction_parameters->compound_ref_mv_stack;
     int index = 0;
     do {
-      assert(temporal_reference_offsets[index] > 0);
-      assert(temporal_reference_offsets[index] <= kMaxFrameDistance);
-      CompoundMotionVector candidate_mv = {};
-      for (int i = 0; i < 2; ++i) {
-        if (reference_offsets[i] != 0) {
-          GetMvProjection(temporal_mvs[index], reference_offsets[i],
-                          temporal_reference_offsets[index],
-                          &candidate_mv.mv[i]);
-          LowerMvPrecision(frame_header, &candidate_mv.mv[i]);
-        }
-      }
-      if (*zero_mv_context == -1) {
-        int max_difference =
-            std::max(std::abs(candidate_mv.mv[0].mv[0] - global_mv[0].mv[0]),
-                     std::abs(candidate_mv.mv[0].mv[1] - global_mv[0].mv[1]));
-        max_difference =
-            std::max(max_difference,
-                     std::abs(candidate_mv.mv[1].mv[0] - global_mv[1].mv[0]));
-        max_difference =
-            std::max(max_difference,
-                     std::abs(candidate_mv.mv[1].mv[1] - global_mv[1].mv[1]));
-        *zero_mv_context = static_cast<int>(max_difference >= 16);
-      }
+      const CompoundMotionVector& candidate_mv = candidate_mvs[index];
       const auto result = std::find_if(
           compound_ref_mv_stack, compound_ref_mv_stack + *num_mv_found,
           [&candidate_mv](const CompoundMotionVector& ref_mv) {
@@ -352,20 +349,20 @@ void AddTemporalReferenceMvCandidate(
     ++*num_mv_found;
     return;
   }
+  MotionVector candidate_mvs[kMaxTemporalMvCandidatesWithPadding];
+  const dsp::Dsp& dsp = *dsp::GetDspTable(8);
+  dsp.mv_projection_single[mv_projection_function_index](
+      temporal_mvs, temporal_reference_offsets, reference_offsets[0], count,
+      candidate_mvs);
+  if (*zero_mv_context == -1) {
+    const int max_difference =
+        std::max(std::abs(candidate_mvs[0].mv[0] - global_mv[0].mv[0]),
+                 std::abs(candidate_mvs[0].mv[1] - global_mv[0].mv[1]));
+    *zero_mv_context = static_cast<int>(max_difference >= 16);
+  }
   int index = 0;
   do {
-    assert(temporal_reference_offsets[index] > 0);
-    assert(temporal_reference_offsets[index] <= kMaxFrameDistance);
-    MotionVector candidate_mv;
-    GetMvProjection(temporal_mvs[index], reference_offsets[0],
-                    temporal_reference_offsets[index], &candidate_mv);
-    LowerMvPrecision(frame_header, &candidate_mv);
-    if (*zero_mv_context == -1) {
-      const int max_difference =
-          std::max(std::abs(candidate_mv.mv[0] - global_mv[0].mv[0]),
-                   std::abs(candidate_mv.mv[1] - global_mv[0].mv[1]));
-      *zero_mv_context = static_cast<int>(max_difference >= 16);
-    }
+    const MotionVector& candidate_mv = candidate_mvs[index];
     const auto result =
         std::find_if(ref_mv_stack, ref_mv_stack + *num_mv_found,
                      [&candidate_mv](const MotionVector& ref_mv) {
@@ -418,9 +415,8 @@ void TemporalScan(const Tile::Block& block, bool is_compound,
   const MotionVector* motion_field_mv = motion_field.mv[0];
   const int8_t* motion_field_reference_offset =
       motion_field.reference_offset[0];
-  constexpr int kMaxTemporalMvCandidates = 19;
-  MotionVector temporal_mvs[kMaxTemporalMvCandidates];
-  int temporal_reference_offsets[kMaxTemporalMvCandidates];
+  MotionVector temporal_mvs[kMaxTemporalMvCandidatesWithPadding];
+  int8_t temporal_reference_offsets[kMaxTemporalMvCandidatesWithPadding];
   int count = 0;
   int offset = stride * (row_start >> 1);
   int mv_row = row_start;
@@ -432,15 +428,14 @@ void TemporalScan(const Tile::Block& block, bool is_compound,
       if (tile.IsBottomRightInside(mv_row, mv_column)) {
         const int x8 = mv_column >> 1;
         const MotionVector temporal_mv = motion_field_mv[offset + x8];
-        const int temporal_reference_offset =
-            motion_field_reference_offset[offset + x8];
         if (temporal_mv.mv[0] == kInvalidMvValue) {
           if (mv_row == row_start && mv_column == column_start) {
             *zero_mv_context = 1;
           }
         } else {
           temporal_mvs[count] = temporal_mv;
-          temporal_reference_offsets[count++] = temporal_reference_offset;
+          temporal_reference_offsets[count++] =
+              motion_field_reference_offset[offset + x8];
         }
       }
       mv_column += step_w;
@@ -472,11 +467,10 @@ void TemporalScan(const Tile::Block& block, bool is_compound,
       if (!tile.IsBottomRightInside(mv_row, mv_column)) continue;
       const MotionVector temporal_mv =
           motion_field_mv[temporal_sample_offsets[i]];
-      const int temporal_reference_offset =
-          motion_field_reference_offset[temporal_sample_offsets[i]];
       if (temporal_mv.mv[0] != kInvalidMvValue) {
         temporal_mvs[count] = temporal_mv;
-        temporal_reference_offsets[count++] = temporal_reference_offset;
+        temporal_reference_offsets[count++] =
+            motion_field_reference_offset[temporal_sample_offsets[i]];
       }
     }
   }

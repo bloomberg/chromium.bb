@@ -52,7 +52,7 @@ void MotionFieldProjectionKernel_C(
       x8_end + kProjectionMvMaxHorizontalOffset, static_cast<int>(stride));
   int8_t* dst_reference_offset = motion_field->reference_offset[y8_start];
   MotionVector* dst_mv = motion_field->mv[y8_start];
-  int8_t reference_offsets[kNumReferenceFrameTypes];
+  int reference_offsets[kNumReferenceFrameTypes];
   bool skip_reference[kNumReferenceFrameTypes];
   assert(stride == motion_field->reference_offset.columns());
   assert((y8_start & 7) == 0);

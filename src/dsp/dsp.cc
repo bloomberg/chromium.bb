@@ -29,6 +29,7 @@
 #include "src/dsp/loop_restoration.h"
 #include "src/dsp/mask_blend.h"
 #include "src/dsp/motion_field_projection.h"
+#include "src/dsp/motion_vector_search.h"
 #include "src/dsp/obmc.h"
 #include "src/dsp/super_res.h"
 #include "src/dsp/warp.h"
@@ -73,6 +74,7 @@ void DspInit() {
     LoopRestorationInit_C();
     MaskBlendInit_C();
     MotionFieldProjectionInit_C();
+    MotionVectorSearchInit_C();
     ObmcInit_C();
     SuperResInit_C();
     WarpInit_C();

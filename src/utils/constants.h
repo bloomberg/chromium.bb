@@ -89,6 +89,11 @@ enum {
   kWarpedModelPrecisionBits = 16,
   kMaxRefMvStackSize = 8,
   kMaxLeastSquaresSamples = 8,
+  kMaxTemporalMvCandidates = 19,
+  // The SIMD implementations of motion vection projection functions always
+  // process 2 or 4 elements together, so we pad the corresponding buffers to
+  // size 20.
+  kMaxTemporalMvCandidatesWithPadding = 20,
   kMaxSuperBlockSizeInPixels = 128,
   kMaxScaledSuperBlockSizeInPixels = 128 * 2,
   kMaxSuperBlockSizeSquareInPixels = 128 * 128,
