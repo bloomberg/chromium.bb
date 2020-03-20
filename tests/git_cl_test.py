@@ -3453,7 +3453,6 @@ class CMDUploadTestCase(CMDTestCaseBase):
     mock.patch('git_cl._fetch_tryjobs').start()
     mock.patch('git_cl._trigger_tryjobs', return_value={}).start()
     mock.patch('git_cl.Changelist.CMDUpload', return_value=0).start()
-    mock.patch('git_cl.Settings.GetIsGerrit', return_value=True).start()
     self.addCleanup(mock.patch.stopall)
 
   def testWarmUpChangeDetailCache(self):

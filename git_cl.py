@@ -832,12 +832,6 @@ class Settings(object):
   def GetDefaultCCList(self):
     return self._GetConfig('rietveld.cc')
 
-  def GetIsGerrit(self):
-    """Returns True if this repo is associated with Gerrit."""
-    if self.is_gerrit is None:
-      self.is_gerrit = self._GetConfig('gerrit.host').lower() == 'true'
-    return self.is_gerrit
-
   def GetSquashGerritUploads(self):
     """Returns True if uploads to Gerrit should be squashed by default."""
     if self.squash_gerrit_uploads is None:
@@ -3023,8 +3017,6 @@ def DownloadGerritHook(force):
   Args:
     force: True to update hooks. False to install hooks if not present.
   """
-  if not settings.GetIsGerrit():
-    return
   src = 'https://gerrit-review.googlesource.com/tools/hooks/commit-msg'
   dst = os.path.join(settings.GetRoot(), '.git', 'hooks', 'commit-msg')
   if not os.access(dst, os.X_OK):
@@ -4301,9 +4293,6 @@ def CMDupload(parser, args):
 
   if options.use_commit_queue:
     options.send_mail = True
-
-  # For sanity of test expectations, do this otherwise lazy-loading *now*.
-  settings.GetIsGerrit()
 
   cl = Changelist()
   # Warm change details cache now to avoid RPCs later, reducing latency for
