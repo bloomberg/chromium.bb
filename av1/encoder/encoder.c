@@ -4941,6 +4941,7 @@ static void recode_loop_update_q(
     int *const low_cr_seen, const int loop_at_this_size) {
   AV1_COMMON *const cm = &cpi->common;
   RATE_CONTROL *const rc = &cpi->rc;
+  *loop = 0;
 
   const int min_cr = cpi->oxcf.min_cr;
   if (min_cr > 0) {
@@ -5293,6 +5294,7 @@ static void determine_sc_tools_with_encoding(AV1_COMP *cpi, const int q_orig) {
 #if CONFIG_TUNE_VMAF
     }
 #endif
+    av1_set_speed_features_qindex_dependent(cpi, cpi->oxcf.speed);
     if (cpi->oxcf.deltaq_mode != NO_DELTA_Q) av1_init_quantizer(cpi);
 
     av1_set_variance_partition_thresholds(cpi, q_for_screen_content_quick_run,
@@ -5429,6 +5431,7 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
 #if CONFIG_TUNE_VMAF
     }
 #endif
+    av1_set_speed_features_qindex_dependent(cpi, cpi->oxcf.speed);
 
     if (cpi->oxcf.deltaq_mode != NO_DELTA_Q) av1_init_quantizer(cpi);
 

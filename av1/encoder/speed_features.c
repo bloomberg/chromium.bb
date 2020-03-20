@@ -1265,3 +1265,20 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
     }
   }
 }
+
+// Override some speed features based on qindex
+void av1_set_speed_features_qindex_dependent(AV1_COMP *cpi, int speed) {
+  AV1_COMMON *const cm = &cpi->common;
+  SPEED_FEATURES *const sf = &cpi->sf;
+  (void)cm;
+  (void)sf;
+  (void)speed;
+  /* Turn trellis off
+  const int is_720p_or_larger = AOMMIN(cm->width, cm->height) >= 720;
+  if (is_720p_or_larger && speed == 0) {
+    if (cm->base_qindex < 96) {
+      sf->rd_sf.optimize_coefficients = NO_TRELLIS_OPT;
+    }
+  }
+  */
+}
