@@ -41,6 +41,9 @@ from chromite.lib import toolchain
 from chromite.utils import key_value_store
 
 
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
 COMPRESSION_PREFERENCE = ('xz', 'bz2')
 
 # TODO(zbehan): Remove the dependency on these, reimplement them in python
