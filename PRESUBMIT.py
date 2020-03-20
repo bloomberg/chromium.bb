@@ -88,7 +88,6 @@ def CommonChecks(input_api, output_api, tests_to_black_list, run_on_python3):
         r'.*ninjalog_uploader_test\.py$',
         r'.*recipes_test\.py$',
         r'.*roll_dep_test\.py$',
-        r'.*subprocess2_test\.py$',
     ]
 
   # TODO(maruel): Make sure at least one file is modified first.

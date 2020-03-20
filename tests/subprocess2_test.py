@@ -20,10 +20,11 @@ sys.path.insert(0, DEPOT_TOOLS)
 import subprocess
 import subprocess2
 
+TEST_FILENAME = 'subprocess2_test_script.py'
 
 TEST_COMMAND = [
     sys.executable,
-    os.path.join(DEPOT_TOOLS, 'testing_support', 'subprocess2_test_script.py'),
+    os.path.join(DEPOT_TOOLS, 'testing_support', TEST_FILENAME),
 ]
 
 
@@ -143,11 +144,11 @@ class SmokeTests(unittest.TestCase):
         subp.check_output(TEST_COMMAND, stdout=subp.PIPE)
 
   def test_print_exception(self):
-    cmd = TEST_COMMAND + ['--fail', '--stdout']
     with self.assertRaises(subprocess2.CalledProcessError) as e:
-      subprocess2.check_output(cmd)
+      subprocess2.check_output(TEST_COMMAND + ['--fail', '--stdout'])
     exception_str = str(e.exception)
-    self.assertIn(' '.join(cmd), exception_str)
+    # Windows escapes backslashes so check only filename
+    self.assertIn(TEST_FILENAME + ' --fail --stdout', exception_str)
     self.assertIn(str(e.exception.returncode), exception_str)
     self.assertIn(e.exception.stdout.decode('utf-8', 'ignore'), exception_str)
 
