@@ -532,6 +532,7 @@ class EBuild(object):
     is_stable = False
     is_blacklisted = False
     has_test = False
+    restrict_tests = False
     with open(ebuild_path, mode='rb') as fp:
       for i, line in enumerate(fp):
         # If the file has bad encodings, produce a helpful diagnostic for the
@@ -561,8 +562,10 @@ class EBuild(object):
         elif (line.startswith('src_test()') or
               line.startswith('platform_pkg_test()')):
           has_test = True
+        elif line.startswith('RESTRICT=') and 'test' in line:
+          restrict_tests = True
     return EBuildClassifyAttributes(
-        is_workon, is_stable, is_blacklisted, has_test)
+        is_workon, is_stable, is_blacklisted, has_test and not restrict_tests)
 
   def _ReadEBuild(self, path):
     """Determine the settings of `is_workon`, `is_stable` and is_blacklisted
