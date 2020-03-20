@@ -320,12 +320,43 @@ typedef struct {
 } CurrentFrame;
 
 typedef struct AV1Common {
+  // Information about the current frame that is being coded.
   CurrentFrame current_frame;
+  // Code and details about current error status.
   struct aom_internal_error_info error;
+
+  // AV1 allows two types of frame scaling operations:
+  // (1) Frame super-resolution: that allows coding a frame at lower resolution
+  // and after decoding the frame, normatively uscales and restores the frame --
+  // inside the coding loop.
+  // (2) Frame resize: that allows coding frame at lower/higher resolution, and
+  // then non-normatively upscale the frame at the time of rendering -- outside
+  // the coding loop.
+  // Hence, the need for 3 types of dimensions.
+
+  // Coded frame dimensions.
   int width;
   int height;
+
+  // Rendered frame dimensions, after applying both super-resolution and resize
+  // to the coded frame.
+  // Different from coded dimensions if super-resolution and/or resize are
+  // being used for this frame.
   int render_width;
   int render_height;
+
+  // Frame dimensions after applying super-resolution to the coded frame (if
+  // present), but before applying resize.
+  // Larger than the coded dimensions if super-resolution is being used for
+  // this frame.
+  // Different from rendered dimensions if resize is being used for this frame.
+  int superres_upscaled_width;
+  int superres_upscaled_height;
+
+  // The denominator of the superres scale used by this frame.
+  // Note: The numerator is fixed to be SCALE_NUMERATOR.
+  uint8_t superres_scale_denominator;
+
   int timing_info_present;
   aom_timing_info_t timing_info;
   int buffer_removal_time_present;
@@ -339,8 +370,10 @@ typedef struct AV1Common {
   // Scale of the current frame with respect to itself.
   struct scale_factors sf_identity;
 
+  // Buffer where previous frame is stored.
   RefCntBuffer *prev_frame;
 
+  // Buffer into which the current frame will be stored and other related info.
   // TODO(hkuang): Combine this with cur_buf in macroblockd.
   RefCntBuffer *cur_frame;
 
@@ -466,10 +499,6 @@ typedef struct AV1Common {
   int switchable_motion_mode;
 
   loop_filter_info_n lf_info;
-  // The denominator of the superres scale; the numerator is fixed.
-  uint8_t superres_scale_denominator;
-  int superres_upscaled_width;
-  int superres_upscaled_height;
   RestorationInfo rst_info[MAX_MB_PLANE];
 
   // Pointer to a scratch buffer used by self-guided restoration
