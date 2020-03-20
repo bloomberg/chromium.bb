@@ -321,12 +321,12 @@ void av1_setup_xform(const AV1_COMMON *cm, MACROBLOCK *x, TX_SIZE tx_size,
   txfm_param->bd = xd->bd;
   txfm_param->is_hbd = is_cur_buf_hbd(xd);
 }
-void av1_setup_quant(const AV1_COMMON *cm, TX_SIZE tx_size, int use_optimize_b,
-                     int xform_quant_idx, QUANT_PARAM *qparam) {
+void av1_setup_quant(TX_SIZE tx_size, int use_optimize_b, int xform_quant_idx,
+                     int use_quant_b_adapt, QUANT_PARAM *qparam) {
   qparam->log_scale = av1_get_tx_scale(tx_size);
   qparam->tx_size = tx_size;
 
-  qparam->use_quant_b_adapt = cm->use_quant_b_adapt;
+  qparam->use_quant_b_adapt = use_quant_b_adapt;
 
   // TODO(bohanli): optimize_b and quantization idx has relationship,
   // but is kind of buried and complicated in different encoding stages.
@@ -362,7 +362,8 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
                          RUN_TYPE dry_run) {
   (void)dry_run;
   struct encode_b_args *const args = arg;
-  const AV1_COMMON *const cm = &args->cpi->common;
+  const AV1_COMP *const cpi = args->cpi;
+  const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCK *const x = args->x;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *mbmi = xd->mi[0];
@@ -394,7 +395,8 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
           USE_B_QUANT_NO_TRELLIS ? AV1_XFORM_QUANT_B : AV1_XFORM_QUANT_FP;
     }
     av1_setup_xform(cm, x, tx_size, tx_type, &txfm_param);
-    av1_setup_quant(cm, tx_size, use_trellis, quant_idx, &quant_param);
+    av1_setup_quant(tx_size, use_trellis, quant_idx, cpi->use_quant_b_adapt,
+                    &quant_param);
     av1_setup_qmatrix(cm, x, plane, tx_size, tx_type, &quant_param);
     av1_xform_quant(x, plane, block, blk_row, blk_col, plane_bsize, &txfm_param,
                     &quant_param);
@@ -559,7 +561,7 @@ void av1_foreach_transformed_block_in_plane(
 }
 
 typedef struct encode_block_pass1_args {
-  AV1_COMMON *cm;
+  AV1_COMP *cpi;
   MACROBLOCK *x;
 } encode_block_pass1_args;
 
@@ -567,7 +569,8 @@ static void encode_block_pass1(int plane, int block, int blk_row, int blk_col,
                                BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
                                void *arg) {
   encode_block_pass1_args *args = (encode_block_pass1_args *)arg;
-  AV1_COMMON *cm = args->cm;
+  AV1_COMP *cpi = args->cpi;
+  AV1_COMMON *cm = &cpi->common;
   MACROBLOCK *const x = args->x;
   MACROBLOCKD *const xd = &x->e_mbd;
   struct macroblock_plane *const p = &x->plane[plane];
@@ -581,7 +584,8 @@ static void encode_block_pass1(int plane, int block, int blk_row, int blk_col,
   QUANT_PARAM quant_param;
 
   av1_setup_xform(cm, x, tx_size, DCT_DCT, &txfm_param);
-  av1_setup_quant(cm, tx_size, 0, AV1_XFORM_QUANT_B, &quant_param);
+  av1_setup_quant(tx_size, 0, AV1_XFORM_QUANT_B, cpi->use_quant_b_adapt,
+                  &quant_param);
   av1_setup_qmatrix(cm, x, plane, tx_size, DCT_DCT, &quant_param);
 
   av1_xform_quant(x, plane, block, blk_row, blk_col, plane_bsize, &txfm_param,
@@ -597,8 +601,8 @@ static void encode_block_pass1(int plane, int block, int blk_row, int blk_col,
   }
 }
 
-void av1_encode_sby_pass1(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize) {
-  encode_block_pass1_args args = { cm, x };
+void av1_encode_sby_pass1(AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize) {
+  encode_block_pass1_args args = { cpi, x };
   av1_subtract_plane(x, bsize, 0);
   av1_foreach_transformed_block_in_plane(&x->e_mbd, bsize, 0,
                                          encode_block_pass1, &args);
@@ -685,7 +689,8 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
                             BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
                             void *arg) {
   struct encode_b_args *const args = arg;
-  const AV1_COMMON *const cm = &args->cpi->common;
+  const AV1_COMP *const cpi = args->cpi;
+  const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCK *const x = args->x;
   MACROBLOCKD *const xd = &x->e_mbd;
   struct macroblock_plane *const p = &x->plane[plane];
@@ -722,7 +727,8 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
           USE_B_QUANT_NO_TRELLIS ? AV1_XFORM_QUANT_B : AV1_XFORM_QUANT_FP;
 
     av1_setup_xform(cm, x, tx_size, tx_type, &txfm_param);
-    av1_setup_quant(cm, tx_size, use_trellis, quant_idx, &quant_param);
+    av1_setup_quant(tx_size, use_trellis, quant_idx, cpi->use_quant_b_adapt,
+                    &quant_param);
     av1_setup_qmatrix(cm, x, plane, tx_size, tx_type, &quant_param);
 
     av1_xform_quant(x, plane, block, blk_row, blk_col, plane_bsize, &txfm_param,

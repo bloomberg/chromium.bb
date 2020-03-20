@@ -1263,8 +1263,8 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
 
   if (!frame_params.show_existing_frame) {
     cm->using_qmatrix = cpi->oxcf.using_qm;
-    cm->min_qmlevel = cpi->oxcf.qm_minlevel;
-    cm->max_qmlevel = cpi->oxcf.qm_maxlevel;
+    cpi->min_qmlevel = cpi->oxcf.qm_minlevel;
+    cpi->max_qmlevel = cpi->oxcf.qm_maxlevel;
 #if !CONFIG_REALTIME_ONLY
     if (oxcf->lag_in_frames > 0 && !is_stat_generation_stage(cpi)) {
       if (cpi->gf_group.index == 1 && cpi->oxcf.enable_tpl_model) {

@@ -734,24 +734,26 @@ void av1_frame_init_quantizer(AV1_COMP *cpi) {
   av1_init_plane_quantizers(cpi, x, xd->mi[0]->segment_id);
 }
 
-void av1_set_quantizer(AV1_COMMON *cm, int q) {
+void av1_set_quantizer(AV1_COMP *cpi, int q) {
   // quantizer has to be reinitialized with av1_init_quantizer() if any
   // delta_q changes.
+  AV1_COMMON *const cm = &cpi->common;
   cm->base_qindex = AOMMAX(cm->delta_q_info.delta_q_present_flag, q);
   cm->y_dc_delta_q = 0;
   cm->u_dc_delta_q = 0;
   cm->u_ac_delta_q = 0;
   cm->v_dc_delta_q = 0;
   cm->v_ac_delta_q = 0;
-  cm->qm_y = aom_get_qmlevel(cm->base_qindex, cm->min_qmlevel, cm->max_qmlevel);
+  cm->qm_y =
+      aom_get_qmlevel(cm->base_qindex, cpi->min_qmlevel, cpi->max_qmlevel);
   cm->qm_u = aom_get_qmlevel(cm->base_qindex + cm->u_ac_delta_q,
-                             cm->min_qmlevel, cm->max_qmlevel);
+                             cpi->min_qmlevel, cpi->max_qmlevel);
 
   if (!cm->seq_params.separate_uv_delta_q)
     cm->qm_v = cm->qm_u;
   else
     cm->qm_v = aom_get_qmlevel(cm->base_qindex + cm->v_ac_delta_q,
-                               cm->min_qmlevel, cm->max_qmlevel);
+                               cpi->min_qmlevel, cpi->max_qmlevel);
 }
 
 // Table that converts 0-63 Q-range values passed in outside to the Qindex

@@ -99,7 +99,7 @@ void av1_build_quantizer(aom_bit_depth_t bit_depth, int y_dc_delta_q,
 
 void av1_init_quantizer(struct AV1_COMP *cpi);
 
-void av1_set_quantizer(struct AV1Common *cm, int q);
+void av1_set_quantizer(struct AV1_COMP *cpi, int q);
 
 int av1_quantizer_to_qindex(int quantizer);
 

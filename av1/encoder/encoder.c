@@ -5119,7 +5119,7 @@ static uint16_t setup_interp_filter_search_mask(AV1_COMP *cpi) {
   int ref_total[REF_FRAMES] = { 0 };
   uint16_t mask = ALLOW_ALL_INTERP_FILT_MASK;
 
-  if (cpi->common.last_frame_type == KEY_FRAME || cpi->refresh_alt_ref_frame)
+  if (cpi->last_frame_type == KEY_FRAME || cpi->refresh_alt_ref_frame)
     return mask;
 
   for (MV_REFERENCE_FRAME ref = LAST_FRAME; ref <= ALTREF_FRAME; ++ref) {
@@ -5287,10 +5287,10 @@ static void determine_sc_tools_with_encoding(AV1_COMP *cpi, const int q_orig) {
         cpi->oxcf.tuning == AOM_TUNE_VMAF_WITHOUT_PREPROCESSING ||
         cpi->oxcf.tuning == AOM_TUNE_VMAF_MAX_GAIN) {
       av1_set_quantizer(
-          cm, av1_get_vmaf_base_qindex(cpi, q_for_screen_content_quick_run));
+          cpi, av1_get_vmaf_base_qindex(cpi, q_for_screen_content_quick_run));
     } else {
 #endif
-      av1_set_quantizer(cm, q_for_screen_content_quick_run);
+      av1_set_quantizer(cpi, q_for_screen_content_quick_run);
 #if CONFIG_TUNE_VMAF
     }
 #endif
@@ -5424,10 +5424,10 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
     if (cpi->oxcf.tuning == AOM_TUNE_VMAF_WITH_PREPROCESSING ||
         cpi->oxcf.tuning == AOM_TUNE_VMAF_WITHOUT_PREPROCESSING ||
         cpi->oxcf.tuning == AOM_TUNE_VMAF_MAX_GAIN) {
-      av1_set_quantizer(cm, av1_get_vmaf_base_qindex(cpi, q));
+      av1_set_quantizer(cpi, av1_get_vmaf_base_qindex(cpi, q));
     } else {
 #endif
-      av1_set_quantizer(cm, q);
+      av1_set_quantizer(cpi, q);
 #if CONFIG_TUNE_VMAF
     }
 #endif
@@ -6191,7 +6191,7 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   cm->allow_warped_motion =
       cpi->oxcf.allow_warped_motion && frame_might_allow_warped_motion(cm);
 
-  cm->last_frame_type = current_frame->frame_type;
+  cpi->last_frame_type = current_frame->frame_type;
 
   if (encode_show_existing_frame(cm)) {
     finalize_encoded_frame(cpi);
@@ -6275,11 +6275,11 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
     cpi->rc.source_alt_ref_active = 0;
   }
   if (cpi->oxcf.mtu == 0) {
-    cm->num_tg = cpi->oxcf.num_tile_groups;
+    cpi->num_tg = cpi->oxcf.num_tile_groups;
   } else {
     // Use a default value for the purposes of weighting costs in probability
     // updates
-    cm->num_tg = DEFAULT_MAX_NUM_TG;
+    cpi->num_tg = DEFAULT_MAX_NUM_TG;
   }
 
   // For 1 pass CBR, check if we are dropping this frame.
@@ -6450,7 +6450,7 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   }
 #endif
 
-  cm->last_frame_type = current_frame->frame_type;
+  cpi->last_frame_type = current_frame->frame_type;
 
   av1_rc_postencode_update(cpi, *size);
 
@@ -6746,7 +6746,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 
   // Indicates whether or not to use an adaptive quantize b rather than
   // the traditional version
-  cm->use_quant_b_adapt = cpi->oxcf.quant_b_adapt;
+  cpi->use_quant_b_adapt = cpi->oxcf.quant_b_adapt;
 
   cm->showable_frame = 0;
   *size = 0;

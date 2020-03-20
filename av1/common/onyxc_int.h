@@ -365,8 +365,6 @@ typedef struct AV1Common {
   aom_op_timing_info_t op_frame_timing[MAX_NUM_OPERATING_POINTS + 1];
   uint32_t frame_presentation_time;
 
-  int context_update_tile_id;
-
   // Buffer where previous frame is stored.
   RefCntBuffer *prev_frame;
 
@@ -411,12 +409,6 @@ typedef struct AV1Common {
   // remapped reference index 'j' (that is, original reference type 'i') to
   // a pointer to the buffer in the buffer pool 'cm->buffer_pool.frame_bufs'.
   RefCntBuffer *ref_frame_map[REF_FRAMES];
-
-  // Frame type of the last frame. May be used in some heuristics for speeding
-  // up the encoding.
-  // TODO(urvang): Used only by encoder (this variable and a few others in this
-  // struct). Ideally we should separate them out and move outside this struct.
-  FRAME_TYPE last_frame_type;
 
   // If true, this frame is actually shown after decoding.
   // If false, this frame is coded in the bitstream, but not shown. It is only
@@ -479,14 +471,10 @@ typedef struct AV1Common {
   const qm_val_t *u_iqmatrix[MAX_SEGMENTS][TX_SIZES_ALL];
   const qm_val_t *v_iqmatrix[MAX_SEGMENTS][TX_SIZES_ALL];
 
-  // Encoder
   int using_qmatrix;
   int qm_y;
   int qm_u;
   int qm_v;
-  int min_qmlevel;
-  int max_qmlevel;
-  int use_quant_b_adapt;
 
   /* We allocate a MB_MODE_INFO struct for each macroblock, together with
      an extra row on top and column on the left to simplify prediction. */
@@ -570,8 +558,6 @@ typedef struct AV1Common {
   unsigned int single_tile_decoding;
 
   int byte_alignment;
-  int skip_loop_filter;
-  int skip_film_grain;
 
   // External BufferPool passed from outside.
   BufferPool *buffer_pool;
@@ -585,17 +571,13 @@ typedef struct AV1Common {
   CdefInfo cdef_info;
   DeltaQInfo delta_q_info;  // Delta Q and Delta LF parameters
 
-  int num_tg;
   SequenceHeader seq_params;
   int current_frame_id;
   int ref_frame_id[REF_FRAMES];
-  int valid_for_referencing[REF_FRAMES];
   TPL_MV_REF *tpl_mvs;
   int tpl_mvs_mem_size;
   // TODO(jingning): This can be combined with sign_bias later.
   int8_t ref_frame_side[REF_FRAMES];
-
-  int is_annexb;
 
   int temporal_layer_id;
   int spatial_layer_id;
@@ -609,14 +591,17 @@ typedef struct AV1Common {
   int64_t cum_txcoeff_timer;
   int64_t txcoeff_timer;
   int txb_count;
-#endif
+#endif  // TXCOEFF_TIMER
 
 #if TXCOEFF_COST_TIMER
   int64_t cum_txcoeff_cost_timer;
   int64_t txcoeff_cost_timer;
   int64_t txcoeff_cost_count;
-#endif
+#endif  // TXCOEFF_COST_TIMER
+
+#if CONFIG_LPF_MASK
   int is_decoding;
+#endif  // CONFIG_LPF_MASK
 } AV1_COMMON;
 
 // TODO(hkuang): Don't need to lock the whole pool after implementing atomic

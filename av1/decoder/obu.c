@@ -879,7 +879,7 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
     }
 
     aom_codec_err_t status =
-        aom_read_obu_header_and_size(data, bytes_available, cm->is_annexb,
+        aom_read_obu_header_and_size(data, bytes_available, pbi->is_annexb,
                                      &obu_header, &payload_size, &bytes_read);
 
     if (status != AOM_CODEC_OK) {

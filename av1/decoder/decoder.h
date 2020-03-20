@@ -244,6 +244,12 @@ typedef struct AV1Decoder {
 
   AV1DecRowMTInfo frame_row_mt_info;
   aom_metadata_array_t *metadata;
+
+  int context_update_tile_id;
+  int skip_loop_filter;
+  int skip_film_grain;
+  int is_annexb;
+  int valid_for_referencing[REF_FRAMES];
 } AV1Decoder;
 
 // Returns 0 on success. Sets pbi->common.error.error_code to a nonzero error

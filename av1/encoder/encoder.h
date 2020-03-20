@@ -1142,6 +1142,14 @@ typedef struct AV1_COMP {
   // Some motion vector stats from the last encoded frame to help us decide what
   // precision to use to encode the current frame.
   MV_STATS mv_stats;
+
+  // Frame type of the last frame. May be used in some heuristics for speeding
+  // up the encoding.
+  FRAME_TYPE last_frame_type;
+  int min_qmlevel;
+  int max_qmlevel;
+  int use_quant_b_adapt;
+  int num_tg;
 } AV1_COMP;
 
 typedef struct {

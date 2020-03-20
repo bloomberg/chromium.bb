@@ -60,12 +60,13 @@ void av1_foreach_transformed_block_in_plane(
     const MACROBLOCKD *const xd, BLOCK_SIZE plane_bsize, int plane,
     foreach_transformed_block_visitor visit, void *arg);
 
-void av1_encode_sby_pass1(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize);
+void av1_encode_sby_pass1(struct AV1_COMP *cpi, MACROBLOCK *x,
+                          BLOCK_SIZE bsize);
 
 void av1_setup_xform(const AV1_COMMON *cm, MACROBLOCK *x, TX_SIZE tx_size,
                      TX_TYPE tx_type, TxfmParam *txfm_param);
-void av1_setup_quant(const AV1_COMMON *cm, TX_SIZE tx_size, int use_optimize_b,
-                     int xform_quant_idx, QUANT_PARAM *qparam);
+void av1_setup_quant(TX_SIZE tx_size, int use_optimize_b, int xform_quant_idx,
+                     int use_quant_b_adapt, QUANT_PARAM *qparam);
 void av1_setup_qmatrix(const AV1_COMMON *cm, MACROBLOCK *x, int plane,
                        TX_SIZE tx_size, TX_TYPE tx_type, QUANT_PARAM *qparam);
 

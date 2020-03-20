@@ -372,7 +372,7 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
   // Do not use periodic key frames.
   cpi->rc.frames_to_key = INT_MAX;
 
-  av1_set_quantizer(cm, qindex);
+  av1_set_quantizer(cpi, qindex);
 
   av1_setup_block_planes(&x->e_mbd, seq_params->subsampling_x,
                          seq_params->subsampling_y, num_planes);
@@ -700,7 +700,7 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
           av1_enc_build_inter_predictor(cm, xd, mb_row * mb_scale,
                                         mb_col * mb_scale, NULL, bsize,
                                         AOM_PLANE_Y, AOM_PLANE_Y);
-          av1_encode_sby_pass1(cm, x, bsize);
+          av1_encode_sby_pass1(cpi, x, bsize);
           sum_mvr += best_mv.row;
           sum_mvr_abs += abs(best_mv.row);
           sum_mvc += best_mv.col;

@@ -2419,12 +2419,12 @@ static AOM_INLINE void read_tile_info(AV1Decoder *const pbi,
 
   read_tile_info_max_tile(cm, rb);
 
-  cm->context_update_tile_id = 0;
+  pbi->context_update_tile_id = 0;
   if (cm->tile_rows * cm->tile_cols > 1) {
     // tile to use for cdf update
-    cm->context_update_tile_id =
+    pbi->context_update_tile_id =
         aom_rb_read_literal(rb, cm->log2_tile_rows + cm->log2_tile_cols);
-    if (cm->context_update_tile_id >= cm->tile_rows * cm->tile_cols) {
+    if (pbi->context_update_tile_id >= cm->tile_rows * cm->tile_cols) {
       aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                          "Invalid context_update_tile_id");
     }
@@ -4573,12 +4573,13 @@ static AOM_INLINE void reset_ref_frame_map(AV1_COMMON *const cm) {
 
 // If the refresh_frame_flags bitmask is set, update reference frame id values
 // and mark frames as valid for reference.
-static AOM_INLINE void update_ref_frame_id(AV1_COMMON *const cm, int frame_id) {
+static AOM_INLINE void update_ref_frame_id(AV1Decoder *const pbi) {
+  AV1_COMMON *const cm = &pbi->common;
   int refresh_frame_flags = cm->current_frame.refresh_frame_flags;
   for (int i = 0; i < REF_FRAMES; i++) {
     if ((refresh_frame_flags >> i) & 1) {
-      cm->ref_frame_id[i] = frame_id;
-      cm->valid_for_referencing[i] = 1;
+      cm->ref_frame_id[i] = cm->current_frame_id;
+      pbi->valid_for_referencing[i] = 1;
     }
   }
 }
@@ -4605,7 +4606,7 @@ static AOM_INLINE void show_existing_frame_reset(AV1Decoder *const pbi,
   // Note that the displayed frame must be valid for referencing in order to
   // have been selected.
   cm->current_frame_id = cm->ref_frame_id[existing_frame_idx];
-  update_ref_frame_id(cm, cm->current_frame_id);
+  update_ref_frame_id(pbi);
 
   cm->refresh_frame_context = REFRESH_FRAME_CONTEXT_DISABLED;
 }
@@ -4646,8 +4647,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                        "No sequence header");
   }
 
-  cm->last_frame_type = current_frame->frame_type;
-
   if (seq_params->reduced_still_picture_hdr) {
     cm->show_existing_frame = 0;
     cm->show_frame = 1;
@@ -4686,7 +4685,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
         /* Compare display_frame_id with ref_frame_id and check valid for
          * referencing */
         if (display_frame_id != cm->ref_frame_id[existing_frame_idx] ||
-            cm->valid_for_referencing[existing_frame_idx] == 0)
+            pbi->valid_for_referencing[existing_frame_idx] == 0)
           aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                              "Reference buffer frame ID mismatch");
       }
@@ -4772,7 +4771,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   if (current_frame->frame_type == KEY_FRAME && cm->show_frame) {
     /* All frames need to be marked as not valid for referencing */
     for (int i = 0; i < REF_FRAMES; i++) {
-      cm->valid_for_referencing[i] = 0;
+      pbi->valid_for_referencing[i] = 0;
     }
   }
   cm->disable_cdf_update = aom_rb_read_bit(rb);
@@ -4829,12 +4828,12 @@ static int read_uncompressed_header(AV1Decoder *pbi,
         if (cm->current_frame_id - (1 << diff_len) > 0) {
           if (cm->ref_frame_id[i] > cm->current_frame_id ||
               cm->ref_frame_id[i] < cm->current_frame_id - (1 << diff_len))
-            cm->valid_for_referencing[i] = 0;
+            pbi->valid_for_referencing[i] = 0;
         } else {
           if (cm->ref_frame_id[i] > cm->current_frame_id &&
               cm->ref_frame_id[i] < (1 << frame_id_length) +
                                         cm->current_frame_id - (1 << diff_len))
-            cm->valid_for_referencing[i] = 0;
+            pbi->valid_for_referencing[i] = 0;
         }
       }
     }
@@ -4926,7 +4925,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
           // If no corresponding buffer exists, allocate a new buffer with all
           // pixels set to neutral grey.
           // TODO(https://crbug.com/aomedia/2420): The spec seems to say we
-          // just need to set cm->valid_for_referencing[ref_idx] to 0.
+          // just need to set pbi->valid_for_referencing[ref_idx] to 0.
           int buf_idx = get_free_fb(cm);
           if (buf_idx == INVALID_IDX) {
             aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
@@ -5022,7 +5021,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
           ref = cm->remapped_ref_idx[i];
         }
         // Check valid for referencing
-        if (cm->valid_for_referencing[ref] == 0)
+        if (pbi->valid_for_referencing[ref] == 0)
           aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                              "Reference frame not valid for referencing");
 
@@ -5094,7 +5093,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
   cm->cur_frame->frame_type = current_frame->frame_type;
 
-  update_ref_frame_id(cm, cm->current_frame_id);
+  update_ref_frame_id(pbi);
 
   const int might_bwd_adapt =
       !(seq_params->reduced_still_picture_hdr) && !(cm->disable_cdf_update);
@@ -5432,7 +5431,7 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
         cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
         cm->rst_info[2].frame_restoration_type != RESTORE_NONE;
     const int do_cdef =
-        !cm->skip_loop_filter && !cm->coded_lossless &&
+        !pbi->skip_loop_filter && !cm->coded_lossless &&
         (cm->cdef_info.cdef_bits || cm->cdef_info.cdef_strengths[0] ||
          cm->cdef_info.cdef_uv_strengths[0]);
     const int do_superres = av1_superres_scaled(cm);
@@ -5484,8 +5483,8 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 
   if (!xd->corrupted) {
     if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {
-      assert(cm->context_update_tile_id < pbi->allocated_tiles);
-      *cm->fc = pbi->tile_data[cm->context_update_tile_id].tctx;
+      assert(pbi->context_update_tile_id < pbi->allocated_tiles);
+      *cm->fc = pbi->tile_data[pbi->context_update_tile_id].tctx;
       av1_reset_cdf_symbol_counters(cm->fc);
     }
   } else {

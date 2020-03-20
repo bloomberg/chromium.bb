@@ -3444,7 +3444,7 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
   unsigned int max_tile_col_size = 0;
   const int n_log2_tiles = cm->log2_tile_rows + cm->log2_tile_cols;
   // Fixed size tile groups for the moment
-  const int num_tg_hdrs = cm->num_tg;
+  const int num_tg_hdrs = cpi->num_tg;
   const int tg_size =
       (cm->large_scale_tile)
           ? 1
@@ -3624,7 +3624,7 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
         curr_tg_data_size += write_tile_group_header(
             data + curr_tg_data_size, tile_idx,
             AOMMIN(tile_idx + tg_size - 1, tile_cols * tile_rows - 1),
-            n_log2_tiles, cm->num_tg > 1);
+            n_log2_tiles, cpi->num_tg > 1);
         total_size += curr_tg_data_size;
         tile_data_start += curr_tg_data_size;
         new_tg = 0;
@@ -3860,7 +3860,7 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size,
   if (cm->show_frame) data += av1_write_metadata_array(cpi, data);
 
   const int write_frame_header =
-      (cm->num_tg > 1 || encode_show_existing_frame(cm));
+      (cpi->num_tg > 1 || encode_show_existing_frame(cm));
   struct aom_write_bit_buffer saved_wb;
   if (write_frame_header) {
     // Write Frame Header OBU.

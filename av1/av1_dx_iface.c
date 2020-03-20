@@ -377,13 +377,14 @@ static aom_codec_err_t update_error_state(
 static void init_buffer_callbacks(aom_codec_alg_priv_t *ctx) {
   AVxWorker *const worker = ctx->frame_worker;
   FrameWorkerData *const frame_worker_data = (FrameWorkerData *)worker->data1;
-  AV1_COMMON *const cm = &frame_worker_data->pbi->common;
+  AV1Decoder *const pbi = frame_worker_data->pbi;
+  AV1_COMMON *const cm = &pbi->common;
   BufferPool *const pool = cm->buffer_pool;
 
   cm->cur_frame = NULL;
   cm->byte_alignment = ctx->byte_alignment;
-  cm->skip_loop_filter = ctx->skip_loop_filter;
-  cm->skip_film_grain = ctx->skip_film_grain;
+  pbi->skip_loop_filter = ctx->skip_loop_filter;
+  pbi->skip_film_grain = ctx->skip_film_grain;
 
   if (ctx->get_ext_fb_cb != NULL && ctx->release_ext_fb_cb != NULL) {
     pool->get_fb_cb = ctx->get_ext_fb_cb;
@@ -470,7 +471,7 @@ static aom_codec_err_t init_decoder(aom_codec_alg_priv_t *ctx) {
   frame_worker_data->pbi->max_threads = ctx->cfg.threads;
   frame_worker_data->pbi->inv_tile_order = ctx->invert_tile_order;
   frame_worker_data->pbi->common.large_scale_tile = ctx->tile_mode;
-  frame_worker_data->pbi->common.is_annexb = ctx->is_annexb;
+  frame_worker_data->pbi->is_annexb = ctx->is_annexb;
   frame_worker_data->pbi->dec_tile_row = ctx->decode_tile_row;
   frame_worker_data->pbi->dec_tile_col = ctx->decode_tile_col;
   frame_worker_data->pbi->operating_point = ctx->operating_point;
@@ -530,7 +531,7 @@ static aom_codec_err_t decode_one(aom_codec_alg_priv_t *ctx,
   frame_worker_data->pbi->row_mt = ctx->row_mt;
   frame_worker_data->pbi->ext_refs = ctx->ext_refs;
 
-  frame_worker_data->pbi->common.is_annexb = ctx->is_annexb;
+  frame_worker_data->pbi->is_annexb = ctx->is_annexb;
 
   worker->had_error = 0;
   winterface->execute(worker);
@@ -828,7 +829,7 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
         img = &ctx->img;
         img->temporal_id = cm->temporal_layer_id;
         img->spatial_id = cm->spatial_layer_id;
-        if (cm->skip_film_grain) grain_params->apply_grain = 0;
+        if (pbi->skip_film_grain) grain_params->apply_grain = 0;
         aom_image_t *res =
             add_grain_if_needed(ctx, img, &ctx->image_with_grain, grain_params);
         if (!res) {
@@ -1251,7 +1252,7 @@ static aom_codec_err_t ctrl_set_skip_loop_filter(aom_codec_alg_priv_t *ctx,
   if (ctx->frame_worker) {
     AVxWorker *const worker = ctx->frame_worker;
     FrameWorkerData *const frame_worker_data = (FrameWorkerData *)worker->data1;
-    frame_worker_data->pbi->common.skip_loop_filter = ctx->skip_loop_filter;
+    frame_worker_data->pbi->skip_loop_filter = ctx->skip_loop_filter;
   }
 
   return AOM_CODEC_OK;
@@ -1264,7 +1265,7 @@ static aom_codec_err_t ctrl_set_skip_film_grain(aom_codec_alg_priv_t *ctx,
   if (ctx->frame_worker) {
     AVxWorker *const worker = ctx->frame_worker;
     FrameWorkerData *const frame_worker_data = (FrameWorkerData *)worker->data1;
-    frame_worker_data->pbi->common.skip_film_grain = ctx->skip_film_grain;
+    frame_worker_data->pbi->skip_film_grain = ctx->skip_film_grain;
   }
 
   return AOM_CODEC_OK;
