@@ -67,10 +67,6 @@ VDB_PATH = 'var/db/pkg'
 WORKON_EBUILD_VERSION = '9999'
 WORKON_EBUILD_SUFFIX = '-%s.ebuild' % WORKON_EBUILD_VERSION
 
-UNITTEST_PACKAGE_BLACKLIST = set((
-    'sys-devel/binutils',
-))
-
 # A structure to hold computed values of CROS_WORKON_*.
 CrosWorkonVars = collections.namedtuple(
     'CrosWorkonVars',

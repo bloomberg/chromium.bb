@@ -91,7 +91,7 @@ def main(argv):
   cros_build_lib.AssertInsideChroot()
 
   sysroot = opts.sysroot or cros_build_lib.GetSysroot(opts.board)
-  package_blacklist = portage_util.UNITTEST_PACKAGE_BLACKLIST
+  package_blacklist = set()
   if opts.package_blacklist:
     package_blacklist |= set(opts.package_blacklist.split())
 
