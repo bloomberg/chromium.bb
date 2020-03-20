@@ -22,6 +22,7 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
+from chromite.lib import portage_util
 from chromite.lib import toolchain_util
 from chromite.lib.paygen import partition_lib
 from chromite.lib.paygen import paygen_payload_lib
@@ -273,7 +274,7 @@ def ArchiveChromeEbuildEnv(sysroot, output_dir):
   Raises:
     NoFilesException: When the package cannot be found.
   """
-  pkg_dir = os.path.join(sysroot.path, 'var', 'db', 'pkg')
+  pkg_dir = os.path.join(sysroot.path, portage_util.VDB_PATH)
   files = glob.glob(os.path.join(pkg_dir, constants.CHROME_CP) + '-*')
   if not files:
     raise NoFilesError('Failed to find package %s' % constants.CHROME_CP)

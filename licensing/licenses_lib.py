@@ -33,7 +33,7 @@ except ImportError:
   yaml = None
 
 # See https://crbug.com/207004 for discussion.
-PER_PKG_LICENSE_DIR = 'var/db/pkg'
+PER_PKG_LICENSE_DIR = portage_util.VDB_PATH
 
 STOCK_LICENSE_DIRS = [
     'src/third_party/portage-stable/licenses',

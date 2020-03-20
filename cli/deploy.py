@@ -745,7 +745,7 @@ print(json.dumps(pkg_info))
 
     install_attrs = {}
     for pkg in sorted_installs:
-      pkg_path = os.path.join(root, portage.VDB_PATH, pkg)
+      pkg_path = os.path.join(root, portage_util.VDB_PATH, pkg)
       dlc_id, dlc_package = _GetDLCInfo(device, pkg_path, from_dut=True)
       install_attrs[pkg] = {}
       if dlc_id and dlc_package:

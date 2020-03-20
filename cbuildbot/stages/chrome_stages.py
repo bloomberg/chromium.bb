@@ -26,6 +26,7 @@ from chromite.lib import failures_lib
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import path_util
+from chromite.lib import portage_util
 from chromite.lib import results_lib
 
 MASK_CHANGES_ERROR_SNIPPET = 'The following mask changes are necessary'
@@ -154,7 +155,7 @@ class SimpleChromeArtifactsStage(generic_stages.BoardSpecificBuilderStage,
     self._upload_queue = multiprocessing.Queue()
     self._pkg_dir = os.path.join(
         self._build_root, constants.DEFAULT_CHROOT_DIR,
-        'build', self._current_board, 'var', 'db', 'pkg')
+        'build', self._current_board, portage_util.VDB_PATH)
 
   def _BuildAndArchiveChromeSysroot(self):
     """Generate and upload sysroot for building Chrome."""

@@ -121,9 +121,6 @@ def ListWorkonPackagesInfo(sysroot):
   Returns:
     A list of WorkonPackageInfo objects for unique packages being worked on.
   """
-  # Import portage late so that this script can be imported outside the chroot.
-  # pylint: disable=import-error
-  import portage.const
   packages = ListWorkonPackages(sysroot)
   if not packages:
     return []
@@ -134,7 +131,7 @@ def ListWorkonPackagesInfo(sysroot):
   else:
     overlays = sysroot.GetStandardField('PORTDIR_OVERLAY').splitlines()
 
-  vdb_path = os.path.join(sysroot.path, portage.const.VDB_PATH)
+  vdb_path = os.path.join(sysroot.path, portage_util.VDB_PATH)
 
   for overlay in overlays:
     for filename, projects, srcpaths in portage_util.GetWorkonProjectMap(

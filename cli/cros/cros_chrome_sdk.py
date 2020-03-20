@@ -26,6 +26,7 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import path_util
+from chromite.lib import portage_util
 from chromite.lib import retry_util
 from chromite.utils import memoize
 from gn_helpers import gn_helpers
@@ -1014,7 +1015,7 @@ class ChromeSDKCommand(command.CliCommand):
     if options.chroot:
       # Override with the environment from the chroot if available (i.e.
       # build_packages or emerge chromeos-chrome has been run for |board|).
-      env_path = os.path.join(sysroot, 'var', 'db', 'pkg', 'chromeos-base',
+      env_path = os.path.join(sysroot, portage_util.VDB_PATH, 'chromeos-base',
                               'chromeos-chrome-*')
       env_glob = glob.glob(env_path)
       if len(env_glob) != 1:

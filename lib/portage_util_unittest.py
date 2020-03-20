@@ -1350,7 +1350,7 @@ class PortageDBTest(cros_test_lib.TempDirTestCase):
     self.fake_packages = []
     # Prepare a fake chroot.
     self.fake_chroot = os.path.join(self.build_root, 'chroot/build/amd64-host')
-    fake_pkgdb_path = os.path.join(self.fake_chroot, 'var/db/pkg')
+    fake_pkgdb_path = os.path.join(self.fake_chroot, portage_util.VDB_PATH)
     os.makedirs(fake_pkgdb_path)
     for cat, pkgs in self.fake_pkgdb.items():
       catpath = os.path.join(fake_pkgdb_path, cat)

@@ -61,6 +61,9 @@ _blank_or_eapi_re = re.compile(r'^\s*(?:#|EAPI=|$)')
 # This regex is used to extract test names from IUSE_TESTS
 _autotest_re = re.compile(r'\+tests_(\w+)', re.VERBOSE)
 
+# Where portage stores metadata about installed packages.
+VDB_PATH = 'var/db/pkg'
+
 WORKON_EBUILD_VERSION = '9999'
 WORKON_EBUILD_SUFFIX = '-%s.ebuild' % WORKON_EBUILD_VERSION
 
@@ -1219,7 +1222,7 @@ class PortageDB(object):
       root: The path to the root to inspect, for example "/build/foo".
     """
     self.root = root
-    self.db_path = os.path.join(root, 'var/db/pkg')
+    self.db_path = os.path.join(root, VDB_PATH)
     self._ebuilds = {}
 
   def GetInstalledPackage(self, category, pv):
