@@ -931,8 +931,9 @@ static void store_coding_context(MACROBLOCK *x, PICK_MODE_CONTEXT *ctx) {
   // Take a snapshot of the coding context so it can be
   // restored if we decide to encode this way
   ctx->rd_stats.skip = x->force_skip;
-  memcpy(ctx->blk_skip, x->blk_skip, sizeof(x->blk_skip[0]) * ctx->num_4x4_blk);
-  av1_copy_array(ctx->tx_type_map, xd->tx_type_map, ctx->num_4x4_blk);
+  memset(ctx->blk_skip, 0, sizeof(ctx->blk_skip[0]) * ctx->num_4x4_blk);
+  memset(ctx->tx_type_map, DCT_DCT,
+         sizeof(ctx->tx_type_map[0]) * ctx->num_4x4_blk);
   ctx->skippable = x->force_skip;
 #if CONFIG_INTERNAL_STATS
   ctx->best_mode_index = mode_index;
@@ -1448,10 +1449,6 @@ void av1_pick_intra_mode(AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *rd_cost,
   init_mbmi(mi, DC_PRED, INTRA_FRAME, NONE_FRAME, cm);
   mi->mv[0].as_int = mi->mv[1].as_int = INVALID_MV;
 
-  memset(xd->tx_type_map, DCT_DCT,
-         sizeof(xd->tx_type_map[0]) * ctx->num_4x4_blk);
-  av1_zero(x->blk_skip);
-
   // Change the limit of this loop to add other intra prediction
   // mode tests.
   for (int i = 0; i < 4; ++i) {
@@ -1670,10 +1667,6 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       AOMMIN(AOMMIN(max_txsize_lookup[bsize],
                     tx_mode_to_biggest_tx_size[x->tx_mode_search_type]),
              TX_16X16);
-  memset(mi->inter_tx_size, mi->tx_size, sizeof(mi->inter_tx_size));
-  memset(xd->tx_type_map, DCT_DCT,
-         sizeof(xd->tx_type_map[0]) * ctx->num_4x4_blk);
-  av1_zero(x->blk_skip);
 
   // TODO(marpan): Look into reducing these conditions. For now constrain
   // it to avoid significant bdrate loss.
