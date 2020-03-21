@@ -88,6 +88,7 @@ class Tile : public Allocable {
 
   struct Block;  // Defined after this class.
 
+  bool Parse();
   bool Decode(bool is_main_thread);  // 5.11.2.
 
   // Processes all the columns of the superblock row at |row4x4| that are within

@@ -600,10 +600,6 @@ bool Tile::ProcessSuperBlockRow(int row4x4,
   return true;
 }
 
-// Used in frame parallel mode. The symbol decoder context has to be saved
-// when the parsing is complete.
-template bool Tile::ProcessSuperBlockRow<kProcessingModeParseOnly, true>(
-    int row4x4, TileScratchBuffer* scratch_buffer);
 // Used in frame parallel mode. The symbol decoder context need not be saved in
 // this case since it was done when parsing was complete.
 template bool Tile::ProcessSuperBlockRow<kProcessingModeDecodeOnly, false>(
@@ -653,6 +649,26 @@ bool Tile::Decode(bool is_main_thread) {
   if (!split_parse_and_decode_) {
     pending_tiles_->Decrement(true);
   }
+  return true;
+}
+
+bool Tile::Parse() {
+  const int block_width4x4 = kNum4x4BlocksWide[SuperBlockSize()];
+  std::unique_ptr<TileScratchBuffer> scratch_buffer =
+      tile_scratch_buffer_pool_->Get();
+  if (scratch_buffer == nullptr) {
+    LIBGAV1_DLOG(ERROR, "Failed to get scratch buffer.");
+    return false;
+  }
+  for (int row4x4 = row4x4_start_; row4x4 < row4x4_end_;
+       row4x4 += block_width4x4) {
+    if (!ProcessSuperBlockRow<kProcessingModeParseOnly, false>(
+            row4x4, scratch_buffer.get())) {
+      return false;
+    }
+  }
+  tile_scratch_buffer_pool_->Release(std::move(scratch_buffer));
+  SaveSymbolDecoderContext();
   return true;
 }
 

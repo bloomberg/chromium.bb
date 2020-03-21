@@ -985,21 +985,10 @@ StatusCode DecoderImpl::DecodeTilesFrameParallel(
     FrameScratchBuffer* const frame_scratch_buffer,
     PostFilter* const post_filter, RefCountedBuffer* const current_frame) {
   // Parse the frame.
-  const int block_width4x4 = sequence_header.use_128x128_superblock ? 32 : 16;
-  std::unique_ptr<TileScratchBuffer> tile_scratch_buffer =
-      frame_scratch_buffer->tile_scratch_buffer_pool.Get();
-  if (tile_scratch_buffer == nullptr) {
-    return kStatusOutOfMemory;
-  }
-  for (int row4x4 = 0; row4x4 < frame_header.rows4x4;
-       row4x4 += block_width4x4) {
-    for (const auto& tile_ptr : tiles) {
-      if (!tile_ptr->ProcessSuperBlockRow<kProcessingModeParseOnly, true>(
-              row4x4, tile_scratch_buffer.get())) {
-        LIBGAV1_DLOG(ERROR, "Failed to parse tile number: %d\n",
-                     tile_ptr->number());
-        return kStatusUnknownError;
-      }
+  for (const auto& tile : tiles) {
+    if (!tile->Parse()) {
+      LIBGAV1_DLOG(ERROR, "Failed to parse tile number: %d\n", tile->number());
+      return kStatusUnknownError;
     }
   }
   if (frame_header.enable_frame_end_update_cdf) {
@@ -1009,6 +998,12 @@ StatusCode DecoderImpl::DecodeTilesFrameParallel(
   SetCurrentFrameSegmentationMap(frame_header, prev_segment_ids, current_frame);
   // Mark frame as parsed.
   current_frame->SetFrameState(kFrameStateParsed);
+  std::unique_ptr<TileScratchBuffer> tile_scratch_buffer =
+      frame_scratch_buffer->tile_scratch_buffer_pool.Get();
+  if (tile_scratch_buffer == nullptr) {
+    return kStatusOutOfMemory;
+  }
+  const int block_width4x4 = sequence_header.use_128x128_superblock ? 32 : 16;
   // Decode in superblock row order (inter prediction in the Tile class will
   // block until the required superblocks in the reference frame are decoded).
   for (int row4x4 = 0; row4x4 < frame_header.rows4x4;
