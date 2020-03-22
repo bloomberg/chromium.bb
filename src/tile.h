@@ -69,16 +69,26 @@ enum ProcessingMode {
 
 class Tile : public Allocable {
  public:
-  Tile(int tile_number, const uint8_t* data, size_t size,
-       const ObuSequenceHeader& sequence_header,
-       const ObuFrameHeader& frame_header, RefCountedBuffer* current_frame,
-       const DecoderState& state, FrameScratchBuffer* frame_scratch_buffer,
-       const WedgeMaskArray& wedge_masks,
-       SymbolDecoderContext* saved_symbol_decoder_context,
-       const SegmentationMap* prev_segment_ids, PostFilter* post_filter,
-       BlockParametersHolder* block_parameters, const dsp::Dsp* dsp,
-       ThreadPool* thread_pool, BlockingCounterWithStatus* pending_tiles,
-       bool frame_parallel, bool use_intra_prediction_buffer);
+  static std::unique_ptr<Tile> Create(
+      int tile_number, const uint8_t* const data, size_t size,
+      const ObuSequenceHeader& sequence_header,
+      const ObuFrameHeader& frame_header, RefCountedBuffer* const current_frame,
+      const DecoderState& state, FrameScratchBuffer* const frame_scratch_buffer,
+      const WedgeMaskArray& wedge_masks,
+      SymbolDecoderContext* const saved_symbol_decoder_context,
+      const SegmentationMap* prev_segment_ids, PostFilter* const post_filter,
+      BlockParametersHolder* const block_parameters_holder,
+      const dsp::Dsp* const dsp, ThreadPool* const thread_pool,
+      BlockingCounterWithStatus* const pending_tiles, bool frame_parallel,
+      bool use_intra_prediction_buffer) {
+    std::unique_ptr<Tile> tile(new (std::nothrow) Tile(
+        tile_number, data, size, sequence_header, frame_header, current_frame,
+        state, frame_scratch_buffer, wedge_masks, saved_symbol_decoder_context,
+        prev_segment_ids, post_filter, block_parameters_holder, dsp,
+        thread_pool, pending_tiles, frame_parallel,
+        use_intra_prediction_buffer));
+    return (tile != nullptr && tile->Init()) ? std::move(tile) : nullptr;
+  }
 
   // Move only.
   Tile(Tile&& tile) noexcept;
@@ -88,9 +98,11 @@ class Tile : public Allocable {
 
   struct Block;  // Defined after this class.
 
+  // Parses the entire tile.
   bool Parse();
+  // Parses and decodes the entire tile. Depending on the configuration of this
+  // Tile, this function may do multithreaded decoding.
   bool Decode(bool is_main_thread);  // 5.11.2.
-
   // Processes all the columns of the superblock row at |row4x4| that are within
   // this Tile. If |save_symbol_decoder_context| is true, then
   // SaveSymbolDecoderContext() is invoked for the last superblock row.
@@ -161,6 +173,17 @@ class Tile : public Allocable {
   int superblock_columns() const { return superblock_columns_; }
 
  private:
+  Tile(int tile_number, const uint8_t* data, size_t size,
+       const ObuSequenceHeader& sequence_header,
+       const ObuFrameHeader& frame_header, RefCountedBuffer* current_frame,
+       const DecoderState& state, FrameScratchBuffer* frame_scratch_buffer,
+       const WedgeMaskArray& wedge_masks,
+       SymbolDecoderContext* saved_symbol_decoder_context,
+       const SegmentationMap* prev_segment_ids, PostFilter* post_filter,
+       BlockParametersHolder* block_parameters_holder, const dsp::Dsp* dsp,
+       ThreadPool* thread_pool, BlockingCounterWithStatus* pending_tiles,
+       bool frame_parallel, bool use_intra_prediction_buffer);
+
   // Stores the transform tree state when reading variable size transform trees
   // and when applying the transform tree. When applying the transform tree,
   // |depth| is not used.
@@ -208,8 +231,8 @@ class Tile : public Allocable {
   //    every transform block.
   using ResidualPtr = uint8_t*;
 
-  // Performs member initializations that may fail. Called by Decode() and
-  // ProcessSuperBlockRow().
+  // Performs member initializations that may fail. Helper function used by
+  // Create().
   LIBGAV1_MUST_USE_RESULT bool Init();
 
   // Saves the symbol decoder context of this tile into
@@ -707,7 +730,6 @@ class Tile : public Allocable {
   // True if all the values in |delta_lf_| are zero. False otherwise.
   bool delta_lf_all_zero_;
   bool build_bit_mask_when_parsing_;
-  bool initialized_;
   const bool frame_parallel_;
   const bool use_intra_prediction_buffer_;
   // Buffer used to store the unfiltered pixels that are necessary for decoding

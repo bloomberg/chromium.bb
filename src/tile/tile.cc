@@ -429,7 +429,6 @@ Tile::Tile(int tile_number, const uint8_t* const data, size_t size,
           &frame_scratch_buffer->tile_scratch_buffer_pool),
       pending_tiles_(pending_tiles),
       build_bit_mask_when_parsing_(false),
-      initialized_(false),
       frame_parallel_(frame_parallel),
       use_intra_prediction_buffer_(use_intra_prediction_buffer) {
   row_ = number_ / frame_header.tile_info.tile_columns;
@@ -570,7 +569,6 @@ bool Tile::Init() {
                      &motion_field_);
   }
   ResetLoopRestorationParams();
-  initialized_ = true;
   return true;
 }
 
@@ -578,7 +576,6 @@ template <ProcessingMode processing_mode, bool save_symbol_decoder_context>
 bool Tile::ProcessSuperBlockRow(int row4x4,
                                 TileScratchBuffer* const scratch_buffer) {
   if (row4x4 < row4x4_start_ || row4x4 >= row4x4_end_) return true;
-  if (!initialized_ && !Init()) return false;
   assert(scratch_buffer != nullptr);
   const int block_width4x4 = kNum4x4BlocksWide[SuperBlockSize()];
   for (int column4x4 = column4x4_start_; column4x4 < column4x4_end_;
@@ -616,39 +613,33 @@ void Tile::SaveSymbolDecoderContext() {
 }
 
 bool Tile::Decode(bool is_main_thread) {
-  if (!Init()) {
-    pending_tiles_->Decrement(false);
-    return false;
-  }
   // If this is the main thread, we build the loop filter bit masks when parsing
   // so that it happens in the current thread. This ensures that the main thread
   // does as much work as possible.
   build_bit_mask_when_parsing_ = is_main_thread;
   if (split_parse_and_decode_) {
     if (!ThreadedDecode()) return false;
-  } else {
-    const int block_width4x4 = kNum4x4BlocksWide[SuperBlockSize()];
-    std::unique_ptr<TileScratchBuffer> scratch_buffer =
-        tile_scratch_buffer_pool_->Get();
-    if (scratch_buffer == nullptr) {
+    SaveSymbolDecoderContext();
+    return true;
+  }
+  std::unique_ptr<TileScratchBuffer> scratch_buffer =
+      tile_scratch_buffer_pool_->Get();
+  if (scratch_buffer == nullptr) {
+    pending_tiles_->Decrement(false);
+    LIBGAV1_DLOG(ERROR, "Failed to get scratch buffer.");
+    return false;
+  }
+  const int block_width4x4 = kNum4x4BlocksWide[SuperBlockSize()];
+  for (int row4x4 = row4x4_start_; row4x4 < row4x4_end_;
+       row4x4 += block_width4x4) {
+    if (!ProcessSuperBlockRow<kProcessingModeParseAndDecode, true>(
+            row4x4, scratch_buffer.get())) {
       pending_tiles_->Decrement(false);
-      LIBGAV1_DLOG(ERROR, "Failed to get scratch buffer.");
       return false;
     }
-    for (int row4x4 = row4x4_start_; row4x4 < row4x4_end_;
-         row4x4 += block_width4x4) {
-      if (!ProcessSuperBlockRow<kProcessingModeParseAndDecode, true>(
-              row4x4, scratch_buffer.get())) {
-        pending_tiles_->Decrement(false);
-        return false;
-      }
-    }
-    tile_scratch_buffer_pool_->Release(std::move(scratch_buffer));
   }
-  SaveSymbolDecoderContext();
-  if (!split_parse_and_decode_) {
-    pending_tiles_->Decrement(true);
-  }
+  tile_scratch_buffer_pool_->Release(std::move(scratch_buffer));
+  pending_tiles_->Decrement(true);
   return true;
 }
 

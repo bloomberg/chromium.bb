@@ -835,15 +835,15 @@ StatusCode DecoderImpl::DecodeTiles(
         tile_size = bytes_left;
       }
 
-      std::unique_ptr<Tile> tile(new (std::nothrow) Tile(
+      std::unique_ptr<Tile> tile = Tile::Create(
           tile_number, tile_group.data + byte_offset, tile_size,
           sequence_header, frame_header, current_frame, state,
           frame_scratch_buffer, wedge_masks_, &saved_symbol_decoder_context,
           prev_segment_ids, &post_filter, &block_parameters_holder, dsp,
           threading_strategy.row_thread_pool(tile_index++), &pending_tiles,
-          IsFrameParallel(), use_intra_prediction_buffer));
+          IsFrameParallel(), use_intra_prediction_buffer);
       if (tile == nullptr) {
-        LIBGAV1_DLOG(ERROR, "Failed to allocate tile.");
+        LIBGAV1_DLOG(ERROR, "Failed to create tile.");
         return kStatusOutOfMemory;
       }
       tiles.push_back_unchecked(std::move(tile));
