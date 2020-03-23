@@ -17,8 +17,9 @@
 #include "av1/encoder/hash.h"
 #include "av1/encoder/hash_motion.h"
 
-static const int crc_bits = 16;
-static const int block_size_bits = 3;
+#define kSrcBits 16
+#define kBlockSizeBits 3
+#define kMaxAddr (1 << (kSrcBits + kBlockSizeBits))
 
 // TODO(youzhou@microsoft.com): is higher than 8 bits screen content supported?
 // If yes, fix this function
@@ -106,8 +107,7 @@ void av1_hash_table_clear_all(hash_table *p_hash_table) {
   if (p_hash_table->p_lookup_table == NULL) {
     return;
   }
-  int max_addr = 1 << (crc_bits + block_size_bits);
-  for (int i = 0; i < max_addr; i++) {
+  for (int i = 0; i < kMaxAddr; i++) {
     if (p_hash_table->p_lookup_table[i] != NULL) {
       aom_vector_destroy(p_hash_table->p_lookup_table[i]);
       aom_free(p_hash_table->p_lookup_table[i]);
@@ -133,11 +133,10 @@ void av1_hash_table_create(hash_table *p_hash_table) {
     av1_hash_table_clear_all(p_hash_table);
     return;
   }
-  const int max_addr = 1 << (crc_bits + block_size_bits);
   p_hash_table->p_lookup_table =
-      (Vector **)aom_malloc(sizeof(p_hash_table->p_lookup_table[0]) * max_addr);
+      (Vector **)aom_malloc(sizeof(p_hash_table->p_lookup_table[0]) * kMaxAddr);
   memset(p_hash_table->p_lookup_table, 0,
-         sizeof(p_hash_table->p_lookup_table[0]) * max_addr);
+         sizeof(p_hash_table->p_lookup_table[0]) * kMaxAddr);
 #if CONFIG_DEBUG
   p_hash_table->has_content = 0;
 #endif
@@ -327,8 +326,11 @@ void av1_add_to_hash_map_by_row_with_precal_data(hash_table *p_hash_table,
 
   int add_value = hash_block_size_to_index(block_size);
   assert(add_value >= 0);
-  add_value <<= crc_bits;
-  const int crc_mask = (1 << crc_bits) - 1;
+  add_value <<= kSrcBits;
+  const int crc_mask = (1 << kSrcBits) - 1;
+#if CONFIG_DEBUG
+  p_hash_table->has_content = 1;
+#endif
 
   for (int x_pos = 0; x_pos < x_end; x_pos++) {
     for (int y_pos = 0; y_pos < y_end; y_pos++) {
@@ -409,8 +411,8 @@ void av1_get_block_hash_value(uint8_t *y_src, int stride, int block_size,
   uint32_t to_hash[4];
   int add_value = hash_block_size_to_index(block_size);
   assert(add_value >= 0);
-  add_value <<= crc_bits;
-  const int crc_mask = (1 << crc_bits) - 1;
+  add_value <<= kSrcBits;
+  const int crc_mask = (1 << kSrcBits) - 1;
 
   // 2x2 subblock hash values in current CU
   int sub_block_in_width = (block_size >> 1);

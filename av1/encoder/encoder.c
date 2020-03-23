@@ -5255,31 +5255,29 @@ static void determine_sc_tools_with_encoding(AV1_COMP *cpi, const int q_orig) {
       cpi->sf.part_sf.always_this_block_size;
 
   // Setup necessary params for encoding, including frame source, etc.
-  {
-    aom_clear_system_state();
+  aom_clear_system_state();
 
-    cpi->source =
-        av1_scale_if_required(cm, cpi->unscaled_source, &cpi->scaled_source);
-    if (cpi->unscaled_last_source != NULL) {
-      cpi->last_source = av1_scale_if_required(cm, cpi->unscaled_last_source,
-                                               &cpi->scaled_last_source);
-    }
-
-    setup_frame(cpi);
-
-    if (cm->seg.enabled) {
-      if (!cm->seg.update_data && cm->prev_frame) {
-        segfeatures_copy(&cm->seg, &cm->prev_frame->seg);
-        cm->seg.enabled = cm->prev_frame->seg.enabled;
-      } else {
-        av1_calculate_segdata(&cm->seg);
-      }
-    } else {
-      memset(&cm->seg, 0, sizeof(cm->seg));
-    }
-    segfeatures_copy(&cm->cur_frame->seg, &cm->seg);
-    cm->cur_frame->seg.enabled = cm->seg.enabled;
+  cpi->source =
+      av1_scale_if_required(cm, cpi->unscaled_source, &cpi->scaled_source);
+  if (cpi->unscaled_last_source != NULL) {
+    cpi->last_source = av1_scale_if_required(cm, cpi->unscaled_last_source,
+                                             &cpi->scaled_last_source);
   }
+
+  setup_frame(cpi);
+
+  if (cm->seg.enabled) {
+    if (!cm->seg.update_data && cm->prev_frame) {
+      segfeatures_copy(&cm->seg, &cm->prev_frame->seg);
+      cm->seg.enabled = cm->prev_frame->seg.enabled;
+    } else {
+      av1_calculate_segdata(&cm->seg);
+    }
+  } else {
+    memset(&cm->seg, 0, sizeof(cm->seg));
+  }
+  segfeatures_copy(&cm->cur_frame->seg, &cm->seg);
+  cm->cur_frame->seg.enabled = cm->seg.enabled;
 
   // The two encoding passes aim to help determine whether to use screen
   // content tools, with a high q and fixed partition.
@@ -5310,6 +5308,8 @@ static void determine_sc_tools_with_encoding(AV1_COMP *cpi, const int q_orig) {
         allow_intrabc_orig_decision, is_screen_content_type_orig_decision, pass,
         projected_size_pass, psnr);
   }
+
+  av1_hash_table_destroy(&cm->cur_frame->hash_table);
 
   // Set partition speed feature back.
   cpi->sf.part_sf.partition_search_type = partition_search_type_orig;

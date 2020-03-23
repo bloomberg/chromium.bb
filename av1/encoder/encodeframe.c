@@ -5592,9 +5592,6 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
       }
     }
 
-#if CONFIG_DEBUG
-    cm->cur_frame->hash_table.has_content++;
-#endif
     av1_hash_table_create(&cm->cur_frame->hash_table);
     av1_generate_block_2x2_hash_value(cpi->source, block_hash_values[0],
                                       is_block_same[0], &cpi->td.mb);
