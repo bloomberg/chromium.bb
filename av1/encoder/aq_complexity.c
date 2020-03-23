@@ -48,7 +48,7 @@ static int get_aq_c_strength(int q_index, aom_bit_depth_t bit_depth) {
 static bool is_frame_aq_enabled(const AV1_COMP *const cpi) {
   const AV1_COMMON *const cm = &cpi->common;
 
-  return frame_is_intra_only(cm) || cm->error_resilient_mode ||
+  return frame_is_intra_only(cm) || cm->features.error_resilient_mode ||
          cpi->refresh_alt_ref_frame ||
          (cpi->refresh_golden_frame && !cpi->rc.is_src_frame_alt_ref);
 }

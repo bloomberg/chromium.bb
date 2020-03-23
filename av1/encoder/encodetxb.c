@@ -519,8 +519,9 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *const x,
   if (eob == 0) return;
 
   const PLANE_TYPE plane_type = get_plane_type(plane);
-  const TX_TYPE tx_type = av1_get_tx_type(xd, plane_type, blk_row, blk_col,
-                                          tx_size, cm->reduced_tx_set_used);
+  const TX_TYPE tx_type =
+      av1_get_tx_type(xd, plane_type, blk_row, blk_col, tx_size,
+                      cm->features.reduced_tx_set_used);
   // Only y plane's tx_type is transmitted
   if (plane == 0) {
     av1_write_tx_type(cm, xd, tx_type, tx_size, w);
@@ -1891,8 +1892,8 @@ int av1_optimize_txb_new(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
                          levels, iqmatrix);
   }
 
-  const int tx_type_cost =
-      get_tx_type_cost(x, xd, plane, tx_size, tx_type, cm->reduced_tx_set_used);
+  const int tx_type_cost = get_tx_type_cost(x, xd, plane, tx_size, tx_type,
+                                            cm->features.reduced_tx_set_used);
   if (eob == 0)
     accu_rate += skip_cost;
   else
@@ -1912,7 +1913,7 @@ int av1_optimize_txb(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
                      int blk_row, int blk_col, int block, TX_SIZE tx_size,
                      TXB_CTX *txb_ctx, int fast_mode, int *rate_cost) {
   const AV1_COMMON *cm = &cpi->common;
-  const int reduced_tx_set_used = cm->reduced_tx_set_used;
+  const int reduced_tx_set_used = cm->features.reduced_tx_set_used;
   MACROBLOCKD *const xd = &x->e_mbd;
   const PLANE_TYPE plane_type = get_plane_type(plane);
   const TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
@@ -2009,7 +2010,7 @@ static void update_tx_type_count(const AV1_COMP *cpi, const AV1_COMMON *cm,
                                  uint8_t allow_update_cdf) {
   MB_MODE_INFO *mbmi = xd->mi[0];
   int is_inter = is_inter_block(mbmi);
-  const int reduced_tx_set_used = cm->reduced_tx_set_used;
+  const int reduced_tx_set_used = cm->features.reduced_tx_set_used;
   FRAME_CONTEXT *fc = xd->tile_ctx;
 #if !CONFIG_ENTROPY_STATS
   (void)counts;
@@ -2088,8 +2089,9 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   const int block_offset = BLOCK_OFFSET(block);
   tran_low_t *qcoeff = p->qcoeff + block_offset;
   const PLANE_TYPE plane_type = pd->plane_type;
-  const TX_TYPE tx_type = av1_get_tx_type(xd, plane_type, blk_row, blk_col,
-                                          tx_size, cm->reduced_tx_set_used);
+  const TX_TYPE tx_type =
+      av1_get_tx_type(xd, plane_type, blk_row, blk_col, tx_size,
+                      cm->features.reduced_tx_set_used);
   const SCAN_ORDER *const scan_order = get_scan(tx_size, tx_type);
   tran_low_t *tcoeff;
   assert(args->dry_run != DRY_RUN_COSTCOEFFS);

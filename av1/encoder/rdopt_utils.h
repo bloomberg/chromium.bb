@@ -365,7 +365,7 @@ static INLINE int check_txfm_eval(MACROBLOCK *const x, BLOCK_SIZE bsize,
 
 static TX_MODE select_tx_mode(
     const AV1_COMP *cpi, const TX_SIZE_SEARCH_METHOD tx_size_search_method) {
-  if (cpi->common.coded_lossless) return ONLY_4X4;
+  if (cpi->common.features.coded_lossless) return ONLY_4X4;
   if (tx_size_search_method == USE_LARGESTALL) {
     return TX_MODE_LARGEST;
   } else {

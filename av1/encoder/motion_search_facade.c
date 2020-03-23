@@ -192,12 +192,12 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
     }
   }
 
-  if (cpi->common.cur_frame_force_integer_mv) {
+  if (cpi->common.features.cur_frame_force_integer_mv) {
     convert_fullmv_to_mv(&x->best_mv);
   }
 
   const int use_fractional_mv =
-      bestsme < INT_MAX && cpi->common.cur_frame_force_integer_mv == 0;
+      bestsme < INT_MAX && cpi->common.features.cur_frame_force_integer_mv == 0;
   if (use_fractional_mv) {
     const uint8_t *second_pred = NULL;
     const uint8_t *mask = NULL;
@@ -402,10 +402,11 @@ void av1_joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
     // Do sub-pixel compound motion search on the current reference frame.
     if (id) xd->plane[plane].pre[0] = ref_yv12[id];
 
-    if (cpi->common.cur_frame_force_integer_mv) {
+    if (cpi->common.features.cur_frame_force_integer_mv) {
       convert_fullmv_to_mv(best_int_mv);
     }
-    if (bestsme < INT_MAX && cpi->common.cur_frame_force_integer_mv == 0) {
+    if (bestsme < INT_MAX &&
+        cpi->common.features.cur_frame_force_integer_mv == 0) {
       int dis; /* TODO: use dis in distortion calculation later. */
       unsigned int sse;
       SUBPEL_MOTION_SEARCH_PARAMS ms_params;
@@ -518,11 +519,11 @@ void av1_compound_single_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
     }
   }
 
-  if (cpi->common.cur_frame_force_integer_mv) {
+  if (cpi->common.features.cur_frame_force_integer_mv) {
     convert_fullmv_to_mv(best_int_mv);
   }
   const int use_fractional_mv =
-      bestsme < INT_MAX && cpi->common.cur_frame_force_integer_mv == 0;
+      bestsme < INT_MAX && cpi->common.features.cur_frame_force_integer_mv == 0;
   if (use_fractional_mv) {
     int dis; /* TODO: use dis in distortion calculation later. */
     unsigned int sse;
@@ -715,7 +716,8 @@ void av1_simple_motion_search(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
   x->mv_limits = tmp_mv_limits;
 
   const int use_subpel_search =
-      var < INT_MAX && !cpi->common.cur_frame_force_integer_mv && use_subpixel;
+      var < INT_MAX && !cpi->common.features.cur_frame_force_integer_mv &&
+      use_subpixel;
   if (scaled_ref_frame) {
     xd->plane[AOM_PLANE_Y].pre[ref_idx] = backup_yv12;
   }

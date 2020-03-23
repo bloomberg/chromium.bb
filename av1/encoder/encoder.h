@@ -1318,7 +1318,7 @@ static INLINE int frame_is_kf_gf_arf(const AV1_COMP *cpi) {
 
 // TODO(huisu@google.com, youzhou@microsoft.com): enable hash-me for HBD.
 static INLINE int av1_use_hash_me(const AV1_COMP *const cpi) {
-  return (cpi->common.allow_screen_content_tools &&
+  return (cpi->common.features.allow_screen_content_tools &&
           frame_is_intra_only(&cpi->common));
 }
 
@@ -1486,7 +1486,7 @@ static INLINE int av1_frame_scaled(const AV1_COMMON *cm) {
 // frame. An exception can be made for a forward keyframe since it has no
 // previous dependencies.
 static INLINE int encode_show_existing_frame(const AV1_COMMON *cm) {
-  return cm->show_existing_frame && (!cm->error_resilient_mode ||
+  return cm->show_existing_frame && (!cm->features.error_resilient_mode ||
                                      cm->current_frame.frame_type == KEY_FRAME);
 }
 

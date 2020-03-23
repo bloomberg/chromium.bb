@@ -1031,8 +1031,8 @@ static INLINE int clamp_and_check_mv(int_mv *out_mv, int_mv in_mv,
                                      const MACROBLOCK *x) {
   const MACROBLOCKD *const xd = &x->e_mbd;
   *out_mv = in_mv;
-  lower_mv_precision(&out_mv->as_mv, cm->allow_high_precision_mv,
-                     cm->cur_frame_force_integer_mv);
+  lower_mv_precision(&out_mv->as_mv, cm->features.allow_high_precision_mv,
+                     cm->features.cur_frame_force_integer_mv);
   clamp_mv2(&out_mv->as_mv, xd);
   return av1_is_fullmv_in_range(&x->mv_limits,
                                 get_fullmv_from_mv(&out_mv->as_mv));
@@ -1252,8 +1252,8 @@ static int64_t motion_mode_rd(
   mbmi->num_proj_ref = 1;  // assume num_proj_ref >=1
   MOTION_MODE last_motion_mode_allowed = SIMPLE_TRANSLATION;
   if (cm->switchable_motion_mode) {
-    last_motion_mode_allowed = motion_mode_allowed(xd->global_motion, xd, mbmi,
-                                                   cm->allow_warped_motion);
+    last_motion_mode_allowed = motion_mode_allowed(
+        xd->global_motion, xd, mbmi, cm->features.allow_warped_motion);
   }
 
   if (last_motion_mode_allowed == WARPED_CAUSAL) {
@@ -4791,7 +4791,8 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   // Only try palette mode when the best mode so far is an intra mode.
   const int try_palette =
       cpi->oxcf.enable_palette &&
-      av1_allow_palette(cm->allow_screen_content_tools, mbmi->sb_type) &&
+      av1_allow_palette(cm->features.allow_screen_content_tools,
+                        mbmi->sb_type) &&
       !is_inter_mode(search_state.best_mbmode.mode);
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
   RD_STATS this_rd_cost;
@@ -4951,8 +4952,8 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
   mbmi->ref_frame[1] = NONE_FRAME;
   mbmi->mv[0].as_int =
       gm_get_motion_vector(&cm->global_motion[mbmi->ref_frame[0]],
-                           cm->allow_high_precision_mv, bsize, mi_col, mi_row,
-                           cm->cur_frame_force_integer_mv)
+                           cm->features.allow_high_precision_mv, bsize, mi_col,
+                           mi_row, cm->features.cur_frame_force_integer_mv)
           .as_int;
   mbmi->tx_size = max_txsize_lookup[bsize];
   x->force_skip = 1;

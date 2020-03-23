@@ -319,6 +319,23 @@ typedef struct {
   int frame_refs_short_signaling;
 } CurrentFrame;
 
+// Struct containing some boolean flags indicating whether some features are
+// allowed/used or not.
+typedef struct {
+  uint8_t disable_cdf_update;
+  int allow_high_precision_mv;
+  uint8_t cur_frame_force_integer_mv;  // 0 the default in AOM, 1 only integer
+  uint8_t allow_screen_content_tools;
+  int allow_intrabc;
+  int allow_warped_motion;
+  // Whether to use previous frames' motion vectors for prediction.
+  int allow_ref_frame_mvs;
+  int coded_lossless;  // frame is fully lossless at the coded resolution.
+  int all_lossless;    // frame is fully lossless at the upscaled resolution.
+  int reduced_tx_set_used;
+  int error_resilient_mode;
+} FeatureFlags;
+
 typedef struct AV1Common {
   // Information about the current frame that is being coded.
   CurrentFrame current_frame;
@@ -426,13 +443,8 @@ typedef struct AV1Common {
   // as signaled in the bitstream.
   int show_existing_frame;
 
-  uint8_t disable_cdf_update;
-  int allow_high_precision_mv;
-  uint8_t cur_frame_force_integer_mv;  // 0 the default in AOM, 1 only integer
-
-  uint8_t allow_screen_content_tools;
-  int allow_intrabc;
-  int allow_warped_motion;
+  // Whether some features are allowed or not.
+  FeatureFlags features;
 
   // MBs, mb_rows/cols is in 16-pixel units; mi_rows/cols is in
   // MB_MODE_INFO (4-pixel) units.
@@ -499,9 +511,6 @@ typedef struct AV1Common {
   // area will be NULL.
   MB_MODE_INFO **mi_grid_base;
 
-  // Whether to use previous frames' motion vectors for prediction.
-  int allow_ref_frame_mvs;
-
   uint8_t *last_frame_seg_map;
 
   InterpFilter interp_filter;
@@ -526,16 +535,10 @@ typedef struct AV1Common {
 
   struct loopfilter lf;
   struct segmentation seg;
-  int coded_lossless;  // frame is fully lossless at the coded resolution.
-  int all_lossless;    // frame is fully lossless at the upscaled resolution.
-
-  int reduced_tx_set_used;
 
   FRAME_CONTEXT *fc; /* this frame entropy */
   FRAME_CONTEXT *default_frame_context;
   int primary_ref_frame;
-
-  int error_resilient_mode;
 
   int tile_cols, tile_rows;
 
@@ -742,7 +745,7 @@ static INLINE RefCntBuffer *get_primary_ref_frame_buf(
 
 // Returns 1 if this frame might allow mvs from some reference frame.
 static INLINE int frame_might_allow_ref_frame_mvs(const AV1_COMMON *cm) {
-  return !cm->error_resilient_mode &&
+  return !cm->features.error_resilient_mode &&
          cm->seq_params.order_hint_info.enable_ref_frame_mvs &&
          cm->seq_params.order_hint_info.enable_order_hint &&
          !frame_is_intra_only(cm);
@@ -750,7 +753,7 @@ static INLINE int frame_might_allow_ref_frame_mvs(const AV1_COMMON *cm) {
 
 // Returns 1 if this frame might use warped_motion
 static INLINE int frame_might_allow_warped_motion(const AV1_COMMON *cm) {
-  return !cm->error_resilient_mode && !frame_is_intra_only(cm) &&
+  return !cm->features.error_resilient_mode && !frame_is_intra_only(cm) &&
          cm->seq_params.enable_warped_motion;
 }
 

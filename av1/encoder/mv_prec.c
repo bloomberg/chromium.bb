@@ -65,7 +65,7 @@ static AOM_INLINE int keep_one_comp_stat(MV_STATS *mv_stats, int comp_val,
   const int int_part = offset >> 3;         // int mv data
   const int frac_part = (offset >> 1) & 3;  // fractional mv data
   const int high_part = offset & 1;         // high precision mv data
-  const int use_hp = cpi->common.allow_high_precision_mv;
+  const int use_hp = cpi->common.features.allow_high_precision_mv;
   int r_idx = 0;
 
   const MACROBLOCK *const x = &cpi->td.mb;
@@ -128,7 +128,7 @@ static AOM_INLINE void keep_one_mv_stat(MV_STATS *mv_stats, const MV *ref_mv,
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   nmv_context *nmvc = &ec_ctx->nmvc;
   aom_cdf_prob *joint_cdf = nmvc->joints_cdf;
-  const int use_hp = cpi->common.allow_high_precision_mv;
+  const int use_hp = cpi->common.features.allow_high_precision_mv;
 
   const MV diff = { cur_mv->row - ref_mv->row, cur_mv->col - ref_mv->col };
   const int mv_joint = av1_get_mv_joint(&diff);
@@ -421,5 +421,5 @@ void av1_pick_and_set_high_precision_mv(AV1_COMP *cpi, int qindex) {
 #endif  // !CONFIG_REALTIME_ONLY
 
   av1_set_high_precision_mv(cpi, use_hp,
-                            cpi->common.cur_frame_force_integer_mv);
+                            cpi->common.features.cur_frame_force_integer_mv);
 }

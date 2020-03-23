@@ -1114,7 +1114,7 @@ static INLINE void recon_intra(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 
     inverse_transform_block_facade(xd, plane, block, blk_row, blk_col,
                                    x->plane[plane].eobs[block],
-                                   cm->reduced_tx_set_used);
+                                   cm->features.reduced_tx_set_used);
 
     // This may happen because of hash collision. The eob stored in the hash
     // table is non-zero, but the real eob is zero. We need to make sure tx_type
@@ -1222,10 +1222,10 @@ static INLINE int64_t dist_block_px_domain(const AV1_COMP *cpi, MACROBLOCK *x,
 
   const PLANE_TYPE plane_type = get_plane_type(plane);
   TX_TYPE tx_type = av1_get_tx_type(xd, plane_type, blk_row, blk_col, tx_size,
-                                    cpi->common.reduced_tx_set_used);
+                                    cpi->common.features.reduced_tx_set_used);
   av1_inverse_transform_block(xd, dqcoeff, plane, tx_type, tx_size, recon,
                               MAX_TX_SIZE, eob,
-                              cpi->common.reduced_tx_set_used);
+                              cpi->common.features.reduced_tx_set_used);
 
   return 16 * pixel_dist(cpi, x, plane, src, src_stride, recon, MAX_TX_SIZE,
                          blk_row, blk_col, plane_bsize, tx_bsize);
@@ -1282,7 +1282,7 @@ static INLINE int is_intra_hash_match(
       xd->tx_type_map[tx_type_map_idx] = (*intra_txb_rd_info)->tx_type;
       const TX_TYPE ref_tx_type =
           av1_get_tx_type(xd, get_plane_type(plane), blk_row, blk_col, tx_size,
-                          cpi->common.reduced_tx_set_used);
+                          cpi->common.features.reduced_tx_set_used);
       return (ref_tx_type == (*intra_txb_rd_info)->tx_type);
     }
   }
@@ -1932,15 +1932,15 @@ get_tx_mask(const AV1_COMP *cpi, MACROBLOCK *x, int plane, int block,
     if (plane == 0) txk_allowed = DCT_DCT;
   }
 
-  const TxSetType tx_set_type =
-      av1_get_ext_tx_set_type(tx_size, is_inter, cm->reduced_tx_set_used);
+  const TxSetType tx_set_type = av1_get_ext_tx_set_type(
+      tx_size, is_inter, cm->features.reduced_tx_set_used);
 
   TX_TYPE uv_tx_type = DCT_DCT;
   if (plane) {
     // tx_type of PLANE_TYPE_UV should be the same as PLANE_TYPE_Y
     uv_tx_type = txk_allowed =
         av1_get_tx_type(xd, get_plane_type(plane), blk_row, blk_col, tx_size,
-                        cm->reduced_tx_set_used);
+                        cm->features.reduced_tx_set_used);
   }
   PREDICTION_MODE intra_dir =
       mbmi->filter_intra_mode_info.use_filter_intra
@@ -1999,16 +1999,17 @@ get_tx_mask(const AV1_COMP *cpi, MACROBLOCK *x, int plane, int block,
       int pf = prune_factors[x->prune_mode];
       int mf = mul_factors[x->prune_mode];
       if (num_allowed <= 7) {
-        const uint16_t prune = prune_txk_type(
-            cpi, x, plane, block, tx_size, blk_row, blk_col, plane_bsize,
-            txk_map, allowed_tx_mask, pf, txb_ctx, cm->reduced_tx_set_used);
+        const uint16_t prune =
+            prune_txk_type(cpi, x, plane, block, tx_size, blk_row, blk_col,
+                           plane_bsize, txk_map, allowed_tx_mask, pf, txb_ctx,
+                           cm->features.reduced_tx_set_used);
         allowed_tx_mask &= (~prune);
       } else {
         const int num_sel = (num_allowed * mf + 50) / 100;
         const uint16_t prune = prune_txk_type_separ(
             cpi, x, plane, block, tx_size, blk_row, blk_col, plane_bsize,
-            txk_map, allowed_tx_mask, pf, txb_ctx, cm->reduced_tx_set_used,
-            ref_best_rd, num_sel);
+            txk_map, allowed_tx_mask, pf, txb_ctx,
+            cm->features.reduced_tx_set_used, ref_best_rd, num_sel);
 
         allowed_tx_mask &= (~prune);
       }
@@ -2225,9 +2226,9 @@ static void search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       av1_optimize_b(cpi, x, plane, block, tx_size, tx_type, txb_ctx,
                      cpi->sf.rd_sf.trellis_eob_fast, &rate_cost);
     } else {
-      rate_cost =
-          av1_cost_coeffs(x, plane, block, tx_size, tx_type, txb_ctx,
-                          use_fast_coef_costing, cm->reduced_tx_set_used);
+      rate_cost = av1_cost_coeffs(x, plane, block, tx_size, tx_type, txb_ctx,
+                                  use_fast_coef_costing,
+                                  cm->features.reduced_tx_set_used);
     }
 
     // If rd cost based on coeff rate is more than best_rd, skip the calculation
@@ -2403,7 +2404,7 @@ static AOM_INLINE void tx_type_rd(const AV1_COMP *cpi, MACROBLOCK *x,
     if (plane == 0) xd->tx_type_map[tx_type_map_idx] = rd_info_array->tx_type;
     const TX_TYPE ref_tx_type =
         av1_get_tx_type(&x->e_mbd, get_plane_type(plane), blk_row, blk_col,
-                        tx_size, cpi->common.reduced_tx_set_used);
+                        tx_size, cpi->common.features.reduced_tx_set_used);
     if (ref_tx_type == rd_info_array->tx_type) {
       rd_stats->rate += rd_info_array->rate;
       rd_stats->dist += rd_info_array->dist;
@@ -3234,7 +3235,7 @@ void av1_pick_tx_size_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   // context and terminate early.
   int64_t dist;
   if (x->predict_skip_level &&
-      predict_skip_flag(x, bsize, &dist, cm->reduced_tx_set_used)) {
+      predict_skip_flag(x, bsize, &dist, cm->features.reduced_tx_set_used)) {
     set_skip_flag(x, rd_stats, bsize, dist);
     // Save the RD search results into tx_rd_record.
     if (is_mb_rd_hash_enabled)
@@ -3317,7 +3318,8 @@ void av1_super_block_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   if (x->predict_skip_level && is_inter &&
       (!xd->lossless[xd->mi[0]->segment_id]) &&
-      predict_skip_flag(x, bs, &dist, cpi->common.reduced_tx_set_used)) {
+      predict_skip_flag(x, bs, &dist,
+                        cpi->common.features.reduced_tx_set_used)) {
     // Populate rdstats as per skip decision
     set_skip_flag(x, rd_stats, bs, dist);
     // Save the RD search results into tx_rd_record.

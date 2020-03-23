@@ -316,7 +316,7 @@ void av1_setup_xform(const AV1_COMMON *cm, MACROBLOCK *x, TX_SIZE tx_size,
   txfm_param->tx_size = tx_size;
   txfm_param->lossless = xd->lossless[mbmi->segment_id];
   txfm_param->tx_set_type = av1_get_ext_tx_set_type(
-      tx_size, is_inter_block(mbmi), cm->reduced_tx_set_used);
+      tx_size, is_inter_block(mbmi), cm->features.reduced_tx_set_used);
 
   txfm_param->bd = xd->bd;
   txfm_param->is_hbd = is_cur_buf_hbd(xd);
@@ -383,7 +383,7 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   TX_TYPE tx_type = DCT_DCT;
   if (!is_blk_skip(x, plane, blk_row * bw + blk_col) && !mbmi->skip_mode) {
     tx_type = av1_get_tx_type(xd, pd->plane_type, blk_row, blk_col, tx_size,
-                              cm->reduced_tx_set_used);
+                              cm->features.reduced_tx_set_used);
     TxfmParam txfm_param;
     QUANT_PARAM quant_param;
     int use_trellis = (args->enable_optimize_b != NO_TRELLIS_OPT);
@@ -427,7 +427,7 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
     *(args->skip) = 0;
     av1_inverse_transform_block(xd, dqcoeff, plane, tx_type, tx_size, dst,
                                 pd->dst.stride, p->eobs[block],
-                                cm->reduced_tx_set_used);
+                                cm->features.reduced_tx_set_used);
   }
 
   // TODO(debargha, jingning): Temporarily disable txk_type check for eob=0
@@ -715,7 +715,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
     const ENTROPY_CONTEXT *a = &args->ta[blk_col];
     const ENTROPY_CONTEXT *l = &args->tl[blk_row];
     tx_type = av1_get_tx_type(xd, plane_type, blk_row, blk_col, tx_size,
-                              cm->reduced_tx_set_used);
+                              cm->features.reduced_tx_set_used);
     TxfmParam txfm_param;
     QUANT_PARAM quant_param;
     int use_trellis = args->enable_optimize_b != NO_TRELLIS_OPT;
@@ -762,7 +762,8 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
 
   if (*eob) {
     av1_inverse_transform_block(xd, dqcoeff, plane, tx_type, tx_size, dst,
-                                dst_stride, *eob, cm->reduced_tx_set_used);
+                                dst_stride, *eob,
+                                cm->features.reduced_tx_set_used);
   }
 
   // TODO(jingning): Temporarily disable txk_type check for eob=0 case.

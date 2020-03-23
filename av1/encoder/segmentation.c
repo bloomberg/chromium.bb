@@ -231,7 +231,7 @@ void av1_choose_segmap_coding_method(AV1_COMMON *cm, MACROBLOCKD *xd) {
 
   // Now choose which coding method to use.
   if (t_pred_cost < no_pred_cost) {
-    assert(!cm->error_resilient_mode);
+    assert(!cm->features.error_resilient_mode);
     seg->temporal_update = 1;
   } else {
     seg->temporal_update = 0;

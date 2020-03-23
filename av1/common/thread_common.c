@@ -909,7 +909,7 @@ void av1_loop_restoration_filter_frame_mt(YV12_BUFFER_CONFIG *frame,
                                           AV1_COMMON *cm, int optimized_lr,
                                           AVxWorker *workers, int num_workers,
                                           AV1LrSync *lr_sync, void *lr_ctxt) {
-  assert(!cm->all_lossless);
+  assert(!cm->features.all_lossless);
 
   const int num_planes = av1_num_planes(cm);
 

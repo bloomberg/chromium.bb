@@ -54,7 +54,7 @@ void av1_make_default_subpel_ms_params(
     int mask_stride, int invert_mask, int do_reset_fractional_mv) {
   const AV1_COMMON *cm = &cpi->common;
   // High level params
-  ms_params->allow_hp = cm->allow_high_precision_mv;
+  ms_params->allow_hp = cm->features.allow_high_precision_mv;
   ms_params->forced_stop = cpi->sf.mv_sf.subpel_force_stop;
   ms_params->iters_per_step = cpi->sf.mv_sf.subpel_iters_per_step;
   ms_params->cost_list = cond_cost_list_const(cpi, cost_list);
@@ -2888,7 +2888,7 @@ unsigned int av1_refine_warped_mv(const AV1_COMP *cpi, MACROBLOCK *const x,
   unsigned int bestmse;
   SubpelMvLimits mv_limits;
 
-  const int start = cm->allow_high_precision_mv ? 0 : 4;
+  const int start = cm->features.allow_high_precision_mv ? 0 : 4;
   int ite;
 
   av1_set_subpel_mv_search_range(&mv_limits, &x->mv_limits, &ref_mv.as_mv);

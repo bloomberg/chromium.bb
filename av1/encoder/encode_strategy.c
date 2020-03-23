@@ -121,9 +121,15 @@ void av1_configure_buffer_updates(AV1_COMP *const cpi,
 
 static void set_additional_frame_flags(const AV1_COMMON *const cm,
                                        unsigned int *const frame_flags) {
-  if (frame_is_intra_only(cm)) *frame_flags |= FRAMEFLAGS_INTRAONLY;
-  if (frame_is_sframe(cm)) *frame_flags |= FRAMEFLAGS_SWITCH;
-  if (cm->error_resilient_mode) *frame_flags |= FRAMEFLAGS_ERROR_RESILIENT;
+  if (frame_is_intra_only(cm)) {
+    *frame_flags |= FRAMEFLAGS_INTRAONLY;
+  }
+  if (frame_is_sframe(cm)) {
+    *frame_flags |= FRAMEFLAGS_SWITCH;
+  }
+  if (cm->features.error_resilient_mode) {
+    *frame_flags |= FRAMEFLAGS_ERROR_RESILIENT;
+  }
 }
 
 static INLINE void update_keyframe_counters(AV1_COMP *cpi) {
@@ -199,7 +205,7 @@ static void set_ext_overrides(AV1_COMP *const cpi,
     cm->refresh_frame_context = cpi->ext_refresh_frame_context;
     cpi->ext_refresh_frame_context_pending = 0;
   }
-  cm->allow_ref_frame_mvs = cpi->ext_use_ref_frame_mvs;
+  cm->features.allow_ref_frame_mvs = cpi->ext_use_ref_frame_mvs;
 
   frame_params->error_resilient_mode = cpi->ext_use_error_resilient;
   // A keyframe is already error resilient and keyframes with
@@ -270,7 +276,7 @@ static void update_fb_of_context_type(
   const int current_frame_ref_type =
       get_current_frame_ref_type(cpi, frame_params);
 
-  if (frame_is_intra_only(cm) || cm->error_resilient_mode ||
+  if (frame_is_intra_only(cm) || cm->features.error_resilient_mode ||
       cpi->ext_use_primary_ref_none) {
     for (int i = 0; i < REF_FRAMES; i++) {
       fb_of_context_type[i] = -1;

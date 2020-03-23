@@ -179,7 +179,7 @@ void av1_encode_mv(AV1_COMP *cpi, aom_writer *w, const MV *mv, const MV *ref,
   const MV_JOINT_TYPE j = av1_get_mv_joint(&diff);
   // If the mv_diff is zero, then we should have used near or nearest instead.
   assert(j != MV_JOINT_ZERO);
-  if (cpi->common.cur_frame_force_integer_mv) {
+  if (cpi->common.features.cur_frame_force_integer_mv) {
     usehp = MV_SUBPEL_NONE;
   }
   aom_write_symbol(w, j, mvctx->joints_cdf, MV_JOINTS);

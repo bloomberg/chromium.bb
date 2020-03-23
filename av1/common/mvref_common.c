@@ -348,12 +348,14 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   const int cur_offset_0 = get_relative_dist(&cm->seq_params.order_hint_info,
                                              cur_frame_index, frame0_index);
   int idx;
+  const int allow_high_precision_mv = cm->features.allow_high_precision_mv;
+  const int force_integer_mv = cm->features.cur_frame_force_integer_mv;
 
   int_mv this_refmv;
   get_mv_projection(&this_refmv.as_mv, prev_frame_mvs->mfmv0.as_mv,
                     cur_offset_0, prev_frame_mvs->ref_frame_offset);
-  lower_mv_precision(&this_refmv.as_mv, cm->allow_high_precision_mv,
-                     cm->cur_frame_force_integer_mv);
+  lower_mv_precision(&this_refmv.as_mv, allow_high_precision_mv,
+                     force_integer_mv);
 
   if (rf[1] == NONE_FRAME) {
     if (blk_row == 0 && blk_col == 0) {
@@ -381,8 +383,8 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     int_mv comp_refmv;
     get_mv_projection(&comp_refmv.as_mv, prev_frame_mvs->mfmv0.as_mv,
                       cur_offset_1, prev_frame_mvs->ref_frame_offset);
-    lower_mv_precision(&comp_refmv.as_mv, cm->allow_high_precision_mv,
-                       cm->cur_frame_force_integer_mv);
+    lower_mv_precision(&comp_refmv.as_mv, allow_high_precision_mv,
+                       force_integer_mv);
 
     if (blk_row == 0 && blk_col == 0) {
       if (abs(this_refmv.as_mv.row - gm_mv_candidates[0].as_mv.row) >= 16 ||
@@ -535,7 +537,7 @@ static AOM_INLINE void setup_ref_mv_list(
   for (int idx = 0; idx < nearest_refmv_count; ++idx)
     ref_mv_weight[idx] += REF_CAT_LEVEL;
 
-  if (cm->allow_ref_frame_mvs) {
+  if (cm->features.allow_ref_frame_mvs) {
     int is_available = 0;
     const int voffset = AOMMAX(mi_size_high[BLOCK_8X8], xd->n4_h);
     const int hoffset = AOMMAX(mi_size_wide[BLOCK_8X8], xd->n4_w);
@@ -794,21 +796,23 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     }
   } else {
     const BLOCK_SIZE bsize = mi->sb_type;
+    const int allow_high_precision_mv = cm->features.allow_high_precision_mv;
+    const int force_integer_mv = cm->features.cur_frame_force_integer_mv;
     if (ref_frame < REF_FRAMES) {
-      gm_mv[0] = gm_get_motion_vector(
-          &cm->global_motion[ref_frame], cm->allow_high_precision_mv, bsize,
-          mi_col, mi_row, cm->cur_frame_force_integer_mv);
+      gm_mv[0] = gm_get_motion_vector(&cm->global_motion[ref_frame],
+                                      allow_high_precision_mv, bsize, mi_col,
+                                      mi_row, force_integer_mv);
       gm_mv[1].as_int = 0;
       if (global_mvs != NULL) global_mvs[ref_frame] = gm_mv[0];
     } else {
       MV_REFERENCE_FRAME rf[2];
       av1_set_ref_frame(rf, ref_frame);
-      gm_mv[0] = gm_get_motion_vector(
-          &cm->global_motion[rf[0]], cm->allow_high_precision_mv, bsize, mi_col,
-          mi_row, cm->cur_frame_force_integer_mv);
-      gm_mv[1] = gm_get_motion_vector(
-          &cm->global_motion[rf[1]], cm->allow_high_precision_mv, bsize, mi_col,
-          mi_row, cm->cur_frame_force_integer_mv);
+      gm_mv[0] = gm_get_motion_vector(&cm->global_motion[rf[0]],
+                                      allow_high_precision_mv, bsize, mi_col,
+                                      mi_row, force_integer_mv);
+      gm_mv[1] = gm_get_motion_vector(&cm->global_motion[rf[1]],
+                                      allow_high_precision_mv, bsize, mi_col,
+                                      mi_row, force_integer_mv);
     }
   }
 

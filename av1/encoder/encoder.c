@@ -603,7 +603,7 @@ static void setup_frame(AV1_COMP *cpi) {
   // other inter-frames the encoder currently uses only two contexts;
   // context 1 for ALTREF frames and context 0 for the others.
 
-  if (frame_is_intra_only(cm) || cm->error_resilient_mode ||
+  if (frame_is_intra_only(cm) || cm->features.error_resilient_mode ||
       cpi->ext_use_primary_ref_none) {
     av1_setup_past_independence(cm);
   }
@@ -3933,17 +3933,18 @@ static void set_mv_search_params(AV1_COMP *cpi) {
   }
 }
 
-static void set_screen_content_options(AV1_COMP *cpi) {
-  AV1_COMMON *cm = &cpi->common;
+static void set_screen_content_options(const AV1_COMP *const cpi,
+                                       FeatureFlags *const features) {
+  const AV1_COMMON *const cm = &cpi->common;
 
   if (cm->seq_params.force_screen_content_tools != 2) {
-    cm->allow_screen_content_tools = cm->allow_intrabc =
+    features->allow_screen_content_tools = features->allow_intrabc =
         cm->seq_params.force_screen_content_tools;
     return;
   }
 
   if (cpi->oxcf.content == AOM_CONTENT_SCREEN) {
-    cm->allow_screen_content_tools = cm->allow_intrabc = 1;
+    features->allow_screen_content_tools = features->allow_intrabc = 1;
     return;
   }
 
@@ -3990,24 +3991,25 @@ static void set_screen_content_options(AV1_COMP *cpi) {
   }
 
   // The threshold values are selected experimentally.
-  cm->allow_screen_content_tools =
+  features->allow_screen_content_tools =
       counts_1 * blk_h * blk_w * 10 > width * height;
   // IntraBC would force loop filters off, so we use more strict rules that also
   // requires that the block has high variance.
-  cm->allow_intrabc = cm->allow_screen_content_tools &&
-                      counts_2 * blk_h * blk_w * 12 > width * height;
+  features->allow_intrabc = features->allow_screen_content_tools &&
+                            counts_2 * blk_h * blk_w * 12 > width * height;
 }
 
 static void set_size_independent_vars(AV1_COMP *cpi) {
   int i;
-  AV1_COMMON *cm = &cpi->common;
+  AV1_COMMON *const cm = &cpi->common;
+  FeatureFlags *const features = &cm->features;
   for (i = LAST_FRAME; i <= ALTREF_FRAME; ++i) {
     cm->global_motion[i] = default_warp_params;
   }
   cpi->global_motion_search_done = 0;
 
-  if (frame_is_intra_only(cm)) set_screen_content_options(cpi);
-  cpi->is_screen_content_type = (cm->allow_screen_content_tools != 0);
+  if (frame_is_intra_only(cm)) set_screen_content_options(cpi, features);
+  cpi->is_screen_content_type = (features->allow_screen_content_tools != 0);
 
   av1_set_speed_features_framesize_independent(cpi, cpi->speed);
   av1_set_rd_speed_thresholds(cpi);
@@ -4314,7 +4316,8 @@ void av1_set_frame_size(AV1_COMP *cpi, int width, int height) {
     // There has been a change in the encoded frame size
     av1_set_size_literal(cpi, width, height);
     // Recalculate 'all_lossless' in case super-resolution was (un)selected.
-    cm->all_lossless = cm->coded_lossless && !av1_superres_scaled(cm);
+    cm->features.all_lossless =
+        cm->features.coded_lossless && !av1_superres_scaled(cm);
   }
   set_mv_search_params(cpi);
 
@@ -4510,7 +4513,7 @@ static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
     case SUPERRES_RANDOM: new_denom = lcg_rand16(&seed) % 9 + 8; break;
     case SUPERRES_QTHRESH: {
       // Do not use superres when screen content tools are used.
-      if (cpi->common.allow_screen_content_tools) break;
+      if (cpi->common.features.allow_screen_content_tools) break;
       if (oxcf->rc_mode == AOM_VBR || oxcf->rc_mode == AOM_CQ)
         av1_set_target_rate(cpi, cpi->oxcf.width, cpi->oxcf.height);
 
@@ -4532,7 +4535,7 @@ static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
     }
     case SUPERRES_AUTO: {
       // Do not use superres when screen content tools are used.
-      if (cpi->common.allow_screen_content_tools) break;
+      if (cpi->common.features.allow_screen_content_tools) break;
       if (oxcf->rc_mode == AOM_VBR || oxcf->rc_mode == AOM_CQ)
         av1_set_target_rate(cpi, cpi->oxcf.width, cpi->oxcf.height);
 
@@ -4691,7 +4694,7 @@ static void superres_post_encode(AV1_COMP *cpi) {
 
   assert(cpi->oxcf.enable_superres);
   assert(!is_lossless_requested(&cpi->oxcf));
-  assert(!cm->all_lossless);
+  assert(!cm->features.all_lossless);
 
   av1_superres_upscale(cm, NULL);
 
@@ -4782,13 +4785,15 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
   MACROBLOCKD *xd = &cpi->td.mb.e_mbd;
 
   assert(IMPLIES(is_lossless_requested(&cpi->oxcf),
-                 cm->coded_lossless && cm->all_lossless));
+                 cm->features.coded_lossless && cm->features.all_lossless));
 
-  const int use_loopfilter = !cm->coded_lossless && !cm->large_scale_tile;
-  const int use_cdef = cm->seq_params.enable_cdef && !cm->coded_lossless &&
-                       !cm->large_scale_tile;
+  const int use_loopfilter =
+      !cm->features.coded_lossless && !cm->large_scale_tile;
+  const int use_cdef = cm->seq_params.enable_cdef &&
+                       !cm->features.coded_lossless && !cm->large_scale_tile;
   const int use_restoration = cm->seq_params.enable_restoration &&
-                              !cm->all_lossless && !cm->large_scale_tile;
+                              !cm->features.all_lossless &&
+                              !cm->large_scale_tile;
 
   struct loopfilter *lf = &cm->lf;
 
@@ -5169,6 +5174,7 @@ static void screen_content_tools_determination(
     const int is_screen_content_type_orig_decision, const int pass,
     int *projected_size_pass, PSNR_STATS *psnr) {
   AV1_COMMON *const cm = &cpi->common;
+  FeatureFlags *const features = &cm->features;
   projected_size_pass[pass] = cpi->rc.projected_frame_size;
 #if CONFIG_AV1_HIGHBITDEPTH
   const uint32_t in_bit_depth = cpi->oxcf.input_bit_depth;
@@ -5184,13 +5190,14 @@ static void screen_content_tools_determination(
   const int is_sc_encoding_much_better = psnr_diff > STRICT_PSNR_DIFF_THRESH;
   if (is_sc_encoding_much_better) {
     // Use screen content tools, if we get coding gain.
-    cm->allow_screen_content_tools = 1;
-    cm->allow_intrabc = cpi->intrabc_used;
+    features->allow_screen_content_tools = 1;
+    features->allow_intrabc = cpi->intrabc_used;
     cpi->is_screen_content_type = 1;
   } else {
     // Use original screen content decision.
-    cm->allow_screen_content_tools = allow_screen_content_tools_orig_decision;
-    cm->allow_intrabc = allow_intrabc_orig_decision;
+    features->allow_screen_content_tools =
+        allow_screen_content_tools_orig_decision;
+    features->allow_intrabc = allow_intrabc_orig_decision;
     cpi->is_screen_content_type = is_screen_content_type_orig_decision;
   }
 }
@@ -5203,8 +5210,8 @@ static void set_encoding_params_for_screen_content(AV1_COMP *cpi,
   if (pass == 0) {
     // In the first pass, encode without screen content tools.
     // Use a high q, and a fixed block size for fast encoding.
-    cm->allow_screen_content_tools = 0;
-    cm->allow_intrabc = 0;
+    cm->features.allow_screen_content_tools = 0;
+    cm->features.allow_intrabc = 0;
     cpi->is_screen_content_type = 0;
     cpi->sf.part_sf.partition_search_type = FIXED_PARTITION;
     cpi->sf.part_sf.always_this_block_size = BLOCK_32X32;
@@ -5213,7 +5220,7 @@ static void set_encoding_params_for_screen_content(AV1_COMP *cpi,
   assert(pass == 1);
   // In the second pass, encode with screen content tools.
   // Use a high q, and a fixed block size for fast encoding.
-  cm->allow_screen_content_tools = 1;
+  cm->features.allow_screen_content_tools = 1;
   // TODO(chengchen): turn intrabc on could lead to data race issue.
   // cm->allow_intrabc = 1;
   cpi->is_screen_content_type = 1;
@@ -5223,8 +5230,8 @@ static void set_encoding_params_for_screen_content(AV1_COMP *cpi,
 }
 
 // Determines whether to use screen content tools for the key frame group.
-// This function modifies "cm->allow_screen_content_tools",
-// "cm->allow_intrabc" and "cpi->is_screen_content_type".
+// This function modifies "cm->features.allow_screen_content_tools",
+// "cm->features.allow_intrabc" and "cpi->is_screen_content_type".
 static void determine_sc_tools_with_encoding(AV1_COMP *cpi, const int q_orig) {
   if (!is_stat_consumption_stage_twopass(cpi)) return;
 
@@ -5234,8 +5241,8 @@ static void determine_sc_tools_with_encoding(AV1_COMP *cpi, const int q_orig) {
   PSNR_STATS psnr[3];
   const int is_key_frame = cm->current_frame.frame_type == KEY_FRAME;
   const int allow_screen_content_tools_orig_decision =
-      cm->allow_screen_content_tools;
-  const int allow_intrabc_orig_decision = cm->allow_intrabc;
+      cm->features.allow_screen_content_tools;
+  const int allow_intrabc_orig_decision = cm->features.allow_intrabc;
   const int is_screen_content_type_orig_decision = cpi->is_screen_content_type;
   // Turn off the encoding trial for forward key frame and superres.
   if (cpi->sf.rt_sf.use_nonrd_pick_mode || cpi->oxcf.fwd_kf_enabled ||
@@ -5486,10 +5493,11 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
 
       // If the precision has changed during different iteration of the loop,
       // then we need to reset the global motion vectors
-      if (loop_count > 0 && cm->allow_high_precision_mv != last_loop_allow_hp) {
+      if (loop_count > 0 &&
+          cm->features.allow_high_precision_mv != last_loop_allow_hp) {
         cpi->global_motion_search_done = 0;
       }
-      last_loop_allow_hp = cm->allow_high_precision_mv;
+      last_loop_allow_hp = cm->features.allow_high_precision_mv;
     }
 
     // transform / motion compensation build reconstruction frame
@@ -5631,7 +5639,7 @@ static int encode_with_recode_loop_and_filter(AV1_COMP *cpi, size_t *size,
   // off.
 
   // Pick the loop filter level for the frame.
-  if (!cm->allow_intrabc) {
+  if (!cm->features.allow_intrabc) {
     loopfilter_frame(cpi, cm);
   } else {
     cm->lf.filter_level[0] = 0;
@@ -6174,6 +6182,7 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   CurrentFrame *const current_frame = &cm->current_frame;
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   struct segmentation *const seg = &cm->seg;
+  FeatureFlags *const features = &cm->features;
 
 #if CONFIG_COLLECT_COMPONENT_TIMING
   start_timing(cpi, encode_frame_to_data_rate_time);
@@ -6185,13 +6194,13 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   cm->large_scale_tile = cpi->oxcf.large_scale_tile;
   cm->single_tile_decoding = cpi->oxcf.single_tile_decoding;
 
-  cm->allow_ref_frame_mvs &= frame_might_allow_ref_frame_mvs(cm);
-  // cm->allow_ref_frame_mvs needs to be written into the frame header while
-  // cm->large_scale_tile is 1, therefore, "cm->large_scale_tile=1" case is
-  // separated from frame_might_allow_ref_frame_mvs().
-  cm->allow_ref_frame_mvs &= !cm->large_scale_tile;
+  features->allow_ref_frame_mvs &= frame_might_allow_ref_frame_mvs(cm);
+  // features->allow_ref_frame_mvs needs to be written into the frame header
+  // while cm->large_scale_tile is 1, therefore, "cm->large_scale_tile=1" case
+  // is separated from frame_might_allow_ref_frame_mvs().
+  features->allow_ref_frame_mvs &= !cm->large_scale_tile;
 
-  cm->allow_warped_motion =
+  features->allow_warped_motion =
       cpi->oxcf.allow_warped_motion && frame_might_allow_warped_motion(cm);
 
   cpi->last_frame_type = current_frame->frame_type;
@@ -6238,21 +6247,22 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 
   // Work out whether to force_integer_mv this frame
   if (!is_stat_generation_stage(cpi) &&
-      cpi->common.allow_screen_content_tools && !frame_is_intra_only(cm)) {
+      cpi->common.features.allow_screen_content_tools &&
+      !frame_is_intra_only(cm)) {
     if (cpi->common.seq_params.force_integer_mv == 2) {
       // Adaptive mode: see what previous frame encoded did
       if (cpi->unscaled_last_source != NULL) {
-        cm->cur_frame_force_integer_mv =
+        features->cur_frame_force_integer_mv =
             is_integer_mv(cpi, cpi->source, cpi->unscaled_last_source);
       } else {
-        cpi->common.cur_frame_force_integer_mv = 0;
+        cpi->common.features.cur_frame_force_integer_mv = 0;
       }
     } else {
-      cpi->common.cur_frame_force_integer_mv =
+      cpi->common.features.cur_frame_force_integer_mv =
           cpi->common.seq_params.force_integer_mv;
     }
   } else {
-    cpi->common.cur_frame_force_integer_mv = 0;
+    cpi->common.features.cur_frame_force_integer_mv = 0;
   }
 
 #if CONFIG_DEBUG
@@ -6343,10 +6353,10 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 
   switch (cpi->oxcf.cdf_update_mode) {
     case 0:  // No CDF update for any frames(4~6% compression loss).
-      cm->disable_cdf_update = 1;
+      features->disable_cdf_update = 1;
       break;
     case 1:  // Enable CDF update for all frames.
-      cm->disable_cdf_update = 0;
+      features->disable_cdf_update = 0;
       break;
     case 2:
       // Strategically determine at which frames to do CDF update.
@@ -6354,7 +6364,7 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
       // compression loss).
       // TODO(huisu@google.com): design schemes for various trade-offs between
       // compression quality and decoding speed.
-      cm->disable_cdf_update =
+      features->disable_cdf_update =
           (frame_is_intra_only(cm) || !cm->show_frame) ? 0 : 1;
       break;
   }
@@ -6488,7 +6498,7 @@ int av1_encode(AV1_COMP *const cpi, uint8_t *const dest,
   cpi->unscaled_last_source = frame_input->last_source;
 
   current_frame->refresh_frame_flags = frame_params->refresh_frame_flags;
-  cm->error_resilient_mode = frame_params->error_resilient_mode;
+  cm->features.error_resilient_mode = frame_params->error_resilient_mode;
   cm->primary_ref_frame = frame_params->primary_ref_frame;
   cm->current_frame.frame_type = frame_params->frame_type;
   cm->show_frame = frame_params->show_frame;

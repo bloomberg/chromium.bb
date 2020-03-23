@@ -598,11 +598,12 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
   if ((!cpi->sf.rt_sf.use_nonrd_pick_mode &&
        cpi->oxcf.mv_cost_upd_freq != COST_UPD_OFF) ||
       frame_is_intra_only(cm) || (cm->current_frame.frame_number & 0x07) == 1)
-    av1_fill_mv_costs(cm->fc, cm->cur_frame_force_integer_mv,
-                      cm->allow_high_precision_mv, x);
+    av1_fill_mv_costs(cm->fc, cm->features.cur_frame_force_integer_mv,
+                      cm->features.allow_high_precision_mv, x);
 
   if (!cpi->sf.rt_sf.use_nonrd_pick_mode && frame_is_intra_only(cm) &&
-      cm->allow_screen_content_tools && !is_stat_generation_stage(cpi)) {
+      cm->features.allow_screen_content_tools &&
+      !is_stat_generation_stage(cpi)) {
     int *dvcost[2] = { &cpi->dv_cost[0][MV_MAX], &cpi->dv_cost[1][MV_MAX] };
     av1_build_nmv_cost_table(cpi->dv_joint_cost, dvcost, &cm->fc->ndvc,
                              MV_SUBPEL_NONE);

@@ -38,8 +38,8 @@ static PREDICTION_MODE read_intra_mode(aom_reader *r, aom_cdf_prob *cdf) {
 
 static void read_cdef(AV1_COMMON *cm, aom_reader *r, MACROBLOCKD *const xd) {
   MB_MODE_INFO *const mbmi = xd->mi[0];
-  if (cm->coded_lossless) return;
-  if (cm->allow_intrabc) {
+  if (cm->features.coded_lossless) return;
+  if (cm->features.allow_intrabc) {
     assert(cm->cdef_info.cdef_bits == 0);
     return;
   }
@@ -210,8 +210,8 @@ static MOTION_MODE read_motion_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
   if (cm->switchable_motion_mode == 0) return SIMPLE_TRANSLATION;
   if (mbmi->skip_mode) return SIMPLE_TRANSLATION;
 
-  const MOTION_MODE last_motion_mode_allowed =
-      motion_mode_allowed(xd->global_motion, xd, mbmi, cm->allow_warped_motion);
+  const MOTION_MODE last_motion_mode_allowed = motion_mode_allowed(
+      xd->global_motion, xd, mbmi, cm->features.allow_warped_motion);
   int motion_mode;
 
   if (last_motion_mode_allowed == SIMPLE_TRANSLATION) return SIMPLE_TRANSLATION;
@@ -544,7 +544,7 @@ static void read_palette_mode_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   const int num_planes = av1_num_planes(cm);
   MB_MODE_INFO *const mbmi = xd->mi[0];
   const BLOCK_SIZE bsize = mbmi->sb_type;
-  assert(av1_allow_palette(cm->allow_screen_content_tools, bsize));
+  assert(av1_allow_palette(cm->features.allow_screen_content_tools, bsize));
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
   const int bsize_ctx = av1_get_palette_bsize_ctx(bsize);
 
@@ -614,11 +614,12 @@ void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd, int blk_row,
   if (qindex == 0) return;
 
   const int inter_block = is_inter_block(mbmi);
-  if (get_ext_tx_types(tx_size, inter_block, cm->reduced_tx_set_used) > 1) {
-    const TxSetType tx_set_type =
-        av1_get_ext_tx_set_type(tx_size, inter_block, cm->reduced_tx_set_used);
+  if (get_ext_tx_types(tx_size, inter_block, cm->features.reduced_tx_set_used) >
+      1) {
+    const TxSetType tx_set_type = av1_get_ext_tx_set_type(
+        tx_size, inter_block, cm->features.reduced_tx_set_used);
     const int eset =
-        get_ext_tx_set(tx_size, inter_block, cm->reduced_tx_set_used);
+        get_ext_tx_set(tx_size, inter_block, cm->features.reduced_tx_set_used);
     // eset == 0 should correspond to a set with only DCT_DCT and
     // there is no need to read the tx_type
     assert(eset != 0);
@@ -808,7 +809,7 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
   }
   xd->cfl.store_y = store_cfl_required(cm, xd);
 
-  if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
+  if (av1_allow_palette(cm->features.allow_screen_content_tools, bsize))
     read_palette_mode_info(cm, xd, r);
 
   read_filter_intra_mode_info(cm, xd, r);
@@ -1070,7 +1071,7 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm,
 
   mbmi->palette_mode_info.palette_size[0] = 0;
   mbmi->palette_mode_info.palette_size[1] = 0;
-  if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
+  if (av1_allow_palette(cm->features.allow_screen_content_tools, bsize))
     read_palette_mode_info(cm, xd, r);
 
   read_filter_intra_mode_info(cm, xd, r);
@@ -1090,7 +1091,8 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   MB_MODE_INFO *mbmi = xd->mi[0];
   BLOCK_SIZE bsize = mbmi->sb_type;
-  if (cm->cur_frame_force_integer_mv) {
+  FeatureFlags *const features = &cm->features;
+  if (features->cur_frame_force_integer_mv) {
     allow_hp = MV_SUBPEL_NONE;
   }
   switch (mode) {
@@ -1108,11 +1110,11 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
       break;
     }
     case GLOBALMV: {
-      mv[0].as_int =
-          gm_get_motion_vector(&cm->global_motion[ref_frame[0]],
-                               cm->allow_high_precision_mv, bsize, xd->mi_col,
-                               xd->mi_row, cm->cur_frame_force_integer_mv)
-              .as_int;
+      mv[0].as_int = gm_get_motion_vector(&cm->global_motion[ref_frame[0]],
+                                          features->allow_high_precision_mv,
+                                          bsize, xd->mi_col, xd->mi_row,
+                                          features->cur_frame_force_integer_mv)
+                         .as_int;
       break;
     }
     case NEW_NEWMV: {
@@ -1165,16 +1167,16 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
     }
     case GLOBAL_GLOBALMV: {
       assert(is_compound);
-      mv[0].as_int =
-          gm_get_motion_vector(&cm->global_motion[ref_frame[0]],
-                               cm->allow_high_precision_mv, bsize, xd->mi_col,
-                               xd->mi_row, cm->cur_frame_force_integer_mv)
-              .as_int;
-      mv[1].as_int =
-          gm_get_motion_vector(&cm->global_motion[ref_frame[1]],
-                               cm->allow_high_precision_mv, bsize, xd->mi_col,
-                               xd->mi_row, cm->cur_frame_force_integer_mv)
-              .as_int;
+      mv[0].as_int = gm_get_motion_vector(&cm->global_motion[ref_frame[0]],
+                                          features->allow_high_precision_mv,
+                                          bsize, xd->mi_col, xd->mi_row,
+                                          features->cur_frame_force_integer_mv)
+                         .as_int;
+      mv[1].as_int = gm_get_motion_vector(&cm->global_motion[ref_frame[1]],
+                                          features->allow_high_precision_mv,
+                                          bsize, xd->mi_col, xd->mi_row,
+                                          features->cur_frame_force_integer_mv)
+                         .as_int;
       break;
     }
     default: { return 0; }
@@ -1242,8 +1244,9 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
                                        MB_MODE_INFO *const mbmi,
                                        aom_reader *r) {
   AV1_COMMON *const cm = &pbi->common;
+  FeatureFlags *const features = &cm->features;
   const BLOCK_SIZE bsize = mbmi->sb_type;
-  const int allow_hp = cm->allow_high_precision_mv;
+  const int allow_hp = features->allow_high_precision_mv;
   int_mv nearestmv[2], nearmv[2];
   int_mv ref_mvs[MODE_CTX_REF_FRAMES][MAX_MV_REF_CANDIDATES] = { { { 0 } } };
   int16_t inter_mode_ctx[MODE_CTX_REF_FRAMES];
@@ -1293,7 +1296,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 
   if (!is_compound && mbmi->mode != GLOBALMV) {
     av1_find_best_ref_mvs(allow_hp, ref_mvs[mbmi->ref_frame[0]], &nearestmv[0],
-                          &nearmv[0], cm->cur_frame_force_integer_mv);
+                          &nearmv[0], features->cur_frame_force_integer_mv);
   }
 
   if (is_compound && mbmi->mode != GLOBAL_GLOBALMV) {
@@ -1303,13 +1306,13 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
     nearmv[0] = xd->ref_mv_stack[ref_frame][ref_mv_idx].this_mv;
     nearmv[1] = xd->ref_mv_stack[ref_frame][ref_mv_idx].comp_mv;
     lower_mv_precision(&nearestmv[0].as_mv, allow_hp,
-                       cm->cur_frame_force_integer_mv);
+                       features->cur_frame_force_integer_mv);
     lower_mv_precision(&nearestmv[1].as_mv, allow_hp,
-                       cm->cur_frame_force_integer_mv);
+                       features->cur_frame_force_integer_mv);
     lower_mv_precision(&nearmv[0].as_mv, allow_hp,
-                       cm->cur_frame_force_integer_mv);
+                       features->cur_frame_force_integer_mv);
     lower_mv_precision(&nearmv[1].as_mv, allow_hp,
-                       cm->cur_frame_force_integer_mv);
+                       features->cur_frame_force_integer_mv);
   } else if (mbmi->ref_mv_idx > 0 && mbmi->mode == NEARMV) {
     nearmv[0] =
         xd->ref_mv_stack[mbmi->ref_frame[0]][1 + mbmi->ref_mv_idx].this_mv;

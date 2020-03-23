@@ -270,6 +270,8 @@ static void set_good_speed_features_framesize_independent(
   const int boosted = frame_is_boosted(cpi);
   const int is_boosted_arf2_bwd_type =
       boosted || gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE;
+  const int allow_screen_content_tools =
+      cm->features.allow_screen_content_tools;
   if (!cpi->oxcf.large_scale_tile) {
     sf->hl_sf.high_precision_mv_usage = LAST_MV_DATA;
   }
@@ -294,7 +296,7 @@ static void set_good_speed_features_framesize_independent(
   sf->inter_sf.prune_mode_search_simple_translation = 1;
   sf->inter_sf.prune_motion_mode_level = 1;
   sf->inter_sf.prune_ref_frame_for_rect_partitions =
-      (boosted || (cm->allow_screen_content_tools))
+      (boosted || (allow_screen_content_tools))
           ? 0
           : (is_boosted_arf2_bwd_type ? 1 : 2);
   sf->inter_sf.prune_wedge_pred_diff_based = 1;
@@ -331,8 +333,7 @@ static void set_good_speed_features_framesize_independent(
     // TODO(Venkat): Clean-up frame type dependency for
     // simple_motion_search_split in partition search function and set the
     // speed feature accordingly
-    sf->part_sf.simple_motion_search_split =
-        cm->allow_screen_content_tools ? 1 : 2;
+    sf->part_sf.simple_motion_search_split = allow_screen_content_tools ? 1 : 2;
 
     sf->mv_sf.use_accurate_subpel_search = USE_4_TAPS;
     sf->mv_sf.exhaustive_searches_thresh <<= 1;
@@ -344,7 +345,7 @@ static void set_good_speed_features_framesize_independent(
     sf->inter_sf.prune_comp_type_by_model_rd = boosted ? 0 : 1;
     sf->inter_sf.prune_motion_mode_level = 2;
     sf->inter_sf.prune_ref_frame_for_rect_partitions =
-        (frame_is_intra_only(&cpi->common) || (cm->allow_screen_content_tools))
+        (frame_is_intra_only(&cpi->common) || (allow_screen_content_tools))
             ? 0
             : (boosted ? 1 : 2);
     sf->inter_sf.reduce_inter_modes = boosted ? 1 : 2;
@@ -414,8 +415,7 @@ static void set_good_speed_features_framesize_independent(
     sf->rd_sf.perform_coeff_opt = is_boosted_arf2_bwd_type ? 2 : 3;
 
     sf->lpf_sf.prune_wiener_based_on_src_var = 1;
-    sf->lpf_sf.prune_sgr_based_on_wiener =
-        cm->allow_screen_content_tools ? 0 : 1;
+    sf->lpf_sf.prune_sgr_based_on_wiener = !allow_screen_content_tools;
   }
 
   if (speed >= 3) {
@@ -427,7 +427,7 @@ static void set_good_speed_features_framesize_independent(
     sf->part_sf.less_rectangular_check_level = 2;
     sf->part_sf.simple_motion_search_prune_agg = 1;
     sf->part_sf.prune_4_partition_using_split_info =
-        cm->allow_screen_content_tools ? 0 : 1;
+        !allow_screen_content_tools;
 
     // adaptive_motion_search breaks encoder multi-thread tests.
     // The values in x->pred_mv[] differ for single and multi-thread cases.
@@ -453,10 +453,9 @@ static void set_good_speed_features_framesize_independent(
     if (cpi->oxcf.enable_smooth_interintra)
       sf->inter_sf.disable_smooth_interintra = boosted ? 0 : 1;
     sf->inter_sf.reuse_compound_type_decision = 1;
-    sf->inter_sf.txfm_rd_gate_level =
-        (boosted || cm->allow_screen_content_tools)
-            ? 0
-            : (is_boosted_arf2_bwd_type ? 1 : 2);
+    sf->inter_sf.txfm_rd_gate_level = (boosted || allow_screen_content_tools)
+                                          ? 0
+                                          : (is_boosted_arf2_bwd_type ? 1 : 2);
 
     sf->intra_sf.prune_palette_search_level = 2;
 
@@ -466,7 +465,7 @@ static void set_good_speed_features_framesize_independent(
 
     sf->tx_sf.adaptive_txb_search_level = boosted ? 2 : 3;
     sf->tx_sf.tx_type_search.use_skip_flag_prediction =
-        cm->allow_screen_content_tools ? 1 : 2;
+        allow_screen_content_tools ? 1 : 2;
 
     // TODO(any): Refactor the code related to following winner mode speed
     // features
@@ -475,7 +474,7 @@ static void set_good_speed_features_framesize_independent(
     sf->winner_mode_sf.enable_winner_mode_for_tx_size_srch =
         frame_is_intra_only(&cpi->common) ? 0 : 1;
     sf->winner_mode_sf.enable_winner_mode_for_use_tx_domain_dist =
-        cm->allow_screen_content_tools ? 0 : 1;
+        !allow_screen_content_tools;
     sf->winner_mode_sf.motion_mode_for_winner_cand =
         boosted
             ? 0
@@ -483,10 +482,9 @@ static void set_good_speed_features_framesize_independent(
                                                                          : 2;
 
     // TODO(any): evaluate if these lpf features can be moved to speed 2.
-    sf->lpf_sf.prune_sgr_based_on_wiener =
-        cm->allow_screen_content_tools ? 0 : 2;
+    sf->lpf_sf.prune_sgr_based_on_wiener = allow_screen_content_tools ? 0 : 2;
     sf->lpf_sf.disable_loop_restoration_chroma =
-        (boosted || cm->allow_screen_content_tools) ? 0 : 1;
+        (boosted || allow_screen_content_tools) ? 0 : 1;
     sf->lpf_sf.reduce_wiener_window_size = !boosted;
     sf->lpf_sf.prune_wiener_based_on_src_var = 2;
 
@@ -498,13 +496,13 @@ static void set_good_speed_features_framesize_independent(
 
     sf->part_sf.simple_motion_search_prune_agg = 2;
     sf->part_sf.prune_ab_partition_using_split_info =
-        cm->allow_screen_content_tools ? 0 : 1;
+        !allow_screen_content_tools;
 
     sf->inter_sf.adaptive_mode_search = 1;
     sf->inter_sf.alt_ref_search_fp = 1;
     sf->inter_sf.prune_ref_mv_idx_search = 1;
     sf->inter_sf.txfm_rd_gate_level =
-        (boosted || cm->allow_screen_content_tools) ? 0 : 3;
+        (boosted || allow_screen_content_tools) ? 0 : 3;
 
     sf->inter_sf.prune_inter_modes_based_on_tpl = boosted ? 0 : 2;
     sf->inter_sf.disable_smooth_interintra = 1;
@@ -540,7 +538,7 @@ static void set_good_speed_features_framesize_independent(
         frame_is_intra_only(&cpi->common) ? 1 : 0;
     sf->winner_mode_sf.enable_winner_mode_for_tx_size_srch = 1;
 
-    sf->lpf_sf.cdef_pick_method = cm->allow_screen_content_tools
+    sf->lpf_sf.cdef_pick_method = allow_screen_content_tools
                                       ? CDEF_FAST_SEARCH_LVL1
                                       : CDEF_FAST_SEARCH_LVL2;
 
@@ -566,14 +564,14 @@ static void set_good_speed_features_framesize_independent(
   if (speed >= 5) {
     sf->part_sf.simple_motion_search_prune_agg = 3;
     sf->part_sf.ext_partition_eval_thresh =
-        cm->allow_screen_content_tools ? BLOCK_8X8 : BLOCK_16X16;
+        allow_screen_content_tools ? BLOCK_8X8 : BLOCK_16X16;
 
     sf->inter_sf.prune_inter_modes_based_on_tpl = boosted ? 0 : 3;
     sf->inter_sf.disable_interinter_wedge = 1;
     sf->inter_sf.disable_obmc = 1;
     sf->inter_sf.disable_onesided_comp = 1;
     sf->inter_sf.txfm_rd_gate_level =
-        (boosted || cm->allow_screen_content_tools) ? 0 : 4;
+        (boosted || allow_screen_content_tools) ? 0 : 4;
     sf->inter_sf.prune_inter_modes_if_skippable = 1;
 
     sf->lpf_sf.lpf_pick = LPF_PICK_FROM_FULL_IMAGE_NON_DUAL;
@@ -1274,7 +1272,7 @@ void av1_set_speed_features_qindex_dependent(AV1_COMP *cpi, int speed) {
   if (is_720p_or_larger && cpi->oxcf.mode == GOOD && speed == 0) {
     if (cm->base_qindex <= 80) {
       sf->part_sf.simple_motion_search_split =
-          cm->allow_screen_content_tools ? 1 : 2;
+          cm->features.allow_screen_content_tools ? 1 : 2;
       sf->tx_sf.inter_tx_size_search_init_depth_rect = 1;
       sf->tx_sf.inter_tx_size_search_init_depth_sqr = 1;
       sf->tx_sf.intra_tx_size_search_init_depth_rect = 1;

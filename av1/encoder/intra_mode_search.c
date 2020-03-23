@@ -317,8 +317,8 @@ static int intra_mode_info_cost_y(const AV1_COMP *cpi, const MACROBLOCK *x,
   // Can only activate one mode.
   assert(((mbmi->mode != DC_PRED) + use_palette + use_intrabc +
           use_filter_intra) <= 1);
-  const int try_palette =
-      av1_allow_palette(cpi->common.allow_screen_content_tools, mbmi->sb_type);
+  const int try_palette = av1_allow_palette(
+      cpi->common.features.allow_screen_content_tools, mbmi->sb_type);
   if (try_palette && mbmi->mode == DC_PRED) {
     const MACROBLOCKD *xd = &x->e_mbd;
     const int bsize_ctx = av1_get_palette_bsize_ctx(bsize);
@@ -372,8 +372,8 @@ static int intra_mode_info_cost_uv(const AV1_COMP *cpi, const MACROBLOCK *x,
   // Can only activate one mode.
   assert(((mode != UV_DC_PRED) + use_palette + mbmi->use_intrabc) <= 1);
 
-  const int try_palette =
-      av1_allow_palette(cpi->common.allow_screen_content_tools, mbmi->sb_type);
+  const int try_palette = av1_allow_palette(
+      cpi->common.features.allow_screen_content_tools, mbmi->sb_type);
   if (try_palette && mode == UV_DC_PRED) {
     const PALETTE_MODE_INFO *pmi = &mbmi->palette_mode_info;
     total_rate +=
@@ -811,7 +811,8 @@ static void rd_pick_palette_intra_sby(
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
   assert(!is_inter_block(mbmi));
-  assert(av1_allow_palette(cpi->common.allow_screen_content_tools, bsize));
+  assert(av1_allow_palette(cpi->common.features.allow_screen_content_tools,
+                           bsize));
 
   const int src_stride = x->plane[0].src.stride;
   const uint8_t *const src = x->plane[0].src.buf;
@@ -1007,8 +1008,8 @@ static AOM_INLINE void rd_pick_palette_intra_sbuv(
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
   assert(!is_inter_block(mbmi));
-  assert(
-      av1_allow_palette(cpi->common.allow_screen_content_tools, mbmi->sb_type));
+  assert(av1_allow_palette(cpi->common.features.allow_screen_content_tools,
+                           mbmi->sb_type));
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
   const BLOCK_SIZE bsize = mbmi->sb_type;
   const SequenceHeader *const seq_params = &cpi->common.seq_params;
@@ -1503,7 +1504,8 @@ int64_t av1_rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   const int try_palette =
       cpi->oxcf.enable_palette &&
-      av1_allow_palette(cpi->common.allow_screen_content_tools, mbmi->sb_type);
+      av1_allow_palette(cpi->common.features.allow_screen_content_tools,
+                        mbmi->sb_type);
   if (try_palette) {
     uint8_t *best_palette_color_map = x->palette_buffer->best_palette_color_map;
     rd_pick_palette_intra_sbuv(
@@ -1841,7 +1843,8 @@ int64_t av1_handle_intra_mode(IntraModeSearchState *intra_search_state,
     PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
     const int try_palette =
         cpi->oxcf.enable_palette &&
-        av1_allow_palette(cm->allow_screen_content_tools, mbmi->sb_type);
+        av1_allow_palette(cm->features.allow_screen_content_tools,
+                          mbmi->sb_type);
     const TX_SIZE uv_tx = av1_get_tx_size(AOM_PLANE_U, xd);
     if (intra_search_state->rate_uv_intra == INT_MAX) {
       const int rate_y =
@@ -1947,7 +1950,8 @@ int64_t av1_rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
   const int try_palette =
       cpi->oxcf.enable_palette &&
-      av1_allow_palette(cpi->common.allow_screen_content_tools, mbmi->sb_type);
+      av1_allow_palette(cpi->common.features.allow_screen_content_tools,
+                        mbmi->sb_type);
   uint8_t *best_palette_color_map =
       try_palette ? x->palette_buffer->best_palette_color_map : NULL;
   const MB_MODE_INFO *above_mi = xd->above_mbmi;

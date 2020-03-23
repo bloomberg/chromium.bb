@@ -1190,7 +1190,7 @@ static void foreach_rest_unit_in_planes(AV1LrStruct *lr_ctxt, AV1_COMMON *cm,
 void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
                                        AV1_COMMON *cm, int optimized_lr,
                                        void *lr_ctxt) {
-  assert(!cm->all_lossless);
+  assert(!cm->features.all_lossless);
   const int num_planes = av1_num_planes(cm);
 
   AV1LrStruct *loop_rest_ctxt = (AV1LrStruct *)lr_ctxt;
@@ -1318,7 +1318,7 @@ int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
   if (bsize != cm->seq_params.sb_size) return 0;
   if (cm->rst_info[plane].frame_restoration_type == RESTORE_NONE) return 0;
 
-  assert(!cm->all_lossless);
+  assert(!cm->features.all_lossless);
 
   const int is_uv = plane > 0;
 

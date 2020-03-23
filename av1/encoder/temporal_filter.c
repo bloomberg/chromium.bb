@@ -95,7 +95,7 @@ static int tf_motion_search(AV1_COMP *cpi,
   const int step_param = av1_init_search_range(
       AOMMAX(frame_to_filter->y_crop_width, frame_to_filter->y_crop_height));
   const SUBPEL_SEARCH_TYPE subpel_search_type = USE_8_TAPS;
-  const int force_integer_mv = cpi->common.cur_frame_force_integer_mv;
+  const int force_integer_mv = cpi->common.features.cur_frame_force_integer_mv;
   const MV_COST_TYPE mv_cost_type =
       min_frame_size >= 720
           ? MV_COST_L1_HDRES
@@ -1217,8 +1217,9 @@ int av1_temporal_filter(AV1_COMP *cpi, const int filter_frame_lookahead_idx,
   const int rdmult = av1_compute_rd_mult_based_on_qindex(cpi, TF_QINDEX);
   set_error_per_bit(&cpi->td.mb, rdmult);
   av1_initialize_me_consts(cpi, &cpi->td.mb, TF_QINDEX);
-  av1_fill_mv_costs(cpi->common.fc, cpi->common.cur_frame_force_integer_mv,
-                    cpi->common.allow_high_precision_mv, &cpi->td.mb);
+  av1_fill_mv_costs(cpi->common.fc,
+                    cpi->common.features.cur_frame_force_integer_mv,
+                    cpi->common.features.allow_high_precision_mv, &cpi->td.mb);
 
   // TODO(weitinglin): Currently, we enforce the filtering strength on internal
   // ARFs to be zeros. We should investigate in which case it is more beneficial

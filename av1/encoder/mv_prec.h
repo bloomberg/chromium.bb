@@ -33,7 +33,7 @@ static AOM_INLINE void av1_set_high_precision_mv(
     AV1_COMP *cpi, int allow_high_precision_mv,
     int cur_frame_force_integer_mv) {
   MACROBLOCK *const x = &cpi->td.mb;
-  const int copy_hp = cpi->common.allow_high_precision_mv =
+  const int copy_hp = cpi->common.features.allow_high_precision_mv =
       allow_high_precision_mv && !cur_frame_force_integer_mv;
   x->nmvcost[0] = &x->nmv_costs[0][MV_MAX];
   x->nmvcost[1] = &x->nmv_costs[1][MV_MAX];

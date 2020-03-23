@@ -63,7 +63,7 @@ void av1_vaq_frame_setup(AV1_COMP *cpi) {
     av1_disable_segmentation(seg);
     return;
   }
-  if (frame_is_intra_only(cm) || cm->error_resilient_mode ||
+  if (frame_is_intra_only(cm) || cm->features.error_resilient_mode ||
       cpi->refresh_alt_ref_frame ||
       (cpi->refresh_golden_frame && !cpi->rc.is_src_frame_alt_ref)) {
     cpi->vaq_refresh = 1;

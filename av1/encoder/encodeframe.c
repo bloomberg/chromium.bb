@@ -1074,7 +1074,7 @@ static AOM_INLINE void sum_intra_stats(const AV1_COMMON *const cm,
                mbmi->angle_delta[PLANE_TYPE_UV] + MAX_ANGLE_DELTA,
                2 * MAX_ANGLE_DELTA + 1);
   }
-  if (av1_allow_palette(cm->allow_screen_content_tools, bsize)) {
+  if (av1_allow_palette(cm->features.allow_screen_content_tools, bsize)) {
     update_palette_cdf(xd, mbmi, counts);
   }
 }
@@ -1346,7 +1346,7 @@ static AOM_INLINE void update_stats(const AV1_COMMON *const cm,
       const MOTION_MODE motion_allowed =
           cm->switchable_motion_mode
               ? motion_mode_allowed(xd->global_motion, xd, mbmi,
-                                    cm->allow_warped_motion)
+                                    cm->features.allow_warped_motion)
               : SIMPLE_TRANSLATION;
       if (mbmi->ref_frame[1] != INTRA_FRAME) {
         if (motion_allowed == WARPED_CAUSAL) {
@@ -1462,9 +1462,9 @@ static AOM_INLINE void update_stats(const AV1_COMMON *const cm,
       }
     }
     if (have_newmv_in_inter_mode(mbmi->mode)) {
-      const int allow_hp = cm->cur_frame_force_integer_mv
+      const int allow_hp = cm->features.cur_frame_force_integer_mv
                                ? MV_SUBPEL_NONE
-                               : cm->allow_high_precision_mv;
+                               : cm->features.allow_high_precision_mv;
       if (new_mv) {
         for (int ref = 0; ref < 1 + has_second_ref(mbmi); ++ref) {
           const int_mv ref_mv = av1_get_ref_mv(x, ref);
@@ -1652,7 +1652,7 @@ static AOM_INLINE void encode_b(const AV1_COMP *const cpi,
     // Gather obmc and warped motion count to update the probability.
     if ((!cpi->sf.inter_sf.disable_obmc &&
          cpi->sf.inter_sf.prune_obmc_prob_thresh > 0) ||
-        (cm->allow_warped_motion &&
+        (cm->features.allow_warped_motion &&
          cpi->sf.inter_sf.prune_warped_prob_thresh > 0)) {
       const int inter_block = is_inter_block(mbmi);
       const int seg_ref_active =
@@ -1661,7 +1661,7 @@ static AOM_INLINE void encode_b(const AV1_COMP *const cpi,
         const MOTION_MODE motion_allowed =
             cm->switchable_motion_mode
                 ? motion_mode_allowed(xd->global_motion, xd, mbmi,
-                                      cm->allow_warped_motion)
+                                      cm->features.allow_warped_motion)
                 : SIMPLE_TRANSLATION;
 
         if (mbmi->ref_frame[1] != INTRA_FRAME) {
@@ -4781,8 +4781,8 @@ static AOM_INLINE void set_cost_upd_freq(AV1_COMP *cpi, ThreadData *td,
       if (cpi->sf.inter_sf.disable_sb_level_mv_cost_upd &&
           mi_col != tile_info->mi_col_start)
         break;
-      av1_fill_mv_costs(xd->tile_ctx, cm->cur_frame_force_integer_mv,
-                        cm->allow_high_precision_mv, x);
+      av1_fill_mv_costs(xd->tile_ctx, cm->features.cur_frame_force_integer_mv,
+                        cm->features.allow_high_precision_mv, x);
       break;
     default: assert(0);
   }
@@ -4850,7 +4850,7 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
     PC_TREE *const pc_root = td->pc_root[mib_size_log2 - MIN_MIB_SIZE_LOG2];
     pc_root->index = 0;
 
-    xd->cur_frame_force_integer_mv = cm->cur_frame_force_integer_mv;
+    xd->cur_frame_force_integer_mv = cm->features.cur_frame_force_integer_mv;
     td->mb.cb_coef_buff = av1_get_cb_coeff_buffer(cpi, mi_row, mi_col);
     x->source_variance = UINT_MAX;
     x->simple_motion_pred_sse = UINT_MAX;
@@ -4941,7 +4941,7 @@ void av1_init_tile_data(AV1_COMP *cpi) {
       tplist_count = av1_get_sb_rows_in_tile(cm, tile_data->tile_info);
       tile_data->allow_update_cdf = !cm->large_scale_tile;
       tile_data->allow_update_cdf =
-          tile_data->allow_update_cdf && !cm->disable_cdf_update;
+          tile_data->allow_update_cdf && !cm->features.disable_cdf_update;
       tile_data->tctx = *cm->fc;
     }
   }
@@ -5332,11 +5332,11 @@ static void compute_global_motion_for_ref_frame(
 
     if (cm->global_motion[frame].wmtype == TRANSLATION) {
       cm->global_motion[frame].wmmat[0] =
-          convert_to_trans_prec(cm->allow_high_precision_mv,
+          convert_to_trans_prec(cm->features.allow_high_precision_mv,
                                 cm->global_motion[frame].wmmat[0]) *
           GM_TRANS_ONLY_DECODE_FACTOR;
       cm->global_motion[frame].wmmat[1] =
-          convert_to_trans_prec(cm->allow_high_precision_mv,
+          convert_to_trans_prec(cm->features.allow_high_precision_mv,
                                 cm->global_motion[frame].wmmat[1]) *
           GM_TRANS_ONLY_DECODE_FACTOR;
     }
@@ -5350,7 +5350,7 @@ static void compute_global_motion_for_ref_frame(
     if (!av1_is_enough_erroradvantage(
             (double)best_warp_error / ref_frame_error,
             gm_get_params_cost(&cm->global_motion[frame], ref_params,
-                               cm->allow_high_precision_mv),
+                               cm->features.allow_high_precision_mv),
             cpi->sf.gm_sf.gm_erroradv_type)) {
       cm->global_motion[frame] = default_warp_params;
     }
@@ -5430,7 +5430,7 @@ static INLINE void compute_gm_for_valid_ref_frames(
 
   cpi->gmparams_cost[frame] =
       gm_get_params_cost(&cm->global_motion[frame], ref_params,
-                         cm->allow_high_precision_mv) +
+                         cm->features.allow_high_precision_mv) +
       cpi->gmtype_cost[cm->global_motion[frame].wmtype] -
       cpi->gmtype_cost[IDENTITY];
 }
@@ -5529,6 +5529,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
   ThreadData *const td = &cpi->td;
   MACROBLOCK *const x = &td->mb;
   AV1_COMMON *const cm = &cpi->common;
+  FeatureFlags *const features = &cm->features;
   MACROBLOCKD *const xd = &x->e_mbd;
   RD_COUNTS *const rdc = &cpi->td.rd_counts;
   int i;
@@ -5558,17 +5559,17 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
   cpi->intrabc_used = 0;
   // Need to disable intrabc when superres is selected
   if (av1_superres_scaled(cm)) {
-    cm->allow_intrabc = 0;
+    features->allow_intrabc = 0;
   }
 
-  cm->allow_intrabc &= (cpi->oxcf.enable_intrabc);
+  features->allow_intrabc &= (cpi->oxcf.enable_intrabc);
 
-  if (cm->allow_warped_motion &&
+  if (features->allow_warped_motion &&
       cpi->sf.inter_sf.prune_warped_prob_thresh > 0) {
     const FRAME_UPDATE_TYPE update_type = get_frame_update_type(&cpi->gf_group);
     if (cpi->warped_probs[update_type] <
         cpi->sf.inter_sf.prune_warped_prob_thresh)
-      cm->allow_warped_motion = 0;
+      features->allow_warped_motion = 0;
   }
 
   if (!is_stat_generation_stage(cpi) && av1_use_hash_me(cpi) &&
@@ -5638,8 +5639,8 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
       cpi->optimize_seg_arr[i] = cpi->sf.rd_sf.optimize_coefficients;
     }
   }
-  cm->coded_lossless = is_coded_lossless(cm, xd);
-  cm->all_lossless = cm->coded_lossless && !av1_superres_scaled(cm);
+  features->coded_lossless = is_coded_lossless(cm, xd);
+  features->all_lossless = features->coded_lossless && !av1_superres_scaled(cm);
 
   // Fix delta q resolution for the moment
   cm->delta_q_info.delta_q_res = 0;
@@ -5683,7 +5684,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
     cm->last_frame_seg_map = cm->prev_frame->seg_map;
   else
     cm->last_frame_seg_map = NULL;
-  if (cm->allow_intrabc || cm->coded_lossless) {
+  if (features->allow_intrabc || features->coded_lossless) {
     av1_set_default_ref_deltas(cm->lf.ref_deltas);
     av1_set_default_mode_deltas(cm->lf.mode_deltas);
   } else if (cm->prev_frame) {
@@ -5793,7 +5794,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
 #if CONFIG_COLLECT_COMPONENT_TIMING
   start_timing(cpi, av1_setup_motion_field_time);
 #endif
-  if (cm->allow_ref_frame_mvs) av1_setup_motion_field(cm);
+  if (features->allow_ref_frame_mvs) av1_setup_motion_field(cm);
 #if CONFIG_COLLECT_COMPONENT_TIMING
   end_timing(cpi, av1_setup_motion_field_time);
 #endif
@@ -5818,8 +5819,12 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
   }
 
   // If intrabc is allowed but never selected, reset the allow_intrabc flag.
-  if (cm->allow_intrabc && !cpi->intrabc_used) cm->allow_intrabc = 0;
-  if (cm->allow_intrabc) cm->delta_q_info.delta_lf_present_flag = 0;
+  if (features->allow_intrabc && !cpi->intrabc_used) {
+    features->allow_intrabc = 0;
+  }
+  if (features->allow_intrabc) {
+    cm->delta_q_info.delta_lf_present_flag = 0;
+  }
 
   if (cm->delta_q_info.delta_q_present_flag && cpi->deltaq_used == 0) {
     cm->delta_q_info.delta_q_present_flag = 0;
@@ -5873,7 +5878,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
     }
   }
 
-  if (cm->allow_warped_motion &&
+  if (features->allow_warped_motion &&
       cpi->sf.inter_sf.prune_warped_prob_thresh > 0) {
     const FRAME_UPDATE_TYPE update_type = get_frame_update_type(&cpi->gf_group);
     int sum = 0;
@@ -5919,7 +5924,7 @@ void av1_encode_frame(AV1_COMP *cpi) {
   const int num_planes = av1_num_planes(cm);
   // Indicates whether or not to use a default reduced set for ext-tx
   // rather than the potential full set of 16 transforms
-  cm->reduced_tx_set_used = cpi->oxcf.reduced_tx_type_set;
+  cm->features.reduced_tx_set_used = cpi->oxcf.reduced_tx_type_set;
 
   // Make sure segment_id is no larger than last_active_segid.
   if (cm->seg.enabled && cm->seg.update_map) {
@@ -6219,7 +6224,7 @@ static AOM_INLINE void encode_superblock(const AV1_COMP *const cpi,
       mbmi->skip = 0;
 
     xd->cfl.store_y = 0;
-    if (av1_allow_palette(cm->allow_screen_content_tools, bsize)) {
+    if (av1_allow_palette(cm->features.allow_screen_content_tools, bsize)) {
       for (int plane = 0; plane < AOMMIN(2, num_planes); ++plane) {
         if (mbmi->palette_mode_info.palette_size[plane] > 0) {
           if (!dry_run) {
