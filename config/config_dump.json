@@ -30774,6 +30774,7 @@
         "upload_stripped_packages": [
             "sys-kernel/*kernel*"
         ],
+        "upload_symbols": true,
         "useflags": [
             "-chrome_internal"
         ],
@@ -30810,6 +30811,7 @@
         "upload_stripped_packages": [
             "sys-kernel/*kernel*"
         ],
+        "upload_symbols": true,
         "useflags": [
             "-chrome_internal"
         ],
@@ -30987,6 +30989,7 @@
         "upload_stripped_packages": [
             "sys-kernel/*kernel*"
         ],
+        "upload_symbols": true,
         "useflags": [
             "-chrome_internal"
         ],
@@ -31023,6 +31026,7 @@
         "upload_stripped_packages": [
             "sys-kernel/*kernel*"
         ],
+        "upload_symbols": true,
         "useflags": [
             "-chrome_internal"
         ],
