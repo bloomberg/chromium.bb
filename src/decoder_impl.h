@@ -115,7 +115,10 @@ class DecoderImpl : public Allocable {
   StatusCode EnqueueFrame(const uint8_t* data, size_t size,
                           int64_t user_private_data, void* buffer_private_data);
   StatusCode DequeueFrame(const DecoderBuffer** out_ptr);
-  int GetMaxAllowedFrames() const { return frame_threads_; }
+  int GetMaxAllowedFrames() const {
+    return (frame_thread_pool_ != nullptr) ? frame_thread_pool_->num_threads()
+                                           : 1;
+  }
   static constexpr int GetMaxBitdepth() {
     static_assert(LIBGAV1_MAX_BITDEPTH == 8 || LIBGAV1_MAX_BITDEPTH == 10,
                   "LIBGAV1_MAX_BITDEPTH must be 8 or 10.");
@@ -192,7 +195,7 @@ class DecoderImpl : public Allocable {
                             ThreadPool* thread_pool);
 
   bool IsNewSequenceHeader(const ObuParser& obu);
-  bool IsFrameParallel() const { return frame_threads_ > 1; }
+  bool IsFrameParallel() const { return frame_thread_pool_ != nullptr; }
 
   Queue<TemporalUnit> temporal_units_;
   DecoderState state_;
@@ -204,7 +207,6 @@ class DecoderImpl : public Allocable {
   BufferPool buffer_pool_;
   WedgeMaskArray wedge_masks_;
   FrameScratchBufferPool frame_scratch_buffer_pool_;
-  int frame_threads_ = 1;
 
   // Used to synchronize the accesses into |temporal_units_| in order to update
   // the "decoded" state of an temporal unit.

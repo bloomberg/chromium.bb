@@ -77,6 +77,9 @@ class ThreadingStrategy {
   int max_tile_index_for_row_threads_;
 };
 
+LIBGAV1_MUST_USE_RESULT bool InitializeThreadPoolsForFrameParallel(
+    int thread_count, std::unique_ptr<ThreadPool>* frame_thread_pool);
+
 }  // namespace libgav1
 
 #endif  // LIBGAV1_SRC_THREADING_STRATEGY_H_

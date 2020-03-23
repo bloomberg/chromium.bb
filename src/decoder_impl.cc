@@ -110,25 +110,18 @@ StatusCode DecoderImpl::Init() {
   if (settings_.frame_parallel) {
 #if defined(ENABLE_FRAME_PARALLEL)
     if (settings_.threads > 1) {
-      frame_threads_ = settings_.threads;
-      frame_thread_pool_ = ThreadPool::Create(frame_threads_);
-      if (frame_thread_pool_ == nullptr) {
-        LIBGAV1_DLOG(ERROR,
-                     "Failed to create frame thread pool with %d threads.",
-                     frame_threads_);
+      if (!InitializeThreadPoolsForFrameParallel(settings_.threads,
+                                                 &frame_thread_pool_)) {
         return kStatusOutOfMemory;
       }
       // TODO(b/142583029): Frame parallel decoding with in-frame
       // multi-threading is not yet implemented. Until then, we force
       // settings_.threads to 1 when frame parallel decoding is enabled.
       settings_.threads = 1;
-    } else {
-      frame_threads_ = 1;
     }
 #else
     LIBGAV1_DLOG(
         ERROR, "Frame parallel decoding is not implemented, ignoring setting.");
-    frame_threads_ = 1;
 #endif  // defined(ENABLE_FRAME_PARALLEL)
   }
   const int max_allowed_frames = GetMaxAllowedFrames();

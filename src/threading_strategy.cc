@@ -103,4 +103,15 @@ bool ThreadingStrategy::Reset(const ObuFrameHeader& frame_header,
   return true;
 }
 
+bool InitializeThreadPoolsForFrameParallel(
+    int thread_count, std::unique_ptr<ThreadPool>* const frame_thread_pool) {
+  *frame_thread_pool = ThreadPool::Create(thread_count);
+  if (*frame_thread_pool == nullptr) {
+    LIBGAV1_DLOG(ERROR, "Failed to create frame thread pool with %d threads.",
+                 thread_count);
+    return false;
+  }
+  return true;
+}
+
 }  // namespace libgav1
