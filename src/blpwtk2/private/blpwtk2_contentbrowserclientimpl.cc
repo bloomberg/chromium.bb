@@ -198,6 +198,12 @@ ContentBrowserClientImpl::CreateNetworkContext(
     return pContextImpl->CreateNetworkContext(in_memory, relative_partition_path, GetUserAgent());
 }
 
+bool ContentBrowserClientImpl::ShouldLockToOrigin(content::BrowserContext* browser_context,
+	                                              const GURL& effective_url)
+{
+    return false;
+}
+
 }  // close namespace blpwtk2
 
 // vim: ts=4 et

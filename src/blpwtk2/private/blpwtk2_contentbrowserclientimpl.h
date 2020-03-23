@@ -138,6 +138,8 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
       bool in_memory,
       const base::FilePath& relative_partition_path) override;
 
+  bool ShouldLockToOrigin(content::BrowserContext* browser_context,
+                          const GURL& effective_url) override;
 };
 
 }  // close namespace blpwtk2
