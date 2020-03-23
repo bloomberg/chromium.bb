@@ -370,6 +370,7 @@ const char kOpenVPNClientCertSlotProperty[] = "OpenVPN.Pkcs11.Slot";
 const char kOpenVPNCipherProperty[] = "OpenVPN.Cipher";
 const char kOpenVPNCompLZOProperty[] = "OpenVPN.CompLZO";
 const char kOpenVPNCompNoAdaptProperty[] = "OpenVPN.CompNoAdapt";
+const char kOpenVPNCompressProperty[] = "OpenVPN.Compress";
 const char kOpenVPNIgnoreDefaultRouteProperty[] = "OpenVPN.IgnoreDefaultRoute";
 const char kOpenVPNKeyDirectionProperty[] = "OpenVPN.KeyDirection";
 const char kOpenVPNMgmtEnableProperty[] = "OpenVPN.Mgmt.Enable";
@@ -391,6 +392,12 @@ const char kOpenVPNStaticChallengeProperty[] = "OpenVPN.StaticChallenge";
 const char kOpenVPNTLSAuthContentsProperty[] = "OpenVPN.TLSAuthContents";
 const char kOpenVPNTLSRemoteProperty[] = "OpenVPN.TLSRemote";
 const char kOpenVPNUserProperty[] = "OpenVPN.User";
+
+// Compress option values as expected by OpenVPN.
+const char kOpenVPNCompressFramingOnly[] = "";
+const char kOpenVPNCompressLz4[] = "lz4";
+const char kOpenVPNCompressLz4V2[] = "lz4-v2";
+const char kOpenVPNCompressLzo[] = "lzo";
 
 // Flimflam ARCVPN property names.
 const char kArcVpnTunnelChromeProperty[] = "ArcVpn.TunnelChrome";
