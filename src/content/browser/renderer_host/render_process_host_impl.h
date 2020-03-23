@@ -270,7 +270,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void ForceCrash() override;
   void CleanupCorbExceptionForPluginUponDestruction() override;
 
-  void AdjustCommandLineForRenderer(base::CommandLine* command_line) override;
+  void AdjustCommandLineForRenderer(base::CommandLine* command_line,
+                                    base::ProcessHandle child_process) override;
   mojom::RouteProvider* GetRemoteRouteProvider();
 
   // IPC::Sender via RenderProcessHost.
@@ -771,7 +772,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // copied over.
   void PropagateBrowserCommandLineToRenderer(
       const base::CommandLine& browser_cmd,
-      base::CommandLine* renderer_cmd);
+      base::CommandLine* renderer_cmd,
+      base::ProcessHandle child_process);
 
   // Recompute |visible_clients_| and |effective_importance_| from
   // |priority_clients_|.

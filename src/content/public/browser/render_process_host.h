@@ -561,7 +561,8 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
 
   // Adjust the specified command line for in-process renderers in blpwtk2
   // client processes.
-  virtual void AdjustCommandLineForRenderer(base::CommandLine* command_line) {}
+  virtual void AdjustCommandLineForRenderer(base::CommandLine* command_line,
+      base::ProcessHandle child_process) {}
 
   // Returns the current number of active views in this process.  Excludes
   // any RenderViewHosts that are swapped out.
