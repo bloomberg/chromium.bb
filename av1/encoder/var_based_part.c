@@ -173,7 +173,8 @@ static AOM_INLINE void fill_variance_tree(void *data, BLOCK_SIZE bsize) {
 static AOM_INLINE void set_block_size(AV1_COMP *const cpi, MACROBLOCK *const x,
                                       MACROBLOCKD *const xd, int mi_row,
                                       int mi_col, BLOCK_SIZE bsize) {
-  if (cpi->common.mi_cols > mi_col && cpi->common.mi_rows > mi_row) {
+  if (cpi->common.mi_params.mi_cols > mi_col &&
+      cpi->common.mi_params.mi_rows > mi_row) {
     set_mode_info_offsets(cpi, x, xd, mi_row, mi_col);
     xd->mi[0]->sb_type = bsize;
   }
@@ -452,12 +453,9 @@ static AOM_INLINE void set_vbp_thresholds(AV1_COMP *cpi, int64_t thresholds[],
 
 // Set temporal variance low flag for superblock 64x64.
 // Only first 25 in the array are used in this case.
-static AOM_INLINE void set_low_temp_var_flag_64x64(AV1_COMP *cpi, MACROBLOCK *x,
-                                                   MACROBLOCKD *xd, v64x64 *vt,
-                                                   int64_t thresholds[],
-                                                   int mi_col, int mi_row) {
-  AV1_COMMON *const cm = &cpi->common;
-
+static AOM_INLINE void set_low_temp_var_flag_64x64(
+    CommonModeInfoParams *mi_params, MACROBLOCK *x, MACROBLOCKD *xd, v64x64 *vt,
+    const int64_t thresholds[], int mi_col, int mi_row) {
   if (xd->mi[0]->sb_type == BLOCK_64X64) {
     if ((vt->part_variances).none.variance < (thresholds[0] >> 1))
       x->variance_low[0] = 1;
@@ -475,11 +473,11 @@ static AOM_INLINE void set_low_temp_var_flag_64x64(AV1_COMP *cpi, MACROBLOCK *x,
     static const int idx[4][2] = { { 0, 0 }, { 0, 8 }, { 8, 0 }, { 8, 8 } };
     for (int i = 0; i < 4; i++) {
       const int idx_str =
-          cm->mi_stride * (mi_row + idx[i][0]) + mi_col + idx[i][1];
-      MB_MODE_INFO **this_mi = cm->mi_grid_base + idx_str;
+          mi_params->mi_stride * (mi_row + idx[i][0]) + mi_col + idx[i][1];
+      MB_MODE_INFO **this_mi = mi_params->mi_grid_base + idx_str;
 
-      if (cm->mi_cols <= mi_col + idx[i][1] ||
-          cm->mi_rows <= mi_row + idx[i][0])
+      if (mi_params->mi_cols <= mi_col + idx[i][1] ||
+          mi_params->mi_rows <= mi_row + idx[i][0])
         continue;
 
       if (*this_mi == NULL) continue;
@@ -506,10 +504,8 @@ static AOM_INLINE void set_low_temp_var_flag_64x64(AV1_COMP *cpi, MACROBLOCK *x,
 }
 
 static AOM_INLINE void set_low_temp_var_flag_128x128(
-    AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd, v128x128 *vt,
-    int64_t thresholds[], int mi_col, int mi_row) {
-  AV1_COMMON *const cm = &cpi->common;
-
+    CommonModeInfoParams *mi_params, MACROBLOCK *x, MACROBLOCKD *xd,
+    v128x128 *vt, const int64_t thresholds[], int mi_col, int mi_row) {
   if (xd->mi[0]->sb_type == BLOCK_128X128) {
     if (vt->part_variances.none.variance < (thresholds[0] >> 1))
       x->variance_low[0] = 1;
@@ -530,11 +526,11 @@ static AOM_INLINE void set_low_temp_var_flag_128x128(
     static const int idx32[4][2] = { { 0, 0 }, { 0, 8 }, { 8, 0 }, { 8, 8 } };
     for (int i = 0; i < 4; i++) {
       const int idx_str =
-          cm->mi_stride * (mi_row + idx64[i][0]) + mi_col + idx64[i][1];
-      MB_MODE_INFO **mi_64 = cm->mi_grid_base + idx_str;
+          mi_params->mi_stride * (mi_row + idx64[i][0]) + mi_col + idx64[i][1];
+      MB_MODE_INFO **mi_64 = mi_params->mi_grid_base + idx_str;
       if (*mi_64 == NULL) continue;
-      if (cm->mi_cols <= mi_col + idx64[i][1] ||
-          cm->mi_rows <= mi_row + idx64[i][0])
+      if (mi_params->mi_cols <= mi_col + idx64[i][1] ||
+          mi_params->mi_rows <= mi_row + idx64[i][0])
         continue;
       const int64_t threshold_64x64 = (5 * thresholds[1]) >> 3;
       if ((*mi_64)->sb_type == BLOCK_64X64) {
@@ -552,12 +548,12 @@ static AOM_INLINE void set_low_temp_var_flag_128x128(
             x->variance_low[17 + (i << 1) + j] = 1;
       } else {
         for (int k = 0; k < 4; k++) {
-          const int idx_str1 = cm->mi_stride * idx32[k][0] + idx32[k][1];
-          MB_MODE_INFO **mi_32 = cm->mi_grid_base + idx_str + idx_str1;
+          const int idx_str1 = mi_params->mi_stride * idx32[k][0] + idx32[k][1];
+          MB_MODE_INFO **mi_32 = mi_params->mi_grid_base + idx_str + idx_str1;
           if (*mi_32 == NULL) continue;
 
-          if (cm->mi_cols <= mi_col + idx64[i][1] + idx32[k][1] ||
-              cm->mi_rows <= mi_row + idx64[i][0] + idx32[k][0])
+          if (mi_params->mi_cols <= mi_col + idx64[i][1] + idx32[k][1] ||
+              mi_params->mi_rows <= mi_row + idx64[i][0] + idx32[k][0])
             continue;
           const int64_t threshold_32x32 = (5 * thresholds[2]) >> 3;
           if ((*mi_32)->sb_type == BLOCK_32X32) {
@@ -604,10 +600,11 @@ static AOM_INLINE void set_low_temp_var_flag(
         xd->mi[0]->mv[0].as_mv.row > -mv_thr))) {
     const int is_small_sb = (cm->seq_params.sb_size == BLOCK_64X64);
     if (is_small_sb)
-      set_low_temp_var_flag_64x64(cpi, x, xd, &(vt->split[0]), thresholds,
-                                  mi_col, mi_row);
+      set_low_temp_var_flag_64x64(&cm->mi_params, x, xd, &(vt->split[0]),
+                                  thresholds, mi_col, mi_row);
     else
-      set_low_temp_var_flag_128x128(cpi, x, xd, vt, thresholds, mi_col, mi_row);
+      set_low_temp_var_flag_128x128(&cm->mi_params, x, xd, vt, thresholds,
+                                    mi_col, mi_row);
   }
 }
 
@@ -830,15 +827,16 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
     // If the y_sad is very small, take 64x64 as partition and exit.
     // Don't check on boosted segment for now, as 64x64 is suppressed there.
 #if 0
-        if (segment_id == CR_SEGMENT_ID_BASE && y_sad < cpi->vbp_threshold_sad)
-       { const int block_width = num_8x8_blocks_wide_lookup[BLOCK_64X64]; const
-       int block_height = num_8x8_blocks_high_lookup[BLOCK_64X64]; if (mi_col +
-       block_width / 2 < cm->mi_cols && mi_row + block_height / 2 < cm->mi_rows)
-       { set_block_size(cpi, x, xd, mi_row, mi_col, BLOCK_128X128);
-            x->variance_low[0] = 1;
-            return 0;
-          }
-        }
+    if (segment_id == CR_SEGMENT_ID_BASE && y_sad < cpi->vbp_threshold_sad) {
+      const int block_width = num_8x8_blocks_wide_lookup[BLOCK_64X64];
+      const int block_height = num_8x8_blocks_high_lookup[BLOCK_64X64];
+      if (mi_col + block_width / 2 < cm->mi_params.mi_cols &&
+          mi_row + block_height / 2 < cm->mi_params.mi_rows) {
+        set_block_size(cpi, x, xd, mi_row, mi_col, BLOCK_128X128);
+        x->variance_low[0] = 1;
+        return 0;
+      }
+    }
 #endif
   } else {
     d = AV1_VAR_OFFS;

@@ -316,7 +316,7 @@ static int simple_motion_search_get_best_ref(
   const AV1_COMMON *const cm = &cpi->common;
   int best_ref = -1;
 
-  if (mi_col >= cm->mi_cols || mi_row >= cm->mi_rows) {
+  if (mi_col >= cm->mi_params.mi_cols || mi_row >= cm->mi_params.mi_rows) {
     // If the whole block is outside of the image, set the var and sse to 0.
     *best_var = 0;
     *best_sse = 0;

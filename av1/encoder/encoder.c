@@ -402,7 +402,8 @@ static void suppress_active_map(AV1_COMP *cpi) {
   unsigned char *const seg_map = cpi->segmentation_map;
   int i;
   if (cpi->active_map.enabled || cpi->active_map.update)
-    for (i = 0; i < cpi->common.mi_rows * cpi->common.mi_cols; ++i)
+    for (i = 0;
+         i < cpi->common.mi_params.mi_rows * cpi->common.mi_params.mi_cols; ++i)
       if (seg_map[i] == AM_SEGMENT_ID_INACTIVE)
         seg_map[i] = AM_SEGMENT_ID_ACTIVE;
 }
@@ -422,7 +423,9 @@ static void apply_active_map(AV1_COMP *cpi) {
 
   if (cpi->active_map.update) {
     if (cpi->active_map.enabled) {
-      for (i = 0; i < cpi->common.mi_rows * cpi->common.mi_cols; ++i)
+      for (i = 0;
+           i < cpi->common.mi_params.mi_rows * cpi->common.mi_params.mi_cols;
+           ++i)
         if (seg_map[i] == AM_SEGMENT_ID_ACTIVE) seg_map[i] = active_map[i];
       av1_enable_segmentation(seg);
       av1_enable_segfeature(seg, AM_SEGMENT_ID_INACTIVE, SEG_LVL_SKIP);
@@ -456,10 +459,11 @@ static void apply_active_map(AV1_COMP *cpi) {
 
 int av1_set_active_map(AV1_COMP *cpi, unsigned char *new_map_16x16, int rows,
                        int cols) {
-  if (rows == cpi->common.mb_rows && cols == cpi->common.mb_cols) {
+  const CommonModeInfoParams *const mi_params = &cpi->common.mi_params;
+  if (rows == mi_params->mb_rows && cols == mi_params->mb_cols) {
     unsigned char *const active_map_8x8 = cpi->active_map.map;
-    const int mi_rows = cpi->common.mi_rows;
-    const int mi_cols = cpi->common.mi_cols;
+    const int mi_rows = mi_params->mi_rows;
+    const int mi_cols = mi_params->mi_cols;
     const int row_scale = mi_size_high[BLOCK_16X16] == 2 ? 1 : 2;
     const int col_scale = mi_size_wide[BLOCK_16X16] == 2 ? 1 : 2;
     cpi->active_map.update = 1;
@@ -485,11 +489,12 @@ int av1_set_active_map(AV1_COMP *cpi, unsigned char *new_map_16x16, int rows,
 
 int av1_get_active_map(AV1_COMP *cpi, unsigned char *new_map_16x16, int rows,
                        int cols) {
-  if (rows == cpi->common.mb_rows && cols == cpi->common.mb_cols &&
+  const CommonModeInfoParams *const mi_params = &cpi->common.mi_params;
+  if (rows == mi_params->mb_rows && cols == mi_params->mb_cols &&
       new_map_16x16) {
     unsigned char *const seg_map_8x8 = cpi->segmentation_map;
-    const int mi_rows = cpi->common.mi_rows;
-    const int mi_cols = cpi->common.mi_cols;
+    const int mi_rows = mi_params->mi_rows;
+    const int mi_cols = mi_params->mi_cols;
     const int row_scale = mi_size_high[BLOCK_16X16] == 2 ? 1 : 2;
     const int col_scale = mi_size_wide[BLOCK_16X16] == 2 ? 1 : 2;
 
@@ -629,7 +634,8 @@ static void setup_frame(AV1_COMP *cpi) {
   cpi->vaq_refresh = 0;
 }
 
-static void enc_set_mb_mi(AV1_COMMON *cm, int width, int height) {
+static void enc_set_mb_mi(CommonModeInfoParams *mi_params, int width,
+                          int height) {
   // Ensure that the decoded width and height are both multiples of
   // 8 luma pixels (note: this may only be a multiple of 4 chroma pixels if
   // subsampling is used).
@@ -638,71 +644,80 @@ static void enc_set_mb_mi(AV1_COMMON *cm, int width, int height) {
   const int aligned_width = ALIGN_POWER_OF_TWO(width, 3);
   const int aligned_height = ALIGN_POWER_OF_TWO(height, 3);
 
-  cm->mi_cols = aligned_width >> MI_SIZE_LOG2;
-  cm->mi_rows = aligned_height >> MI_SIZE_LOG2;
-  cm->mi_stride = calc_mi_size(cm->mi_cols);
+  mi_params->mi_cols = aligned_width >> MI_SIZE_LOG2;
+  mi_params->mi_rows = aligned_height >> MI_SIZE_LOG2;
+  mi_params->mi_stride = calc_mi_size(mi_params->mi_cols);
 
-  cm->mb_cols = (cm->mi_cols + 2) >> 2;
-  cm->mb_rows = (cm->mi_rows + 2) >> 2;
-  cm->MBs = cm->mb_rows * cm->mb_cols;
+  mi_params->mb_cols = (mi_params->mi_cols + 2) >> 2;
+  mi_params->mb_rows = (mi_params->mi_rows + 2) >> 2;
+  mi_params->MBs = mi_params->mb_rows * mi_params->mb_cols;
 
   const int is_4k_or_larger = AOMMIN(width, height) >= 2160;
 
-  cm->mi_alloc_bsize = is_4k_or_larger ? BLOCK_8X8 : BLOCK_4X4;
-  const int mi_alloc_size_1d = mi_size_wide[cm->mi_alloc_bsize];
-  cm->mi_alloc_rows = (cm->mi_rows + mi_alloc_size_1d - 1) / mi_alloc_size_1d;
-  cm->mi_alloc_cols = (cm->mi_cols + mi_alloc_size_1d - 1) / mi_alloc_size_1d;
-  cm->mi_alloc_stride =
-      (cm->mi_stride + mi_alloc_size_1d - 1) / mi_alloc_size_1d;
+  mi_params->mi_alloc_bsize = is_4k_or_larger ? BLOCK_8X8 : BLOCK_4X4;
+  const int mi_alloc_size_1d = mi_size_wide[mi_params->mi_alloc_bsize];
+  mi_params->mi_alloc_rows =
+      (mi_params->mi_rows + mi_alloc_size_1d - 1) / mi_alloc_size_1d;
+  mi_params->mi_alloc_cols =
+      (mi_params->mi_cols + mi_alloc_size_1d - 1) / mi_alloc_size_1d;
+  mi_params->mi_alloc_stride =
+      (mi_params->mi_stride + mi_alloc_size_1d - 1) / mi_alloc_size_1d;
 
-  assert(mi_size_wide[cm->mi_alloc_bsize] == mi_size_high[cm->mi_alloc_bsize]);
+  assert(mi_size_wide[mi_params->mi_alloc_bsize] ==
+         mi_size_high[mi_params->mi_alloc_bsize]);
 
 #if CONFIG_LPF_MASK
-  av1_alloc_loop_filter_mask(cm);
+  av1_alloc_loop_filter_mask(mi_params);
 #endif
 }
 
-static void enc_setup_mi(AV1_COMMON *cm) {
-  const int mi_grid_size = cm->mi_stride * calc_mi_size(cm->mi_rows);
-  memset(cm->mi, 0, cm->mi_alloc_size * sizeof(*cm->mi));
-  memset(cm->mi_grid_base, 0, mi_grid_size * sizeof(*cm->mi_grid_base));
-  memset(cm->tx_type_map, 0, mi_grid_size * sizeof(*cm->tx_type_map));
+static void enc_setup_mi(CommonModeInfoParams *mi_params) {
+  const int mi_grid_size =
+      mi_params->mi_stride * calc_mi_size(mi_params->mi_rows);
+  memset(mi_params->mi, 0, mi_params->mi_alloc_size * sizeof(*mi_params->mi));
+  memset(mi_params->mi_grid_base, 0,
+         mi_grid_size * sizeof(*mi_params->mi_grid_base));
+  memset(mi_params->tx_type_map, 0,
+         mi_grid_size * sizeof(*mi_params->tx_type_map));
 }
 
-static int enc_alloc_mi(AV1_COMMON *cm) {
-  const int mi_grid_size = cm->mi_stride * calc_mi_size(cm->mi_rows);
-  const int alloc_size_1d = mi_size_wide[cm->mi_alloc_bsize];
-  const int alloc_mi_size =
-      cm->mi_alloc_stride * (calc_mi_size(cm->mi_rows) / alloc_size_1d);
+static int enc_alloc_mi(CommonModeInfoParams *mi_params) {
+  const int mi_grid_size =
+      mi_params->mi_stride * calc_mi_size(mi_params->mi_rows);
+  const int alloc_size_1d = mi_size_wide[mi_params->mi_alloc_bsize];
+  const int alloc_mi_size = mi_params->mi_alloc_stride *
+                            (calc_mi_size(mi_params->mi_rows) / alloc_size_1d);
 
-  if (cm->mi_alloc_size < alloc_mi_size || cm->mi_grid_size < mi_grid_size) {
-    cm->free_mi(cm);
+  if (mi_params->mi_alloc_size < alloc_mi_size ||
+      mi_params->mi_grid_size < mi_grid_size) {
+    mi_params->free_mi(mi_params);
 
-    cm->mi = aom_calloc(alloc_mi_size, sizeof(*cm->mi));
-    if (!cm->mi) return 1;
-    cm->mi_alloc_size = alloc_mi_size;
+    mi_params->mi = aom_calloc(alloc_mi_size, sizeof(*mi_params->mi));
+    if (!mi_params->mi) return 1;
+    mi_params->mi_alloc_size = alloc_mi_size;
 
-    cm->mi_grid_base =
+    mi_params->mi_grid_base =
         (MB_MODE_INFO **)aom_calloc(mi_grid_size, sizeof(MB_MODE_INFO *));
-    if (!cm->mi_grid_base) return 1;
-    cm->mi_grid_size = mi_grid_size;
+    if (!mi_params->mi_grid_base) return 1;
+    mi_params->mi_grid_size = mi_grid_size;
 
-    cm->tx_type_map = aom_calloc(calc_mi_size(cm->mi_rows) * cm->mi_stride,
-                                 sizeof(*cm->tx_type_map));
-    if (!cm->tx_type_map) return 1;
+    mi_params->tx_type_map =
+        aom_calloc(calc_mi_size(mi_params->mi_rows) * mi_params->mi_stride,
+                   sizeof(*mi_params->tx_type_map));
+    if (!mi_params->tx_type_map) return 1;
   }
 
   return 0;
 }
 
-static void enc_free_mi(AV1_COMMON *cm) {
-  aom_free(cm->mi);
-  cm->mi = NULL;
-  aom_free(cm->mi_grid_base);
-  cm->mi_grid_base = NULL;
-  cm->mi_alloc_size = 0;
-  aom_free(cm->tx_type_map);
-  cm->tx_type_map = NULL;
+static void enc_free_mi(CommonModeInfoParams *mi_params) {
+  aom_free(mi_params->mi);
+  mi_params->mi = NULL;
+  aom_free(mi_params->mi_grid_base);
+  mi_params->mi_grid_base = NULL;
+  mi_params->mi_alloc_size = 0;
+  aom_free(mi_params->tx_type_map);
+  mi_params->tx_type_map = NULL;
 }
 
 void av1_initialize_enc(void) {
@@ -724,7 +739,8 @@ static void dealloc_context_buffers_ext(AV1_COMP *cpi) {
 
 static void alloc_context_buffers_ext(AV1_COMP *cpi) {
   AV1_COMMON *cm = &cpi->common;
-  const int new_ext_mi_size = cm->mi_alloc_rows * cm->mi_alloc_cols;
+  const int new_ext_mi_size =
+      cm->mi_params.mi_alloc_rows * cm->mi_params.mi_alloc_cols;
 
   if (new_ext_mi_size > cpi->mi_ext_alloc_size) {
     dealloc_context_buffers_ext(cpi);
@@ -906,7 +922,8 @@ static void configure_static_seg_features(AV1_COMP *cpi) {
   // Disable and clear down for KF
   if (cm->current_frame.frame_type == KEY_FRAME) {
     // Clear down the global segmentation map
-    memset(cpi->segmentation_map, 0, cm->mi_rows * cm->mi_cols);
+    memset(cpi->segmentation_map, 0,
+           cm->mi_params.mi_rows * cm->mi_params.mi_cols);
     seg->update_map = 0;
     seg->update_data = 0;
     cpi->static_mb_pct = 0;
@@ -919,7 +936,8 @@ static void configure_static_seg_features(AV1_COMP *cpi) {
   } else if (cpi->refresh_alt_ref_frame) {
     // If this is an alt ref frame
     // Clear down the global segmentation map
-    memset(cpi->segmentation_map, 0, cm->mi_rows * cm->mi_cols);
+    memset(cpi->segmentation_map, 0,
+           cm->mi_params.mi_rows * cm->mi_params.mi_cols);
     seg->update_map = 0;
     seg->update_data = 0;
     cpi->static_mb_pct = 0;
@@ -986,7 +1004,8 @@ static void configure_static_seg_features(AV1_COMP *cpi) {
 
         av1_disable_segmentation(seg);
 
-        memset(cpi->segmentation_map, 0, cm->mi_rows * cm->mi_cols);
+        memset(cpi->segmentation_map, 0,
+               cm->mi_params.mi_rows * cm->mi_params.mi_cols);
 
         seg->update_map = 0;
         seg->update_data = 0;
@@ -1027,17 +1046,17 @@ static void configure_static_seg_features(AV1_COMP *cpi) {
 
 static void update_reference_segmentation_map(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
-  MB_MODE_INFO **mi_4x4_ptr = cm->mi_grid_base;
+  const CommonModeInfoParams *const mi_params = &cm->mi_params;
+  MB_MODE_INFO **mi_4x4_ptr = mi_params->mi_grid_base;
   uint8_t *cache_ptr = cm->cur_frame->seg_map;
-  int row, col;
 
-  for (row = 0; row < cm->mi_rows; row++) {
+  for (int row = 0; row < mi_params->mi_rows; row++) {
     MB_MODE_INFO **mi_4x4 = mi_4x4_ptr;
     uint8_t *cache = cache_ptr;
-    for (col = 0; col < cm->mi_cols; col++, mi_4x4++, cache++)
+    for (int col = 0; col < mi_params->mi_cols; col++, mi_4x4++, cache++)
       cache[0] = mi_4x4[0]->segment_id;
-    mi_4x4_ptr += cm->mi_stride;
-    cache_ptr += cm->mi_cols;
+    mi_4x4_ptr += mi_params->mi_stride;
+    cache_ptr += mi_params->mi_cols;
   }
 }
 
@@ -1100,7 +1119,7 @@ static void alloc_compressor_data(AV1_COMP *cpi) {
   }
 
   int mi_rows_aligned_to_sb =
-      ALIGN_POWER_OF_TWO(cm->mi_rows, cm->seq_params.mib_size_log2);
+      ALIGN_POWER_OF_TWO(cm->mi_params.mi_rows, cm->seq_params.mib_size_log2);
   int sb_rows = mi_rows_aligned_to_sb >> cm->seq_params.mib_size_log2;
 
   av1_alloc_txb_buf(cpi);
@@ -1111,7 +1130,8 @@ static void alloc_compressor_data(AV1_COMP *cpi) {
 
   {
     unsigned int tokens =
-        get_token_alloc(cm->mb_rows, cm->mb_cols, MAX_SB_SIZE_LOG2, num_planes);
+        get_token_alloc(cm->mi_params.mb_rows, cm->mi_params.mb_cols,
+                        MAX_SB_SIZE_LOG2, num_planes);
     CHECK_MEM_ERROR(cm, cpi->tile_tok[0][0],
                     aom_calloc(tokens, sizeof(*cpi->tile_tok[0][0])));
   }
@@ -1147,6 +1167,7 @@ double av1_get_compression_ratio(const AV1_COMMON *const cm,
 
 static void set_tile_info(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
+  const CommonModeInfoParams *const mi_params = &cm->mi_params;
   const SequenceHeader *const seq_params = &cm->seq_params;
   CommonTileParams *const tiles = &cm->tiles;
   int i, start_sb;
@@ -1159,7 +1180,8 @@ static void set_tile_info(AV1_COMP *cpi) {
     tiles->log2_cols = AOMMAX(cpi->oxcf.tile_columns, tiles->min_log2_cols);
     tiles->log2_cols = AOMMIN(tiles->log2_cols, tiles->max_log2_cols);
   } else {
-    int mi_cols = ALIGN_POWER_OF_TWO(cm->mi_cols, seq_params->mib_size_log2);
+    int mi_cols =
+        ALIGN_POWER_OF_TWO(mi_params->mi_cols, seq_params->mib_size_log2);
     int sb_cols = mi_cols >> seq_params->mib_size_log2;
     int size_sb, j = 0;
     tiles->uniform_spacing = 0;
@@ -1172,14 +1194,16 @@ static void set_tile_info(AV1_COMP *cpi) {
     tiles->cols = i;
     tiles->col_start_sb[i] = sb_cols;
   }
-  av1_calculate_tile_cols(seq_params, cm->mi_rows, cm->mi_cols, tiles);
+  av1_calculate_tile_cols(seq_params, mi_params->mi_rows, mi_params->mi_cols,
+                          tiles);
 
   // configure tile rows
   if (tiles->uniform_spacing) {
     tiles->log2_rows = AOMMAX(cpi->oxcf.tile_rows, tiles->min_log2_rows);
     tiles->log2_rows = AOMMIN(tiles->log2_rows, tiles->max_log2_rows);
   } else {
-    int mi_rows = ALIGN_POWER_OF_TWO(cm->mi_rows, seq_params->mib_size_log2);
+    int mi_rows =
+        ALIGN_POWER_OF_TWO(mi_params->mi_rows, seq_params->mib_size_log2);
     int sb_rows = mi_rows >> seq_params->mib_size_log2;
     int size_sb, j = 0;
     for (i = 0, start_sb = 0; start_sb < sb_rows && i < MAX_TILE_ROWS; i++) {
@@ -1191,7 +1215,7 @@ static void set_tile_info(AV1_COMP *cpi) {
     tiles->rows = i;
     tiles->row_start_sb[i] = sb_rows;
   }
-  av1_calculate_tile_rows(seq_params, cm->mi_rows, tiles);
+  av1_calculate_tile_rows(seq_params, mi_params->mi_rows, tiles);
 }
 
 static void update_frame_size(AV1_COMP *cpi) {
@@ -1203,11 +1227,12 @@ static void update_frame_size(AV1_COMP *cpi) {
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate context buffers");
   }
-  av1_init_context_buffers(cm);
+  av1_init_mi_buffers(&cm->mi_params);
 
   av1_init_macroblockd(cm, xd, NULL);
 
-  const int ext_mi_size = cm->mi_alloc_rows * cm->mi_alloc_cols;
+  const int ext_mi_size =
+      cm->mi_params.mi_alloc_rows * cm->mi_params.mi_alloc_cols;
   alloc_context_buffers_ext(cpi);
   memset(cpi->mbmi_ext_frame_base, 0,
          ext_mi_size * sizeof(*cpi->mbmi_ext_frame_base));
@@ -2652,21 +2677,23 @@ static void highbd_set_var_fns(AV1_COMP *const cpi) {
 
 static void realloc_segmentation_maps(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
+  CommonModeInfoParams *const mi_params = &cm->mi_params;
 
   // Create the encoder segmentation map and set all entries to 0
   aom_free(cpi->segmentation_map);
   CHECK_MEM_ERROR(cm, cpi->segmentation_map,
-                  aom_calloc(cm->mi_rows * cm->mi_cols, 1));
+                  aom_calloc(mi_params->mi_rows * mi_params->mi_cols, 1));
 
   // Create a map used for cyclic background refresh.
   if (cpi->cyclic_refresh) av1_cyclic_refresh_free(cpi->cyclic_refresh);
-  CHECK_MEM_ERROR(cm, cpi->cyclic_refresh,
-                  av1_cyclic_refresh_alloc(cm->mi_rows, cm->mi_cols));
+  CHECK_MEM_ERROR(
+      cm, cpi->cyclic_refresh,
+      av1_cyclic_refresh_alloc(mi_params->mi_rows, mi_params->mi_cols));
 
   // Create a map used to mark inactive areas.
   aom_free(cpi->active_map.map);
   CHECK_MEM_ERROR(cm, cpi->active_map.map,
-                  aom_calloc(cm->mi_rows * cm->mi_cols, 1));
+                  aom_calloc(mi_params->mi_rows * mi_params->mi_cols, 1));
 }
 
 static void set_tpl_stats_block_size(AV1_COMP *cpi) {
@@ -2965,12 +2992,14 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf, BufferPool *const pool,
   }
 
   cm->error.setjmp = 1;
-  cm->alloc_mi = enc_alloc_mi;
-  cm->free_mi = enc_free_mi;
-  cm->setup_mi = enc_setup_mi;
-  cm->set_mb_mi = enc_set_mb_mi;
 
-  cm->mi_alloc_bsize = BLOCK_4X4;
+  CommonModeInfoParams *const mi_params = &cm->mi_params;
+  mi_params->alloc_mi = enc_alloc_mi;
+  mi_params->free_mi = enc_free_mi;
+  mi_params->setup_mi = enc_setup_mi;
+  mi_params->set_mb_mi = enc_set_mb_mi;
+
+  mi_params->mi_alloc_bsize = BLOCK_4X4;
 
   CHECK_MEM_ERROR(cm, cm->fc,
                   (FRAME_CONTEXT *)aom_memalign(32, sizeof(*cm->fc)));
@@ -3042,9 +3071,10 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf, BufferPool *const pool,
   }
 
   if (cpi->b_calculate_consistency) {
-    CHECK_MEM_ERROR(cm, cpi->ssim_vars,
-                    aom_malloc(sizeof(*cpi->ssim_vars) * 4 *
-                               cpi->common.mi_rows * cpi->common.mi_cols));
+    CHECK_MEM_ERROR(
+        cm, cpi->ssim_vars,
+        aom_malloc(sizeof(*cpi->ssim_vars) * 4 * cpi->common.mi_params.mi_rows *
+                   cpi->common.mi_params.mi_cols));
     cpi->worst_consistency = 100.0;
   }
 #endif
@@ -3133,8 +3163,8 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf, BufferPool *const pool,
     const int bsize = BLOCK_16X16;
     const int w = mi_size_wide[bsize];
     const int h = mi_size_high[bsize];
-    const int num_cols = (cm->mi_cols + w - 1) / w;
-    const int num_rows = (cm->mi_rows + h - 1) / h;
+    const int num_cols = (mi_params->mi_cols + w - 1) / w;
+    const int num_rows = (mi_params->mi_rows + h - 1) / h;
     CHECK_MEM_ERROR(cm, cpi->tpl_rdmult_scaling_factors,
                     aom_calloc(num_rows * num_cols,
                                sizeof(*cpi->tpl_rdmult_scaling_factors)));
@@ -3147,8 +3177,8 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf, BufferPool *const pool,
     const int bsize = BLOCK_16X16;
     const int w = mi_size_wide[bsize];
     const int h = mi_size_high[bsize];
-    const int num_cols = (cm->mi_cols + w - 1) / w;
-    const int num_rows = (cm->mi_rows + h - 1) / h;
+    const int num_cols = (mi_params->mi_cols + w - 1) / w;
+    const int num_rows = (mi_params->mi_rows + h - 1) / h;
     CHECK_MEM_ERROR(cm, cpi->ssim_rdmult_scaling_factors,
                     aom_calloc(num_rows * num_cols,
                                sizeof(*cpi->ssim_rdmult_scaling_factors)));
@@ -3159,8 +3189,8 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf, BufferPool *const pool,
     const int bsize = BLOCK_64X64;
     const int w = mi_size_wide[bsize];
     const int h = mi_size_high[bsize];
-    const int num_cols = (cm->mi_cols + w - 1) / w;
-    const int num_rows = (cm->mi_rows + h - 1) / h;
+    const int num_cols = (mi_params->mi_cols + w - 1) / w;
+    const int num_rows = (mi_params->mi_rows + h - 1) / h;
     CHECK_MEM_ERROR(cm, cpi->vmaf_rdmult_scaling_factors,
                     aom_calloc(num_rows * num_cols,
                                sizeof(*cpi->vmaf_rdmult_scaling_factors)));
@@ -3170,8 +3200,10 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf, BufferPool *const pool,
   set_tpl_stats_block_size(cpi);
 
   for (int frame = 0; frame < MAX_LENGTH_TPL_FRAME_STATS; ++frame) {
-    const int mi_cols = ALIGN_POWER_OF_TWO(cm->mi_cols, MAX_MIB_SIZE_LOG2);
-    const int mi_rows = ALIGN_POWER_OF_TWO(cm->mi_rows, MAX_MIB_SIZE_LOG2);
+    const int mi_cols =
+        ALIGN_POWER_OF_TWO(mi_params->mi_cols, MAX_MIB_SIZE_LOG2);
+    const int mi_rows =
+        ALIGN_POWER_OF_TWO(mi_params->mi_rows, MAX_MIB_SIZE_LOG2);
 
     cpi->tpl_stats_buffer[frame].is_valid = 0;
     cpi->tpl_stats_buffer[frame].width =
@@ -3179,8 +3211,8 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf, BufferPool *const pool,
     cpi->tpl_stats_buffer[frame].height =
         mi_rows >> cpi->tpl_stats_block_mis_log2;
     cpi->tpl_stats_buffer[frame].stride = cpi->tpl_stats_buffer[frame].width;
-    cpi->tpl_stats_buffer[frame].mi_rows = cm->mi_rows;
-    cpi->tpl_stats_buffer[frame].mi_cols = cm->mi_cols;
+    cpi->tpl_stats_buffer[frame].mi_rows = mi_params->mi_rows;
+    cpi->tpl_stats_buffer[frame].mi_cols = mi_params->mi_cols;
   }
 
   for (int frame = 0; frame < MAX_LAG_BUFFERS; ++frame) {
@@ -4089,7 +4121,7 @@ static void process_tpl_stats_frame(AV1_COMP *cpi) {
     const int step = 1 << cpi->tpl_stats_block_mis_log2;
     const int mi_cols_sr = av1_pixels_to_mi(cm->superres_upscaled_width);
 
-    for (int row = 0; row < cm->mi_rows; row += step) {
+    for (int row = 0; row < cm->mi_params.mi_rows; row += step) {
       for (int col = 0; col < mi_cols_sr; col += step) {
         TplDepStats *this_stats =
             &tpl_stats[av1_tpl_ptr_pos(cpi, row, col, tpl_stride)];
@@ -4149,10 +4181,10 @@ static void process_tpl_stats_frame(AV1_COMP *cpi) {
         }
       }
 #if !USE_TPL_CLASSIC_MODEL
-      cpi->rd.mc_count_base =
-          (double)mc_count_base / (cm->mi_rows * cm->mi_cols);
-      cpi->rd.mc_saved_base =
-          (double)mc_saved_base / (cm->mi_rows * cm->mi_cols);
+      cpi->rd.mc_count_base = (double)mc_count_base /
+                              (cm->mi_params.mi_rows * cm->mi_params.mi_cols);
+      cpi->rd.mc_saved_base = (double)mc_saved_base /
+                              (cm->mi_params.mi_rows * cm->mi_params.mi_cols);
 #endif  // !USE_TPL_CLASSIC_MODEL
       aom_clear_system_state();
     }
@@ -4277,7 +4309,7 @@ void av1_check_initial_width(AV1_COMP *cpi, int use_highbitdepth,
 
     cpi->initial_width = cm->width;
     cpi->initial_height = cm->height;
-    cpi->initial_mbs = cm->MBs;
+    cpi->initial_mbs = cm->mi_params.MBs;
   }
 }
 
@@ -4331,7 +4363,7 @@ void av1_set_frame_size(AV1_COMP *cpi, int width, int height) {
 
   // Allocate above context buffers
   if (cm->num_allocated_above_context_planes < av1_num_planes(cm) ||
-      cm->num_allocated_above_context_mi_col < cm->mi_cols ||
+      cm->num_allocated_above_context_mi_col < cm->mi_params.mi_cols ||
       cm->num_allocated_above_contexts < cm->tiles.rows) {
     av1_free_above_context_buffers(cm, cm->num_allocated_above_contexts);
     if (av1_alloc_above_context_buffers(cm, cm->tiles.rows))
@@ -6093,7 +6125,7 @@ static void refresh_reference_frames(AV1_COMP *cpi) {
 }
 
 static void set_mb_ssim_rdmult_scaling(AV1_COMP *cpi) {
-  AV1_COMMON *cm = &cpi->common;
+  const CommonModeInfoParams *const mi_params = &cpi->common.mi_params;
   ThreadData *td = &cpi->td;
   MACROBLOCK *x = &td->mb;
   MACROBLOCKD *xd = &x->e_mbd;
@@ -6103,24 +6135,23 @@ static void set_mb_ssim_rdmult_scaling(AV1_COMP *cpi) {
 
   const int num_mi_w = mi_size_wide[block_size];
   const int num_mi_h = mi_size_high[block_size];
-  const int num_cols = (cm->mi_cols + num_mi_w - 1) / num_mi_w;
-  const int num_rows = (cm->mi_rows + num_mi_h - 1) / num_mi_h;
+  const int num_cols = (mi_params->mi_cols + num_mi_w - 1) / num_mi_w;
+  const int num_rows = (mi_params->mi_rows + num_mi_h - 1) / num_mi_h;
   double log_sum = 0.0;
-  int row, col;
   const int use_hbd = cpi->source->flags & YV12_FLAG_HIGHBITDEPTH;
 
   // Loop through each 16x16 block.
-  for (row = 0; row < num_rows; ++row) {
-    for (col = 0; col < num_cols; ++col) {
-      int mi_row, mi_col;
+  for (int row = 0; row < num_rows; ++row) {
+    for (int col = 0; col < num_cols; ++col) {
       double var = 0.0, num_of_var = 0.0;
       const int index = row * num_cols + col;
 
       // Loop through each 8x8 block.
-      for (mi_row = row * num_mi_h;
-           mi_row < cm->mi_rows && mi_row < (row + 1) * num_mi_h; mi_row += 2) {
-        for (mi_col = col * num_mi_w;
-             mi_col < cm->mi_cols && mi_col < (col + 1) * num_mi_w;
+      for (int mi_row = row * num_mi_h;
+           mi_row < mi_params->mi_rows && mi_row < (row + 1) * num_mi_h;
+           mi_row += 2) {
+        for (int mi_col = col * num_mi_w;
+             mi_col < mi_params->mi_cols && mi_col < (col + 1) * num_mi_w;
              mi_col += 2) {
           struct buf_2d buf;
           const int row_offset_y = mi_row << 2;
@@ -6150,14 +6181,12 @@ static void set_mb_ssim_rdmult_scaling(AV1_COMP *cpi) {
   }
   log_sum = exp(log_sum / (double)(num_rows * num_cols));
 
-  for (row = 0; row < num_rows; ++row) {
-    for (col = 0; col < num_cols; ++col) {
+  for (int row = 0; row < num_rows; ++row) {
+    for (int col = 0; col < num_cols; ++col) {
       const int index = row * num_cols + col;
       cpi->ssim_rdmult_scaling_factors[index] /= log_sum;
     }
   }
-
-  (void)xd;
 }
 
 #if CONFIG_DEBUG
@@ -6410,7 +6439,7 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
       update_reference_segmentation_map(cpi);
     } else if (cm->last_frame_seg_map) {
       memcpy(cm->cur_frame->seg_map, cm->last_frame_seg_map,
-             cm->mi_cols * cm->mi_rows * sizeof(uint8_t));
+             cm->mi_params.mi_cols * cm->mi_params.mi_rows * sizeof(uint8_t));
     }
   }
 

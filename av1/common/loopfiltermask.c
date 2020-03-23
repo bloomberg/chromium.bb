@@ -964,7 +964,7 @@ void av1_filter_block_plane_bitmask_vert(
     const int shift = get_index_shift(col, row, &index);
     int index_next = 0;
     const int shift_next = get_index_shift(col, row_next, &index_next);
-    const int has_next_row = row_next < cm->mi_rows;
+    const int has_next_row = row_next < cm->mi_params.mi_rows;
     switch (pl) {
       case 0:
         mask_16x16 = lfm->left_y[TX_16X16].bits[index];

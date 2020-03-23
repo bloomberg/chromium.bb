@@ -31,9 +31,9 @@ void av1_get_tile_limits(AV1_COMMON *const cm) {
   const SequenceHeader *const seq_params = &cm->seq_params;
   CommonTileParams *const tiles = &cm->tiles;
   const int mi_cols =
-      ALIGN_POWER_OF_TWO(cm->mi_cols, seq_params->mib_size_log2);
+      ALIGN_POWER_OF_TWO(cm->mi_params.mi_cols, seq_params->mib_size_log2);
   const int mi_rows =
-      ALIGN_POWER_OF_TWO(cm->mi_rows, seq_params->mib_size_log2);
+      ALIGN_POWER_OF_TWO(cm->mi_params.mi_rows, seq_params->mib_size_log2);
   const int sb_cols = mi_cols >> seq_params->mib_size_log2;
   const int sb_rows = mi_rows >> seq_params->mib_size_log2;
 
@@ -135,7 +135,7 @@ void av1_tile_set_row(TileInfo *tile, const AV1_COMMON *cm, int row) {
                    << cm->seq_params.mib_size_log2;
   tile->tile_row = row;
   tile->mi_row_start = mi_row_start;
-  tile->mi_row_end = AOMMIN(mi_row_end, cm->mi_rows);
+  tile->mi_row_end = AOMMIN(mi_row_end, cm->mi_params.mi_rows);
   assert(tile->mi_row_end > tile->mi_row_start);
 }
 
@@ -147,7 +147,7 @@ void av1_tile_set_col(TileInfo *tile, const AV1_COMMON *cm, int col) {
                    << cm->seq_params.mib_size_log2;
   tile->tile_col = col;
   tile->mi_col_start = mi_col_start;
-  tile->mi_col_end = AOMMIN(mi_col_end, cm->mi_cols);
+  tile->mi_col_end = AOMMIN(mi_col_end, cm->mi_params.mi_cols);
   assert(tile->mi_col_end > tile->mi_col_start);
 }
 

@@ -359,6 +359,44 @@ typedef struct CommonTileParams {
   unsigned int single_tile_decoding;
 } CommonTileParams;
 
+// Struct containing params related to MB_MODE_INFO arrays and related info.
+typedef struct CommonModeInfoParams CommonModeInfoParams;
+struct CommonModeInfoParams {
+  // MBs, mb_rows/cols is in 16-pixel units; mi_rows/cols is in
+  // MB_MODE_INFO (4-pixel) units.
+  int MBs;
+  int mb_rows;
+  int mb_cols;
+
+  int mi_rows;
+  int mi_cols;
+
+  // Corresponds to upper left visible macroblock
+  MB_MODE_INFO *mi;
+  int mi_alloc_size;
+  // The minimum size each allocated mi can correspond to.
+  // For decoder, this is always BLOCK_4X4.
+  // For encoder, this is currently set to BLOCK_4X4 for resolution below 4k,
+  // and BLOCK_8X8 for resolution above 4k
+  BLOCK_SIZE mi_alloc_bsize;
+  int mi_alloc_rows, mi_alloc_cols, mi_alloc_stride;
+
+  // Grid of pointers to 4x4 MB_MODE_INFO structs. Any 4x4 not in the visible
+  // area will be NULL.
+  MB_MODE_INFO **mi_grid_base;
+  int mi_grid_size;
+  int mi_stride;
+
+  uint8_t *tx_type_map;
+
+  // Separate mi functions between encoder and decoder.
+  int (*alloc_mi)(struct CommonModeInfoParams *mi_params);
+  void (*free_mi)(struct CommonModeInfoParams *mi_params);
+  void (*setup_mi)(struct CommonModeInfoParams *mi_params);
+  void (*set_mb_mi)(struct CommonModeInfoParams *mi_params, int width,
+                    int height);
+};
+
 typedef struct AV1Common {
   // Information about the current frame that is being coded.
   CurrentFrame current_frame;
@@ -469,12 +507,8 @@ typedef struct AV1Common {
   // Whether some features are allowed or not.
   FeatureFlags features;
 
-  // MBs, mb_rows/cols is in 16-pixel units; mi_rows/cols is in
-  // MB_MODE_INFO (4-pixel) units.
-  int MBs;
-  int mb_rows, mi_rows;
-  int mb_cols, mi_cols;
-  int mi_stride;
+  // Params related to MB_MODE_INFO arrays and related info.
+  CommonModeInfoParams mi_params;
 
   /* profile settings */
   TX_MODE tx_mode;
@@ -510,29 +544,6 @@ typedef struct AV1Common {
   int qm_y;
   int qm_u;
   int qm_v;
-
-  /* We allocate a MB_MODE_INFO struct for each macroblock, together with
-     an extra row on top and column on the left to simplify prediction. */
-  int mi_alloc_size, mi_grid_size;
-  MB_MODE_INFO *mi; /* Corresponds to upper left visible macroblock */
-  uint8_t *tx_type_map;
-
-  // The minimum size each allocated mi can correspond to.
-  // For decoder, this is always BLOCK_4X4.
-  // For encoder, this is currently set to BLOCK_4X4 for resolution below 4k,
-  // and BLOCK_8X8 for resolution above 4k
-  BLOCK_SIZE mi_alloc_bsize;
-  int mi_alloc_rows, mi_alloc_cols, mi_alloc_stride;
-
-  // Separate mi functions between encoder and decoder.
-  int (*alloc_mi)(struct AV1Common *cm);
-  void (*free_mi)(struct AV1Common *cm);
-  void (*setup_mi)(struct AV1Common *cm);
-  void (*set_mb_mi)(struct AV1Common *cm, int height, int width);
-
-  // Grid of pointers to 4x4 MB_MODE_INFO structs. Any 4x4 not in the visible
-  // area will be NULL.
-  MB_MODE_INFO **mi_grid_base;
 
   uint8_t *last_frame_seg_map;
 
@@ -766,23 +777,26 @@ static INLINE int frame_might_allow_warped_motion(const AV1_COMMON *cm) {
 static INLINE void ensure_mv_buffer(RefCntBuffer *buf, AV1_COMMON *cm) {
   const int buf_rows = buf->mi_rows;
   const int buf_cols = buf->mi_cols;
+  const CommonModeInfoParams *const mi_params = &cm->mi_params;
 
-  if (buf->mvs == NULL || buf_rows != cm->mi_rows || buf_cols != cm->mi_cols) {
+  if (buf->mvs == NULL || buf_rows != mi_params->mi_rows ||
+      buf_cols != mi_params->mi_cols) {
     aom_free(buf->mvs);
-    buf->mi_rows = cm->mi_rows;
-    buf->mi_cols = cm->mi_cols;
+    buf->mi_rows = mi_params->mi_rows;
+    buf->mi_cols = mi_params->mi_cols;
     CHECK_MEM_ERROR(cm, buf->mvs,
-                    (MV_REF *)aom_calloc(
-                        ((cm->mi_rows + 1) >> 1) * ((cm->mi_cols + 1) >> 1),
-                        sizeof(*buf->mvs)));
+                    (MV_REF *)aom_calloc(((mi_params->mi_rows + 1) >> 1) *
+                                             ((mi_params->mi_cols + 1) >> 1),
+                                         sizeof(*buf->mvs)));
     aom_free(buf->seg_map);
-    CHECK_MEM_ERROR(cm, buf->seg_map,
-                    (uint8_t *)aom_calloc(cm->mi_rows * cm->mi_cols,
-                                          sizeof(*buf->seg_map)));
+    CHECK_MEM_ERROR(
+        cm, buf->seg_map,
+        (uint8_t *)aom_calloc(mi_params->mi_rows * mi_params->mi_cols,
+                              sizeof(*buf->seg_map)));
   }
 
   const int mem_size =
-      ((cm->mi_rows + MAX_MIB_SIZE) >> 1) * (cm->mi_stride >> 1);
+      ((mi_params->mi_rows + MAX_MIB_SIZE) >> 1) * (mi_params->mi_stride >> 1);
   int realloc = cm->tpl_mvs == NULL;
   if (cm->tpl_mvs) realloc |= cm->tpl_mvs_mem_size < mem_size;
 
@@ -835,7 +849,7 @@ static INLINE void av1_init_macroblockd(AV1_COMMON *cm, MACROBLOCKD *xd,
       }
     }
   }
-  xd->mi_stride = cm->mi_stride;
+  xd->mi_stride = cm->mi_params.mi_stride;
   xd->error_info = &cm->error;
   cfl_init(&xd->cfl, &cm->seq_params);
 }
@@ -1199,26 +1213,27 @@ static INLINE void set_txfm_ctxs(TX_SIZE tx_size, int n4_w, int n4_h, int skip,
   set_txfm_ctx(xd->left_txfm_context, bh, n4_h);
 }
 
-static INLINE int get_mi_grid_idx(const AV1_COMMON *cm, int mi_row,
-                                  int mi_col) {
-  return mi_row * cm->mi_stride + mi_col;
+static INLINE int get_mi_grid_idx(const CommonModeInfoParams *const mi_params,
+                                  int mi_row, int mi_col) {
+  return mi_row * mi_params->mi_stride + mi_col;
 }
 
-static INLINE int get_alloc_mi_idx(const AV1_COMMON *cm, int mi_row,
-                                   int mi_col) {
-  const int mi_alloc_size_1d = mi_size_wide[cm->mi_alloc_bsize];
+static INLINE int get_alloc_mi_idx(const CommonModeInfoParams *const mi_params,
+                                   int mi_row, int mi_col) {
+  const int mi_alloc_size_1d = mi_size_wide[mi_params->mi_alloc_bsize];
   const int mi_alloc_row = mi_row / mi_alloc_size_1d;
   const int mi_alloc_col = mi_col / mi_alloc_size_1d;
 
-  return mi_alloc_row * cm->mi_alloc_stride + mi_alloc_col;
+  return mi_alloc_row * mi_params->mi_alloc_stride + mi_alloc_col;
 }
 
-static INLINE int get_mi_ext_idx(const AV1_COMMON *cm, int mi_row, int mi_col) {
-  const int mi_alloc_size_1d = mi_size_wide[cm->mi_alloc_bsize];
+static INLINE int get_mi_ext_idx(const CommonModeInfoParams *const mi_params,
+                                 int mi_row, int mi_col) {
+  const int mi_alloc_size_1d = mi_size_wide[mi_params->mi_alloc_bsize];
   const int mi_alloc_row = mi_row / mi_alloc_size_1d;
   const int mi_alloc_col = mi_col / mi_alloc_size_1d;
 
-  return mi_alloc_row * cm->mi_alloc_cols + mi_alloc_col;
+  return mi_alloc_row * mi_params->mi_alloc_cols + mi_alloc_col;
 }
 
 static INLINE void txfm_partition_update(TXFM_CONTEXT *above_ctx,
@@ -1313,10 +1328,12 @@ static INLINE int txfm_partition_context(const TXFM_CONTEXT *const above_ctx,
 static INLINE PARTITION_TYPE get_partition(const AV1_COMMON *const cm,
                                            int mi_row, int mi_col,
                                            BLOCK_SIZE bsize) {
-  if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return PARTITION_INVALID;
+  const CommonModeInfoParams *const mi_params = &cm->mi_params;
+  if (mi_row >= mi_params->mi_rows || mi_col >= mi_params->mi_cols)
+    return PARTITION_INVALID;
 
-  const int offset = mi_row * cm->mi_stride + mi_col;
-  MB_MODE_INFO **mi = cm->mi_grid_base + offset;
+  const int offset = mi_row * mi_params->mi_stride + mi_col;
+  MB_MODE_INFO **mi = mi_params->mi_grid_base + offset;
   const BLOCK_SIZE subsize = mi[0]->sb_type;
 
   if (subsize == bsize) return PARTITION_NONE;
@@ -1326,12 +1343,12 @@ static INLINE PARTITION_TYPE get_partition(const AV1_COMMON *const cm,
   const int sshigh = mi_size_high[subsize];
   const int sswide = mi_size_wide[subsize];
 
-  if (bsize > BLOCK_8X8 && mi_row + bwide / 2 < cm->mi_rows &&
-      mi_col + bhigh / 2 < cm->mi_cols) {
+  if (bsize > BLOCK_8X8 && mi_row + bwide / 2 < mi_params->mi_rows &&
+      mi_col + bhigh / 2 < mi_params->mi_cols) {
     // In this case, the block might be using an extended partition
     // type.
     const MB_MODE_INFO *const mbmi_right = mi[bwide / 2];
-    const MB_MODE_INFO *const mbmi_below = mi[bhigh / 2 * cm->mi_stride];
+    const MB_MODE_INFO *const mbmi_below = mi[bhigh / 2 * mi_params->mi_stride];
 
     if (sswide == bwide) {
       // Smaller height but same width. Is PARTITION_HORZ_4, PARTITION_HORZ or
@@ -1421,17 +1438,19 @@ static INLINE int is_valid_seq_level_idx(AV1_LEVEL seq_level_idx) {
 }
 
 static INLINE void init_frame_info(FRAME_INFO *frame_info,
-                                   AV1_COMMON *const cm) {
+                                   const AV1_COMMON *const cm) {
+  const CommonModeInfoParams *const mi_params = &cm->mi_params;
+  const SequenceHeader *const seq_params = &cm->seq_params;
   frame_info->frame_width = cm->width;
   frame_info->frame_height = cm->height;
-  frame_info->mi_cols = cm->mi_cols;
-  frame_info->mi_rows = cm->mi_rows;
-  frame_info->mb_cols = cm->mb_cols;
-  frame_info->mb_rows = cm->mb_rows;
-  frame_info->num_mbs = cm->MBs;
-  frame_info->bit_depth = cm->seq_params.bit_depth;
-  frame_info->subsampling_x = cm->seq_params.subsampling_x;
-  frame_info->subsampling_y = cm->seq_params.subsampling_y;
+  frame_info->mi_cols = mi_params->mi_cols;
+  frame_info->mi_rows = mi_params->mi_rows;
+  frame_info->mb_cols = mi_params->mb_cols;
+  frame_info->mb_rows = mi_params->mb_rows;
+  frame_info->num_mbs = mi_params->MBs;
+  frame_info->bit_depth = seq_params->bit_depth;
+  frame_info->subsampling_x = seq_params->subsampling_x;
+  frame_info->subsampling_y = seq_params->subsampling_y;
 }
 
 #ifdef __cplusplus

@@ -252,16 +252,17 @@ static AOM_INLINE void first_pass_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
   }
 }
 
-static BLOCK_SIZE get_bsize(const AV1_COMMON *cm, int mb_row, int mb_col) {
+static BLOCK_SIZE get_bsize(const CommonModeInfoParams *const mi_params,
+                            int mb_row, int mb_col) {
   if (mi_size_wide[BLOCK_16X16] * mb_col + mi_size_wide[BLOCK_8X8] <
-      cm->mi_cols) {
+      mi_params->mi_cols) {
     return mi_size_wide[BLOCK_16X16] * mb_row + mi_size_wide[BLOCK_8X8] <
-                   cm->mi_rows
+                   mi_params->mi_rows
                ? BLOCK_16X16
                : BLOCK_16X8;
   } else {
     return mi_size_wide[BLOCK_16X16] * mb_row + mi_size_wide[BLOCK_8X8] <
-                   cm->mi_rows
+                   mi_params->mi_rows
                ? BLOCK_8X16
                : BLOCK_8X8;
   }
@@ -300,6 +301,7 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
   int mb_row, mb_col;
   MACROBLOCK *const x = &cpi->td.mb;
   AV1_COMMON *const cm = &cpi->common;
+  const CommonModeInfoParams *const mi_params = &cm->mi_params;
   CurrentFrame *const current_frame = &cm->current_frame;
   const SequenceHeader *const seq_params = &cm->seq_params;
   const int num_planes = av1_num_planes(cm);
@@ -355,9 +357,9 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
 
   int *raw_motion_err_list;
   int raw_motion_err_counts = 0;
-  CHECK_MEM_ERROR(
-      cm, raw_motion_err_list,
-      aom_calloc(cm->mb_rows * cm->mb_cols, sizeof(*raw_motion_err_list)));
+  CHECK_MEM_ERROR(cm, raw_motion_err_list,
+                  aom_calloc(mi_params->mb_rows * mi_params->mb_cols,
+                             sizeof(*raw_motion_err_list)));
   // First pass code requires valid last and new frame buffers.
   assert(new_yv12 != NULL);
   assert(frame_is_intra_only(cm) || (lst_yv12 != NULL));
@@ -365,8 +367,8 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
   av1_setup_frame_size(cpi);
   aom_clear_system_state();
 
-  xd->mi = cm->mi_grid_base;
-  xd->mi[0] = cm->mi;
+  xd->mi = mi_params->mi_grid_base;
+  xd->mi[0] = mi_params->mi;
   x->e_mbd.mi[0]->sb_type = BLOCK_16X16;
 
   intra_factor = 0.0;
@@ -390,8 +392,8 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
     av1_setup_pre_planes(xd, 0, lst_yv12, 0, 0, NULL, num_planes);
   }
 
-  xd->mi = cm->mi_grid_base;
-  xd->mi[0] = cm->mi;
+  xd->mi = mi_params->mi_grid_base;
+  xd->mi[0] = mi_params->mi;
 
   // Don't store luma on the fist pass since chroma is not computed
   xd->cfl.store_y = 0;
@@ -415,7 +417,7 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
   recon_uv_stride = new_yv12->uv_stride;
   uv_mb_height = 16 >> (new_yv12->y_height > new_yv12->uv_height);
 
-  for (mb_row = 0; mb_row < cm->mb_rows; ++mb_row) {
+  for (mb_row = 0; mb_row < mi_params->mb_rows; ++mb_row) {
     MV best_ref_mv = kZeroMv;
 
     // Reset above block coeffs.
@@ -428,26 +430,26 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
 
     // Set up limit values for motion vectors to prevent them extending
     // outside the UMV borders.
-    av1_set_mv_row_limits(cm, &x->mv_limits, (mb_row << 2),
+    av1_set_mv_row_limits(mi_params, &x->mv_limits, (mb_row << 2),
                           (16 >> MI_SIZE_LOG2), cpi->oxcf.border_in_pixels);
 
-    for (mb_col = 0; mb_col < cm->mb_cols; ++mb_col) {
+    for (mb_col = 0; mb_col < mi_params->mb_cols; ++mb_col) {
       int this_intra_error;
       const int use_dc_pred = (mb_col || mb_row) && (!mb_col || !mb_row);
-      const BLOCK_SIZE bsize = get_bsize(cm, mb_row, mb_col);
+      const BLOCK_SIZE bsize = get_bsize(mi_params, mb_row, mb_col);
       double log_intra;
       int level_sample;
 
       aom_clear_system_state();
 
       const int grid_idx =
-          get_mi_grid_idx(cm, mb_row * mb_scale, mb_col * mb_scale);
+          get_mi_grid_idx(mi_params, mb_row * mb_scale, mb_col * mb_scale);
       const int mi_idx =
-          get_alloc_mi_idx(cm, mb_row * mb_scale, mb_col * mb_scale);
-      xd->mi = cm->mi_grid_base + grid_idx;
-      xd->mi[0] = cm->mi + mi_idx;
-      xd->tx_type_map = cm->tx_type_map + grid_idx;
-      xd->tx_type_map_stride = cm->mi_stride;
+          get_alloc_mi_idx(mi_params, mb_row * mb_scale, mb_col * mb_scale);
+      xd->mi = mi_params->mi_grid_base + grid_idx;
+      xd->mi[0] = mi_params->mi + mi_idx;
+      xd->tx_type_map = mi_params->tx_type_map + grid_idx;
+      xd->tx_type_map_stride = mi_params->mi_stride;
       xd->plane[0].dst.buf = new_yv12->y_buffer + recon_yoffset;
       xd->plane[1].dst.buf = new_yv12->u_buffer + recon_uvoffset;
       xd->plane[2].dst.buf = new_yv12->v_buffer + recon_uvoffset;
@@ -455,8 +457,8 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
       xd->mi[0]->sb_type = bsize;
       xd->mi[0]->ref_frame[0] = INTRA_FRAME;
       set_mi_row_col(xd, &tile, mb_row * mb_scale, mi_size_high[bsize],
-                     mb_col * mb_scale, mi_size_wide[bsize], cm->mi_rows,
-                     cm->mi_cols);
+                     mb_col * mb_scale, mi_size_wide[bsize], mi_params->mi_rows,
+                     mi_params->mi_cols);
 
       set_plane_n4(xd, mi_size_wide[bsize], mi_size_high[bsize], num_planes);
 
@@ -528,7 +530,7 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
 
       // Set up limit values for motion vectors to prevent them extending
       // outside the UMV borders.
-      av1_set_mv_col_limits(cm, &x->mv_limits, (mb_col << 2),
+      av1_set_mv_col_limits(mi_params, &x->mv_limits, (mb_col << 2),
                             (16 >> MI_SIZE_LOG2), cpi->oxcf.border_in_pixels);
 
       if (!frame_is_intra_only(cm)) {  // Do a motion search
@@ -723,12 +725,12 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
             lastmv = best_mv;
 
             // Does the row vector point inwards or outwards?
-            if (mb_row < cm->mb_rows / 2) {
+            if (mb_row < mi_params->mb_rows / 2) {
               if (mv.row > 0)
                 --sum_in_vectors;
               else if (mv.row < 0)
                 ++sum_in_vectors;
-            } else if (mb_row > cm->mb_rows / 2) {
+            } else if (mb_row > mi_params->mb_rows / 2) {
               if (mv.row > 0)
                 ++sum_in_vectors;
               else if (mv.row < 0)
@@ -736,12 +738,12 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
             }
 
             // Does the col vector point inwards or outwards?
-            if (mb_col < cm->mb_cols / 2) {
+            if (mb_col < mi_params->mb_cols / 2) {
               if (mv.col > 0)
                 --sum_in_vectors;
               else if (mv.col < 0)
                 ++sum_in_vectors;
-            } else if (mb_col > cm->mb_cols / 2) {
+            } else if (mb_col > mi_params->mb_cols / 2) {
               if (mv.col > 0)
                 ++sum_in_vectors;
               else if (mv.col < 0)
@@ -767,11 +769,12 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
       alt_yv12_yoffset += 16;
     }
     // Adjust to the next row of MBs.
-    x->plane[0].src.buf += 16 * x->plane[0].src.stride - 16 * cm->mb_cols;
-    x->plane[1].src.buf +=
-        uv_mb_height * x->plane[1].src.stride - uv_mb_height * cm->mb_cols;
-    x->plane[2].src.buf +=
-        uv_mb_height * x->plane[1].src.stride - uv_mb_height * cm->mb_cols;
+    x->plane[0].src.buf +=
+        16 * x->plane[0].src.stride - 16 * mi_params->mb_cols;
+    x->plane[1].src.buf += uv_mb_height * x->plane[1].src.stride -
+                           uv_mb_height * mi_params->mb_cols;
+    x->plane[2].src.buf += uv_mb_height * x->plane[1].src.stride -
+                           uv_mb_height * mi_params->mb_cols;
 
     aom_clear_system_state();
   }
@@ -781,14 +784,14 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
 
   // Clamp the image start to rows/2. This number of rows is discarded top
   // and bottom as dead data so rows / 2 means the frame is blank.
-  if ((image_data_start_row > cm->mb_rows / 2) ||
+  if ((image_data_start_row > mi_params->mb_rows / 2) ||
       (image_data_start_row == INVALID_ROW)) {
-    image_data_start_row = cm->mb_rows / 2;
+    image_data_start_row = mi_params->mb_rows / 2;
   }
   // Exclude any image dead zone
   if (image_data_start_row > 0) {
-    intra_skip_count =
-        AOMMAX(0, intra_skip_count - (image_data_start_row * cm->mb_cols * 2));
+    intra_skip_count = AOMMAX(
+        0, intra_skip_count - (image_data_start_row * mi_params->mb_cols * 2));
   }
 
   FIRSTPASS_STATS *this_frame_stats = twopass->stats_buf_ctx->stats_in_end;
@@ -801,7 +804,7 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
     // number of mbs is proportional to the image area.
     const int num_mbs = (cpi->oxcf.resize_mode != RESIZE_NONE)
                             ? cpi->initial_mbs
-                            : cpi->common.MBs;
+                            : mi_params->MBs;
     const double min_err = 200 * sqrt(num_mbs);
 
     intra_factor = intra_factor / (double)num_mbs;

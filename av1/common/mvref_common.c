@@ -40,7 +40,7 @@ static AOM_INLINE void get_mv_projection(MV *output, MV ref, int num, int den) {
 void av1_copy_frame_mvs(const AV1_COMMON *const cm,
                         const MB_MODE_INFO *const mi, int mi_row, int mi_col,
                         int x_mis, int y_mis) {
-  const int frame_mvs_stride = ROUND_POWER_OF_TWO(cm->mi_cols, 1);
+  const int frame_mvs_stride = ROUND_POWER_OF_TWO(cm->mi_params.mi_cols, 1);
   MV_REF *frame_mvs =
       cm->cur_frame->mvs + (mi_row >> 1) * frame_mvs_stride + (mi_col >> 1);
   x_mis = ROUND_POWER_OF_TWO(x_mis, 1);
@@ -145,7 +145,7 @@ static AOM_INLINE void scan_row_mbmi(
     uint16_t *ref_mv_weight, uint8_t *refmv_count, uint8_t *ref_match_count,
     uint8_t *newmv_count, int_mv *gm_mv_candidates, int max_row_offset,
     int *processed_rows) {
-  int end_mi = AOMMIN(xd->n4_w, cm->mi_cols - mi_col);
+  int end_mi = AOMMIN(xd->n4_w, cm->mi_params.mi_cols - mi_col);
   end_mi = AOMMIN(end_mi, mi_size_wide[BLOCK_64X64]);
   const int n8_w_8 = mi_size_wide[BLOCK_8X8];
   const int n8_w_16 = mi_size_wide[BLOCK_16X16];
@@ -193,7 +193,7 @@ static AOM_INLINE void scan_col_mbmi(
     uint16_t *ref_mv_weight, uint8_t *refmv_count, uint8_t *ref_match_count,
     uint8_t *newmv_count, int_mv *gm_mv_candidates, int max_col_offset,
     int *processed_cols) {
-  int end_mi = AOMMIN(xd->n4_h, cm->mi_rows - mi_row);
+  int end_mi = AOMMIN(xd->n4_h, cm->mi_params.mi_rows - mi_row);
   end_mi = AOMMIN(end_mi, mi_size_high[BLOCK_64X64]);
   const int n8_h_8 = mi_size_high[BLOCK_8X8];
   const int n8_h_16 = mi_size_high[BLOCK_16X16];
@@ -334,7 +334,8 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   if (!is_inside(&xd->tile, mi_col, mi_row, &mi_pos)) return 0;
 
   const TPL_MV_REF *prev_frame_mvs =
-      cm->tpl_mvs + ((mi_row + mi_pos.row) >> 1) * (cm->mi_stride >> 1) +
+      cm->tpl_mvs +
+      ((mi_row + mi_pos.row) >> 1) * (cm->mi_params.mi_stride >> 1) +
       ((mi_col + mi_pos.col) >> 1);
   if (prev_frame_mvs->mfmv0.as_int == INVALID_MV) return 0;
 
@@ -671,9 +672,9 @@ static AOM_INLINE void setup_ref_mv_list(
   }
 
   int mi_width = AOMMIN(mi_size_wide[BLOCK_64X64], xd->n4_w);
-  mi_width = AOMMIN(mi_width, cm->mi_cols - mi_col);
+  mi_width = AOMMIN(mi_width, cm->mi_params.mi_cols - mi_col);
   int mi_height = AOMMIN(mi_size_high[BLOCK_64X64], xd->n4_h);
-  mi_height = AOMMIN(mi_height, cm->mi_rows - mi_row);
+  mi_height = AOMMIN(mi_height, cm->mi_params.mi_rows - mi_row);
   const int mi_size = AOMMIN(mi_width, mi_height);
   if (rf[1] > NONE_FRAME) {
     // TODO(jingning, yunqing): Refactor and consolidate the compound and
@@ -884,8 +885,8 @@ static int get_block_position(AV1_COMMON *cm, int *mi_r, int *mi_c, int blk_row,
   const int col =
       (sign_bias == 1) ? blk_col - col_offset : blk_col + col_offset;
 
-  if (row < 0 || row >= (cm->mi_rows >> 1) || col < 0 ||
-      col >= (cm->mi_cols >> 1))
+  if (row < 0 || row >= (cm->mi_params.mi_rows >> 1) || col < 0 ||
+      col >= (cm->mi_params.mi_cols >> 1))
     return 0;
 
   if (row < base_blk_row - (MAX_OFFSET_HEIGHT >> 3) ||
@@ -919,8 +920,8 @@ static int motion_field_projection(AV1_COMMON *cm,
       start_frame_buf->frame_type == INTRA_ONLY_FRAME)
     return 0;
 
-  if (start_frame_buf->mi_rows != cm->mi_rows ||
-      start_frame_buf->mi_cols != cm->mi_cols)
+  if (start_frame_buf->mi_rows != cm->mi_params.mi_rows ||
+      start_frame_buf->mi_cols != cm->mi_params.mi_cols)
     return 0;
 
   const int start_frame_order_hint = start_frame_buf->order_hint;
@@ -939,8 +940,8 @@ static int motion_field_projection(AV1_COMMON *cm,
   if (dir == 2) start_to_current_frame_offset = -start_to_current_frame_offset;
 
   MV_REF *mv_ref_base = start_frame_buf->mvs;
-  const int mvs_rows = (cm->mi_rows + 1) >> 1;
-  const int mvs_cols = (cm->mi_cols + 1) >> 1;
+  const int mvs_rows = (cm->mi_params.mi_rows + 1) >> 1;
+  const int mvs_cols = (cm->mi_params.mi_cols + 1) >> 1;
 
   for (int blk_row = 0; blk_row < mvs_rows; ++blk_row) {
     for (int blk_col = 0; blk_col < mvs_cols; ++blk_col) {
@@ -965,7 +966,7 @@ static int motion_field_projection(AV1_COMMON *cm,
         }
 
         if (pos_valid) {
-          const int mi_offset = mi_r * (cm->mi_stride >> 1) + mi_c;
+          const int mi_offset = mi_r * (cm->mi_params.mi_stride >> 1) + mi_c;
 
           tpl_mvs_base[mi_offset].mfmv0.as_mv.row = fwd_mv.row;
           tpl_mvs_base[mi_offset].mfmv0.as_mv.col = fwd_mv.col;
@@ -985,7 +986,8 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
   if (!order_hint_info->enable_order_hint) return;
 
   TPL_MV_REF *tpl_mvs_base = cm->tpl_mvs;
-  int size = ((cm->mi_rows + MAX_MIB_SIZE) >> 1) * (cm->mi_stride >> 1);
+  int size = ((cm->mi_params.mi_rows + MAX_MIB_SIZE) >> 1) *
+             (cm->mi_params.mi_stride >> 1);
   for (int idx = 0; idx < size; ++idx) {
     tpl_mvs_base[idx].mfmv0.as_int = INVALID_MV;
     tpl_mvs_base[idx].ref_frame_offset = 0;
@@ -1145,7 +1147,8 @@ uint8_t av1_findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int *pts,
       }
     } else {
       // Handle "current block width > above block width" case.
-      for (i = 0; i < AOMMIN(xd->n4_w, cm->mi_cols - mi_col); i += mi_step) {
+      for (i = 0; i < AOMMIN(xd->n4_w, cm->mi_params.mi_cols - mi_col);
+           i += mi_step) {
         mbmi = xd->mi[i + mi_row_offset * mi_stride];
         n4_w = mi_size_wide[mbmi->sb_type];
         mi_step = AOMMIN(xd->n4_w, n4_w);
@@ -1184,7 +1187,8 @@ uint8_t av1_findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int *pts,
       }
     } else {
       // Handle "current block height > above block height" case.
-      for (i = 0; i < AOMMIN(xd->n4_h, cm->mi_rows - mi_row); i += mi_step) {
+      for (i = 0; i < AOMMIN(xd->n4_h, cm->mi_params.mi_rows - mi_row);
+           i += mi_step) {
         mbmi = xd->mi[mi_col_offset + i * mi_stride];
         n4_h = mi_size_high[mbmi->sb_type];
         mi_step = AOMMIN(xd->n4_h, n4_h);

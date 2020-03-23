@@ -187,7 +187,8 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td,
   MACROBLOCKD *const xd = &x->e_mbd;
   const int mi_row = xd->mi_row;
   const int mi_col = xd->mi_col;
-  if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
+  if (mi_row >= cm->mi_params.mi_rows || mi_col >= cm->mi_params.mi_cols)
+    return;
 
   const int num_planes = av1_num_planes(cm);
   MB_MODE_INFO *const mbmi = xd->mi[0];

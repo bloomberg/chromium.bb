@@ -1087,7 +1087,8 @@ void av1_setup_past_independence(AV1_COMMON *cm) {
   av1_clearall_segfeatures(&cm->seg);
 
   if (cm->cur_frame->seg_map)
-    memset(cm->cur_frame->seg_map, 0, (cm->mi_rows * cm->mi_cols));
+    memset(cm->cur_frame->seg_map, 0,
+           (cm->mi_params.mi_rows * cm->mi_params.mi_cols));
 
   // reset mode ref deltas
   av1_set_default_ref_deltas(cm->cur_frame->ref_deltas);

@@ -804,7 +804,8 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
                   mi_row * (MI_SIZE >> ssy) * ctx->img.stride[plane];
             }
           }
-          ctx->img.d_h = AOMMIN(tile_height, cm->mi_rows - mi_row) * MI_SIZE;
+          ctx->img.d_h =
+              AOMMIN(tile_height, cm->mi_params.mi_rows - mi_row) * MI_SIZE;
         }
 
         if (pbi->ext_tile_debug && tiles->single_tile_decoding &&
@@ -823,7 +824,8 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
                   mi_col * (MI_SIZE >> ssx) * (1 + is_hbd);
             }
           }
-          ctx->img.d_w = AOMMIN(tile_width, cm->mi_cols - mi_col) * MI_SIZE;
+          ctx->img.d_w =
+              AOMMIN(tile_width, cm->mi_params.mi_cols - mi_col) * MI_SIZE;
         }
 
         ctx->img.fb_priv = output_frame_buf->raw_frame_buffer.priv;

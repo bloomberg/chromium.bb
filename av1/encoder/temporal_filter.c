@@ -962,12 +962,12 @@ static FRAME_DIFF tf_do_filtering(
       TF_ENABLE_PLANEWISE_STRATEGY && AOMMIN(frame_height, frame_width) >= 480;
   // Perform temporal filtering block by block.
   for (int mb_row = 0; mb_row < mb_rows; mb_row++) {
-    av1_set_mv_row_limits(&cpi->common, &mb->mv_limits, (mb_row << mi_h),
-                          (mb_height >> MI_SIZE_LOG2),
+    av1_set_mv_row_limits(&cpi->common.mi_params, &mb->mv_limits,
+                          (mb_row << mi_h), (mb_height >> MI_SIZE_LOG2),
                           cpi->oxcf.border_in_pixels);
     for (int mb_col = 0; mb_col < mb_cols; mb_col++) {
-      av1_set_mv_col_limits(&cpi->common, &mb->mv_limits, (mb_col << mi_w),
-                            (mb_width >> MI_SIZE_LOG2),
+      av1_set_mv_col_limits(&cpi->common.mi_params, &mb->mv_limits,
+                            (mb_col << mi_w), (mb_width >> MI_SIZE_LOG2),
                             cpi->oxcf.border_in_pixels);
       memset(accum, 0, num_planes * mb_pels * sizeof(accum[0]));
       memset(count, 0, num_planes * mb_pels * sizeof(count[0]));

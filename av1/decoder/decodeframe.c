@@ -321,13 +321,14 @@ static AOM_INLINE void set_offsets(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                                    BLOCK_SIZE bsize, int mi_row, int mi_col,
                                    int bw, int bh, int x_mis, int y_mis) {
   const int num_planes = av1_num_planes(cm);
-
+  const CommonModeInfoParams *const mi_params = &cm->mi_params;
   const TileInfo *const tile = &xd->tile;
 
-  xd->mi = cm->mi_grid_base + get_mi_grid_idx(cm, mi_row, mi_col);
-  xd->mi[0] = &cm->mi[get_alloc_mi_idx(cm, mi_row, mi_col)];
-  xd->tx_type_map = &cm->tx_type_map[mi_row * cm->mi_stride + mi_col];
-  xd->tx_type_map_stride = cm->mi_stride;
+  xd->mi = mi_params->mi_grid_base + get_mi_grid_idx(mi_params, mi_row, mi_col);
+  xd->mi[0] = &mi_params->mi[get_alloc_mi_idx(mi_params, mi_row, mi_col)];
+  xd->tx_type_map =
+      &mi_params->tx_type_map[mi_row * mi_params->mi_stride + mi_col];
+  xd->tx_type_map_stride = mi_params->mi_stride;
   // TODO(slavarnway): Generate sb_type based on bwl and bhl, instead of
   // passing bsize from decode_partition().
   xd->mi[0]->sb_type = bsize;
@@ -338,10 +339,10 @@ static AOM_INLINE void set_offsets(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 
   assert(x_mis && y_mis);
   for (int x = 1; x < x_mis; ++x) xd->mi[x] = xd->mi[0];
-  int idx = cm->mi_stride;
+  int idx = mi_params->mi_stride;
   for (int y = 1; y < y_mis; ++y) {
     memcpy(&xd->mi[idx], &xd->mi[0], x_mis * sizeof(xd->mi[0]));
-    idx += cm->mi_stride;
+    idx += mi_params->mi_stride;
   }
 
   set_plane_n4(xd, bw, bh, num_planes);
@@ -349,7 +350,8 @@ static AOM_INLINE void set_offsets(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 
   // Distance of Mb to the various image edges. These are specified to 8th pel
   // as they are always compared to values that are in 1/8th pel units
-  set_mi_row_col(xd, tile, mi_row, bh, mi_col, bw, cm->mi_rows, cm->mi_cols);
+  set_mi_row_col(xd, tile, mi_row, bh, mi_col, bw, mi_params->mi_rows,
+                 mi_params->mi_cols);
 
   av1_setup_dst_planes(xd->plane, bsize, &cm->cur_frame->buf, mi_row, mi_col, 0,
                        num_planes);
@@ -364,8 +366,8 @@ static AOM_INLINE void decode_mbmi_block(AV1Decoder *const pbi,
   const SequenceHeader *const seq_params = &cm->seq_params;
   const int bw = mi_size_wide[bsize];
   const int bh = mi_size_high[bsize];
-  const int x_mis = AOMMIN(bw, cm->mi_cols - mi_col);
-  const int y_mis = AOMMIN(bh, cm->mi_rows - mi_row);
+  const int x_mis = AOMMIN(bw, cm->mi_params.mi_cols - mi_col);
+  const int y_mis = AOMMIN(bh, cm->mi_params.mi_rows - mi_row);
 
 #if CONFIG_ACCOUNTING
   aom_accounting_set_context(&pbi->accounting, mi_col, mi_row);
@@ -1474,23 +1476,26 @@ static AOM_INLINE void set_offsets_for_pred_and_recon(AV1Decoder *const pbi,
                                                       int mi_row, int mi_col,
                                                       BLOCK_SIZE bsize) {
   AV1_COMMON *const cm = &pbi->common;
+  const CommonModeInfoParams *const mi_params = &cm->mi_params;
   MACROBLOCKD *const xd = &td->xd;
   const int bw = mi_size_wide[bsize];
   const int bh = mi_size_high[bsize];
   const int num_planes = av1_num_planes(cm);
 
-  const int offset = mi_row * cm->mi_stride + mi_col;
+  const int offset = mi_row * mi_params->mi_stride + mi_col;
   const TileInfo *const tile = &xd->tile;
 
-  xd->mi = cm->mi_grid_base + offset;
-  xd->tx_type_map = &cm->tx_type_map[mi_row * cm->mi_stride + mi_col];
-  xd->tx_type_map_stride = cm->mi_stride;
+  xd->mi = mi_params->mi_grid_base + offset;
+  xd->tx_type_map =
+      &mi_params->tx_type_map[mi_row * mi_params->mi_stride + mi_col];
+  xd->tx_type_map_stride = mi_params->mi_stride;
 
   set_plane_n4(xd, bw, bh, num_planes);
 
   // Distance of Mb to the various image edges. These are specified to 8th pel
   // as they are always compared to values that are in 1/8th pel units
-  set_mi_row_col(xd, tile, mi_row, bh, mi_col, bw, cm->mi_rows, cm->mi_cols);
+  set_mi_row_col(xd, tile, mi_row, bh, mi_col, bw, mi_params->mi_rows,
+                 mi_params->mi_cols);
 
   av1_setup_dst_planes(xd->plane, bsize, &cm->cur_frame->buf, mi_row, mi_col, 0,
                        num_planes);
@@ -1549,10 +1554,11 @@ static AOM_INLINE void decode_partition(AV1Decoder *const pbi,
   BLOCK_SIZE subsize;
   const int quarter_step = bw / 4;
   BLOCK_SIZE bsize2 = get_partition_subsize(bsize, PARTITION_SPLIT);
-  const int has_rows = (mi_row + hbs) < cm->mi_rows;
-  const int has_cols = (mi_col + hbs) < cm->mi_cols;
+  const int has_rows = (mi_row + hbs) < cm->mi_params.mi_rows;
+  const int has_cols = (mi_col + hbs) < cm->mi_params.mi_cols;
 
-  if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
+  if (mi_row >= cm->mi_params.mi_rows || mi_col >= cm->mi_params.mi_cols)
+    return;
 
   // parse_decode_flag takes the following values :
   // 01 - do parse only
@@ -1648,14 +1654,14 @@ static AOM_INLINE void decode_partition(AV1Decoder *const pbi,
     case PARTITION_HORZ_4:
       for (int i = 0; i < 4; ++i) {
         int this_mi_row = mi_row + i * quarter_step;
-        if (i > 0 && this_mi_row >= cm->mi_rows) break;
+        if (i > 0 && this_mi_row >= cm->mi_params.mi_rows) break;
         DEC_BLOCK(this_mi_row, mi_col, subsize);
       }
       break;
     case PARTITION_VERT_4:
       for (int i = 0; i < 4; ++i) {
         int this_mi_col = mi_col + i * quarter_step;
-        if (i > 0 && this_mi_col >= cm->mi_cols) break;
+        if (i > 0 && this_mi_col >= cm->mi_params.mi_cols) break;
         DEC_BLOCK(mi_row, this_mi_col, subsize);
       }
       break;
@@ -1700,15 +1706,16 @@ static AOM_INLINE void setup_segmentation(AV1_COMMON *const cm,
   seg->enabled = aom_rb_read_bit(rb);
   if (!seg->enabled) {
     if (cm->cur_frame->seg_map)
-      memset(cm->cur_frame->seg_map, 0, (cm->mi_rows * cm->mi_cols));
+      memset(cm->cur_frame->seg_map, 0,
+             (cm->mi_params.mi_rows * cm->mi_params.mi_cols));
 
     memset(seg, 0, sizeof(*seg));
     segfeatures_copy(&cm->cur_frame->seg, seg);
     return;
   }
   if (cm->seg.enabled && cm->prev_frame &&
-      (cm->mi_rows == cm->prev_frame->mi_rows) &&
-      (cm->mi_cols == cm->prev_frame->mi_cols)) {
+      (cm->mi_params.mi_rows == cm->prev_frame->mi_rows) &&
+      (cm->mi_params.mi_cols == cm->prev_frame->mi_cols)) {
     cm->last_frame_seg_map = cm->prev_frame->seg_map;
   } else {
     cm->last_frame_seg_map = NULL;
@@ -2162,7 +2169,8 @@ static AOM_INLINE void resize_context_buffers(AV1_COMMON *cm, int width,
 
     // Allocations in av1_alloc_context_buffers() depend on individual
     // dimensions as well as the overall size.
-    if (new_mi_cols > cm->mi_cols || new_mi_rows > cm->mi_rows) {
+    if (new_mi_cols > cm->mi_params.mi_cols ||
+        new_mi_rows > cm->mi_params.mi_rows) {
       if (av1_alloc_context_buffers(cm, width, height)) {
         // The cm->mi_* values have been cleared and any existing context
         // buffers have been freed. Clear cm->width and cm->height to be
@@ -2173,9 +2181,9 @@ static AOM_INLINE void resize_context_buffers(AV1_COMMON *cm, int width,
                            "Failed to allocate context buffers");
       }
     } else {
-      cm->set_mb_mi(cm, width, height);
+      cm->mi_params.set_mb_mi(&cm->mi_params, width, height);
     }
-    av1_init_context_buffers(cm);
+    av1_init_mi_buffers(&cm->mi_params);
     cm->width = width;
     cm->height = height;
   }
@@ -2337,8 +2345,10 @@ static AOM_INLINE void read_tile_info_max_tile(
     AV1_COMMON *const cm, struct aom_read_bit_buffer *const rb) {
   const SequenceHeader *const seq_params = &cm->seq_params;
   CommonTileParams *const tiles = &cm->tiles;
-  int width_mi = ALIGN_POWER_OF_TWO(cm->mi_cols, seq_params->mib_size_log2);
-  int height_mi = ALIGN_POWER_OF_TWO(cm->mi_rows, seq_params->mib_size_log2);
+  int width_mi =
+      ALIGN_POWER_OF_TWO(cm->mi_params.mi_cols, seq_params->mib_size_log2);
+  int height_mi =
+      ALIGN_POWER_OF_TWO(cm->mi_params.mi_rows, seq_params->mib_size_log2);
   int width_sb = width_mi >> seq_params->mib_size_log2;
   int height_sb = height_mi >> seq_params->mib_size_log2;
 
@@ -2367,7 +2377,8 @@ static AOM_INLINE void read_tile_info_max_tile(
     tiles->cols = i;
     tiles->col_start_sb[i] = start_sb + width_sb;
   }
-  av1_calculate_tile_cols(seq_params, cm->mi_rows, cm->mi_cols, tiles);
+  av1_calculate_tile_cols(seq_params, cm->mi_params.mi_rows,
+                          cm->mi_params.mi_cols, tiles);
 
   // Read tile rows
   if (tiles->uniform_spacing) {
@@ -2391,7 +2402,7 @@ static AOM_INLINE void read_tile_info_max_tile(
     tiles->rows = i;
     tiles->row_start_sb[i] = start_sb + height_sb;
   }
-  av1_calculate_tile_rows(seq_params, cm->mi_rows, tiles);
+  av1_calculate_tile_rows(seq_params, cm->mi_params.mi_rows, tiles);
 }
 
 void av1_set_single_tile_decoding_mode(AV1_COMMON *const cm) {
@@ -2676,7 +2687,7 @@ static AOM_INLINE void set_cb_buffer(AV1Decoder *pbi, MACROBLOCKD *const xd,
                                      int mi_col) {
   AV1_COMMON *const cm = &pbi->common;
   int mib_size_log2 = cm->seq_params.mib_size_log2;
-  int stride = (cm->mi_cols >> mib_size_log2) + 1;
+  int stride = (cm->mi_params.mi_cols >> mib_size_log2) + 1;
   int offset = (mi_row >> mib_size_log2) * stride + (mi_col >> mib_size_log2);
   CB_BUFFER *cb_buffer = cb_buffer_base + offset;
 
@@ -3822,8 +3833,8 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
 
 static AOM_INLINE void dec_alloc_cb_buf(AV1Decoder *pbi) {
   AV1_COMMON *const cm = &pbi->common;
-  int size = ((cm->mi_rows >> cm->seq_params.mib_size_log2) + 1) *
-             ((cm->mi_cols >> cm->seq_params.mib_size_log2) + 1);
+  int size = ((cm->mi_params.mi_rows >> cm->seq_params.mib_size_log2) + 1) *
+             ((cm->mi_params.mi_cols >> cm->seq_params.mib_size_log2) + 1);
 
   if (pbi->cb_buffer_alloc_size < size) {
     av1_dec_free_cb_buf(pbi);
@@ -5169,7 +5180,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   xd->bd = (int)seq_params->bit_depth;
 
   if (cm->num_allocated_above_context_planes < av1_num_planes(cm) ||
-      cm->num_allocated_above_context_mi_col < cm->mi_cols ||
+      cm->num_allocated_above_context_mi_col < cm->mi_params.mi_cols ||
       cm->num_allocated_above_contexts < cm->tiles.rows) {
     av1_free_above_context_buffers(cm, cm->num_allocated_above_contexts);
     if (av1_alloc_above_context_buffers(cm, cm->tiles.rows))
@@ -5360,7 +5371,7 @@ uint32_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
     return uncomp_hdr_size;
   }
 
-  cm->setup_mi(cm);
+  cm->mi_params.setup_mi(&cm->mi_params);
 
   av1_setup_motion_field(cm);
 

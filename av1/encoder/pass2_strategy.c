@@ -225,7 +225,7 @@ static int get_twopass_worst_quality(AV1_COMP *cpi, const double section_err,
   } else {
     const int num_mbs = (cpi->oxcf.resize_mode != RESIZE_NONE)
                             ? cpi->initial_mbs
-                            : cpi->common.MBs;
+                            : cpi->common.mi_params.MBs;
     const int active_mbs = AOMMAX(1, num_mbs - (int)(num_mbs * inactive_zone));
     const double av_err_per_mb = section_err / active_mbs;
     const int target_norm_bits_per_mb =
@@ -1658,8 +1658,9 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   // Was the group length constrained by the requirement for a new KF?
   rc->constrained_gf_group = (i >= rc->frames_to_key) ? 1 : 0;
 
-  const int num_mbs = (cpi->oxcf.resize_mode != RESIZE_NONE) ? cpi->initial_mbs
-                                                             : cpi->common.MBs;
+  const int num_mbs = (cpi->oxcf.resize_mode != RESIZE_NONE)
+                          ? cpi->initial_mbs
+                          : cm->mi_params.MBs;
   assert(num_mbs > 0);
 
   average_gf_stats(i, &next_frame, &gf_stats);
@@ -1818,7 +1819,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
         gf_stats.gf_group_skip_pct / rc->baseline_gf_interval;
     const double group_av_inactive_zone =
         ((gf_stats.gf_group_inactive_zone_rows * 2) /
-         (rc->baseline_gf_interval * (double)cm->mb_rows));
+         (rc->baseline_gf_interval * (double)cm->mi_params.mb_rows));
 
     int tmp_q;
     // rc factor is a weight factor that corrects for local rate control drift.
@@ -2419,7 +2420,7 @@ static void process_first_pass_stats(AV1_COMP *cpi,
         twopass->total_left_stats->intra_skip_pct / section_length;
     const double section_inactive_zone =
         (twopass->total_left_stats->inactive_zone_rows * 2) /
-        ((double)cm->mb_rows * section_length);
+        ((double)cm->mi_params.mb_rows * section_length);
     const int tmp_q = get_twopass_worst_quality(
         cpi, section_error, section_intra_skip + section_inactive_zone,
         section_target_bandwidth, DEFAULT_GRP_WEIGHT);
@@ -2444,7 +2445,7 @@ static void process_first_pass_stats(AV1_COMP *cpi,
   {
     const int num_mbs = (cpi->oxcf.resize_mode != RESIZE_NONE)
                             ? cpi->initial_mbs
-                            : cpi->common.MBs;
+                            : cm->mi_params.MBs;
     // The multiplication by 256 reverses a scaling factor of (>> 8)
     // applied when combining MB error values for the frame.
     twopass->mb_av_energy = log((this_frame->intra_error / num_mbs) + 1.0);

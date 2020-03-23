@@ -875,10 +875,11 @@ void setup_mi(AV1_COMP *const cpi, YV12_BUFFER_CONFIG *src) {
   av1_setup_block_planes(xd, cm->seq_params.subsampling_x,
                          cm->seq_params.subsampling_y, num_planes);
 
-  xd->mi = cm->mi_grid_base;
-  xd->mi[0] = cm->mi;
-  xd->tx_type_map = cm->tx_type_map;
-  xd->tx_type_map_stride = cm->mi_stride;
+  const CommonModeInfoParams *const mi_params = &cm->mi_params;
+  xd->mi = mi_params->mi_grid_base;
+  xd->mi[0] = mi_params->mi;
+  xd->tx_type_map = mi_params->tx_type_map;
+  xd->tx_type_map_stride = mi_params->mi_stride;
 }
 
 // Apply temporal filtering to key frames and encode the filtered frame.
@@ -917,10 +918,11 @@ static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
   if (apply_filtering) {
     // Initialization for frame motion estimation.
     MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
-    av1_init_context_buffers(cm);
+    av1_init_mi_buffers(&cm->mi_params);
     setup_mi(cpi, frame_input->source);
     av1_init_macroblockd(cm, xd, NULL);
-    const int ext_mi_size = cm->mi_alloc_rows * cm->mi_alloc_cols;
+    const int ext_mi_size =
+        cm->mi_params.mi_alloc_rows * cm->mi_params.mi_alloc_cols;
     memset(cpi->mbmi_ext_frame_base, 0,
            ext_mi_size * sizeof(*cpi->mbmi_ext_frame_base));
 

@@ -399,20 +399,20 @@ static AOM_INLINE void pack_txb_tokens(
   }
 }
 
-static INLINE void set_spatial_segment_id(const AV1_COMMON *const cm,
-                                          uint8_t *segment_ids,
-                                          BLOCK_SIZE bsize, int mi_row,
-                                          int mi_col, int segment_id) {
-  const int mi_offset = mi_row * cm->mi_cols + mi_col;
+static INLINE void set_spatial_segment_id(
+    const CommonModeInfoParams *const mi_params, uint8_t *segment_ids,
+    BLOCK_SIZE bsize, int mi_row, int mi_col, int segment_id) {
+  const int mi_offset = mi_row * mi_params->mi_cols + mi_col;
   const int bw = mi_size_wide[bsize];
   const int bh = mi_size_high[bsize];
-  const int xmis = AOMMIN(cm->mi_cols - mi_col, bw);
-  const int ymis = AOMMIN(cm->mi_rows - mi_row, bh);
-  int x, y;
+  const int xmis = AOMMIN(mi_params->mi_cols - mi_col, bw);
+  const int ymis = AOMMIN(mi_params->mi_rows - mi_row, bh);
 
-  for (y = 0; y < ymis; ++y)
-    for (x = 0; x < xmis; ++x)
-      segment_ids[mi_offset + y * cm->mi_cols + x] = segment_id;
+  for (int y = 0; y < ymis; ++y) {
+    for (int x = 0; x < xmis; ++x) {
+      segment_ids[mi_offset + y * mi_params->mi_cols + x] = segment_id;
+    }
+  }
 }
 
 int av1_neg_interleave(int x, int ref, int max) {
@@ -457,10 +457,10 @@ static AOM_INLINE void write_segment_id(
     // changing from lossless to lossy.
     assert(is_inter_block(mbmi) || !cpi->has_lossless_segment);
 
-    set_spatial_segment_id(cm, cm->cur_frame->seg_map, mbmi->sb_type, mi_row,
-                           mi_col, pred);
-    set_spatial_segment_id(cm, cpi->segmentation_map, mbmi->sb_type, mi_row,
-                           mi_col, pred);
+    set_spatial_segment_id(&cm->mi_params, cm->cur_frame->seg_map,
+                           mbmi->sb_type, mi_row, mi_col, pred);
+    set_spatial_segment_id(&cm->mi_params, cpi->segmentation_map, mbmi->sb_type,
+                           mi_row, mi_col, pred);
     /* mbmi is read only but we need to update segment_id */
     ((MB_MODE_INFO *)mbmi)->segment_id = pred;
     return;
@@ -470,8 +470,8 @@ static AOM_INLINE void write_segment_id(
       av1_neg_interleave(mbmi->segment_id, pred, seg->last_active_segid + 1);
   aom_cdf_prob *pred_cdf = segp->spatial_pred_seg_cdf[cdf_num];
   aom_write_symbol(w, coded_id, pred_cdf, MAX_SEGMENTS);
-  set_spatial_segment_id(cm, cm->cur_frame->seg_map, mbmi->sb_type, mi_row,
-                         mi_col, mbmi->segment_id);
+  set_spatial_segment_id(&cm->mi_params, cm->cur_frame->seg_map, mbmi->sb_type,
+                         mi_row, mi_col, mbmi->segment_id);
 }
 
 #define WRITE_REF_BIT(bname, pname) \
@@ -868,7 +868,8 @@ static AOM_INLINE void write_cdef(AV1_COMMON *cm, MACROBLOCKD *const xd,
   const int mi_row = xd->mi_row;
   const int mi_col = xd->mi_col;
   const MB_MODE_INFO *mbmi =
-      cm->mi_grid_base[(mi_row & m) * cm->mi_stride + (mi_col & m)];
+      cm->mi_params
+          .mi_grid_base[(mi_row & m) * cm->mi_params.mi_stride + (mi_col & m)];
   // Initialise when at top left part of the superblock
   if (!(mi_row & (cm->seq_params.mib_size - 1)) &&
       !(mi_col & (cm->seq_params.mib_size - 1))) {  // Top left?
@@ -915,8 +916,8 @@ static AOM_INLINE void write_inter_segment_id(
         write_segment_id(cpi, mbmi, w, seg, segp, 0);
       }
       if (pred_flag) {
-        set_spatial_segment_id(cm, cm->cur_frame->seg_map, mbmi->sb_type,
-                               mi_row, mi_col, mbmi->segment_id);
+        set_spatial_segment_id(&cm->mi_params, cm->cur_frame->seg_map,
+                               mbmi->sb_type, mi_row, mi_col, mbmi->segment_id);
       }
     } else {
       write_segment_id(cpi, mbmi, w, seg, segp, 0);
@@ -1301,10 +1302,10 @@ static int rd_token_stats_mismatch(RD_STATS *rd_stats, TOKEN_STATS *token_stats,
 #if ENC_MISMATCH_DEBUG
 static AOM_INLINE void enc_dump_logs(AV1_COMP *cpi, int mi_row, int mi_col) {
   AV1_COMMON *const cm = &cpi->common;
-  const MB_MODE_INFO *const mbmi =
-      *(cm->mi_grid_base + (mi_row * cm->mi_stride + mi_col));
+  const MB_MODE_INFO *const mbmi = *(
+      cm->mi_params.mi_grid_base + (mi_row * cm->mi_params.mi_stride + mi_col));
   const MB_MODE_INFO_EXT_FRAME *const mbmi_ext_frame_base =
-      cpi->mbmi_ext_frame_base + get_mi_ext_idx(cm, mi_row, mi_col);
+      cpi->mbmi_ext_frame_base + get_mi_ext_idx(&cm->mi_params, mi_row, mi_col);
   if (is_inter_block(mbmi)) {
 #define FRAME_TO_CHECK 11
     if (cm->current_frame.frame_number == FRAME_TO_CHECK &&
@@ -1468,13 +1469,14 @@ static AOM_INLINE void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
                                      const TOKENEXTRA *const tok_end,
                                      int mi_row, int mi_col) {
   const AV1_COMMON *cm = &cpi->common;
+  const CommonModeInfoParams *const mi_params = &cm->mi_params;
   MACROBLOCKD *xd = &cpi->td.mb.e_mbd;
-  const int grid_idx = mi_row * cm->mi_stride + mi_col;
-  xd->mi = cm->mi_grid_base + grid_idx;
+  const int grid_idx = mi_row * mi_params->mi_stride + mi_col;
+  xd->mi = mi_params->mi_grid_base + grid_idx;
   cpi->td.mb.mbmi_ext_frame =
-      cpi->mbmi_ext_frame_base + get_mi_ext_idx(cm, mi_row, mi_col);
-  xd->tx_type_map = cm->tx_type_map + grid_idx;
-  xd->tx_type_map_stride = cm->mi_stride;
+      cpi->mbmi_ext_frame_base + get_mi_ext_idx(mi_params, mi_row, mi_col);
+  xd->tx_type_map = mi_params->tx_type_map + grid_idx;
+  xd->tx_type_map_stride = mi_params->mi_stride;
 
   const MB_MODE_INFO *mbmi = xd->mi[0];
   const BLOCK_SIZE bsize = mbmi->sb_type;
@@ -1483,7 +1485,8 @@ static AOM_INLINE void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
 
   const int bh = mi_size_high[bsize];
   const int bw = mi_size_wide[bsize];
-  set_mi_row_col(xd, tile, mi_row, bh, mi_col, bw, cm->mi_rows, cm->mi_cols);
+  set_mi_row_col(xd, tile, mi_row, bh, mi_col, bw, mi_params->mi_rows,
+                 mi_params->mi_cols);
 
   xd->above_txfm_context = cm->above_txfm_context[tile->tile_row] + mi_col;
   xd->left_txfm_context =
@@ -1545,8 +1548,8 @@ static AOM_INLINE void write_partition(const AV1_COMMON *const cm,
 
   if (!is_partition_point) return;
 
-  const int has_rows = (mi_row + hbs) < cm->mi_rows;
-  const int has_cols = (mi_col + hbs) < cm->mi_cols;
+  const int has_rows = (mi_row + hbs) < cm->mi_params.mi_rows;
+  const int has_cols = (mi_col + hbs) < cm->mi_params.mi_cols;
   const int ctx = partition_plane_context(xd, mi_row, mi_col, bsize);
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
 
@@ -1579,6 +1582,7 @@ static AOM_INLINE void write_modes_sb(
     const TOKENEXTRA **tok, const TOKENEXTRA *const tok_end, int mi_row,
     int mi_col, BLOCK_SIZE bsize) {
   const AV1_COMMON *const cm = &cpi->common;
+  const CommonModeInfoParams *const mi_params = &cm->mi_params;
   MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
   assert(bsize < BLOCK_SIZES_ALL);
   const int hbs = mi_size_wide[bsize] / 2;
@@ -1587,7 +1591,7 @@ static AOM_INLINE void write_modes_sb(
   const PARTITION_TYPE partition = get_partition(cm, mi_row, mi_col, bsize);
   const BLOCK_SIZE subsize = get_partition_subsize(bsize, partition);
 
-  if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
+  if (mi_row >= mi_params->mi_rows || mi_col >= mi_params->mi_cols) return;
 
   const int num_planes = av1_num_planes(cm);
   for (int plane = 0; plane < num_planes; ++plane) {
@@ -1614,12 +1618,12 @@ static AOM_INLINE void write_modes_sb(
       break;
     case PARTITION_HORZ:
       write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
-      if (mi_row + hbs < cm->mi_rows)
+      if (mi_row + hbs < mi_params->mi_rows)
         write_modes_b(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col);
       break;
     case PARTITION_VERT:
       write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
-      if (mi_col + hbs < cm->mi_cols)
+      if (mi_col + hbs < mi_params->mi_cols)
         write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col + hbs);
       break;
     case PARTITION_SPLIT:
@@ -1652,7 +1656,7 @@ static AOM_INLINE void write_modes_sb(
     case PARTITION_HORZ_4:
       for (i = 0; i < 4; ++i) {
         int this_mi_row = mi_row + i * quarter_step;
-        if (i > 0 && this_mi_row >= cm->mi_rows) break;
+        if (i > 0 && this_mi_row >= mi_params->mi_rows) break;
 
         write_modes_b(cpi, tile, w, tok, tok_end, this_mi_row, mi_col);
       }
@@ -1660,7 +1664,7 @@ static AOM_INLINE void write_modes_sb(
     case PARTITION_VERT_4:
       for (i = 0; i < 4; ++i) {
         int this_mi_col = mi_col + i * quarter_step;
-        if (i > 0 && this_mi_col >= cm->mi_cols) break;
+        if (i > 0 && this_mi_col >= mi_params->mi_cols) break;
 
         write_modes_b(cpi, tile, w, tok, tok_end, mi_row, this_mi_col);
       }
@@ -2120,8 +2124,10 @@ static AOM_INLINE void wb_write_uniform(struct aom_write_bit_buffer *wb, int n,
 
 static AOM_INLINE void write_tile_info_max_tile(
     const AV1_COMMON *const cm, struct aom_write_bit_buffer *wb) {
-  int width_mi = ALIGN_POWER_OF_TWO(cm->mi_cols, cm->seq_params.mib_size_log2);
-  int height_mi = ALIGN_POWER_OF_TWO(cm->mi_rows, cm->seq_params.mib_size_log2);
+  int width_mi =
+      ALIGN_POWER_OF_TWO(cm->mi_params.mi_cols, cm->seq_params.mib_size_log2);
+  int height_mi =
+      ALIGN_POWER_OF_TWO(cm->mi_params.mi_rows, cm->seq_params.mib_size_log2);
   int width_sb = width_mi >> cm->seq_params.mib_size_log2;
   int height_sb = height_mi >> cm->seq_params.mib_size_log2;
   int size_sb, i;

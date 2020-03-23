@@ -552,8 +552,8 @@ void av1_set_vmaf_rdmult(const AV1_COMP *const cpi, MACROBLOCK *const x,
   const int bsize_base = BLOCK_64X64;
   const int num_mi_w = mi_size_wide[bsize_base];
   const int num_mi_h = mi_size_high[bsize_base];
-  const int num_cols = (cm->mi_cols + num_mi_w - 1) / num_mi_w;
-  const int num_rows = (cm->mi_rows + num_mi_h - 1) / num_mi_h;
+  const int num_cols = (cm->mi_params.mi_cols + num_mi_w - 1) / num_mi_w;
+  const int num_rows = (cm->mi_params.mi_rows + num_mi_h - 1) / num_mi_h;
   const int num_bcols = (mi_size_wide[bsize] + num_mi_w - 1) / num_mi_w;
   const int num_brows = (mi_size_high[bsize] + num_mi_h - 1) / num_mi_h;
   int row, col;

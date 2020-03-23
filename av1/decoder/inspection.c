@@ -36,10 +36,11 @@ void ifd_clear(insp_frame_data *fd) {
 int ifd_inspect(insp_frame_data *fd, void *decoder, int skip_not_transform) {
   struct AV1Decoder *pbi = (struct AV1Decoder *)decoder;
   AV1_COMMON *const cm = &pbi->common;
+  const CommonModeInfoParams *const mi_params = &cm->mi_params;
 
-  if (fd->mi_rows != cm->mi_rows || fd->mi_cols != cm->mi_cols) {
+  if (fd->mi_rows != mi_params->mi_rows || fd->mi_cols != mi_params->mi_cols) {
     ifd_clear(fd);
-    ifd_init_mi_rc(fd, cm->mi_rows, cm->mi_cols);
+    ifd_init_mi_rc(fd, mi_params->mi_rows, mi_params->mi_cols);
   }
   fd->show_existing_frame = cm->show_existing_frame;
   fd->frame_number = cm->current_frame.frame_number;
@@ -66,10 +67,11 @@ int ifd_inspect(insp_frame_data *fd, void *decoder, int skip_not_transform) {
       fd->v_dequant[i][j] = cm->v_dequant_QTX[i][j];
     }
   }
-  for (j = 0; j < cm->mi_rows; j++) {
-    for (i = 0; i < cm->mi_cols; i++) {
-      const MB_MODE_INFO *mbmi = cm->mi_grid_base[j * cm->mi_stride + i];
-      insp_mi_data *mi = &fd->mi_grid[j * cm->mi_cols + i];
+  for (j = 0; j < mi_params->mi_rows; j++) {
+    for (i = 0; i < mi_params->mi_cols; i++) {
+      const MB_MODE_INFO *mbmi =
+          mi_params->mi_grid_base[j * mi_params->mi_stride + i];
+      insp_mi_data *mi = &fd->mi_grid[j * mi_params->mi_cols + i];
       // Segment
       mi->segment_id = mbmi->segment_id;
       // Motion Vectors
@@ -119,8 +121,9 @@ int ifd_inspect(insp_frame_data *fd, void *decoder, int skip_not_transform) {
       if (mi->skip) {
         const int tx_type_row = j - j % tx_size_high_unit[mi->tx_size];
         const int tx_type_col = i - i % tx_size_wide_unit[mi->tx_size];
-        const int tx_type_map_idx = tx_type_row * cm->mi_stride + tx_type_col;
-        mi->tx_type = cm->tx_type_map[tx_type_map_idx];
+        const int tx_type_map_idx =
+            tx_type_row * mi_params->mi_stride + tx_type_col;
+        mi->tx_type = mi_params->tx_type_map[tx_type_map_idx];
       } else {
         mi->tx_type = 0;
       }

@@ -235,7 +235,7 @@ static AOM_INLINE void mode_estimation(
   const int mi_height = mi_size_high[bsize];
   set_mode_info_offsets(cpi, x, xd, mi_row, mi_col);
   set_mi_row_col(xd, &xd->tile, mi_row, mi_height, mi_col, mi_width,
-                 cm->mi_rows, cm->mi_cols);
+                 cm->mi_params.mi_rows, cm->mi_params.mi_cols);
   set_plane_n4(xd, mi_size_wide[bsize], mi_size_high[bsize],
                av1_num_planes(cm));
   xd->mi[0]->sb_type = bsize;
@@ -455,7 +455,7 @@ static AOM_INLINE void mode_estimation(
     for (int idx = 0; idx < mi_width; ++idx) {
       if ((xd->mb_to_right_edge >> (3 + MI_SIZE_LOG2)) + mi_width > idx &&
           (xd->mb_to_bottom_edge >> (3 + MI_SIZE_LOG2)) + mi_height > idy) {
-        xd->mi[idx + idy * cm->mi_stride] = xd->mi[0];
+        xd->mi[idx + idy * cm->mi_params.mi_stride] = xd->mi[0];
       }
     }
   }
@@ -677,6 +677,7 @@ static AOM_INLINE void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx,
                                              NULL, NULL, NULL };
 
   AV1_COMMON *cm = &cpi->common;
+  const CommonModeInfoParams *const mi_params = &cm->mi_params;
   struct scale_factors sf;
   int rdmult, idx;
   ThreadData *td = &cpi->td;
@@ -742,21 +743,22 @@ static AOM_INLINE void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx,
   tpl_frame->base_rdmult =
       av1_compute_rd_mult_based_on_qindex(cpi, pframe_qindex) / 6;
 
-  for (mi_row = 0; mi_row < cm->mi_rows; mi_row += mi_height) {
+  for (mi_row = 0; mi_row < mi_params->mi_rows; mi_row += mi_height) {
     // Motion estimation row boundary
-    av1_set_mv_row_limits(cm, &x->mv_limits, mi_row, mi_height,
+    av1_set_mv_row_limits(mi_params, &x->mv_limits, mi_row, mi_height,
                           cpi->oxcf.border_in_pixels);
     xd->mb_to_top_edge = -GET_MV_SUBPEL(mi_row * MI_SIZE);
     xd->mb_to_bottom_edge =
-        GET_MV_SUBPEL((cm->mi_rows - mi_height - mi_row) * MI_SIZE);
-    for (mi_col = 0; mi_col < cm->mi_cols; mi_col += mi_width) {
+        GET_MV_SUBPEL((mi_params->mi_rows - mi_height - mi_row) * MI_SIZE);
+    for (mi_col = 0; mi_col < mi_params->mi_cols; mi_col += mi_width) {
       TplDepStats tpl_stats;
 
       // Motion estimation column boundary
-      av1_set_mv_col_limits(cm, &x->mv_limits, mi_col, mi_width,
+      av1_set_mv_col_limits(mi_params, &x->mv_limits, mi_col, mi_width,
                             cpi->oxcf.border_in_pixels);
       xd->mb_to_left_edge = -GET_MV_SUBPEL(mi_col * MI_SIZE);
-      xd->mb_to_right_edge = GET_MV_SUBPEL(cm->mi_cols - mi_width - mi_col);
+      xd->mb_to_right_edge =
+          GET_MV_SUBPEL(mi_params->mi_cols - mi_width - mi_col);
       mode_estimation(cpi, x, xd, &sf, frame_idx, mi_row, mi_col, bsize,
                       tx_size, ref_frame, src_frame, &tpl_stats);
 
@@ -779,8 +781,8 @@ static void mc_flow_synthesizer(AV1_COMP *cpi, int frame_idx) {
   const int mi_height = mi_size_high[bsize];
   const int mi_width = mi_size_wide[bsize];
 
-  for (int mi_row = 0; mi_row < cm->mi_rows; mi_row += mi_height) {
-    for (int mi_col = 0; mi_col < cm->mi_cols; mi_col += mi_width) {
+  for (int mi_row = 0; mi_row < cm->mi_params.mi_rows; mi_row += mi_height) {
+    for (int mi_col = 0; mi_col < cm->mi_params.mi_cols; mi_col += mi_width) {
       if (frame_idx) {
         tpl_model_update(cpi, cpi->tpl_frame, tpl_frame->tpl_stats_ptr, mi_row,
                          mi_col, bsize, frame_idx);
@@ -1042,7 +1044,7 @@ int av1_tpl_setup_stats(AV1_COMP *cpi, int gop_eval,
     const int step = 1 << cpi->tpl_stats_block_mis_log2;
     const int mi_cols_sr = av1_pixels_to_mi(cm->superres_upscaled_width);
 
-    for (int row = 0; row < cm->mi_rows; row += step) {
+    for (int row = 0; row < cm->mi_params.mi_rows; row += step) {
       for (int col = 0; col < mi_cols_sr; col += step) {
         TplDepStats *this_stats =
             &tpl_stats[av1_tpl_ptr_pos(cpi, row, col, tpl_stride)];
@@ -1083,7 +1085,7 @@ void av1_tpl_rdmult_setup(AV1_COMP *cpi) {
   const int num_mi_w = mi_size_wide[block_size];
   const int num_mi_h = mi_size_high[block_size];
   const int num_cols = (mi_cols_sr + num_mi_w - 1) / num_mi_w;
-  const int num_rows = (cm->mi_rows + num_mi_h - 1) / num_mi_h;
+  const int num_rows = (cm->mi_params.mi_rows + num_mi_h - 1) / num_mi_h;
   const double c = 1.2;
   const int step = 1 << cpi->tpl_stats_block_mis_log2;
 
@@ -1098,7 +1100,7 @@ void av1_tpl_rdmult_setup(AV1_COMP *cpi) {
            mi_row += step) {
         for (int mi_col = col * num_mi_w; mi_col < (col + 1) * num_mi_w;
              mi_col += step) {
-          if (mi_row >= cm->mi_rows || mi_col >= mi_cols_sr) continue;
+          if (mi_row >= cm->mi_params.mi_rows || mi_col >= mi_cols_sr) continue;
           const TplDepStats *this_stats =
               &tpl_stats[av1_tpl_ptr_pos(cpi, mi_row, mi_col, tpl_stride)];
           int64_t mc_dep_delta =
@@ -1134,8 +1136,8 @@ void av1_tpl_rdmult_setup_sb(AV1_COMP *cpi, MACROBLOCK *const x,
   const int bsize_base = BLOCK_16X16;
   const int num_mi_w = mi_size_wide[bsize_base];
   const int num_mi_h = mi_size_high[bsize_base];
-  const int num_cols = (cm->mi_cols + num_mi_w - 1) / num_mi_w;
-  const int num_rows = (cm->mi_rows + num_mi_h - 1) / num_mi_h;
+  const int num_cols = (cm->mi_params.mi_cols + num_mi_w - 1) / num_mi_w;
+  const int num_rows = (cm->mi_params.mi_rows + num_mi_h - 1) / num_mi_h;
   const int num_bcols = (mi_size_wide[sb_size] + num_mi_w - 1) / num_mi_w;
   const int num_brows = (mi_size_high[sb_size] + num_mi_h - 1) / num_mi_h;
   int row, col;

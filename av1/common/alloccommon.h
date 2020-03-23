@@ -22,6 +22,7 @@ extern "C" {
 
 struct AV1Common;
 struct BufferPool;
+struct CommonModeInfoParams;
 
 void av1_remove_common(struct AV1Common *cm);
 
@@ -30,7 +31,7 @@ int av1_alloc_above_context_buffers(struct AV1Common *cm,
 void av1_free_above_context_buffers(struct AV1Common *cm,
                                     int num_free_above_contexts);
 int av1_alloc_context_buffers(struct AV1Common *cm, int width, int height);
-void av1_init_context_buffers(struct AV1Common *cm);
+void av1_init_mi_buffers(struct CommonModeInfoParams *mi_params);
 void av1_free_context_buffers(struct AV1Common *cm);
 
 void av1_free_ref_frame_buffers(struct BufferPool *pool);

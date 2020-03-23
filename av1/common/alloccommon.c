@@ -164,7 +164,7 @@ void av1_free_above_context_buffers(AV1_COMMON *cm,
 }
 
 void av1_free_context_buffers(AV1_COMMON *cm) {
-  cm->free_mi(cm);
+  cm->mi_params.free_mi(&cm->mi_params);
 
   av1_free_above_context_buffers(cm, cm->num_allocated_above_contexts);
 
@@ -178,7 +178,7 @@ int av1_alloc_above_context_buffers(AV1_COMMON *cm,
   const int num_planes = av1_num_planes(cm);
   int plane_idx;
   const int aligned_mi_cols =
-      ALIGN_POWER_OF_TWO(cm->mi_cols, MAX_MIB_SIZE_LOG2);
+      ALIGN_POWER_OF_TWO(cm->mi_params.mi_cols, MAX_MIB_SIZE_LOG2);
 
   // Allocate above context buffers
   cm->num_allocated_above_contexts = num_alloc_above_contexts;
@@ -218,15 +218,14 @@ int av1_alloc_above_context_buffers(AV1_COMMON *cm,
 }
 
 int av1_alloc_context_buffers(AV1_COMMON *cm, int width, int height) {
-  cm->set_mb_mi(cm, width, height);
-
-  if (cm->alloc_mi(cm)) goto fail;
-
+  CommonModeInfoParams *const mi_params = &cm->mi_params;
+  mi_params->set_mb_mi(mi_params, width, height);
+  if (mi_params->alloc_mi(mi_params)) goto fail;
   return 0;
 
 fail:
   // clear the mi_* values to force a realloc on resync
-  cm->set_mb_mi(cm, 0, 0);
+  mi_params->set_mb_mi(mi_params, 0, 0);
   av1_free_context_buffers(cm);
   return 1;
 }
@@ -240,7 +239,9 @@ void av1_remove_common(AV1_COMMON *cm) {
   cm->default_frame_context = NULL;
 }
 
-void av1_init_context_buffers(AV1_COMMON *cm) { cm->setup_mi(cm); }
+void av1_init_mi_buffers(CommonModeInfoParams *mi_params) {
+  mi_params->setup_mi(mi_params);
+}
 
 #if CONFIG_LPF_MASK
 int av1_alloc_loop_filter_mask(AV1_COMMON *cm) {
@@ -251,9 +252,11 @@ int av1_alloc_loop_filter_mask(AV1_COMMON *cm) {
   // 64x64 (128x128 for ext_partitions) region.  The stride
   // and rows are rounded up / truncated to a multiple of 16
   // (32 for ext_partition).
-  cm->lf.lfm_stride = (cm->mi_cols + (MI_SIZE_64X64 - 1)) >> MIN_MIB_SIZE_LOG2;
-  cm->lf.lfm_num = ((cm->mi_rows + (MI_SIZE_64X64 - 1)) >> MIN_MIB_SIZE_LOG2) *
-                   cm->lf.lfm_stride;
+  cm->lf.lfm_stride =
+      (cm->mi_params.mi_cols + (MI_SIZE_64X64 - 1)) >> MIN_MIB_SIZE_LOG2;
+  cm->lf.lfm_num =
+      ((cm->mi_params.mi_rows + (MI_SIZE_64X64 - 1)) >> MIN_MIB_SIZE_LOG2) *
+      cm->lf.lfm_stride;
   cm->lf.lfm =
       (LoopFilterMask *)aom_calloc(cm->lf.lfm_num, sizeof(*cm->lf.lfm));
   if (!cm->lf.lfm) return 1;

@@ -268,7 +268,8 @@ static INLINE void thread_loop_filter_rows(
     struct macroblockd_plane *planes, MACROBLOCKD *xd,
     AV1LfSync *const lf_sync) {
   const int sb_cols =
-      ALIGN_POWER_OF_TWO(cm->mi_cols, MAX_MIB_SIZE_LOG2) >> MAX_MIB_SIZE_LOG2;
+      ALIGN_POWER_OF_TWO(cm->mi_params.mi_cols, MAX_MIB_SIZE_LOG2) >>
+      MAX_MIB_SIZE_LOG2;
   int mi_row, mi_col, plane, dir;
   int r, c;
 
@@ -282,7 +283,8 @@ static INLINE void thread_loop_filter_rows(
       r = mi_row >> MAX_MIB_SIZE_LOG2;
 
       if (dir == 0) {
-        for (mi_col = 0; mi_col < cm->mi_cols; mi_col += MAX_MIB_SIZE) {
+        for (mi_col = 0; mi_col < cm->mi_params.mi_cols;
+             mi_col += MAX_MIB_SIZE) {
           c = mi_col >> MAX_MIB_SIZE_LOG2;
 
           av1_setup_dst_planes(planes, cm->seq_params.sb_size, frame_buffer,
@@ -293,7 +295,8 @@ static INLINE void thread_loop_filter_rows(
           sync_write(lf_sync, r, c, sb_cols, plane);
         }
       } else if (dir == 1) {
-        for (mi_col = 0; mi_col < cm->mi_cols; mi_col += MAX_MIB_SIZE) {
+        for (mi_col = 0; mi_col < cm->mi_params.mi_cols;
+             mi_col += MAX_MIB_SIZE) {
           c = mi_col >> MAX_MIB_SIZE_LOG2;
 
           // Wait for vertical edge filtering of the top-right block to be
@@ -331,7 +334,8 @@ static INLINE void thread_loop_filter_bitmask_rows(
     struct macroblockd_plane *planes, MACROBLOCKD *xd,
     AV1LfSync *const lf_sync) {
   const int sb_cols =
-      ALIGN_POWER_OF_TWO(cm->mi_cols, MIN_MIB_SIZE_LOG2) >> MIN_MIB_SIZE_LOG2;
+      ALIGN_POWER_OF_TWO(cm->mi_params.mi_cols, MIN_MIB_SIZE_LOG2) >>
+      MIN_MIB_SIZE_LOG2;
   int mi_row, mi_col, plane, dir;
   int r, c;
   (void)xd;
@@ -346,7 +350,8 @@ static INLINE void thread_loop_filter_bitmask_rows(
       r = mi_row >> MIN_MIB_SIZE_LOG2;
 
       if (dir == 0) {
-        for (mi_col = 0; mi_col < cm->mi_cols; mi_col += MI_SIZE_64X64) {
+        for (mi_col = 0; mi_col < cm->mi_params.mi_cols;
+             mi_col += MI_SIZE_64X64) {
           c = mi_col >> MIN_MIB_SIZE_LOG2;
 
           av1_setup_dst_planes(planes, BLOCK_64X64, frame_buffer, mi_row,
@@ -357,7 +362,8 @@ static INLINE void thread_loop_filter_bitmask_rows(
           sync_write(lf_sync, r, c, sb_cols, plane);
         }
       } else if (dir == 1) {
-        for (mi_col = 0; mi_col < cm->mi_cols; mi_col += MI_SIZE_64X64) {
+        for (mi_col = 0; mi_col < cm->mi_params.mi_cols;
+             mi_col += MI_SIZE_64X64) {
           c = mi_col >> MIN_MIB_SIZE_LOG2;
 
           // Wait for vertical edge filtering of the top-right block to be
@@ -402,16 +408,17 @@ static void loop_filter_rows_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
 #if CONFIG_LPF_MASK
   int sb_rows;
   if (is_decoding) {
-    sb_rows =
-        ALIGN_POWER_OF_TWO(cm->mi_rows, MIN_MIB_SIZE_LOG2) >> MIN_MIB_SIZE_LOG2;
+    sb_rows = ALIGN_POWER_OF_TWO(cm->mi_params.mi_rows, MIN_MIB_SIZE_LOG2) >>
+              MIN_MIB_SIZE_LOG2;
   } else {
-    sb_rows =
-        ALIGN_POWER_OF_TWO(cm->mi_rows, MAX_MIB_SIZE_LOG2) >> MAX_MIB_SIZE_LOG2;
+    sb_rows = ALIGN_POWER_OF_TWO(cm->mi_params.mi_rows, MAX_MIB_SIZE_LOG2) >>
+              MAX_MIB_SIZE_LOG2;
   }
 #else
   // Number of superblock rows and cols
   const int sb_rows =
-      ALIGN_POWER_OF_TWO(cm->mi_rows, MAX_MIB_SIZE_LOG2) >> MAX_MIB_SIZE_LOG2;
+      ALIGN_POWER_OF_TWO(cm->mi_params.mi_rows, MAX_MIB_SIZE_LOG2) >>
+      MAX_MIB_SIZE_LOG2;
 #endif
   const int num_workers = nworkers;
   int i;
@@ -479,11 +486,11 @@ void av1_loop_filter_frame_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   int start_mi_row, end_mi_row, mi_rows_to_filter;
 
   start_mi_row = 0;
-  mi_rows_to_filter = cm->mi_rows;
-  if (partial_frame && cm->mi_rows > 8) {
-    start_mi_row = cm->mi_rows >> 1;
+  mi_rows_to_filter = cm->mi_params.mi_rows;
+  if (partial_frame && cm->mi_params.mi_rows > 8) {
+    start_mi_row = cm->mi_params.mi_rows >> 1;
     start_mi_row &= 0xfffffff8;
-    mi_rows_to_filter = AOMMAX(cm->mi_rows / 8, 8);
+    mi_rows_to_filter = AOMMAX(cm->mi_params.mi_rows / 8, 8);
   }
   end_mi_row = start_mi_row + mi_rows_to_filter;
   av1_loop_filter_frame_init(cm, plane_start, plane_end);

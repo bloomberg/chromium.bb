@@ -45,7 +45,8 @@ static void initialize_dec(void) {
   av1_init_wedge_masks();
 }
 
-static void dec_set_mb_mi(AV1_COMMON *cm, int width, int height) {
+static void dec_set_mb_mi(CommonModeInfoParams *mi_params, int width,
+                          int height) {
   // Ensure that the decoded width and height are both multiples of
   // 8 luma pixels (note: this may only be a multiple of 4 chroma pixels if
   // subsampling is used).
@@ -54,62 +55,68 @@ static void dec_set_mb_mi(AV1_COMMON *cm, int width, int height) {
   const int aligned_width = ALIGN_POWER_OF_TWO(width, 3);
   const int aligned_height = ALIGN_POWER_OF_TWO(height, 3);
 
-  cm->mi_cols = aligned_width >> MI_SIZE_LOG2;
-  cm->mi_rows = aligned_height >> MI_SIZE_LOG2;
-  cm->mi_stride = calc_mi_size(cm->mi_cols);
+  mi_params->mi_cols = aligned_width >> MI_SIZE_LOG2;
+  mi_params->mi_rows = aligned_height >> MI_SIZE_LOG2;
+  mi_params->mi_stride = calc_mi_size(mi_params->mi_cols);
 
-  cm->mb_cols = (cm->mi_cols + 2) >> 2;
-  cm->mb_rows = (cm->mi_rows + 2) >> 2;
-  cm->MBs = cm->mb_rows * cm->mb_cols;
+  mi_params->mb_cols = (mi_params->mi_cols + 2) >> 2;
+  mi_params->mb_rows = (mi_params->mi_rows + 2) >> 2;
+  mi_params->MBs = mi_params->mb_rows * mi_params->mb_cols;
 
-  cm->mi_alloc_bsize = BLOCK_4X4;
-  cm->mi_alloc_rows = cm->mi_rows;
-  cm->mi_alloc_cols = cm->mi_cols;
-  cm->mi_alloc_stride = cm->mi_stride;
+  mi_params->mi_alloc_bsize = BLOCK_4X4;
+  mi_params->mi_alloc_rows = mi_params->mi_rows;
+  mi_params->mi_alloc_cols = mi_params->mi_cols;
+  mi_params->mi_alloc_stride = mi_params->mi_stride;
 
-  assert(mi_size_wide[cm->mi_alloc_bsize] == mi_size_high[cm->mi_alloc_bsize]);
+  assert(mi_size_wide[mi_params->mi_alloc_bsize] ==
+         mi_size_high[mi_params->mi_alloc_bsize]);
 
 #if CONFIG_LPF_MASK
-  av1_alloc_loop_filter_mask(cm);
+  av1_alloc_loop_filter_mask(mi_params);
 #endif
 }
 
-static void dec_setup_mi(AV1_COMMON *cm) {
-  const int mi_grid_size = cm->mi_stride * calc_mi_size(cm->mi_rows);
-  memset(cm->mi_grid_base, 0, mi_grid_size * sizeof(*cm->mi_grid_base));
+static void dec_setup_mi(CommonModeInfoParams *mi_params) {
+  const int mi_grid_size =
+      mi_params->mi_stride * calc_mi_size(mi_params->mi_rows);
+  memset(mi_params->mi_grid_base, 0,
+         mi_grid_size * sizeof(*mi_params->mi_grid_base));
 }
 
-static int dec_alloc_mi(AV1_COMMON *cm) {
-  const int mi_grid_size = cm->mi_stride * calc_mi_size(cm->mi_rows);
+static int dec_alloc_mi(CommonModeInfoParams *mi_params) {
+  const int mi_grid_size =
+      mi_params->mi_stride * calc_mi_size(mi_params->mi_rows);
 
-  if (cm->mi_alloc_size < mi_grid_size || cm->mi_grid_size < mi_grid_size) {
-    cm->free_mi(cm);
+  if (mi_params->mi_alloc_size < mi_grid_size ||
+      mi_params->mi_grid_size < mi_grid_size) {
+    mi_params->free_mi(mi_params);
 
-    cm->mi = aom_calloc(mi_grid_size, sizeof(*cm->mi));
-    if (!cm->mi) return 1;
-    cm->mi_alloc_size = mi_grid_size;
+    mi_params->mi = aom_calloc(mi_grid_size, sizeof(*mi_params->mi));
+    if (!mi_params->mi) return 1;
+    mi_params->mi_alloc_size = mi_grid_size;
 
-    cm->mi_grid_base =
+    mi_params->mi_grid_base =
         (MB_MODE_INFO **)aom_calloc(mi_grid_size, sizeof(MB_MODE_INFO *));
-    if (!cm->mi_grid_base) return 1;
-    cm->mi_grid_size = mi_grid_size;
+    if (!mi_params->mi_grid_base) return 1;
+    mi_params->mi_grid_size = mi_grid_size;
 
-    cm->tx_type_map = aom_calloc(calc_mi_size(cm->mi_rows) * cm->mi_stride,
-                                 sizeof(*cm->tx_type_map));
-    if (!cm->tx_type_map) return 1;
+    mi_params->tx_type_map =
+        aom_calloc(calc_mi_size(mi_params->mi_rows) * mi_params->mi_stride,
+                   sizeof(*mi_params->tx_type_map));
+    if (!mi_params->tx_type_map) return 1;
   }
 
   return 0;
 }
 
-static void dec_free_mi(AV1_COMMON *cm) {
-  aom_free(cm->mi);
-  cm->mi = NULL;
-  aom_free(cm->mi_grid_base);
-  cm->mi_grid_base = NULL;
-  cm->mi_alloc_size = 0;
-  aom_free(cm->tx_type_map);
-  cm->tx_type_map = NULL;
+static void dec_free_mi(CommonModeInfoParams *mi_params) {
+  aom_free(mi_params->mi);
+  mi_params->mi = NULL;
+  aom_free(mi_params->mi_grid_base);
+  mi_params->mi_grid_base = NULL;
+  mi_params->mi_alloc_size = 0;
+  aom_free(mi_params->tx_type_map);
+  mi_params->tx_type_map = NULL;
 }
 
 AV1Decoder *av1_decoder_create(BufferPool *const pool) {
@@ -152,10 +159,10 @@ AV1Decoder *av1_decoder_create(BufferPool *const pool) {
 
   cm->seq_params.bit_depth = AOM_BITS_8;
 
-  cm->alloc_mi = dec_alloc_mi;
-  cm->free_mi = dec_free_mi;
-  cm->setup_mi = dec_setup_mi;
-  cm->set_mb_mi = dec_set_mb_mi;
+  cm->mi_params.alloc_mi = dec_alloc_mi;
+  cm->mi_params.free_mi = dec_free_mi;
+  cm->mi_params.setup_mi = dec_setup_mi;
+  cm->mi_params.set_mb_mi = dec_set_mb_mi;
 
   av1_loop_filter_init(cm);
 
@@ -525,8 +532,9 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
 
   if (!cm->show_existing_frame) {
     if (cm->seg.enabled) {
-      if (cm->prev_frame && (cm->mi_rows == cm->prev_frame->mi_rows) &&
-          (cm->mi_cols == cm->prev_frame->mi_cols)) {
+      if (cm->prev_frame &&
+          (cm->mi_params.mi_rows == cm->prev_frame->mi_rows) &&
+          (cm->mi_params.mi_cols == cm->prev_frame->mi_cols)) {
         cm->last_frame_seg_map = cm->prev_frame->seg_map;
       } else {
         cm->last_frame_seg_map = NULL;

@@ -274,11 +274,12 @@ static uint64_t compute_cdef_dist(uint16_t *dst, int dstride, uint16_t *src,
   return sum >> 2 * coeff_shift;
 }
 
-static int sb_all_skip(const AV1_COMMON *const cm, int mi_row, int mi_col) {
-  const int maxr = AOMMIN(cm->mi_rows - mi_row, MI_SIZE_64X64);
-  const int maxc = AOMMIN(cm->mi_cols - mi_col, MI_SIZE_64X64);
-  const int stride = cm->mi_stride;
-  MB_MODE_INFO **mbmi = cm->mi_grid_base + mi_row * stride + mi_col;
+static int sb_all_skip(const CommonModeInfoParams *const mi_params, int mi_row,
+                       int mi_col) {
+  const int maxr = AOMMIN(mi_params->mi_rows - mi_row, MI_SIZE_64X64);
+  const int maxc = AOMMIN(mi_params->mi_cols - mi_col, MI_SIZE_64X64);
+  const int stride = mi_params->mi_stride;
+  MB_MODE_INFO **mbmi = mi_params->mi_grid_base + mi_row * stride + mi_col;
   for (int r = 0; r < maxr; ++r, mbmi += stride) {
     for (int c = 0; c < maxc; ++c) {
       if (!mbmi[c]->skip) return 0;
@@ -332,14 +333,15 @@ static void pick_cdef_from_qp(AV1_COMMON *const cm) {
   cdef_info->cdef_uv_strengths[0] =
       predicted_uv_f1 * CDEF_SEC_STRENGTHS + predicted_uv_f2;
 
-  const int nvfb = (cm->mi_rows + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
-  const int nhfb = (cm->mi_cols + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
-  MB_MODE_INFO **mbmi = cm->mi_grid_base;
+  const CommonModeInfoParams *const mi_params = &cm->mi_params;
+  const int nvfb = (mi_params->mi_rows + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
+  const int nhfb = (mi_params->mi_cols + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
+  MB_MODE_INFO **mbmi = mi_params->mi_grid_base;
   for (int r = 0; r < nvfb; ++r) {
     for (int c = 0; c < nhfb; ++c) {
       mbmi[MI_SIZE_64X64 * c]->cdef_strength = 0;
     }
-    mbmi += MI_SIZE_64X64 * cm->mi_stride;
+    mbmi += MI_SIZE_64X64 * mi_params->mi_stride;
   }
 }
 
@@ -356,8 +358,9 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
   cdef_list dlist[MI_SIZE_128X128 * MI_SIZE_128X128];
   int dir[CDEF_NBLOCKS][CDEF_NBLOCKS] = { { 0 } };
   int var[CDEF_NBLOCKS][CDEF_NBLOCKS] = { { 0 } };
-  const int nvfb = (cm->mi_rows + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
-  const int nhfb = (cm->mi_cols + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
+  const CommonModeInfoParams *const mi_params = &cm->mi_params;
+  const int nvfb = (mi_params->mi_rows + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
+  const int nhfb = (mi_params->mi_cols + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
   int *sb_index = aom_malloc(nvfb * nhfb * sizeof(*sb_index));
   const int damping = 3 + (cm->base_qindex >> 6);
   const int fast = (pick_method == CDEF_FAST_SEARCH_LVL1 ||
@@ -394,22 +397,23 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
         ref_stride = ref->uv_stride;
         break;
     }
-    src[pli] = aom_memalign(
-        32, sizeof(*src) * cm->mi_rows * cm->mi_cols * MI_SIZE * MI_SIZE);
-    ref_coeff[pli] = aom_memalign(
-        32, sizeof(*ref_coeff) * cm->mi_rows * cm->mi_cols * MI_SIZE * MI_SIZE);
+    src[pli] = aom_memalign(32, sizeof(*src) * mi_params->mi_rows *
+                                    mi_params->mi_cols * MI_SIZE * MI_SIZE);
+    ref_coeff[pli] =
+        aom_memalign(32, sizeof(*ref_coeff) * mi_params->mi_rows *
+                             mi_params->mi_cols * MI_SIZE * MI_SIZE);
     xdec[pli] = xd->plane[pli].subsampling_x;
     ydec[pli] = xd->plane[pli].subsampling_y;
     bsize[pli] = ydec[pli] ? (xdec[pli] ? BLOCK_4X4 : BLOCK_8X4)
                            : (xdec[pli] ? BLOCK_4X8 : BLOCK_8X8);
-    stride[pli] = cm->mi_cols << MI_SIZE_LOG2;
+    stride[pli] = mi_params->mi_cols << MI_SIZE_LOG2;
     mi_wide_l2[pli] = MI_SIZE_LOG2 - xd->plane[pli].subsampling_x;
     mi_high_l2[pli] = MI_SIZE_LOG2 - xd->plane[pli].subsampling_y;
 
     const int frame_height =
-        (cm->mi_rows * MI_SIZE) >> xd->plane[pli].subsampling_y;
+        (mi_params->mi_rows * MI_SIZE) >> xd->plane[pli].subsampling_y;
     const int frame_width =
-        (cm->mi_cols * MI_SIZE) >> xd->plane[pli].subsampling_x;
+        (mi_params->mi_cols * MI_SIZE) >> xd->plane[pli].subsampling_x;
     const int plane_sride = stride[pli];
     const int dst_stride = xd->plane[pli].dst.stride;
     for (int r = 0; r < frame_height; ++r) {
@@ -435,19 +439,20 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
   for (int fbr = 0; fbr < nvfb; ++fbr) {
     for (int fbc = 0; fbc < nhfb; ++fbc) {
       // No filtering if the entire filter block is skipped
-      if (sb_all_skip(cm, fbr * MI_SIZE_64X64, fbc * MI_SIZE_64X64)) continue;
+      if (sb_all_skip(mi_params, fbr * MI_SIZE_64X64, fbc * MI_SIZE_64X64))
+        continue;
 
       const MB_MODE_INFO *const mbmi =
-          cm->mi_grid_base[MI_SIZE_64X64 * fbr * cm->mi_stride +
-                           MI_SIZE_64X64 * fbc];
+          mi_params->mi_grid_base[MI_SIZE_64X64 * fbr * mi_params->mi_stride +
+                                  MI_SIZE_64X64 * fbc];
       if (((fbc & 1) &&
            (mbmi->sb_type == BLOCK_128X128 || mbmi->sb_type == BLOCK_128X64)) ||
           ((fbr & 1) &&
            (mbmi->sb_type == BLOCK_128X128 || mbmi->sb_type == BLOCK_64X128)))
         continue;
 
-      int nhb = AOMMIN(MI_SIZE_64X64, cm->mi_cols - MI_SIZE_64X64 * fbc);
-      int nvb = AOMMIN(MI_SIZE_64X64, cm->mi_rows - MI_SIZE_64X64 * fbr);
+      int nhb = AOMMIN(MI_SIZE_64X64, mi_params->mi_cols - MI_SIZE_64X64 * fbc);
+      int nvb = AOMMIN(MI_SIZE_64X64, mi_params->mi_rows - MI_SIZE_64X64 * fbr);
       int hb_step = 1;
       int vb_step = 1;
       BLOCK_SIZE bs;
@@ -455,11 +460,13 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
           mbmi->sb_type == BLOCK_64X128) {
         bs = mbmi->sb_type;
         if (bs == BLOCK_128X128 || bs == BLOCK_128X64) {
-          nhb = AOMMIN(MI_SIZE_128X128, cm->mi_cols - MI_SIZE_64X64 * fbc);
+          nhb =
+              AOMMIN(MI_SIZE_128X128, mi_params->mi_cols - MI_SIZE_64X64 * fbc);
           hb_step = 2;
         }
         if (bs == BLOCK_128X128 || bs == BLOCK_64X128) {
-          nvb = AOMMIN(MI_SIZE_128X128, cm->mi_rows - MI_SIZE_64X64 * fbr);
+          nvb =
+              AOMMIN(MI_SIZE_128X128, mi_params->mi_rows - MI_SIZE_64X64 * fbr);
           vb_step = 2;
         }
       } else {
@@ -467,7 +474,7 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
       }
 
       const int cdef_count = av1_cdef_compute_sb_list(
-          cm, fbr * MI_SIZE_64X64, fbc * MI_SIZE_64X64, dlist, bs);
+          mi_params, fbr * MI_SIZE_64X64, fbc * MI_SIZE_64X64, dlist, bs);
 
       const int yoff = CDEF_VBORDER * (fbr != 0);
       const int xoff = CDEF_HBORDER * (fbc != 0);
@@ -504,7 +511,7 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
         }
       }
       sb_index[sb_count++] =
-          MI_SIZE_64X64 * fbr * cm->mi_stride + MI_SIZE_64X64 * fbc;
+          MI_SIZE_64X64 * fbr * mi_params->mi_stride + MI_SIZE_64X64 * fbc;
     }
   }
 
@@ -555,7 +562,7 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
         best_mse = curr;
       }
     }
-    cm->mi_grid_base[sb_index[i]]->cdef_strength = best_gi;
+    mi_params->mi_grid_base[sb_index[i]]->cdef_strength = best_gi;
   }
 
   if (fast) {

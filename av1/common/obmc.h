@@ -29,7 +29,7 @@ static INLINE void foreach_overlappable_nb_above(const AV1_COMMON *cm,
   // prev_row_mi points into the mi array, starting at the beginning of the
   // previous row.
   MB_MODE_INFO **prev_row_mi = xd->mi - mi_col - 1 * xd->mi_stride;
-  const int end_col = AOMMIN(mi_col + xd->n4_w, cm->mi_cols);
+  const int end_col = AOMMIN(mi_col + xd->n4_w, cm->mi_params.mi_cols);
   uint8_t mi_step;
   for (int above_mi_col = mi_col; above_mi_col < end_col && nb_count < nb_max;
        above_mi_col += mi_step) {
@@ -66,7 +66,7 @@ static INLINE void foreach_overlappable_nb_left(const AV1_COMMON *cm,
   // previous column
   const int mi_row = xd->mi_row;
   MB_MODE_INFO **prev_col_mi = xd->mi - 1 - mi_row * xd->mi_stride;
-  const int end_row = AOMMIN(mi_row + xd->n4_h, cm->mi_rows);
+  const int end_row = AOMMIN(mi_row + xd->n4_h, cm->mi_params.mi_rows);
   uint8_t mi_step;
   for (int left_mi_row = mi_row; left_mi_row < end_row && nb_count < nb_max;
        left_mi_row += mi_step) {

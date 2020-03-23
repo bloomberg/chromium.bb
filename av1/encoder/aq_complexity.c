@@ -70,7 +70,8 @@ void av1_setup_in_frame_q_adj(AV1_COMP *cpi) {
   aom_clear_system_state();
 
   if (resolution_change) {
-    memset(cpi->segmentation_map, 0, cm->mi_rows * cm->mi_cols);
+    memset(cpi->segmentation_map, 0,
+           cm->mi_params.mi_rows * cm->mi_params.mi_cols);
     av1_clearall_segfeatures(seg);
     av1_disable_segmentation(seg);
     return;
@@ -82,7 +83,8 @@ void av1_setup_in_frame_q_adj(AV1_COMP *cpi) {
         get_aq_c_strength(cm->base_qindex, cm->seq_params.bit_depth);
 
     // Clear down the segment map.
-    memset(cpi->segmentation_map, DEFAULT_AQ2_SEG, cm->mi_rows * cm->mi_cols);
+    memset(cpi->segmentation_map, DEFAULT_AQ2_SEG,
+           cm->mi_params.mi_rows * cm->mi_params.mi_cols);
 
     av1_clearall_segfeatures(seg);
 
@@ -132,9 +134,9 @@ void av1_caq_select_segment(const AV1_COMP *cpi, MACROBLOCK *mb, BLOCK_SIZE bs,
   const AV1_COMMON *const cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
 
-  const int mi_offset = mi_row * cm->mi_cols + mi_col;
-  const int xmis = AOMMIN(cm->mi_cols - mi_col, mi_size_wide[bs]);
-  const int ymis = AOMMIN(cm->mi_rows - mi_row, mi_size_high[bs]);
+  const int mi_offset = mi_row * cm->mi_params.mi_cols + mi_col;
+  const int xmis = AOMMIN(cm->mi_params.mi_cols - mi_col, mi_size_wide[bs]);
+  const int ymis = AOMMIN(cm->mi_params.mi_rows - mi_row, mi_size_high[bs]);
   int x, y;
   int i;
   unsigned char segment;
@@ -177,7 +179,8 @@ void av1_caq_select_segment(const AV1_COMP *cpi, MACROBLOCK *mb, BLOCK_SIZE bs,
   // Fill in the entires in the segment map corresponding to this SB64.
   for (y = 0; y < ymis; y++) {
     for (x = 0; x < xmis; x++) {
-      cpi->segmentation_map[mi_offset + y * cm->mi_cols + x] = segment;
+      cpi->segmentation_map[mi_offset + y * cm->mi_params.mi_cols + x] =
+          segment;
     }
   }
 }

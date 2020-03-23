@@ -177,14 +177,16 @@ static AOM_INLINE void collect_mv_stats_b(MV_STATS *mv_stats,
                                           const AV1_COMP *cpi, int mi_row,
                                           int mi_col) {
   const AV1_COMMON *cm = &cpi->common;
+  const CommonModeInfoParams *const mi_params = &cm->mi_params;
 
-  if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) {
+  if (mi_row >= mi_params->mi_rows || mi_col >= mi_params->mi_cols) {
     return;
   }
 
-  const MB_MODE_INFO *mbmi = cm->mi_grid_base[mi_row * cm->mi_stride + mi_col];
+  const MB_MODE_INFO *mbmi =
+      mi_params->mi_grid_base[mi_row * mi_params->mi_stride + mi_col];
   const MB_MODE_INFO_EXT_FRAME *mbmi_ext_frame =
-      cpi->mbmi_ext_frame_base + get_mi_ext_idx(cm, mi_row, mi_col);
+      cpi->mbmi_ext_frame_base + get_mi_ext_idx(mi_params, mi_row, mi_col);
 
   if (!is_inter_block(mbmi)) {
     mv_stats->intra_count++;
@@ -265,7 +267,8 @@ static AOM_INLINE void collect_mv_stats_sb(MV_STATS *mv_stats,
   assert(bsize < BLOCK_SIZES_ALL);
   const AV1_COMMON *cm = &cpi->common;
 
-  if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
+  if (mi_row >= cm->mi_params.mi_rows || mi_col >= cm->mi_params.mi_cols)
+    return;
 
   const PARTITION_TYPE partition = get_partition(cm, mi_row, mi_col, bsize);
   const BLOCK_SIZE subsize = get_partition_subsize(bsize, partition);

@@ -944,7 +944,8 @@ static void get_tile_stats(const AV1_COMP *const cpi, int *max_tile_size,
       *min_cropped_tile_height =
           AOMMIN(*min_cropped_tile_height, cropped_tile_height);
 
-      const int is_right_most_tile = tile_info->mi_col_end == cm->mi_cols;
+      const int is_right_most_tile =
+          tile_info->mi_col_end == cm->mi_params.mi_cols;
       if (!is_right_most_tile) {
         if (av1_superres_scaled(cm))
           *tile_width_valid &= tile_width >= 128;

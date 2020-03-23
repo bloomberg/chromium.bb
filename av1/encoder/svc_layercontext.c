@@ -24,8 +24,8 @@ void av1_init_layer_context(AV1_COMP *const cpi) {
   AV1_COMMON *const cm = &cpi->common;
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   SVC *const svc = &cpi->svc;
-  int mi_rows = cpi->common.mi_rows;
-  int mi_cols = cpi->common.mi_cols;
+  int mi_rows = cpi->common.mi_params.mi_rows;
+  int mi_cols = cpi->common.mi_params.mi_cols;
   svc->base_framerate = 30.0;
   svc->current_superframe = 0;
 

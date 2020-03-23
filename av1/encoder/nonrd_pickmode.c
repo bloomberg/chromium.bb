@@ -2160,8 +2160,8 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   aom_usec_timer_mark(&ms_stat.timer2);
   ms_stat.avg_block_times[bsize] += aom_usec_timer_elapsed(&ms_stat.timer2);
   //
-  if ((mi_row + mi_size_high[bsize] >= (cpi->common.mi_rows)) &&
-      (mi_col + mi_size_wide[bsize] >= (cpi->common.mi_cols))) {
+  if ((mi_row + mi_size_high[bsize] >= (cpi->common.mi_params.mi_rows)) &&
+      (mi_col + mi_size_wide[bsize] >= (cpi->common.mi_params.mi_cols))) {
     int i, j;
     PREDICTION_MODE used_modes[3] = { NEARESTMV, NEARMV, NEWMV };
     BLOCK_SIZE bss[5] = { BLOCK_8X8, BLOCK_16X16, BLOCK_32X32, BLOCK_64X64,

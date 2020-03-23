@@ -57,11 +57,12 @@ static void read_cdef(AV1_COMMON *cm, aom_reader *r, MACROBLOCKD *const xd) {
   const int index = cm->seq_params.sb_size == BLOCK_128X128
                         ? !!(mi_col & mask) + 2 * !!(mi_row & mask)
                         : 0;
-  cm->mi_grid_base[(mi_row & m) * cm->mi_stride + (mi_col & m)]->cdef_strength =
-      xd->cdef_preset[index] =
-          xd->cdef_preset[index] == -1 && !mbmi->skip
-              ? aom_read_literal(r, cm->cdef_info.cdef_bits, ACCT_STR)
-              : xd->cdef_preset[index];
+  cm->mi_params
+      .mi_grid_base[(mi_row & m) * cm->mi_params.mi_stride + (mi_col & m)]
+      ->cdef_strength = xd->cdef_preset[index] =
+      xd->cdef_preset[index] == -1 && !mbmi->skip
+          ? aom_read_literal(r, cm->cdef_info.cdef_bits, ACCT_STR)
+          : xd->cdef_preset[index];
 }
 
 static int read_delta_qindex(AV1_COMMON *cm, const MACROBLOCKD *xd,
@@ -286,8 +287,8 @@ static int dec_get_segment_id(const AV1_COMMON *cm, const uint8_t *segment_ids,
 
   for (int y = 0; y < y_mis; y++)
     for (int x = 0; x < x_mis; x++)
-      segment_id =
-          AOMMIN(segment_id, segment_ids[mi_offset + y * cm->mi_cols + x]);
+      segment_id = AOMMIN(
+          segment_id, segment_ids[mi_offset + y * cm->mi_params.mi_cols + x]);
 
   assert(segment_id >= 0 && segment_id < MAX_SEGMENTS);
   return segment_id;
@@ -299,7 +300,8 @@ static void set_segment_id(AV1_COMMON *cm, int mi_offset, int x_mis, int y_mis,
 
   for (int y = 0; y < y_mis; y++)
     for (int x = 0; x < x_mis; x++)
-      cm->cur_frame->seg_map[mi_offset + y * cm->mi_cols + x] = segment_id;
+      cm->cur_frame->seg_map[mi_offset + y * cm->mi_params.mi_cols + x] =
+          segment_id;
 }
 
 static int read_intra_segment_id(AV1_COMMON *const cm,
@@ -307,30 +309,31 @@ static int read_intra_segment_id(AV1_COMMON *const cm,
                                  aom_reader *r, int skip) {
   struct segmentation *const seg = &cm->seg;
   if (!seg->enabled) return 0;  // Default for disabled segmentation
-
   assert(seg->update_map && !seg->temporal_update);
 
+  const CommonModeInfoParams *const mi_params = &cm->mi_params;
   const int mi_row = xd->mi_row;
   const int mi_col = xd->mi_col;
-  const int mi_offset = mi_row * cm->mi_cols + mi_col;
+  const int mi_offset = mi_row * mi_params->mi_cols + mi_col;
   const int bw = mi_size_wide[bsize];
   const int bh = mi_size_high[bsize];
-  const int x_mis = AOMMIN(cm->mi_cols - mi_col, bw);
-  const int y_mis = AOMMIN(cm->mi_rows - mi_row, bh);
+  const int x_mis = AOMMIN(mi_params->mi_cols - mi_col, bw);
+  const int y_mis = AOMMIN(mi_params->mi_rows - mi_row, bh);
   const int segment_id = read_segment_id(cm, xd, r, skip);
   set_segment_id(cm, mi_offset, x_mis, y_mis, segment_id);
   return segment_id;
 }
 
-static void copy_segment_id(const AV1_COMMON *cm,
+static void copy_segment_id(const CommonModeInfoParams *const mi_params,
                             const uint8_t *last_segment_ids,
                             uint8_t *current_segment_ids, int mi_offset,
                             int x_mis, int y_mis) {
   for (int y = 0; y < y_mis; y++)
     for (int x = 0; x < x_mis; x++)
-      current_segment_ids[mi_offset + y * cm->mi_cols + x] =
-          last_segment_ids ? last_segment_ids[mi_offset + y * cm->mi_cols + x]
-                           : 0;
+      current_segment_ids[mi_offset + y * mi_params->mi_cols + x] =
+          last_segment_ids
+              ? last_segment_ids[mi_offset + y * mi_params->mi_cols + x]
+              : 0;
 }
 
 static int get_predicted_segment_id(AV1_COMMON *const cm, int mi_offset,
@@ -343,21 +346,22 @@ static int get_predicted_segment_id(AV1_COMMON *const cm, int mi_offset,
 static int read_inter_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                                  int preskip, aom_reader *r) {
   struct segmentation *const seg = &cm->seg;
+  const CommonModeInfoParams *const mi_params = &cm->mi_params;
   MB_MODE_INFO *const mbmi = xd->mi[0];
   const int mi_row = xd->mi_row;
   const int mi_col = xd->mi_col;
-  const int mi_offset = mi_row * cm->mi_cols + mi_col;
+  const int mi_offset = mi_row * mi_params->mi_cols + mi_col;
   const int bw = mi_size_wide[mbmi->sb_type];
   const int bh = mi_size_high[mbmi->sb_type];
 
   // TODO(slavarnway): move x_mis, y_mis into xd ?????
-  const int x_mis = AOMMIN(cm->mi_cols - mi_col, bw);
-  const int y_mis = AOMMIN(cm->mi_rows - mi_row, bh);
+  const int x_mis = AOMMIN(mi_params->mi_cols - mi_col, bw);
+  const int y_mis = AOMMIN(mi_params->mi_rows - mi_row, bh);
 
   if (!seg->enabled) return 0;  // Default for disabled segmentation
 
   if (!seg->update_map) {
-    copy_segment_id(cm, cm->last_frame_seg_map, cm->cur_frame->seg_map,
+    copy_segment_id(mi_params, cm->last_frame_seg_map, cm->cur_frame->seg_map,
                     mi_offset, x_mis, y_mis);
     return get_predicted_segment_id(cm, mi_offset, x_mis, y_mis);
   }
@@ -1519,7 +1523,7 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
 
 static void intra_copy_frame_mvs(AV1_COMMON *const cm, int mi_row, int mi_col,
                                  int x_mis, int y_mis) {
-  const int frame_mvs_stride = ROUND_POWER_OF_TWO(cm->mi_cols, 1);
+  const int frame_mvs_stride = ROUND_POWER_OF_TWO(cm->mi_params.mi_cols, 1);
   MV_REF *frame_mvs =
       cm->cur_frame->mvs + (mi_row >> 1) * frame_mvs_stride + (mi_col >> 1);
   x_mis = ROUND_POWER_OF_TWO(x_mis, 1);
