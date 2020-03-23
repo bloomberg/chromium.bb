@@ -102,7 +102,7 @@ class Tile : public Allocable {
   bool Parse();
   // Parses and decodes the entire tile. Depending on the configuration of this
   // Tile, this function may do multithreaded decoding.
-  bool Decode(bool is_main_thread);  // 5.11.2.
+  bool ParseAndDecode(bool is_main_thread);  // 5.11.2.
   // Processes all the columns of the superblock row at |row4x4| that are within
   // this Tile. If |save_symbol_decoder_context| is true, then
   // SaveSymbolDecoderContext() is invoked for the last superblock row.
@@ -240,9 +240,9 @@ class Tile : public Allocable {
   void SaveSymbolDecoderContext();
 
   // Entry point for multi-threaded decoding. This function performs the same
-  // functionality as Decode(). The current thread does the "parse" step while
-  // the worker threads do the "decode" step.
-  bool ThreadedDecode();
+  // functionality as ParseAndDecode(). The current thread does the "parse" step
+  // while the worker threads do the "decode" step.
+  bool ThreadedParseAndDecode();
 
   // Returns whether or not the prerequisites for decoding the superblock at
   // |row_index| and |column_index| are satisfied. |threading_.mutex| must be

@@ -612,13 +612,13 @@ void Tile::SaveSymbolDecoderContext() {
   }
 }
 
-bool Tile::Decode(bool is_main_thread) {
+bool Tile::ParseAndDecode(bool is_main_thread) {
   // If this is the main thread, we build the loop filter bit masks when parsing
   // so that it happens in the current thread. This ensures that the main thread
   // does as much work as possible.
   build_bit_mask_when_parsing_ = is_main_thread;
   if (split_parse_and_decode_) {
-    if (!ThreadedDecode()) return false;
+    if (!ThreadedParseAndDecode()) return false;
     SaveSymbolDecoderContext();
     return true;
   }
@@ -663,7 +663,7 @@ bool Tile::Parse() {
   return true;
 }
 
-bool Tile::ThreadedDecode() {
+bool Tile::ThreadedParseAndDecode() {
   {
     std::lock_guard<std::mutex> lock(threading_.mutex);
     // Account for the parsing job.

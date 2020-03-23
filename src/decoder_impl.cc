@@ -933,7 +933,7 @@ StatusCode DecoderImpl::DecodeTilesThreadedNonFrameParallel(
              tile_count) {
         if (!failed) {
           const auto& tile_ptr = tiles[index];
-          if (!tile_ptr->Decode(/*is_main_thread=*/false)) {
+          if (!tile_ptr->ParseAndDecode(/*is_main_thread=*/false)) {
             LIBGAV1_DLOG(ERROR, "Error decoding tile #%d", tile_ptr->number());
             failed = true;
           }
@@ -950,7 +950,7 @@ StatusCode DecoderImpl::DecodeTilesThreadedNonFrameParallel(
          tile_count) {
     if (!tile_decoding_failed) {
       const auto& tile_ptr = tiles[index];
-      if (!tile_ptr->Decode(/*is_main_thread=*/true)) {
+      if (!tile_ptr->ParseAndDecode(/*is_main_thread=*/true)) {
         LIBGAV1_DLOG(ERROR, "Error decoding tile #%d", tile_ptr->number());
         tile_decoding_failed = true;
       }
