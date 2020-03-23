@@ -154,6 +154,10 @@ inline base::ProcessId ProcessHostImpl::Impl::processId() const {
   return d_processId;
 }
 
+inline base::ProcessHandle ProcessHostImpl::Impl::processHandle() const {
+  return d_process->Handle();
+}
+
 inline const BrowserContextImpl& ProcessHostImpl::Impl::context() const {
   return *d_context;
 }
@@ -275,12 +279,13 @@ std::string ProcessHostImpl::createHostChannel(
 
   // Import the renderer command line switches from the render process host.
   base::CommandLine commandLine(base::CommandLine::NO_PROGRAM);
-  processHost.d_impl->renderProcessHost().AdjustCommandLineForRenderer(
-      &commandLine);
+  const scoped_refptr<ProcessHostImpl::Impl>& impl = processHost.d_impl;
+  impl->renderProcessHost().AdjustCommandLineForRenderer(
+      &commandLine, impl->processHandle());
   channelInfo.loadSwitchesFromCommandLine(commandLine);
 
   // Stash the host state in the global map
-  s_unboundHosts[processId] = processHost.d_impl;
+  s_unboundHosts[processId] = impl;
 
   return channelInfo.serialize();
 }
