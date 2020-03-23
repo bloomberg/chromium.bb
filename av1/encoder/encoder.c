@@ -5195,11 +5195,10 @@ static void screen_content_tools_determination(
   }
 }
 
-// Set or save some encoding parameters. In the two encoding pass,
-// we want to make the encoding process fast. A fixed block partition size,
-// and a large q is used.
-static void set_or_save_encoding_params_for_screen_content(AV1_COMP *cpi,
-                                                           const int pass) {
+// Set some encoding parameters to make the encoding process fast.
+// A fixed block partition size, and a large q is used.
+static void set_encoding_params_for_screen_content(AV1_COMP *cpi,
+                                                   const int pass) {
   AV1_COMMON *const cm = &cpi->common;
   if (pass == 0) {
     // In the first pass, encode without screen content tools.
@@ -5209,17 +5208,18 @@ static void set_or_save_encoding_params_for_screen_content(AV1_COMP *cpi,
     cpi->is_screen_content_type = 0;
     cpi->sf.part_sf.partition_search_type = FIXED_PARTITION;
     cpi->sf.part_sf.always_this_block_size = BLOCK_32X32;
-  } else {
-    // In the second pass, encode with screen content tools.
-    // Use a high q, and a fixed block size for fast encoding.
-    cm->allow_screen_content_tools = 1;
-    // TODO(chengchen): turn intrabc on could lead to data race issue.
-    // cm->allow_intrabc = 1;
-    cpi->is_screen_content_type = 1;
-    cpi->sf.part_sf.partition_search_type = FIXED_PARTITION;
-    cpi->sf.part_sf.always_this_block_size = BLOCK_32X32;
-    av1_hash_table_create(&cm->cur_frame->hash_table);
+    return;
   }
+  assert(pass == 1);
+  // In the second pass, encode with screen content tools.
+  // Use a high q, and a fixed block size for fast encoding.
+  cm->allow_screen_content_tools = 1;
+  // TODO(chengchen): turn intrabc on could lead to data race issue.
+  // cm->allow_intrabc = 1;
+  cpi->is_screen_content_type = 1;
+  cpi->sf.part_sf.partition_search_type = FIXED_PARTITION;
+  cpi->sf.part_sf.always_this_block_size = BLOCK_32X32;
+  av1_hash_table_create(&cm->cur_frame->hash_table);
 }
 
 // Determines whether to use screen content tools for the key frame group.
@@ -5281,11 +5281,10 @@ static void determine_sc_tools_with_encoding(AV1_COMP *cpi, const int q_orig) {
     cm->cur_frame->seg.enabled = cm->seg.enabled;
   }
 
-  // The two encodes is to help determine whether to use screen content tools,
-  // with a high q and fixed partition.
-  // Then reset the partition speed feature.
+  // The two encoding passes aim to help determine whether to use screen
+  // content tools, with a high q and fixed partition.
   for (int pass = 0; pass < 2; ++pass) {
-    set_or_save_encoding_params_for_screen_content(cpi, pass);
+    set_encoding_params_for_screen_content(cpi, pass);
 #if CONFIG_TUNE_VMAF
     if (cpi->oxcf.tuning == AOM_TUNE_VMAF_WITH_PREPROCESSING ||
         cpi->oxcf.tuning == AOM_TUNE_VMAF_WITHOUT_PREPROCESSING ||
