@@ -2176,6 +2176,10 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
     NavigationRequest* request) {
   SiteInstance* current_site_instance = render_frame_host_->GetSiteInstance();
 
+  // blpwtk2: Enforce renderer affinity at the webview level by always using
+  //          the same site instance
+  return base::WrapRefCounted(current_site_instance);
+
   // All children of MHTML documents must be MHTML documents. They all live in
   // the same process.
   if (request->IsForMhtmlSubframe())
