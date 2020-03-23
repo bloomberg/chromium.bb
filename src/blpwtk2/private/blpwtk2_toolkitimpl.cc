@@ -63,6 +63,7 @@
 #include <content/public/browser/render_process_host.h>
 #include <content/public/common/content_switches.h>
 #include <content/common/in_process_child_thread_params.h>
+#include <content/child/field_trial.h>
 #include <content/renderer/render_thread_impl.h>
 #include <content/public/renderer/render_thread.h>
 #include <content/browser/browser_main_loop.h>
@@ -597,17 +598,7 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
     }
 
     if (!isHost) {
-        const base::CommandLine& command_line =
-            *base::CommandLine::ForCurrentProcess();
-        std::string process_type =
-            command_line.GetSwitchValueASCII(switches::kProcessType);
-        field_trial_list.reset(new base::FieldTrialList(nullptr));
-        std::unique_ptr<base::FeatureList> feature_list(
-            new base::FeatureList);
-        base::FieldTrialList::CreateFeaturesFromCommandLine(
-            command_line, switches::kEnableFeatures,
-        switches::kDisableFeatures, feature_list.get());
-        base::FeatureList::SetInstance(std::move(feature_list));    
+        content::InitializeFieldTrialAndFeatureList();
     }
     // Start pumping the message loop.
     startMessageLoop(sandboxInfo);
