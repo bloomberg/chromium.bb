@@ -2599,7 +2599,7 @@ int evaluate_ab_partition_based_on_split(
   int num_win = 0;
   // Threshold for number of winners
   // Conservative pruning for high quantizers
-  int num_win_thresh = 3 * (2 * (MAXQ - qindex) / MAXQ);
+  const int num_win_thresh = AOMMIN(3 * (2 * (MAXQ - qindex) / MAXQ), 3);
   bool sub_part_win = (rect_part_win_info == NULL)
                           ? (pc_tree->partitioning == rect_part)
                           : (rect_part == PARTITION_HORZ)
@@ -3633,7 +3633,7 @@ BEGIN_PARTITION_SEARCH:
     // Prune HORZ4/VERT4 partitions based on number of HORZ/VERT winners of
     // split partiitons.
     // Conservative pruning for high quantizers
-    const int num_win_thresh = 3 * (MAXQ - x->qindex) / MAXQ + 1;
+    const int num_win_thresh = AOMMIN(3 * (MAXQ - x->qindex) / MAXQ + 1, 3);
     if (num_child_horz_win < num_win_thresh) {
       partition_horz4_allowed = 0;
     }
