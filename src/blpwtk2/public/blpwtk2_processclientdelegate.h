@@ -31,6 +31,7 @@ namespace blpwtk2 {
 
 class BLPWTK2_EXPORT ProcessClientDelegate {
 public:
+    ProcessClientDelegate();
 
     virtual ~ProcessClientDelegate();
 
