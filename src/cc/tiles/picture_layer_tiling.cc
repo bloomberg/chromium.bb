@@ -32,7 +32,7 @@ namespace cc {
 namespace {
 // The math is similar to gfx::Rect::ManhattanInternalDistance except that each
 // component is scaled by the specified |scale|.
-float ComputeScaledManhattalInternalDistance(const gfx::Rect& a,
+float ComputeScaledManhattanInternalDistance(const gfx::Rect& a,
                                              const gfx::Rect& b,
                                              const gfx::SizeF& scale) {
   gfx::Rect combined(a);
@@ -942,7 +942,7 @@ TilePriority PictureLayerTiling::ComputePriorityForTile(
       tiling_data_.TileBounds(tile->tiling_i_index(), tile->tiling_j_index());
   DCHECK_GT(current_content_to_screen_scale_.width(), 0.f);
   DCHECK_GT(current_content_to_screen_scale_.height(), 0.f);
-  float distance_to_visible = ComputeScaledManhattalInternalDistance(
+  float distance_to_visible = ComputeScaledManhattanInternalDistance(
       current_visible_rect_, tile_bounds, current_content_to_screen_scale_);
 
   return TilePriority(resolution_, priority_bin, distance_to_visible);

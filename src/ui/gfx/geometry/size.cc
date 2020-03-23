@@ -82,11 +82,16 @@ Size ScaleToCeiledSize(const Size& size, float x_scale, float y_scale) {
   return ToCeiledSize(ScaleSize(gfx::SizeF(size), x_scale, y_scale));
 }
 
+#ifndef DISALLOW_UNIFORM_SCALE_ENFORCEMENT
+// blpwtk2: This function is commented out so that we can catch accidental
+//          calls to it at compile time.  We always want the
+//          ScaleToCeiledSize(size,x,y) version to be called.
 Size ScaleToCeiledSize(const Size& size, float scale) {
   if (scale == 1.f)
     return size;
   return ToCeiledSize(ScaleSize(gfx::SizeF(size), scale, scale));
 }
+#endif
 
 Size ScaleToFlooredSize(const Size& size, float x_scale, float y_scale) {
   if (x_scale == 1.f && y_scale == 1.f)
@@ -94,11 +99,16 @@ Size ScaleToFlooredSize(const Size& size, float x_scale, float y_scale) {
   return ToFlooredSize(ScaleSize(gfx::SizeF(size), x_scale, y_scale));
 }
 
+#ifndef DISALLOW_UNIFORM_SCALE_ENFORCEMENT
+// blpwtk2: This function is commented out so that we can catch accidental
+//          calls to it at compile time.  We always want the
+//          ScaleToFlooredSize(size,x,y) version to be called.
 Size ScaleToFlooredSize(const Size& size, float scale) {
   if (scale == 1.f)
     return size;
   return ToFlooredSize(ScaleSize(gfx::SizeF(size), scale, scale));
 }
+#endif
 
 Size ScaleToRoundedSize(const Size& size, float x_scale, float y_scale) {
   if (x_scale == 1.f && y_scale == 1.f)

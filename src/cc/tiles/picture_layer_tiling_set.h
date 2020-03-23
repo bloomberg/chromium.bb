@@ -88,8 +88,14 @@ class CC_EXPORT PictureLayerTilingSet {
   }
   WhichTree tree() const { return tree_; }
 
-  PictureLayerTiling* FindTilingWithScaleKey(float scale_key) const;
-  PictureLayerTiling* FindTilingWithScale(const gfx::SizeF& scale) const;
+  PictureLayerTiling* FindTilingWithScaleKey2(const gfx::SizeF& scale) const;
+
+#ifndef DISALLOW_UNIFORM_SCALE_ENFORCEMENT
+  PictureLayerTiling* FindTilingWithScaleKey(float scale) const {
+    return FindTilingWithScaleKey2(gfx::SizeF(scale, scale));
+  }
+#endif
+
   PictureLayerTiling* FindTilingWithResolution(TileResolution resolution) const;
 
   void MarkAllTilingsNonIdeal();
@@ -104,6 +110,10 @@ class CC_EXPORT PictureLayerTilingSet {
   // Returns the maximum contents scale of all tilings, or 0 if no tilings
   // exist. Note that this returns the maximum of x and y scales depending on
   // the aspect ratio.
+  //
+  // blpwtk2: For non-uniform scales, this function returns the `width`
+  //          component only. The caller needs to multiply the return value
+  //          with the aspect ratio to compute the `height` component.
   float GetMaximumContentsScale() const;
 
   // Remove one tiling.
@@ -154,6 +164,10 @@ class CC_EXPORT PictureLayerTilingSet {
     // |ideal_contents_scale| is the ideal scale that we want, which determines
     // the order in which tilings are processed to get the best ("crispest")
     // coverage.
+    //
+    // blpwtk2: Only the `width` component of coverage_scale needs to be
+    //          specified. The PictureLayerTiling will use the aspect ratio
+    //          to compute the `height` component.
     CoverageIterator(const PictureLayerTilingSet* set,
                      float coverage_scale,
                      const gfx::Rect& coverage_rect,

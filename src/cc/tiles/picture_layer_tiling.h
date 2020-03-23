@@ -142,9 +142,15 @@ class CC_EXPORT PictureLayerTiling {
   gfx::Size tiling_size() const { return tiling_data_.tiling_size(); }
   gfx::Rect live_tiles_rect() const { return live_tiles_rect_; }
   gfx::Size tile_size() const { return tiling_data_.max_texture_size(); }
+  const gfx::SizeF& contents_scale_key2() const { return raster_transform_.scale(); }
+
+#ifndef DISALLOW_UNIFORM_SCALE_ENFORCEMENT
   float contents_scale_key() const { return raster_transform_.scale().width(); }
-  const gfx::SizeF& raster_scales() const { return raster_transform_.scale(); }
-  const gfx::AxisTransform2d& raster_transform() const { return raster_transform_; }
+#endif
+
+  const gfx::AxisTransform2d& raster_transform() const {
+    return raster_transform_;
+  }
   const TilingData* tiling_data() const { return &tiling_data_; }
 
   Tile* TileAt(int i, int j) const {

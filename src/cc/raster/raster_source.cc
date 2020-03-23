@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#define DISALLOW_UNIFORM_SCALE_ENFORCEMENT
+
 #include "cc/raster/raster_source.h"
 
 #include <stddef.h>
@@ -224,8 +226,8 @@ gfx::Size RasterSource::GetSize() const {
   return size_;
 }
 
-gfx::Size RasterSource::GetContentSize(float content_scale) const {
-  return gfx::ScaleToCeiledSize(GetSize(), content_scale);
+gfx::Size RasterSource::GetContentSize(const gfx::SizeF& content_scale) const {
+  return gfx::ScaleToCeiledSize(GetSize(), content_scale.width(), content_scale.height());
 }
 
 bool RasterSource::IsSolidColor() const {
