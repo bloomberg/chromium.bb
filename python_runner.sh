@@ -59,6 +59,6 @@ elif [[ $GCLIENT_PY3 = 0 ]]; then
   # Explicitly run on Python 2
   vpython "$DEPOT_TOOLS/$SCRIPT" "$@"
 else
-  # Run on Python 2 for now, allows default to be flipped.
-  vpython "$DEPOT_TOOLS/$SCRIPT" "$@"
+  # Run on Python 3, allows default to be flipped.
+  vpython3 "$DEPOT_TOOLS/$SCRIPT" "$@"
 fi
