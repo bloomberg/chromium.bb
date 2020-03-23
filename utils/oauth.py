@@ -26,7 +26,13 @@ tools.force_local_third_party()
 import httplib2
 from oauth2client import client
 from oauth2client.contrib import locked_file
-from oauth2client.contrib import multistore_file
+# Handle the internal use case, where multistore_file has
+# 2 copies in oauth2client. One is in root folder, one is
+# in contrib folder.
+try:
+  from oauth2client.contrib import multistore_file
+except ImportError:
+  from oauth2client import multistore_file
 from pyasn1.codec.der import decoder
 from pyasn1.type import univ
 import requests

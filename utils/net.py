@@ -30,6 +30,7 @@ from six.moves import urllib
 import urllib3
 
 from utils import authenticators
+from utils import configs
 from utils import oauth
 from utils import tools
 
@@ -82,10 +83,6 @@ _auth_lock = threading.Lock()
 # Set in 'set_oauth_config'. If 'set_oauth_config' is not called before the
 # first request, will be set to oauth.make_oauth_config().
 _auth_config = None
-
-# A class to use to send HTTP requests. Can be changed by 'set_engine_class'.
-# Default is RequestsLibEngine.
-_request_engine_cls = None
 
 
 class NetError(IOError):
@@ -181,14 +178,17 @@ def set_engine_class(engine_cls):
 
   Custom engine class should support same public interface as RequestsLibEngine.
   """
-  global _request_engine_cls
-  assert _request_engine_cls is None
-  _request_engine_cls = engine_cls
+  # global keyword doesn't work cross modules in Python3, created configs.py
+  # to share global variables across modules based on this recommendataion(
+  # https://docs.python.org/3/faq/programming.html#
+  # how-do-i-share-global-variables-across-modules)
+  assert configs._request_engine_cls is None
+  configs._request_engine_cls = engine_cls
 
 
 def get_engine_class():
   """Returns a class to use to execute HTTP requests."""
-  return _request_engine_cls or RequestsLibEngine
+  return configs._request_engine_cls or RequestsLibEngine
 
 
 def url_open(url, **kwargs):  # pylint: disable=W0621
@@ -393,12 +393,14 @@ class HttpService(object):
   def encode_request_body(body, content_type):
     """Returns request body encoded according to its content type."""
     # No body or it is already encoded.
-    if body is None or isinstance(body, str):
+    if body is None or isinstance(body, (str, bytes)):
       return body
     # Any body should have content type set.
     assert content_type, 'Request has body, but no content type'
     encoder = CONTENT_ENCODERS.get(content_type)
     assert encoder, ('Unknown content type %s' % content_type)
+    if six.PY3 and isinstance(body, bytes):
+      return body
     return encoder(body)
 
   def login(self, allow_user_interaction):
@@ -485,6 +487,8 @@ class HttpService(object):
       method = method or 'POST'
       content_type = content_type or DEFAULT_CONTENT_TYPE
       body = self.encode_request_body(data, content_type)
+      # data in http request is expected to be bytes in Python3.
+      body = six.ensure_binary(body)
     else:
       assert method in (None, 'DELETE', 'GET')
       method = method or 'GET'
@@ -538,8 +542,8 @@ class HttpService(object):
         if e.response.code in (401, 403):
           logging.warning(
               'Got a reply with HTTP status code %d for %s on attempt %d: %s',
-              e.response.code, request.get_full_url(),
-              attempt.attempt, e.description())
+              e.response.code, request.get_full_url(), attempt.attempt,
+              e.description())
           # Try forcefully refresh the token. If it doesn't help, then server
           # does not support authentication or user doesn't have required
           # access.

@@ -300,7 +300,10 @@ def extract_resource(package, resource, temp_dir=None):
   # For regular non-zip packages just construct an absolute path.
   if not is_zipped_module(package):
     # Package's __file__ attribute is always an absolute path.
-    ppath = package.__file__.decode(sys.getfilesystemencoding())
+    if sys.version_info.major == 2:
+      ppath = package.__file__.decode(sys.getfilesystemencoding())
+    else:
+      ppath = package.__file__
     path = os.path.join(os.path.dirname(ppath),
         resource.replace('/', os.sep))
     if not os.path.exists(path):

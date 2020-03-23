@@ -188,7 +188,7 @@ class ThreadPool(object):
         with self._lock:
           self._ready -= 1
       try:
-        if task is None:
+        if task == sys.maxsize:
           # We're done.
           return
         _priority, _index, func, args, kwargs = task
@@ -293,7 +293,10 @@ class ThreadPool(object):
       self._is_closed = True
     for _ in range(len(self._workers)):
       # Enqueueing None causes the worker to stop.
-      self.tasks.put(None)
+      # Python3 doesn't support to compare None with any integer, so putting
+      # None in priority queue will cause exception. Switch to use sys.maxsize,
+      # since lower priority takes precedence.
+      self.tasks.put(sys.maxsize)
     for t in self._workers:
       # 'join' without timeout blocks signal handlers, spin with timeout.
       while t.is_alive():

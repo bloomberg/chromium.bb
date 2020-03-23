@@ -286,7 +286,7 @@ class LocalAuthHttpServiceTest(auto_stub.TestCase):
     def handle_request(request):
       self.assertTrue(
           request.get_full_url().startswith(service_url + request_url))
-      self.assertEqual('', request.body)
+      self.assertEqual(b'', request.body)
       self.assertEqual(u'Bearer %s' % token,
                        request.headers['Authorization'])
       return net_utils.make_fake_response(response, request.get_full_url())
@@ -306,7 +306,7 @@ class LocalAuthHttpServiceTest(auto_stub.TestCase):
     def handle_request(request):
       self.assertTrue(
           request.get_full_url().startswith(service_url + request_url))
-      self.assertEqual('', request.body)
+      self.assertEqual(b'', request.body)
       self.assertIsNone(request.headers.get('Authorization'))
       return net_utils.make_fake_response(response, request.get_full_url())
 
@@ -356,7 +356,7 @@ class LocalAuthHttpServiceTest(auto_stub.TestCase):
     def handle_request(request):
       self.assertTrue(
           request.get_full_url().startswith(service_url + request_url))
-      self.assertEqual('', request.body)
+      self.assertEqual(b'', request.body)
       self.assertIsNone(request.headers.get('Authorization'))
       return net_utils.make_fake_response(response, request.get_full_url())
 
