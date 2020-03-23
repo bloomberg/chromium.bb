@@ -92,6 +92,8 @@ list(APPEND libgav1_dsp_sources_neon
             "${libgav1_source}/dsp/arm/mask_blend_neon.h"
             "${libgav1_source}/dsp/arm/motion_field_projection_neon.cc"
             "${libgav1_source}/dsp/arm/motion_field_projection_neon.h"
+            "${libgav1_source}/dsp/arm/motion_vector_search_neon.cc"
+            "${libgav1_source}/dsp/arm/motion_vector_search_neon.h"
             "${libgav1_source}/dsp/arm/obmc_neon.cc"
             "${libgav1_source}/dsp/arm/obmc_neon.h"
             "${libgav1_source}/dsp/arm/super_res_neon.cc"

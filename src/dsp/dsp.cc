@@ -117,6 +117,7 @@ void DspInit() {
     LoopRestorationInit_NEON();
     MaskBlendInit_NEON();
     MotionFieldProjectionInit_NEON();
+    MotionVectorSearchInit_NEON();
     ObmcInit_NEON();
     SuperResInit_NEON();
     WarpInit_NEON();

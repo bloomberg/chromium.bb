@@ -14,27 +14,26 @@
  * limitations under the License.
  */
 
-#ifndef LIBGAV1_SRC_DSP_MOTION_VECTOR_SEARCH_H_
-#define LIBGAV1_SRC_DSP_MOTION_VECTOR_SEARCH_H_
+#ifndef LIBGAV1_SRC_DSP_MOTION_VECTOR_SEARCH_NEON_H_
+#define LIBGAV1_SRC_DSP_MOTION_VECTOR_SEARCH_NEON_H_
 
-// Pull in LIBGAV1_DspXXX defines representing the implementation status
-// of each function. The resulting value of each can be used by each module to
-// determine whether an implementation is needed at compile time.
-// IWYU pragma: begin_exports
-
-// ARM:
-#include "src/dsp/arm/motion_vector_search_neon.h"
-
-// IWYU pragma: end_exports
+#include "src/dsp/dsp.h"
+#include "src/utils/cpu.h"
 
 namespace libgav1 {
 namespace dsp {
 
 // Initializes Dsp::mv_projection_compound and Dsp::mv_projection_single. This
 // function is not thread-safe.
-void MotionVectorSearchInit_C();
+void MotionVectorSearchInit_NEON();
 
 }  // namespace dsp
 }  // namespace libgav1
 
-#endif  // LIBGAV1_SRC_DSP_MOTION_VECTOR_SEARCH_H_
+#if LIBGAV1_ENABLE_NEON
+
+#define LIBGAV1_Dsp8bpp_MotionVectorSearch LIBGAV1_CPU_NEON
+
+#endif  // LIBGAV1_ENABLE_NEON
+
+#endif  // LIBGAV1_SRC_DSP_MOTION_VECTOR_SEARCH_NEON_H_
