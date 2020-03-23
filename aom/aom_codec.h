@@ -183,7 +183,15 @@ typedef int64_t aom_codec_pts_t;
 /*!\brief Codec interface structure.
  *
  * Contains function pointers and other data private to the codec
- * implementation. This structure is opaque to the application.
+ * implementation. This structure is opaque to the application. Common
+ * functions used with this structure:
+ *   - aom_codec_iface_name: get the name of the codec
+ *   - aom_codec_get_caps: returns the capabilities of the codec (see
+ *     aom_encoder.h for more details)
+ *   - aom_codec_enc_config_default: generate the default config to use
+ *     when initializing the encoder
+ *   - aom_codec_dec_init, aom_codec_enc_init: initialize the codec context
+ *     structure (see documentation on aom_codec_ctx for more information).
  */
 typedef const struct aom_codec_iface aom_codec_iface_t;
 
