@@ -25,6 +25,8 @@
 
 namespace blpwtk2 {
 
+ProcessClientDelegate::ProcessClientDelegate() = default;
+
 ProcessClientDelegate::~ProcessClientDelegate() {}
 
 } // Close namespace blpwtk2
