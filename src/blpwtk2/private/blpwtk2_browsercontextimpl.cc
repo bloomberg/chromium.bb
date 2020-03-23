@@ -50,6 +50,7 @@
 #include <components/prefs/pref_service.h>
 #include <base/threading/thread_restrictions.h>
 #include <chrome/common/pref_names.h>
+#include <components/language/core/browser/pref_names.h>
 #include <content/public/browser/browser_thread.h>
 #include <content/public/browser/render_process_host.h>
 #include <content/public/browser/storage_partition.h>
@@ -117,6 +118,8 @@ BrowserContextImpl::BrowserContextImpl(const std::string& dataDir)
     // dependency manager.
     {
     }
+
+    d_prefRegistry->RegisterStringPref(language::prefs::kAcceptLanguages, "en-US,en;q=0.5");
 
     // Register this context with the dependency manager.
     BrowserContextDependencyManager* dependencyManager = BrowserContextDependencyManager::GetInstance();
