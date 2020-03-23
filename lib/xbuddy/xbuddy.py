@@ -13,15 +13,17 @@ import operator
 import os
 import re
 import shutil
+import sys
 import time
 import threading
 
 from six.moves import configparser
 
+from chromite.lib import constants
+from chromite.lib import image_lib
 from chromite.lib import gs
 from chromite.lib.xbuddy import artifact_info
 from chromite.lib.xbuddy import build_artifact
-from chromite.lib.xbuddy import build_util
 from chromite.lib.xbuddy import common_util
 from chromite.lib.xbuddy import devserver_constants
 from chromite.lib.xbuddy import downloader
@@ -165,7 +167,7 @@ class Timestamp(object):
       os.utime(time_file, None)
 
 
-class XBuddy(build_util.BuildObject):
+class XBuddy(object):
   """Class that manages image retrieval and caching by the devserver.
 
   Image retrieval by xBuddy path:
@@ -195,9 +197,7 @@ class XBuddy(build_util.BuildObject):
   _staging_thread_count_lock = threading.Lock()
 
   def __init__(self, manage_builds=False, board=None, version=None,
-               images_dir=None, log_screen=True, **kwargs):
-    super(XBuddy, self).__init__(**kwargs)
-
+               images_dir=None, log_screen=True, static_dir=None):
     if not log_screen:
       cherrypy_log_util.UpdateConfig({'log.screen': False})
 
@@ -205,12 +205,11 @@ class XBuddy(build_util.BuildObject):
     self._manage_builds = manage_builds or self._ManageBuilds()
     self._board = board
     self._version = version
+    self.static_dir = static_dir
     self._timestamp_folder = os.path.join(self.static_dir,
                                           Timestamp.XBUDDY_TIMESTAMP_DIR)
-    if images_dir:
-      self.images_dir = images_dir
-    else:
-      self.images_dir = os.path.join(self.GetSourceRoot(), 'src/build/images')
+    self.images_dir = images_dir or os.path.join(constants.SOURCE_ROOT,
+                                                 'src/build/images')
 
     cache_user = 'chronos' if common_util.IsRunningOnMoblab() else None
     self._ctx = gs.GSContext(cache_user=cache_user)
@@ -237,8 +236,9 @@ class XBuddy(build_util.BuildObject):
     Raises:
       XBuddyException if the config file is missing.
     """
+    devserver_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+    config_file = os.path.join(devserver_dir, CONFIG_FILE)
     xbuddy_config = configparser.ConfigParser()
-    config_file = os.path.join(self.devserver_dir, CONFIG_FILE)
     if os.path.exists(config_file):
       xbuddy_config.read(config_file)
     else:
@@ -251,7 +251,7 @@ class XBuddy(build_util.BuildObject):
     if os.path.isdir(CHROOT_SHADOW_DIR):
       shadow_config_file = os.path.join(CHROOT_SHADOW_DIR, SHADOW_CONFIG_FILE)
     else:
-      shadow_config_file = os.path.join(self.devserver_dir, SHADOW_CONFIG_FILE)
+      shadow_config_file = os.path.join(devserver_dir, SHADOW_CONFIG_FILE)
 
     _Log('Using shadow config file stored at %s', shadow_config_file)
     if os.path.exists(shadow_config_file):
@@ -567,7 +567,7 @@ class XBuddy(build_util.BuildObject):
       XBuddyException if neither test nor dev image was found in latest built
       directory.
     """
-    latest_local_dir = self.GetLatestImageLink(board)
+    latest_local_dir = image_lib.GetLatestImageLink(board)
     if not latest_local_dir or not os.path.exists(latest_local_dir):
       raise XBuddyException('No builds found for %s. Did you run build_image?' %
                             board)
