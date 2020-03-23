@@ -4728,7 +4728,7 @@ static AOM_INLINE void encode_rd_sb(AV1_COMP *cpi, ThreadData *td,
 
   // TODO(angiebird): Let inter_mode_rd_model_estimation support multi-tile.
   if (cpi->sf.inter_sf.inter_mode_rd_model_estimation == 1 &&
-      cm->tile_cols == 1 && cm->tile_rows == 1) {
+      cm->tiles.cols == 1 && cm->tiles.rows == 1) {
     av1_inter_mode_data_fit(tile_data, x->rdmult);
   }
 }
@@ -4904,8 +4904,8 @@ static AOM_INLINE void init_encode_frame_mb_context(AV1_COMP *cpi) {
 
 void av1_alloc_tile_data(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
-  const int tile_cols = cm->tile_cols;
-  const int tile_rows = cm->tile_rows;
+  const int tile_cols = cm->tiles.cols;
+  const int tile_rows = cm->tiles.rows;
 
   if (cpi->tile_data != NULL) aom_free(cpi->tile_data);
   CHECK_MEM_ERROR(
@@ -4917,8 +4917,8 @@ void av1_alloc_tile_data(AV1_COMP *cpi) {
 void av1_init_tile_data(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
-  const int tile_cols = cm->tile_cols;
-  const int tile_rows = cm->tile_rows;
+  const int tile_cols = cm->tiles.cols;
+  const int tile_rows = cm->tiles.rows;
   int tile_col, tile_row;
   TOKENEXTRA *pre_tok = cpi->tile_tok[0][0];
   TOKENLIST *tplist = cpi->tplist[0][0];
@@ -4939,7 +4939,7 @@ void av1_init_tile_data(AV1_COMP *cpi) {
       cpi->tplist[tile_row][tile_col] = tplist + tplist_count;
       tplist = cpi->tplist[tile_row][tile_col];
       tplist_count = av1_get_sb_rows_in_tile(cm, tile_data->tile_info);
-      tile_data->allow_update_cdf = !cm->large_scale_tile;
+      tile_data->allow_update_cdf = !cm->tiles.large_scale;
       tile_data->allow_update_cdf =
           tile_data->allow_update_cdf && !cm->features.disable_cdf_update;
       tile_data->tctx = *cm->fc;
@@ -4951,7 +4951,7 @@ void av1_encode_sb_row(AV1_COMP *cpi, ThreadData *td, int tile_row,
                        int tile_col, int mi_row) {
   AV1_COMMON *const cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
-  const int tile_cols = cm->tile_cols;
+  const int tile_cols = cm->tiles.cols;
   TileDataEnc *this_tile = &cpi->tile_data[tile_row * tile_cols + tile_col];
   const TileInfo *const tile_info = &this_tile->tile_info;
   TOKENEXTRA *tok = NULL;
@@ -4987,7 +4987,7 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
                      int tile_col) {
   AV1_COMMON *const cm = &cpi->common;
   TileDataEnc *const this_tile =
-      &cpi->tile_data[tile_row * cm->tile_cols + tile_col];
+      &cpi->tile_data[tile_row * cm->tiles.cols + tile_col];
   const TileInfo *const tile_info = &this_tile->tile_info;
   int mi_row;
 
@@ -5009,8 +5009,8 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
 
 static AOM_INLINE void encode_tiles(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
-  const int tile_cols = cm->tile_cols;
-  const int tile_rows = cm->tile_rows;
+  const int tile_cols = cm->tiles.cols;
+  const int tile_rows = cm->tiles.rows;
   int tile_col, tile_row;
 
   if (cpi->tile_data == NULL || cpi->allocated_tiles < tile_cols * tile_rows)
@@ -5021,7 +5021,7 @@ static AOM_INLINE void encode_tiles(AV1_COMP *cpi) {
   for (tile_row = 0; tile_row < tile_rows; ++tile_row) {
     for (tile_col = 0; tile_col < tile_cols; ++tile_col) {
       TileDataEnc *const this_tile =
-          &cpi->tile_data[tile_row * cm->tile_cols + tile_col];
+          &cpi->tile_data[tile_row * cm->tiles.cols + tile_col];
       cpi->td.intrabc_used = 0;
       cpi->td.deltaq_used = 0;
       cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
@@ -5812,7 +5812,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
     cpi->row_mt_sync_write_ptr = av1_row_mt_sync_write;
     av1_encode_tiles_row_mt(cpi);
   } else {
-    if (AOMMIN(cpi->oxcf.max_threads, cm->tile_cols * cm->tile_rows) > 1)
+    if (AOMMIN(cpi->oxcf.max_threads, cm->tiles.cols * cm->tiles.rows) > 1)
       av1_encode_tiles_mt(cpi);
     else
       encode_tiles(cpi);
@@ -5997,7 +5997,7 @@ void av1_encode_frame(AV1_COMP *cpi) {
       current_frame->reference_mode = REFERENCE_MODE_SELECT;
 
     cm->interp_filter = SWITCHABLE;
-    if (cm->large_scale_tile) cm->interp_filter = EIGHTTAP_REGULAR;
+    if (cm->tiles.large_scale) cm->interp_filter = EIGHTTAP_REGULAR;
 
     cm->switchable_motion_mode = 1;
 
@@ -6026,7 +6026,7 @@ void av1_encode_frame(AV1_COMP *cpi) {
     if (skip_mode_info->skip_mode_flag && rdc->skip_mode_used_flag == 0)
       skip_mode_info->skip_mode_flag = 0;
 
-    if (!cm->large_scale_tile) {
+    if (!cm->tiles.large_scale) {
       if (cm->tx_mode == TX_MODE_SELECT && cpi->td.mb.txb_split_count == 0)
         cm->tx_mode = TX_MODE_LARGEST;
     }

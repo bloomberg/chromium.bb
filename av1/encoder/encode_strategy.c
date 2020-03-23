@@ -252,7 +252,7 @@ static int choose_primary_ref_frame(
   // Note(yunqing): In other cases, primary_ref_frame is chosen based on
   // cpi->gf_group.layer_depth[cpi->gf_group.index], which also controls
   // frame bit allocation.
-  if (cm->large_scale_tile) return (LAST_FRAME - LAST_FRAME);
+  if (cm->tiles.large_scale) return (LAST_FRAME - LAST_FRAME);
 
   // Find the most recent reference frame with the same reference type as the
   // current frame

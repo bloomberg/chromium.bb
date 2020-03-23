@@ -183,10 +183,10 @@ void av1_choose_segmap_coding_method(AV1_COMMON *cm, MACROBLOCKD *xd) {
   // First of all generate stats regarding how well the last segment map
   // predicts this one
   if (!scale_up) {
-    for (tile_row = 0; tile_row < cm->tile_rows; tile_row++) {
+    for (tile_row = 0; tile_row < cm->tiles.rows; tile_row++) {
       TileInfo tile_info;
       av1_tile_set_row(&tile_info, cm, tile_row);
-      for (tile_col = 0; tile_col < cm->tile_cols; tile_col++) {
+      for (tile_col = 0; tile_col < cm->tiles.cols; tile_col++) {
         MB_MODE_INFO **mi_ptr;
         av1_tile_set_col(&tile_info, cm, tile_col);
         mi_ptr = cm->mi_grid_base + tile_info.mi_row_start * cm->mi_stride +

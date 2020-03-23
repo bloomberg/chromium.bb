@@ -19,8 +19,8 @@ void av1_row_mt_mem_alloc(AV1_COMP *cpi, int max_sb_rows) {
   struct AV1Common *cm = &cpi->common;
   MultiThreadHandle *multi_thread_ctxt = &cpi->multi_thread_ctxt;
   int tile_row, tile_col;
-  const int tile_cols = cm->tile_cols;
-  const int tile_rows = cm->tile_rows;
+  const int tile_cols = cm->tiles.cols;
+  const int tile_rows = cm->tiles.rows;
 
   multi_thread_ctxt->allocated_tile_cols = tile_cols;
   multi_thread_ctxt->allocated_tile_rows = tile_rows;

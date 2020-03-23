@@ -50,9 +50,9 @@ static AOM_INLINE void update_delta_lf_for_row_mt(AV1_COMP *cpi) {
   const int mib_size = cm->seq_params.mib_size;
   const int frame_lf_count =
       av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
-  for (int row = 0; row < cm->tile_rows; row++) {
-    for (int col = 0; col < cm->tile_cols; col++) {
-      TileDataEnc *tile_data = &cpi->tile_data[row * cm->tile_cols + col];
+  for (int row = 0; row < cm->tiles.rows; row++) {
+    for (int col = 0; col < cm->tiles.cols; col++) {
+      TileDataEnc *tile_data = &cpi->tile_data[row * cm->tiles.cols + col];
       const TileInfo *const tile_info = &tile_data->tile_info;
       for (int mi_row = tile_info->mi_row_start; mi_row < tile_info->mi_row_end;
            mi_row += mib_size) {
@@ -240,8 +240,8 @@ static AOM_INLINE void switch_tile_and_get_next_job(AV1_COMP *const cpi,
                                                     int *current_mi_row,
                                                     int *end_of_frame) {
   AV1_COMMON *const cm = &cpi->common;
-  const int tile_cols = cm->tile_cols;
-  const int tile_rows = cm->tile_rows;
+  const int tile_cols = cm->tiles.cols;
+  const int tile_rows = cm->tiles.rows;
 
   int tile_id = -1;  // Stores the tile ID with minimum proc done
   int max_mis_to_encode = 0;
@@ -364,8 +364,8 @@ static int enc_worker_hook(void *arg1, void *unused) {
   EncWorkerData *const thread_data = (EncWorkerData *)arg1;
   AV1_COMP *const cpi = thread_data->cpi;
   const AV1_COMMON *const cm = &cpi->common;
-  const int tile_cols = cm->tile_cols;
-  const int tile_rows = cm->tile_rows;
+  const int tile_cols = cm->tiles.cols;
+  const int tile_rows = cm->tiles.rows;
   int t;
 
   (void)unused;
@@ -376,7 +376,7 @@ static int enc_worker_hook(void *arg1, void *unused) {
     int tile_col = t % tile_cols;
 
     TileDataEnc *const this_tile =
-        &cpi->tile_data[tile_row * cm->tile_cols + tile_col];
+        &cpi->tile_data[tile_row * cm->tiles.cols + tile_col];
     thread_data->td->mb.e_mbd.tile_ctx = &this_tile->tctx;
     thread_data->td->mb.tile_pb_ctx = &this_tile->tctx;
     av1_encode_tile(cpi, thread_data->td, tile_row, tile_col);
@@ -610,8 +610,8 @@ static AOM_INLINE void prepare_enc_workers(AV1_COMP *cpi, AVxWorkerHook hook,
 
 void av1_encode_tiles_mt(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
-  const int tile_cols = cm->tile_cols;
-  const int tile_rows = cm->tile_rows;
+  const int tile_cols = cm->tiles.cols;
+  const int tile_rows = cm->tiles.rows;
   int num_workers = AOMMIN(cpi->oxcf.max_threads, tile_cols * tile_rows);
 
   if (cpi->tile_data == NULL || cpi->allocated_tiles < tile_cols * tile_rows)
@@ -644,8 +644,8 @@ void av1_accumulate_frame_counts(FRAME_COUNTS *acc_counts,
 
 void av1_encode_tiles_row_mt(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
-  const int tile_cols = cm->tile_cols;
-  const int tile_rows = cm->tile_rows;
+  const int tile_cols = cm->tiles.cols;
+  const int tile_rows = cm->tiles.rows;
   MultiThreadHandle *multi_thread_ctxt = &cpi->multi_thread_ctxt;
   int num_workers = 0;
   int total_num_threads_row_mt = 0;
@@ -660,7 +660,7 @@ void av1_encode_tiles_row_mt(AV1_COMP *cpi) {
 
   for (int row = 0; row < tile_rows; row++) {
     for (int col = 0; col < tile_cols; col++) {
-      TileDataEnc *tile_data = &cpi->tile_data[row * cm->tile_cols + col];
+      TileDataEnc *tile_data = &cpi->tile_data[row * cm->tiles.cols + col];
       int num_sb_rows_in_tile =
           av1_get_sb_rows_in_tile(cm, tile_data->tile_info);
       int num_sb_cols_in_tile =

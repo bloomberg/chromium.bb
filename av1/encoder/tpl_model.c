@@ -1033,7 +1033,7 @@ int av1_tpl_setup_stats(AV1_COMP *cpi, int gop_eval,
   cm->current_frame.frame_type = frame_params->frame_type;
   cm->show_frame = frame_params->show_frame;
 
-  if (cpi->common.large_scale_tile) return 0;
+  if (cpi->common.tiles.large_scale) return 0;
   if (gf_group->max_layer_depth_allowed == 0) return 1;
 
   double beta[2] = { 0.0 };

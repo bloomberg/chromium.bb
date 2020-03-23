@@ -1071,7 +1071,7 @@ void av1_setup_frame_contexts(AV1_COMMON *cm) {
   *cm->default_frame_context = *cm->fc;
   // TODO(jack.haughton@argondesign.com): don't think this should be necessary,
   // but could do with fuller testing
-  if (cm->large_scale_tile) {
+  if (cm->tiles.large_scale) {
     for (int i = LAST_FRAME; i <= ALTREF_FRAME; ++i) {
       RefCntBuffer *const buf = get_ref_frame_buf(cm, i);
       if (buf != NULL) buf->frame_context = *cm->fc;

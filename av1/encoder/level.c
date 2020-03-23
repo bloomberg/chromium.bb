@@ -909,8 +909,8 @@ static void get_tile_stats(const AV1_COMP *const cpi, int *max_tile_size,
                            int *min_cropped_tile_height,
                            int *tile_width_valid) {
   const AV1_COMMON *const cm = &cpi->common;
-  const int tile_cols = cm->tile_cols;
-  const int tile_rows = cm->tile_rows;
+  const int tile_cols = cm->tiles.cols;
+  const int tile_rows = cm->tiles.rows;
   const int superres_scale_denominator = cm->superres_scale_denominator;
 
   *max_tile_size = 0;
@@ -922,7 +922,7 @@ static void get_tile_stats(const AV1_COMP *const cpi, int *max_tile_size,
   for (int tile_row = 0; tile_row < tile_rows; ++tile_row) {
     for (int tile_col = 0; tile_col < tile_cols; ++tile_col) {
       const TileInfo *const tile_info =
-          &cpi->tile_data[tile_row * cm->tile_cols + tile_col].tile_info;
+          &cpi->tile_data[tile_row * cm->tiles.cols + tile_col].tile_info;
       const int tile_width =
           (tile_info->mi_col_end - tile_info->mi_col_start) * MI_SIZE;
       const int tile_height =
@@ -1048,8 +1048,8 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
   const int upscaled_width = cm->superres_upscaled_width;
   const int width = cm->width;
   const int height = cm->height;
-  const int tile_cols = cm->tile_cols;
-  const int tile_rows = cm->tile_rows;
+  const int tile_cols = cm->tiles.cols;
+  const int tile_rows = cm->tiles.rows;
   const int tiles = tile_cols * tile_rows;
   const int luma_pic_size = upscaled_width * height;
   const int frame_header_count = cpi->frame_header_count;

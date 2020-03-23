@@ -346,8 +346,8 @@ static AOM_INLINE void collect_mv_stats_tile(MV_STATS *mv_stats,
 void av1_collect_mv_stats(AV1_COMP *cpi, int current_q) {
   MV_STATS *mv_stats = &cpi->mv_stats;
   const AV1_COMMON *cm = &cpi->common;
-  const int tile_cols = cm->tile_cols;
-  const int tile_rows = cm->tile_rows;
+  const int tile_cols = cm->tiles.cols;
+  const int tile_rows = cm->tiles.rows;
 
   for (int tile_row = 0; tile_row < tile_rows; tile_row++) {
     TileInfo tile_info;

@@ -1385,7 +1385,7 @@ static INLINE void get_start_tok(AV1_COMP *cpi, int tile_row, int tile_col,
                                  int mi_row, TOKENEXTRA **tok, int sb_size_log2,
                                  int num_planes) {
   AV1_COMMON *const cm = &cpi->common;
-  const int tile_cols = cm->tile_cols;
+  const int tile_cols = cm->tiles.cols;
   TileDataEnc *this_tile = &cpi->tile_data[tile_row * tile_cols + tile_col];
   const TileInfo *const tile_info = &this_tile->tile_info;
 

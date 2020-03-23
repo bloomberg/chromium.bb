@@ -1235,7 +1235,7 @@ void av1_upscale_normative_rows(const AV1_COMMON *cm, const uint8_t *src,
   int32_t x0_qn = get_upscale_convolve_x0(downscaled_plane_width,
                                           upscaled_plane_width, x_step_qn);
 
-  for (int j = 0; j < cm->tile_cols; j++) {
+  for (int j = 0; j < cm->tiles.cols; j++) {
     av1_tile_set_col(&tile_col, cm, j);
     // Determine the limits of this tile column in both the source
     // and destination images.
@@ -1248,7 +1248,7 @@ void av1_upscale_normative_rows(const AV1_COMMON *cm, const uint8_t *src,
 
     const int upscaled_x0 = (downscaled_x0 * superres_denom) / SCALE_NUMERATOR;
     int upscaled_x1;
-    if (j == cm->tile_cols - 1) {
+    if (j == cm->tiles.cols - 1) {
       // Note that we can't just use AOMMIN here - due to rounding,
       // (downscaled_x1 * superres_denom) / SCALE_NUMERATOR may be less than
       // upscaled_plane_width.
@@ -1262,7 +1262,7 @@ void av1_upscale_normative_rows(const AV1_COMMON *cm, const uint8_t *src,
     const int dst_width = upscaled_x1 - upscaled_x0;
 
     const int pad_left = (j == 0);
-    const int pad_right = (j == cm->tile_cols - 1);
+    const int pad_right = (j == cm->tiles.cols - 1);
 
 #if CONFIG_AV1_HIGHBITDEPTH
     if (cm->seq_params.use_highbitdepth)

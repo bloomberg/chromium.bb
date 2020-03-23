@@ -336,6 +336,29 @@ typedef struct {
   int error_resilient_mode;
 } FeatureFlags;
 
+// Struct containing params related to tiles.
+typedef struct CommonTileParams {
+  int cols;
+  int rows;
+  int max_width_sb;
+  int max_height_sb;
+  int min_log2_cols;
+  int max_log2_cols;
+  int max_log2_rows;
+  int min_log2_rows;
+  int min_log2;
+  int uniform_spacing;
+  int log2_cols;                        // only valid for uniform tiles
+  int log2_rows;                        // only valid for uniform tiles
+  int col_start_sb[MAX_TILE_COLS + 1];  // valid for 0 <= i <= tile_cols
+  int row_start_sb[MAX_TILE_ROWS + 1];  // valid for 0 <= i <= tile_rows
+  int width;                            // Width in MI units
+  int height;                           // Height in MI units
+  int min_inner_width;                  // min width of non-rightmost tile
+  unsigned int large_scale;
+  unsigned int single_tile_decoding;
+} CommonTileParams;
+
 typedef struct AV1Common {
   // Information about the current frame that is being coded.
   CurrentFrame current_frame;
@@ -540,25 +563,8 @@ typedef struct AV1Common {
   FRAME_CONTEXT *default_frame_context;
   int primary_ref_frame;
 
-  int tile_cols, tile_rows;
-
-  int max_tile_width_sb;
-  int min_log2_tile_cols;
-  int max_log2_tile_cols;
-  int max_log2_tile_rows;
-  int min_log2_tile_rows;
-  int min_log2_tiles;
-  int max_tile_height_sb;
-  int uniform_tile_spacing_flag;
-  int log2_tile_cols;                        // only valid for uniform tiles
-  int log2_tile_rows;                        // only valid for uniform tiles
-  int tile_col_start_sb[MAX_TILE_COLS + 1];  // valid for 0 <= i <= tile_cols
-  int tile_row_start_sb[MAX_TILE_ROWS + 1];  // valid for 0 <= i <= tile_rows
-  int tile_width, tile_height;               // In MI units
-  int min_inner_tile_width;                  // min width of non-rightmost tile
-
-  unsigned int large_scale_tile;
-  unsigned int single_tile_decoding;
+  // Parameters related to tiling.
+  CommonTileParams tiles;
 
   int byte_alignment;
 

@@ -73,7 +73,7 @@ void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
   // able to quickly answer the question "Where is the <n>'th stripe for tile
   // row <m>?" To make that efficient, we generate the rst_last_stripe array.
   int num_stripes = 0;
-  for (int i = 0; i < cm->tile_rows; ++i) {
+  for (int i = 0; i < cm->tiles.rows; ++i) {
     TileInfo tile_info;
     av1_tile_set_row(&tile_info, cm, i);
     const int mi_h = tile_info.mi_row_end - tile_info.mi_row_start;
