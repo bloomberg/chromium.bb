@@ -192,12 +192,12 @@ def GetTargetVersions(input_proto, output_proto, _config):
   output_proto.full_version = packages.determine_full_version()
 
 
-def _HasChromePrebuiltSuccess(_input_proto, output_proto, _config):
+def _HasPrebuiltSuccess(_input_proto, output_proto, _config):
   """The mock success case for HasChromePrebuilt."""
   output_proto.has_prebuilt = True
 
 
-@faux.success(_HasChromePrebuiltSuccess)
+@faux.success(_HasPrebuiltSuccess)
 @faux.empty_error
 @validate.require('build_target.name')
 @validate.validation_complete
@@ -207,6 +207,21 @@ def HasChromePrebuilt(input_proto, output_proto, _config):
   useflags = 'chrome_internal' if input_proto.chrome else None
   exists = packages.has_prebuilt(constants.CHROME_CP, build_target=build_target,
                                  useflags=useflags)
+
+  output_proto.has_prebuilt = exists
+
+
+@faux.success(_HasPrebuiltSuccess)
+@faux.empty_error
+@validate.require('build_target.name', 'package.category', 'package.name')
+@validate.validation_complete
+def HasPrebuilt(input_proto, output_proto, _config):
+  """Checks if the most recent version of Chrome has a prebuilt."""
+  build_target = controller_util.ParseBuildTarget(input_proto.build_target)
+  package = controller_util.PackageInfoToCPV(input_proto.package_info).cp
+  useflags = 'chrome_internal' if input_proto.chrome else None
+  exists = packages.has_prebuilt(
+      package, build_target=build_target, useflags=useflags)
 
   output_proto.has_prebuilt = exists
 
