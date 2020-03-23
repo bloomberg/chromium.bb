@@ -92,7 +92,7 @@ void RasterBufferProvider::PlaybackToMemory(
     stride = info.minRowBytes();
   DCHECK_GT(stride, 0u);
 
-  gfx::Size content_size = gfx::ScaleToCeiledSize(raster_source->GetSize(), transform.scale().width(), transform.scale().height());
+  gfx::Size content_size = raster_source->GetContentSize(transform.scale());
 
   switch (format) {
     case viz::RGBA_8888:

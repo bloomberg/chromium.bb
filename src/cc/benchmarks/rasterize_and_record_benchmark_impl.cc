@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#define DISALLOW_UNIFORM_SCALE_ENFORCEMENT
+
 #include "cc/benchmarks/rasterize_and_record_benchmark_impl.h"
 
 #include <stddef.h>
@@ -29,7 +31,7 @@ const int kDefaultRasterizeRepeatCount = 100;
 void RunBenchmark(RasterSource* raster_source,
                   ImageDecodeCache* image_decode_cache,
                   const gfx::Rect& content_rect,
-                  const gfx::SizeF& raster_scales,
+                  const gfx::SizeF& contents_scale,
                   size_t repeat_count,
                   base::TimeDelta* min_time,
                   bool* is_solid_color) {
@@ -47,7 +49,7 @@ void RunBenchmark(RasterSource* raster_source,
                          kTimeCheckInterval);
     SkColor color = SK_ColorTRANSPARENT;
     gfx::Rect layer_rect =
-        gfx::ScaleToEnclosingRect(content_rect, 1.f / raster_scales.width(), 1.f / raster_scales.height());
+        gfx::ScaleToEnclosingRect(content_rect, 1.f / contents_scale.width(), 1.f / contents_scale.height());
     *is_solid_color =
         raster_source->PerformSolidColorAnalysis(layer_rect, &color);
 
@@ -68,11 +70,10 @@ void RunBenchmark(RasterSource* raster_source,
           image_decode_cache, gfx::ColorSpace(), std::move(image_settings));
       RasterSource::PlaybackSettings settings;
       settings.image_provider = &image_provider;
-      gfx::Size sz = gfx::ScaleToCeiledSize(raster_source->GetSize(), raster_scales.width(), raster_scales.height());
 
       raster_source->PlaybackToCanvas(
-          &canvas, sz, content_rect,
-          content_rect, gfx::AxisTransform2d(raster_scales.width(), raster_scales.height(), gfx::Vector2dF()),
+          &canvas, raster_source->GetContentSize(contents_scale), content_rect,
+          content_rect, gfx::AxisTransform2d(contents_scale, gfx::Vector2dF()),
           settings);
 
       timer.NextLap();
@@ -207,12 +208,12 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
     DCHECK(*it);
 
     gfx::Rect content_rect = (*it)->content_rect();
-    const gfx::SizeF& raster_scales = (*it)->raster_transform().scale();
+    const gfx::SizeF& contents_scale = (*it)->raster_transform().scale();
 
     base::TimeDelta min_time;
     bool is_solid_color = false;
     RunBenchmark(raster_source, layer->layer_tree_impl()->image_decode_cache(),
-                 content_rect, raster_scales, rasterize_repeat_count_,
+                 content_rect, contents_scale, rasterize_repeat_count_,
                  &min_time, &is_solid_color);
 
     int tile_size = content_rect.width() * content_rect.height();
