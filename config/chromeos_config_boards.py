@@ -99,6 +99,7 @@ x86_internal_release_boards = frozenset([
     'coral',
     'cyan',
     'dedede',
+    'deltaur',
     'drallion',
     'edgar',
     'endeavour',

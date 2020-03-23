@@ -755,6 +755,12 @@
   dedede-payloads-tryjob
   dedede-release-tryjob
   dedede-unittest-stress
+  deltaur-full-tryjob
+  deltaur-llvm-next-toolchain-tryjob
+  deltaur-llvm-toolchain-tryjob
+  deltaur-payloads-tryjob
+  deltaur-release-tryjob
+  deltaur-unittest-stress
   drallion-full-tryjob
   drallion-llvm-next-toolchain-tryjob
   drallion-llvm-toolchain-tryjob
