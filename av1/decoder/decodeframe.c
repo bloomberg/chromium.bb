@@ -4933,8 +4933,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
           }
           // If no corresponding buffer exists, allocate a new buffer with all
           // pixels set to neutral grey.
-          // TODO(https://crbug.com/aomedia/2420): The spec seems to say we
-          // just need to set pbi->valid_for_referencing[ref_idx] to 0.
           int buf_idx = get_free_fb(cm);
           if (buf_idx == INVALID_IDX) {
             aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
@@ -4954,8 +4952,23 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                                "Failed to allocate frame buffer");
           }
           unlock_buffer_pool(pool);
-          set_planes_to_neutral_grey(seq_params, &buf->buf, 0);
+          // According to the specification, valid bitstreams are required to
+          // never use missing reference frames so the filling process for
+          // missing frames is not normatively defined and RefValid for missing
+          // frames is set to 0.
 
+          // To make libaom more robust when the bitstream has been corrupted
+          // by the loss of some frames of data, this code adds a neutral grey
+          // buffer in place of missing frames, i.e.
+          //
+          set_planes_to_neutral_grey(seq_params, &buf->buf, 0);
+          //
+          // and allows the frames to be used for referencing, i.e.
+          //
+          pbi->valid_for_referencing[ref_idx] = 1;
+          //
+          // Please note such behavior is not normative and other decoders may
+          // use a different approach.
           cm->ref_frame_map[ref_idx] = buf;
           buf->order_hint = order_hint;
         }
