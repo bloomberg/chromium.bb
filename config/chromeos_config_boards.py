@@ -23,6 +23,7 @@ from __future__ import print_function
 
 arm_internal_release_boards = frozenset([
     'arkham',
+    'asurada',
     'beaglebone',
     'beaglebone_servo',
     'bob',

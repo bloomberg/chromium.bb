@@ -489,6 +489,12 @@
   asuka-payloads-tryjob
   asuka-release-tryjob
   asuka-unittest-stress
+  asurada-full-tryjob
+  asurada-llvm-next-toolchain-tryjob
+  asurada-llvm-toolchain-tryjob
+  asurada-payloads-tryjob
+  asurada-release-tryjob
+  asurada-unittest-stress
   atlas-factory-atlas-11907.B-factorybranch-tryjob
   atlas-full-tryjob
   atlas-kvm-full-tryjob
