@@ -53,6 +53,7 @@
 #include <base/threading/thread_restrictions.h>
 #include <chrome/browser/spellchecker/spellcheck_factory.h>
 #include <chrome/common/pref_names.h>
+#include <components/language/core/browser/pref_names.h>
 #include <components/spellcheck/common/spellcheck_common.h>
 #include <components/spellcheck/browser/pref_names.h>
 #include <content/public/browser/browser_thread.h>
@@ -139,6 +140,8 @@ BrowserContextImpl::BrowserContextImpl(const std::string& dataDir)
     }
 
     d_prefRegistry->RegisterBooleanPref(prefs::kPrintingEnabled, true);
+
+    d_prefRegistry->RegisterStringPref(language::prefs::kAcceptLanguages, "en-US,en;q=0.5");
 
     // Register this context with the dependency manager.
     BrowserContextDependencyManager* dependencyManager = BrowserContextDependencyManager::GetInstance();

@@ -5,8 +5,10 @@
 #ifndef CONTENT_PUBLIC_CHILD_FIELD_TRIAL_H_
 #define CONTENT_PUBLIC_CHILD_FIELD_TRIAL_H_
 
+#include <content/common/content_export.h>
+
 namespace content {
-void InitializeFieldTrialAndFeatureList();
+CONTENT_EXPORT void InitializeFieldTrialAndFeatureList();
 }
 
 #endif  // CONTENT_PUBLIC_CHILD_FIELD_TRIAL_H_
