@@ -18,6 +18,7 @@ else:
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+import gclient_utils
 import git_drover
 
 
@@ -39,7 +40,7 @@ class GitDroverTest(unittest.TestCase):
         os.path.join(self._parent_repo, '.git', 'info', 'refs'), 'w') as f:
       f.write('refs')
     mock.patch('tempfile.mkdtemp', self._mkdtemp).start()
-    mock.patch('git_drover._raw_input', self._get_input).start()
+    mock.patch('gclient_utils.AskForData', self._get_input).start()
     mock.patch('subprocess.check_call', self._check_call).start()
     mock.patch('subprocess.check_output', self._check_call).start()
     self.real_popen = subprocess.Popen

@@ -233,7 +233,7 @@ def SplitCl(description_file, comment_file, changelist, cmd_upload, dry_run,
         ' infra-dev@chromium.org to ensure that this won\'t  break anything.'
         ' The infra team reserves the right to cancel your jobs if they are'
         ' overloading the CQ.' % num_cls)
-      answer = raw_input('Proceed? (y/n):')
+      answer = gclient_utils.AskForData('Proceed? (y/n):')
       if answer.lower() != 'y':
         return 0
 

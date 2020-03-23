@@ -14,6 +14,7 @@ from __future__ import print_function
 import argparse
 import sys
 
+import gclient_utils
 from git_common import current_branch, branches, upstream, run, hash_one
 import metrics
 
@@ -53,7 +54,7 @@ def main(args):
       if r:
         print(prompt + r)
       else:
-        r = raw_input(prompt).strip() or '0'
+        r = gclient_utils.AskForData(prompt).strip() or '0'
       if not r.isdigit() or (0 > int(r) > high):
         print("Invalid choice.")
       else:

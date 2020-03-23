@@ -42,6 +42,7 @@ import re
 
 import auth
 import fix_encoding
+import gclient_utils
 import gerrit_util
 
 
@@ -153,7 +154,7 @@ def get_week_of(date):
 
 def get_yes_or_no(msg):
   while True:
-    response = raw_input(msg + ' yes/no [no] ')
+    response = gclient_utils.AskForData(msg + ' yes/no [no] ')
     if response == 'y' or response == 'yes':
       return True
     elif not response or response == 'n' or response == 'no':

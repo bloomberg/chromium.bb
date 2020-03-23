@@ -17,6 +17,7 @@ import sys
 import tempfile
 
 import git_common
+import gclient_utils
 
 if sys.version_info.major == 2:
   import cPickle
@@ -69,12 +70,6 @@ if os.name == 'nt':
 else:
   mk_symlink = os.symlink
 
-
-def _raw_input(message):
-  # Use this so that it can be mocked in tests on Python 2 and 3.
-  if sys.version_info.major == 2:
-    return raw_input(message)
-  return input(message)
 
 class _Drover(object):
 
@@ -192,7 +187,7 @@ class _Drover(object):
     result = ''
     while result not in ('y', 'n'):
       try:
-        result = _raw_input('%s Continue (y/n)? ' % message)
+        result = gclient_utils.AskForData('%s Continue (y/n)? ' % message)
       except EOFError:
         result = 'n'
     return result == 'y'

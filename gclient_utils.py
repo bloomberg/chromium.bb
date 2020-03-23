@@ -158,6 +158,17 @@ class PrintableObject(object):
     return output
 
 
+def AskForData(message):
+  # Use this so that it can be mocked in tests on Python 2 and 3.
+  try:
+    if sys.version_info.major == 2:
+      return raw_input(message)
+    return input(message)
+  except KeyboardInterrupt:
+    # Hide the exception.
+    sys.exit(1)
+
+
 def FileRead(filename, mode='rbU'):
   # Always decodes output to a Unicode string.
   # On Python 3 newlines are converted to '\n' by default and 'U' is deprecated.

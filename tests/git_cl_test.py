@@ -1218,7 +1218,7 @@ class TestGitCl(unittest.TestCase):
     mock.patch(
         'git_cl.GenerateGerritChangeId', return_value=change_id).start()
     mock.patch(
-        'git_cl.ask_for_data',
+        'gclient_utils.AskForData',
         lambda prompt: self._mocked_call('ask_for_data', prompt)).start()
 
     self.mockGit.config['gerrit.host'] = 'true'
@@ -1854,7 +1854,7 @@ class TestGitCl(unittest.TestCase):
 
   def _test_gerrit_ensure_authenticated_common(self, auth):
     mock.patch(
-        'git_cl.ask_for_data',
+        'gclient_utils.AskForData',
         lambda prompt: self._mocked_call('ask_for_data', prompt)).start()
     mock.patch('git_cl.gerrit_util.CookiesAuthenticator',
               CookiesAuthenticatorMockFactory(hosts_with_creds=auth)).start()
@@ -2253,7 +2253,7 @@ class TestGitCl(unittest.TestCase):
         'git_cl.gclient_utils.rm_file_or_tree',
         lambda path: self._mocked_call(['rm_file_or_tree', path])).start()
     mock.patch(
-        'git_cl.ask_for_data',
+        'gclient_utils.AskForData',
         lambda prompt: self._mocked_call('ask_for_data', prompt)).start()
     return git_cl.Changelist(issue=123)
 
@@ -2405,7 +2405,7 @@ class TestGitCl(unittest.TestCase):
       # git cl also checks for existence other files not relevant to this test.
       return None
     mock.patch(
-        'git_cl.ask_for_data',
+        'gclient_utils.AskForData',
         lambda prompt: self._mocked_call('ask_for_data', prompt)).start()
     mock.patch('os.path.exists', exists_mock).start()
 

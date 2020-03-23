@@ -233,21 +233,6 @@ def datetime_now():
   return datetime.datetime.now()
 
 
-def _raw_input(message):
-  # Use this so that it can be mocked in tests on Python 2 and 3.
-  if sys.version_info.major == 2:
-    return raw_input(message)
-  return input(message)
-
-
-def ask_for_data(prompt):
-  try:
-    return _raw_input(prompt)
-  except KeyboardInterrupt:
-    # Hide the exception.
-    sys.exit(1)
-
-
 def confirm_or_exit(prefix='', action='confirm'):
   """Asks user to press enter to continue or press Ctrl+C to abort."""
   if not prefix or prefix.endswith('\n'):
@@ -258,18 +243,19 @@ def confirm_or_exit(prefix='', action='confirm'):
     mid = 'press'
   else:
     mid = ' press'
-  ask_for_data('%s%s Enter to %s, or Ctrl+C to abort' % (prefix, mid, action))
+  gclient_utils.AskForData(
+      '%s%s Enter to %s, or Ctrl+C to abort' % (prefix, mid, action))
 
 
 def ask_for_explicit_yes(prompt):
   """Returns whether user typed 'y' or 'yes' to confirm the given prompt."""
-  result = ask_for_data(prompt + ' [Yes/No]: ').lower()
+  result = gclient_utils.AskForData(prompt + ' [Yes/No]: ').lower()
   while True:
     if 'yes'.startswith(result):
       return True
     if 'no'.startswith(result):
       return False
-    result = ask_for_data('Please, type yes or no: ').lower()
+    result = gclient_utils.AskForData('Please, type yes or no: ').lower()
 
 
 def _git_branch_config_key(branch, key):
@@ -1495,7 +1481,8 @@ class Changelist(object):
         ['show', '-s', '--format=%s', 'HEAD']).strip()
     if options.force:
       return title
-    return ask_for_data('Title for patchset [%s]: ' % title) or title
+    user_title = gclient_utils.AskForData('Title for patchset [%s]: ' % title)
+    return user_title or title
 
   def CMDUpload(self, options, git_diff_args, orig_args):
     """Uploads a change to codereview."""
@@ -3614,7 +3601,7 @@ def CMDarchive(parser, args):
           current_branch)
     return 1
   elif not options.force:
-    answer = ask_for_data('\nProceed with deletion (Y/n)? ').lower()
+    answer = gclient_utils.AskForData('\nProceed with deletion (Y/n)? ').lower()
     if answer not in ('y', ''):
       print('Aborted.')
       return 1
@@ -5267,7 +5254,7 @@ def CMDcheckout(parser, args):
     print('Multiple branches match issue %s:' % target_issue)
     for i in range(len(branches)):
       print('%d: %s' % (i, branches[i]))
-    which = ask_for_data('Choose by index: ')
+    which = gclient_utils.AskForData('Choose by index: ')
     try:
       RunGit(['checkout', branches[int(which)]])
     except (IndexError, ValueError):

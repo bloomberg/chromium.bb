@@ -12,6 +12,9 @@ import owners as owners_module
 import random
 
 
+import gclient_utils
+
+
 def first(iterable):
   for element in iterable:
     return element
@@ -126,7 +129,7 @@ class OwnersFinder(object):
           self.list_owners(self.owners_queue)
           break
         elif inp == 'p' or inp == 'pick':
-          self.pick_owner(raw_input('Pick an owner: '))
+          self.pick_owner(gclient_utils.AskForData('Pick an owner: '))
           break
         elif inp.startswith('p ') or inp.startswith('pick '):
           self.pick_owner(inp.split(' ', 2)[1].strip())
@@ -373,5 +376,5 @@ class OwnersFinder(object):
 
   def input_command(self, owner):
     self.writeln('Add ' + self.bold_name(owner) + ' as your reviewer? ')
-    return raw_input(
+    return gclient_utils.AskForData(
         '[yes/no/Defer/pick/files/owners/quit/restart]: ').lower()
