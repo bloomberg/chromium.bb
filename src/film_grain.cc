@@ -281,8 +281,7 @@ FilmGrain<bitdepth>::FilmGrain(const FilmGrainParams& params,
 template <int bitdepth>
 bool FilmGrain<bitdepth>::Init() {
   // Section 7.18.3.3. Generate grain process.
-  const dsp::Dsp* dsp = dsp::GetDspTable(bitdepth);
-  assert(dsp != nullptr);
+  const dsp::Dsp& dsp = *dsp::GetDspTable(bitdepth);
   // If params_.num_y_points is 0, luma_grain_ will never be read, so we don't
   // need to generate it.
   const bool use_luma = params_.num_y_points > 0;
@@ -291,7 +290,7 @@ bool FilmGrain<bitdepth>::Init() {
     // If params_.auto_regression_coeff_lag is 0, the filter is the identity
     // filter and therefore can be skipped.
     if (params_.auto_regression_coeff_lag > 0) {
-      dsp->film_grain
+      dsp.film_grain
           .luma_auto_regression[params_.auto_regression_coeff_lag - 1](
               params_, luma_grain_);
     }
@@ -303,7 +302,7 @@ bool FilmGrain<bitdepth>::Init() {
     GenerateChromaGrains(params_, template_uv_width_, template_uv_height_,
                          u_grain_, v_grain_);
     if (params_.auto_regression_coeff_lag > 0 || use_luma) {
-      dsp->film_grain.chroma_auto_regression[static_cast<int>(
+      dsp.film_grain.chroma_auto_regression[static_cast<int>(
           use_luma)][params_.auto_regression_coeff_lag](
           params_, luma_grain_, subsampling_x_, subsampling_y_, u_grain_,
           v_grain_);
@@ -321,7 +320,7 @@ bool FilmGrain<bitdepth>::Init() {
   // Note: Although it does not seem to make sense, there are test vectors
   // with chroma_scaling_from_luma=true and params_.num_y_points=0.
   if (use_luma || params_.chroma_scaling_from_luma) {
-    dsp->film_grain.initialize_scaling_lut(
+    dsp.film_grain.initialize_scaling_lut(
         params_.num_y_points, params_.point_y_value, params_.point_y_scaling,
         scaling_lut_y_);
   } else {
@@ -341,14 +340,14 @@ bool FilmGrain<bitdepth>::Init() {
       uint8_t* buffer = scaling_lut_chroma_buffer_.get();
       if (params_.num_u_points > 0) {
         scaling_lut_u_ = buffer;
-        dsp->film_grain.initialize_scaling_lut(
+        dsp.film_grain.initialize_scaling_lut(
             params_.num_u_points, params_.point_u_value,
             params_.point_u_scaling, scaling_lut_u_);
         buffer += kScalingLookupTableSize + kScalingLookupTablePadding;
       }
       if (params_.num_v_points > 0) {
         scaling_lut_v_ = buffer;
-        dsp->film_grain.initialize_scaling_lut(
+        dsp.film_grain.initialize_scaling_lut(
             params_.num_v_points, params_.point_v_value,
             params_.point_v_scaling, scaling_lut_v_);
       }
@@ -627,24 +626,23 @@ bool FilmGrain<bitdepth>::AddNoise(
     return false;
   }
 
-  const dsp::Dsp* dsp = dsp::GetDspTable(bitdepth);
-  assert(dsp != nullptr);
+  const dsp::Dsp& dsp = *dsp::GetDspTable(bitdepth);
   const bool use_luma = params_.num_y_points > 0;
 
   // Construct noise stripes.
   if (use_luma) {
     // The luma plane is never subsampled.
-    dsp->film_grain
+    dsp.film_grain
         .construct_noise_stripes[static_cast<int>(params_.overlap_flag)](
             luma_grain_, params_.grain_seed, width_, height_,
             /*subsampling_x=*/0, /*subsampling_y=*/0, &noise_stripes_[kPlaneY]);
   }
   if (!is_monochrome_) {
-    dsp->film_grain
+    dsp.film_grain
         .construct_noise_stripes[static_cast<int>(params_.overlap_flag)](
             u_grain_, params_.grain_seed, width_, height_, subsampling_x_,
             subsampling_y_, &noise_stripes_[kPlaneU]);
-    dsp->film_grain
+    dsp.film_grain
         .construct_noise_stripes[static_cast<int>(params_.overlap_flag)](
             v_grain_, params_.grain_seed, width_, height_, subsampling_x_,
             subsampling_y_, &noise_stripes_[kPlaneV]);
@@ -661,7 +659,7 @@ bool FilmGrain<bitdepth>::AddNoise(
         &noise_stripes_[kPlaneY], width_, height_, /*subsampling_x=*/0,
         /*subsampling_y=*/0, params_.overlap_flag << 1, &noise_image_[kPlaneY]);
     if (params_.overlap_flag) {
-      dsp->film_grain.construct_noise_image_overlap(
+      dsp.film_grain.construct_noise_image_overlap(
           &noise_stripes_[kPlaneY], width_, height_, /*subsampling_x=*/0,
           /*subsampling_y=*/0, &noise_image_[kPlaneY]);
     }
@@ -676,10 +674,10 @@ bool FilmGrain<bitdepth>::AddNoise(
                         params_.overlap_flag << (1 - subsampling_y_),
                         &noise_image_[kPlaneV]);
     if (params_.overlap_flag) {
-      dsp->film_grain.construct_noise_image_overlap(
+      dsp.film_grain.construct_noise_image_overlap(
           &noise_stripes_[kPlaneU], width_, height_, subsampling_x_,
           subsampling_y_, &noise_image_[kPlaneU]);
-      dsp->film_grain.construct_noise_image_overlap(
+      dsp.film_grain.construct_noise_image_overlap(
           &noise_stripes_[kPlaneV], width_, height_, subsampling_x_,
           subsampling_y_, &noise_image_[kPlaneV]);
     }
@@ -743,32 +741,31 @@ bool FilmGrain<bitdepth>::AddNoise(
                                 source_plane_y, source_stride_y, source_plane_u,
                                 source_plane_v, source_stride_uv, dest_plane_u,
                                 dest_plane_v, dest_stride_uv]() {
-          BlendNoiseChromaWorker(
-              *dsp, planes_to_blend, num_planes, &job_counter, min_value,
-              max_chroma, source_plane_y, source_stride_y, source_plane_u,
-              source_plane_v, source_stride_uv, dest_plane_u, dest_plane_v,
-              dest_stride_uv);
+          BlendNoiseChromaWorker(dsp, planes_to_blend, num_planes, &job_counter,
+                                 min_value, max_chroma, source_plane_y,
+                                 source_stride_y, source_plane_u,
+                                 source_plane_v, source_stride_uv, dest_plane_u,
+                                 dest_plane_v, dest_stride_uv);
           pending_workers.Decrement();
         });
       }
-      BlendNoiseChromaWorker(*dsp, planes_to_blend, num_planes, &job_counter,
-                             min_value, max_chroma, source_plane_y,
-                             source_stride_y, source_plane_u, source_plane_v,
-                             source_stride_uv, dest_plane_u, dest_plane_v,
-                             dest_stride_uv);
+      BlendNoiseChromaWorker(
+          dsp, planes_to_blend, num_planes, &job_counter, min_value, max_chroma,
+          source_plane_y, source_stride_y, source_plane_u, source_plane_v,
+          source_stride_uv, dest_plane_u, dest_plane_v, dest_stride_uv);
 
       pending_workers.Wait();
     } else {
       // Single threaded.
       if (params_.num_u_points > 0 || params_.chroma_scaling_from_luma) {
-        dsp->film_grain.blend_noise_chroma[params_.chroma_scaling_from_luma](
+        dsp.film_grain.blend_noise_chroma[params_.chroma_scaling_from_luma](
             kPlaneU, params_, noise_image_, min_value, max_chroma, width_,
             height_, /*start_height=*/0, subsampling_x_, subsampling_y_,
             scaling_lut_u_, source_plane_y, source_stride_y, source_plane_u,
             source_stride_uv, dest_plane_u, dest_stride_uv);
       }
       if (params_.num_v_points > 0 || params_.chroma_scaling_from_luma) {
-        dsp->film_grain.blend_noise_chroma[params_.chroma_scaling_from_luma](
+        dsp.film_grain.blend_noise_chroma[params_.chroma_scaling_from_luma](
             kPlaneV, params_, noise_image_, min_value, max_chroma, width_,
             height_, /*start_height=*/0, subsampling_x_, subsampling_y_,
             scaling_lut_v_, source_plane_y, source_stride_y, source_plane_v,
@@ -785,19 +782,19 @@ bool FilmGrain<bitdepth>::AddNoise(
         thread_pool_->Schedule(
             [this, dsp, &pending_workers, &job_counter, min_value, max_luma,
              source_plane_y, source_stride_y, dest_plane_y, dest_stride_y]() {
-              BlendNoiseLumaWorker(*dsp, &job_counter, min_value, max_luma,
+              BlendNoiseLumaWorker(dsp, &job_counter, min_value, max_luma,
                                    source_plane_y, source_stride_y,
                                    dest_plane_y, dest_stride_y);
               pending_workers.Decrement();
             });
       }
 
-      BlendNoiseLumaWorker(*dsp, &job_counter, min_value, max_luma,
+      BlendNoiseLumaWorker(dsp, &job_counter, min_value, max_luma,
                            source_plane_y, source_stride_y, dest_plane_y,
                            dest_stride_y);
       pending_workers.Wait();
     } else {
-      dsp->film_grain.blend_noise_luma(
+      dsp.film_grain.blend_noise_luma(
           noise_image_, min_value, max_luma, params_.chroma_scaling, width_,
           height_, /*start_height=*/0, scaling_lut_y_, source_plane_y,
           source_stride_y, dest_plane_y, dest_stride_y);

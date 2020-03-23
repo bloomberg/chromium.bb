@@ -757,9 +757,8 @@ bool MotionFieldProjection(
   }
   assert(reference_to_current_with_sign >= -kMaxFrameDistance);
   if (reference_to_current_with_sign > kMaxFrameDistance) return true;
-  const dsp::Dsp* const dsp = dsp::GetDspTable(8);
-  assert(dsp != nullptr);
-  dsp->motion_field_projection_kernel(
+  const dsp::Dsp& dsp = *dsp::GetDspTable(8);
+  dsp.motion_field_projection_kernel(
       source_frame->motion_field_reference_frame(y8_start, 0),
       source_frame->motion_field_mv(y8_start, 0),
       source_frame->order_hint_array(), current_frame.order_hint(source),
