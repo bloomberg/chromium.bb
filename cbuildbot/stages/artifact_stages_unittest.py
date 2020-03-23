@@ -435,6 +435,9 @@ class UploadTestArtifactsStageTest(build_stages_unittest.AllConfigsTestCase,
     self.buildstore = FakeBuildStore()
 
   def ConstructStage(self):
+    sysroot_dir = os.path.join(self.build_root, 'chroot', 'build',
+                               self._current_board, 'usr/local/build')
+    osutils.SafeMakedirs(sysroot_dir)
     return artifact_stages.UploadTestArtifactsStage(self._run, self.buildstore,
                                                     self._current_board)
 
