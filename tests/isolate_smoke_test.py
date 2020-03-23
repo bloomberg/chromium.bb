@@ -570,8 +570,7 @@ class IsolateTempdirBase(unittest.TestCase):
     with open(self.isolated, 'r') as f:
       self.assertEqual(expected, json.load(f))
 
-  def _expected_saved_state(
-      self, args, read_only, empty_file, extra_vars, root_dir):
+  def _expected_saved_state(self, args, read_only, empty_file, root_dir):
     expected = {
         u'OS':
             six.text_type(sys.platform),
@@ -582,9 +581,6 @@ class IsolateTempdirBase(unittest.TestCase):
         u'config_variables': {
             u'OS': u'mac',
             u'chromeos': 0,
-        },
-        u'extra_variables': {
-            u'EXECUTABLE_SUFFIX': u'.exe' if sys.platform == 'win32' else u'',
         },
         u'files':
             self._gen_files(read_only, empty_file),
@@ -602,15 +598,12 @@ class IsolateTempdirBase(unittest.TestCase):
     }
     if args:
       expected[u'command'] = [u'python'] + [unicode(x) for x in args]
-    expected['extra_variables'].update(extra_vars or {})
     with open(self.saved_state(), 'r') as f:
       self.assertEqual(expected, json.load(f))
 
-  def _expect_results(
-      self, args, read_only, extra_vars, empty_file, root_dir=None):
+  def _expect_results(self, args, read_only, empty_file, root_dir=None):
     self._expected_isolated(args, read_only, empty_file)
-    self._expected_saved_state(
-        args, read_only, empty_file, extra_vars, root_dir)
+    self._expected_saved_state(args, read_only, empty_file, root_dir)
     # Also verifies run_isolated.py will be able to read it.
     with open(self.isolated, 'rb') as f:
       isolated_format.load_isolated(f.read(), ALGO)
@@ -773,22 +766,9 @@ class Isolate_check(IsolateTempdirBase):
     self._execute('check', 'no_run.isolate', [])
     self._expect_results([], None, None, None)
 
-  # TODO(csharp): Disabled until crbug.com/150823 is fixed.
-  def do_not_test_touch_only(self):
-    self._execute(
-        'check', 'touch_only.isolate', ['--extra-variable', 'FLAG', 'gyp'])
-    empty = os.path.join('files1', 'test_file1.txt')
-    self._expected_isolated(['touch_only.py', 'gyp'], None, empty)
-
   def test_touch_root(self):
     self._execute('check', 'touch_root.isolate', [])
-    self._expect_results(['touch_root.py'], None, None, None, self.isolate_dir)
-
-  def test_with_flag(self):
-    self._execute(
-        'check', 'with_flag.isolate', ['--extra-variable', 'FLAG', 'gyp'])
-    self._expect_results(
-        ['with_flag.py', 'gyp'], None, {u'FLAG': u'gyp'}, None)
+    self._expect_results(['touch_root.py'], None, None, self.isolate_dir)
 
   if sys.platform != 'win32':
     def test_symlink_full(self):
@@ -830,26 +810,10 @@ class Isolate_remap(IsolateOutdir):
     self._expected_tree()
     self._expect_results([], None, None, None)
 
-  # TODO(csharp): Disabled until crbug.com/150823 is fixed.
-  def do_not_test_touch_only(self):
-    self._execute(
-        'remap', 'touch_only.isolate', ['--extra-variable', 'FLAG', 'gyp'])
-    self._expected_tree()
-    empty = os.path.join('files1', 'test_file1.txt')
-    self._expect_results(
-        ['touch_only.py', 'gyp'], None, {u'FLAG': u'gyp'}, empty)
-
   def test_touch_root(self):
     self._execute('remap', 'touch_root.isolate', [])
     self._expected_tree()
-    self._expect_results(['touch_root.py'], None, None, None, self.isolate_dir)
-
-  def test_with_flag(self):
-    self._execute(
-        'remap', 'with_flag.isolate', ['--extra-variable', 'FLAG', 'gyp'])
-    self._expected_tree()
-    self._expect_results(
-        ['with_flag.py', 'gyp'], None, {u'FLAG': u'gyp'}, None)
+    self._expect_results(['touch_root.py'], None, None, self.isolate_dir)
 
   if sys.platform != 'win32':
     def test_symlink_full(self):
@@ -899,23 +863,9 @@ class Isolate_run(IsolateTempdirBase):
       pass
     self._expect_no_result()
 
-  # TODO(csharp): Disabled until crbug.com/150823 is fixed.
-  def do_not_test_touch_only(self):
-    self._execute(
-        'run', 'touch_only.isolate', ['--extra-variable', 'FLAG', 'run'])
-    empty = os.path.join('files1', 'test_file1.txt')
-    self._expect_results(
-        ['touch_only.py', 'run'], None, {u'FLAG': u'run'}, empty)
-
   def test_touch_root(self):
     self._execute('run', 'touch_root.isolate', [])
-    self._expect_results(['touch_root.py'], None, None, None, self.isolate_dir)
-
-  def test_with_flag(self):
-    self._execute(
-        'run', 'with_flag.isolate', ['--extra-variable', 'FLAG', 'run'])
-    self._expect_results(
-        ['with_flag.py', 'run'], None, {u'FLAG': u'run'}, None)
+    self._expect_results(['touch_root.py'], None, None, self.isolate_dir)
 
   if sys.platform != 'win32':
     def test_symlink_full(self):

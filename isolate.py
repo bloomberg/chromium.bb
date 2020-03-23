@@ -66,8 +66,8 @@ ISOLATED_GEN_JSON_VERSION = 1
 # Warning printed when variables are used. This is meant to reduce the use of
 # variables.
 _VARIABLE_WARNING = """\
-WARNING: --config-variables, --path-variables and --extra-variables
-will be unsupported soon. Please contact the LUCI team.
+WARNING: --config-variables and --path-variables will be unsupported soon.
+Please contact the LUCI team.
 https://crbug.com/907880
 """
 
@@ -290,9 +290,6 @@ class SavedState(Flattenable):
     # GYP variables that are used to generate conditions. The most frequent
     # example is 'OS'.
     'config_variables',
-    # GYP variables that will be replaced in 'command' and paths but will not be
-    # considered a relative directory.
-    'extra_variables',
     # Cache of the files found so the next run can skip hash calculation.
     'files',
     # Path of the original .isolate file. Relative path to isolated_basedir.
@@ -337,7 +334,6 @@ class SavedState(Flattenable):
     self.child_isolated_files = []
     self.command = []
     self.config_variables = {}
-    self.extra_variables = {}
     self.files = {}
     self.isolate_file = None
     self.path_variables = {}
@@ -351,7 +347,7 @@ class SavedState(Flattenable):
     """Updates the saved state with only config variables."""
     self.config_variables.update(config_variables)
 
-  def update(self, isolate_file, path_variables, extra_variables):
+  def update(self, isolate_file, path_variables):
     """Updates the saved state with new data to keep GYP variables and internal
     reference to the original .isolate file.
     """
@@ -365,7 +361,6 @@ class SavedState(Flattenable):
     # .isolated.state.
     assert isolate_file == self.isolate_file or not self.isolate_file, (
         isolate_file, self.isolate_file)
-    self.extra_variables.update(extra_variables)
     self.isolate_file = isolate_file
     self.path_variables.update(path_variables)
 
@@ -481,7 +476,6 @@ class SavedState(Flattenable):
     out += '  child_isolated_files: %s\n' % self.child_isolated_files
     out += '  path_variables: %s\n' % dict_to_str(self.path_variables)
     out += '  config_variables: %s\n' % dict_to_str(self.config_variables)
-    out += '  extra_variables: %s\n' % dict_to_str(self.extra_variables)
     return out
 
 
@@ -504,9 +498,8 @@ class CompleteState(object):
         isolatedfile_to_state(isolated_filepath), algo_name, isolated_basedir)
     return cls(isolated_filepath, s)
 
-  def load_isolate(
-      self, cwd, isolate_file, path_variables, config_variables,
-      extra_variables, blacklist, ignore_broken_items, collapse_symlinks):
+  def load_isolate(self, cwd, isolate_file, path_variables, config_variables,
+                   blacklist, ignore_broken_items, collapse_symlinks):
     """Updates self.isolated and self.saved_state with information loaded from a
     .isolate file.
 
@@ -515,10 +508,9 @@ class CompleteState(object):
     # Make sure to not depend on os.getcwd().
     assert os.path.isabs(isolate_file), isolate_file
     isolate_file = file_path.get_native_path_case(isolate_file)
-    logging.info(
-        'CompleteState.load_isolate(%s, %s, %s, %s, %s, %s, %s)',
-        cwd, isolate_file, path_variables, config_variables, extra_variables,
-        ignore_broken_items, collapse_symlinks)
+    logging.info('CompleteState.load_isolate(%s, %s, %s, %s, %s, %s)', cwd,
+                 isolate_file, path_variables, config_variables,
+                 ignore_broken_items, collapse_symlinks)
 
     # Config variables are not affected by the paths and must be used to
     # retrieve the paths, so update them first.
@@ -537,17 +529,15 @@ class CompleteState(object):
     path_variables = normalize_path_variables(
         cwd, path_variables, isolate_cmd_dir)
     # Update the rest of the saved state.
-    self.saved_state.update(isolate_file, path_variables, extra_variables)
+    self.saved_state.update(isolate_file, path_variables)
 
     total_variables = self.saved_state.path_variables.copy()
     total_variables.update(self.saved_state.config_variables)
-    total_variables.update(self.saved_state.extra_variables)
     command = [
         isolate_format.eval_variables(i, total_variables) for i in command
     ]
 
     total_variables = self.saved_state.path_variables.copy()
-    total_variables.update(self.saved_state.extra_variables)
     infiles = [
         isolate_format.eval_variables(f, total_variables) for f in infiles
     ]
@@ -709,10 +699,10 @@ def load_complete_state(options, cwd, subdir, skip_update):
 
   if not skip_update:
     # Then load the .isolate and expands directories.
-    complete_state.load_isolate(
-        cwd, isolate, options.path_variables, options.config_variables,
-        options.extra_variables, options.blacklist, options.ignore_broken_items,
-        options.collapse_symlinks)
+    complete_state.load_isolate(cwd, isolate, options.path_variables,
+                                options.config_variables, options.blacklist,
+                                options.ignore_broken_items,
+                                options.collapse_symlinks)
 
   # Regenerate complete_state.saved_state.files.
   if subdir:
@@ -1164,7 +1154,6 @@ def add_variable_option(parser):
       '-r', '--result',
       dest='isolated',
       help=optparse.SUPPRESS_HELP)
-  is_win = sys.platform in ('win32', 'cygwin')
   # There is really 3 kind of variables:
   # - path variables, like DEPTH or PRODUCT_DIR that should be
   #   replaced opportunistically when tracing tests.
@@ -1192,16 +1181,6 @@ def add_variable_option(parser):
       metavar='FOO BAR',
       help='Path variables are used to replace file paths when loading a '
            '.isolate file, default: %default')
-  parser.add_option(
-      '--extra-variable',
-      action='callback',
-      callback=_process_variable_arg,
-      default=[('EXECUTABLE_SUFFIX', '.exe' if is_win else '')],
-      dest='extra_variables',
-      metavar='FOO BAR',
-      help='Extraneous variables are replaced on the \'command\' entry and on '
-           'paths in the .isolate file but are not considered relative paths.')
-
 
 def add_isolate_options(parser):
   """Adds --isolate, --isolated, --out and --<foo>-variable options."""
@@ -1293,10 +1272,8 @@ def process_isolate_options(parser, options, cwd=None, require_isolated=True):
   options.config_variables = dict(
       (k, try_make_int(v)) for k, v in options.config_variables)
   options.path_variables = dict(options.path_variables)
-  options.extra_variables = dict(options.extra_variables)
   # Account for default EXECUTABLE_SUFFIX.
-  if (options.config_variables or options.path_variables or
-      len(options.extra_variables) > 1):
+  if options.config_variables or options.path_variables:
     sys.stderr.write(_VARIABLE_WARNING)
 
   # Normalize the path in --isolate.
