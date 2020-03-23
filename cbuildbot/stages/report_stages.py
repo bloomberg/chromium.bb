@@ -242,6 +242,7 @@ class BuildStartStage(generic_stages.BuilderStage):
                    d['build_id'])
       return
 
+    buildbucket_id = self._run.options.buildbucket_id
     # Note: In other build stages we use self._run.GetCIDBHandle to fetch
     # a cidb handle. However, since we don't yet have a build_id, we can't
     # do that here.
@@ -256,7 +257,7 @@ class BuildStartStage(generic_stages.BuilderStage):
             master_build_id=d['master_build_id'],
             timeout_seconds=self._GetBuildTimeoutSeconds(),
             important=d['important'],
-            buildbucket_id=self._run.options.buildbucket_id,
+            buildbucket_id=buildbucket_id,
             branch=self._run.manifest_branch)
       except Exception as e:
         logging.error('Error: %s\n If the buildbucket_id to insert is '
@@ -268,6 +269,7 @@ class BuildStartStage(generic_stages.BuilderStage):
         raise e
 
       self._run.attrs.metadata.UpdateWithDict({'build_id': build_id,
+                                               'buildbucket_id': buildbucket_id,
                                                'db_type': db_type})
       logging.info('Inserted build_id %s into cidb database type %s.',
                    build_id, db_type)
