@@ -91,7 +91,13 @@ BrowserMainRunner::BrowserMainRunner(
 
     Statics::browserMainTaskRunner = base::ThreadTaskRunnerHandle::Get();
 
-    display::Screen::SetScreenInstance(views::CreateDesktopScreen());
+    display::Screen *screen;
+    {
+        base::ScopedAllowBlocking allow_blocking;
+        screen = views::CreateDesktopScreen();
+    }
+
+    display::Screen::SetScreenInstance(screen);
     d_viewsDelegate.reset(new ViewsDelegateImpl());
     content::StartBrowserThreadPool();
 }
