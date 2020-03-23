@@ -122,6 +122,7 @@ x86_internal_release_boards = frozenset([
     'guado',
     'guado_labstation',
     'hatch',
+    'hatch-arc-r',
     'hatch-diskswap',
     'heli',
     'jecht',

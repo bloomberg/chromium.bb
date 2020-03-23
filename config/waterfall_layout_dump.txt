@@ -1187,6 +1187,7 @@
   hatch-arc-r-full-tryjob
   hatch-arc-r-llvm-next-toolchain-tryjob
   hatch-arc-r-llvm-toolchain-tryjob
+  hatch-arc-r-payloads-tryjob
   hatch-arc-r-release-tryjob
   hatch-arc-r-unittest-stress
   hatch-arc-r-vmrvc-android-pfq-tryjob
