@@ -9129,6 +9129,7 @@
         "boards": [
             "deltaur"
         ],
+        "important": false,
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -23222,6 +23223,7 @@
             "cyan-kernelnext-release",
             "cyan-release",
             "dedede-release",
+            "deltaur-release",
             "drallion-release",
             "edgar-release",
             "elm-kernelnext-release",
@@ -23407,6 +23409,7 @@
             "cyan-kernelnext-release-tryjob",
             "cyan-release-tryjob",
             "dedede-release-tryjob",
+            "deltaur-release-tryjob",
             "drallion-release-tryjob",
             "edgar-release-tryjob",
             "elm-kernelnext-release-tryjob",
