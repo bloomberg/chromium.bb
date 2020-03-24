@@ -528,8 +528,8 @@ AnalyzerFrame::AnalyzerFrame(const bool bit_accounting)
   wxMenuBar *mb = new wxMenuBar();
 
   fileMenu = new wxMenu();
-  fileMenu->Append(wxID_OPEN, _("&Open...\tCtrl-O"), _("Open daala file"));
-  fileMenu->Append(wxID_CLOSE, _("&Close\tCtrl-W"), _("Close daala file"));
+  fileMenu->Append(wxID_OPEN, _("&Open...\tCtrl-O"), _("Open AV1 file"));
+  fileMenu->Append(wxID_CLOSE, _("&Close\tCtrl-W"), _("Close AV1 file"));
   fileMenu->Enable(wxID_CLOSE, false);
   fileMenu->Append(wxID_EXIT, _("E&xit\tCtrl-Q"), _("Quit this program"));
   mb->Append(fileMenu, _("&File"));
