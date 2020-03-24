@@ -5000,8 +5000,4 @@ void RenderProcessHost::InterceptBindHostReceiverForTesting(
   GetBindHostReceiverInterceptor() = std::move(callback);
 }
 
-//void RenderProcessHostImpl::SetProcess(base::Process process) {
-//  child_connection_->SetProcess(std::move(process));
-//}
-
 }  // namespace content

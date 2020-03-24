@@ -671,7 +671,6 @@ void WebViewImpl::RequestMediaAccessPermission(
       public:
         gfx::NativeViewId OnStarted(base::OnceClosure stop,
                                    SourceCallback source) override {
-                                 //  base::RepeatingClosure source) override {
         return 0;
        }
     };
