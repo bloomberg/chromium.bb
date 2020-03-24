@@ -33,6 +33,7 @@
 #include <blpwtk2_webviewimpl.h>
 #include <blpwtk2_webviewdelegate.h>
 #include <blpwtk2_requestinterceptorimpl.h>
+#include <net/url_request/url_request_context_builder.h>
 
 
 
@@ -195,6 +196,11 @@ BrowserContextImpl::CreateNetworkContext(bool in_memory,
                                          const base::FilePath& relative_partition_path,
                                          std::string user_agent)
 {
+    auto injector = []() {
+        return std::make_unique<RequestInterceptorImpl>();
+    };
+    net::URLRequestContextBuilder::set_interceptor_injector(std::move(injector));
+
     return d_requestContextManager->CreateNetworkContext(
         in_memory, relative_partition_path, std::move(user_agent));
 }
