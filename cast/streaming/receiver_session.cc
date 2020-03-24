@@ -98,11 +98,11 @@ Preferences& Preferences::operator=(Preferences&&) noexcept = default;
 
 ReceiverSession::ReceiverSession(Client* const client,
                                  Environment* environment,
-                                 std::unique_ptr<MessagePort> message_port,
+                                 MessagePort* message_port,
                                  Preferences preferences)
     : client_(client),
       environment_(environment),
-      message_port_(std::move(message_port)),
+      message_port_(message_port),
       preferences_(std::move(preferences)),
       packet_router_(environment_) {
   OSP_DCHECK(client_);
@@ -240,7 +240,7 @@ ErrorOr<ConfiguredReceivers> ReceiverSession::TrySpawningReceivers(
 
 void ReceiverSession::ResetReceivers() {
   if (current_video_receiver_ || current_audio_receiver_) {
-    client_->OnReceiversDestroyed(this);
+    client_->OnConfiguredReceiversDestroyed(this);
     current_audio_receiver_.reset();
     current_video_receiver_.reset();
   }

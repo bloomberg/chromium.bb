@@ -139,24 +139,25 @@ class CastSocketE2ETest : public ::testing::Test {
     ASSERT_TRUE(device_key);
 
     ErrorOr<bssl::UniquePtr<X509>> root_cert_or_error =
-        CreateCertificateForTest("Cast Root CA", kCertificateDuration,
-                                 *root_key, GetWallTimeSinceUnixEpoch(), true);
+        CreateSelfSignedX509CertificateForTest(
+            "Cast Root CA", kCertificateDuration, *root_key,
+            GetWallTimeSinceUnixEpoch(), true);
     ASSERT_TRUE(root_cert_or_error);
     bssl::UniquePtr<X509> root_cert = std::move(root_cert_or_error.value());
 
     ErrorOr<bssl::UniquePtr<X509>> intermediate_cert_or_error =
-        CreateCertificateForTest("Cast Intermediate", kCertificateDuration,
-                                 *intermediate_key, GetWallTimeSinceUnixEpoch(),
-                                 true, root_cert.get(), root_key.get());
+        CreateSelfSignedX509CertificateForTest(
+            "Cast Intermediate", kCertificateDuration, *intermediate_key,
+            GetWallTimeSinceUnixEpoch(), true, root_cert.get(), root_key.get());
     ASSERT_TRUE(intermediate_cert_or_error);
     bssl::UniquePtr<X509> intermediate_cert =
         std::move(intermediate_cert_or_error.value());
 
     ErrorOr<bssl::UniquePtr<X509>> device_cert_or_error =
-        CreateCertificateForTest("Test Device", kCertificateDuration,
-                                 *device_key, GetWallTimeSinceUnixEpoch(),
-                                 false, intermediate_cert.get(),
-                                 intermediate_key.get());
+        CreateSelfSignedX509CertificateForTest(
+            "Test Device", kCertificateDuration, *device_key,
+            GetWallTimeSinceUnixEpoch(), false, intermediate_cert.get(),
+            intermediate_key.get());
     ASSERT_TRUE(device_cert_or_error);
     bssl::UniquePtr<X509> device_cert = std::move(device_cert_or_error.value());
 
@@ -187,8 +188,8 @@ class CastSocketE2ETest : public ::testing::Test {
     bssl::UniquePtr<EVP_PKEY> tls_key = GenerateRsaKeyPair();
     ASSERT_EQ(EVP_PKEY_id(tls_key.get()), EVP_PKEY_RSA);
     ErrorOr<bssl::UniquePtr<X509>> tls_cert_or_error =
-        CreateCertificate("Test Device TLS", kCertificateDuration, *tls_key,
-                          GetWallTimeSinceUnixEpoch());
+        CreateSelfSignedX509Certificate("Test Device TLS", kCertificateDuration,
+                                        *tls_key, GetWallTimeSinceUnixEpoch());
     ASSERT_TRUE(tls_cert_or_error);
     bssl::UniquePtr<X509> tls_cert = std::move(tls_cert_or_error.value());
 

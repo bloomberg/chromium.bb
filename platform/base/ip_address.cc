@@ -328,4 +328,10 @@ std::ostream& operator<<(std::ostream& out, const IPEndpoint& endpoint) {
   return out << ':' << std::dec << static_cast<int>(endpoint.port);
 }
 
+std::string IPEndpoint::ToString() const {
+  std::ostringstream name;
+  name << this;
+  return name.str();
+}
+
 }  // namespace openscreen

@@ -26,6 +26,11 @@ constexpr std::chrono::milliseconds kDefaultTargetPlayoutDelay(400);
 // ANSWER control message, which may or may not match this port number here.
 constexpr int kDefaultCastStreamingPort = 2344;
 
+// Default TCP port, bound at the TLS server socket level, for Cast Streaming.
+// An implementation must use the port specified in the DNS-SD published record
+// for connecting over TLS, which may or may not match this port number here.
+constexpr int kDefaultCastPort = 8010;
+
 // Target number of milliseconds between the sending of RTCP reports.  Both
 // senders and receivers regularly send RTCP reports to their peer.
 constexpr std::chrono::milliseconds kRtcpReportInterval(500);

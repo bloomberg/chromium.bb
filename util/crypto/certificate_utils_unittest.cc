@@ -27,7 +27,7 @@ TEST(CertificateUtilTest, CreatesValidCertificate) {
   ASSERT_TRUE(pkey);
 
   ErrorOr<bssl::UniquePtr<X509>> certificate =
-      CreateCertificate(kName, kDuration, *pkey);
+      CreateSelfSignedX509Certificate(kName, kDuration, *pkey);
   ASSERT_TRUE(certificate.is_value());
 
   // Validate the generated certificate.
@@ -38,11 +38,11 @@ TEST(CertificateUtilTest, ExportsAndImportsCertificate) {
   bssl::UniquePtr<EVP_PKEY> pkey = GenerateRsaKeyPair();
   ASSERT_TRUE(pkey);
   ErrorOr<bssl::UniquePtr<X509>> certificate =
-      CreateCertificate(kName, kDuration, *pkey);
+      CreateSelfSignedX509Certificate(kName, kDuration, *pkey);
   ASSERT_TRUE(certificate.is_value());
 
   ErrorOr<std::vector<uint8_t>> exported =
-      ExportCertificate(*certificate.value());
+      ExportX509CertificateToDer(*certificate.value());
   ASSERT_TRUE(exported.is_value()) << exported.error();
   EXPECT_FALSE(exported.value().empty());
 

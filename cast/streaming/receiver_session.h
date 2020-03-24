@@ -45,8 +45,8 @@ class ReceiverSession final : public MessagePort::Client {
     // successfully negotiate a receiver configuration.
 
     // NOTES ON LIFETIMES: The audio and video receiver pointers are expected
-    // to be valid until the OnReceiversDestroyed event is fired, at which
-    // point they become invalid and need to replaced by the results of
+    // to be valid until the OnConfiguredReceiversDestroyed event is fired, at
+    // which point they become invalid and need to replaced by the results of
     // the ensuing OnNegotiated call.
 
     // If the receiver is audio- or video-only, either of the receivers
@@ -65,7 +65,8 @@ class ReceiverSession final : public MessagePort::Client {
 
     // This method is called immediately preceding the invalidation of
     // this session's receivers.
-    virtual void OnReceiversDestroyed(const ReceiverSession* session) = 0;
+    virtual void OnConfiguredReceiversDestroyed(
+        const ReceiverSession* session) = 0;
 
     virtual void OnError(const ReceiverSession* session, Error error) = 0;
   };
@@ -103,7 +104,7 @@ class ReceiverSession final : public MessagePort::Client {
 
   ReceiverSession(Client* const client,
                   Environment* environment,
-                  std::unique_ptr<MessagePort> message_port,
+                  MessagePort* message_port,
                   Preferences preferences);
   ReceiverSession(const ReceiverSession&) = delete;
   ReceiverSession(ReceiverSession&&) = delete;
@@ -148,7 +149,7 @@ class ReceiverSession final : public MessagePort::Client {
 
   Client* const client_;
   Environment* const environment_;
-  const std::unique_ptr<MessagePort> message_port_;
+  MessagePort* const message_port_;
   const Preferences preferences_;
 
   CastMode cast_mode_;

@@ -142,7 +142,7 @@ bssl::UniquePtr<EVP_PKEY> GenerateRsaKeyPair(int key_bits) {
   return pkey;
 }
 
-ErrorOr<bssl::UniquePtr<X509>> CreateCertificate(
+ErrorOr<bssl::UniquePtr<X509>> CreateSelfSignedX509Certificate(
     absl::string_view name,
     std::chrono::seconds duration,
     const EVP_PKEY& key_pair,
@@ -155,7 +155,7 @@ ErrorOr<bssl::UniquePtr<X509>> CreateCertificate(
   return certificate;
 }
 
-ErrorOr<bssl::UniquePtr<X509>> CreateCertificateForTest(
+ErrorOr<bssl::UniquePtr<X509>> CreateSelfSignedX509CertificateForTest(
     absl::string_view name,
     std::chrono::seconds duration,
     const EVP_PKEY& key_pair,
@@ -172,7 +172,8 @@ ErrorOr<bssl::UniquePtr<X509>> CreateCertificateForTest(
   return certificate;
 }
 
-ErrorOr<std::vector<uint8_t>> ExportCertificate(const X509& certificate) {
+ErrorOr<std::vector<uint8_t>> ExportX509CertificateToDer(
+    const X509& certificate) {
   unsigned char* buffer = nullptr;
   // Casting-away the const because the legacy i2d_X509() function is not
   // const-correct.
@@ -207,9 +208,7 @@ ErrorOr<bssl::UniquePtr<EVP_PKEY>> ImportRSAPrivateKey(
     return Error::Code::kParameterInvalid;
   }
 
-  CBS cbs;
-  CBS_init(&cbs, der_rsa_private_key, key_length);
-  RSA* rsa = RSA_parse_private_key(&cbs);
+  RSA* rsa = RSA_private_key_from_bytes(der_rsa_private_key, key_length);
   if (!rsa) {
     return Error::Code::kRSAKeyParseError;
   }

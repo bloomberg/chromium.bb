@@ -13,9 +13,9 @@ if (!build_with_chromium) {
     sources = [
       "cast_agent.cc",
       "cast_agent.h",
+      "cast_socket_message_port.cc",
+      "cast_socket_message_port.h",
       "main.cc",
-      "simple_message_port.cc",
-      "simple_message_port.h",
       "streaming_playback_controller.cc",
       "streaming_playback_controller.h",
     ]
@@ -24,6 +24,7 @@ if (!build_with_chromium) {
       "../../third_party/jsoncpp",
       "../common:public",
       "../common/channel/proto:channel_proto",
+      "../receiver:channel",
       "../streaming:receiver",
     ]
 

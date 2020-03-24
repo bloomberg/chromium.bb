@@ -30,10 +30,6 @@ namespace openscreen {
 namespace cast {
 namespace {
 
-// TODO(jophba): set this based on actual values when the cast agent is
-// complete.
-static constexpr int kCastTlsPort = 80;
-
 class DiscoveryReportingClient : public discovery::ReportingClient {
   void OnFatalError(Error error) override {
     OSP_LOG_FATAL << "Encountered fatal discovery error: " << error;
@@ -64,7 +60,7 @@ ErrorOr<std::unique_ptr<DiscoveryState>> StartDiscovery(
 
   // TODO(jophba): update after ServiceInfo update patch lands.
   ServiceInfo info;
-  info.port = kCastTlsPort;
+  info.port = kDefaultCastPort;
   if (interface.GetIpAddressV4()) {
     info.v4_address = interface.GetIpAddressV4();
   }
@@ -95,7 +91,11 @@ ErrorOr<std::unique_ptr<DiscoveryState>> StartDiscovery(
 void RunStandaloneReceiver(TaskRunnerImpl* task_runner,
                            InterfaceInfo interface) {
   CastAgent agent(task_runner, interface);
-  agent.Start();
+  const auto error = agent.Start();
+  if (!error.ok()) {
+    OSP_LOG_ERROR << "Error occurred while starting agent: " << error;
+    return;
+  }
 
   // Run the event loop until an exit is requested (e.g., the video player GUI
   // window is closed, a SIGINT or SIGTERM is received, or whatever other

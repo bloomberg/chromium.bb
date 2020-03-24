@@ -100,7 +100,10 @@ struct IPEndpoint {
   // Parses a text representation of an IPv4/IPv6 address and port (e.g.
   // "192.168.0.1:8080" or "[abcd::1234]:8080").
   static ErrorOr<IPEndpoint> Parse(const std::string& s);
+
+  std::string ToString() const;
 };
+
 bool operator==(const IPEndpoint& a, const IPEndpoint& b);
 bool operator!=(const IPEndpoint& a, const IPEndpoint& b);
 

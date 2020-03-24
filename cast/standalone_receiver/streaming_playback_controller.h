@@ -23,18 +23,26 @@ namespace cast {
 
 class StreamingPlaybackController final : public ReceiverSession::Client {
  public:
-  explicit StreamingPlaybackController(TaskRunnerImpl* task_runner);
+  class Client {
+   public:
+    virtual void OnPlaybackError(StreamingPlaybackController* controller,
+                                 Error error) = 0;
+  };
+
+  StreamingPlaybackController(TaskRunner* task_runner,
+                              StreamingPlaybackController::Client* client);
 
   // ReceiverSession::Client overrides.
   void OnNegotiated(const ReceiverSession* session,
                     ReceiverSession::ConfiguredReceivers receivers) override;
 
-  void OnReceiversDestroyed(const ReceiverSession* session) override;
+  void OnConfiguredReceiversDestroyed(const ReceiverSession* session) override;
 
   void OnError(const ReceiverSession* session, Error error) override;
 
  private:
-  TaskRunnerImpl* const task_runner_;
+  TaskRunner* const task_runner_;
+  StreamingPlaybackController::Client* client_;
 
 #if defined(CAST_STANDALONE_RECEIVER_HAVE_EXTERNAL_LIBS)
   // NOTE: member ordering is important, since the sub systems must be

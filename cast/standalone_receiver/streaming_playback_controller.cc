@@ -19,10 +19,17 @@ namespace cast {
 
 #if defined(CAST_STANDALONE_RECEIVER_HAVE_EXTERNAL_LIBS)
 StreamingPlaybackController::StreamingPlaybackController(
-    TaskRunnerImpl* task_runner)
-    : task_runner_(task_runner), sdl_event_loop_(task_runner_, [this] {
-        task_runner_->RequestStopSoon();
+    TaskRunner* task_runner,
+    StreamingPlaybackController::Client* client)
+    : task_runner_(task_runner),
+      client_(client),
+      sdl_event_loop_(task_runner_, [this] {
+        client_->OnPlaybackError(this,
+                                 Error{Error::Code::kOperationCancelled,
+                                       std::string("SDL event loop closed.")});
       }) {
+  OSP_DCHECK(task_runner_ != nullptr);
+  OSP_DCHECK(client_ != nullptr);
   constexpr int kDefaultWindowWidth = 1280;
   constexpr int kDefaultWindowHeight = 720;
   window_ = MakeUniqueSDLWindow(
@@ -36,9 +43,11 @@ StreamingPlaybackController::StreamingPlaybackController(
 }
 #else
 StreamingPlaybackController::StreamingPlaybackController(
-    TaskRunnerImpl* task_runner)
-    : task_runner_(task_runner) {
+    TaskRunner* task_runner,
+    StreamingPlaybackController::Client* client)
+    : task_runner_(task_runner), client_(client) {
   OSP_DCHECK(task_runner_ != nullptr);
+  OSP_DCHECK(client_ != nullptr);
 }
 #endif  // defined(CAST_STANDALONE_RECEIVER_HAVE_EXTERNAL_LIBS)
 
@@ -53,8 +62,7 @@ void StreamingPlaybackController::OnNegotiated(
     audio_player_ = std::make_unique<SDLAudioPlayer>(
         &Clock::now, task_runner_, receivers.audio->receiver,
         receivers.audio->selected_stream.stream.codec_name, [this] {
-          OSP_LOG_ERROR << audio_player_->error_status().message();
-          task_runner_->RequestStopSoon();
+          client_->OnPlaybackError(this, audio_player_->error_status());
         });
   }
   if (receivers.video) {
@@ -62,8 +70,7 @@ void StreamingPlaybackController::OnNegotiated(
         &Clock::now, task_runner_, receivers.video->receiver,
         receivers.video->selected_stream.stream.codec_name, renderer_.get(),
         [this] {
-          OSP_LOG_ERROR << video_player_->error_status().message();
-          task_runner_->RequestStopSoon();
+          client_->OnPlaybackError(this, video_player_->error_status());
         });
   }
 #else
@@ -77,7 +84,7 @@ void StreamingPlaybackController::OnNegotiated(
 #endif  // defined(CAST_STANDALONE_RECEIVER_HAVE_EXTERNAL_LIBS)
 }
 
-void StreamingPlaybackController::OnReceiversDestroyed(
+void StreamingPlaybackController::OnConfiguredReceiversDestroyed(
     const ReceiverSession* session) {
   audio_player_.reset();
   video_player_.reset();
@@ -85,8 +92,7 @@ void StreamingPlaybackController::OnReceiversDestroyed(
 
 void StreamingPlaybackController::OnError(const ReceiverSession* session,
                                           Error error) {
-  OSP_LOG_FATAL << "Failure reported to demo client for session " << session
-                << ": " << error;
+  client_->OnPlaybackError(this, error);
 }
 
 }  // namespace cast
