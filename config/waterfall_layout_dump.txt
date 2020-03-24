@@ -248,7 +248,6 @@
     banon-release
     beaglebone-release
     beaglebone_servo-release
-    betty-arc64-release
     betty-arcmaster-release
     betty-arcnext-release
     betty-arcvm-master-release
@@ -256,7 +255,6 @@
     betty-kernelnext-release
     betty-pi-arc-release
     betty-qt-arc-release
-    betty-release
     bob-release
     bubs-release
     buddy-cfm-release
@@ -1423,7 +1421,6 @@
     banon-release-tryjob
     beaglebone-release-tryjob
     beaglebone_servo-release-tryjob
-    betty-arc64-release-tryjob
     betty-arcmaster-release-tryjob
     betty-arcnext-release-tryjob
     betty-arcvm-master-release-tryjob
@@ -1431,7 +1428,6 @@
     betty-kernelnext-release-tryjob
     betty-pi-arc-release-tryjob
     betty-qt-arc-release-tryjob
-    betty-release-tryjob
     bob-release-tryjob
     bubs-release-tryjob
     buddy-cfm-release-tryjob
