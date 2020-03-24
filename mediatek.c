@@ -49,7 +49,7 @@ static int mediatek_init(struct driver *drv)
 	struct format_metadata metadata;
 
 	drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
-			     &LINEAR_METADATA, BO_USE_RENDER_MASK);
+			     &LINEAR_METADATA, BO_USE_RENDER_MASK | BO_USE_SCANOUT);
 
 	drv_add_combinations(drv, texture_source_formats, ARRAY_SIZE(texture_source_formats),
 			     &LINEAR_METADATA, BO_USE_TEXTURE_MASK);
