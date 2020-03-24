@@ -214,9 +214,6 @@ from :3
     self.relpath = '.'
     self.base_path = join(self.root_dir, self.relpath)
     self.enabled = self.CreateGitRepo(self.sample_git_import, self.base_path)
-    self._original_GitBinaryExists = gclient_scm.GitWrapper.BinaryExists
-    mock.patch('gclient_scm.GitWrapper.BinaryExists',
-               staticmethod(lambda : True)).start()
     mock.patch('sys.stdout', StringIO()).start()
     self.addCleanup(mock.patch.stopall)
     self.addCleanup(gclient_utils.rmtree, self.root_dir)
