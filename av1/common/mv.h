@@ -24,7 +24,7 @@ extern "C" {
 #define GET_MV_RAWPEL(x) (((x) + 3 + ((x) >= 0)) >> 3)
 #define GET_MV_SUBPEL(x) ((x)*8)
 
-#define CHECK_MV_EQUAL(x, y) (((int_mv)(x)).as_int == ((int_mv)(y)).as_int)
+#define CHECK_MV_EQUAL(x, y) (((x).row == (y).row) && ((x).col == (y).col))
 
 // The motion vector in units of full pixel
 typedef struct fullpel_mv {

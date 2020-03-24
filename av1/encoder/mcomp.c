@@ -2838,7 +2838,7 @@ int av1_find_best_sub_pixel_tree(MACROBLOCK *x, const AV1_COMMON *const cm,
 
   for (iter = 0; iter < round; ++iter) {
     MV iter_center_mv = *bestmv;
-    if (CHECK_MV_EQUAL(x->fractional_best_mv[iter], iter_center_mv)) {
+    if (CHECK_MV_EQUAL(x->fractional_best_mv[iter].as_mv, iter_center_mv)) {
       return INT_MAX;
     }
 
