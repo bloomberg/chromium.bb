@@ -213,7 +213,8 @@ def HasChromePrebuilt(input_proto, output_proto, _config):
 
 @faux.success(_HasPrebuiltSuccess)
 @faux.empty_error
-@validate.require('build_target.name', 'package.category', 'package.name')
+@validate.require('build_target.name', 'package_info.category',
+                  'package_info.package_name')
 @validate.validation_complete
 def HasPrebuilt(input_proto, output_proto, _config):
   """Checks if the most recent version of Chrome has a prebuilt."""
