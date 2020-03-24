@@ -116,7 +116,8 @@ static int i915_add_combinations(struct driver *drv)
 	metadata.priority = 3;
 	metadata.modifier = I915_FORMAT_MOD_Y_TILED;
 
-	scanout_and_render = unset_flags(scanout_and_render, BO_USE_SW_READ_RARELY | BO_USE_SW_WRITE_RARELY);
+	scanout_and_render =
+	    unset_flags(scanout_and_render, BO_USE_SW_READ_RARELY | BO_USE_SW_WRITE_RARELY);
 /* Support y-tiled NV12 and P010 for libva */
 #ifdef I915_SCANOUT_Y_TILED
 	drv_add_combination(drv, DRM_FORMAT_NV12, &metadata,

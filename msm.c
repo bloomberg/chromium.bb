@@ -109,7 +109,7 @@ static void msm_calculate_layout(struct bo *bo)
 			DRM_FORMAT_R8 of height one is used for JPEG camera output, so don't
 			height align that. */
 		if (bo->meta.format == DRM_FORMAT_YVU420_ANDROID ||
-						(bo->meta.format == DRM_FORMAT_R8 && height == 1)) {
+		    (bo->meta.format == DRM_FORMAT_R8 && height == 1)) {
 			alignh = height;
 		} else {
 			alignh = ALIGN(height, DEFAULT_ALIGNMENT);
