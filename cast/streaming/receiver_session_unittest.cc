@@ -248,8 +248,9 @@ TEST_F(ReceiverSessionTest, RegistersSelfOnMessagePump) {
   SimpleMessagePort* raw_port = message_port.get();
   StrictMock<FakeClient> client;
 
+  auto environment = MakeEnvironment();
   auto session = std::make_unique<ReceiverSession>(
-      &client, MakeEnvironment(), std::move(message_port),
+      &client, environment.get(), std::move(message_port),
       ReceiverSession::Preferences{});
   EXPECT_EQ(raw_port->client(), session.get());
 }
@@ -258,7 +259,8 @@ TEST_F(ReceiverSessionTest, CanNegotiateWithDefaultPreferences) {
   auto message_port = std::make_unique<SimpleMessagePort>();
   SimpleMessagePort* raw_port = message_port.get();
   StrictMock<FakeClient> client;
-  ReceiverSession session(&client, MakeEnvironment(), std::move(message_port),
+  auto environment = MakeEnvironment();
+  ReceiverSession session(&client, environment.get(), std::move(message_port),
                           ReceiverSession::Preferences{});
 
   EXPECT_CALL(client, OnNegotiated(&session, _))
@@ -329,8 +331,9 @@ TEST_F(ReceiverSessionTest, CanNegotiateWithCustomCodecPreferences) {
   auto message_port = std::make_unique<SimpleMessagePort>();
   SimpleMessagePort* raw_port = message_port.get();
   StrictMock<FakeClient> client;
+  auto environment = MakeEnvironment();
   ReceiverSession session(
-      &client, MakeEnvironment(), std::move(message_port),
+      &client, environment.get(), std::move(message_port),
       ReceiverSession::Preferences{{ReceiverSession::VideoCodec::kVp9},
                                    {ReceiverSession::AudioCodec::kOpus}});
 
@@ -369,8 +372,9 @@ TEST_F(ReceiverSessionTest, CanNegotiateWithCustomConstraints) {
       Dimensions{640, 480, SimpleFraction{60, 1}}, AspectRatio{16, 9},
       AspectRatioConstraint::kFixed}};
 
+  auto environment = MakeEnvironment();
   ReceiverSession session(
-      &client, MakeEnvironment(), std::move(message_port),
+      &client, environment.get(), std::move(message_port),
       ReceiverSession::Preferences{{ReceiverSession::VideoCodec::kVp9},
                                    {ReceiverSession::AudioCodec::kOpus},
                                    std::move(constraints),
@@ -430,7 +434,8 @@ TEST_F(ReceiverSessionTest, HandlesNoValidAudioStream) {
   auto message_port = std::make_unique<SimpleMessagePort>();
   SimpleMessagePort* raw_port = message_port.get();
   StrictMock<FakeClient> client;
-  ReceiverSession session(&client, MakeEnvironment(), std::move(message_port),
+  auto environment = MakeEnvironment();
+  ReceiverSession session(&client, environment.get(), std::move(message_port),
                           ReceiverSession::Preferences{});
 
   EXPECT_CALL(client, OnNegotiated(&session, _)).Times(1);
@@ -456,7 +461,8 @@ TEST_F(ReceiverSessionTest, HandlesNoValidVideoStream) {
   auto message_port = std::make_unique<SimpleMessagePort>();
   SimpleMessagePort* raw_port = message_port.get();
   StrictMock<FakeClient> client;
-  ReceiverSession session(&client, MakeEnvironment(), std::move(message_port),
+  auto environment = MakeEnvironment();
+  ReceiverSession session(&client, environment.get(), std::move(message_port),
                           ReceiverSession::Preferences{});
 
   EXPECT_CALL(client, OnNegotiated(&session, _)).Times(1);
@@ -482,7 +488,9 @@ TEST_F(ReceiverSessionTest, HandlesNoValidStreams) {
   auto message_port = std::make_unique<SimpleMessagePort>();
   SimpleMessagePort* raw_port = message_port.get();
   StrictMock<FakeClient> client;
-  ReceiverSession session(&client, MakeEnvironment(), std::move(message_port),
+
+  auto environment = MakeEnvironment();
+  ReceiverSession session(&client, environment.get(), std::move(message_port),
                           ReceiverSession::Preferences{});
 
   // We shouldn't call OnNegotiated if we failed to negotiate any streams.
@@ -501,7 +509,8 @@ TEST_F(ReceiverSessionTest, HandlesMalformedOffer) {
   auto message_port = std::make_unique<SimpleMessagePort>();
   SimpleMessagePort* raw_port = message_port.get();
   StrictMock<FakeClient> client;
-  ReceiverSession session(&client, MakeEnvironment(), std::move(message_port),
+  auto environment = MakeEnvironment();
+  ReceiverSession session(&client, environment.get(), std::move(message_port),
                           ReceiverSession::Preferences{});
 
   // We shouldn't call OnNegotiated if we failed to negotiate any streams.
@@ -519,7 +528,8 @@ TEST_F(ReceiverSessionTest, NotifiesReceiverDestruction) {
   auto message_port = std::make_unique<SimpleMessagePort>();
   SimpleMessagePort* raw_port = message_port.get();
   StrictMock<FakeClient> client;
-  ReceiverSession session(&client, MakeEnvironment(), std::move(message_port),
+  auto environment = MakeEnvironment();
+  ReceiverSession session(&client, environment.get(), std::move(message_port),
                           ReceiverSession::Preferences{});
 
   EXPECT_CALL(client, OnNegotiated(&session, _)).Times(2);

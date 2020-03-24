@@ -102,7 +102,7 @@ class ReceiverSession final : public MessagePort::Client {
   };
 
   ReceiverSession(Client* const client,
-                  std::unique_ptr<Environment> environment,
+                  Environment* environment,
                   std::unique_ptr<MessagePort> message_port,
                   Preferences preferences);
   ReceiverSession(const ReceiverSession&) = delete;
@@ -147,7 +147,7 @@ class ReceiverSession final : public MessagePort::Client {
   void ResetReceivers();
 
   Client* const client_;
-  const std::unique_ptr<Environment> environment_;
+  Environment* const environment_;
   const std::unique_ptr<MessagePort> message_port_;
   const Preferences preferences_;
 

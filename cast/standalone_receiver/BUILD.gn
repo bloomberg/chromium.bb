@@ -11,6 +11,8 @@ import("//build_overrides/build.gni")
 if (!build_with_chromium) {
   executable("cast_receiver") {
     sources = [
+      "cast_agent.cc",
+      "cast_agent.h",
       "main.cc",
       "simple_message_port.cc",
       "simple_message_port.h",
@@ -20,6 +22,7 @@ if (!build_with_chromium) {
     deps = [
       "../../platform",
       "../../third_party/jsoncpp",
+      "../common/channel/proto:channel_proto",
       "../streaming:receiver",
     ]
 

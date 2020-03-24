@@ -97,14 +97,14 @@ Preferences::Preferences(Preferences&&) noexcept = default;
 Preferences& Preferences::operator=(Preferences&&) noexcept = default;
 
 ReceiverSession::ReceiverSession(Client* const client,
-                                 std::unique_ptr<Environment> environment,
+                                 Environment* environment,
                                  std::unique_ptr<MessagePort> message_port,
                                  Preferences preferences)
     : client_(client),
-      environment_(std::move(environment)),
+      environment_(environment),
       message_port_(std::move(message_port)),
       preferences_(std::move(preferences)),
-      packet_router_(environment_.get()) {
+      packet_router_(environment_) {
   OSP_DCHECK(client_);
   OSP_DCHECK(message_port_);
   OSP_DCHECK(environment_);
@@ -203,7 +203,7 @@ ReceiverSession::ConstructReceiver(const Stream& stream) {
                           stream.target_delay, stream.aes_key,
                           stream.aes_iv_mask};
   auto receiver =
-      std::make_unique<Receiver>(environment_.get(), &packet_router_, config);
+      std::make_unique<Receiver>(environment_, &packet_router_, config);
 
   return std::make_pair(std::move(config), std::move(receiver));
 }

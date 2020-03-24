@@ -21,7 +21,7 @@
 namespace openscreen {
 namespace cast {
 
-class StreamingPlaybackController : public ReceiverSession::Client {
+class StreamingPlaybackController final : public ReceiverSession::Client {
  public:
   explicit StreamingPlaybackController(TaskRunnerImpl* task_runner);
 

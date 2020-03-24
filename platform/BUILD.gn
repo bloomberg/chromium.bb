@@ -84,7 +84,11 @@ if (!build_with_chromium) {
     ]
 
     if (is_linux) {
-      sources += [ "impl/network_interface_linux.cc" ]
+      sources += [
+        "impl/network_interface_linux.cc",
+        "impl/scoped_wake_lock_linux.cc",
+        "impl/scoped_wake_lock_linux.h",
+      ]
     } else if (is_mac) {
       defines += [
         # Required, to use the new IPv6 Sockets options introduced by RFC 3542.
