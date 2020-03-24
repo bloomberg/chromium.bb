@@ -1475,8 +1475,8 @@ int CompareSimd3Args(fptr store, fptr load1, fptr load2, fptr load3, fptr simd,
       (CArg1(*const)(const void *))c_load1;
   CArg2 (*const my_c_load2)(const void *) =
       (CArg2(*const)(const void *))c_load2;
-  CArg2 (*const my_c_load3)(const void *) =
-      (CArg2(*const)(const void *))c_load3;
+  CArg3 (*const my_c_load3)(const void *) =
+      (CArg3(*const)(const void *))c_load3;
   CRet (*const my_c_simd)(CArg1, CArg2, CArg3) =
       (CRet(*const)(CArg1, CArg2, CArg3))c_simd;
 
