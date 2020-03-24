@@ -2616,9 +2616,33 @@ int evaluate_ab_partition_based_on_split(
   return 1;
 }
 
-// TODO(jinging,jimbankoski,rbultje): properly skip partition types that are
-// unlikely to be selected depending on previous rate-distortion optimization
-// results, for encoding speed-up.
+// Searches for the best partition pattern for a block based on the
+// rate-distortion cost, and returns a bool value to indicate whether a valid
+// partition pattern is found. The partition can recursively go down to
+// the smallest block size.
+//
+// Inputs:
+//     cpi: the global compressor setting
+//     td: thread data
+//     tile_data: tile data
+//     tp: the pointer to the start token
+//     mi_row: row coordinate of the block in a step size of MI_SIZE
+//     mi_col: column coordinate of the block in a step size of MI_SIZE
+//     bsize: block size
+//     max_sq_part: the largest square block size for prediction blocks
+//     min_sq_part: the smallest square block size for prediction blocks
+//     rd_cost: the pointer to the final rd cost of the current block
+//     best_rdc: the upper bound of rd cost for a valid partition
+//     pc_tree: the pointer to the PC_TREE node storing the picked partitions
+//              and mode info for the current block
+//     none_rd: the pointer to the rd cost in the case of not splitting the
+//              current block
+//     multi_pass_mode: SB_SINGLE_PASS/SB_DRY_PASS/SB_WET_PASS
+//     rect_part_win_info: the pointer to a struct storing whether horz/vert
+//                         partition outperforms previously tested partitions
+//
+// Output:
+//     a bool value indicating whether a valid partition is found
 static bool rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
                               TileDataEnc *tile_data, TOKENEXTRA **tp,
                               int mi_row, int mi_col, BLOCK_SIZE bsize,
