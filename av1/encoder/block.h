@@ -50,6 +50,13 @@ typedef struct {
   unsigned int var;
 } DIFF;
 
+enum {
+  NO_TRELLIS_OPT,          // No trellis optimization
+  FULL_TRELLIS_OPT,        // Trellis optimization in all stages
+  FINAL_PASS_TRELLIS_OPT,  // Trellis optimization in only the final encode pass
+  NO_ESTIMATE_YRD_TRELLIS_OPT  // Disable trellis in estimate_yrd_for_sb
+} UENUM1BYTE(TRELLIS_OPT_TYPE);
+
 typedef struct macroblock_plane {
   DECLARE_ALIGNED(32, int16_t, src_diff[MAX_SB_SQUARE]);
   tran_low_t *qcoeff;

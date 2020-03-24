@@ -40,13 +40,6 @@ enum {
 } UENUM1BYTE(GM_ERRORADV_TYPE);
 
 enum {
-  NO_TRELLIS_OPT,          // No trellis optimization
-  FULL_TRELLIS_OPT,        // Trellis optimization in all stages
-  FINAL_PASS_TRELLIS_OPT,  // Trellis optimization in only the final encode pass
-  NO_ESTIMATE_YRD_TRELLIS_OPT  // Disable trellis in estimate_yrd_for_sb
-} UENUM1BYTE(TRELLIS_OPT_TYPE);
-
-enum {
   FULL_TXFM_RD,
   LOW_TXFM_RD,
 } UENUM1BYTE(TXFM_RD_MODEL);

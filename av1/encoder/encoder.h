@@ -788,7 +788,7 @@ typedef struct AV1_COMP {
   struct lookahead_entry *alt_ref_source;
   int no_show_kf;
 
-  int optimize_seg_arr[MAX_SEGMENTS];
+  TRELLIS_OPT_TYPE optimize_seg_arr[MAX_SEGMENTS];
   int mi_ext_alloc_size;
 
   YV12_BUFFER_CONFIG *source;

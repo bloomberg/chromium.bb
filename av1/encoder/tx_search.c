@@ -2117,9 +2117,9 @@ static void search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       (mi_row + mi_size_high[plane_bsize] < xd->tile.mi_row_end) &&
       mi_col >= xd->tile.mi_col_start &&
       (mi_col + mi_size_wide[plane_bsize] < xd->tile.mi_col_end);
-  skip_trellis |=
-      cpi->optimize_seg_arr[mbmi->segment_id] == NO_TRELLIS_OPT ||
-      cpi->optimize_seg_arr[mbmi->segment_id] == FINAL_PASS_TRELLIS_OPT;
+
+  skip_trellis |= !is_trellis_used(cpi->optimize_seg_arr[xd->mi[0]->segment_id],
+                                   DRY_RUN_NORMAL);
   if (is_intra_hash_match(cpi, x, plane, blk_row, blk_col, plane_bsize, tx_size,
                           txb_ctx, &intra_txb_rd_info, within_border,
                           tx_type_map_idx, &cur_joint_ctx)) {
@@ -2417,8 +2417,11 @@ static AOM_INLINE void tx_type_rd(const AV1_COMP *cpi, MACROBLOCK *x,
   }
 
   RD_STATS this_rd_stats;
+
+  const int skip_trellis = 0;
   search_txk_type(cpi, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                  txb_ctx, ftxs_mode, 0, 0, ref_rdcost, &this_rd_stats);
+                  txb_ctx, ftxs_mode, 0, skip_trellis, ref_rdcost,
+                  &this_rd_stats);
 
   av1_merge_rd_stats(rd_stats, &this_rd_stats);
 
@@ -2692,9 +2695,11 @@ static AOM_INLINE void choose_largest_tx_size(const AV1_COMP *const cpi,
   // Skip RDcost is used only for Inter blocks
   if (is_inter_block(xd->mi[0])) skip_rd = RDCOST(x->rdmult, s1, 0);
 
+  const int skip_trellis = 0;
   av1_txfm_rd_in_plane(x, cpi, rd_stats, ref_best_rd, AOMMIN(this_rd, skip_rd),
                        AOM_PLANE_Y, bs, mbmi->tx_size,
-                       cpi->sf.rd_sf.use_fast_coef_costing, FTXS_NONE, 0);
+                       cpi->sf.rd_sf.use_fast_coef_costing, FTXS_NONE,
+                       skip_trellis);
 }
 
 static AOM_INLINE void choose_smallest_tx_size(const AV1_COMP *const cpi,
@@ -2707,8 +2712,10 @@ static AOM_INLINE void choose_smallest_tx_size(const AV1_COMP *const cpi,
 
   mbmi->tx_size = TX_4X4;
   // TODO(any) : Pass this_rd based on skip/non-skip cost
+  const int skip_trellis = 0;
   av1_txfm_rd_in_plane(x, cpi, rd_stats, ref_best_rd, 0, 0, bs, mbmi->tx_size,
-                       cpi->sf.rd_sf.use_fast_coef_costing, FTXS_NONE, 0);
+                       cpi->sf.rd_sf.use_fast_coef_costing, FTXS_NONE,
+                       skip_trellis);
 }
 
 static AOM_INLINE void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
@@ -2737,6 +2744,7 @@ static AOM_INLINE void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
     init_depth = MAX_TX_DEPTH;
   }
 
+  const int skip_trellis = 0;
   uint8_t best_txk_type_map[MAX_MIB_SIZE * MAX_MIB_SIZE];
   uint8_t best_blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE];
   TX_SIZE best_tx_size = max_rect_tx_size;
@@ -2750,8 +2758,8 @@ static AOM_INLINE void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
     if (!cpi->oxcf.enable_tx64 && txsize_sqr_up_map[n] == TX_64X64) continue;
 
     RD_STATS this_rd_stats;
-    rd[depth] =
-        av1_txfm_yrd(cpi, x, &this_rd_stats, ref_best_rd, bs, n, FTXS_NONE, 0);
+    rd[depth] = av1_txfm_yrd(cpi, x, &this_rd_stats, ref_best_rd, bs, n,
+                             FTXS_NONE, skip_trellis);
 
     if (rd[depth] < best_rd) {
       av1_copy_array(best_blk_skip, x->blk_skip, n4);
@@ -3367,6 +3375,7 @@ int av1_super_block_uvrd(const AV1_COMP *const cpi, MACROBLOCK *x,
       av1_subtract_plane(x, plane_bsize, plane);
   }
 
+  const int skip_trellis = 0;
   if (is_cost_valid) {
     const TX_SIZE uv_tx_size = av1_get_tx_size(AOM_PLANE_U, xd);
     for (plane = 1; plane < MAX_MB_PLANE; ++plane) {
@@ -3382,7 +3391,8 @@ int av1_super_block_uvrd(const AV1_COMP *const cpi, MACROBLOCK *x,
         chroma_ref_best_rd = ref_best_rd - AOMMIN(this_rd, skip_rd);
       av1_txfm_rd_in_plane(x, cpi, &pn_rd_stats, chroma_ref_best_rd, 0, plane,
                            plane_bsize, uv_tx_size,
-                           cpi->sf.rd_sf.use_fast_coef_costing, FTXS_NONE, 0);
+                           cpi->sf.rd_sf.use_fast_coef_costing, FTXS_NONE,
+                           skip_trellis);
       if (pn_rd_stats.rate == INT_MAX) {
         is_cost_valid = 0;
         break;

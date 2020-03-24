@@ -1216,6 +1216,7 @@ static AOM_INLINE void choose_intra_uv_mode(
   if (xd->cfl.store_y) {
     // Restore reconstructed luma values.
     av1_encode_intra_block_plane(cpi, x, mbmi->sb_type, AOM_PLANE_Y,
+                                 DRY_RUN_NORMAL,
                                  cpi->optimize_seg_arr[mbmi->segment_id]);
     xd->cfl.store_y = 0;
   }
@@ -1336,6 +1337,7 @@ static int cfl_rd_pick_alpha(MACROBLOCK *const x, const AV1_COMP *const cpi,
   int best_rate_uv[CFL_JOINT_SIGNS][CFL_PRED_PLANES];
 #endif  // CONFIG_DEBUG
 
+  const int skip_trellis = 0;
   for (int plane = 0; plane < CFL_PRED_PLANES; plane++) {
     RD_STATS rd_stats;
     av1_init_rd_stats(&rd_stats);
@@ -1351,9 +1353,9 @@ static int cfl_rd_pick_alpha(MACROBLOCK *const x, const AV1_COMP *const cpi,
       if (i == CFL_SIGN_NEG) {
         mbmi->cfl_alpha_idx = 0;
         mbmi->cfl_alpha_signs = joint_sign;
-        av1_txfm_rd_in_plane(x, cpi, &rd_stats, best_rd, 0, plane + 1,
-                             plane_bsize, tx_size,
-                             cpi->sf.rd_sf.use_fast_coef_costing, FTXS_NONE, 0);
+        av1_txfm_rd_in_plane(
+            x, cpi, &rd_stats, best_rd, 0, plane + 1, plane_bsize, tx_size,
+            cpi->sf.rd_sf.use_fast_coef_costing, FTXS_NONE, skip_trellis);
         if (rd_stats.rate == INT_MAX) break;
       }
       const int alpha_rate = x->cfl_cost[joint_sign][plane][0];
@@ -1382,7 +1384,7 @@ static int cfl_rd_pick_alpha(MACROBLOCK *const x, const AV1_COMP *const cpi,
             mbmi->cfl_alpha_signs = joint_sign;
             av1_txfm_rd_in_plane(
                 x, cpi, &rd_stats, best_rd, 0, plane + 1, plane_bsize, tx_size,
-                cpi->sf.rd_sf.use_fast_coef_costing, FTXS_NONE, 0);
+                cpi->sf.rd_sf.use_fast_coef_costing, FTXS_NONE, skip_trellis);
             if (rd_stats.rate == INT_MAX) break;
           }
           const int alpha_rate = x->cfl_cost[joint_sign][plane][c];

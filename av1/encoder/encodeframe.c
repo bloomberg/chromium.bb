@@ -5658,7 +5658,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
     if (xd->lossless[i]) cpi->has_lossless_segment = 1;
     xd->qindex[i] = qindex;
     if (xd->lossless[i]) {
-      cpi->optimize_seg_arr[i] = 0;
+      cpi->optimize_seg_arr[i] = NO_TRELLIS_OPT;
     } else {
       cpi->optimize_seg_arr[i] = cpi->sf.rd_sf.optimize_coefficients;
     }
@@ -6236,7 +6236,7 @@ static AOM_INLINE void encode_superblock(const AV1_COMP *const cpi,
     xd->cfl.store_y = store_cfl_required(cm, xd);
     mbmi->skip = 1;
     for (int plane = 0; plane < num_planes; ++plane) {
-      av1_encode_intra_block_plane(cpi, x, bsize, plane,
+      av1_encode_intra_block_plane(cpi, x, bsize, plane, dry_run,
                                    cpi->optimize_seg_arr[mbmi->segment_id]);
     }
 

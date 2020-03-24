@@ -466,7 +466,7 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
       xd->mi[0]->mode = DC_PRED;
       xd->mi[0]->tx_size =
           use_dc_pred ? (bsize >= BLOCK_16X16 ? TX_16X16 : TX_8X8) : TX_4X4;
-      av1_encode_intra_block_plane(cpi, x, bsize, 0, 0);
+      av1_encode_intra_block_plane(cpi, x, bsize, 0, DRY_RUN_NORMAL, 0);
       this_intra_error = aom_get_mb_ss(x->plane[0].src_diff);
 
       if (this_intra_error < UL_INTRA_THRESH) {

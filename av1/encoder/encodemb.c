@@ -82,22 +82,22 @@ void av1_subtract_plane(MACROBLOCK *x, BLOCK_SIZE plane_bsize, int plane) {
                      pd->dst.buf, pd->dst.stride);
 }
 
-int av1_optimize_b(const struct AV1_COMP *cpi, MACROBLOCK *mb, int plane,
+int av1_optimize_b(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
                    int block, TX_SIZE tx_size, TX_TYPE tx_type,
                    const TXB_CTX *const txb_ctx, int fast_mode,
                    int *rate_cost) {
-  MACROBLOCKD *const xd = &mb->e_mbd;
-  struct macroblock_plane *const p = &mb->plane[plane];
+  MACROBLOCKD *const xd = &x->e_mbd;
+  struct macroblock_plane *const p = &x->plane[plane];
   const int eob = p->eobs[block];
   const int segment_id = xd->mi[0]->segment_id;
 
   if (eob == 0 || !cpi->optimize_seg_arr[segment_id] ||
       xd->lossless[segment_id]) {
-    *rate_cost = av1_cost_skip_txb(mb, txb_ctx, plane, tx_size);
+    *rate_cost = av1_cost_skip_txb(x, txb_ctx, plane, tx_size);
     return eob;
   }
 
-  return av1_optimize_txb_new(cpi, mb, plane, block, tx_size, tx_type, txb_ctx,
+  return av1_optimize_txb_new(cpi, x, plane, block, tx_size, tx_type, txb_ctx,
                               rate_cost, cpi->oxcf.sharpness, fast_mode);
 }
 
@@ -386,14 +386,13 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
                               cm->features.reduced_tx_set_used);
     TxfmParam txfm_param;
     QUANT_PARAM quant_param;
-    int use_trellis = (args->enable_optimize_b != NO_TRELLIS_OPT);
+    const int use_trellis = is_trellis_used(args->enable_optimize_b, dry_run);
     int quant_idx;
-    if (use_trellis && args->enable_optimize_b != FINAL_PASS_TRELLIS_OPT) {
+    if (use_trellis)
       quant_idx = AV1_XFORM_QUANT_FP;
-    } else {
+    else
       quant_idx =
           USE_B_QUANT_NO_TRELLIS ? AV1_XFORM_QUANT_B : AV1_XFORM_QUANT_FP;
-    }
     av1_setup_xform(cm, x, tx_size, tx_type, &txfm_param);
     av1_setup_quant(tx_size, use_trellis, quant_idx, cpi->use_quant_b_adapt,
                     &quant_param);
@@ -617,13 +616,10 @@ void av1_encode_sb(const struct AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
   if (x->force_skip) return;
 
   struct optimize_ctx ctx;
-  struct encode_b_args arg = { cpi,
-                               x,
-                               &ctx,
-                               &mbmi->skip,
-                               NULL,
-                               NULL,
-                               cpi->optimize_seg_arr[mbmi->segment_id] };
+  struct encode_b_args arg = {
+    cpi,  x,    &ctx,    &mbmi->skip,
+    NULL, NULL, dry_run, cpi->optimize_seg_arr[mbmi->segment_id]
+  };
   const AV1_COMMON *const cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   for (int plane = 0; plane < num_planes; ++plane) {
@@ -718,9 +714,10 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
                               cm->features.reduced_tx_set_used);
     TxfmParam txfm_param;
     QUANT_PARAM quant_param;
-    int use_trellis = args->enable_optimize_b != NO_TRELLIS_OPT;
+    const int use_trellis =
+        is_trellis_used(args->enable_optimize_b, args->dry_run);
     int quant_idx;
-    if (use_trellis && args->enable_optimize_b != FINAL_PASS_TRELLIS_OPT)
+    if (use_trellis)
       quant_idx = AV1_XFORM_QUANT_FP;
     else
       quant_idx =
@@ -792,8 +789,8 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
 }
 
 void av1_encode_intra_block_plane(const struct AV1_COMP *cpi, MACROBLOCK *x,
-                                  BLOCK_SIZE bsize, int plane,
-                                  int enable_optimize_b) {
+                                  BLOCK_SIZE bsize, int plane, RUN_TYPE dry_run,
+                                  TRELLIS_OPT_TYPE enable_optimize_b) {
   assert(bsize < BLOCK_SIZES_ALL);
   const MACROBLOCKD *const xd = &x->e_mbd;
   if (plane && !xd->is_chroma_ref) return;
@@ -803,9 +800,8 @@ void av1_encode_intra_block_plane(const struct AV1_COMP *cpi, MACROBLOCK *x,
   const int ss_y = pd->subsampling_y;
   ENTROPY_CONTEXT ta[MAX_MIB_SIZE] = { 0 };
   ENTROPY_CONTEXT tl[MAX_MIB_SIZE] = { 0 };
-  struct encode_b_args arg = {
-    cpi, x, NULL, &(xd->mi[0]->skip), ta, tl, enable_optimize_b
-  };
+  struct encode_b_args arg = { cpi, x,  NULL,    &(xd->mi[0]->skip),
+                               ta,  tl, dry_run, enable_optimize_b };
   const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, ss_x, ss_y);
   if (enable_optimize_b) {
     av1_get_entropy_contexts(plane_bsize, pd, ta, tl);
