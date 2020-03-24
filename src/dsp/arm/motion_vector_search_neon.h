@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef LIBGAV1_SRC_DSP_MOTION_VECTOR_SEARCH_NEON_H_
-#define LIBGAV1_SRC_DSP_MOTION_VECTOR_SEARCH_NEON_H_
+#ifndef LIBGAV1_SRC_DSP_ARM_MOTION_VECTOR_SEARCH_NEON_H_
+#define LIBGAV1_SRC_DSP_ARM_MOTION_VECTOR_SEARCH_NEON_H_
 
 #include "src/dsp/dsp.h"
 #include "src/utils/cpu.h"
@@ -36,4 +36,4 @@ void MotionVectorSearchInit_NEON();
 
 #endif  // LIBGAV1_ENABLE_NEON
 
-#endif  // LIBGAV1_SRC_DSP_MOTION_VECTOR_SEARCH_NEON_H_
+#endif  // LIBGAV1_SRC_DSP_ARM_MOTION_VECTOR_SEARCH_NEON_H_
