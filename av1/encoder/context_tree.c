@@ -223,7 +223,7 @@ void av1_free_pc_tree(ThreadData *td, const int num_planes) {
 void av1_copy_tree_context(PICK_MODE_CONTEXT *dst_ctx,
                            PICK_MODE_CONTEXT *src_ctx) {
   dst_ctx->mic = src_ctx->mic;
-  dst_ctx->mbmi_ext = src_ctx->mbmi_ext;
+  dst_ctx->mbmi_ext_best = src_ctx->mbmi_ext_best;
 
   dst_ctx->num_4x4_blk = src_ctx->num_4x4_blk;
   dst_ctx->skippable = src_ctx->skippable;

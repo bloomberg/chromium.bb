@@ -221,6 +221,22 @@ static INLINE int prune_ref_by_selective_ref_frame(
 
   return 0;
 }
+
+// This function will copy the best reference mode information from
+// MB_MODE_INFO_EXT to MB_MODE_INFO_EXT_FRAME.
+static INLINE void av1_copy_mbmi_ext_to_mbmi_ext_frame(
+    MB_MODE_INFO_EXT_FRAME *mbmi_ext_best,
+    const MB_MODE_INFO_EXT *const mbmi_ext, uint8_t ref_frame_type) {
+  memcpy(mbmi_ext_best->ref_mv_stack, mbmi_ext->ref_mv_stack[ref_frame_type],
+         sizeof(mbmi_ext->ref_mv_stack[USABLE_REF_MV_STACK_SIZE]));
+  memcpy(mbmi_ext_best->weight, mbmi_ext->weight[ref_frame_type],
+         sizeof(mbmi_ext->weight[USABLE_REF_MV_STACK_SIZE]));
+  mbmi_ext_best->mode_context = mbmi_ext->mode_context[ref_frame_type];
+  mbmi_ext_best->ref_mv_count = mbmi_ext->ref_mv_count[ref_frame_type];
+  memcpy(mbmi_ext_best->global_mvs, mbmi_ext->global_mvs,
+         sizeof(mbmi_ext->global_mvs));
+}
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

@@ -28,7 +28,7 @@ struct ThreadData;
 // Structure to hold snapshot of coding context during the mode picking process
 typedef struct {
   MB_MODE_INFO mic;
-  MB_MODE_INFO_EXT mbmi_ext;
+  MB_MODE_INFO_EXT_FRAME mbmi_ext_best;
   uint8_t *color_index_map[2];
   uint8_t *blk_skip;
 

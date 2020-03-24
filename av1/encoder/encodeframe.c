@@ -507,6 +507,21 @@ static AOM_INLINE void reset_tx_size(MACROBLOCK *x, MB_MODE_INFO *mbmi,
   x->force_skip = 0;
 }
 
+// This function will copy the best reference mode information from
+// MB_MODE_INFO_EXT_FRAME to MB_MODE_INFO_EXT.
+static INLINE void copy_mbmi_ext_frame_to_mbmi_ext(
+    MB_MODE_INFO_EXT *mbmi_ext,
+    const MB_MODE_INFO_EXT_FRAME *const mbmi_ext_best, uint8_t ref_frame_type) {
+  memcpy(mbmi_ext->ref_mv_stack[ref_frame_type], mbmi_ext_best->ref_mv_stack,
+         sizeof(mbmi_ext->ref_mv_stack[USABLE_REF_MV_STACK_SIZE]));
+  memcpy(mbmi_ext->weight[ref_frame_type], mbmi_ext_best->weight,
+         sizeof(mbmi_ext->weight[USABLE_REF_MV_STACK_SIZE]));
+  mbmi_ext->mode_context[ref_frame_type] = mbmi_ext_best->mode_context;
+  mbmi_ext->ref_mv_count[ref_frame_type] = mbmi_ext_best->ref_mv_count;
+  memcpy(mbmi_ext->global_mvs, mbmi_ext_best->global_mvs,
+         sizeof(mbmi_ext->global_mvs));
+}
+
 static AOM_INLINE void update_state(const AV1_COMP *const cpi, ThreadData *td,
                                     const PICK_MODE_CONTEXT *const ctx,
                                     int mi_row, int mi_col, BLOCK_SIZE bsize,
@@ -532,7 +547,8 @@ static AOM_INLINE void update_state(const AV1_COMP *const cpi, ThreadData *td,
   assert(mi->sb_type == bsize);
 
   *mi_addr = *mi;
-  *x->mbmi_ext = ctx->mbmi_ext;
+  copy_mbmi_ext_frame_to_mbmi_ext(x->mbmi_ext, &ctx->mbmi_ext_best,
+                                  av1_ref_frame_type(ctx->mic.ref_frame));
 
   memcpy(x->blk_skip, ctx->blk_skip, sizeof(x->blk_skip[0]) * ctx->num_4x4_blk);
 
@@ -685,25 +701,6 @@ static int use_pb_simple_motion_pred_sse(const AV1_COMP *const cpi) {
   // utilizing this data point, and replace '0' by the corresponding speed
   // feature flag.
   return 0 && !frame_is_intra_only(&cpi->common);
-}
-
-// This function will copy the winner reference mode information from block
-// level (x->mbmi_ext) to frame level (cpi->mbmi_ext_frame_base). This frame
-// level buffer (cpi->mbmi_ext_frame_base) will be used during bitstream
-// preparation.
-static INLINE void copy_winner_ref_mode_from_mbmi_ext(MACROBLOCK *const x) {
-  MACROBLOCKD *const xd = &x->e_mbd;
-  MB_MODE_INFO *mbmi = xd->mi[0];
-  uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
-  memcpy(x->mbmi_ext_frame->ref_mv_stack,
-         x->mbmi_ext->ref_mv_stack[ref_frame_type],
-         sizeof(x->mbmi_ext->ref_mv_stack[USABLE_REF_MV_STACK_SIZE]));
-  memcpy(x->mbmi_ext_frame->weight, x->mbmi_ext->weight[ref_frame_type],
-         sizeof(x->mbmi_ext->weight[USABLE_REF_MV_STACK_SIZE]));
-  x->mbmi_ext_frame->mode_context = x->mbmi_ext->mode_context[ref_frame_type];
-  x->mbmi_ext_frame->ref_mv_count = x->mbmi_ext->ref_mv_count[ref_frame_type];
-  memcpy(x->mbmi_ext_frame->global_mvs, x->mbmi_ext->global_mvs,
-         sizeof(x->mbmi_ext->global_mvs));
 }
 
 static void hybrid_intra_mode_search(AV1_COMP *cpi, MACROBLOCK *const x,
@@ -1677,7 +1674,12 @@ static AOM_INLINE void encode_b(const AV1_COMP *const cpi,
     }
   }
   // TODO(Ravi/Remya): Move this copy function to a better logical place
-  copy_winner_ref_mode_from_mbmi_ext(x);
+  // This function will copy the winner reference mode information from block
+  // level (x->mbmi_ext) to frame level (cpi->mbmi_ext_frame_base). This frame
+  // level buffer (cpi->mbmi_ext_frame_base) will be used during bitstream
+  // preparation.
+  av1_copy_mbmi_ext_to_mbmi_ext_frame(x->mbmi_ext_frame, x->mbmi_ext,
+                                      av1_ref_frame_type(xd->mi[0]->ref_frame));
   x->rdmult = origin_mult;
 }
 
