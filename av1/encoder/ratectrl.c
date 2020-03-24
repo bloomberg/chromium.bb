@@ -1621,13 +1621,13 @@ void av1_rc_postencode_update(AV1_COMP *cpi, uint64_t bytes_used) {
         (int)(rc->this_frame_target /
               resize_rate_factor(cpi, cm->width, cm->height));
   if (current_frame->frame_type != KEY_FRAME) {
-    rc->rolling_target_bits = ROUND_POWER_OF_TWO(
+    rc->rolling_target_bits = (int)ROUND_POWER_OF_TWO_64(
         rc->rolling_target_bits * 3 + rc->this_frame_target, 2);
-    rc->rolling_actual_bits = ROUND_POWER_OF_TWO(
+    rc->rolling_actual_bits = (int)ROUND_POWER_OF_TWO_64(
         rc->rolling_actual_bits * 3 + rc->projected_frame_size, 2);
-    rc->long_rolling_target_bits = ROUND_POWER_OF_TWO(
+    rc->long_rolling_target_bits = (int)ROUND_POWER_OF_TWO_64(
         rc->long_rolling_target_bits * 31 + rc->this_frame_target, 5);
-    rc->long_rolling_actual_bits = ROUND_POWER_OF_TWO(
+    rc->long_rolling_actual_bits = (int)ROUND_POWER_OF_TWO_64(
         rc->long_rolling_actual_bits * 31 + rc->projected_frame_size, 5);
   }
 
@@ -1852,20 +1852,22 @@ int av1_calc_pframe_target_size_one_pass_vbr(
     const AV1_COMP *const cpi, FRAME_UPDATE_TYPE frame_update_type) {
   static const int af_ratio = 10;
   const RATE_CONTROL *const rc = &cpi->rc;
-  int target;
+  int64_t target;
 #if USE_ALTREF_FOR_ONE_PASS
   if (frame_update_type == KF_UPDATE || frame_update_type == GF_UPDATE ||
       frame_update_type == ARF_UPDATE) {
-    target = (rc->avg_frame_bandwidth * rc->baseline_gf_interval * af_ratio) /
+    target = ((int64_t)rc->avg_frame_bandwidth * rc->baseline_gf_interval *
+              af_ratio) /
              (rc->baseline_gf_interval + af_ratio - 1);
   } else {
-    target = (rc->avg_frame_bandwidth * rc->baseline_gf_interval) /
+    target = ((int64_t)rc->avg_frame_bandwidth * rc->baseline_gf_interval) /
              (rc->baseline_gf_interval + af_ratio - 1);
   }
+  if (target > INT_MAX) target = INT_MAX;
 #else
   target = rc->avg_frame_bandwidth;
 #endif
-  return av1_rc_clamp_pframe_target_size(cpi, target, frame_update_type);
+  return av1_rc_clamp_pframe_target_size(cpi, (int)target, frame_update_type);
 }
 
 int av1_calc_iframe_target_size_one_pass_vbr(const AV1_COMP *const cpi) {
