@@ -26,13 +26,19 @@ fi
 # standalone, but allow other PATH manipulations to take priority.
 PATH=$PATH:$base_dir
 
+# MINGW will equal 0 if we're running on Windows under MinGW.
+MINGW=$(uname -s | grep MINGW > /dev/null; echo $?)
+
 if [[ $GCLIENT_PY3 == 1 ]]; then
   # Explicitly run on Python 3
   PYTHONDONTWRITEBYTECODE=1 exec vpython3 "$base_dir/gclient.py" "$@"
 elif [[ $GCLIENT_PY3 == 0 ]]; then
   # Explicitly run on Python 2
   PYTHONDONTWRITEBYTECODE=1 exec vpython "$base_dir/gclient.py" "$@"
-else
-  # Run on Python 2 for now, allows default to be flipped.
+elif [[ $MINGW = 0 ]]; then
+  # Run on Python 2 on Windows for now, allows default to be flipped.
   PYTHONDONTWRITEBYTECODE=1 exec vpython "$base_dir/gclient.py" "$@"
+else
+  # Run on Python 3, allows default to be flipped.
+  PYTHONDONTWRITEBYTECODE=1 exec vpython3 "$base_dir/gclient.py" "$@"
 fi
