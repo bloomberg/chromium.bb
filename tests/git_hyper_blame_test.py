@@ -132,8 +132,8 @@ class GitHyperBlameMainTest(GitHyperBlameTestBase):
       retval = self.git_hyper_blame.main(
           ['-i', 'tag_B', 'tag_C', 'some/files/file'], outbuf)
     finally:
-      shutil.rmtree(tempdir)
       os.chdir(curdir)
+      shutil.rmtree(tempdir)
 
     self.assertNotEqual(0, retval)
     self.assertEqual(b'', outbuf.getvalue())
@@ -590,16 +590,29 @@ class GitHyperBlameUnicodeTest(GitHyperBlameTestBase):
 
   # Add a line.
   COMMIT_B = {
-    GitRepo.AUTHOR_NAME: '\u4e2d\u56fd\u4f5c\u8005'.encode('utf-8'),
-    'file': {'data': b'red\ngreen\nblue\n'},
+      # AUTHOR_NAME has .encode('utf-8') for py2 as Windows raises exception
+      # otherwise. Type remains str
+      GitRepo.AUTHOR_NAME:
+      ('\u4e2d\u56fd\u4f5c\u8005'.encode('utf-8')
+       if sys.version_info.major == 2 else '\u4e2d\u56fd\u4f5c\u8005'),
+      'file': {
+          'data': b'red\ngreen\nblue\n'
+      },
   }
 
   # Modify a line with non-UTF-8 author and file text.
   COMMIT_C = {
-    GitRepo.AUTHOR_NAME: 'Lat\u00edn-1 Author'.encode('latin-1'),
-    'file': {'data': 'red\ngre\u00e9n\nblue\n'.encode('latin-1')},
+      GitRepo.AUTHOR_NAME:
+      ('Lat\u00edn-1 Author'.encode('latin-1')
+       if sys.version_info.major == 2 else 'Lat\xedn-1 Author'),
+      'file': {
+          'data': 'red\ngre\u00e9n\nblue\n'.encode('latin-1')
+      },
   }
 
+  @unittest.skipIf(
+      sys.platform.startswith("win") and sys.version_info.major == 2,
+      "Known issue for Windows and py2")
   def testNonASCIIAuthorName(self):
     """Ensures correct tabulation.
 
@@ -607,7 +620,11 @@ class GitHyperBlameUnicodeTest(GitHyperBlameTestBase):
     name.
 
     Regression test for https://crbug.com/808905.
+
+    This test is disabled only for Windows and Python2 as `author` gets escaped
+    differently.
     """
+    # Known issue with Windows and py2, skip test for such env
     expected_output = [
         self.blame_line('A', '1) red', author='ASCII Author'),
         # Expect 8 spaces, to line up with the other name.

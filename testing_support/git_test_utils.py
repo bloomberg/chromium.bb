@@ -9,10 +9,13 @@ import datetime
 import hashlib
 import os
 import shutil
+# Do not use subprocess2 as we won't be able to test encoding failures
 import subprocess
 import sys
 import tempfile
 import unittest
+
+import gclient_utils
 
 
 if sys.version_info.major == 3:
@@ -260,7 +263,7 @@ class GitRepo(object):
   For file content, if 'data' is None, then this commit will `git rm` that file.
   """
   BASE_TEMP_DIR = tempfile.mkdtemp(suffix='base', prefix='git_repo')
-  atexit.register(shutil.rmtree, BASE_TEMP_DIR)
+  atexit.register(gclient_utils.rmtree, BASE_TEMP_DIR)
 
   # Singleton objects to specify specific data in a commit dictionary.
   AUTHOR_NAME = object()
@@ -382,8 +385,13 @@ class GitRepo(object):
     assert self.repo_path is not None
     try:
       with open(os.devnull, 'wb') as devnull:
+        shell = sys.platform == 'win32'
         output = subprocess.check_output(
-          ('git',) + args, cwd=self.repo_path, stderr=devnull, **kwargs)
+            ('git', ) + args,
+            shell=shell,
+            cwd=self.repo_path,
+            stderr=devnull,
+            **kwargs)
         output = output.decode('utf-8')
       return self.COMMAND_OUTPUT(0, output)
     except subprocess.CalledProcessError as e:
@@ -402,7 +410,7 @@ class GitRepo(object):
 
     Causes this GitRepo to be unusable.
     """
-    shutil.rmtree(self.repo_path)
+    gclient_utils.rmtree(self.repo_path)
     self.repo_path = None
 
   def run(self, fn, *args, **kwargs):

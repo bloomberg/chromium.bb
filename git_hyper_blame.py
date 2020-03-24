@@ -258,6 +258,7 @@ def approx_lineno_across_revs(filename, newfilename, revision, newrevision,
 def hyper_blame(outbuf, ignored, filename, revision):
   # Map from commit to parsed blame from that commit.
   blame_from = {}
+  filename = os.path.normpath(filename)
 
   def cache_blame_from(filename, commithash):
     try:
@@ -315,7 +316,8 @@ def hyper_blame(outbuf, ignored, filename, revision):
 
     # If any line has a different filename to the file's current name, turn on
     # filename display for the entire blame output.
-    if line.commit.filename != filename:
+    # Use normpath to make variable consistent across platforms.
+    if os.path.normpath(line.commit.filename) != filename:
       show_filenames = True
 
     new_parsed.append(line)
