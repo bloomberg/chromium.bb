@@ -2368,6 +2368,7 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
 
   # Used for future bvt migration.
   _release_experimental_boards = frozenset([
+      'monroe',  # crbug/1064306
   ])
 
   _release_enable_skylab_hwtest = frozenset([
