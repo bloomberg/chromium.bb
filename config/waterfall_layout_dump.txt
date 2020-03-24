@@ -431,7 +431,9 @@
 
 == vmpi_android_pfq ==
   master-vmpi-android-pfq
+    atlas-vmpi-android-pfq
     eve-arcvm-mesa-virgl-next-vmpi-android-pfq
+    kukui-vmpi-android-pfq
 
 == vmrvc_android_pfq ==
   master-vmrvc-android-pfq
@@ -506,6 +508,7 @@
   atlas-payloads-tryjob
   atlas-release-tryjob
   atlas-unittest-stress
+  atlas-vmpi-android-pfq-tryjob
   auron_paine-factory-auron-6459.B-factorybranch-tryjob
   auron_paine-full-tryjob
   auron_paine-llvm-next-toolchain-tryjob
@@ -1296,6 +1299,7 @@
   kukui-payloads-tryjob
   kukui-release-tryjob
   kukui-unittest-stress
+  kukui-vmpi-android-pfq-tryjob
   kumo-full-tryjob
   kumo-incremental-tryjob
   kumo-llvm-next-toolchain-tryjob
@@ -1573,7 +1577,9 @@
   master-vmmst-android-pfq-tryjob
     betty-arcvm-master-vmmst-android-pfq-tryjob
   master-vmpi-android-pfq-tryjob
+    atlas-vmpi-android-pfq-tryjob
     eve-arcvm-mesa-virgl-next-vmpi-android-pfq-tryjob
+    kukui-vmpi-android-pfq-tryjob
   master-vmrvc-android-pfq-tryjob
     eve-arc-r-vmrvc-android-pfq-tryjob
     hatch-arc-r-vmrvc-android-pfq-tryjob
