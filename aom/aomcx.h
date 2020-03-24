@@ -1284,13 +1284,12 @@ typedef enum {
  *
  */
 typedef enum {
-  AOM_TUNE_PSNR,
-  AOM_TUNE_SSIM,
-  AOM_TUNE_CDEF_DIST,   // Unused
-  AOM_TUNE_DAALA_DIST,  // Unused
-  AOM_TUNE_VMAF_WITH_PREPROCESSING,
-  AOM_TUNE_VMAF_WITHOUT_PREPROCESSING,
-  AOM_TUNE_VMAF_MAX_GAIN
+  AOM_TUNE_PSNR = 0,
+  AOM_TUNE_SSIM = 1,
+  /* NOTE: enums 2 and 3 unused */
+  AOM_TUNE_VMAF_WITH_PREPROCESSING = 4,
+  AOM_TUNE_VMAF_WITHOUT_PREPROCESSING = 5,
+  AOM_TUNE_VMAF_MAX_GAIN = 6
 } aom_tune_metric;
 
 #define AOM_MAX_LAYERS 32   /**< Max number of layers */
