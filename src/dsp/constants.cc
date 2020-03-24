@@ -81,8 +81,6 @@ const uint16_t kSgrScaleParameter[16][2] = {
 
 const uint8_t kCdefPrimaryTaps[2][2] = {{4, 2}, {3, 3}};
 
-const uint8_t kCdefSecondaryTaps[2] = {2, 1};
-
 const int8_t kCdefDirections[8][2][2] = {
     {{-1, 1}, {-2, 2}}, {{0, 1}, {-1, 2}}, {{0, 1}, {0, 2}}, {{0, 1}, {1, 2}},
     {{1, 1}, {2, 2}},   {{1, 0}, {2, 1}},  {{1, 0}, {2, 0}}, {{1, 0}, {2, -1}}};

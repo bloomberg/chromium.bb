@@ -125,6 +125,8 @@ void CdefFilter_C(const void* const source, const ptrdiff_t source_stride,
                   const int secondary_strength, const int damping,
                   const int direction, void* const dest,
                   const ptrdiff_t dest_stride) {
+  static constexpr int kCdefSecondaryTaps[2] = {kCdefSecondaryTap0,
+                                                kCdefSecondaryTap1};
   const int coeff_shift = bitdepth - 8;
   const int plane_width = MultiplyBy4(columns4x4) >> subsampling_x;
   const int plane_height = MultiplyBy4(rows4x4) >> subsampling_y;

@@ -44,6 +44,8 @@ enum {
   // Offset applied to 10bpp and 12bpp predictors to allow storing them in
   // uint16_t. Removed before blending.
   kCompoundOffset = (1 << 14) + (1 << 13),
+  kCdefSecondaryTap0 = 2,
+  kCdefSecondaryTap1 = 1,
 };  // anonymous enum
 
 extern const int8_t kFilterIntraTaps[kNumFilterIntraPredictors][8][8];
@@ -61,8 +63,6 @@ enum SubsamplingType : uint8_t {
 extern const uint16_t kSgrScaleParameter[16][2];
 
 extern const uint8_t kCdefPrimaryTaps[2][2];
-
-extern const uint8_t kCdefSecondaryTaps[2];
 
 extern const int8_t kCdefDirections[8][2][2];
 

@@ -383,8 +383,8 @@ void DoCdef(const uint16_t* src, const ptrdiff_t src_stride, const int height,
       _mm_set1_epi16(kCdefPrimaryTaps[primary_strength & 1][0]);
   const __m128i primary_tap_1 =
       _mm_set1_epi16(kCdefPrimaryTaps[primary_strength & 1][1]);
-  const __m128i secondary_tap_0 = _mm_set1_epi16(kCdefSecondaryTaps[0]);
-  const __m128i secondary_tap_1 = _mm_set1_epi16(kCdefSecondaryTaps[1]);
+  const __m128i secondary_tap_0 = _mm_set1_epi16(kCdefSecondaryTap0);
+  const __m128i secondary_tap_1 = _mm_set1_epi16(kCdefSecondaryTap1);
   const __m128i cdef_large_value =
       _mm_set1_epi16(static_cast<int16_t>(kCdefLargeValue));
   const __m128i cdef_large_value_mask =
