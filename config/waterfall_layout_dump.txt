@@ -231,7 +231,6 @@
 
 == qt_android_pfq ==
   master-qt-android-pfq
-    betty-qt-arc-qt-android-pfq
     eve-arcnext-qt-android-pfq
 
 == release ==
@@ -598,8 +597,6 @@
   betty-qt-arc-full-tryjob
   betty-qt-arc-llvm-next-toolchain-tryjob
   betty-qt-arc-llvm-toolchain-tryjob
-  betty-qt-arc-payloads-tryjob
-  betty-qt-arc-qt-android-pfq-tryjob
   betty-qt-arc-release-tryjob
   betty-qt-arc-unittest-stress
   betty-release-tryjob
@@ -1407,7 +1404,6 @@
     kevin-pi-android-pfq-tryjob
     reef-pi-android-pfq-tryjob
   master-qt-android-pfq-tryjob
-    betty-qt-arc-qt-android-pfq-tryjob
     eve-arcnext-qt-android-pfq-tryjob
   master-release-tryjob
     amd64-generic-cheets-release-tryjob

@@ -1364,9 +1364,7 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   ])
   _qt_no_hwtest_boards = frozenset([])
   _qt_no_hwtest_experimental_boards = frozenset([])
-  _qt_vmtest_boards = frozenset([
-      'betty-qt-arc',
-  ])
+  _qt_vmtest_boards = frozenset([])
 
   # Android PI master.
   pi_master_config = site_config.Add(
@@ -2671,12 +2669,6 @@ def ApplyCustomOverrides(site_config):
           'hw_tests': [],
           'hw_tests_override': [],
           'hw_tests_disabled_bug': 'https://crbug.com/1026430',
-      },
-
-      'betty-qt-arc-release': {
-          'hw_tests': [],
-          'hw_tests_override': [],
-          'hw_tests_disabled_bug': 'https://crbug.com/998427',
       },
 
       'heli-release': {
