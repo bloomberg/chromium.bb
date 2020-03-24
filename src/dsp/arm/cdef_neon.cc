@@ -29,6 +29,7 @@
 #include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
 #include "src/utils/common.h"
+#include "src/utils/constants.h"
 
 namespace libgav1 {
 namespace dsp {
@@ -260,17 +261,8 @@ void CdefDirection_NEON(const void* const source, ptrdiff_t stride,
   *variance = (best_cost - cost[(*direction + 4) & 7]) >> 10;
 }
 
-// TODO(johannkoenig): Dedup these constants.
-// CdefFilter:
-constexpr uint16_t kCdefLargeValue = 0x4000;
-
-constexpr uint8_t kPrimaryTaps[2][2] = {{4, 2}, {3, 3}};
-
-constexpr uint8_t kSecondaryTaps[2] = {2, 1};
-
-constexpr int8_t kCdefDirections[8][2][2] = {
-    {{-1, 1}, {-2, 2}}, {{0, 1}, {-1, 2}}, {{0, 1}, {0, 2}}, {{0, 1}, {1, 2}},
-    {{1, 1}, {2, 2}},   {{1, 0}, {2, 1}},  {{1, 0}, {2, 0}}, {{1, 0}, {2, -1}}};
+// -------------------------------------------------------------------------
+// CdefFilter
 
 // Load 4 vectors based on the given |direction|.
 void LoadDirection(const uint16_t* const src, const ptrdiff_t stride,
@@ -363,10 +355,8 @@ void DoCdef(const uint16_t* src, const ptrdiff_t src_stride, const int height,
         vdupq_n_s16(-std::max(0, damping - FloorLog2(secondary_strength)));
   }
 
-  const int primary_tap_0 = kPrimaryTaps[primary_strength & 1][0];
-  const int primary_tap_1 = kPrimaryTaps[primary_strength & 1][1];
-  const int secondary_tap_0 = kSecondaryTaps[0];
-  const int secondary_tap_1 = kSecondaryTaps[1];
+  const int primary_tap_0 = kCdefPrimaryTaps[primary_strength & 1][0];
+  const int primary_tap_1 = kCdefPrimaryTaps[primary_strength & 1][1];
 
   int y = 0;
   do {
@@ -445,35 +435,35 @@ void DoCdef(const uint16_t* src, const ptrdiff_t src_stride, const int height,
     sum = vmlaq_n_s16(sum,
                       Constrain(secondary_val[0], pixel, secondary_threshold,
                                 secondary_damping_shift),
-                      secondary_tap_0);
+                      kCdefSecondaryTap0);
     sum = vmlaq_n_s16(sum,
                       Constrain(secondary_val[1], pixel, secondary_threshold,
                                 secondary_damping_shift),
-                      secondary_tap_0);
+                      kCdefSecondaryTap0);
     sum = vmlaq_n_s16(sum,
                       Constrain(secondary_val[2], pixel, secondary_threshold,
                                 secondary_damping_shift),
-                      secondary_tap_1);
+                      kCdefSecondaryTap1);
     sum = vmlaq_n_s16(sum,
                       Constrain(secondary_val[3], pixel, secondary_threshold,
                                 secondary_damping_shift),
-                      secondary_tap_1);
+                      kCdefSecondaryTap1);
     sum = vmlaq_n_s16(sum,
                       Constrain(secondary_val[4], pixel, secondary_threshold,
                                 secondary_damping_shift),
-                      secondary_tap_0);
+                      kCdefSecondaryTap0);
     sum = vmlaq_n_s16(sum,
                       Constrain(secondary_val[5], pixel, secondary_threshold,
                                 secondary_damping_shift),
-                      secondary_tap_0);
+                      kCdefSecondaryTap0);
     sum = vmlaq_n_s16(sum,
                       Constrain(secondary_val[6], pixel, secondary_threshold,
                                 secondary_damping_shift),
-                      secondary_tap_1);
+                      kCdefSecondaryTap1);
     sum = vmlaq_n_s16(sum,
                       Constrain(secondary_val[7], pixel, secondary_threshold,
                                 secondary_damping_shift),
-                      secondary_tap_1);
+                      kCdefSecondaryTap1);
 
     // Clip3(pixel + ((8 + sum - (sum < 0)) >> 4), min, max))
     const int16x8_t sum_lt_0 = vshrq_n_s16(sum, 15);
