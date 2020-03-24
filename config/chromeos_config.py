@@ -2658,6 +2658,15 @@ def ApplyCustomOverrides(site_config):
           'vm_tests': [],
           'vm_tests_override': []
       },
+      # Currently betty-arc-r is VM only.
+      'betty-arc-r-release': {
+          'hw_tests': [],
+          'hw_tests_override': [],
+          'hw_tests_disabled_bug': 'https://crbug.com/998427',
+          'vm_tests': [],
+          'vm_tests_override': []
+      },
+
 
       # No hw tests for any betty builders.  See crbug/998427.
       'betty-release': {

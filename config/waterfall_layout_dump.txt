@@ -559,6 +559,12 @@
   beaglebone_servo-release-tryjob
   beaglebone_servo-unittest-stress
   benchmark-afdo-generate-tryjob
+  betty-arc-r-full-tryjob
+  betty-arc-r-llvm-next-toolchain-tryjob
+  betty-arc-r-llvm-toolchain-tryjob
+  betty-arc-r-payloads-tryjob
+  betty-arc-r-release-tryjob
+  betty-arc-r-unittest-stress
   betty-arc64-full-tryjob
   betty-arc64-llvm-next-toolchain-tryjob
   betty-arc64-llvm-toolchain-tryjob
