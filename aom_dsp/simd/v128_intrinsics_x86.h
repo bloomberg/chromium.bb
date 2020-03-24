@@ -45,7 +45,7 @@ SIMD_INLINE v128 v128_load_aligned(const void *p) {
 
 SIMD_INLINE v128 v128_load_unaligned(const void *p) {
 #if defined(__SSSE3__)
-  return (__m128i)_mm_lddqu_si128((__m128i *)p);
+  return _mm_lddqu_si128((__m128i *)p);
 #else
   return _mm_loadu_si128((__m128i *)p);
 #endif

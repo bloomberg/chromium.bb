@@ -143,7 +143,7 @@ SIMD_INLINE void c_v64_store_aligned(void *p, c_v64 a) {
   c_v64_store_unaligned(p, a);
 }
 
-SIMD_INLINE c_v64 c_v64_zero() {
+SIMD_INLINE c_v64 c_v64_zero(void) {
   c_v64 t;
   t.u64 = 0;
   return t;
@@ -601,28 +601,41 @@ SIMD_INLINE int64_t c_v64_hadd_s16(c_v64 a) {
   return a.s16[3] + a.s16[2] + a.s16[1] + a.s16[0];
 }
 
-typedef uint32_t c_sad64_internal;
+typedef struct {
+  uint32_t val;
+  int count;
+} c_sad64_internal;
+
+SIMD_INLINE c_sad64_internal c_v64_sad_u8_init(void) {
+  c_sad64_internal t;
+  t.val = t.count = 0;
+  return t;
+}
 
 /* Implementation dependent return value.  Result must be finalised with
-   v64_sad_u8_sum().
-   The result for more than 32 v64_sad_u8() calls is undefined. */
-SIMD_INLINE c_sad64_internal c_v64_sad_u8_init() { return 0; }
-
+   v64_sad_u8_sum(). The result for more than 32 v64_sad_u8() calls is
+   undefined. */
 SIMD_INLINE c_sad64_internal c_v64_sad_u8(c_sad64_internal s, c_v64 a,
                                           c_v64 b) {
   int c;
   for (c = 0; c < 8; c++)
-    s += a.u8[c] > b.u8[c] ? a.u8[c] - b.u8[c] : b.u8[c] - a.u8[c];
+    s.val += a.u8[c] > b.u8[c] ? a.u8[c] - b.u8[c] : b.u8[c] - a.u8[c];
+  s.count++;
+  if (SIMD_CHECK && s.count > 32) {
+    fprintf(stderr,
+            "Error: sad called 32 times returning an undefined result\n");
+    abort();
+  }
   return s;
 }
 
-SIMD_INLINE uint32_t c_v64_sad_u8_sum(c_sad64_internal s) { return s; }
+SIMD_INLINE uint32_t c_v64_sad_u8_sum(c_sad64_internal s) { return s.val; }
 
 typedef uint32_t c_ssd64_internal;
 
 /* Implementation dependent return value.  Result must be finalised with
  * v64_ssd_u8_sum(). */
-SIMD_INLINE c_ssd64_internal c_v64_ssd_u8_init() { return 0; }
+SIMD_INLINE c_ssd64_internal c_v64_ssd_u8_init(void) { return 0; }
 
 SIMD_INLINE c_ssd64_internal c_v64_ssd_u8(c_ssd64_internal s, c_v64 a,
                                           c_v64 b) {
