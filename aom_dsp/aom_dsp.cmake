@@ -154,10 +154,9 @@ if(CONFIG_AV1_DECODER)
   list(APPEND AOM_DSP_DECODER_SOURCES
               "${AOM_ROOT}/aom_dsp/binary_codes_reader.c"
               "${AOM_ROOT}/aom_dsp/binary_codes_reader.h"
-              "${AOM_ROOT}/aom_dsp/bitreader.h"
-              "${AOM_ROOT}/aom_dsp/daalaboolreader.c"
-              "${AOM_ROOT}/aom_dsp/daalaboolreader.h"
-              "${AOM_ROOT}/aom_dsp/entdec.c" "${AOM_ROOT}/aom_dsp/entdec.h"
+              "${AOM_ROOT}/aom_dsp/bitreader.c"
+              "${AOM_ROOT}/aom_dsp/bitreader.h" "${AOM_ROOT}/aom_dsp/entdec.c"
+              "${AOM_ROOT}/aom_dsp/entdec.h"
               "${AOM_ROOT}/aom_dsp/grain_synthesis.c"
               "${AOM_ROOT}/aom_dsp/grain_synthesis.h")
 endif()
@@ -166,10 +165,9 @@ if(CONFIG_AV1_ENCODER)
   list(APPEND AOM_DSP_ENCODER_SOURCES
               "${AOM_ROOT}/aom_dsp/binary_codes_writer.c"
               "${AOM_ROOT}/aom_dsp/binary_codes_writer.h"
+              "${AOM_ROOT}/aom_dsp/bitwriter.c"
               "${AOM_ROOT}/aom_dsp/bitwriter.h"
               "${AOM_ROOT}/aom_dsp/blk_sse_sum.c"
-              "${AOM_ROOT}/aom_dsp/daalaboolwriter.c"
-              "${AOM_ROOT}/aom_dsp/daalaboolwriter.h"
               "${AOM_ROOT}/aom_dsp/entenc.c"
               "${AOM_ROOT}/aom_dsp/entenc.h"
               "${AOM_ROOT}/aom_dsp/fwd_txfm.c"

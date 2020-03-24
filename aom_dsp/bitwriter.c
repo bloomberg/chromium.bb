@@ -10,22 +10,22 @@
  */
 
 #include <string.h>
-#include "aom_dsp/daalaboolwriter.h"
+#include "aom_dsp/bitwriter.h"
 
-void aom_daala_start_encode(daala_writer *br, uint8_t *source) {
-  br->buffer = source;
-  br->pos = 0;
-  od_ec_enc_init(&br->ec, 62025);
+void aom_start_encode(aom_writer *w, uint8_t *source) {
+  w->buffer = source;
+  w->pos = 0;
+  od_ec_enc_init(&w->ec, 62025);
 }
 
-int aom_daala_stop_encode(daala_writer *br) {
+int aom_stop_encode(aom_writer *w) {
   int nb_bits;
-  uint32_t daala_bytes;
-  unsigned char *daala_data;
-  daala_data = od_ec_enc_done(&br->ec, &daala_bytes);
-  nb_bits = od_ec_enc_tell(&br->ec);
-  memcpy(br->buffer, daala_data, daala_bytes);
-  br->pos = daala_bytes;
-  od_ec_enc_clear(&br->ec);
+  uint32_t bytes;
+  unsigned char *data;
+  data = od_ec_enc_done(&w->ec, &bytes);
+  nb_bits = od_ec_enc_tell(&w->ec);
+  memcpy(w->buffer, data, bytes);
+  w->pos = bytes;
+  od_ec_enc_clear(&w->ec);
   return nb_bits;
 }
