@@ -147,7 +147,7 @@ StatusCode DecoderImpl::EnqueueFrame(const uint8_t* data, size_t size,
   TemporalUnit temporal_unit(data, size, user_private_data,
                              buffer_private_data);
   temporal_units_.Push(std::move(temporal_unit));
-  return IsFrameParallel() ? ParseAndEnqueue() : kStatusOk;
+  return IsFrameParallel() ? ParseAndSchedule() : kStatusOk;
 }
 
 // DequeueFrame() follows the following policy to avoid holding unnecessary
@@ -211,7 +211,7 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
   return kStatusOk;
 }
 
-StatusCode DecoderImpl::ParseAndEnqueue() {
+StatusCode DecoderImpl::ParseAndSchedule() {
   TemporalUnit& temporal_unit = temporal_units_.Back();
   std::unique_ptr<ObuParser> obu(new (std::nothrow) ObuParser(
       temporal_unit.data, temporal_unit.size, &buffer_pool_, &state_));

@@ -143,8 +143,8 @@ class DecoderImpl : public Allocable {
   // Used only in frame parallel mode. EnqueueFrame pushes the last enqueued
   // temporal unit into |temporal_units_| and this function will do the OBU
   // parsing for the last temporal unit that was pushed into the queue and
-  // enqueue the frames for decoding.
-  StatusCode ParseAndEnqueue();
+  // schedule the frames for decoding.
+  StatusCode ParseAndSchedule();
   // Decodes the |encoded_frame| and updates the
   // |encoded_frame->temporal_unit|'s parameters if the decoded frame is a
   // displayable frame. Used only in frame parallel mode.
