@@ -33,6 +33,6 @@ elif [[ $GCLIENT_PY3 == 0 ]]; then
   # Explicitly run on Python 2
   PYTHONDONTWRITEBYTECODE=1 exec vpython "$base_dir/gclient.py" "$@"
 else
-  # Run on Python 3, allows default to be flipped.
-  PYTHONDONTWRITEBYTECODE=1 exec vpython3 "$base_dir/gclient.py" "$@"
+  # Run on Python 2 for now, allows default to be flipped.
+  PYTHONDONTWRITEBYTECODE=1 exec vpython "$base_dir/gclient.py" "$@"
 fi
