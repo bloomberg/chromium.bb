@@ -33,9 +33,11 @@ void UdpSocketReaderPosix::ProcessReadyHandle(SocketHandleRef handle) {
 }
 
 void UdpSocketReaderPosix::OnCreate(UdpSocket* socket) {
-  std::lock_guard<std::mutex> lock(mutex_);
   UdpSocketPosix* read_socket = static_cast<UdpSocketPosix*>(socket);
-  sockets_.push_back(read_socket);
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    sockets_.push_back(read_socket);
+  }
   waiter_->Subscribe(this, std::cref(read_socket->GetHandle()));
 }
 
