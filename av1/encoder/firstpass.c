@@ -337,19 +337,21 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
   TWO_PASS *twopass = &cpi->twopass;
   int recon_y_stride, src_y_stride, recon_uv_stride, uv_mb_height;
 
-  const YV12_BUFFER_CONFIG *const lst_yv12 =
+  const YV12_BUFFER_CONFIG *const last_frame =
       get_ref_frame_yv12_buf(cm, LAST_FRAME);
-  const YV12_BUFFER_CONFIG *gld_yv12 = get_ref_frame_yv12_buf(cm, GOLDEN_FRAME);
-  const YV12_BUFFER_CONFIG *alt_yv12 = NULL;
-  const int alt_offset = 16 - (current_frame->frame_number % 16);
-  if (alt_offset < 16) {
-    const struct lookahead_entry *const alt_buf =
-        av1_lookahead_peek(cpi->lookahead, alt_offset, cpi->compressor_stage);
-    if (alt_buf != NULL) {
-      alt_yv12 = &alt_buf->img;
+  const YV12_BUFFER_CONFIG *golden_frame =
+      get_ref_frame_yv12_buf(cm, GOLDEN_FRAME);
+  const YV12_BUFFER_CONFIG *alt_ref_frame = NULL;
+  const int alt_ref_offset = 16 - (current_frame->frame_number % 16);
+  if (alt_ref_offset < 16) {
+    const struct lookahead_entry *const alt_ref_frame_buffer =
+        av1_lookahead_peek(cpi->lookahead, alt_ref_offset,
+                           cpi->compressor_stage);
+    if (alt_ref_frame_buffer != NULL) {
+      alt_ref_frame = &alt_ref_frame_buffer->img;
     }
   }
-  YV12_BUFFER_CONFIG *const new_yv12 = &cm->cur_frame->buf;
+  YV12_BUFFER_CONFIG *const this_frame = &cm->cur_frame->buf;
   double intra_factor;
   double brightness_factor;
   const int qindex = find_fp_qindex(seq_params->bit_depth);
@@ -361,8 +363,8 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
                   aom_calloc(mi_params->mb_rows * mi_params->mb_cols,
                              sizeof(*raw_motion_err_list)));
   // First pass code requires valid last and new frame buffers.
-  assert(new_yv12 != NULL);
-  assert(frame_is_intra_only(cm) || (lst_yv12 != NULL));
+  assert(this_frame != NULL);
+  assert(frame_is_intra_only(cm) || (last_frame != NULL));
 
   av1_setup_frame_size(cpi);
   aom_clear_system_state();
@@ -384,11 +386,11 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
 
   av1_setup_src_planes(x, cpi->source, 0, 0, num_planes,
                        x->e_mbd.mi[0]->sb_type);
-  av1_setup_dst_planes(xd->plane, seq_params->sb_size, new_yv12, 0, 0, 0,
+  av1_setup_dst_planes(xd->plane, seq_params->sb_size, this_frame, 0, 0, 0,
                        num_planes);
 
   if (!frame_is_intra_only(cm)) {
-    av1_setup_pre_planes(xd, 0, lst_yv12, 0, 0, NULL, num_planes);
+    av1_setup_pre_planes(xd, 0, last_frame, 0, 0, NULL, num_planes);
   }
 
   set_mi_offsets(mi_params, xd, 0, 0);
@@ -411,9 +413,9 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
   // Tiling is ignored in the first pass.
   av1_tile_init(&tile, cm, 0, 0);
   src_y_stride = cpi->source->y_stride;
-  recon_y_stride = new_yv12->y_stride;
-  recon_uv_stride = new_yv12->uv_stride;
-  uv_mb_height = 16 >> (new_yv12->y_height > new_yv12->uv_height);
+  recon_y_stride = this_frame->y_stride;
+  recon_uv_stride = this_frame->uv_stride;
+  uv_mb_height = 16 >> (this_frame->y_height > this_frame->uv_height);
 
   for (mb_row = 0; mb_row < mi_params->mb_rows; ++mb_row) {
     MV best_ref_mv = kZeroMv;
@@ -423,8 +425,8 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
     recon_yoffset = (mb_row * recon_y_stride * 16);
     src_yoffset = (mb_row * src_y_stride * 16);
     recon_uvoffset = (mb_row * recon_uv_stride * uv_mb_height);
-    int alt_yv12_yoffset =
-        (alt_yv12 != NULL) ? mb_row * alt_yv12->y_stride * 16 : -1;
+    int alt_ref_frame_yoffset =
+        (alt_ref_frame != NULL) ? mb_row * alt_ref_frame->y_stride * 16 : -1;
 
     // Set up limit values for motion vectors to prevent them extending
     // outside the UMV borders.
@@ -441,9 +443,9 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
       aom_clear_system_state();
 
       set_mi_offsets(mi_params, xd, mb_row * mb_scale, mb_col * mb_scale);
-      xd->plane[0].dst.buf = new_yv12->y_buffer + recon_yoffset;
-      xd->plane[1].dst.buf = new_yv12->u_buffer + recon_uvoffset;
-      xd->plane[2].dst.buf = new_yv12->v_buffer + recon_uvoffset;
+      xd->plane[0].dst.buf = this_frame->y_buffer + recon_yoffset;
+      xd->plane[1].dst.buf = this_frame->u_buffer + recon_uvoffset;
+      xd->plane[2].dst.buf = this_frame->v_buffer + recon_uvoffset;
       xd->left_available = (mb_col != 0);
       xd->mi[0]->sb_type = bsize;
       xd->mi[0]->ref_frame[0] = INTRA_FRAME;
@@ -530,7 +532,7 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
         FULLPEL_MV mv = kZeroFullMv, tmp_mv = kZeroFullMv;
         struct buf_2d unscaled_last_source_buf_2d;
 
-        xd->plane[0].pre[0].buf = lst_yv12->y_buffer + recon_yoffset;
+        xd->plane[0].pre[0].buf = last_frame->y_buffer + recon_yoffset;
 #if CONFIG_AV1_HIGHBITDEPTH
         if (is_cur_buf_hbd(xd)) {
           motion_error = highbd_get_prediction_error(
@@ -583,9 +585,9 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
 
           // Motion search in 2nd reference frame.
           int gf_motion_error;
-          if ((current_frame->frame_number > 1) && gld_yv12 != NULL) {
+          if ((current_frame->frame_number > 1) && golden_frame != NULL) {
             // Assume 0,0 motion with no mv overhead.
-            xd->plane[0].pre[0].buf = gld_yv12->y_buffer + recon_yoffset;
+            xd->plane[0].pre[0].buf = golden_frame->y_buffer + recon_yoffset;
 #if CONFIG_AV1_HIGHBITDEPTH
             if (is_cur_buf_hbd(xd)) {
               gf_motion_error = highbd_get_prediction_error(
@@ -606,9 +608,9 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
               ++second_ref_count;
 
             // Reset to last frame as reference buffer.
-            xd->plane[0].pre[0].buf = lst_yv12->y_buffer + recon_yoffset;
-            xd->plane[1].pre[0].buf = lst_yv12->u_buffer + recon_uvoffset;
-            xd->plane[2].pre[0].buf = lst_yv12->v_buffer + recon_uvoffset;
+            xd->plane[0].pre[0].buf = last_frame->y_buffer + recon_yoffset;
+            xd->plane[1].pre[0].buf = last_frame->u_buffer + recon_uvoffset;
+            xd->plane[2].pre[0].buf = last_frame->v_buffer + recon_uvoffset;
 
             // In accumulating a score for the 2nd reference frame take the
             // best of the motion predicted score and the intra coded error
@@ -624,9 +626,10 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
           }
 
           // Motion search in 3rd reference frame.
-          if (alt_yv12 != NULL) {
-            xd->plane[0].pre[0].buf = alt_yv12->y_buffer + alt_yv12_yoffset;
-            xd->plane[0].pre[0].stride = alt_yv12->y_stride;
+          if (alt_ref_frame != NULL) {
+            xd->plane[0].pre[0].buf =
+                alt_ref_frame->y_buffer + alt_ref_frame_yoffset;
+            xd->plane[0].pre[0].stride = alt_ref_frame->y_stride;
             int alt_motion_error;
 #if CONFIG_AV1_HIGHBITDEPTH
             if (is_cur_buf_hbd(xd)) {
@@ -649,8 +652,8 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
               ++third_ref_count;
 
             // Reset to last frame as reference buffer.
-            xd->plane[0].pre[0].buf = lst_yv12->y_buffer + recon_yoffset;
-            xd->plane[0].pre[0].stride = lst_yv12->y_stride;
+            xd->plane[0].pre[0].buf = last_frame->y_buffer + recon_yoffset;
+            xd->plane[0].pre[0].stride = last_frame->y_stride;
 
             // In accumulating a score for the 3rd reference frame take the
             // best of the motion predicted score and the intra coded error
@@ -757,7 +760,7 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
       recon_yoffset += 16;
       src_yoffset += 16;
       recon_uvoffset += uv_mb_height;
-      alt_yv12_yoffset += 16;
+      alt_ref_frame_yoffset += 16;
     }
     // Adjust to the next row of MBs.
     x->plane[0].src.buf +=
@@ -870,7 +873,7 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
        (this_frame_stats->pcnt_inter > 0.20) &&
        ((this_frame_stats->intra_error /
          DOUBLE_DIVIDE_CHECK(this_frame_stats->coded_error)) > 2.0))) {
-    if (gld_yv12 != NULL) {
+    if (golden_frame != NULL) {
       assign_frame_buffer_p(
           &cm->ref_frame_map[get_ref_frame_map_idx(cm, GOLDEN_FRAME)],
           cm->ref_frame_map[get_ref_frame_map_idx(cm, LAST_FRAME)]);
@@ -880,7 +883,7 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
     ++twopass->sr_update_lag;
   }
 
-  aom_extend_frame_borders(new_yv12, num_planes);
+  aom_extend_frame_borders(this_frame, num_planes);
 
   // The frame we just compressed now becomes the last frame.
   assign_frame_buffer_p(
@@ -907,7 +910,8 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
     else
       recon_file = fopen(filename, "ab");
 
-    (void)fwrite(lst_yv12->buffer_alloc, lst_yv12->frame_size, 1, recon_file);
+    (void)fwrite(last_frame->buffer_alloc, last_frame->frame_size, 1,
+                 recon_file);
     fclose(recon_file);
   }
 
