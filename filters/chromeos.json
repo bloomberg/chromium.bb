@@ -1034,7 +1034,8 @@
         "-/Types",
         "-/Types%short",
         "-/characterLabelPattern",
-        "-/Variants"
+        "-/Variants",
+        "+/Variants/OXENDICT"
       ]
     },
 // For chromeos, drop all script names except
