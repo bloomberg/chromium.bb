@@ -38,6 +38,7 @@ const char kApplyAnsiblePlaybookMethod[] = "ApplyAnsiblePlaybook";
 const char kUpgradeContainerMethod[] = "UpgradeContainer";
 const char kCancelUpgradeContainerMethod[] = "CancelUpgradeContainer";
 const char kConfigureForArcSideloadMethod[] = "ConfigureForArcSideload";
+const char kStartLxdMethod[] = "StartLxd";
 
 // Methods to be called from chunneld.
 const char kConnectChunnelMethod[] = "ConnectChunnel";
@@ -61,6 +62,7 @@ const char kPendingAppListUpdatesSignal[] = "PendingAppListUpdates";
 const char kApplyAnsiblePlaybookProgressSignal[] =
     "ApplyAnsiblePlaybookProgress";
 const char kUpgradeContainerProgressSignal[] = "UpgradeContainerProgress";
+const char kStartLxdProgressSignal[] = "StartLxdProgress";
 
 }  // namespace cicerone
 }  // namespace vm_tools
