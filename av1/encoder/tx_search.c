@@ -2162,11 +2162,18 @@ static void search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   }
   block_sse *= 16;
 
-  // Used mse based threshold logic to take decision of R-D of optimization of
-  // coeffs. For smaller residuals, coeff optimization would be helpful. For
-  // larger residuals, R-D optimization may not be effective.
+  const int dequant_shift = (is_cur_buf_hbd(xd)) ? xd->bd - 5 : 3;
+  const int qstep = x->plane[plane].dequant_QTX[1] >> dequant_shift;
+
+  // Use mse / qstep^2 based threshold logic to take decision of R-D
+  // optimization of coeffs. For smaller residuals, coeff optimization
+  // would be helpful. For larger residuals, R-D optimization may not be
+  // effective.
   // TODO(any): Experiment with variance and mean based thresholds
-  perform_block_coeff_opt = (block_mse_q8 <= x->coeff_opt_dist_threshold);
+  perform_block_coeff_opt =
+      ((uint64_t)block_mse_q8 <=
+       (uint64_t)x->coeff_opt_dist_threshold * qstep * qstep);
+
   skip_trellis |= !perform_block_coeff_opt;
 
   // Tranform domain distortion is accurate for higher residuals.

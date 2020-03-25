@@ -64,7 +64,7 @@ static unsigned int tx_domain_dist_types[3][MODE_EVAL_TYPES] = { { 0, 2, 0 },
                                                                  { 2, 2, 0 } };
 
 // Threshold values to be used for disabling coeff RD-optimization
-// based on block MSE
+// based on block MSE / qstep^2.
 // TODO(any): Experiment the threshold logic based on variance metric
 // Index 0: Default mode evaluation, Winner mode processing is not applicable
 // (Eg : IntraBc) Index 1: Mode evaluation. Index 2: Winner mode evaluation.
@@ -72,10 +72,10 @@ static unsigned int tx_domain_dist_types[3][MODE_EVAL_TYPES] = { { 0, 2, 0 },
 // feature is ON
 static unsigned int coeff_opt_dist_thresholds[5][MODE_EVAL_TYPES] = {
   { UINT_MAX, UINT_MAX, UINT_MAX },
-  { 442413, 36314, UINT_MAX },
-  { 162754, 36314, UINT_MAX },
-  { 22026, 22026, UINT_MAX },
-  { 22026, 22026, UINT_MAX }
+  { 1728, 142, UINT_MAX },
+  { 864, 142, UINT_MAX },
+  { 432, 86, UINT_MAX },
+  { 216, 86, UINT_MAX }
 };
 
 // Transform size to be used for default, mode and winner mode evaluation
