@@ -4184,8 +4184,106 @@ static AOM_INLINE void evaluate_motion_mode_for_winner_candidates(
   }
 }
 
-// Indicates number of winner simple translation modes to be used
-static unsigned int num_winner_motion_modes[3] = { 0, 10, 3 };
+// Arguments for speed feature pruning of inter mode search
+typedef struct {
+  int *skip_motion_mode;
+  mode_skip_mask_t *mode_skip_mask;
+  InterModeSearchState *search_state;
+  int skip_ref_frame_mask;
+  int reach_first_comp_mode;
+  int mode_thresh_mul_fact;
+  int *intra_mode_idx_ls;
+  int *intra_mode_num;
+  int prune_cpd_using_sr_stats_ready;
+} InterModeSFArgs;
+
+static int skip_inter_mode(AV1_COMP *cpi, MACROBLOCK *x, const BLOCK_SIZE bsize,
+                           int64_t *ref_frame_rd, int midx,
+                           InterModeSFArgs *args) {
+  const SPEED_FEATURES *const sf = &cpi->sf;
+  MACROBLOCKD *const xd = &x->e_mbd;
+  MB_MODE_INFO *const mbmi = xd->mi[0];
+  // Get the actual prediction mode we are trying in this iteration
+  const THR_MODES mode_enum = av1_default_mode_order[midx];
+  const MODE_DEFINITION *mode_def = &av1_mode_defs[mode_enum];
+  const PREDICTION_MODE this_mode = mode_def->mode;
+  const MV_REFERENCE_FRAME *ref_frames = mode_def->ref_frame;
+  const MV_REFERENCE_FRAME ref_frame = ref_frames[0];
+  const MV_REFERENCE_FRAME second_ref_frame = ref_frames[1];
+  const int comp_pred = second_ref_frame > INTRA_FRAME;
+  const int last_single_ref_mode_idx =
+      find_last_single_ref_mode_idx(av1_default_mode_order);
+
+  // After we done with single reference modes, find the 2nd best RD
+  // for a reference frame. Only search compound modes that have a reference
+  // frame at least as good as the 2nd best.
+  if (sf->inter_sf.prune_compound_using_single_ref &&
+      midx == last_single_ref_mode_idx + 1) {
+    find_top_ref(ref_frame_rd);
+    args->prune_cpd_using_sr_stats_ready = 1;
+  }
+
+  // Check if this mode should be skipped because it is incompatible with the
+  // current frame
+  if (inter_mode_compatible_skip(cpi, x, bsize, this_mode, ref_frames))
+    return 1;
+  const int ret = inter_mode_search_order_independent_skip(
+      cpi, x, args->mode_skip_mask, args->search_state,
+      args->skip_ref_frame_mask, this_mode, mode_def->ref_frame);
+  if (ret == 1) return 1;
+  *(args->skip_motion_mode) = (ret == 2);
+
+  // We've reached the first compound prediction mode, get stats from the
+  // single reference predictors to help with pruning
+  if (sf->inter_sf.prune_comp_search_by_single_result > 0 && comp_pred &&
+      args->reach_first_comp_mode == 0) {
+    analyze_single_states(cpi, args->search_state);
+    args->reach_first_comp_mode = 1;
+  }
+
+  // Prune aggressively when best mode is skippable.
+  int mul_fact = args->search_state->best_mode_skippable
+                     ? args->mode_thresh_mul_fact
+                     : (1 << MODE_THRESH_QBITS);
+  int64_t mode_threshold =
+      (args->search_state->mode_threshold[mode_enum] * mul_fact) >>
+      MODE_THRESH_QBITS;
+
+  if (args->search_state->best_rd < mode_threshold) return 1;
+
+  // Skip this compound mode based on the RD results from the single prediction
+  // modes
+  if (sf->inter_sf.prune_comp_search_by_single_result > 0 && comp_pred) {
+    if (compound_skip_by_single_states(cpi, args->search_state, this_mode,
+                                       ref_frame, second_ref_frame, x))
+      return 1;
+  }
+
+  // Speed features to prune out INTRA frames
+  if (ref_frame == INTRA_FRAME) {
+    if ((!cpi->oxcf.enable_smooth_intra || sf->intra_sf.disable_smooth_intra) &&
+        (mbmi->mode == SMOOTH_PRED || mbmi->mode == SMOOTH_H_PRED ||
+         mbmi->mode == SMOOTH_V_PRED))
+      return 1;
+    if (!cpi->oxcf.enable_paeth_intra && mbmi->mode == PAETH_PRED) return 1;
+    if (sf->inter_sf.adaptive_mode_search > 1)
+      if ((x->source_variance << num_pels_log2_lookup[bsize]) >
+          args->search_state->best_pred_sse)
+        return 1;
+
+    // Intra modes will be handled in another loop later.
+    assert(*args->intra_mode_num < INTRA_MODES);
+    args->intra_mode_idx_ls[(*args->intra_mode_num)++] = mode_enum;
+    return 1;
+  }
+
+  if (sf->inter_sf.prune_compound_using_single_ref &&
+      args->prune_cpd_using_sr_stats_ready && comp_pred &&
+      !in_single_ref_cutoff(ref_frame_rd, ref_frame, second_ref_frame)) {
+    return 1;
+  }
+  return 0;
+}
 
 static void record_best_compound(REFERENCE_MODE reference_mode,
                                  RD_STATS *rd_stats, int comp_pred, int rdmult,
@@ -4220,6 +4318,9 @@ static void record_best_compound(REFERENCE_MODE reference_mode,
     search_state->intra_search_state.best_pred_rd[REFERENCE_MODE_SELECT] =
         hybrid_rd;
 }
+
+// Indicates number of winner simple translation modes to be used
+static const unsigned int num_winner_motion_modes[3] = { 0, 10, 3 };
 
 void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                                MACROBLOCK *x, RD_STATS *rd_cost,
@@ -4317,7 +4418,6 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
   int intra_mode_num = 0;
   int intra_mode_idx_ls[INTRA_MODES];
-  int reach_first_comp_mode = 0;
 
   // Temporary buffers used by handle_inter_mode().
   uint8_t *const tmp_buf = get_buf_by_bd(xd, x->tmp_obmc_bufs[0]);
@@ -4389,10 +4489,6 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     }
   }
 
-  const int last_single_ref_mode_idx =
-      find_last_single_ref_mode_idx(av1_default_mode_order);
-  int prune_cpd_using_sr_stats_ready = 0;
-
   // Initialize best mode stats for winner mode processing
   av1_zero(x->winner_mode_stats);
   x->winner_mode_count = 0;
@@ -4406,6 +4502,17 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     // Higher multiplication factor values for lower quantizers.
     mode_thresh_mul_fact = mode_threshold_mul_factor[x->qindex];
   }
+
+  // Initialize arguments for mode loop speed features
+  InterModeSFArgs sf_args = { &args.skip_motion_mode,
+                              &mode_skip_mask,
+                              &search_state,
+                              skip_ref_frame_mask,
+                              0,
+                              mode_thresh_mul_fact,
+                              intra_mode_idx_ls,
+                              &intra_mode_num,
+                              0 };
 
   // Here midx is just an iterator index that should not be used by itself
   // except to keep track of the number of modes searched. It should be used
@@ -4425,80 +4532,13 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
         ref_frame > INTRA_FRAME && second_ref_frame == NONE_FRAME;
     const int comp_pred = second_ref_frame > INTRA_FRAME;
 
-    // After we done with single reference modes, find the 2nd best RD
-    // for a reference frame. Only search compound modes that have a reference
-    // frame at least as good as the 2nd best.
-    if (sf->inter_sf.prune_compound_using_single_ref &&
-        midx == last_single_ref_mode_idx + 1) {
-      find_top_ref(ref_frame_rd);
-      prune_cpd_using_sr_stats_ready = 1;
-    }
-
-    if (inter_mode_compatible_skip(cpi, x, bsize, this_mode, ref_frames))
-      continue;
-    const int ret = inter_mode_search_order_independent_skip(
-        cpi, x, &mode_skip_mask, &search_state, skip_ref_frame_mask, this_mode,
-        mode_def->ref_frame);
-    if (ret == 1) continue;
-    args.skip_motion_mode = (ret == 2);
-
-    if (sf->inter_sf.prune_compound_using_single_ref &&
-        prune_cpd_using_sr_stats_ready && comp_pred &&
-        !in_single_ref_cutoff(ref_frame_rd, ref_frame, second_ref_frame)) {
-      continue;
-    }
-
-    // Reach the first compound prediction mode
-    if (sf->inter_sf.prune_comp_search_by_single_result > 0 && comp_pred &&
-        reach_first_comp_mode == 0) {
-      analyze_single_states(cpi, &search_state);
-      reach_first_comp_mode = 1;
-    }
-
     init_mbmi(mbmi, this_mode, ref_frames, cm);
 
     x->force_skip = 0;
     set_ref_ptrs(cm, xd, ref_frame, second_ref_frame);
 
-    // Prune aggressively when best mode is skippable.
-    int mul_fact = search_state.best_mode_skippable ? mode_thresh_mul_fact
-                                                    : (1 << MODE_THRESH_QBITS);
-    int64_t mode_threshold =
-        (search_state.mode_threshold[mode_enum] * mul_fact) >>
-        MODE_THRESH_QBITS;
-
-    if (search_state.best_rd < mode_threshold) continue;
-
-    if (sf->inter_sf.prune_comp_search_by_single_result > 0 && comp_pred) {
-      if (compound_skip_by_single_states(cpi, &search_state, this_mode,
-                                         ref_frame, second_ref_frame, x))
-        continue;
-    }
-
-    const int compmode_cost =
-        is_comp_ref_allowed(mbmi->sb_type) ? comp_inter_cost[comp_pred] : 0;
-    const int real_compmode_cost =
-        cm->current_frame.reference_mode == REFERENCE_MODE_SELECT
-            ? compmode_cost
-            : 0;
-
-    if (ref_frame == INTRA_FRAME) {
-      if ((!cpi->oxcf.enable_smooth_intra ||
-           sf->intra_sf.disable_smooth_intra) &&
-          (mbmi->mode == SMOOTH_PRED || mbmi->mode == SMOOTH_H_PRED ||
-           mbmi->mode == SMOOTH_V_PRED))
-        continue;
-      if (!cpi->oxcf.enable_paeth_intra && mbmi->mode == PAETH_PRED) continue;
-      if (sf->inter_sf.adaptive_mode_search > 1)
-        if ((x->source_variance << num_pels_log2_lookup[bsize]) >
-            search_state.best_pred_sse)
-          continue;
-
-      // Intra modes will be handled in another loop later.
-      assert(intra_mode_num < INTRA_MODES);
-      intra_mode_idx_ls[intra_mode_num++] = mode_enum;
-      continue;
-    }
+    // Apply speed features to decide if this inter mode can be skipped
+    if (skip_inter_mode(cpi, x, bsize, ref_frame_rd, midx, &sf_args)) continue;
 
     // Select prediction reference frames.
     for (i = 0; i < num_planes; i++) {
@@ -4519,6 +4559,12 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     const int ref_frame_cost = comp_pred
                                    ? ref_costs_comp[ref_frame][second_ref_frame]
                                    : ref_costs_single[ref_frame];
+    const int compmode_cost =
+        is_comp_ref_allowed(mbmi->sb_type) ? comp_inter_cost[comp_pred] : 0;
+    const int real_compmode_cost =
+        cm->current_frame.reference_mode == REFERENCE_MODE_SELECT
+            ? compmode_cost
+            : 0;
     // Point to variables that are maintained between loop iterations
     args.single_newmv = search_state.single_newmv;
     args.single_newmv_rate = search_state.single_newmv_rate;
