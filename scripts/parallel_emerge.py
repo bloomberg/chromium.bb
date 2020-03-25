@@ -21,6 +21,7 @@ import os
 import sys
 
 from chromite.lib import commandline
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 
 
@@ -150,6 +151,9 @@ def main(argv):
     emerge_args.append('--root-deps')
 
   emerge_args.append('--jobs=%s' % parsed_args['jobs'])
+
   emerge_args.append('--rebuild-exclude=chromeos-base/chromeos-chrome')
+  for pkg in constants.OTHER_CHROME_PACKAGES:
+    emerge_args.append('--rebuild-exclude=%s' % pkg)
 
   os.execvp('emerge', ['emerge'] + emerge_args)
