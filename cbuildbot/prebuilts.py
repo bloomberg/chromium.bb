@@ -178,12 +178,9 @@ def UploadPrebuilts(category, private_bucket, buildroot, version=None,
       for entry in toolchain_paths:
         extra_args.extend(['--toolchain-tarball', '%s:%s' % entry])
 
-  if category == constants.POSTSUBMIT_TYPE:
-    extra_args.extend(['--key', _POSTSUBMIT_BINHOST])
-  else:
-    assert category in (constants.FULL_TYPE,
-                        constants.CHROOT_BUILDER_TYPE)
-    extra_args.extend(['--key', _FULL_BINHOST])
+  assert category in (constants.FULL_TYPE,
+                      constants.CHROOT_BUILDER_TYPE)
+  extra_args.extend(['--key', _FULL_BINHOST])
 
   kwargs.setdefault('extra_args', []).extend(extra_args)
   return _UploadPrebuilts(buildroot=buildroot, **kwargs)

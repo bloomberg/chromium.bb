@@ -31,19 +31,6 @@ class PrebuiltTest(cros_test_lib.RunCommandTempDirTestCase):
     self._chroot = os.path.join(self._buildroot, 'chroot')
     os.makedirs(os.path.join(self._buildroot, '.repo'))
 
-  def testUploadPrebuilts(self,
-                          builder_type=constants.POSTSUBMIT_TYPE,
-                          private=False,
-                          version=None):
-    """Test UploadPrebuilts with a public location."""
-    prebuilts.UploadPrebuilts(builder_type, private, buildroot=self._buildroot,
-                              board=self._board, version=version)
-    self.assertCommandContains([builder_type, 'gs://chromeos-prebuilt'])
-
-  def testUploadPrivatePrebuilts(self):
-    """Test UploadPrebuilts with a private location."""
-    self.testUploadPrebuilts(private=True)
-
   def testSdkPrebuilts(self):
     """Test UploadPrebuilts for SDK builds."""
     # A magical date for a magical time.
@@ -81,8 +68,12 @@ class PrebuiltTest(cros_test_lib.RunCommandTempDirTestCase):
       tarball_arg = '%s:%s' % (tarball_base, tarball_path)
       toolchain_tarball_args.append(['--toolchain-tarball', tarball_arg])
 
-    self.testUploadPrebuilts(builder_type=constants.CHROOT_BUILDER_TYPE,
-                             version=version)
+    prebuilts.UploadPrebuilts(constants.CHROOT_BUILDER_TYPE, False,
+                              buildroot=self._buildroot, board=self._board,
+                              version=version)
+    self.assertCommandContains(
+        [constants.CHROOT_BUILDER_TYPE, 'gs://chromeos-prebuilt'])
+
     self.assertCommandContains([
         '--toolchains-overlay-upload-path',
         '1994/04/cros-sdk-overlay-toolchains-%%(toolchains)s-'

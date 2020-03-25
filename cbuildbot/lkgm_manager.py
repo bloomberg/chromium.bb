@@ -105,7 +105,6 @@ class LKGMManager(manifest_version.BuildSpecsManager):
   TOOLCHAIN_SUBDIR = 'toolchain'
   FULL_SUBDIR = 'full'
   INCREMENTAL_SUBDIR = 'incremental'
-  POSTSUBMIT_SUBDIR = 'postsubmit'
 
   def __init__(self, source_repo, manifest_repo, build_names, build_type,
                incr_type, force, branch, manifest=constants.DEFAULT_MANIFEST,
@@ -154,8 +153,6 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       self.rel_working_dir = self.FULL_SUBDIR
     elif self.build_type == constants.INCREMENTAL_TYPE:
       self.rel_working_dir = self.INCREMENTAL_SUBDIR
-    elif self.build_type == constants.POSTSUBMIT_TYPE:
-      self.rel_working_dir = self.POSTSUBMIT_SUBDIR
     else:
       assert config_lib.IsPFQType(self.build_type)
       self.rel_working_dir = self.LKGM_SUBDIR

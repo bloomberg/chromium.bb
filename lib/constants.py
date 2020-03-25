@@ -571,10 +571,6 @@ TOOLCHAIN_TYPE = 'toolchain'
 # Generic type of tryjob only build configs.
 TRYJOB_TYPE = 'tryjob'
 
-# Builds that run repeatedly to verify TOT state, and generate secondary
-# artifacts (like prebuilts).
-POSTSUBMIT_TYPE = 'postsubmit'
-
 # Special build type for Chroot builders.  These builds focus on building
 # toolchains and validate that they work.
 CHROOT_BUILDER_TYPE = 'chroot'
@@ -595,7 +591,6 @@ VALID_BUILD_TYPES = (
     TOOLCHAIN_TYPE,
     TRYJOB_TYPE,
     GENERIC_TYPE,
-    POSTSUBMIT_TYPE,
 )
 
 # Define pool of machines for Hardware tests.

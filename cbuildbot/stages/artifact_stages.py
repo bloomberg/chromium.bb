@@ -669,7 +669,6 @@ class UploadPrebuiltsStage(generic_stages.BoardSpecificBuilderStage):
     """Uploads prebuilts for master and slave builders."""
     prebuilt_type = self._prebuilt_type
     board = self._current_board
-    binhosts = []
 
     # Whether we publish public or private prebuilts.
     public = self._run.config.prebuilts == constants.PUBLIC
@@ -679,32 +678,6 @@ class UploadPrebuiltsStage(generic_stages.BoardSpecificBuilderStage):
     public_args, private_args = [], []
     # Public / private builders.
     public_builders, private_builders = [], []
-
-    # Distributed builders that use manifest-versions to sync with one another
-    # share prebuilt logic by passing around versions.
-    if config_lib.IsBinhostType(prebuilt_type):
-
-      # Deduplicate against previous binhosts.
-      binhosts.extend(self._GetPortageEnvVar(_PORTAGE_BINHOST, board).split())
-      binhosts.extend(self._GetPortageEnvVar(_PORTAGE_BINHOST, None).split())
-      for binhost in (x for x in binhosts if x):
-        generated_args.extend(['--previous-binhost-url', binhost])
-
-      if self._run.config.master and board == self._boards[-1]:
-        # The master builder updates all the binhost conf files, and needs to do
-        # so only once so as to ensure it doesn't try to update the same file
-        # more than once. As multiple boards can be built on the same builder,
-        # we arbitrarily decided to update the binhost conf files when we run
-        # upload_prebuilts for the last board. The other boards are treated as
-        # slave boards.
-        generated_args.append('--sync-binhost-conf')
-        for c in self._GetSlaveConfigs():
-          if c['prebuilts'] == constants.PUBLIC:
-            public_builders.append(c['name'])
-            public_args.extend(self._AddOptionsForSlave(c, board))
-          elif c['prebuilts'] == constants.PRIVATE:
-            private_builders.append(c['name'])
-            private_args.extend(self._AddOptionsForSlave(c, board))
 
     common_kwargs = {
         'buildroot': self._build_root,

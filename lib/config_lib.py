@@ -168,11 +168,6 @@ def IsPFQType(b_type):
   return b_type in (constants.PFQ_TYPE, constants.ANDROID_PFQ_TYPE)
 
 
-def IsBinhostType(b_type):
-  """Returns True if this build type is a BINHOST.conf provider"""
-  return b_type == constants.POSTSUBMIT_TYPE
-
-
 def IsCanaryType(b_type):
   """Returns True if this build type is a Canary."""
   return b_type == constants.CANARY_TYPE
