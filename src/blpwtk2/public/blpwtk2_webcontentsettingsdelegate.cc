@@ -24,6 +24,7 @@
 
 namespace blpwtk2 {
 
+WebContentSettingsDelegate::WebContentSettingsDelegate() = default;
 WebContentSettingsDelegate::~WebContentSettingsDelegate()
 {
 }

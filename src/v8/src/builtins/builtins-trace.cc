@@ -80,7 +80,9 @@ class JsonTraceValue : public ConvertableToTraceFormat {
     data_ = *data;
   }
 
-  void AppendAsTraceFormat(std::string* out) const override { *out += data_; }
+  void AppendAsTraceFormat(void* v) const override { 
+    std::string* out = (std::string *)v;
+    *out += data_; }
 
  private:
   std::string data_;

@@ -125,8 +125,12 @@ class ConvertableToTraceFormat {
    * data must be a valid JSON object. Strings must be properly quoted, and
    * escaped. There is no processing applied to the content after it is
    * appended.
+   * 
+   * out should be a std::string* but cast and passed in as void* to avoid
+   * naming conflit between blpwtk2 and embedder when they are build with different
+   * version/source of c++ library.
    */
-  virtual void AppendAsTraceFormat(std::string* out) const = 0;
+  virtual void AppendAsTraceFormat(void* out) const = 0;
 };
 
 /**
@@ -141,7 +145,7 @@ class ConvertableToTraceFormatShim : public ConvertableToTraceFormat {
    */
   virtual const char* GetToBeAppendedTraceFormat() const = 0;
 
-  V8_EXPORT void AppendAsTraceFormat(std::string* out) const final;
+  V8_EXPORT void AppendAsTraceFormat(void* out) const final;
 };
 
 /**

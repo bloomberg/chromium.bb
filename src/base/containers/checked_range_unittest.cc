@@ -51,7 +51,7 @@ TEST(CheckedContiguousRange, Constructor_StringPiece) {
 TEST(CheckedContiguousRange, Constructor_InitializerList) {
   static constexpr std::initializer_list<int> il = {1, 2, 3, 4, 5};
   constexpr CheckedContiguousRange<const std::initializer_list<int>> range(il);
-  static_assert(base::data(il) == range.data(), "");
+  static_assert(data(il) == range.data(), "");
   static_assert(size(il) == range.size(), "");
 }
 

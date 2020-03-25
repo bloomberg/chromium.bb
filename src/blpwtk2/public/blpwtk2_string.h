@@ -39,12 +39,12 @@ class BLPWTK2_EXPORT String {
     static size_t length(Impl);
 
   public:
-    String() : d_impl(0) { }
-    String(const String& orig) : d_impl(orig.d_impl ? make(orig.d_impl) : 0) {}
-    explicit String(const char* str) : d_impl(make(str, strlen(str))) {}
-    String(const char* str, size_t length) : d_impl(make(str, length)) {}
-    String(const wchar_t* str, size_t length) : d_impl(make(str, length)) {}
-    explicit String(const StringRef& str) : d_impl(make(str.data(), str.length())) {}
+    String();
+    String(const String& orig);
+    explicit String(const char* str);
+    String(const char* str, size_t length);
+    String(const wchar_t* str, size_t length);
+    explicit String(const StringRef& str);
     explicit String(const std::string& str) : d_impl(make(str.data(), str.length())) {}
     explicit String(const std::wstring& str) : d_impl(make(str.data(), str.length())) {}
     ~String();
@@ -79,11 +79,11 @@ class BLPWTK2_EXPORT String {
         d_impl = impl;
     }
 
-    const char* data() const { return d_impl; }
+    const char* data() const;
     const char* c_str() const;
-    size_t length() const { return d_impl ? length(d_impl) : 0; }
+    size_t length() const;
     size_t size() const { return length(); }
-    int isEmpty() const { return !d_impl; }
+    int isEmpty() const;
     bool equals(const StringRef& other) const
     {
         return 0 == StringRef::compare(*this, other);

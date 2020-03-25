@@ -45,6 +45,8 @@ class MediaRequest;
 // All methods on the delegate are invoked in the application's main thread.
 class BLPWTK2_EXPORT WebViewDelegate {
   public:
+    WebViewDelegate();
+
     virtual ~WebViewDelegate();
 
     virtual void created(WebView *source) = 0;
