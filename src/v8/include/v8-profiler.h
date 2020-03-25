@@ -487,6 +487,7 @@ class V8_EXPORT OutputStream {  // NOLINT
     kContinue = 0,
     kAbort = 1
   };
+  OutputStream();
   virtual ~OutputStream();
   /** Notify about the end of stream. */
   virtual void EndOfStream() = 0;

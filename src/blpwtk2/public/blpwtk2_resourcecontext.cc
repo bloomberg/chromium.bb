@@ -24,6 +24,7 @@
 
 namespace blpwtk2 {
 
+HTTPHeaderVisitor::HTTPHeaderVisitor() = default;
 HTTPHeaderVisitor::~HTTPHeaderVisitor()
 {
 }
@@ -32,9 +33,13 @@ HTTPBodyVisitor::~HTTPBodyVisitor()
 {
 }
 
+HTTPBodyVisitor::HTTPBodyVisitor() = default;
+
 URLRequest::~URLRequest()
 {
 }
+
+ResourceContext::ResourceContext() = default;
 
 ResourceContext::~ResourceContext()
 {

@@ -33,6 +33,8 @@ class Blob::Impl {
     virtual size_t size() const = 0;
 };
 
+Blob::Blob() : d_impl(0) {}
+
 Blob::~Blob()
 {
     if (d_impl)

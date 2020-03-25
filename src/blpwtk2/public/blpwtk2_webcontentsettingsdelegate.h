@@ -36,6 +36,7 @@ namespace blpwtk2 {
 
 class BLPWTK2_EXPORT WebContentSettingsDelegate {
   public:
+    WebContentSettingsDelegate();
     virtual ~WebContentSettingsDelegate();
 
     // Controls whether insecure content is allowed to display for this frame.

@@ -18,8 +18,8 @@ int main(int argc, char** argv) {
   mojo::core::Init();
   v8::V8::InitializeICUDefaultLocation(argv[0]);
   v8::V8::InitializeExternalStartupData(argv[0]);
-  auto platform = v8::platform::NewDefaultPlatform();
-  v8::V8::InitializePlatform(platform.get());
+  v8::Platform *platform = v8::platform::NewDefaultPlatform();
+  v8::V8::InitializePlatform(platform);
   v8::V8::Initialize();
 
   return base::LaunchUnitTests(

@@ -47,6 +47,8 @@ class BLPWTK2_EXPORT ToolkitDelegate {
 
 
 
+    ToolkitDelegate();
+
     // patch section: devtools integration
 
 
