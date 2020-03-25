@@ -518,13 +518,14 @@ static inline bool IsExecutionTerminatingCheck(i::Isolate* isolate) {
 }
 namespace platform {
 
-std::unique_ptr<v8::Platform> NewDefaultPlatform(
+v8::Platform* NewDefaultPlatform(
     int thread_pool_size, IdleTaskSupport idle_task_support,
     InProcessStackDumping in_process_stack_dumping,
-    std::unique_ptr<v8::TracingController> tracing_controller) {
+    v8::TracingController* tracing_controller) {
+    std::unique_ptr<v8::TracingController> controller(tracing_controller);
   return NewDefaultPlatformImpl(thread_pool_size, idle_task_support,
                                 in_process_stack_dumping,
-                                std::move(tracing_controller));
+                                std::move(controller)).release();
 }
 
 bool PumpMessageLoop(v8::Platform* platform, v8::Isolate* isolate,
@@ -10544,6 +10545,7 @@ OutputStream::WriteResult OutputStream::WriteHeapStatsChunk(HeapStatsUpdate* dat
     return kAbort;
 }
 
+OutputStream::OutputStream() = default;
 OutputStream::~OutputStream() = default;
 
 int OutputStream::GetChunkSize() {
@@ -10814,7 +10816,8 @@ void EmbedderHeapTracer::ResetHandleInNonTracingGC(
   UNREACHABLE();
 }
 
-void ConvertableToTraceFormatShim::AppendAsTraceFormat(std::string* out) const {
+void ConvertableToTraceFormatShim::AppendAsTraceFormat(void* v) const {
+  std::string* out = (std::string *)v;
   out->append(GetToBeAppendedTraceFormat());
 }
 

@@ -33,7 +33,7 @@ class StringRef;
 
 class BLPWTK2_EXPORT HTTPHeaderVisitor {
   public:
-
+    HTTPHeaderVisitor();
     virtual void visitHeader(const StringRef& name, const StringRef& value) = 0;
 
   protected:
@@ -43,7 +43,7 @@ class BLPWTK2_EXPORT HTTPHeaderVisitor {
 
 class BLPWTK2_EXPORT HTTPBodyVisitor {
   public:
-
+    HTTPBodyVisitor();
     virtual void visitBodyElement(const Blob& element) = 0;
 
   protected:
@@ -100,6 +100,8 @@ class BLPWTK2_EXPORT URLRequest {
 // thread.
 class BLPWTK2_EXPORT ResourceContext {
   public:
+    ResourceContext();
+
     virtual const URLRequest* request() = 0;
 
     // Replace the current status line with the provided one (the specified

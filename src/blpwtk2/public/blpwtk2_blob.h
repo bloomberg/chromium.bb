@@ -40,7 +40,7 @@ class BLPWTK2_EXPORT Blob {
   public:
     class Impl;
 
-    Blob() : d_impl(0) {}
+    Blob();
     ~Blob();
 
     void copyTo(void *dest) const;

@@ -111,7 +111,7 @@ void TracedValue::SetValue(const char* name, TracedValue* value) {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeDict);
   WriteName(name);
   std::string tmp;
-  value->AppendAsTraceFormat(&tmp);
+  value->AppendAsTraceFormat((void*)&tmp);
   data_ += tmp;
 }
 
@@ -201,7 +201,8 @@ void TracedValue::WriteName(const char* name) {
   data_ += "\":";
 }
 
-void TracedValue::AppendAsTraceFormat(std::string* out) const {
+void TracedValue::AppendAsTraceFormat(void* v) const {
+  std::string* out = (std::string *)v;
   *out += '{';
   *out += data_;
   *out += '}';

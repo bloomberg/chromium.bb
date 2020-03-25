@@ -25,6 +25,7 @@
 
 namespace blpwtk2 {
 
+WebViewDelegate::WebViewDelegate() = default;
 WebViewDelegate::~WebViewDelegate() {}
 
 void WebViewDelegate::didFinishLoad(WebView* source, const StringRef& url) {}

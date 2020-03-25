@@ -36,12 +36,12 @@ enum class MessageLoopBehavior : bool {
  * If |tracing_controller| is nullptr, the default platform will create a
  * v8::platform::TracingController instance and use it.
  */
-BLPV8_PLATFORM_EXPORT std::unique_ptr<v8::Platform> NewDefaultPlatform(
+BLPV8_PLATFORM_EXPORT v8::Platform* NewDefaultPlatform(
     int thread_pool_size = 0,
     IdleTaskSupport idle_task_support = IdleTaskSupport::kDisabled,
     InProcessStackDumping in_process_stack_dumping =
         InProcessStackDumping::kDisabled,
-    std::unique_ptr<v8::TracingController> tracing_controller = {});
+    v8::TracingController* tracing_controller = nullptr);
 
 /**
  * Pumps the message loop for the given isolate.

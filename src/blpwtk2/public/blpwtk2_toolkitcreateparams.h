@@ -52,6 +52,8 @@ class BLPWTK2_EXPORT ToolkitDelegate {
 
 
 
+    ToolkitDelegate();
+
     // patch section: devtools integration
     virtual void onDebugBreak() = 0;
     virtual void onDebugResume() = 0;

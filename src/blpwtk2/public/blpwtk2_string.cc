@@ -27,6 +27,14 @@
 #include <third_party/blink/public/platform/web_string.h>
 
 namespace blpwtk2 {
+
+String::String() : d_impl(0) { }
+String::String(const String& orig) : d_impl(orig.d_impl ? make(orig.d_impl) : 0) {}
+String::String(const char* str) : d_impl(make(str, strlen(str))) {}
+String::String(const char* str, size_t length) : d_impl(make(str, length)) {}
+String::String(const wchar_t* str, size_t length) : d_impl(make(str, length)) {}
+String::String(const StringRef& str) : d_impl(make(str.data(), str.length())) {}
+
 String::~String()
 {
     if (d_impl) unmake(d_impl);
@@ -87,9 +95,23 @@ size_t String::length(Impl impl)
     return *(reinterpret_cast<size_t*>(impl) - 1);
 }
 
+const char* String::data() const
+{
+    return d_impl;
+}
 const char* String::c_str() const
 {
     return d_impl ? d_impl : "";
+}
+
+size_t String::length() const
+{
+    return d_impl ? length(d_impl) : 0;
+}
+
+int String::isEmpty() const
+{
+    return !d_impl;
 }
 
 String fromWebString(const blink::WebString& other)

@@ -34,6 +34,8 @@
 
 namespace blpwtk2 {
 
+ToolkitDelegate::ToolkitDelegate() = default;
+
                         // ==============================
                         // struct ToolkitCreateParamsImpl
                         // ==============================
