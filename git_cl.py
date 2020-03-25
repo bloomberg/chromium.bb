@@ -3515,12 +3515,12 @@ def upload_branch_deps(cl, args):
   return 0
 
 
-def GetArchiveTagForBranch(issue_num, branch_name, existing_tags):
+def GetArchiveTagForBranch(issue_num, branch_name, existing_tags, pattern):
   """Given a proposed tag name, returns a tag name that is guaranteed to be
   unique. If 'foo' is proposed but already exists, then 'foo-2' is used,
   or 'foo-3', and so on."""
 
-  proposed_tag = 'git-cl-archived-%s-%s' % (issue_num, branch_name)
+  proposed_tag = pattern.format(**{'issue': issue_num, 'branch': branch_name})
   for suffix_num in itertools.count(1):
     if suffix_num == 1:
       to_check = proposed_tag
@@ -3547,6 +3547,12 @@ def CMDarchive(parser, args):
       '-t', '--notags', action='store_true',
       help='Do not tag archived branches. '
            'Note: local commit history may be lost.')
+  parser.add_option(
+      '-p',
+      '--pattern',
+      default='git-cl-archived-{issue}-{branch}',
+      help='Format string for archive tags. '
+      'E.g. \'archived-{issue}-{branch}\'.')
 
   options, args = parser.parse_args(args)
   if args:
@@ -3568,8 +3574,8 @@ def CMDarchive(parser, args):
                              fine_grained=True,
                              max_processes=options.maxjobs)
   proposal = [(cl.GetBranch(),
-               GetArchiveTagForBranch(cl.GetIssue(), cl.GetBranch(),
-                                      tags))
+               GetArchiveTagForBranch(cl.GetIssue(), cl.GetBranch(), tags,
+                                      options.pattern))
               for cl, status in statuses
               if status in ('closed', 'rietveld-not-supported')]
   proposal.sort()
