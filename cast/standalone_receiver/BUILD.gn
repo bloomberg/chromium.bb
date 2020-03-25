@@ -22,6 +22,7 @@ if (!build_with_chromium) {
     deps = [
       "../../platform",
       "../../third_party/jsoncpp",
+      "../common:public",
       "../common/channel/proto:channel_proto",
       "../streaming:receiver",
     ]
