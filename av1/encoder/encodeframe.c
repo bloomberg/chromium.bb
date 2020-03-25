@@ -4163,10 +4163,10 @@ static AOM_INLINE void setup_delta_q(AV1_COMP *const cpi, ThreadData *td,
     // before mi is assigned for each block in current superblock
     for (int j = 0; j < AOMMIN(mib_size, mi_params->mi_rows - mi_row); j++) {
       for (int k = 0; k < AOMMIN(mib_size, mi_params->mi_cols - mi_col); k++) {
-        const int mi_idx = get_alloc_mi_idx(mi_params, mi_row + j, mi_col + k);
-        mi_params->mi[mi_idx].delta_lf_from_base = delta_lf;
+        const int grid_idx = get_mi_grid_idx(mi_params, mi_row + j, mi_col + k);
+        mi_params->mi_grid_base[grid_idx]->delta_lf_from_base = delta_lf;
         for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id) {
-          mi_params->mi[mi_idx].delta_lf[lf_id] = delta_lf;
+          mi_params->mi_grid_base[grid_idx]->delta_lf[lf_id] = delta_lf;
         }
       }
     }
@@ -5598,10 +5598,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
     mi_params->setup_mi(mi_params);
   }
 
-  xd->mi = mi_params->mi_grid_base;
-  xd->mi[0] = mi_params->mi;
-  xd->tx_type_map = mi_params->tx_type_map;
-  xd->tx_type_map_stride = mi_params->mi_stride;
+  set_mi_offsets(mi_params, xd, 0, 0);
 
 #if CONFIG_AV1_HIGHBITDEPTH
   x->fwd_txfm4x4 = aom_fdct4x4;

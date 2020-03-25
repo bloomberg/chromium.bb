@@ -367,9 +367,8 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
   av1_setup_frame_size(cpi);
   aom_clear_system_state();
 
-  xd->mi = mi_params->mi_grid_base;
-  xd->mi[0] = mi_params->mi;
-  x->e_mbd.mi[0]->sb_type = BLOCK_16X16;
+  set_mi_offsets(mi_params, xd, 0, 0);
+  xd->mi[0]->sb_type = BLOCK_16X16;
 
   intra_factor = 0.0;
   brightness_factor = 0.0;
@@ -392,8 +391,7 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
     av1_setup_pre_planes(xd, 0, lst_yv12, 0, 0, NULL, num_planes);
   }
 
-  xd->mi = mi_params->mi_grid_base;
-  xd->mi[0] = mi_params->mi;
+  set_mi_offsets(mi_params, xd, 0, 0);
 
   // Don't store luma on the fist pass since chroma is not computed
   xd->cfl.store_y = 0;
@@ -442,14 +440,7 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
 
       aom_clear_system_state();
 
-      const int grid_idx =
-          get_mi_grid_idx(mi_params, mb_row * mb_scale, mb_col * mb_scale);
-      const int mi_idx =
-          get_alloc_mi_idx(mi_params, mb_row * mb_scale, mb_col * mb_scale);
-      xd->mi = mi_params->mi_grid_base + grid_idx;
-      xd->mi[0] = mi_params->mi + mi_idx;
-      xd->tx_type_map = mi_params->tx_type_map + grid_idx;
-      xd->tx_type_map_stride = mi_params->mi_stride;
+      set_mi_offsets(mi_params, xd, mb_row * mb_scale, mb_col * mb_scale);
       xd->plane[0].dst.buf = new_yv12->y_buffer + recon_yoffset;
       xd->plane[1].dst.buf = new_yv12->u_buffer + recon_uvoffset;
       xd->plane[2].dst.buf = new_yv12->v_buffer + recon_uvoffset;

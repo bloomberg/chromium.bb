@@ -1236,6 +1236,21 @@ static INLINE int get_mi_ext_idx(const CommonModeInfoParams *const mi_params,
   return mi_alloc_row * mi_params->mi_alloc_cols + mi_alloc_col;
 }
 
+// For this partition block, set pointers in mi_params->mi_grid_base and xd->mi.
+static INLINE void set_mi_offsets(const CommonModeInfoParams *const mi_params,
+                                  MACROBLOCKD *const xd, int mi_row,
+                                  int mi_col) {
+  // 'mi_grid_base' should point to appropriate memory in 'mi'.
+  const int mi_grid_idx = get_mi_grid_idx(mi_params, mi_row, mi_col);
+  const int mi_alloc_idx = get_alloc_mi_idx(mi_params, mi_row, mi_col);
+  mi_params->mi_grid_base[mi_grid_idx] = &mi_params->mi[mi_alloc_idx];
+  // 'xd->mi' should point to an offset in 'mi_grid_base';
+  xd->mi = mi_params->mi_grid_base + mi_grid_idx;
+  // 'xd->tx_type_map' should point to an offset in 'mi_params->tx_type_map'.
+  xd->tx_type_map = mi_params->tx_type_map + mi_grid_idx;
+  xd->tx_type_map_stride = mi_params->mi_stride;
+}
+
 static INLINE void txfm_partition_update(TXFM_CONTEXT *above_ctx,
                                          TXFM_CONTEXT *left_ctx,
                                          TX_SIZE tx_size, TX_SIZE txb_size) {

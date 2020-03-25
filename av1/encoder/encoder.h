@@ -1549,14 +1549,8 @@ static INLINE void set_mode_info_offsets(const AV1_COMP *const cpi,
                                          MACROBLOCKD *const xd, int mi_row,
                                          int mi_col) {
   const CommonModeInfoParams *const mi_params = &cpi->common.mi_params;
-  const int grid_idx = get_mi_grid_idx(mi_params, mi_row, mi_col);
-  const int mi_idx = get_alloc_mi_idx(mi_params, mi_row, mi_col);
+  set_mi_offsets(mi_params, xd, mi_row, mi_col);
   const int ext_idx = get_mi_ext_idx(mi_params, mi_row, mi_col);
-
-  xd->mi = mi_params->mi_grid_base + grid_idx;
-  xd->mi[0] = mi_params->mi + mi_idx;
-  xd->tx_type_map = mi_params->tx_type_map + grid_idx;
-  xd->tx_type_map_stride = mi_params->mi_stride;
   x->mbmi_ext_frame = cpi->mbmi_ext_frame_base + ext_idx;
 }
 
