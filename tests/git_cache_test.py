@@ -84,6 +84,18 @@ class GitCacheTest(unittest.TestCase):
 
     mirror.populate(reset_fetch_config=True)
 
+  def testPopulateTwice(self):
+    self.git(['init', '-q'])
+    with open(os.path.join(self.origin_dir, 'foo'), 'w') as f:
+      f.write('touched\n')
+    self.git(['add', 'foo'])
+    self.git(['commit', '-m', 'foo'])
+
+    mirror = git_cache.Mirror(self.origin_dir)
+    mirror.populate()
+
+    mirror.populate()
+
   def _makeGitRepoWithTag(self):
     self.git(['init', '-q'])
     with open(os.path.join(self.origin_dir, 'foo'), 'w') as f:
