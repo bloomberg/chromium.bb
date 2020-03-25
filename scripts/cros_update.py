@@ -75,7 +75,8 @@ class CrOSUpdateTrigger(object):
                log_file=None, au_tempdir=None, force_update=False,
                full_update=False, original_build=None, payload_filename=None,
                clobber_stateful=True, quick_provision=False,
-               devserver_url=None, static_url=None):
+               devserver_url=None, static_url=None, staging_server=None,
+               transfer_class=None):
     self.host_name = host_name
     self.build_name = build_name
     self.static_dir = static_dir
@@ -90,6 +91,8 @@ class CrOSUpdateTrigger(object):
     self.quick_provision = quick_provision
     self.devserver_url = devserver_url
     self.static_url = static_url
+    self.staging_server = staging_server
+    self.transfer_class = transfer_class or auto_updater_transfer.LocalTransfer
 
   def _WriteAUStatus(self, content):
     if self.progress_tracker:
@@ -234,7 +237,8 @@ class CrOSUpdateTrigger(object):
             yes=True,
             payload_filename=self.payload_filename,
             clobber_stateful=self.clobber_stateful,
-            transfer_class=auto_updater_transfer.LocalTransfer)
+            staging_server=self.staging_server,
+            transfer_class=self.transfer_class)
 
         # Allow fall back if the quick provision does not succeed.
         invoke_autoupdate = True
