@@ -4322,6 +4322,49 @@ static void record_best_compound(REFERENCE_MODE reference_mode,
 // Indicates number of winner simple translation modes to be used
 static const unsigned int num_winner_motion_modes[3] = { 0, 10, 3 };
 
+// Adds a motion mode to the candidate list for motion_mode_for_winner_cand
+// speed feature. This list consists of modes that have only searched
+// SIMPLE_TRANSLATION. The final list will be used to search other motion
+// modes after the initial RD search.
+static void handle_winner_cand(
+    MB_MODE_INFO *const mbmi,
+    motion_mode_best_st_candidate *best_motion_mode_cands,
+    int max_winner_motion_mode_cand, int64_t this_rd,
+    motion_mode_candidate *motion_mode_cand, int skip_motion_mode) {
+  // Number of current motion mode candidates in list
+  const int num_motion_mode_cand = best_motion_mode_cands->num_motion_mode_cand;
+  int valid_motion_mode_cand_loc = num_motion_mode_cand;
+
+  // find the best location to insert new motion mode candidate
+  for (int j = 0; j < num_motion_mode_cand; j++) {
+    if (this_rd < best_motion_mode_cands->motion_mode_cand[j].rd_cost) {
+      valid_motion_mode_cand_loc = j;
+      break;
+    }
+  }
+
+  // Insert motion mode if location is found
+  if (valid_motion_mode_cand_loc < max_winner_motion_mode_cand) {
+    if (num_motion_mode_cand > 0 &&
+        valid_motion_mode_cand_loc < max_winner_motion_mode_cand - 1)
+      memmove(
+          &best_motion_mode_cands
+               ->motion_mode_cand[valid_motion_mode_cand_loc + 1],
+          &best_motion_mode_cands->motion_mode_cand[valid_motion_mode_cand_loc],
+          (AOMMIN(num_motion_mode_cand, max_winner_motion_mode_cand - 1) -
+           valid_motion_mode_cand_loc) *
+              sizeof(best_motion_mode_cands->motion_mode_cand[0]));
+    motion_mode_cand->mbmi = *mbmi;
+    motion_mode_cand->rd_cost = this_rd;
+    motion_mode_cand->skip_motion_mode = skip_motion_mode;
+    best_motion_mode_cands->motion_mode_cand[valid_motion_mode_cand_loc] =
+        *motion_mode_cand;
+    best_motion_mode_cands->num_motion_mode_cand =
+        AOMMIN(max_winner_motion_mode_cand,
+               best_motion_mode_cands->num_motion_mode_cand + 1);
+  }
+}
+
 void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                                MACROBLOCK *x, RD_STATS *rd_cost,
                                const BLOCK_SIZE bsize, PICK_MODE_CONTEXT *ctx,
@@ -4611,38 +4654,11 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       search_state.best_skip_rd[1] = skip_rd[1];
     }
     if (cpi->sf.winner_mode_sf.motion_mode_for_winner_cand) {
-      const int num_motion_mode_cand =
-          best_motion_mode_cands.num_motion_mode_cand;
-      int valid_motion_mode_cand_loc = num_motion_mode_cand;
-
-      // find the best location to insert new motion mode candidate
-      for (int j = 0; j < num_motion_mode_cand; j++) {
-        if (this_rd < best_motion_mode_cands.motion_mode_cand[j].rd_cost) {
-          valid_motion_mode_cand_loc = j;
-          break;
-        }
-      }
-
-      if (valid_motion_mode_cand_loc < max_winner_motion_mode_cand) {
-        if (num_motion_mode_cand > 0 &&
-            valid_motion_mode_cand_loc < max_winner_motion_mode_cand - 1)
-          memmove(
-              &best_motion_mode_cands
-                   .motion_mode_cand[valid_motion_mode_cand_loc + 1],
-              &best_motion_mode_cands
-                   .motion_mode_cand[valid_motion_mode_cand_loc],
-              (AOMMIN(num_motion_mode_cand, max_winner_motion_mode_cand - 1) -
-               valid_motion_mode_cand_loc) *
-                  sizeof(best_motion_mode_cands.motion_mode_cand[0]));
-        motion_mode_cand.mbmi = *mbmi;
-        motion_mode_cand.rd_cost = this_rd;
-        motion_mode_cand.skip_motion_mode = args.skip_motion_mode;
-        best_motion_mode_cands.motion_mode_cand[valid_motion_mode_cand_loc] =
-            motion_mode_cand;
-        best_motion_mode_cands.num_motion_mode_cand =
-            AOMMIN(max_winner_motion_mode_cand,
-                   best_motion_mode_cands.num_motion_mode_cand + 1);
-      }
+      // Add this mode to motion mode candidate list for motion mode search
+      // if using motion_mode_for_winner_cand speed feature
+      handle_winner_cand(mbmi, &best_motion_mode_cands,
+                         max_winner_motion_mode_cand, this_rd,
+                         &motion_mode_cand, args.skip_motion_mode);
     }
 
     /* keep record of best compound/single-only prediction */
