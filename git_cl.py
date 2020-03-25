@@ -9,6 +9,7 @@
 
 from __future__ import print_function
 
+from distutils.version import LooseVersion
 import base64
 import collections
 import datetime
@@ -115,12 +116,6 @@ DEFAULT_LINT_IGNORE_REGEX = r"$^"
 # File name for yapf style config files.
 YAPF_CONFIG_FILENAME = '.style.yapf'
 
-# The issue, patchset and codereview server are stored on git config for each
-# branch under branch.<branch-name>.<config-key>.
-ISSUE_CONFIG_KEY = 'gerritissue'
-PATCHSET_CONFIG_KEY = 'gerritpatchset'
-CODEREVIEW_SERVER_CONFIG_KEY = 'gerritserver'
-
 # Shortcut since it quickly becomes repetitive.
 Fore = colorama.Fore
 
@@ -206,6 +201,20 @@ def RunGitSilent(args):
   return RunGitWithCode(args, suppress_stderr=True)[1]
 
 
+def IsGitVersionAtLeast(min_version):
+  prefix = 'git version '
+  version = RunGit(['--version']).strip()
+  return (version.startswith(prefix) and
+          LooseVersion(version[len(prefix):]) >= LooseVersion(min_version))
+
+
+def BranchExists(branch):
+  """Return True if specified branch exists."""
+  code, _ = RunGitWithCode(['rev-parse', '--verify', branch],
+                           suppress_stderr=True)
+  return not code
+
+
 def time_sleep(seconds):
   # Use this so that it can be mocked in tests without interfering with python
   # system machinery.
@@ -249,6 +258,12 @@ def ask_for_explicit_yes(prompt):
     result = gclient_utils.AskForData('Please, type yes or no: ').lower()
 
 
+def _git_branch_config_key(branch, key):
+  """Helper method to return Git config key for a branch."""
+  assert branch, 'branch name is required to set git config for it'
+  return 'branch.%s.%s' % (branch, key)
+
+
 def _get_properties_from_options(options):
   prop_list = getattr(options, 'properties', [])
   properties = dict(x.split('=', 1) for x in prop_list)
@@ -258,6 +273,46 @@ def _get_properties_from_options(options):
     except ValueError:
       pass  # If a value couldn't be evaluated, treat it as a string.
   return properties
+
+
+# TODO(crbug.com/976104): Remove this function once git-cl try-results has
+# migrated to use buildbucket v2
+def _buildbucket_retry(operation_name, http, *args, **kwargs):
+  """Retries requests to buildbucket service and returns parsed json content."""
+  try_count = 0
+  while True:
+    response, content = http.request(*args, **kwargs)
+    try:
+      content_json = json.loads(content)
+    except ValueError:
+      content_json = None
+
+    # Buildbucket could return an error even if status==200.
+    if content_json and content_json.get('error'):
+      error = content_json.get('error')
+      if error.get('code') == 403:
+        raise BuildbucketResponseException(
+            'Access denied: %s' % error.get('message', ''))
+      msg = 'Error in response. Reason: %s. Message: %s.' % (
+          error.get('reason', ''), error.get('message', ''))
+      raise BuildbucketResponseException(msg)
+
+    if response.status == 200:
+      if content_json is None:
+        raise BuildbucketResponseException(
+            'Buildbucket returned invalid JSON content: %s.\n'
+            'Please file bugs at http://crbug.com, '
+            'component "Infra>Platform>Buildbucket".' %
+            content)
+      return content_json
+    if response.status < 500 or try_count >= 2:
+      raise httplib2.HttpLib2Error(content)
+
+    # status >= 500 means transient failures.
+    logging.debug('Transient errors when %s. Will retry.', operation_name)
+    time_sleep(0.5 + (1.5 * try_count))
+    try_count += 1
+  assert False, 'unreachable'
 
 
 def _call_buildbucket(http, buildbucket_host, method, request):
@@ -731,7 +786,7 @@ class Settings(object):
 
   @staticmethod
   def GetRelativeRoot():
-    return scm.GIT.GetCheckoutRoot(None)
+    return RunGit(['rev-parse', '--show-cdup']).strip()
 
   def GetRoot(self):
     if self.root is None:
@@ -976,6 +1031,12 @@ class Changelist(object):
       self.cc = ','.join(filter(None, (base_cc, more_cc))) or ''
     return self.cc
 
+  def GetCCListWithoutDefault(self):
+    """Return the users cc'd on this CL excluding default ones."""
+    if self.cc is None:
+      self.cc = ','.join(self.more_cc)
+    return self.cc
+
   def ExtendCC(self, more_cc):
     """Extends the list of users to cc on this CL based on the changed files."""
     self.more_cc.extend(more_cc)
@@ -994,6 +1055,10 @@ class Changelist(object):
     """Returns the full branch name, e.g. 'refs/heads/master'."""
     self.GetBranch()  # Poke the lazy loader.
     return self.branchref
+
+  def ClearBranch(self):
+    """Clears cached branch data of this object."""
+    self.branch = self.branchref = None
 
   def _GitGetBranchConfigValue(self, key, default=None):
     return scm.GIT.GetBranchConfig(
@@ -1026,7 +1091,7 @@ class Changelist(object):
 
   def GetCommonAncestorWithUpstream(self):
     upstream_branch = self.GetUpstreamBranch()
-    if not scm.GIT.IsValidRevision(settings.GetRoot(), upstream_branch):
+    if not BranchExists(upstream_branch):
       DieWithError('The upstream for the current branch (%s) does not exist '
                    'anymore.\nPlease fix it and try again.' % self.GetBranch())
     return git_common.get_or_create_merge_base(self.GetBranch(),
@@ -1072,6 +1137,55 @@ class Changelist(object):
       else:
         self._remote = (remote, 'refs/remotes/%s/%s' % (remote, branch))
     return self._remote
+
+  def GitSanityChecks(self, upstream_git_obj):
+    """Checks git repo status and ensures diff is from local commits."""
+
+    if upstream_git_obj is None:
+      if self.GetBranch() is None:
+        print('ERROR: Unable to determine current branch (detached HEAD?)',
+              file=sys.stderr)
+      else:
+        print('ERROR: No upstream branch.', file=sys.stderr)
+      return False
+
+    # Verify the commit we're diffing against is in our current branch.
+    upstream_sha = RunGit(['rev-parse', '--verify', upstream_git_obj]).strip()
+    common_ancestor = RunGit(['merge-base', upstream_sha, 'HEAD']).strip()
+    if upstream_sha != common_ancestor:
+      print('ERROR: %s is not in the current branch.  You may need to rebase '
+            'your tracking branch' % upstream_sha, file=sys.stderr)
+      return False
+
+    # List the commits inside the diff, and verify they are all local.
+    commits_in_diff = RunGit(
+        ['rev-list', '^%s' % upstream_sha, 'HEAD']).splitlines()
+    code, remote_branch = RunGitWithCode(['config', 'gitcl.remotebranch'])
+    remote_branch = remote_branch.strip()
+    if code != 0:
+      _, remote_branch = self.GetRemoteBranch()
+
+    commits_in_remote = RunGit(
+        ['rev-list', '^%s' % upstream_sha, remote_branch]).splitlines()
+
+    common_commits = set(commits_in_diff) & set(commits_in_remote)
+    if common_commits:
+      print('ERROR: Your diff contains %d commits already in %s.\n'
+            'Run "git log --oneline %s..HEAD" to get a list of commits in '
+            'the diff.  If you are using a custom git flow, you can override'
+            ' the reference used for this check with "git config '
+            'gitcl.remotebranch <git-ref>".' % (
+                len(common_commits), remote_branch, upstream_git_obj),
+            file=sys.stderr)
+      return False
+    return True
+
+  def GetGitBaseUrlFromConfig(self):
+    """Return the configured base URL from branch.<branchname>.baseurl.
+
+    Returns None if it is not set.
+    """
+    return self._GitGetBranchConfigValue('base-url')
 
   def GetRemoteUrl(self):
     """Return the configured remote URL, e.g. 'git://example.org/foo.git/'.
@@ -1123,7 +1237,7 @@ class Changelist(object):
   def GetIssue(self):
     """Returns the issue number as a int or None if not set."""
     if self.issue is None and not self.lookedup_issue:
-      self.issue = self._GitGetBranchConfigValue(ISSUE_CONFIG_KEY)
+      self.issue = self._GitGetBranchConfigValue(self.IssueConfigKey())
       if self.issue is not None:
         self.issue = int(self.issue)
       self.lookedup_issue = True
@@ -1159,7 +1273,7 @@ class Changelist(object):
   def GetPatchset(self):
     """Returns the patchset number as a int or None if not set."""
     if self.patchset is None and not self.lookedup_patchset:
-      self.patchset = self._GitGetBranchConfigValue(PATCHSET_CONFIG_KEY)
+      self.patchset = self._GitGetBranchConfigValue(self.PatchsetConfigKey())
       if self.patchset is not None:
         self.patchset = int(self.patchset)
       self.lookedup_patchset = True
@@ -1175,28 +1289,30 @@ class Changelist(object):
       self.patchset = None
     else:
       self.patchset = int(patchset)
-    self._GitSetBranchConfigValue(PATCHSET_CONFIG_KEY, str(self.patchset))
+    self._GitSetBranchConfigValue(
+        self.PatchsetConfigKey(), str(self.patchset))
 
   def SetIssue(self, issue=None):
     """Set this branch's issue. If issue isn't given, clears the issue."""
     assert self.GetBranch()
     if issue:
       issue = int(issue)
-      self._GitSetBranchConfigValue(ISSUE_CONFIG_KEY, str(issue))
+      self._GitSetBranchConfigValue(
+          self.IssueConfigKey(), str(issue))
       self.issue = issue
       codereview_server = self.GetCodereviewServer()
       if codereview_server:
         self._GitSetBranchConfigValue(
-            CODEREVIEW_SERVER_CONFIG_KEY, codereview_server)
+            self.CodereviewServerConfigKey(),
+            codereview_server)
     else:
       # Reset all of these just to be clean.
       reset_suffixes = [
           'last-upload-hash',
-          ISSUE_CONFIG_KEY,
-          PATCHSET_CONFIG_KEY,
-          CODEREVIEW_SERVER_CONFIG_KEY,
-          'gerritsquashhash',
-      ]
+          self.IssueConfigKey(),
+          self.PatchsetConfigKey(),
+          self.CodereviewServerConfigKey(),
+      ] + self._PostUnsetIssueProperties()
       for prop in reset_suffixes:
         try:
           self._GitSetBranchConfigValue(prop, None)
@@ -1361,7 +1477,8 @@ class Changelist(object):
       return options.message.strip()
 
     # Use the subject of the last commit as title by default.
-    title = RunGit(['show', '-s', '--format=%s', 'HEAD']).strip()
+    title = RunGit(
+        ['show', '-s', '--format=%s', 'HEAD']).strip()
     if options.force:
       return title
     user_title = gclient_utils.AskForData('Title for patchset [%s]: ' % title)
@@ -1409,7 +1526,7 @@ class Changelist(object):
         options, git_diff_args, custom_cl_base, change_desc)
     if not ret:
       self._GitSetBranchConfigValue(
-          'last-upload-hash', scm.GIT.ResolveCommit(settings.GetRoot(), 'HEAD'))
+          'last-upload-hash', RunGit(['rev-parse', 'HEAD']).strip())
       # Run post upload hooks, if specified.
       if settings.GetRunPostUploadHook():
         self.RunPostUploadHook(
@@ -1488,7 +1605,7 @@ class Changelist(object):
       # with that branch.
       if self.GetIssue() and self.GetBranch():
         self._gerrit_server = self._GitGetBranchConfigValue(
-            CODEREVIEW_SERVER_CONFIG_KEY)
+            self.CodereviewServerConfigKey())
         if self._gerrit_server:
           self._gerrit_host = urllib.parse.urlparse(self._gerrit_server).netloc
       if not self._gerrit_server:
@@ -1530,6 +1647,18 @@ class Changelist(object):
       return gerrit_util.ChangeIdentifier(project, self.GetIssue())
     # Fall back on still unique, but less efficient change number.
     return str(self.GetIssue())
+
+  @classmethod
+  def IssueConfigKey(cls):
+    return 'gerritissue'
+
+  @classmethod
+  def PatchsetConfigKey(cls):
+    return 'gerritpatchset'
+
+  @classmethod
+  def CodereviewServerConfigKey(cls):
+    return 'gerritserver'
 
   def EnsureAuthenticated(self, force, refresh=None):
     """Best effort check that user is authenticated with Gerrit server."""
@@ -1627,6 +1756,13 @@ class Changelist(object):
             'Uploading may fail due to lack of permissions.' %
             (self.GetIssue(), self.GetIssueOwner(), details['email']))
       confirm_or_exit(action='upload')
+
+  def _PostUnsetIssueProperties(self):
+    """Which branch-specific properties to erase when unsetting issue."""
+    return ['gerritsquashhash']
+
+  def GetGerritObjForPresubmit(self):
+    return presubmit_support.GerritAccessor(self._GetGerritHost())
 
   def GetStatus(self):
     """Applies a rough heuristic to give a simple summary of an issue's review
@@ -1963,7 +2099,7 @@ class Changelist(object):
     if self.GetBranch():
       self.SetIssue(parsed_issue_arg.issue)
       self.SetPatchset(patchset)
-      fetched_hash = scm.GIT.ResolveCommit(settings.GetRoot(), 'FETCH_HEAD')
+      fetched_hash = RunGit(['rev-parse', 'FETCH_HEAD']).strip()
       self._GitSetBranchConfigValue('last-upload-hash', fetched_hash)
       self._GitSetBranchConfigValue('gerritsquashhash', fetched_hash)
     else:
@@ -2353,7 +2489,9 @@ class Changelist(object):
     # the tree hash of the parent branch. The upside is less likely bogus
     # requests to reupload parent change just because it's uploadhash is
     # missing, yet the downside likely exists, too (albeit unknown to me yet).
-    parent = self._GitGetBranchConfigValue('gerritsquashhash', '')
+    parent = RunGit(['config',
+                     'branch.%s.gerritsquashhash' % upstream_branch_name],
+                    error_ok=True).strip()
     # Verify that the upstream branch has been uploaded too, otherwise
     # Gerrit will create additional CLs when uploading.
     if not parent or (RunGitSilent(['rev-parse', upstream_branch + ':']) !=
@@ -2704,6 +2842,76 @@ class ChangeDescription(object):
     """
     return re.sub(cls.BAD_HASH_TAG_CHUNK, '-', tag).strip('-').lower()
 
+  def update_with_git_number_footers(self, parent_hash, parent_msg, dest_ref):
+    """Updates this commit description given the parent.
+
+    This is essentially what Gnumbd used to do.
+    Consult https://goo.gl/WMmpDe for more details.
+    """
+    assert parent_msg  # No, orphan branch creation isn't supported.
+    assert parent_hash
+    assert dest_ref
+    parent_footer_map = git_footers.parse_footers(parent_msg)
+    # This will also happily parse svn-position, which GnumbD is no longer
+    # supporting. While we'd generate correct footers, the verifier plugin
+    # installed in Gerrit will block such commit (ie git push below will fail).
+    parent_position = git_footers.get_position(parent_footer_map)
+
+    # Cherry-picks may have last line obscuring their prior footers,
+    # from git_footers perspective. This is also what Gnumbd did.
+    cp_line = None
+    if (self._description_lines and
+        re.match(self.CHERRY_PICK_LINE, self._description_lines[-1])):
+      cp_line = self._description_lines.pop()
+
+    top_lines, footer_lines, _ = git_footers.split_footers(self.description)
+
+    # Original-ify all Cr- footers, to avoid re-lands, cherry-picks, or just
+    # user interference with actual footers we'd insert below.
+    for i, line in enumerate(footer_lines):
+      k, v = git_footers.parse_footer(line) or (None, None)
+      if k and k.startswith('Cr-'):
+        footer_lines[i] = '%s: %s' % ('Cr-Original-' + k[len('Cr-'):], v)
+
+    # Add Position and Lineage footers based on the parent.
+    lineage = list(reversed(parent_footer_map.get('Cr-Branched-From', [])))
+    if parent_position[0] == dest_ref:
+      # Same branch as parent.
+      number = int(parent_position[1]) + 1
+    else:
+      number = 1  # New branch, and extra lineage.
+      lineage.insert(0, '%s-%s@{#%d}' % (parent_hash, parent_position[0],
+                                         int(parent_position[1])))
+
+    footer_lines.append('Cr-Commit-Position: %s@{#%d}' % (dest_ref, number))
+    footer_lines.extend('Cr-Branched-From: %s' % v for v in lineage)
+
+    self._description_lines = top_lines
+    if cp_line:
+      self._description_lines.append(cp_line)
+    if self._description_lines[-1] != '':
+      self._description_lines.append('')  # Ensure footer separator.
+    self._description_lines.extend(footer_lines)
+
+
+def get_approving_reviewers(props, disapproval=False):
+  """Retrieves the reviewers that approved a CL from the issue properties with
+  messages.
+
+  Note that the list may contain reviewers that are not committer, thus are not
+  considered by the CQ.
+
+  If disapproval is True, instead returns reviewers who 'not lgtm'd the CL.
+  """
+  approval_type = 'disapproval' if disapproval else 'approval'
+  return sorted(
+      set(
+        message['sender']
+        for message in props['messages']
+        if message[approval_type] and message['sender'] in props['reviewers']
+      )
+  )
+
 
 def FindCodereviewSettingsFile(filename='codereview.settings'):
   """Finds the given file starting in the cwd and going up.
@@ -2783,6 +2991,11 @@ def hasSheBang(fname):
   """Checks fname is a #! script."""
   with open(fname) as f:
     return f.read(2).startswith('#!')
+
+
+# TODO(bpastene) Remove once a cleaner fix to crbug.com/600473 presents itself.
+def DownloadHooks(*args, **kwargs):
+  pass
 
 
 def DownloadGerritHook(force):
@@ -3118,7 +3331,7 @@ def CMDcreds_check(parser, args):
 @metrics.collector.collect_metrics('git cl baseurl')
 def CMDbaseurl(parser, args):
   """Gets or sets base-url for this branch."""
-  branchref = scm.GIT.GetBranchRef(settings.GetRoot())
+  branchref = RunGit(['symbolic-ref', 'HEAD']).strip()
   branch = scm.GIT.ShortBranchName(branchref)
   _, args = parser.parse_args(args)
   if not args:
@@ -3590,8 +3803,9 @@ def CMDissue(parser, args):
       git_config[name] = val
 
     for branch in branches:
-      issue = git_config.get(
-          'branch.%s.%s' % (scm.GIT.ShortBranchName(branch), ISSUE_CONFIG_KEY))
+      config_key = _git_branch_config_key(scm.GIT.ShortBranchName(branch),
+                                          Changelist.IssueConfigKey())
+      issue = git_config.get(config_key)
       if issue:
         issue_branch_map.setdefault(int(issue), []).append(branch)
     if not args:
@@ -4635,8 +4849,9 @@ def CMDowners(parser, args):
       help='Show all owners for a particular file')
   options, args = parser.parse_args(args)
 
+  author = RunGit(['config', 'user.email']).strip() or None
+
   cl = Changelist()
-  author = cl.GetAuthor()
 
   if options.show_all:
     for arg in args:
@@ -4857,7 +5072,8 @@ def CMDformat(parser, args):
   dart_diff_files = [x for x in diff_files if MatchingFileType(x, ['.dart'])]
   gn_diff_files = [x for x in diff_files if MatchingFileType(x, GN_EXTS)]
 
-  top_dir = settings.GetRoot()
+  top_dir = os.path.normpath(
+      RunGit(["rev-parse", "--show-toplevel"]).rstrip('\n'))
 
   return_value = _RunClangFormatDiff(opts, clang_diff_files, top_dir,
                                      upstream_commit)
@@ -5019,14 +5235,15 @@ def CMDcheckout(parser, args):
 
   target_issue = str(issue_arg.issue)
 
+  issueprefix = Changelist.IssueConfigKey()
   output = RunGit(['config', '--local', '--get-regexp',
-                   r'branch\..*\.' + ISSUE_CONFIG_KEY],
+                   r'branch\..*\.%s' % issueprefix],
                    error_ok=True)
 
   branches = []
   for key, issue in [x.split() for x in output.splitlines()]:
     if issue == target_issue:
-      branches.append(re.sub(r'branch\.(.*)\.' + ISSUE_CONFIG_KEY, r'\1', key))
+      branches.append(re.sub(r'branch\.(.*)\.%s' % issueprefix, r'\1', key))
 
   if len(branches) == 0:
     print('No branch found for issue %s.' % target_issue)

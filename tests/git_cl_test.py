@@ -302,6 +302,187 @@ class TestGitClBasic(unittest.TestCase):
     self.assertEqual(f('v8', 'chromium:123,456,v8:123'),
                      ['v8:456', 'chromium:123', 'v8:123'])
 
+  def _test_git_number(self, parent_msg, dest_ref, child_msg,
+                       parent_hash='parenthash'):
+    desc = git_cl.ChangeDescription(child_msg)
+    desc.update_with_git_number_footers(parent_hash, parent_msg, dest_ref)
+    return desc.description
+
+  def assertEqualByLine(self, actual, expected):
+    self.assertEqual(actual.splitlines(), expected.splitlines())
+
+  def test_git_number_bad_parent(self):
+    with self.assertRaises(ValueError):
+      self._test_git_number('Parent', 'refs/heads/master', 'Child')
+
+  def test_git_number_bad_parent_footer(self):
+    with self.assertRaises(AssertionError):
+      self._test_git_number(
+          'Parent\n'
+          '\n'
+          'Cr-Commit-Position: wrong',
+          'refs/heads/master', 'Child')
+
+  def test_git_number_bad_lineage_ignored(self):
+    actual = self._test_git_number(
+        'Parent\n'
+        '\n'
+        'Cr-Commit-Position: refs/heads/master@{#1}\n'
+        'Cr-Branched-From: mustBeReal40CharHash-branch@{#pos}',
+        'refs/heads/master', 'Child')
+    self.assertEqualByLine(
+        actual,
+        'Child\n'
+        '\n'
+        'Cr-Commit-Position: refs/heads/master@{#2}\n'
+        'Cr-Branched-From: mustBeReal40CharHash-branch@{#pos}')
+
+  def test_git_number_same_branch(self):
+    actual = self._test_git_number(
+        'Parent\n'
+        '\n'
+        'Cr-Commit-Position: refs/heads/master@{#12}',
+        dest_ref='refs/heads/master',
+        child_msg='Child')
+    self.assertEqualByLine(
+        actual,
+        'Child\n'
+        '\n'
+        'Cr-Commit-Position: refs/heads/master@{#13}')
+
+  def test_git_number_same_branch_mixed_footers(self):
+    actual = self._test_git_number(
+        'Parent\n'
+        '\n'
+        'Cr-Commit-Position: refs/heads/master@{#12}',
+        dest_ref='refs/heads/master',
+        child_msg='Child\n'
+                  '\n'
+                  'Broken-by: design\n'
+                  'BUG=123')
+    self.assertEqualByLine(
+        actual,
+        'Child\n'
+        '\n'
+        'Broken-by: design\n'
+        'BUG=123\n'
+        'Cr-Commit-Position: refs/heads/master@{#13}')
+
+  def test_git_number_same_branch_with_originals(self):
+    actual = self._test_git_number(
+        'Parent\n'
+        '\n'
+        'Cr-Commit-Position: refs/heads/master@{#12}',
+        dest_ref='refs/heads/master',
+        child_msg='Child\n'
+        '\n'
+        'Some users are smart and insert their own footers\n'
+        '\n'
+        'Cr-Whatever: value\n'
+        'Cr-Commit-Position: refs/copy/paste@{#22}')
+    self.assertEqualByLine(
+        actual,
+        'Child\n'
+        '\n'
+        'Some users are smart and insert their own footers\n'
+        '\n'
+        'Cr-Original-Whatever: value\n'
+        'Cr-Original-Commit-Position: refs/copy/paste@{#22}\n'
+        'Cr-Commit-Position: refs/heads/master@{#13}')
+
+  def test_git_number_new_branch(self):
+    actual = self._test_git_number(
+        'Parent\n'
+        '\n'
+        'Cr-Commit-Position: refs/heads/master@{#12}',
+        dest_ref='refs/heads/branch',
+        child_msg='Child')
+    self.assertEqualByLine(
+        actual,
+        'Child\n'
+        '\n'
+        'Cr-Commit-Position: refs/heads/branch@{#1}\n'
+        'Cr-Branched-From: parenthash-refs/heads/master@{#12}')
+
+  def test_git_number_lineage(self):
+    actual = self._test_git_number(
+        'Parent\n'
+        '\n'
+        'Cr-Commit-Position: refs/heads/branch@{#1}\n'
+        'Cr-Branched-From: somehash-refs/heads/master@{#12}',
+        dest_ref='refs/heads/branch',
+        child_msg='Child')
+    self.assertEqualByLine(
+        actual,
+        'Child\n'
+        '\n'
+        'Cr-Commit-Position: refs/heads/branch@{#2}\n'
+        'Cr-Branched-From: somehash-refs/heads/master@{#12}')
+
+  def test_git_number_moooooooore_lineage(self):
+    actual = self._test_git_number(
+        'Parent\n'
+        '\n'
+        'Cr-Commit-Position: refs/heads/branch@{#5}\n'
+        'Cr-Branched-From: somehash-refs/heads/master@{#12}',
+        dest_ref='refs/heads/mooore',
+        child_msg='Child')
+    self.assertEqualByLine(
+        actual,
+        'Child\n'
+        '\n'
+        'Cr-Commit-Position: refs/heads/mooore@{#1}\n'
+        'Cr-Branched-From: parenthash-refs/heads/branch@{#5}\n'
+        'Cr-Branched-From: somehash-refs/heads/master@{#12}')
+
+  def test_git_number_ever_moooooooore_lineage(self):
+    self.maxDiff = 10000  # pylint: disable=attribute-defined-outside-init
+    actual = self._test_git_number(
+        'CQ commit on fresh new branch + numbering.\n'
+        '\n'
+        'NOTRY=True\n'
+        'NOPRESUBMIT=True\n'
+        'BUG=\n'
+        '\n'
+        'Review-Url: https://codereview.chromium.org/2577703003\n'
+        'Cr-Commit-Position: refs/heads/gnumb-test/br@{#1}\n'
+        'Cr-Branched-From: 0749ff9edc-refs/heads/gnumb-test/cq@{#4}\n'
+        'Cr-Branched-From: 5c49df2da6-refs/heads/master@{#41618}',
+        dest_ref='refs/heads/gnumb-test/cl',
+        child_msg='git cl on fresh new branch + numbering.\n'
+                  '\n'
+                  'Review-Url: https://codereview.chromium.org/2575043003 .\n')
+    self.assertEqualByLine(
+        actual,
+        'git cl on fresh new branch + numbering.\n'
+        '\n'
+        'Review-Url: https://codereview.chromium.org/2575043003 .\n'
+        'Cr-Commit-Position: refs/heads/gnumb-test/cl@{#1}\n'
+        'Cr-Branched-From: parenthash-refs/heads/gnumb-test/br@{#1}\n'
+        'Cr-Branched-From: 0749ff9edc-refs/heads/gnumb-test/cq@{#4}\n'
+        'Cr-Branched-From: 5c49df2da6-refs/heads/master@{#41618}')
+
+  def test_git_number_cherry_pick(self):
+    actual = self._test_git_number(
+        'Parent\n'
+        '\n'
+        'Cr-Commit-Position: refs/heads/branch@{#1}\n'
+        'Cr-Branched-From: somehash-refs/heads/master@{#12}',
+        dest_ref='refs/heads/branch',
+        child_msg='Child, which is cherry-pick from master\n'
+        '\n'
+        'Cr-Commit-Position: refs/heads/master@{#100}\n'
+        '(cherry picked from commit deadbeef12345678deadbeef12345678deadbeef)')
+    self.assertEqualByLine(
+        actual,
+        'Child, which is cherry-pick from master\n'
+        '\n'
+        '(cherry picked from commit deadbeef12345678deadbeef12345678deadbeef)\n'
+        '\n'
+        'Cr-Original-Commit-Position: refs/heads/master@{#100}\n'
+        'Cr-Commit-Position: refs/heads/branch@{#2}\n'
+        'Cr-Branched-From: somehash-refs/heads/master@{#12}')
+
   @mock.patch('gerrit_util.GetAccountDetails')
   def test_valid_accounts(self, mockGetAccountDetails):
     mock_per_account = {
@@ -497,6 +678,7 @@ class TestGitCl(unittest.TestCase):
     mock.patch(
         'git_common.get_or_create_merge_base',
         lambda *a: self._mocked_call('get_or_create_merge_base', *a)).start()
+    mock.patch('git_cl.BranchExists', return_value=True).start()
     mock.patch('git_cl.FindCodereviewSettingsFile', return_value='').start()
     mock.patch(
         'git_cl.SaveDescriptionBackup',
@@ -538,8 +720,6 @@ class TestGitCl(unittest.TestCase):
     self.mockGit = GitMocks()
     mock.patch('scm.GIT.GetBranchRef', self.mockGit.GetBranchRef).start()
     mock.patch('scm.GIT.GetConfig', self.mockGit.GetConfig).start()
-    mock.patch('scm.GIT.ResolveCommit', return_value='hash').start()
-    mock.patch('scm.GIT.IsValidRevision', return_value=True).start()
     mock.patch('scm.GIT.SetConfig', self.mockGit.SetConfig).start()
     mock.patch(
         'git_new_branch.create_new_branch', self.mockGit.NewBranch).start()
@@ -957,6 +1137,9 @@ class TestGitCl(unittest.TestCase):
             notify),
            ''),
       ]
+    calls += [
+        ((['git', 'rev-parse', 'HEAD'],), 'hash'),
+    ]
     return calls
 
   def _run_gerrit_upload_test(
@@ -1026,6 +1209,7 @@ class TestGitCl(unittest.TestCase):
               list(args))).start()
     mock.patch('os.path.isfile',
               lambda path: self._mocked_call(['os.path.isfile', path])).start()
+    mock.patch('git_cl.Changelist.GitSanityChecks', return_value=True).start()
     mock.patch(
         'git_cl._create_description_from_log', return_value=description).start()
     mock.patch(
@@ -1532,7 +1716,7 @@ class TestGitCl(unittest.TestCase):
         scm.GIT.GetBranchConfig('', branch, 'gerritserver'))
 
   def _patch_common(self, git_short_host='chromium'):
-    mock.patch('scm.GIT.ResolveCommit', return_value='deadbeef').start()
+    mock.patch('git_cl.IsGitVersionAtLeast', return_value=True).start()
     self.mockGit.config['remote.origin.url'] = (
         'https://%s.googlesource.com/my/repo' % git_short_host)
     gerrit_util.GetChangeDetail.return_value = {
@@ -1561,6 +1745,7 @@ class TestGitCl(unittest.TestCase):
       ((['git', 'fetch', 'https://chromium.googlesource.com/my/repo',
          'refs/changes/56/123456/7'],), ''),
       ((['git', 'cherry-pick', 'FETCH_HEAD'],), ''),
+      ((['git', 'rev-parse', 'FETCH_HEAD'],), 'deadbeef'),
     ]
     self.assertEqual(git_cl.main(['patch', '123456']), 0)
     self.assertIssueAndPatchset()
@@ -1571,6 +1756,7 @@ class TestGitCl(unittest.TestCase):
       ((['git', 'fetch', 'https://chromium.googlesource.com/my/repo',
          'refs/changes/56/123456/7'],), ''),
       ((['git', 'cherry-pick', 'FETCH_HEAD'],), ''),
+      ((['git', 'rev-parse', 'FETCH_HEAD'],), 'deadbeef'),
     ]
     self.assertEqual(git_cl.main(['patch', '-b', 'feature', '123456']), 0)
     self.assertIssueAndPatchset(branch='feature')
@@ -1581,6 +1767,7 @@ class TestGitCl(unittest.TestCase):
       ((['git', 'fetch', 'https://host.googlesource.com/my/repo',
          'refs/changes/56/123456/7'],), ''),
       ((['git', 'reset', '--hard', 'FETCH_HEAD'],), ''),
+      ((['git', 'rev-parse', 'FETCH_HEAD'],), 'deadbeef'),
     ]
     self.assertEqual(git_cl.main(['patch', '123456', '--force']), 0)
     self.assertIssueAndPatchset(git_short_host='host')
@@ -1591,6 +1778,7 @@ class TestGitCl(unittest.TestCase):
       ((['git', 'fetch', 'https://else.googlesource.com/my/repo',
          'refs/changes/56/123456/1'],), ''),
       ((['git', 'cherry-pick', 'FETCH_HEAD'],), ''),
+      ((['git', 'rev-parse', 'FETCH_HEAD'],), 'deadbeef'),
     ]
     self.assertEqual(git_cl.main(
       ['patch', 'https://else-review.googlesource.com/#/c/123456/1']), 0)
@@ -1602,6 +1790,7 @@ class TestGitCl(unittest.TestCase):
       ((['git', 'fetch', 'https://else.googlesource.com/my/repo',
          'refs/changes/56/123456/1'],), ''),
       ((['git', 'cherry-pick', 'FETCH_HEAD'],), ''),
+      ((['git', 'rev-parse', 'FETCH_HEAD'],), 'deadbeef'),
     ]
     self.assertEqual(git_cl.main(
       ['patch', 'https://else-review.googlesource.com/c/my/repo/+/123456/1']),

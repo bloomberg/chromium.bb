@@ -230,6 +230,18 @@ class GitWrapper(SCMWrapper):
       filter_kwargs['predicate'] = self.out_cb
     self.filter = gclient_utils.GitFilter(**filter_kwargs)
 
+  @staticmethod
+  def BinaryExists():
+    """Returns true if the command exists."""
+    try:
+      # We assume git is newer than 1.7.  See: crbug.com/114483
+      result, version = scm.GIT.AssertVersion('1.7')
+      if not result:
+        raise gclient_utils.Error('Git version is older than 1.7: %s' % version)
+      return result
+    except OSError:
+      return False
+
   def GetCheckoutRoot(self):
     return scm.GIT.GetCheckoutRoot(self.checkout_path)
 

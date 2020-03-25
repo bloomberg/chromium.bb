@@ -38,23 +38,6 @@ class GitWrapperTestCase(unittest.TestCase):
     self.assertEqual(scm.GIT.GetEmail(self.root_dir), 'mini@me.com')
     mockCapture.assert_called_with(['config', 'user.email'], cwd=self.root_dir)
 
-  @mock.patch('scm.GIT.Capture')
-  def testAssertVersion(self, mockCapture):
-    cases = [
-        ('1.7', True),
-        ('1.7.9', True),
-        ('1.7.9.foo-bar-baz', True),
-        ('1.8', True),
-        ('1.6.9', False),
-    ]
-    for expected_version, expected_ok in cases:
-      class GIT(scm.GIT):
-        pass
-      mockCapture.return_value = 'git version ' + expected_version
-      ok, version = GIT.AssertVersion('1.7')
-      self.assertEqual(expected_ok, ok)
-      self.assertEqual(expected_version, version)
-
   def testRefToRemoteRef(self):
     remote = 'origin'
     refs = {
