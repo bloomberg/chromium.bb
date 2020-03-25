@@ -1710,8 +1710,8 @@ class PrepareForBuildHandler(_CommonPrepareBundle):
     cros_build_lib.run(
         [
             'remove_indirect_calls',
-            '--input=' + redacted_temp,
-            '--output=' + removed_temp,
+            '--input=' + self.chroot.chroot_path(redacted_temp),
+            '--output=' + self.chroot.chroot_path(removed_temp),
         ],
         enter_chroot=True,
         print_cmd=True,
