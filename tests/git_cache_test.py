@@ -152,7 +152,7 @@ class GitCacheDirTest(unittest.TestCase):
 
       git_cache.Mirror._GIT_CONFIG_LOCATION = ['-f', tmpFile]
 
-      self.assertEqual(git_cache.Mirror.GetCachePath(), b'hello world')
+      self.assertEqual(git_cache.Mirror.GetCachePath(), 'hello world')
     finally:
       git_cache.Mirror._GIT_CONFIG_LOCATION = old
       os.remove(tmpFile)
