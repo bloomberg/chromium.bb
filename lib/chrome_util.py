@@ -14,11 +14,15 @@ import os
 import re
 import shlex
 import shutil
+import sys
 
 from chromite.lib import failures_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # Taken from external/gyp.git/pylib.
