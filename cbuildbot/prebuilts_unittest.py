@@ -34,22 +34,15 @@ class PrebuiltTest(cros_test_lib.RunCommandTempDirTestCase):
   def testUploadPrebuilts(self,
                           builder_type=constants.POSTSUBMIT_TYPE,
                           private=False,
-                          chrome_rev=None,
                           version=None):
     """Test UploadPrebuilts with a public location."""
-    prebuilts.UploadPrebuilts(builder_type, chrome_rev, private,
-                              buildroot=self._buildroot, board=self._board,
-                              version=version)
+    prebuilts.UploadPrebuilts(builder_type, private, buildroot=self._buildroot,
+                              board=self._board, version=version)
     self.assertCommandContains([builder_type, 'gs://chromeos-prebuilt'])
 
   def testUploadPrivatePrebuilts(self):
     """Test UploadPrebuilts with a private location."""
     self.testUploadPrebuilts(private=True)
-
-  def testChromePrebuilts(self):
-    """Test UploadPrebuilts for Chrome prebuilts."""
-    self.testUploadPrebuilts(builder_type=constants.CHROME_PFQ_TYPE,
-                             chrome_rev='tot')
 
   def testSdkPrebuilts(self):
     """Test UploadPrebuilts for SDK builds."""

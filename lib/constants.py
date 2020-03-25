@@ -552,11 +552,6 @@ INCREMENTAL_TYPE = 'binary'
 # These builds serve as PFQ builders.  This is being deprecated.
 PFQ_TYPE = 'pfq'
 
-# Chrome PFQ type.  Incremental build type that builds and validates new
-# versions of Chrome.  Only valid if set with CHROME_REV.  See
-# VALID_CHROME_REVISIONS for more information.
-CHROME_PFQ_TYPE = 'chrome'
-
 # Android PFQ type.  Builds and validates new versions of Android.
 ANDROID_PFQ_TYPE = 'android'
 
@@ -594,7 +589,6 @@ VALID_BUILD_TYPES = (
     CANARY_TYPE,
     CHROOT_BUILDER_TYPE,
     CHROOT_BUILDER_BOARD,
-    CHROME_PFQ_TYPE,
     ANDROID_PFQ_TYPE,
     PFQ_TYPE,
     PAYLOADS_TYPE,
@@ -974,10 +968,6 @@ EXTRA_BUCKETS_FILES_BLACKLIST = [
 # AFDO common constants.
 # How long does the AFDO_record autotest have to generate the AFDO perf data.
 AFDO_GENERATE_TIMEOUT = 120 * 60
-
-# Manual Uprev PFQ constants.
-STAGING_PFQ_BRANCH_PREFIX = 'staging_pfq_branch_'
-PFQ_REF = 'pfq'
 
 # Gmail Credentials.
 GMAIL_TOKEN_CACHE_FILE = os.path.expanduser('~/.gmail_credentials')

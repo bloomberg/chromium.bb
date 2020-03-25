@@ -180,7 +180,6 @@ class UploadDevInstallerPrebuiltsStageTest(
   def _Prepare(self, bot_id=None, **kwargs):  # pylint: disable=arguments-differ
     super(UploadDevInstallerPrebuiltsStageTest, self)._Prepare(bot_id, **kwargs)
 
-    self._run.options.chrome_rev = None
     self._run.options.prebuilts = True
     self._run.config['dev_installer_prebuilts'] = True
     self._run.config['binhost_bucket'] = 'gs://testbucket'

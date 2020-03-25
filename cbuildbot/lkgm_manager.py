@@ -101,7 +101,6 @@ class LKGMManager(manifest_version.BuildSpecsManager):
   """
   # Sub-directories for LKGM and Chrome LKGM's.
   LKGM_SUBDIR = 'LKGM-candidates'
-  CHROME_PFQ_SUBDIR = 'chrome-LKGM-candidates'
   ANDROID_PFQ_SUBDIR = 'android-LKGM-candidates'
   TOOLCHAIN_SUBDIR = 'toolchain'
   FULL_SUBDIR = 'full'
@@ -147,9 +146,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     self.build_type = build_type
     # Chrome PFQ and PFQ's exist at the same time and version separately so they
     # must have separate subdirs in the manifest-versions repository.
-    if self.build_type == constants.CHROME_PFQ_TYPE:
-      self.rel_working_dir = self.CHROME_PFQ_SUBDIR
-    elif self.build_type == constants.ANDROID_PFQ_TYPE:
+    if self.build_type == constants.ANDROID_PFQ_TYPE:
       self.rel_working_dir = self.ANDROID_PFQ_SUBDIR
     elif self.build_type == constants.TOOLCHAIN_TYPE:
       self.rel_working_dir = self.TOOLCHAIN_SUBDIR

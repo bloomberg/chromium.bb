@@ -197,8 +197,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     # TODO(build): Run this logic in debug mode too.
     if (not self._run.options.debug and
         config_lib.IsPFQType(self._run.config.build_type) and
-        self._run.config.master and self._run.manifest_branch == 'master' and
-        self._run.config.build_type != constants.CHROME_PFQ_TYPE):
+        self._run.config.master and self._run.manifest_branch == 'master'):
       self._run.attrs.manifest_manager.PromoteCandidate()
       if sync_stages.MasterSlaveLKGMSyncStage.external_manager:
         sync_stages.MasterSlaveLKGMSyncStage.external_manager.PromoteCandidate()
@@ -589,7 +588,6 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
                buildstore,
                sync_stage,
                success,
-               stage_push=False,
                **kwargs):
     """Constructor.
 
@@ -598,14 +596,11 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
       buildstore: BuildStore instance to make DB calls with.
       sync_stage: An instance of sync stage.
       success: Boolean indicating whether the build succeeded.
-      stage_push: Indicating whether to stage the push instead of pushing
-                  it to master, default to False.
     """
     super(PublishUprevChangesStage, self).__init__(builder_run, buildstore,
                                                    **kwargs)
     self.sync_stage = sync_stage
     self.success = success
-    self.stage_push = stage_push
 
   def CheckMasterBinhostTest(self, buildbucket_id):
     """Check whether the master builder has passed BinhostTest stage.
@@ -699,22 +694,6 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
     assert self._run.config.master
     assert self._run.config.push_overlays
 
-    staging_branch = None
-    if self.stage_push:
-      if not config_lib.IsMasterChromePFQ(self._run.config):
-        raise ValueError('This build must be a master chrome PFQ build '
-                         'when stage_push is True.')
-      build_identifier, _ = self._run.GetCIDBHandle()
-      buildbucket_id = build_identifier.buildbucket_id
-
-      # If the master passed BinHostTest and all the important slaves passed
-      # UploadPrebuiltsTest, push uprev commits to a staging_branch.
-      if (self.CheckMasterBinhostTest(buildbucket_id) and
-          self.CheckSlaveUploadPrebuiltsTest()):
-        staging_branch = ('refs/' + constants.PFQ_REF + '/' +
-                          constants.STAGING_PFQ_BRANCH_PREFIX +
-                          str(buildbucket_id))
-
     # If we're a commit queue, we should clean out our local changes, resync,
     # and reapply our uprevs. This is necessary so that 1) we are sure to point
     # at the remote SHA1s, not our local SHA1s; 2) we can avoid doing a
@@ -731,7 +710,7 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
     # the local commits generated in AFDOUpdateEbuild stage to the
     # staging_branch, cleaning up repository here will wipe out the local
     # commits.
-    if not (self.success or staging_branch is not None):
+    if not self.success:
       repo = self.GetRepoRepository()
 
       # Clean up our root and sync down the latest changes that were
@@ -753,10 +732,8 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
             self._run.config.push_overlays, buildroot=self._build_root)
         commands.RegenPortageCache(push_overlays)
 
-    # When prebuilts is True, if it's a successful run or staging_branch is
-    # not None for a master-chrome-pfq run, update binhost conf
-    if (self._run.config.prebuilts and
-        (self.success or staging_branch is not None)):
+    # When prebuilts is True, if it's a successful run, update binhost conf.
+    if self._run.config.prebuilts and self.success:
       confwriter = prebuilts.BinhostConfWriter(self._run)
       confwriter.Perform()
 
@@ -764,7 +741,6 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
     commands.UprevPush(
         self._build_root,
         overlay_type=self._run.config.push_overlays,
-        dryrun=self._run.options.debug,
-        staging_branch=staging_branch)
+        dryrun=self._run.options.debug)
     if config_lib.IsMasterAndroidPFQ(self._run.config) and self.success:
       self._run.attrs.metadata.UpdateWithDict({'UprevvedAndroid': True})

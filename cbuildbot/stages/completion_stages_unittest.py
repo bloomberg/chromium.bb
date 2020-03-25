@@ -329,8 +329,7 @@ class PublishUprevChangesStageTest(
     self._run.options.prebuilts = True
     self.RunStage()
     self.push_mock.assert_called_once_with(
-        self.build_root, overlay_type='public', dryrun=False,
-        staging_branch=None)
+        self.build_root, overlay_type='public', dryrun=False)
     self.assertTrue(self._run.attrs.metadata.GetValue('UprevvedAndroid'))
     metadata_dict = self._run.attrs.metadata.GetDict()
     self.assertNotIn('UprevvedChrome', metadata_dict)
@@ -340,4 +339,4 @@ class PublishUprevChangesStageTest(
     stage = self.ConstructStage()
     stage.PerformStage()
     self.push_mock.assert_called_once_with(
-        self.build_root, overlay_type='both', dryrun=False, staging_branch=None)
+        self.build_root, overlay_type='both', dryrun=False)

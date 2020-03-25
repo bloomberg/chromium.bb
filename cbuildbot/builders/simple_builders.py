@@ -424,8 +424,7 @@ class SimpleBuilder(generic_builders.Builder):
   def RunStages(self):
     """Runs through build process."""
     # TODO(sosa): Split these out into classes.
-    if ((self._run.config.build_type == constants.CHROME_PFQ_TYPE or
-         self._run.config.build_type == constants.ANDROID_PFQ_TYPE) and
+    if (self._run.config.build_type == constants.ANDROID_PFQ_TYPE and
         self._run.config.master):
       self._RunMasterPaladinOrPFQBuild()
     else:
@@ -459,15 +458,11 @@ class DistributedBuilder(SimpleBuilder):
     """
     # Determine sync class to use.  CQ overrides PFQ bits so should check it
     # first.
-    if self._run.config.pre_cq:
-      assert False, 'Pre-CQ no longer supported'
-    elif config_lib.IsCanaryType(self._run.config.build_type):
+    if config_lib.IsCanaryType(self._run.config.build_type):
       sync_stage = self._GetStageInstance(
           sync_stages.ManifestVersionedSyncStage)
       self.completion_stage_class = (
           completion_stages.CanaryCompletionStage)
-    elif self._run.config.build_type == constants.CHROME_PFQ_TYPE:
-      assert False, 'Chrome PFQ no longer supported'
     elif (config_lib.IsPFQType(self._run.config.build_type) or
           self._run.config.build_type in (constants.TOOLCHAIN_TYPE,
                                           constants.FULL_TYPE,
@@ -523,10 +518,6 @@ class DistributedBuilder(SimpleBuilder):
         without completing if it raises ExitEarlyException.
       completion_successful: Whether the compeletion_stage succeeded.
     """
-    is_master_chrome_pfq = config_lib.IsMasterChromePFQ(self._run.config)
-
-    updateChromeEbuild_successful = False
-    updateKernelEbuild_successful = False
     try:
       # When (afdo_update_ebuild and not afdo_generate_min) is True,
       # if completion_stage passed, need to run
@@ -534,14 +525,11 @@ class DistributedBuilder(SimpleBuilder):
       # if it's a master_chrome_pfq build and compeletion_stage failed,
       # need to run AFDOUpdateChromeEbuildStage to prepare for pushing commits
       # to a staging branch.
-      if ((completion_successful or is_master_chrome_pfq) and
-          not self._run.config.afdo_generate_min):
+      if completion_successful and not self._run.config.afdo_generate_min:
         if self._run.config.afdo_update_chrome_ebuild:
           self._RunStage(afdo_stages.AFDOUpdateChromeEbuildStage)
-          updateChromeEbuild_successful = True
         if self._run.config.afdo_update_kernel_ebuild:
           self._RunStage(afdo_stages.AFDOUpdateKernelEbuildStage)
-          updateKernelEbuild_successful = True
     finally:
       if self._run.config.master:
         self._RunStage(report_stages.SlaveFailureSummaryStage)
@@ -559,25 +547,13 @@ class DistributedBuilder(SimpleBuilder):
       if self._run.config.push_overlays:
         publish = (was_build_successful and completion_successful and
                    build_finished)
-        # If this build is master chrome pfq, completion_stage failed,
-        # AFDOUpdateChromeEbuildStage passed, and the necessary build stages
-        # passed, it means publish is False and we need to stage the
-        # push to another branch instead of master.
-        stage_push = (is_master_chrome_pfq and
-                      not completion_successful and
-                      (updateChromeEbuild_successful or
-                       updateKernelEbuild_successful) and
-                      was_build_successful and
-                      build_finished)
-
         # CQ and Master Chrome PFQ no longer publish uprevs. For Master Chrome
         # PFQ this is because this duty is being transitioned to the Chrome
         # PUpr in the PCQ world. See http://go/pupr.
         # There is no easy way to disable this in ChromeOS config,
         # so hack the check here.
-        if not is_master_chrome_pfq:
-          self._RunStage(completion_stages.PublishUprevChangesStage,
-                         self.sync_stage, publish, stage_push)
+        self._RunStage(completion_stages.PublishUprevChangesStage,
+                       self.sync_stage, publish)
 
   def RunStages(self):
     """Runs simple builder logic and publishes information to overlays."""

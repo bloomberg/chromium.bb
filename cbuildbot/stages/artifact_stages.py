@@ -709,7 +709,6 @@ class UploadPrebuiltsStage(generic_stages.BoardSpecificBuilderStage):
     common_kwargs = {
         'buildroot': self._build_root,
         'category': prebuilt_type,
-        'chrome_rev': self._chrome_rev,
         'version': self.prebuilts_version,
     }
 

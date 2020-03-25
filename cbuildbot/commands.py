@@ -2186,15 +2186,12 @@ def RegenPortageCache(overlays):
 def UprevPush(buildroot,
               overlay_type,
               dryrun=True,
-              staging_branch=None,
               workspace=None):
   """Pushes uprev changes to the main line.
 
   Args:
     buildroot: Root directory where build occurs.
     dryrun: If True, do not actually push.
-    staging_branch: If not None, push uprev commits to this
-                    staging_branch.
     overlay_type: A value from constants.VALID_OVERLAYS.
     workspace: Alternative buildroot directory to uprev.
   """
@@ -2208,8 +2205,6 @@ def UprevPush(buildroot,
       '--overlay-type',
       overlay_type,
   ]
-  if staging_branch is not None:
-    cmd.append('--staging_branch=%s' % staging_branch)
   if dryrun:
     cmd.append('--dryrun')
   RunBuildScript(buildroot, cmd, chromite_cmd=True)

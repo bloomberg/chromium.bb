@@ -119,12 +119,6 @@ class SyncChromeStage(generic_stages.BuilderStage,
                         useflags,
                         git_cache_dir=git_cache_dir,
                         **kwargs)
-    if (self._chrome_rev and not chrome_atom_to_build and
-        self._run.options.buildbot and
-        self._run.config.build_type == constants.CHROME_PFQ_TYPE):
-      logging.info('Chrome already uprevved. Nothing else to do.')
-      raise failures_lib.ExitEarlyException(
-          'SyncChromeStage finished and exited early.')
 
   def _WriteChromeVersionToMetadata(self):
     """Write chrome version to metadata and upload partial json file."""

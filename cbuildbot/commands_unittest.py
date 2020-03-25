@@ -838,14 +838,12 @@ class CBuildBotTest(cros_test_lib.RunCommandTempDirTestCase):
     """See if we can generate the max cros_mark_as_stable commandline."""
     commands.UprevPush(self._buildroot,
                        dryrun=False,
-                       staging_branch='stage-branch',
                        overlay_type=constants.PUBLIC_OVERLAYS,
                        workspace='/workspace')
     self.assertCommandContains([
         'push',
         '--buildroot', '/workspace',
         '--overlay-type', 'public',
-        '--staging_branch=%s' % 'stage-branch',
     ])
 
   def testVerifyBinpkgMissing(self):
