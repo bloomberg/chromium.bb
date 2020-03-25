@@ -18,6 +18,7 @@
 #define LIBGAV1_SRC_DECODER_IMPL_H_
 
 #include <array>
+#include <atomic>
 #include <condition_variable>  // NOLINT (unapproved c++11 header)
 #include <cstddef>
 #include <cstdint>
@@ -128,6 +129,14 @@ class DecoderImpl : public Allocable {
  private:
   explicit DecoderImpl(const DecoderSettings* settings);
   StatusCode Init();
+  // Used only in frame parallel mode. Signals failure and waits until the
+  // worker threads are aborted if |status| is a failure status. If |status| is
+  // equal to kStatusOk or kStatusTryAgain, this function does not do anything.
+  // Always returns the input parameter |status| as the return value.
+  //
+  // This function is called only from the application thread (from
+  // EnqueueFrame() and DequeueFrame()).
+  StatusCode SignalFailure(StatusCode status);
 
   bool AllocateCurrentFrame(RefCountedBuffer* current_frame,
                             const ColorConfig& color_config,
@@ -213,6 +222,15 @@ class DecoderImpl : public Allocable {
   std::mutex mutex_;
   std::condition_variable decoded_condvar_;
   std::unique_ptr<ThreadPool> frame_thread_pool_;
+
+  // In frame parallel mode, there are two primary points of failure:
+  //  1) ParseAndSchedule()
+  //  2) DecodeTiles()
+  // Both of these functions have to respond to the other one failing by
+  // aborting whatever they are doing. This variable is used to accomplish that.
+  std::atomic<bool> abort_{false};
+  // Stores the failure status if |abort_| is true.
+  std::atomic<StatusCode> failure_status_{kStatusOk};
 
   ObuSequenceHeader sequence_header_ = {};
   // If true, sequence_header is valid.

@@ -210,6 +210,15 @@ RefCountedBufferPtr BufferPool::GetFreeBuffer() {
   return RefCountedBufferPtr(buffer, RefCountedBuffer::ReturnToBufferPool);
 }
 
+void BufferPool::Abort() {
+  std::unique_lock<std::mutex> lock(mutex_);
+  for (auto buffer : buffers_) {
+    if (buffer->in_use_) {
+      buffer->Abort();
+    }
+  }
+}
+
 void BufferPool::ReturnUnusedBuffer(RefCountedBuffer* buffer) {
   std::lock_guard<std::mutex> lock(mutex_);
   assert(buffer->in_use_);

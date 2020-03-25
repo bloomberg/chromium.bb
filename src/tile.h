@@ -382,7 +382,7 @@ class Tile : public Allocable {
   void ReadVariableTransformTree(const Block& block, int row4x4, int column4x4,
                                  TransformSize tx_size);
   void DecodeTransformSize(const Block& block);  // 5.11.16.
-  void ComputePrediction(const Block& block);    // 5.11.33.
+  bool ComputePrediction(const Block& block);    // 5.11.33.
   // |x4| and |y4| are the column and row positions of the 4x4 block. |w4| and
   // |h4| are the width and height in 4x4 units of |tx_size|.
   int GetTransformAllZeroContext(const Block& block, Plane plane,
@@ -440,7 +440,7 @@ class Tile : public Allocable {
                               GlobalMotion* global_motion_params,
                               GlobalMotion* local_warp_params)
       const;  // Part of section 7.11.3.1 in the spec.
-  void InterPrediction(const Block& block, Plane plane, int x, int y,
+  bool InterPrediction(const Block& block, Plane plane, int x, int y,
                        int prediction_width, int prediction_height,
                        int candidate_row, int candidate_column,
                        bool* is_local_valid,
@@ -467,24 +467,24 @@ class Tile : public Allocable {
                           uint8_t* block_buffer,
                           ptrdiff_t convolve_buffer_stride,
                           ptrdiff_t block_extended_width);
-  void BlockInterPrediction(const Block& block, Plane plane,
+  bool BlockInterPrediction(const Block& block, Plane plane,
                             int reference_frame_index, const MotionVector& mv,
                             int x, int y, int width, int height,
                             int candidate_row, int candidate_column,
                             uint16_t* prediction, bool is_compound,
                             bool is_inter_intra, uint8_t* dest,
                             ptrdiff_t dest_stride);  // 7.11.3.4.
-  void BlockWarpProcess(const Block& block, Plane plane, int index,
+  bool BlockWarpProcess(const Block& block, Plane plane, int index,
                         int block_start_x, int block_start_y, int width,
                         int height, GlobalMotion* warp_params, bool is_compound,
                         bool is_inter_intra, uint8_t* dest,
                         ptrdiff_t dest_stride);  // 7.11.3.5.
-  void ObmcBlockPrediction(const Block& block, const MotionVector& mv,
+  bool ObmcBlockPrediction(const Block& block, const MotionVector& mv,
                            Plane plane, int reference_frame_index, int width,
                            int height, int x, int y, int candidate_row,
                            int candidate_column,
                            ObmcDirection blending_direction);
-  void ObmcPrediction(const Block& block, Plane plane, int width,
+  bool ObmcPrediction(const Block& block, Plane plane, int width,
                       int height);  // 7.11.3.9.
   void DistanceWeightedPrediction(void* prediction_0, void* prediction_1,
                                   int width, int height, int candidate_row,

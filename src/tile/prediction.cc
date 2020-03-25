@@ -718,7 +718,7 @@ GlobalMotion* Tile::GetWarpParams(
   return nullptr;
 }
 
-void Tile::InterPrediction(const Block& block, const Plane plane, const int x,
+bool Tile::InterPrediction(const Block& block, const Plane plane, const int x,
                            const int y, const int prediction_width,
                            const int prediction_height, int candidate_row,
                            int candidate_column, bool* const is_local_valid,
@@ -746,20 +746,24 @@ void Tile::InterPrediction(const Block& block, const Plane plane, const int x,
                       prediction_parameters, reference_type, is_local_valid,
                       &global_motion_params, local_warp_params);
     if (warp_params != nullptr) {
-      BlockWarpProcess(block, plane, index, x, y, prediction_width,
-                       prediction_height, warp_params, is_compound,
-                       is_inter_intra, dest, dest_stride);
+      if (!BlockWarpProcess(block, plane, index, x, y, prediction_width,
+                            prediction_height, warp_params, is_compound,
+                            is_inter_intra, dest, dest_stride)) {
+        return false;
+      }
     } else {
       const int reference_index =
           prediction_parameters.use_intra_block_copy
               ? -1
               : frame_header_.reference_frame_index[reference_type -
                                                     kReferenceFrameLast];
-      BlockInterPrediction(block, plane, reference_index,
-                           bp_reference.mv.mv[index], x, y, prediction_width,
-                           prediction_height, candidate_row, candidate_column,
-                           block.scratch_buffer->prediction_buffer[index],
-                           is_compound, is_inter_intra, dest, dest_stride);
+      if (!BlockInterPrediction(
+              block, plane, reference_index, bp_reference.mv.mv[index], x, y,
+              prediction_width, prediction_height, candidate_row,
+              candidate_column, block.scratch_buffer->prediction_buffer[index],
+              is_compound, is_inter_intra, dest, dest_stride)) {
+        return false;
+      }
     }
   }
 
@@ -809,7 +813,9 @@ void Tile::InterPrediction(const Block& block, const Plane plane, const int x,
                             dest, dest_stride);
   } else if (prediction_parameters.motion_mode == kMotionModeObmc) {
     // Obmc mode is allowed only for single reference (!is_compound).
-    ObmcPrediction(block, plane, prediction_width, prediction_height);
+    if (!ObmcPrediction(block, plane, prediction_width, prediction_height)) {
+      return false;
+    }
   } else if (is_inter_intra) {
     // InterIntra and obmc must be mutually exclusive.
     InterIntraPrediction(
@@ -817,9 +823,10 @@ void Tile::InterPrediction(const Block& block, const Plane plane, const int x,
         prediction_mask_stride, prediction_parameters, prediction_width,
         prediction_height, subsampling_x, subsampling_y, dest, dest_stride);
   }
+  return true;
 }
 
-void Tile::ObmcBlockPrediction(const Block& block, const MotionVector& mv,
+bool Tile::ObmcBlockPrediction(const Block& block, const MotionVector& mv,
                                const Plane plane,
                                const int reference_frame_index, const int width,
                                const int height, const int x, const int y,
@@ -838,17 +845,21 @@ void Tile::ObmcBlockPrediction(const Block& block, const MotionVector& mv,
       reinterpret_cast<uint8_t*>(block.scratch_buffer->prediction_buffer[1]);
   const ptrdiff_t obmc_buffer_stride =
       (bitdepth == 8) ? width : width * sizeof(uint16_t);
-  BlockInterPrediction(block, plane, reference_frame_index, mv, x, y, width,
-                       height, candidate_row, candidate_column, nullptr, false,
-                       false, obmc_buffer, obmc_buffer_stride);
+  if (!BlockInterPrediction(block, plane, reference_frame_index, mv, x, y,
+                            width, height, candidate_row, candidate_column,
+                            nullptr, false, false, obmc_buffer,
+                            obmc_buffer_stride)) {
+    return false;
+  }
 
   uint8_t* const prediction = GetStartPoint(buffer_, plane, x, y, bitdepth);
   const ptrdiff_t prediction_stride = buffer_[plane].columns();
   dsp_.obmc_blend[blending_direction](prediction, prediction_stride, width,
                                       height, obmc_buffer, obmc_buffer_stride);
+  return true;
 }
 
-void Tile::ObmcPrediction(const Block& block, const Plane plane,
+bool Tile::ObmcPrediction(const Block& block, const Plane plane,
                           const int width, const int height) {
   const int subsampling_x = subsampling_x_[plane];
   const int subsampling_y = subsampling_y_[plane];
@@ -875,11 +886,13 @@ void Tile::ObmcPrediction(const Block& block, const Plane plane,
                                                 kReferenceFrameLast];
         const int prediction_width =
             std::min(width, MultiplyBy4(step) >> subsampling_x);
-        ObmcBlockPrediction(
-            block, bp_top.mv.mv[0], plane, candidate_reference_frame_index,
-            prediction_width, prediction_height,
-            MultiplyBy4(column4x4) >> subsampling_x, block_start_y,
-            candidate_row, candidate_column, kObmcDirectionVertical);
+        if (!ObmcBlockPrediction(
+                block, bp_top.mv.mv[0], plane, candidate_reference_frame_index,
+                prediction_width, prediction_height,
+                MultiplyBy4(column4x4) >> subsampling_x, block_start_y,
+                candidate_row, candidate_column, kObmcDirectionVertical)) {
+          return false;
+        }
       }
     }
   }
@@ -906,14 +919,17 @@ void Tile::ObmcPrediction(const Block& block, const Plane plane,
                                                 kReferenceFrameLast];
         const int prediction_height =
             std::min(height, MultiplyBy4(step) >> subsampling_y);
-        ObmcBlockPrediction(block, bp_left.mv.mv[0], plane,
-                            candidate_reference_frame_index, prediction_width,
-                            prediction_height, block_start_x,
-                            MultiplyBy4(row4x4) >> subsampling_y, candidate_row,
-                            candidate_column, kObmcDirectionHorizontal);
+        if (!ObmcBlockPrediction(
+                block, bp_left.mv.mv[0], plane, candidate_reference_frame_index,
+                prediction_width, prediction_height, block_start_x,
+                MultiplyBy4(row4x4) >> subsampling_y, candidate_row,
+                candidate_column, kObmcDirectionHorizontal)) {
+          return false;
+        }
       }
     }
   }
+  return true;
 }
 
 void Tile::DistanceWeightedPrediction(void* prediction_0, void* prediction_1,
@@ -1048,7 +1064,7 @@ void Tile::BuildConvolveBlock(
   }
 }
 
-void Tile::BlockInterPrediction(
+bool Tile::BlockInterPrediction(
     const Block& block, const Plane plane, const int reference_frame_index,
     const MotionVector& mv, const int x, const int y, const int width,
     const int height, const int candidate_row, const int candidate_column,
@@ -1120,7 +1136,9 @@ void Tile::BlockInterPrediction(
       // reference_y_max by 2 since we only track the progress of Y planes.
       reference_y_max = LeftShift(reference_y_max, subsampling_y);
     }
-    reference_frames_[reference_frame_index]->WaitUntil(reference_y_max);
+    if (!reference_frames_[reference_frame_index]->WaitUntil(reference_y_max)) {
+      return false;
+    }
   }
 
   const uint8_t* block_start = nullptr;
@@ -1211,9 +1229,10 @@ void Tile::BlockInterPrediction(
                   vertical_filter_index, start_x, start_y, width, height,
                   output, output_stride);
   }
+  return true;
 }
 
-void Tile::BlockWarpProcess(const Block& block, const Plane plane,
+bool Tile::BlockWarpProcess(const Block& block, const Plane plane,
                             const int index, const int block_start_x,
                             const int block_start_y, const int width,
                             const int height, GlobalMotion* const warp_params,
@@ -1256,7 +1275,9 @@ void Tile::BlockWarpProcess(const Block& block, const Plane plane,
     // For U and V planes with subsampling, we need to multiply reference_y_max
     // by 2 since we only track the progress of Y planes.
     reference_y_max = LeftShift(reference_y_max, subsampling_y_[plane]);
-    reference_frames_[reference_frame_index]->WaitUntil(reference_y_max);
+    if (!reference_frames_[reference_frame_index]->WaitUntil(reference_y_max)) {
+      return false;
+    }
   }
   if (is_compound) {
     dsp_.warp_compound(source, source_stride, source_width, source_height,
@@ -1285,6 +1306,7 @@ void Tile::BlockWarpProcess(const Block& block, const Plane plane,
               warp_params->beta, warp_params->gamma, warp_params->delta, output,
               output_stride);
   }
+  return true;
 }
 
 }  // namespace libgav1

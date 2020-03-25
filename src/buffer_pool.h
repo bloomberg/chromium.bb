@@ -205,6 +205,17 @@ class RefCountedBuffer {
     film_grain_params_ = params;
   }
 
+  // This will wake up the WaitUntil*() functions and make them return false.
+  void Abort() {
+    {
+      std::lock_guard<std::mutex> lock(mutex_);
+      abort_ = true;
+    }
+    parsed_condvar_.notify_all();
+    decoded_condvar_.notify_all();
+    progress_row_condvar_.notify_all();
+  }
+
   void SetFrameState(FrameState frame_state) {
     std::lock_guard<std::mutex> lock(mutex_);
     frame_state_ = frame_state;
@@ -231,33 +242,42 @@ class RefCountedBuffer {
     frame_state_ = kFrameStateStarted;
   }
 
+  // All the WaitUntil* functions will return true if the desired wait state was
+  // reached successfully. If the return value is false, then the caller must
+  // assume that the wait was not successful and try to stop whatever they are
+  // doing as early as possible.
+
   // Waits until the frame has been parsed.
-  void WaitUntilParsed() {
+  bool WaitUntilParsed() {
     std::unique_lock<std::mutex> lock(mutex_);
-    while (frame_state_ < kFrameStateParsed) {
+    while (frame_state_ < kFrameStateParsed && !abort_) {
       parsed_condvar_.wait(lock);
     }
+    return !abort_;
   }
 
   // Waits until the |progress_row| has been decoded (as indicated either by
   // |progress_row_| or |frame_state_|).
-  void WaitUntil(int progress_row) {
+  bool WaitUntil(int progress_row) {
     // If |progress_row| is negative, it means that the wait is on the top
     // border to be available. The top border will be available when row 0 has
     // been decoded. So we can simply wait on row 0 instead.
     progress_row = std::max(progress_row, 0);
     std::unique_lock<std::mutex> lock(mutex_);
-    while (progress_row_ < progress_row && frame_state_ != kFrameStateDecoded) {
+    while (progress_row_ < progress_row && frame_state_ != kFrameStateDecoded &&
+           !abort_) {
       progress_row_condvar_.wait(lock);
     }
+    return !abort_;
   }
 
   // Waits until the entire frame has been decoded.
-  void WaitUntilDecoded() {
+  bool WaitUntilDecoded() {
     std::unique_lock<std::mutex> lock(mutex_);
-    while (frame_state_ != kFrameStateDecoded) {
+    while (frame_state_ != kFrameStateDecoded && !abort_) {
       decoded_condvar_.wait(lock);
     }
+    return !abort_;
   }
 
  private:
@@ -285,6 +305,7 @@ class RefCountedBuffer {
   std::condition_variable parsed_condvar_;
   // Signaled when the frame state is set to kFrameStateDecoded.
   std::condition_variable decoded_condvar_;
+  bool abort_ = false LIBGAV1_GUARDED_BY(mutex_);
 
   FrameType frame_type_ = kFrameKey;
   ChromaSamplePosition chroma_sample_position_ = kChromaSamplePositionUnknown;
@@ -356,6 +377,9 @@ class BufferPool {
   // buffer. If there is no free buffer, returns a null pointer. This function
   // is thread safe.
   RefCountedBufferPtr GetFreeBuffer();
+
+  // Aborts all the buffers that are in use.
+  void Abort();
 
  private:
   friend class RefCountedBuffer;

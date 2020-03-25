@@ -141,13 +141,32 @@ StatusCode DecoderImpl::EnqueueFrame(const uint8_t* data, size_t size,
                                      int64_t user_private_data,
                                      void* buffer_private_data) {
   if (data == nullptr || size == 0) return kStatusInvalidArgument;
+  if (abort_) return kStatusUnknownError;
   if (temporal_units_.Full()) {
     return kStatusTryAgain;
   }
   TemporalUnit temporal_unit(data, size, user_private_data,
                              buffer_private_data);
   temporal_units_.Push(std::move(temporal_unit));
-  return IsFrameParallel() ? ParseAndSchedule() : kStatusOk;
+  return IsFrameParallel() ? SignalFailure(ParseAndSchedule()) : kStatusOk;
+}
+
+StatusCode DecoderImpl::SignalFailure(StatusCode status) {
+  if (status == kStatusOk || status == kStatusTryAgain) return status;
+  abort_ = true;
+  failure_status_ = status;
+  // Make sure all waiting threads exit.
+  buffer_pool_.Abort();
+  frame_thread_pool_ = nullptr;
+  while (!temporal_units_.Empty()) {
+    if (settings_.release_input_buffer != nullptr) {
+      settings_.release_input_buffer(
+          settings_.callback_private_data,
+          temporal_units_.Front().buffer_private_data);
+    }
+    temporal_units_.Pop();
+  }
+  return status;
 }
 
 // DequeueFrame() follows the following policy to avoid holding unnecessary
@@ -180,12 +199,15 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
   }
   if (settings_.blocking_dequeue) {
     std::unique_lock<std::mutex> lock(mutex_);
-    while (!temporal_unit.decoded) {
+    while (!temporal_unit.decoded && !abort_) {
       decoded_condvar_.wait(lock);
     }
   } else {
-    std::unique_lock<std::mutex> lock(mutex_);
-    if (!temporal_unit.decoded) return kStatusTryAgain;
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (!temporal_unit.decoded && !abort_) return kStatusTryAgain;
+  }
+  if (abort_) {
+    return SignalFailure(failure_status_);
   }
   if (settings_.release_input_buffer != nullptr) {
     settings_.release_input_buffer(settings_.callback_private_data,
@@ -193,7 +215,7 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
   }
   if (temporal_unit.status != kStatusOk) {
     temporal_units_.Pop();
-    return temporal_unit.status;
+    return SignalFailure(temporal_unit.status);
   }
   if (!temporal_unit.has_displayable_frame) {
     *out_ptr = nullptr;
@@ -203,7 +225,7 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
   StatusCode status = CopyFrameToOutputBuffer(temporal_unit.output_frame);
   if (status != kStatusOk) {
     temporal_units_.Pop();
-    return status;
+    return SignalFailure(status);
   }
   buffer_.user_private_data = temporal_unit.user_private_data;
   *out_ptr = &buffer_;
@@ -274,15 +296,27 @@ StatusCode DecoderImpl::ParseAndSchedule() {
   for (auto& frame : temporal_unit.frames) {
     EncodedFrame* const encoded_frame = &frame;
     frame_thread_pool_->Schedule([this, encoded_frame]() {
+      if (abort_) return;
       const StatusCode status = DecodeFrame(encoded_frame);
+      if (abort_) return;
       encoded_frame->state = {};
       encoded_frame->frame = nullptr;
-      // TODO(vigneshv): Implement error handling.
       TemporalUnit& temporal_unit = encoded_frame->temporal_unit;
       std::lock_guard<std::mutex> lock(mutex_);
-      temporal_unit.status = status;
-      if (++temporal_unit.decoded_count == temporal_unit.frames.size()) {
-        temporal_unit.decoded = true;
+      // temporal_unit's status defaults to kStatusOk. So we need to set it only
+      // on error. If |abort_| is true at this point, it means that there has
+      // already been a failure. So we don't care about this subsequent failure.
+      // We will simply return the error code of the first failure.
+      if (status != kStatusOk) {
+        temporal_unit.status = status;
+        if (!abort_) {
+          abort_ = true;
+          failure_status_ = status;
+        }
+      }
+      temporal_unit.decoded =
+          ++temporal_unit.decoded_count == temporal_unit.frames.size();
+      if (temporal_unit.decoded || abort_) {
         decoded_condvar_.notify_one();
       }
     });
@@ -319,7 +353,9 @@ StatusCode DecoderImpl::DecodeFrame(EncodedFrame* const encoded_frame) {
       return status;
     }
   } else {
-    current_frame->WaitUntilDecoded();
+    if (!current_frame->WaitUntilDecoded()) {
+      return kStatusUnknownError;
+    }
   }
   if (!frame_header.show_frame && !frame_header.show_existing_frame) {
     // This frame is not displayable. Not an error.
@@ -543,7 +579,9 @@ StatusCode DecoderImpl::DecodeTiles(
       if (!state.reference_valid[i] || state.reference_frame[i] == nullptr) {
         continue;
       }
-      state.reference_frame[i]->WaitUntilParsed();
+      if (!state.reference_frame[i]->WaitUntilParsed()) {
+        return kStatusUnknownError;
+      }
     }
   }
   if (PostFilter::DoDeblock(frame_header, settings_.post_filter_mask)) {

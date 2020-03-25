@@ -1955,9 +1955,9 @@ void Tile::ResetEntropyContext(const Block& block) {
   }
 }
 
-void Tile::ComputePrediction(const Block& block) {
+bool Tile::ComputePrediction(const Block& block) {
   const BlockParameters& bp = *block.bp;
-  if (!bp.is_inter) return;
+  if (!bp.is_inter) return true;
   const int mask =
       (1 << (4 + static_cast<int>(sequence_header_.use_128x128_superblock))) -
       1;
@@ -2046,10 +2046,12 @@ void Tile::ComputePrediction(const Block& block) {
       int c = 0;
       int x = 0;
       do {
-        InterPrediction(block, static_cast<Plane>(plane), base_x + x,
-                        base_y + y, prediction_width, prediction_height,
-                        candidate_row + r, candidate_column + c,
-                        &is_local_valid, &local_warp_params);
+        if (!InterPrediction(block, static_cast<Plane>(plane), base_x + x,
+                             base_y + y, prediction_width, prediction_height,
+                             candidate_row + r, candidate_column + c,
+                             &is_local_valid, &local_warp_params)) {
+          return false;
+        }
         ++c;
         x += prediction_width;
       } while (x < block_width);
@@ -2057,6 +2059,7 @@ void Tile::ComputePrediction(const Block& block) {
       y += prediction_height;
     } while (y < block_height);
   } while (++plane < plane_count);
+  return true;
 }
 
 #undef CALL_BITDEPTH_FUNCTION
@@ -2113,8 +2116,10 @@ bool Tile::ProcessBlock(int row4x4, int column4x4, BlockSize block_size,
   if (split_parse_and_decode_) {
     if (!Residual(block, kProcessingModeParseOnly)) return false;
   } else {
-    ComputePrediction(block);
-    if (!Residual(block, kProcessingModeParseAndDecode)) return false;
+    if (!ComputePrediction(block) ||
+        !Residual(block, kProcessingModeParseAndDecode)) {
+      return false;
+    }
   }
   // If frame_header_.segmentation.enabled is false, bp.segment_id is 0 for all
   // blocks. We don't need to call save bp.segment_id in the current frame
@@ -2155,8 +2160,10 @@ bool Tile::DecodeBlock(ParameterTree* const tree,
   }
   const BlockSize block_size = tree->block_size();
   Block block(*this, block_size, row4x4, column4x4, scratch_buffer, residual);
-  ComputePrediction(block);
-  if (!Residual(block, kProcessingModeDecodeOnly)) return false;
+  if (!ComputePrediction(block) ||
+      !Residual(block, kProcessingModeDecodeOnly)) {
+    return false;
+  }
   if (kDeblockFilterBitMask && !build_bit_mask_when_parsing_) {
     BuildBitMask(block);
   }
