@@ -297,6 +297,7 @@ static double raw_motion_error_stdev(int *raw_motion_err_list,
 
 #define UL_INTRA_THRESH 50
 #define INVALID_ROW -1
+#define FIRST_PASS_ALT_REF_DISTANCE 16
 void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
   int mb_row, mb_col;
   MACROBLOCK *const x = &cpi->td.mb;
@@ -342,8 +343,10 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
   const YV12_BUFFER_CONFIG *golden_frame =
       get_ref_frame_yv12_buf(cm, GOLDEN_FRAME);
   const YV12_BUFFER_CONFIG *alt_ref_frame = NULL;
-  const int alt_ref_offset = 16 - (current_frame->frame_number % 16);
-  if (alt_ref_offset < 16) {
+  const int alt_ref_offset =
+      FIRST_PASS_ALT_REF_DISTANCE -
+      (current_frame->frame_number % FIRST_PASS_ALT_REF_DISTANCE);
+  if (alt_ref_offset < FIRST_PASS_ALT_REF_DISTANCE) {
     const struct lookahead_entry *const alt_ref_frame_buffer =
         av1_lookahead_peek(cpi->lookahead, alt_ref_offset,
                            cpi->compressor_stage);
@@ -355,7 +358,11 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
   double intra_factor;
   double brightness_factor;
   const int qindex = find_fp_qindex(seq_params->bit_depth);
-  const int mb_scale = mi_size_wide[BLOCK_16X16];
+  // First pass coding processes in raster scan with unit size of 16x16.
+  const BLOCK_SIZE fp_block_size = BLOCK_16X16;
+  const int fp_block_size_width = block_size_high[fp_block_size];
+  const int fp_block_size_height = block_size_wide[fp_block_size];
+  const int mb_scale = mi_size_wide[fp_block_size];
 
   int *raw_motion_err_list;
   int raw_motion_err_counts = 0;
@@ -370,7 +377,7 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
   aom_clear_system_state();
 
   set_mi_offsets(mi_params, xd, 0, 0);
-  xd->mi[0]->sb_type = BLOCK_16X16;
+  xd->mi[0]->sb_type = fp_block_size;
 
   intra_factor = 0.0;
   brightness_factor = 0.0;
@@ -415,23 +422,27 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
   src_y_stride = cpi->source->y_stride;
   recon_y_stride = this_frame->y_stride;
   recon_uv_stride = this_frame->uv_stride;
-  uv_mb_height = 16 >> (this_frame->y_height > this_frame->uv_height);
+  uv_mb_height =
+      fp_block_size_height >> (this_frame->y_height > this_frame->uv_height);
 
   for (mb_row = 0; mb_row < mi_params->mb_rows; ++mb_row) {
     MV best_ref_mv = kZeroMv;
 
     // Reset above block coeffs.
     xd->up_available = (mb_row != 0);
-    recon_yoffset = (mb_row * recon_y_stride * 16);
-    src_yoffset = (mb_row * src_y_stride * 16);
+    recon_yoffset = (mb_row * recon_y_stride * fp_block_size_height);
+    src_yoffset = (mb_row * src_y_stride * fp_block_size_height);
     recon_uvoffset = (mb_row * recon_uv_stride * uv_mb_height);
     int alt_ref_frame_yoffset =
-        (alt_ref_frame != NULL) ? mb_row * alt_ref_frame->y_stride * 16 : -1;
+        (alt_ref_frame != NULL)
+            ? mb_row * alt_ref_frame->y_stride * fp_block_size_height
+            : -1;
 
     // Set up limit values for motion vectors to prevent them extending
     // outside the UMV borders.
     av1_set_mv_row_limits(mi_params, &x->mv_limits, (mb_row << 2),
-                          (16 >> MI_SIZE_LOG2), cpi->oxcf.border_in_pixels);
+                          (fp_block_size_height >> MI_SIZE_LOG2),
+                          cpi->oxcf.border_in_pixels);
 
     for (mb_col = 0; mb_col < mi_params->mb_cols; ++mb_col) {
       int this_intra_error;
@@ -460,7 +471,7 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
       xd->lossless[xd->mi[0]->segment_id] = (qindex == 0);
       xd->mi[0]->mode = DC_PRED;
       xd->mi[0]->tx_size =
-          use_dc_pred ? (bsize >= BLOCK_16X16 ? TX_16X16 : TX_8X8) : TX_4X4;
+          use_dc_pred ? (bsize >= fp_block_size ? TX_16X16 : TX_8X8) : TX_4X4;
       av1_encode_intra_block_plane(cpi, x, bsize, 0, DRY_RUN_NORMAL, 0);
       this_intra_error = aom_get_mb_ss(x->plane[0].src_diff);
 
@@ -524,7 +535,8 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
       // Set up limit values for motion vectors to prevent them extending
       // outside the UMV borders.
       av1_set_mv_col_limits(mi_params, &x->mv_limits, (mb_col << 2),
-                            (16 >> MI_SIZE_LOG2), cpi->oxcf.border_in_pixels);
+                            (fp_block_size_height >> MI_SIZE_LOG2),
+                            cpi->oxcf.border_in_pixels);
 
       if (!frame_is_intra_only(cm)) {  // Do a motion search
         int tmp_err, motion_error, raw_motion_error;
@@ -753,18 +765,18 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
       coded_error += (int64_t)this_intra_error;
 
       // Adjust to the next column of MBs.
-      x->plane[0].src.buf += 16;
+      x->plane[0].src.buf += fp_block_size_width;
       x->plane[1].src.buf += uv_mb_height;
       x->plane[2].src.buf += uv_mb_height;
 
-      recon_yoffset += 16;
-      src_yoffset += 16;
+      recon_yoffset += fp_block_size_width;
+      src_yoffset += fp_block_size_width;
       recon_uvoffset += uv_mb_height;
-      alt_ref_frame_yoffset += 16;
+      alt_ref_frame_yoffset += fp_block_size_width;
     }
     // Adjust to the next row of MBs.
-    x->plane[0].src.buf +=
-        16 * x->plane[0].src.stride - 16 * mi_params->mb_cols;
+    x->plane[0].src.buf += fp_block_size_height * x->plane[0].src.stride -
+                           fp_block_size_width * mi_params->mb_cols;
     x->plane[1].src.buf += uv_mb_height * x->plane[1].src.stride -
                            uv_mb_height * mi_params->mb_cols;
     x->plane[2].src.buf += uv_mb_height * x->plane[1].src.stride -
