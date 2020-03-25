@@ -58,6 +58,7 @@ class VIEWS_EXPORT TooltipController
 
   // Overridden from aura::WindowObserver.
   void OnWindowDestroyed(aura::Window* window) override;
+  void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
   void OnWindowPropertyChanged(aura::Window* window,
                                const void* key,
                                intptr_t old) override;
