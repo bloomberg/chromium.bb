@@ -98,6 +98,11 @@ class V8ContextInfo {
 
 class V8_EXPORT V8StackTrace {
  public:
+  // Set this to false if callstack capturing should always happen.  By default, this
+  // is true, which means callstack capturing only happens when the inspector is open
+  // (which is the default upstream behavior).
+  static bool s_stackCaptureControlledByInspector;
+
   virtual StringView firstNonEmptySourceURL() const = 0;
   virtual bool isEmpty() const = 0;
   virtual StringView topSourceURL() const = 0;
