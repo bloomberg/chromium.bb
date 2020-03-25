@@ -109,7 +109,6 @@ class CONTENT_EXPORT BodyLoaderRequestInfoProvider
   BodyLoaderRequestInfoProvider(
       const mojom::CommonNavigationParams& common_params,
       const mojom::CommitNavigationParams& commit_params,
-      const network::ResourceResponseHead& head,
       const network::mojom::URLLoaderClientEndpointsPtr& client_endpoints,
       scoped_refptr<base::SingleThreadTaskRunner> runner,
       int render_frame_id,

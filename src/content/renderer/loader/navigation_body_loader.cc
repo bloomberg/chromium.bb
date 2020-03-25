@@ -77,10 +77,10 @@ void NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
     navigation_params->response.SetHttpStatusCode(200);
 
   if(loader_creator) {
-//    BodyLoaderRequestInfoProvider request_info(
-//        common_params, commit_params, head, url_loader_client_endpoints,
-//        task_runner, render_frame_id, resource_load_info);
-//    navigation_params->body_loader = loader_creator(request_info);
+    BodyLoaderRequestInfoProvider request_info(
+        *common_params, *commit_params, url_loader_client_endpoints,
+        task_runner, render_frame_id, resource_load_info);
+    navigation_params->body_loader = loader_creator(request_info);
   }
   if (!navigation_params->body_loader && url_loader_client_endpoints) {
     navigation_params->body_loader.reset(new NavigationBodyLoader(
