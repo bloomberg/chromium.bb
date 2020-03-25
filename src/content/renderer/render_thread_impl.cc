@@ -808,6 +808,8 @@ void RenderThreadImpl::Init() {
 
   if (!GetContentClient()->renderer()->ShouldBindFrameSinkProvider()) {
     BindHostReceiver(frame_sink_provider_.BindNewPipeAndPassReceiver());
+  } else {
+    GetContentClient()->renderer()->BindHostReceiver(frame_sink_provider_.BindNewPipeAndPassReceiver());
   }
 
   if (!is_gpu_compositing_disabled_) {
