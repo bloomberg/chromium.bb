@@ -38,6 +38,8 @@ class ResourceRequestJob : public net::URLRequestJob {
   void Start() override;
   bool GetMimeType(std::string* mime_type) const override;
 
+  void NotifyHeadersCompleteHelper();
+
   GURL url_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceRequestJob);

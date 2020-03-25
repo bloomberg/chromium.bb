@@ -21,7 +21,7 @@
  */
 
 #include <blpwtk2_resourcerequestjob.h>
-#include <url/gurl.h>
+#include <base/threading/sequenced_task_runner_handle.h>
 
 namespace blpwtk2 {
 
@@ -33,7 +33,10 @@ ResourceRequestJob::ResourceRequestJob(
 }
 
 void ResourceRequestJob::Start() {
-  NotifyHeadersComplete();
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(&ResourceRequestJob::NotifyHeadersCompleteHelper,
+                 base::Unretained(this)));
 }
 
 static bool EndsWith(const std::string& hay, const std::string& needle) {
@@ -81,6 +84,10 @@ bool ResourceRequestJob::GetMimeType(std::string* mime_type) const {
     return net::URLRequestJob::GetMimeType(mime_type);
 
   return true;
+}
+
+void ResourceRequestJob::NotifyHeadersCompleteHelper() {
+  NotifyHeadersComplete();
 }
 
 }  // close namespace blpwtk2
