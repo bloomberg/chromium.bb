@@ -49,6 +49,7 @@ const char kCreateArcTimersMethod[] = "CreateArcTimers";
 const char kStartArcTimerMethod[] = "StartArcTimer";
 const char kDeleteArcTimersMethod[] = "DeleteArcTimers";
 const char kHasAmbientColorDeviceMethod[] = "HasAmbientColorDevice";
+const char kChangeWifiRegDomainMethod[] = "ChangeWifiRegDomain";
 
 // Signals emitted by powerd.
 const char kScreenBrightnessChangedSignal[] = "ScreenBrightnessChanged";
@@ -90,6 +91,12 @@ enum RequestShutdownReason {
   REQUEST_SHUTDOWN_FOR_USER = 0,
   // Some other reason.
   REQUEST_SHUTDOWN_OTHER = 1,
+};
+enum WifiRegDomainDbus {
+  WIFI_REG_DOMAIN_FCC = 0,
+  WIFI_REG_DOMAIN_EU = 1,
+  WIFI_REG_DOMAIN_REST_OF_WORLD = 2,
+  WIFI_REG_DOMAIN_NONE = 3,
 };
 
 }  // namespace power_manager
