@@ -1,8 +1,12 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #include "cast/standalone_receiver/decoder.h"
 
 #include <algorithm>
 #include <sstream>
-#include <thread>
+#include <thread>  // NOLINT
 
 #include "util/logging.h"
 #include "util/trace_logging.h"
@@ -126,8 +130,15 @@ bool Decoder::Initialize() {
   // This should always be greater than zero, so that decoding doesn't block the
   // main thread of this receiver app and cause playback timing issues. The
   // actual number should be tuned, based on the number of CPU cores.
+  //
+  // This should also be 16 or less, since the encoder implementations emit
+  // warnings about too many encode threads. FFMPEG's VP8 implementation
+  // actually silently freezes if this is 10 or more. Thus, 8 is used for the
+  // max here, just to be safe.
+  //
   // TODO(jophba): determine a better number after running benchmarking.
-  context_->thread_count = std::max(std::thread::hardware_concurrency(), 1u);
+  context_->thread_count =
+      std::min(std::max<int>(std::thread::hardware_concurrency(), 1), 8);
   const int open_result = avcodec_open2(context_.get(), codec_, nullptr);
   if (open_result < 0) {
     HandleInitializationError("failed to open codec", open_result);

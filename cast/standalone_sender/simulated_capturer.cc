@@ -58,8 +58,12 @@ SimulatedCapturer::SimulatedCapturer(Environment* environment,
     OnError("MakeUniqueAVCodecContext", AVERROR_BUG);
     return;  // Capturer is halted (unable to start).
   }
+  // This should also be 16 or less, since the encoder implementations emit
+  // warnings about too many encode threads. FFMPEG's VP8 implementation
+  // actually silently freezes if this is 10 or more. Thus, 8 is used for the
+  // max here, just to be safe.
   decoder_context_->thread_count =
-      std::max<int>(std::thread::hardware_concurrency(), 1);
+      std::min(std::max<int>(std::thread::hardware_concurrency(), 1), 8);
   const int params_result = avcodec_parameters_to_context(
       decoder_context_.get(),
       format_context_->streams[stream_index_]->codecpar);
