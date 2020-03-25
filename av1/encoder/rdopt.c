@@ -2301,6 +2301,10 @@ static int64_t handle_inter_mode(
   const int base_rate =
       args->ref_frame_cost + args->single_comp_cost + ref_mv_cost;
   for (int ref_mv_idx = 0; ref_mv_idx < ref_set; ++ref_mv_idx) {
+    mode_info[ref_mv_idx].full_search_mv.as_int = INVALID_MV;
+    mode_info[ref_mv_idx].mv.as_int = INVALID_MV;
+    mode_info[ref_mv_idx].rd = INT64_MAX;
+
     if (!mask_check_bit(idx_mask, ref_mv_idx)) {
       // MV did not perform well in simple translation search. Skip it.
       continue;
@@ -2312,10 +2316,6 @@ static int64_t handle_inter_mode(
               cpi->sf.inter_sf.prune_inter_modes_based_on_tpl))
         continue;
     }
-
-    mode_info[ref_mv_idx].full_search_mv.as_int = INVALID_MV;
-    mode_info[ref_mv_idx].mv.as_int = INVALID_MV;
-    mode_info[ref_mv_idx].rd = INT64_MAX;
     av1_init_rd_stats(rd_stats);
 
     mbmi->interinter_comp.type = COMPOUND_AVERAGE;
