@@ -349,7 +349,8 @@ void AddTemporalReferenceMvCandidate(
     ++*num_mv_found;
     return;
   }
-  MotionVector candidate_mvs[kMaxTemporalMvCandidatesWithPadding];
+  alignas(kMaxAlignment)
+      MotionVector candidate_mvs[kMaxTemporalMvCandidatesWithPadding];
   const dsp::Dsp& dsp = *dsp::GetDspTable(8);
   dsp.mv_projection_single[mv_projection_function_index](
       temporal_mvs, temporal_reference_offsets, reference_offsets[0], count,
@@ -415,7 +416,8 @@ void TemporalScan(const Tile::Block& block, bool is_compound,
   const MotionVector* motion_field_mv = motion_field.mv[0];
   const int8_t* motion_field_reference_offset =
       motion_field.reference_offset[0];
-  MotionVector temporal_mvs[kMaxTemporalMvCandidatesWithPadding];
+  alignas(kMaxAlignment)
+      MotionVector temporal_mvs[kMaxTemporalMvCandidatesWithPadding];
   int8_t temporal_reference_offsets[kMaxTemporalMvCandidatesWithPadding];
   int count = 0;
   int offset = stride * (row_start >> 1);

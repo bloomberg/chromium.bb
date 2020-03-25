@@ -37,9 +37,9 @@ inline int16x4_t MvProjection(const int16x4_t mv, const int16x4_t denominator,
                               const int32x4_t numerator) {
   const int32x4_t m0 = vmull_s16(mv, denominator);
   const int32x4_t m = vmulq_s32(m0, numerator);
-  // Subtract the sign bit to round towards zero.
-  const int32x4_t sub_sign = vsraq_n_s32(m, m, 31);
-  return vqrshrn_n_s32(sub_sign, 14);
+  // Add the sign (0 or -1) to round towards zero.
+  const int32x4_t add_sign = vsraq_n_s32(m, m, 31);
+  return vqrshrn_n_s32(add_sign, 14);
 }
 
 inline int16x4_t MvProjectionCompound(const int16x4_t mv,
@@ -98,6 +98,24 @@ inline int16x8_t MvProjectionSingleClip(
   return ProjectionClip(mv0, mv1);
 }
 
+void LowPrecision(const int16x8_t mv, void* const candidate_mvs) {
+  const int16x8_t k1 = vdupq_n_s16(1);
+  const uint16x8_t mvu = vreinterpretq_u16_s16(mv);
+  const int16x8_t mv0 = vreinterpretq_s16_u16(vsraq_n_u16(mvu, mvu, 15));
+  const int16x8_t mv1 = vbicq_s16(mv0, k1);
+  vst1q_s16(static_cast<int16_t*>(candidate_mvs), mv1);
+}
+
+void ForceInteger(const int16x8_t mv, void* const candidate_mvs) {
+  const int16x8_t k3 = vdupq_n_s16(3);
+  const int16x8_t k7 = vdupq_n_s16(7);
+  const uint16x8_t mvu = vreinterpretq_u16_s16(mv);
+  const int16x8_t mv0 = vreinterpretq_s16_u16(vsraq_n_u16(mvu, mvu, 15));
+  const int16x8_t mv1 = vaddq_s16(mv0, k3);
+  const int16x8_t mv2 = vbicq_s16(mv1, k7);
+  vst1q_s16(static_cast<int16_t*>(candidate_mvs), mv2);
+}
+
 void MvProjectionCompoundLowPrecision_NEON(
     const MotionVector* temporal_mvs, const int8_t* temporal_reference_offsets,
     const int reference_offsets[2], int count,
@@ -105,20 +123,16 @@ void MvProjectionCompoundLowPrecision_NEON(
   // |reference_offsets| non-zero check usually equals true and is ignored.
   // To facilitate the compilers, make a local copy of |reference_offsets|.
   const int offsets[2] = {reference_offsets[0], reference_offsets[1]};
-  const int16x8_t k1 = vdupq_n_s16(1);
   // One more element could be calculated.
+  int loop_count = (count + 1) >> 1;
   do {
-    const int16x8_t mv0 = MvProjectionCompoundClip(
+    const int16x8_t mv = MvProjectionCompoundClip(
         temporal_mvs, temporal_reference_offsets, offsets);
-    const uint16x8_t mv0u = vreinterpretq_u16_s16(mv0);
-    const int16x8_t mv1 = vreinterpretq_s16_u16(vsraq_n_u16(mv0u, mv0u, 15));
-    const int16x8_t mv = vbicq_s16(mv1, k1);
-    vst1q_s16(reinterpret_cast<int16_t*>(candidate_mvs), mv);
+    LowPrecision(mv, candidate_mvs);
     temporal_mvs += 2;
     temporal_reference_offsets += 2;
     candidate_mvs += 2;
-    count -= 2;
-  } while (count > 0);
+  } while (--loop_count);
 }
 
 void MvProjectionCompoundForceInteger_NEON(
@@ -128,18 +142,12 @@ void MvProjectionCompoundForceInteger_NEON(
   // |reference_offsets| non-zero check usually equals true and is ignored.
   // To facilitate the compilers, make a local copy of |reference_offsets|.
   const int offsets[2] = {reference_offsets[0], reference_offsets[1]};
-  const int16x8_t k3 = vdupq_n_s16(3);
-  const int16x8_t k7 = vdupq_n_s16(7);
   // One more element could be calculated.
   int loop_count = (count + 1) >> 1;
   do {
-    const int16x8_t mv0 = MvProjectionCompoundClip(
+    const int16x8_t mv = MvProjectionCompoundClip(
         temporal_mvs, temporal_reference_offsets, offsets);
-    const uint16x8_t mv0u = vreinterpretq_u16_s16(mv0);
-    const int16x8_t mv1 = vreinterpretq_s16_u16(vsraq_n_u16(mv0u, mv0u, 15));
-    const int16x8_t mv2 = vaddq_s16(mv1, k3);
-    const int16x8_t mv = vbicq_s16(mv2, k7);
-    vst1q_s16(reinterpret_cast<int16_t*>(candidate_mvs), mv);
+    ForceInteger(mv, candidate_mvs);
     temporal_mvs += 2;
     temporal_reference_offsets += 2;
     candidate_mvs += 2;
@@ -168,17 +176,13 @@ void MvProjectionCompoundHighPrecision_NEON(
 void MvProjectionSingleLowPrecision_NEON(
     const MotionVector* temporal_mvs, const int8_t* temporal_reference_offsets,
     const int reference_offset, const int count, MotionVector* candidate_mvs) {
-  const int16x8_t k1 = vdupq_n_s16(1);
   // Up to three more elements could be calculated.
   int loop_count = (count + 3) >> 2;
   int16x4_t lookup = vdup_n_s16(0);
   do {
-    const int16x8_t mv0 = MvProjectionSingleClip(
+    const int16x8_t mv = MvProjectionSingleClip(
         temporal_mvs, temporal_reference_offsets, reference_offset, &lookup);
-    const uint16x8_t mv0u = vreinterpretq_u16_s16(mv0);
-    const int16x8_t mv1 = vreinterpretq_s16_u16(vsraq_n_u16(mv0u, mv0u, 15));
-    const int16x8_t mv = vbicq_s16(mv1, k1);
-    vst1q_s16(reinterpret_cast<int16_t*>(candidate_mvs), mv);
+    LowPrecision(mv, candidate_mvs);
     temporal_mvs += 4;
     temporal_reference_offsets += 4;
     candidate_mvs += 4;
@@ -188,19 +192,13 @@ void MvProjectionSingleLowPrecision_NEON(
 void MvProjectionSingleForceInteger_NEON(
     const MotionVector* temporal_mvs, const int8_t* temporal_reference_offsets,
     const int reference_offset, const int count, MotionVector* candidate_mvs) {
-  const int16x8_t k3 = vdupq_n_s16(3);
-  const int16x8_t k7 = vdupq_n_s16(7);
   // Up to three more elements could be calculated.
   int loop_count = (count + 3) >> 2;
   int16x4_t lookup = vdup_n_s16(0);
   do {
-    const int16x8_t mv0 = MvProjectionSingleClip(
+    const int16x8_t mv = MvProjectionSingleClip(
         temporal_mvs, temporal_reference_offsets, reference_offset, &lookup);
-    const uint16x8_t mv0u = vreinterpretq_u16_s16(mv0);
-    const int16x8_t mv1 = vreinterpretq_s16_u16(vsraq_n_u16(mv0u, mv0u, 15));
-    const int16x8_t mv2 = vaddq_s16(mv1, k3);
-    const int16x8_t mv = vbicq_s16(mv2, k7);
-    vst1q_s16(reinterpret_cast<int16_t*>(candidate_mvs), mv);
+    ForceInteger(mv, candidate_mvs);
     temporal_mvs += 4;
     temporal_reference_offsets += 4;
     candidate_mvs += 4;
