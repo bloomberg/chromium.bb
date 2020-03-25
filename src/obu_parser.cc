@@ -2196,6 +2196,10 @@ bool ObuParser::ParseMetadataScalability() {
         static_cast<bool>(scratch);
     // scalability_structure_reserved_3bits
     OBU_READ_LITERAL_OR_FAIL(3);
+    if (scratch != 0) {
+      LIBGAV1_DLOG(WARNING,
+                   "scalability_structure_reserved_3bits is not zero.");
+    }
     if (spatial_layer_dimensions_present_flag) {
       for (int i = 0; i < spatial_layers_count; ++i) {
         // spatial_layer_max_width[i]
@@ -2531,8 +2535,7 @@ bool ObuParser::ParseHeader() {
   obu_header.has_size_field = static_cast<bool>(scratch);
   OBU_READ_BIT_OR_FAIL;  // reserved.
   if (scratch != 0) {
-    LIBGAV1_DLOG(ERROR, "obu_reserved_1bit is not zero.");
-    return false;
+    LIBGAV1_DLOG(WARNING, "obu_reserved_1bit is not zero.");
   }
   obu_header.has_extension = extension_flag;
   if (extension_flag) {
@@ -2547,8 +2550,7 @@ bool ObuParser::ParseHeader() {
     obu_header.spatial_id = scratch;
     OBU_READ_LITERAL_OR_FAIL(3);  // reserved.
     if (scratch != 0) {
-      LIBGAV1_DLOG(ERROR, "extension_header_reserved_3bits is not zero.");
-      return false;
+      LIBGAV1_DLOG(WARNING, "extension_header_reserved_3bits is not zero.");
     }
   } else {
     obu_header.temporal_id = 0;
