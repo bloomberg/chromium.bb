@@ -21,8 +21,6 @@ from chromite.utils import memoize
 GS_PATH_DEFAULT = 'default'  # Means gs://chromeos-image-archive/ + bot_id
 
 # Contains the valid build config suffixes.
-CONFIG_TYPE_PRECQ = 'pre-cq'
-CONFIG_TYPE_PALADIN = 'paladin'
 CONFIG_TYPE_RELEASE = 'release'
 CONFIG_TYPE_FULL = 'full'
 CONFIG_TYPE_FIRMWARE = 'firmware'
@@ -31,13 +29,11 @@ CONFIG_TYPE_TOOLCHAIN = 'toolchain'
 
 # DISPLAY labels are used to group related builds together in the GE UI.
 
-DISPLAY_LABEL_PRECQ = 'pre_cq'
 DISPLAY_LABEL_TRYJOB = 'tryjob'
 DISPLAY_LABEL_INCREMENATAL = 'incremental'
 DISPLAY_LABEL_FULL = 'full'
 DISPLAY_LABEL_CHROME_INFORMATIONAL = 'chrome_informational'
 DISPLAY_LABEL_INFORMATIONAL = 'informational'
-DISPLAY_LABEL_CQ = 'cq'
 DISPLAY_LABEL_RELEASE = 'release'
 DISPLAY_LABEL_CHROME_PFQ = 'chrome_pfq'
 DISPLAY_LABEL_MST_ANDROID_PFQ = 'mst_android_pfq'
@@ -57,13 +53,11 @@ DISPLAY_LABEL_PRODUCTION_TRYJOB = 'production_tryjob'
 
 # This list of constants should be kept in sync with GoldenEye code.
 ALL_DISPLAY_LABEL = {
-    DISPLAY_LABEL_PRECQ,
     DISPLAY_LABEL_TRYJOB,
     DISPLAY_LABEL_INCREMENATAL,
     DISPLAY_LABEL_FULL,
     DISPLAY_LABEL_CHROME_INFORMATIONAL,
     DISPLAY_LABEL_INFORMATIONAL,
-    DISPLAY_LABEL_CQ,
     DISPLAY_LABEL_RELEASE,
     DISPLAY_LABEL_CHROME_PFQ,
     DISPLAY_LABEL_MST_ANDROID_PFQ,
@@ -171,18 +165,13 @@ def IsCanaryMaster(builder_run):
 
 def IsPFQType(b_type):
   """Returns True if this build type is a PFQ."""
-  return b_type in (constants.PFQ_TYPE, constants.PALADIN_TYPE,
+  return b_type in (constants.PFQ_TYPE,
                     constants.CHROME_PFQ_TYPE, constants.ANDROID_PFQ_TYPE)
 
 
 def IsBinhostType(b_type):
   """Returns True if this build type is a BINHOST.conf provider"""
   return b_type in (constants.CHROME_PFQ_TYPE, constants.POSTSUBMIT_TYPE)
-
-
-def IsCQType(b_type):
-  """Returns True if this build type is a Commit Queue."""
-  return b_type == constants.PALADIN_TYPE
 
 
 def IsCanaryType(b_type):
@@ -227,32 +216,6 @@ def GetHWTestEnv(builder_run_config, model_config=None, suite_config=None):
     return constants.ENV_SKYLAB
 
   return constants.ENV_AUTOTEST
-
-
-def RetryAlreadyStartedSlaves(config):
-  """Returns True if wants to retry slaves which already start but fail.
-
-  For a slave scheduled by Buildbucket, if the slave started cbuildbot
-  and reported status to CIDB but failed to finish, its master may
-  still want to retry the slave.
-  """
-  return config.name == constants.CQ_MASTER
-
-
-def GetCriticalStageForRetry(config):
-  """Get critical stage names for retry decisions.
-
-  For a slave scheduled by Buildbucket, its master may want to retry it
-  if it didn't pass the critical stage.
-
-  Returns:
-    A set of critical stage names (strings) for the config;
-      default to an empty set.
-  """
-  if config.name == constants.CQ_MASTER:
-    return {'CommitQueueSync', 'MasterSlaveLKGMSync'}
-  else:
-    return set()
 
 
 class AttrDict(dict):
@@ -738,11 +701,6 @@ def DefaultSettings():
       # at some point.
       health_threshold=0,
 
-      # If this build_config fails this many times consecutively, trigger a
-      # sanity-check build on this build_config. A sanity-check-pre-cq is a
-      # pre-cq build without patched CLs.
-      sanity_check_threshold=0,
-
       # List of email addresses to send health alerts to for this builder. It
       # supports automatic email address lookup for the following sheriff
       # types:
@@ -837,9 +795,6 @@ def DefaultSettings():
       # Exit the builder right after checking compilation.
       # TODO(mtennant): Should be something like "compile_check_only".
       compilecheck=False,
-
-      # Test CLs to verify they're ready for the commit queue.
-      pre_cq=False,
 
       # If True, run DebugInfoTest stage.
       debuginfo_test=False,

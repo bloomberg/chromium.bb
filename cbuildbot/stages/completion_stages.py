@@ -731,8 +731,7 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
     # the local commits generated in AFDOUpdateEbuild stage to the
     # staging_branch, cleaning up repository here will wipe out the local
     # commits.
-    if (config_lib.IsCQType(self._run.config.build_type) or
-        not (self.success or staging_branch is not None)):
+    if not (self.success or staging_branch is not None):
       repo = self.GetRepoRepository()
 
       # Clean up our root and sync down the latest changes that were

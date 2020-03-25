@@ -266,16 +266,6 @@ class SlaveStatus(object):
 
         assert self.buildstore.AreClientsReady()
 
-        build_stages = self.buildstore.GetBuildsStages(buildbucket_ids=[
-            self.new_cidb_status_dict[build].buildbucket_id])
-        accepted_stages = {stage['name'] for stage in build_stages
-                           if stage['status'] in self.ACCEPTED_STATUSES}
-
-        # A failed build is not retriable if it passed the critical stage.
-        if config_lib.GetCriticalStageForRetry(self.config).intersection(
-            accepted_stages):
-          continue
-
       builds_to_retry.add(build)
 
     return builds_to_retry

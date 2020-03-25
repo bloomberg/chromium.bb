@@ -686,8 +686,6 @@ class CBuildBotTest(ChromeosConfigTestBase):
         # they are internal or not.
         if not config['internal']:
           self.assertEqual(config['overlays'], constants.PUBLIC_OVERLAYS, error)
-        elif config_lib.IsCQType(config['build_type']):
-          self.assertEqual(config['overlays'], constants.BOTH_OVERLAYS, error)
 
   def testGetSlaves(self):
     """Make sure every master has a sane list of slaves"""
@@ -699,39 +697,12 @@ class CBuildBotTest(ChromeosConfigTestBase):
             'Duplicate board in slaves of %s will cause upload prebuilts'
             ' failures' % build_name)
 
-        # Our logic for calculating what slaves have completed their critical
-        # stages will break if the master is considered a slave of itself,
-        # because db.GetSlaveStages(...) doesn't include master stages.
-        if config.build_type == constants.PALADIN_TYPE:
-          self.assertEqual(
-              config.boards, [],
-              'Master paladin %s cannot have boards.' % build_name)
-          self.assertNotIn(
-              build_name, [x.name for x in configs],
-              'Master paladin %s cannot be a slave of itself.' % build_name)
-
   def _getSlaveConfigsForMaster(self, master_config_name):
     """Helper to fetch the configs for all slaves of a given master."""
     master_config = self.site_config[master_config_name]
 
     # Get a list of all active Paladins.
     return [self.site_config[n] for n in master_config.slave_configs]
-
-  def testNoCqPrebuilts(self):
-    """Make sure every master has a sane list of slaves"""
-    for build_name, config in self.site_config.items():
-      if config.build_type == constants.PALADIN_TYPE:
-        self.assertFalse(
-            config.prebuilts,
-            'Paladin %s should not generate prebuilts.' % build_name)
-
-  # Disabled due to https://crbug.com/984316
-  # def testPreCQHasVMTests(self):
-  #   """Make sure that at least one pre-cq builder enables VM tests."""
-  #   pre_cq_configs = constants.PRE_CQ_DEFAULT_CONFIGS
-  #   have_vm_tests = any([self.site_config[name].vm_tests
-  #                        for name in pre_cq_configs])
-  #   self.assertTrue(have_vm_tests, 'No Pre-CQ builder has VM tests enabled')
 
   def testGetSlavesOnTrybot(self):
     """Make sure every master has a sane list of slaves"""
@@ -825,23 +796,6 @@ class CBuildBotTest(ChromeosConfigTestBase):
 
     return False
 
-  def testNoDuplicateSlavePrebuilts(self):
-    """Test that no two same-board paladin slaves upload prebuilts."""
-    for cfg in self.site_config.values():
-      if cfg['build_type'] == constants.PALADIN_TYPE and cfg['master']:
-        slaves = self.site_config.GetSlavesForMaster(cfg)
-        prebuilt_slaves = [s for s in slaves if s['prebuilts']]
-        # Dictionary from board name to builder name that uploads prebuilt
-        prebuilt_slave_boards = {}
-        for slave in prebuilt_slaves:
-          for board in slave['boards']:
-            self.assertNotIn(board, prebuilt_slave_boards,
-                             'Configs %s and %s both upload prebuilts for '
-                             'board %s.' % (prebuilt_slave_boards.get(board),
-                                            slave['name'],
-                                            board))
-            prebuilt_slave_boards[board] = slave['name']
-
   def testCantBeBothTypesOfAFDO(self):
     """Using afdo_generate and afdo_use together doesn't work."""
     for config in self.site_config.values():
@@ -855,14 +809,6 @@ class CBuildBotTest(ChromeosConfigTestBase):
       msg = 'Config %s: has unexpected prebuilts value.' % build_name
       valid_values = (False, constants.PRIVATE, constants.PUBLIC)
       self.assertTrue(config['prebuilts'] in valid_values, msg)
-
-  def testInternalPrebuilts(self):
-    for build_name, config in self.site_config.items():
-      if (config['internal'] and
-          config['build_type'] not in [constants.CHROME_PFQ_TYPE,
-                                       constants.PALADIN_TYPE]):
-        msg = 'Config %s is internal but has public prebuilts.' % build_name
-        self.assertNotEqual(config['prebuilts'], constants.PUBLIC, msg)
 
   def testValidHWTestPriority(self):
     """Verify that hw test priority is valid."""

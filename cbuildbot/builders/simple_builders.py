@@ -286,8 +286,6 @@ class SimpleBuilder(generic_builders.Builder):
     self._RunStage(chrome_stages.SyncChromeStage)
     self._RunStage(android_stages.UprevAndroidStage)
     self._RunStage(android_stages.AndroidMetadataStage)
-    if self._run.config.build_type == constants.PALADIN_TYPE:
-      self._RunStage(build_stages.RegenPortageCacheStage)
 
   def RunEarlySyncAndSetupStages(self):
     """Runs through the early sync and board setup stages."""
@@ -426,12 +424,9 @@ class SimpleBuilder(generic_builders.Builder):
   def RunStages(self):
     """Runs through build process."""
     # TODO(sosa): Split these out into classes.
-    if self._run.config.build_type == constants.PRE_CQ_LAUNCHER_TYPE:
-      assert False, 'Pre-CQ no longer supported'
-    elif ((self._run.config.build_type == constants.PALADIN_TYPE or
-           self._run.config.build_type == constants.CHROME_PFQ_TYPE or
-           self._run.config.build_type == constants.ANDROID_PFQ_TYPE) and
-          self._run.config.master):
+    if ((self._run.config.build_type == constants.CHROME_PFQ_TYPE or
+         self._run.config.build_type == constants.ANDROID_PFQ_TYPE) and
+        self._run.config.master):
       self._RunMasterPaladinOrPFQBuild()
     else:
       self._RunDefaultTypeBuild()
@@ -466,8 +461,6 @@ class DistributedBuilder(SimpleBuilder):
     # first.
     if self._run.config.pre_cq:
       assert False, 'Pre-CQ no longer supported'
-    elif config_lib.IsCQType(self._run.config.build_type):
-      assert False, 'Legacy CQ no longer supported'
     elif config_lib.IsCanaryType(self._run.config.build_type):
       sync_stage = self._GetStageInstance(
           sync_stages.ManifestVersionedSyncStage)
@@ -582,8 +575,7 @@ class DistributedBuilder(SimpleBuilder):
         # PUpr in the PCQ world. See http://go/pupr.
         # There is no easy way to disable this in ChromeOS config,
         # so hack the check here.
-        if (not config_lib.IsCQType(self._run.config.build_type) and
-            not is_master_chrome_pfq):
+        if not is_master_chrome_pfq:
           self._RunStage(completion_stages.PublishUprevChangesStage,
                          self.sync_stage, publish, stage_push)
 

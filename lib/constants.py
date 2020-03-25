@@ -135,15 +135,6 @@ BUILDER_NON_FAILURE_STATUSES = (BUILDER_STATUS_PLANNED,
                                 BUILDER_STATUS_INFLIGHT,
                                 BUILDER_STATUS_FORGIVEN)
 
-# CL status strings
-CL_STATUS_FAILED = BUILDER_STATUS_FAILED
-CL_STATUS_INFLIGHT = BUILDER_STATUS_INFLIGHT
-CL_STATUS_PASSED = BUILDER_STATUS_PASSED
-CL_STATUS_LAUNCHING = 'launching'
-CL_STATUS_WAITING = 'waiting'
-CL_STATUS_READY_TO_SUBMIT = 'ready-to-submit'
-CL_STATUS_FULLY_VERIFIED = 'fully-verified'
-
 # Partition labels
 CROS_PART_STATEFUL = 'STATE'
 
@@ -154,40 +145,6 @@ SIGNER_STATUS_FAILED = 'failed'
 # Change sources
 CHANGE_SOURCE_INTERNAL = 'internal'
 CHANGE_SOURCE_EXTERNAL = 'external'
-
-# Build failure categories
-FAILURE_CATEGORY_BAD_CL = 'bad_cl'
-FAILURE_CATEGORY_BUG_IN_TOT = 'bug_in_tot'
-FAILURE_CATEGORY_MERGE_CONFLICT = 'merge_conflict'
-FAILURE_CATEGORY_SCHEDULED_ABORT = 'scheduled_abort'
-FAILURE_CATEGORY_CL_NOT_READY = 'cl_not_ready'
-FAILURE_CATEGORY_BAD_CHROME = 'bad_chrome'
-FAILURE_CATEGORY_INFRA_FAILURE = 'infra_failure'
-FAILURE_CATEGORY_TEST_FLAKE = 'test_flake'
-FAILURE_CATEGORY_GERRIT_FAILURE = 'gerrit_failure'
-FAILURE_CATEGORY_GS_FAILURE = 'gs_failure'
-FAILURE_CATEGORY_LAB_FAILURE = 'lab_failure'
-FAILURE_CATEGORY_BAD_BINARY_PACKAGE = 'bad_binary_package'
-FAILURE_CATEGORY_BUILD_FLAKE = 'build_flake'
-FAILURE_CATEGORY_MYSTERY = 'mystery'
-
-FAILURE_CATEGORY_ALL_CATEGORIES = (
-    FAILURE_CATEGORY_BAD_CL,
-    FAILURE_CATEGORY_BUG_IN_TOT,
-    FAILURE_CATEGORY_MERGE_CONFLICT,
-    FAILURE_CATEGORY_SCHEDULED_ABORT,
-    FAILURE_CATEGORY_CL_NOT_READY,
-    FAILURE_CATEGORY_BAD_CHROME,
-    FAILURE_CATEGORY_INFRA_FAILURE,
-    FAILURE_CATEGORY_TEST_FLAKE,
-    FAILURE_CATEGORY_GERRIT_FAILURE,
-    FAILURE_CATEGORY_GS_FAILURE,
-    FAILURE_CATEGORY_LAB_FAILURE,
-    FAILURE_CATEGORY_BAD_BINARY_PACKAGE,
-    FAILURE_CATEGORY_BUILD_FLAKE,
-    FAILURE_CATEGORY_MYSTERY,
-)
-
 
 # Exception categories, as recorded in cidb
 EXCEPTION_CATEGORY_UNKNOWN = 'unknown'
@@ -204,58 +161,15 @@ EXCEPTION_CATEGORY_ALL_CATEGORIES = (
     EXCEPTION_CATEGORY_LAB,
 )
 
-# Suspect reasons for rejecting changes in validation_pool.
-SUSPECT_REASON_BAD_CHANGE = 'bad_change'
-SUSPECT_REASON_INFRA_FAIL = 'infra_fail'
-SUSPECT_REASON_BUILD_FAIL = 'build_fail'
-SUSPECT_REASON_TEST_FAIL = 'test_fail'
-SUSPECT_REASON_OVERLAY_CHANGE = 'overlay_change'
-SUSPECT_REASON_UNKNOWN = 'unknown'
-
-# A dict mapping suspect reasons to their blame priorities.
-# Lower values have higher blame priorities.
-SUSPECT_REASONS = {
-    SUSPECT_REASON_BAD_CHANGE: 1,
-    SUSPECT_REASON_INFRA_FAIL: 2,
-    SUSPECT_REASON_BUILD_FAIL: 3,
-    SUSPECT_REASON_TEST_FAIL: 4,
-    SUSPECT_REASON_OVERLAY_CHANGE: 5,
-    SUSPECT_REASON_UNKNOWN: 6,
-}
-
 # Monarch metric names
-MON_CQ_WALL_CLOCK_SECS = 'chromeos/cbuildbot/cq_wall_clock_seconds'
-MON_CQ_SELF_DESTRUCTION_COUNT = ('chromeos/cbuildbot/build/'
-                                 'cq_self_destruction_count')
-MON_CQ_BUILD_DURATION = 'chromeos/cbuildbot/build/cq_build_durations'
-MON_CL_ACTION = 'chromeos/cbuildbot/cl_action'
 MON_LAST_SLAVE = 'chromeos/cbuildbot/last_completed_slave'
-MON_PRECQ_LAUNCH_COUNT = 'chromeos/cbuildbot/pre-cq/launch_count'
-MON_PRECQ_CL_LAUNCH_COUNT = 'chromeos/cbuildbot/pre-cq/cl_launch_count'
-MON_PRECQ_TICK_COUNT = 'chromeos/cbuildbot/pre-cq/tick_count'
 MON_BUILD_COMP_COUNT = 'chromeos/cbuildbot/build/completed_count'
-MON_BUILD_SANITY_COMP_COUNT = (
-    'chromeos/cbuildbot/build/sanity_build_completed_count')
-MON_BUILD_SANITY_ID = 'chromeos/cbuildbot/build/sanity_build_id'
 MON_BUILD_DURATION = 'chromeos/cbuildbot/build/durations'
 MON_STAGE_COMP_COUNT = 'chromeos/cbuildbot/stage/completed_count'
 MON_STAGE_DURATION = 'chromeos/cbuildbot/stage/durations'
 MON_STAGE_INSTANCE_DURATION = 'chromeos/cbuildbot/stage/instance_durations'
 MON_STAGE_FAILURE_COUNT = 'chromeos/cbuildbot/stage/failure_count'
 MON_FAILED_STAGE = 'chromeos/chromite/cbuildbot_launch/failed_stage'
-MON_CL_HANDLE_TIME = 'chromeos/cbuildbot/submitted_change/handling_times'
-MON_CL_WALL_CLOCK_TIME = 'chromeos/cbuildbot/submitted_change/wall_clock_times'
-MON_CL_PRECQ_TIME = 'chromeos/cbuildbot/submitted_change/precq_times'
-MON_CL_WAIT_TIME = 'chromeos/cbuildbot/submitted_change/wait_times'
-MON_CL_CQRUN_TIME = 'chromeos/cbuildbot/submitted_change/cq_run_times'
-MON_CL_CQ_TRIES = 'chromeos/cbuildbot/submitted_change/cq_attempts'
-MON_CL_FALSE_REJ = 'chromeos/cbuildbot/submitted_change/false_rejections'
-MON_CL_FALSE_REJ_TOTAL = (
-    'chromeos/cbuildbot/submitted_change/false_rejections_total')
-MON_CL_FALSE_REJ_COUNT = (
-    'chromeos/cbuildbot/submitted_change/false_rejection_count')
-MON_CQ_FALSE_REJ_MINUS_EXONERATIONS = (
-    'chromeos/cbuildbot/submitted_change/false_rejections_minus_exonerations')
 MON_CHROOT_USED = 'chromeos/cbuildbot/chroot_at_version'
 MON_REPO_SYNC_COUNT = 'chromeos/cbuildbot/repo/sync_count'
 MON_REPO_SYNC_RETRY_COUNT = 'chromeos/cbuildbot/repo/sync_retry_count'
@@ -268,10 +182,7 @@ MON_BB_RETRY_BUILD_COUNT = ('chromeos/cbuildbot/buildbucket/'
                             'retry_build_count')
 MON_BB_CANCEL_BATCH_BUILDS_COUNT = ('chromeos/cbuildbot/buildbucket/'
                                     'cancel_batch_builds_count')
-MON_BB_CANCEL_PRE_CQ_BUILD_COUNT = ('chromeos/cbuildbot/buildbucket/'
-                                    'cancel_pre_cq_build_count')
 MON_EXPORT_TO_GCLOUD = 'chromeos/cbuildbot/export_to_gcloud'
-MON_CL_REJECT_COUNT = 'chromeos/cbuildbot/change/rejected_count'
 
 # Stage Categorization for failed stages metric.
 UNCATEGORIZED_STAGE = 'Uncategorized'
@@ -641,13 +552,6 @@ INCREMENTAL_TYPE = 'binary'
 # These builds serve as PFQ builders.  This is being deprecated.
 PFQ_TYPE = 'pfq'
 
-# Hybrid Commit and PFQ type.  Ultimate protection.  Commonly referred to
-# as simply "commit queue" now.
-PALADIN_TYPE = 'paladin'
-
-# A builder that kicks off Pre-CQ builders that bless the purest CLs.
-PRE_CQ_LAUNCHER_TYPE = 'priest'
-
 # Chrome PFQ type.  Incremental build type that builds and validates new
 # versions of Chrome.  Only valid if set with CHROME_REV.  See
 # VALID_CHROME_REVISIONS for more information.
@@ -684,11 +588,7 @@ CHROOT_BUILDER_BOARD = 'amd64-host'
 # Use for builds that don't requite a type.
 GENERIC_TYPE = 'generic'
 
-# Build type of Pre-CQs
-PRE_CQ_TYPE = 'pre_cq'
-
 VALID_BUILD_TYPES = (
-    PALADIN_TYPE,
     INCREMENTAL_TYPE,
     FULL_TYPE,
     CANARY_TYPE,
@@ -697,49 +597,23 @@ VALID_BUILD_TYPES = (
     CHROME_PFQ_TYPE,
     ANDROID_PFQ_TYPE,
     PFQ_TYPE,
-    PRE_CQ_LAUNCHER_TYPE,
     PAYLOADS_TYPE,
     TOOLCHAIN_TYPE,
     TRYJOB_TYPE,
     GENERIC_TYPE,
-    PRE_CQ_TYPE,
     POSTSUBMIT_TYPE,
 )
-
-# The default list of pre-cq configs to use.
-PRE_CQ_DEFAULT_CONFIGS = [
-    # Betty is the designated board to run vmtest on N.
-    # betty-pi-arc is disabled pending decreasing its runtime
-    # 'betty-pi-arc-pre-cq',           # vm board    arcnext
-    'betty-pre-cq',                   # vm board    vmtest
-    'eve-no-vmtest-pre-cq',           # kabylake    cheets_64 vulkan(Intel)
-    'fizz-no-vmtest-pre-cq',          # kabylake
-    'grunt-no-vmtest-pre-cq',         # stoneyridge vulkan(AMD)
-    'lakitu-no-vmtest-pre-cq',        # container
-    'whirlwind-no-vmtest-pre-cq',     # brillo
-]
-
-# The name of the pre-cq launching config.
-PRE_CQ_LAUNCHER_CONFIG = 'pre-cq-launcher'
-
-# The name of the Pre-CQ launcher on the waterfall.
-# As of crbug.com/591117 this is the same as the config name.
-PRE_CQ_LAUNCHER_NAME = PRE_CQ_LAUNCHER_CONFIG
 
 # Define pool of machines for Hardware tests.
 # TODO(akeshet): Delete constants for deprecated pools, and references to them.
 HWTEST_TRYBOT_NUM = 3
 HWTEST_MACH_POOL = 'bvt'
 HWTEST_MACH_POOL_UNI = 'bvt-uni'        # Deprecated
-HWTEST_PALADIN_POOL = 'cq'              # Deprecated
 HWTEST_QUOTA_POOL = 'quota'
-HWTEST_TOT_PALADIN_POOL = 'tot-cq'      # Deprecated
 HWTEST_PFQ_POOL = 'pfq'
 HWTEST_SUITES_POOL = 'suites'
 HWTEST_CHROME_PERF_POOL = 'chromeperf'  # Probably deprecated, no existing DUTS.
 HWTEST_TRYBOT_POOL = HWTEST_SUITES_POOL
-HWTEST_WIFICELL_PRE_CQ_POOL = 'wificell-pre-cq'
-HWTEST_BLUESTREAK_PRE_CQ_POOL = 'bluestreak-pre-cq'
 HWTEST_CONTINUOUS_POOL = 'continuous'
 HWTEST_CTS_POOL = 'cts'
 HWTEST_GTS_POOL = HWTEST_CTS_POOL
@@ -924,175 +798,11 @@ INTERNAL_PATCH_TAG = 'i'
 EXTERNAL_PATCH_TAG = 'e'
 PATCH_TAGS = (INTERNAL_PATCH_TAG, EXTERNAL_PATCH_TAG)
 
-# Common parts of query used for CQ, THROTTLED_CQ, and PRECQ.
-# "NOT is:draft" in this query doesn't work, it finds any non-draft revision.
-# We want to match drafts anyway, so we can comment on them.
-_QUERIES = {
-    # CLs that are open and not vetoed.
-    'open': 'status:open AND -label:CodeReview=-2 AND -label:Verified=-1',
-
-    # CLs that are approved and verified.
-    'approved': 'label:Code-Review=+2 AND label:Verified=+1',
-}
-
-#
-# Please note that requiring the +2 code review (or CQ+1 for try) for all CQ
-# and PreCQ runs is a security requirement. Otherwise arbitrary people can
-# run code on our servers.
-#
-# The Verified and Commit-Queue flags can be set by any registered user (you
-# don't need commit access to set them.)
-#
-
-
-# Default gerrit query used to find changes for CQ.
-CQ_READY_QUERY = (
-    '%(open)s AND %(approved)s AND label:Commit-Queue>=2' % _QUERIES,
-    lambda change: change.IsMergeable())
-
-# The PreCQ does not require the CQ+2 bit to be set if it's a recent CL, or if
-# the Commit-Queue +1 flag has been set.
-PRECQ_READY_QUERY = (
-    '%(open)s AND (%(approved)s AND label:Commit-Queue>=2 OR '
-    'label:Code-Review=+2 AND -age:2h OR label:Commit-Queue=+1)' % _QUERIES,
-    lambda change: not change.IsBeingMerged())
-
 GERRIT_ON_BORG_LABELS = {
     'Code-Review': 'CRVW',
     'Commit-Queue': 'COMR',
     'Verified': 'VRIF',
 }
-
-# Actions that a CQ run can take on a CL
-CL_ACTION_PICKED_UP = 'picked_up'         # CL picked up in CommitQueueSync
-CL_ACTION_SUBMITTED = 'submitted'         # CL submitted successfully
-CL_ACTION_KICKED_OUT = 'kicked_out'       # CL CQ-Ready value set to zero
-CL_ACTION_SUBMIT_FAILED = 'submit_failed' # CL submitted but submit failed
-CL_ACTION_VERIFIED = 'verified'           # CL was verified by the builder
-CL_ACTION_FORGIVEN = 'forgiven'           # Build failed, but CL not kicked out
-CL_ACTION_EXONERATED = 'exonerated'       # CL was kicked out, then exonerated.
-
-# Actions the Pre-CQ Launcher can take on a CL
-# See cbuildbot/stages/sync_stages.py:PreCQLauncherStage for more info
-CL_ACTION_PRE_CQ_INFLIGHT = 'pre_cq_inflight'
-CL_ACTION_PRE_CQ_PASSED = 'pre_cq_passed'
-CL_ACTION_PRE_CQ_FAILED = 'pre_cq_failed'
-CL_ACTION_PRE_CQ_LAUNCHING = 'pre_cq_launching'
-CL_ACTION_PRE_CQ_WAITING = 'pre_cq_waiting'
-CL_ACTION_PRE_CQ_FULLY_VERIFIED = 'pre_cq_fully_verified'
-CL_ACTION_PRE_CQ_READY_TO_SUBMIT = 'pre_cq_ready_to_submit'
-# Recording this action causes the pre-cq status and all per-config statuses to
-# be reset.
-CL_ACTION_PRE_CQ_RESET = 'pre_cq_reset'
-
-# Miscellaneous actions
-
-# Recorded by pre-cq launcher for a change when it is noticed that a previously
-# rejected change is again in the queue.
-# This is a best effort detection for developers re-marking their changes, to
-# help calculate true CQ handling time. It is susceptible to developers
-# un-marking their change after is requeued or to the CQ picking up a CL before
-# it is seen by the pre-cq-launcher.
-CL_ACTION_REQUEUED = 'requeued'
-
-# Recorded by pre-cq launcher when it begins handling a change that isn't marked
-# as CQ+1. This indicates that all actions between this and the next
-# CL_ACTION_REQUEUED action have occured on a non-CQ+1 change.
-CL_ACTION_SPECULATIVE = 'speculative'
-
-# Recorded by pre-cq launcher when it has screened a change for necessary
-# tryjobs
-CL_ACTION_SCREENED_FOR_PRE_CQ = 'screened_for_pre_cq'
-# Recorded by pre-cq launcher for each tryjob config necessary to validate
-# a change, with |reason| field specifying the config.
-CL_ACTION_VALIDATION_PENDING_PRE_CQ = 'validation_pending_pre_cq'
-
-# Recorded by CQ slaves builds when a picked-up CL is determined to be
-# irrelevant to that slave build.
-CL_ACTION_IRRELEVANT_TO_SLAVE = 'irrelevant_to_slave'
-
-# Recorded by CQ slaves builds when a picked-up CL is determined to be
-# relevant to that slave build.
-CL_ACTION_RELEVANT_TO_SLAVE = 'relevant_to_slave'
-
-# Recorded by pre-cq-launcher when it launches a tryjob with a particular
-# config. The |reason| field of the action will be the config.
-CL_ACTION_TRYBOT_LAUNCHING = 'trybot_launching'
-
-# Recorded by pre-cq-launcher when it cancels a trybot.
-CL_ACTION_TRYBOT_CANCELLED = 'trybot_cancelled'
-
-
-CL_ACTIONS = (CL_ACTION_PICKED_UP,
-              CL_ACTION_SUBMITTED,
-              CL_ACTION_KICKED_OUT,
-              CL_ACTION_SUBMIT_FAILED,
-              CL_ACTION_VERIFIED,
-              CL_ACTION_PRE_CQ_INFLIGHT,
-              CL_ACTION_PRE_CQ_PASSED,
-              CL_ACTION_PRE_CQ_FAILED,
-              CL_ACTION_PRE_CQ_LAUNCHING,
-              CL_ACTION_PRE_CQ_WAITING,
-              CL_ACTION_PRE_CQ_READY_TO_SUBMIT,
-              CL_ACTION_REQUEUED,
-              CL_ACTION_SCREENED_FOR_PRE_CQ,
-              CL_ACTION_VALIDATION_PENDING_PRE_CQ,
-              CL_ACTION_IRRELEVANT_TO_SLAVE,
-              CL_ACTION_RELEVANT_TO_SLAVE,
-              CL_ACTION_TRYBOT_LAUNCHING,
-              CL_ACTION_SPECULATIVE,
-              CL_ACTION_FORGIVEN,
-              CL_ACTION_EXONERATED,
-              CL_ACTION_PRE_CQ_FULLY_VERIFIED,
-              CL_ACTION_PRE_CQ_RESET,
-              CL_ACTION_TRYBOT_CANCELLED)
-
-# Actions taken by a builder when making a decision about a CL.
-CL_DECISION_ACTIONS = (
-    CL_ACTION_SUBMITTED,
-    CL_ACTION_KICKED_OUT,
-    CL_ACTION_SUBMIT_FAILED,
-    CL_ACTION_VERIFIED,
-    CL_ACTION_FORGIVEN
-)
-
-# Per-config status strings for a CL.
-CL_PRECQ_CONFIG_STATUS_PENDING = 'pending'
-CL_PRECQ_CONFIG_STATUS_LAUNCHED = 'launched'
-CL_PRECQ_CONFIG_STATUS_INFLIGHT = CL_STATUS_INFLIGHT
-CL_PRECQ_CONFIG_STATUS_FAILED = BUILDER_STATUS_FAILED
-CL_PRECQ_CONFIG_STATUS_VERIFIED = CL_ACTION_VERIFIED
-CL_PRECQ_CONFIG_STATUSES = (CL_PRECQ_CONFIG_STATUS_PENDING,
-                            CL_PRECQ_CONFIG_STATUS_LAUNCHED,
-                            CL_PRECQ_CONFIG_STATUS_INFLIGHT,
-                            CL_PRECQ_CONFIG_STATUS_FAILED,
-                            CL_PRECQ_CONFIG_STATUS_VERIFIED)
-
-# CL submission, rejection, or forgiven reasons (i.e. strategies).
-STRATEGY_CQ_SUCCESS = 'strategy:cq-success'
-STRATEGY_PRECQ_SUBMIT = 'strategy:pre-cq-submit'
-STRATEGY_NONMANIFEST = 'strategy:non-manifest-submit'
-
-# Strategy for CQ partial pool submission
-STRATEGY_CQ_PARTIAL_NOT_TESTED = 'strategy:cq-submit-partial-pool-not-tested'
-STRATEGY_CQ_PARTIAL_CQ_HISTORY = 'strategy:cq-submit-partial-pool-cq-history'
-STRATEGY_CQ_PARTIAL_IGNORED_STAGES = (
-    'strategy:cq-submit-partial-pool-ignored-stages')
-STRATEGY_CQ_PARTIAL_BUILDS_PASSED = (
-    'strategy:cq-submit-partial-pool-builds-passed')
-
-# A dict mapping CQ partial pool submission strategies to their priorities;
-# lower values have higher priorities.
-STRATEGY_CQ_PARTIAL_REASONS = {
-    STRATEGY_CQ_PARTIAL_NOT_TESTED: 1,
-    STRATEGY_CQ_PARTIAL_CQ_HISTORY: 2,
-    STRATEGY_CQ_PARTIAL_IGNORED_STAGES: 3,
-    STRATEGY_CQ_PARTIAL_BUILDS_PASSED: 4
-}
-
-# CQ types.
-CQ = 'cq'
-PRE_CQ = 'pre-cq'
 
 # Environment variables that should be exposed to all children processes
 # invoked via cros_build_lib.run.
@@ -1234,11 +944,8 @@ CHROME_GARDENER = 'chrome'
 CHROME_GARDENER_REVIEW_EMAIL = 'chrome-os-gardeners@google.com'
 
 # Useful config targets.
-CQ_MASTER = 'master-paladin'
 CANARY_MASTER = 'master-release'
 PFQ_MASTER = 'master-chromium-pfq'
-WIFICELL_PRE_CQ = 'wificell-pre-cq'
-BLUESTREAK_PRE_CQ = 'bluestreak-pre-cq'
 MST_ANDROID_PFQ_MASTER = 'master-mst-android-pfq'
 VMMST_ANDROID_PFQ_MASTER = 'master-vmmst-android-pfq'
 PI_ANDROID_PFQ_MASTER = 'master-pi-android-pfq'

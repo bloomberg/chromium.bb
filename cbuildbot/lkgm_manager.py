@@ -103,7 +103,6 @@ class LKGMManager(manifest_version.BuildSpecsManager):
   LKGM_SUBDIR = 'LKGM-candidates'
   CHROME_PFQ_SUBDIR = 'chrome-LKGM-candidates'
   ANDROID_PFQ_SUBDIR = 'android-LKGM-candidates'
-  COMMIT_QUEUE_SUBDIR = 'paladin'
   TOOLCHAIN_SUBDIR = 'toolchain'
   FULL_SUBDIR = 'full'
   INCREMENTAL_SUBDIR = 'incremental'
@@ -160,8 +159,6 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       self.rel_working_dir = self.INCREMENTAL_SUBDIR
     elif self.build_type == constants.POSTSUBMIT_TYPE:
       self.rel_working_dir = self.POSTSUBMIT_SUBDIR
-    elif config_lib.IsCQType(self.build_type):
-      self.rel_working_dir = self.COMMIT_QUEUE_SUBDIR
     else:
       assert config_lib.IsPFQType(self.build_type)
       self.rel_working_dir = self.LKGM_SUBDIR
