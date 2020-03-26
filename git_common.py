@@ -9,10 +9,17 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import multiprocessing.pool
+import sys
+import threading
+
 from multiprocessing.pool import IMapIterator
+
 def wrapper(func):
   def wrap(self, timeout=None):
-    return func(self, timeout=timeout or 1 << 31)
+    default_timeout = (1 << 31 if sys.version_info.major == 2 else
+                       threading.TIMEOUT_MAX)
+    return func(self, timeout=timeout or default_timeout)
+
   return wrap
 IMapIterator.next = wrapper(IMapIterator.next)
 IMapIterator.__next__ = IMapIterator.next
@@ -29,10 +36,8 @@ import re
 import setup_color
 import shutil
 import signal
-import sys
 import tempfile
 import textwrap
-import threading
 
 import subprocess2
 
