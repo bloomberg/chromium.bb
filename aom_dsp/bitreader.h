@@ -98,20 +98,8 @@ static INLINE void aom_update_symb_counts(const aom_reader *r, int is_binary) {
 #endif
 
 static INLINE int aom_read_(aom_reader *r, int prob ACCT_STR_PARAM) {
-  int bit;
   int p = (0x7FFFFF - (prob << 15) + prob) >> 8;
-#if CONFIG_BITSTREAM_DEBUG
-/*{
-  const int queue_r = bitstream_queue_get_read();
-  const int frame_idx = aom_bitstream_queue_get_frame_read();
-  if (frame_idx == 0 && queue_r == 0) {
-    fprintf(stderr, "\n *** bitstream queue at frame_idx_r %d queue_r %d\n",
-            frame_idx, queue_r);
-  }
-}*/
-#endif
-
-  bit = od_ec_decode_bool_q15(&r->ec, p);
+  int bit = od_ec_decode_bool_q15(&r->ec, p);
 
 #if CONFIG_BITSTREAM_DEBUG
   {
