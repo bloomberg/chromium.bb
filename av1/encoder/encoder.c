@@ -2970,6 +2970,45 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
     av1_update_layer_context_change_config(cpi, oxcf->target_bandwidth);
 }
 
+static INLINE void setup_tpl_buffers(AV1_COMP *cpi) {
+  AV1_COMMON *cm = &cpi->common;
+  CommonModeInfoParams *const mi_params = &cm->mi_params;
+
+  set_tpl_stats_block_size(cpi);
+  for (int frame = 0; frame < MAX_LENGTH_TPL_FRAME_STATS; ++frame) {
+    const int mi_cols =
+        ALIGN_POWER_OF_TWO(mi_params->mi_cols, MAX_MIB_SIZE_LOG2);
+    const int mi_rows =
+        ALIGN_POWER_OF_TWO(mi_params->mi_rows, MAX_MIB_SIZE_LOG2);
+
+    cpi->tpl_stats_buffer[frame].is_valid = 0;
+    cpi->tpl_stats_buffer[frame].width =
+        mi_cols >> cpi->tpl_stats_block_mis_log2;
+    cpi->tpl_stats_buffer[frame].height =
+        mi_rows >> cpi->tpl_stats_block_mis_log2;
+    cpi->tpl_stats_buffer[frame].stride = cpi->tpl_stats_buffer[frame].width;
+    cpi->tpl_stats_buffer[frame].mi_rows = mi_params->mi_rows;
+    cpi->tpl_stats_buffer[frame].mi_cols = mi_params->mi_cols;
+  }
+
+  for (int frame = 0; frame < MAX_LAG_BUFFERS; ++frame) {
+    CHECK_MEM_ERROR(
+        cm, cpi->tpl_stats_pool[frame],
+        aom_calloc(cpi->tpl_stats_buffer[frame].width *
+                       cpi->tpl_stats_buffer[frame].height,
+                   sizeof(*cpi->tpl_stats_buffer[frame].tpl_stats_ptr)));
+    if (aom_alloc_frame_buffer(&cpi->tpl_rec_pool[frame], cm->width, cm->height,
+                               cm->seq_params.subsampling_x,
+                               cm->seq_params.subsampling_y,
+                               cm->seq_params.use_highbitdepth,
+                               AOM_ENC_NO_SCALE_BORDER, cm->byte_alignment))
+      aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
+                         "Failed to allocate frame buffer");
+  }
+
+  cpi->tpl_frame = &cpi->tpl_stats_buffer[REF_FRAMES + 1];
+}
+
 AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf, BufferPool *const pool,
                                 FIRSTPASS_STATS *frame_stats_buf,
                                 COMPRESSOR_STAGE stage, int num_lap_buffers,
@@ -3198,40 +3237,9 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf, BufferPool *const pool,
   }
 #endif
 
-  set_tpl_stats_block_size(cpi);
-
-  for (int frame = 0; frame < MAX_LENGTH_TPL_FRAME_STATS; ++frame) {
-    const int mi_cols =
-        ALIGN_POWER_OF_TWO(mi_params->mi_cols, MAX_MIB_SIZE_LOG2);
-    const int mi_rows =
-        ALIGN_POWER_OF_TWO(mi_params->mi_rows, MAX_MIB_SIZE_LOG2);
-
-    cpi->tpl_stats_buffer[frame].is_valid = 0;
-    cpi->tpl_stats_buffer[frame].width =
-        mi_cols >> cpi->tpl_stats_block_mis_log2;
-    cpi->tpl_stats_buffer[frame].height =
-        mi_rows >> cpi->tpl_stats_block_mis_log2;
-    cpi->tpl_stats_buffer[frame].stride = cpi->tpl_stats_buffer[frame].width;
-    cpi->tpl_stats_buffer[frame].mi_rows = mi_params->mi_rows;
-    cpi->tpl_stats_buffer[frame].mi_cols = mi_params->mi_cols;
+  if (!is_stat_generation_stage(cpi)) {
+    setup_tpl_buffers(cpi);
   }
-
-  for (int frame = 0; frame < MAX_LAG_BUFFERS; ++frame) {
-    CHECK_MEM_ERROR(
-        cm, cpi->tpl_stats_pool[frame],
-        aom_calloc(cpi->tpl_stats_buffer[frame].width *
-                       cpi->tpl_stats_buffer[frame].height,
-                   sizeof(*cpi->tpl_stats_buffer[frame].tpl_stats_ptr)));
-    if (aom_alloc_frame_buffer(&cpi->tpl_rec_pool[frame], cm->width, cm->height,
-                               cm->seq_params.subsampling_x,
-                               cm->seq_params.subsampling_y,
-                               cm->seq_params.use_highbitdepth,
-                               AOM_ENC_NO_SCALE_BORDER, cm->byte_alignment))
-      aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
-                         "Failed to allocate frame buffer");
-  }
-
-  cpi->tpl_frame = &cpi->tpl_stats_buffer[REF_FRAMES + 1];
 
 #if CONFIG_COLLECT_PARTITION_STATS == 2
   av1_zero(cpi->partition_stats);
