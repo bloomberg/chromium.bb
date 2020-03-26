@@ -658,6 +658,7 @@ class TestGitCl(unittest.TestCase):
     super(TestGitCl, self).setUp()
     self.calls = []
     self._calls_done = []
+    self.failed = False
     mock.patch('sys.stdout', StringIO()).start()
     mock.patch(
         'git_cl.time_time',
@@ -734,7 +735,8 @@ class TestGitCl(unittest.TestCase):
 
   def tearDown(self):
     try:
-      self.assertEqual([], self.calls)
+      if not self.failed:
+        self.assertEqual([], self.calls)
     except AssertionError:
       calls = ''.join('  %s\n' % str(call) for call in self.calls[:5])
       if len(self.calls) > 5:
@@ -771,6 +773,7 @@ class TestGitCl(unittest.TestCase):
           (prior_calls, len(self._calls_done), expected_args,
            len(self._calls_done), args, following_calls))
 
+      self.failed = True
       self.fail('@%d\n'
                 '  Expected: %r\n'
                 '  Actual:   %r\n'
@@ -1164,6 +1167,7 @@ class TestGitCl(unittest.TestCase):
       final_description=None,
       gitcookies_exists=True,
       force=False,
+      log_description=None,
       edit_description=None,
       fetched_description=None):
     """Generic gerrit upload test framework."""
@@ -1211,7 +1215,8 @@ class TestGitCl(unittest.TestCase):
               lambda path: self._mocked_call(['os.path.isfile', path])).start()
     mock.patch('git_cl.Changelist.GitSanityChecks', return_value=True).start()
     mock.patch(
-        'git_cl._create_description_from_log', return_value=description).start()
+        'git_cl._create_description_from_log',
+        return_value=log_description or description).start()
     mock.patch(
         'git_cl.Changelist._AddChangeIdToCommitMessage',
         return_value=post_amend_description or description).start()
@@ -1319,7 +1324,7 @@ class TestGitCl(unittest.TestCase):
         short_hostname='other',
         change_id='I123456789')
 
-  def test_gerrit_patchset_title_special_chars(self):
+  def test_gerrit_patchset_title_special_chars_nosquash(self):
     self._run_gerrit_upload_test(
         ['-f', '-t', 'We\'ll escape ^_ ^ special chars...@{u}'],
         'desc ✔\n\nBUG=\n\nChange-Id: I123456789',
@@ -1396,6 +1401,16 @@ class TestGitCl(unittest.TestCase):
         'desc ✔\nBUG=\n\nChange-Id: 123456789',
         [],
         squash=True,
+        change_id='123456789')
+
+  def test_gerrit_upload_squash_first_title(self):
+    self._run_gerrit_upload_test(
+        ['-f', '-t', 'title'],
+        'title\n\ndesc\n\nChange-Id: 123456789',
+        [],
+        force=True,
+        squash=True,
+        log_description='desc',
         change_id='123456789')
 
   def test_gerrit_upload_squash_first_with_labels(self):
@@ -3469,6 +3484,10 @@ class CMDUploadTestCase(CMDTestCaseBase):
     mock.patch('git_cl._fetch_tryjobs').start()
     mock.patch('git_cl._trigger_tryjobs', return_value={}).start()
     mock.patch('git_cl.Changelist.CMDUpload', return_value=0).start()
+    mock.patch('git_cl.Settings.GetRoot', return_value='').start()
+    mock.patch(
+        'git_cl.Settings.GetSquashGerritUploads',
+        return_value=True).start()
     self.addCleanup(mock.patch.stopall)
 
   def testWarmUpChangeDetailCache(self):

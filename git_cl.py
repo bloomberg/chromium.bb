@@ -1436,7 +1436,7 @@ class Changelist(object):
     else:
       description = _create_description_from_log(git_diff_args)
       if options.title and options.squash:
-        description = options.title + '\n\n' + message
+        description = options.title + '\n\n' + description
 
     # Extract bug number from branch name.
     bug = options.bug
@@ -2260,10 +2260,6 @@ class Changelist(object):
   def CMDUploadChange(
       self, options, git_diff_args, custom_cl_base, change_desc):
     """Upload the current branch to Gerrit."""
-    if options.squash is None:
-      # Load default for user, repo, squash=true, in this order.
-      options.squash = settings.GetSquashGerritUploads()
-
     remote, remote_branch = self.GetRemoteBranch()
     branch = GetTargetRef(remote, remote_branch, options.target_branch)
 
@@ -4286,6 +4282,10 @@ def CMDupload(parser, args):
 
   if options.use_commit_queue:
     options.send_mail = True
+
+  if options.squash is None:
+    # Load default for user, repo, squash=true, in this order.
+    options.squash = settings.GetSquashGerritUploads()
 
   cl = Changelist()
   # Warm change details cache now to avoid RPCs later, reducing latency for
