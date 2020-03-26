@@ -466,7 +466,6 @@ static void print_reconstruction_frame(
 #define INVALID_ROW -1
 #define FIRST_PASS_ALT_REF_DISTANCE 16
 void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
-  int mb_row, mb_col;
   MACROBLOCK *const x = &cpi->td.mb;
   AV1_COMMON *const cm = &cpi->common;
   const CommonModeInfoParams *const mi_params = &cm->mi_params;
@@ -474,19 +473,23 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
   const SequenceHeader *const seq_params = &cm->seq_params;
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &x->e_mbd;
-  TileInfo tile;
-  struct macroblock_plane *const p = x->plane;
-  struct macroblockd_plane *const pd = xd->plane;
   const PICK_MODE_CONTEXT *ctx =
       &cpi->td.pc_root[MAX_MIB_SIZE_LOG2 - MIN_MIB_SIZE_LOG2]->none;
-  int i;
-
-  int recon_yoffset, src_yoffset, recon_uvoffset;
-  const int intrapenalty = INTRA_MODE_PENALTY;
   MV lastmv = kZeroMv;
-  TWO_PASS *twopass = &cpi->twopass;
-  int recon_y_stride, src_y_stride, recon_uv_stride, uv_mb_height;
-
+  const int qindex = find_fp_qindex(seq_params->bit_depth);
+  // First pass coding proceeds in raster scan order with unit size of 16x16.
+  const BLOCK_SIZE fp_block_size = BLOCK_16X16;
+  const int fp_block_size_width = block_size_high[fp_block_size];
+  const int fp_block_size_height = block_size_wide[fp_block_size];
+  const int mb_scale = mi_size_wide[fp_block_size];
+  int *raw_motion_err_list;
+  int raw_motion_err_counts = 0;
+  CHECK_MEM_ERROR(cm, raw_motion_err_list,
+                  aom_calloc(mi_params->mb_rows * mi_params->mb_cols,
+                             sizeof(*raw_motion_err_list)));
+  // Tiling is ignored in the first pass.
+  TileInfo tile;
+  av1_tile_init(&tile, cm, 0, 0);
   FRAME_STATS stats = { 0 };
   stats.image_data_start_row = INVALID_ROW;
 
@@ -507,18 +510,6 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
     }
   }
   YV12_BUFFER_CONFIG *const this_frame = &cm->cur_frame->buf;
-  const int qindex = find_fp_qindex(seq_params->bit_depth);
-  // First pass coding processes in raster scan with unit size of 16x16.
-  const BLOCK_SIZE fp_block_size = BLOCK_16X16;
-  const int fp_block_size_width = block_size_high[fp_block_size];
-  const int fp_block_size_height = block_size_wide[fp_block_size];
-  const int mb_scale = mi_size_wide[fp_block_size];
-
-  int *raw_motion_err_list;
-  int raw_motion_err_counts = 0;
-  CHECK_MEM_ERROR(cm, raw_motion_err_list,
-                  aom_calloc(mi_params->mb_rows * mi_params->mb_cols,
-                             sizeof(*raw_motion_err_list)));
   // First pass code requires valid last and new frame buffers.
   assert(this_frame != NULL);
   assert(frame_is_intra_only(cm) || (last_frame != NULL));
@@ -534,11 +525,10 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
 
   av1_set_quantizer(cpi, qindex);
 
-  av1_setup_block_planes(&x->e_mbd, seq_params->subsampling_x,
+  av1_setup_block_planes(xd, seq_params->subsampling_x,
                          seq_params->subsampling_y, num_planes);
 
-  av1_setup_src_planes(x, cpi->source, 0, 0, num_planes,
-                       x->e_mbd.mi[0]->sb_type);
+  av1_setup_src_planes(x, cpi->source, 0, 0, num_planes, fp_block_size);
   av1_setup_dst_planes(xd->plane, seq_params->sb_size, this_frame, 0, 0, 0,
                        num_planes);
 
@@ -552,33 +542,31 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
   xd->cfl.store_y = 0;
   av1_frame_init_quantizer(cpi);
 
-  for (i = 0; i < num_planes; ++i) {
-    p[i].coeff = ctx->coeff[i];
-    p[i].qcoeff = ctx->qcoeff[i];
-    pd[i].dqcoeff = ctx->dqcoeff[i];
-    p[i].eobs = ctx->eobs[i];
-    p[i].txb_entropy_ctx = ctx->txb_entropy_ctx[i];
+  for (int i = 0; i < num_planes; ++i) {
+    x->plane[i].coeff = ctx->coeff[i];
+    x->plane[i].qcoeff = ctx->qcoeff[i];
+    x->plane[i].eobs = ctx->eobs[i];
+    x->plane[i].txb_entropy_ctx = ctx->txb_entropy_ctx[i];
+    xd->plane[i].dqcoeff = ctx->dqcoeff[i];
   }
 
   av1_init_mv_probs(cm);
   av1_initialize_rd_consts(cpi);
 
-  // Tiling is ignored in the first pass.
-  av1_tile_init(&tile, cm, 0, 0);
-  src_y_stride = cpi->source->y_stride;
-  recon_y_stride = this_frame->y_stride;
-  recon_uv_stride = this_frame->uv_stride;
-  uv_mb_height =
+  const int src_y_stride = cpi->source->y_stride;
+  const int recon_y_stride = this_frame->y_stride;
+  const int recon_uv_stride = this_frame->uv_stride;
+  const int uv_mb_height =
       fp_block_size_height >> (this_frame->y_height > this_frame->uv_height);
 
-  for (mb_row = 0; mb_row < mi_params->mb_rows; ++mb_row) {
+  for (int mb_row = 0; mb_row < mi_params->mb_rows; ++mb_row) {
     MV best_ref_mv = kZeroMv;
 
     // Reset above block coeffs.
     xd->up_available = (mb_row != 0);
-    recon_yoffset = (mb_row * recon_y_stride * fp_block_size_height);
-    src_yoffset = (mb_row * src_y_stride * fp_block_size_height);
-    recon_uvoffset = (mb_row * recon_uv_stride * uv_mb_height);
+    int recon_yoffset = (mb_row * recon_y_stride * fp_block_size_height);
+    int src_yoffset = (mb_row * src_y_stride * fp_block_size_height);
+    int recon_uvoffset = (mb_row * recon_uv_stride * uv_mb_height);
     int alt_ref_frame_yoffset =
         (alt_ref_frame != NULL)
             ? mb_row * alt_ref_frame->y_stride * fp_block_size_height
@@ -590,7 +578,7 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
                           (fp_block_size_height >> MI_SIZE_LOG2),
                           cpi->oxcf.border_in_pixels);
 
-    for (mb_col = 0; mb_col < mi_params->mb_cols; ++mb_col) {
+    for (int mb_col = 0; mb_col < mi_params->mb_cols; ++mb_col) {
       int this_intra_error;
       const int use_dc_pred = (mb_col || mb_row) && (!mb_col || !mb_row);
       const BLOCK_SIZE bsize = get_bsize(mi_params, mb_row, mb_col);
@@ -663,7 +651,7 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
       // When the error score is very low this causes us to pick all or lots of
       // INTRA modes and throw lots of key frames.
       // This penalty adds a cost matching that of a 0,0 mv to the intra case.
-      this_intra_error += intrapenalty;
+      this_intra_error += INTRA_MODE_PENALTY;
 
       // Accumulate the intra error.
       stats.intra_error += (int64_t)this_intra_error;
@@ -836,8 +824,9 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
           // Keep a count of cases where the inter and intra were very close
           // and very low. This helps with scene cut detection for example in
           // cropped clips with black bars at the sides or top and bottom.
-          if (((this_intra_error - intrapenalty) * 9 <= motion_error * 10) &&
-              (this_intra_error < (2 * intrapenalty))) {
+          if (((this_intra_error - INTRA_MODE_PENALTY) * 9 <=
+               motion_error * 10) &&
+              (this_intra_error < (2 * INTRA_MODE_PENALTY))) {
             stats.neutral_count += 1.0;
             // Also track cases where the intra is not much worse than the inter
             // and use this in limiting the GF/arf group length.
@@ -947,6 +936,7 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
                       (stats.image_data_start_row * mi_params->mb_cols * 2));
   }
 
+  TWO_PASS *twopass = &cpi->twopass;
   const int num_mbs = (cpi->oxcf.resize_mode != RESIZE_NONE) ? cpi->initial_mbs
                                                              : mi_params->MBs;
   stats.intra_factor = stats.intra_factor / (double)num_mbs;
