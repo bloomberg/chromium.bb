@@ -249,10 +249,8 @@ enum {
 typedef struct {
   const aom_variance_fn_ptr_t *vfp;
   SUBPEL_SEARCH_TYPE subpel_search_type;
-  const uint8_t *second_pred;
-  const uint8_t *mask;
-  int mask_stride;
-  int invert_mask;
+  // Source and reference buffers
+  MSBuffers ms_buffers;
   int w, h;
 } SUBPEL_SEARCH_VAR_PARAMS;
 
@@ -265,6 +263,7 @@ typedef struct {
   SUBPEL_FORCE_STOP forced_stop;
   int iters_per_step;
   int do_reset_fractional_mv;
+  SubpelMvLimits mv_limits;
 
   // For calculating mv cost
   MV_COST_PARAMS mv_cost_params;
@@ -279,9 +278,11 @@ void av1_make_default_subpel_ms_params(
     const int *cost_list, const uint8_t *second_pred, const uint8_t *mask,
     int mask_stride, int invert_mask, int do_reset_fractional_mv);
 
-typedef int(fractional_mv_step_fp)(MACROBLOCK *x, const AV1_COMMON *const cm,
+typedef int(fractional_mv_step_fp)(MACROBLOCKD *xd, const AV1_COMMON *const cm,
                                    const SUBPEL_MOTION_SEARCH_PARAMS *ms_params,
-                                   int *distortion, unsigned int *sse1);
+                                   const MV start_mv, MV *bestmv,
+                                   int *distortion, unsigned int *sse1,
+                                   int_mv *last_mv_search_list);
 
 extern fractional_mv_step_fp av1_find_best_sub_pixel_tree;
 extern fractional_mv_step_fp av1_find_best_sub_pixel_tree_pruned;

@@ -148,8 +148,10 @@ static int tf_motion_search(AV1_COMP *cpi,
         mask, mask_stride, invert_mask, do_reset_fractional_mv);
     ms_params.forced_stop = EIGHTH_PEL;
     ms_params.var_params.subpel_search_type = subpel_search_type;
-    block_error = cpi->find_fractional_mv_step(mb, &cpi->common, &ms_params,
-                                               &distortion, &sse);
+    MV subpel_start_mv = get_mv_from_fullmv(&mb->best_mv.as_fullmv);
+    block_error = cpi->find_fractional_mv_step(
+        &mb->e_mbd, &cpi->common, &ms_params, subpel_start_mv,
+        &mb->best_mv.as_mv, &distortion, &sse, NULL);
 
     mb->e_mbd.mi[0]->mv[0] = mb->best_mv;
     *ref_mv = mb->best_mv.as_mv;
@@ -184,8 +186,10 @@ static int tf_motion_search(AV1_COMP *cpi,
                                           do_reset_fractional_mv);
         ms_params.forced_stop = EIGHTH_PEL;
         ms_params.var_params.subpel_search_type = subpel_search_type;
+        subpel_start_mv = get_mv_from_fullmv(&mb->best_mv.as_fullmv);
         subblock_errors[subblock_idx] = cpi->find_fractional_mv_step(
-            mb, &cpi->common, &ms_params, &distortion, &sse);
+            &mb->e_mbd, &cpi->common, &ms_params, subpel_start_mv,
+            &mb->best_mv.as_mv, &distortion, &sse, NULL);
 
         subblock_mvs[subblock_idx] = mb->best_mv.as_mv;
         ++subblock_idx;

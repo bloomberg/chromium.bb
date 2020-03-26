@@ -167,7 +167,10 @@ static uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
   ms_params.forced_stop = EIGHTH_PEL;
   ms_params.var_params.subpel_search_type = USE_2_TAPS;
   ms_params.mv_cost_params.mv_cost_type = MV_COST_NONE;
-  bestsme = cpi->find_fractional_mv_step(x, cm, &ms_params, &distortion, &sse);
+  MV subpel_start_mv = get_mv_from_fullmv(&x->best_mv.as_fullmv);
+  bestsme =
+      cpi->find_fractional_mv_step(xd, cm, &ms_params, subpel_start_mv,
+                                   &x->best_mv.as_mv, &distortion, &sse, NULL);
 
   return bestsme;
 }
