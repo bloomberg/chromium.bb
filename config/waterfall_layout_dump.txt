@@ -239,6 +239,7 @@
     amd64-generic-cheets-release
     arkham-release
     asuka-release
+    asurada-release
     atlas-kvm-release
     atlas-release
     auron_paine-release
@@ -1408,6 +1409,7 @@
     amd64-generic-cheets-release-tryjob
     arkham-release-tryjob
     asuka-release-tryjob
+    asurada-release-tryjob
     atlas-kvm-release-tryjob
     atlas-release-tryjob
     auron_paine-release-tryjob

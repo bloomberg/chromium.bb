@@ -38,6 +38,18 @@
       ]
     },
     {
+      "name": "asurada",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "asurada",
+          "arch": "ARM_INTERNAL"
+        }
+      ]
+    },
+    {
       "name": "atlas",
       "configs": [
         {

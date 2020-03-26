@@ -2296,6 +2296,8 @@
         "boards": [
             "asurada"
         ],
+        "chrome_sdk_build_chrome": false,
+        "important": false,
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -2304,6 +2306,7 @@
         "boards": [
             "asurada"
         ],
+        "chrome_sdk_build_chrome": false,
         "debug": true,
         "display_label": "tryjob",
         "hw_tests": [
@@ -23136,6 +23139,7 @@
             "amd64-generic-cheets-release",
             "arkham-release",
             "asuka-release",
+            "asurada-release",
             "atlas-kvm-release",
             "atlas-release",
             "auron_paine-release",
@@ -23319,6 +23323,7 @@
             "amd64-generic-cheets-release-tryjob",
             "arkham-release-tryjob",
             "asuka-release-tryjob",
+            "asurada-release-tryjob",
             "atlas-kvm-release-tryjob",
             "atlas-release-tryjob",
             "auron_paine-release-tryjob",
