@@ -1451,18 +1451,6 @@ static int64_t motion_mode_rd(
     if (interintra_allowed) {
       rd_stats->rate += x->interintra_cost[size_group_lookup[bsize]]
                                           [mbmi->ref_frame[1] == INTRA_FRAME];
-      if (mbmi->ref_frame[1] == INTRA_FRAME) {
-        rd_stats->rate += x->interintra_mode_cost[size_group_lookup[bsize]]
-                                                 [mbmi->interintra_mode];
-        if (av1_is_wedge_used(bsize)) {
-          rd_stats->rate +=
-              x->wedge_interintra_cost[bsize][mbmi->use_wedge_interintra];
-          if (mbmi->use_wedge_interintra) {
-            rd_stats->rate +=
-                x->wedge_idx_cost[bsize][mbmi->interintra_wedge_index];
-          }
-        }
-      }
     }
     if ((last_motion_mode_allowed > SIMPLE_TRANSLATION) &&
         (mbmi->ref_frame[1] != INTRA_FRAME)) {

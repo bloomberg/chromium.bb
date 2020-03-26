@@ -500,17 +500,14 @@ static int64_t estimate_yrd_for_sb(const AV1_COMP *const cpi, BLOCK_SIZE bs,
   return rd;
 }
 
-// Computes the rd_threshold and total_mode_rate
-static AOM_INLINE int64_t compute_total_rate_and_rd_thresh(
-    MACROBLOCK *const x, int *rate_mv, int *total_mode_rate, BLOCK_SIZE bsize,
-    int64_t ref_best_rd, int rmode) {
-  const int is_wedge_used = av1_is_wedge_used(bsize);
+// Computes the rd_threshold for smooth interintra rd search.
+static AOM_INLINE int64_t compute_rd_thresh(MACROBLOCK *const x,
+                                            int total_mode_rate,
+                                            int64_t ref_best_rd) {
   const int64_t rd_thresh = get_rd_thresh_from_best_rd(
       ref_best_rd, (1 << INTER_INTRA_RD_THRESH_SHIFT),
       INTER_INTRA_RD_THRESH_SCALE);
-  const int rwedge = is_wedge_used ? x->wedge_interintra_cost[bsize][0] : 0;
-  *total_mode_rate = *rate_mv + rmode + rwedge;
-  const int64_t mode_rd = RDCOST(x->rdmult, *total_mode_rate, 0);
+  const int64_t mode_rd = RDCOST(x->rdmult, total_mode_rate, 0);
   return (rd_thresh - mode_rd);
 }
 
@@ -551,8 +548,9 @@ int av1_handle_inter_intra_mode(const AV1_COMP *const cpi, MACROBLOCK *const x,
                                 const BUFFER_SET *orig_dst) {
   const int try_smooth_interintra = cpi->oxcf.enable_smooth_interintra &&
                                     !cpi->sf.inter_sf.disable_smooth_interintra;
+  const int is_wedge_used = av1_is_wedge_used(bsize);
   const int try_wedge_interintra =
-      av1_is_wedge_used(bsize) && enable_wedge_interintra_search(x, cpi);
+      is_wedge_used && enable_wedge_interintra_search(x, cpi);
   if (!try_smooth_interintra && !try_wedge_interintra) return -1;
 
   const AV1_COMMON *const cm = &cpi->common;
@@ -584,6 +582,7 @@ int av1_handle_inter_intra_mode(const AV1_COMP *const cpi, MACROBLOCK *const x,
 
   // Compute smooth_interintra
   int64_t best_interintra_rd_nowedge = INT64_MAX;
+  int best_mode_rate = INT_MAX;
   if (try_smooth_interintra) {
     mbmi->use_wedge_interintra = 0;
     int interintra_mode_reuse = 1;
@@ -607,7 +606,6 @@ int av1_handle_inter_intra_mode(const AV1_COMP *const cpi, MACROBLOCK *const x,
     assert(IMPLIES(!cpi->oxcf.enable_smooth_interintra ||
                        cpi->sf.inter_sf.disable_smooth_interintra,
                    best_interintra_mode != II_SMOOTH_PRED));
-    int rmode = interintra_mode_cost[best_interintra_mode];
     // Recompute prediction if required
     if (interintra_mode_reuse || best_interintra_mode != INTERINTRA_MODES - 1) {
       mbmi->interintra_mode = best_interintra_mode;
@@ -618,9 +616,11 @@ int av1_handle_inter_intra_mode(const AV1_COMP *const cpi, MACROBLOCK *const x,
 
     // Compute rd cost for best smooth_interintra
     RD_STATS rd_stats;
-    int total_mode_rate;
-    const int64_t rd_thresh = compute_total_rate_and_rd_thresh(
-        x, rate_mv, &total_mode_rate, bsize, ref_best_rd, rmode);
+    const int rmode = interintra_mode_cost[best_interintra_mode] +
+                      (is_wedge_used ? x->wedge_interintra_cost[bsize][0] : 0);
+    const int total_mode_rate = rmode + *rate_mv;
+    const int64_t rd_thresh =
+        compute_rd_thresh(x, total_mode_rate, ref_best_rd);
     rd = estimate_yrd_for_sb(cpi, bsize, x, rd_thresh, &rd_stats);
     if (rd != INT64_MAX) {
       rd = RDCOST(x->rdmult, total_mode_rate + rd_stats.rate, rd_stats.dist);
@@ -628,6 +628,7 @@ int av1_handle_inter_intra_mode(const AV1_COMP *const cpi, MACROBLOCK *const x,
       return -1;
     }
     best_interintra_rd_nowedge = rd;
+    best_mode_rate = rmode;
     // Return early if best_interintra_rd_nowedge not good enough
     if (ref_best_rd < INT64_MAX &&
         (best_interintra_rd_nowedge >> INTER_INTRA_RD_THRESH_SHIFT) *
@@ -751,6 +752,7 @@ int av1_handle_inter_intra_mode(const AV1_COMP *const cpi, MACROBLOCK *const x,
       mbmi->mv[0].as_int = tmp_mv.as_int;
       *tmp_rate2 += tmp_rate_mv - *rate_mv;
       *rate_mv = tmp_rate_mv;
+      best_mode_rate = rate_overhead;
     } else {
       mbmi->use_wedge_interintra = 0;
       mbmi->interintra_mode = best_interintra_mode;
@@ -764,6 +766,8 @@ int av1_handle_inter_intra_mode(const AV1_COMP *const cpi, MACROBLOCK *const x,
       best_interintra_rd_wedge == INT64_MAX) {
     return -1;
   }
+
+  *tmp_rate2 += best_mode_rate;
 
   if (num_planes > 1) {
     av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, orig_dst, bsize,
