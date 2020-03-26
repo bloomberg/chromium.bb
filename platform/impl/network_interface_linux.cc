@@ -95,7 +95,7 @@ void GetInterfaceAttributes(struct rtattr* rta,
           GetInterfaceName(reinterpret_cast<const char*>(RTA_DATA(rta)));
     } else if (rta->rta_type == IFLA_ADDRESS) {
       OSP_CHECK_EQ(sizeof(info->hardware_address), RTA_PAYLOAD(rta));
-      std::memcpy(info->hardware_address, RTA_DATA(rta),
+      std::memcpy(info->hardware_address.data(), RTA_DATA(rta),
                   sizeof(info->hardware_address));
     }
   }

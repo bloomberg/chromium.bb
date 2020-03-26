@@ -80,7 +80,7 @@ std::ostream& operator<<(std::ostream& out, const InterfaceInfo& info) {
   out << '{' << info.index << " (a.k.a. " << info.name
       << "); media_type=" << info.type << "; MAC=" << std::hex
       << static_cast<int>(info.hardware_address[0]);
-  for (size_t i = 1; i < sizeof(info.hardware_address); ++i) {
+  for (size_t i = 1; i < info.hardware_address.size(); ++i) {
     out << ':' << static_cast<int>(info.hardware_address[i]);
   }
   for (const IPSubnet& ip : info.addresses) {
