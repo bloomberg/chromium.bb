@@ -65,13 +65,18 @@ static unsigned int tx_domain_dist_types[3][MODE_EVAL_TYPES] = { { 0, 2, 0 },
 
 // Threshold values to be used for disabling coeff RD-optimization
 // based on block MSE / qstep^2.
-// TODO(any): Experiment the threshold logic based on variance metric
+// TODO(any): Experiment the threshold logic based on variance metric.
+// For each row, the indices are as follows.
 // Index 0: Default mode evaluation, Winner mode processing is not applicable
-// (Eg : IntraBc) Index 1: Mode evaluation. Index 2: Winner mode evaluation.
+// (Eg : IntraBc)
+// Index 1: Mode evaluation.
+// Index 2: Winner mode evaluation.
 // Index 1 and 2 are applicable when enable_winner_mode_for_coeff_opt speed
 // feature is ON
-static unsigned int coeff_opt_dist_thresholds[5][MODE_EVAL_TYPES] = {
+// There are 6 levels with increasing speed, mapping to vertical indices.
+static unsigned int coeff_opt_dist_thresholds[6][MODE_EVAL_TYPES] = {
   { UINT_MAX, UINT_MAX, UINT_MAX },
+  { 3200, 250, UINT_MAX },
   { 1728, 142, UINT_MAX },
   { 864, 142, UINT_MAX },
   { 432, 86, UINT_MAX },
@@ -323,6 +328,8 @@ static void set_good_speed_features_framesize_independent(
   else
     sf->mv_sf.exhaustive_searches_thresh = (1 << 25);
 
+  sf->rd_sf.perform_coeff_opt = 1;
+
   if (speed >= 1) {
     sf->gm_sf.disable_adaptive_warp_error_thresh = 0;
     sf->gm_sf.gm_search_type = GM_REDUCED_REF_SEARCH_SKIP_L2_L3_ARF2;
@@ -367,7 +374,7 @@ static void set_good_speed_features_framesize_independent(
     sf->tx_sf.tx_type_search.skip_tx_search = 1;
     sf->tx_sf.use_intra_txb_hash = 1;
 
-    sf->rd_sf.perform_coeff_opt = boosted ? 1 : 2;
+    sf->rd_sf.perform_coeff_opt = boosted ? 2 : 3;
     sf->rd_sf.tx_domain_dist_level = boosted ? 1 : 2;
     sf->rd_sf.tx_domain_dist_thres_level = 1;
 
@@ -412,7 +419,7 @@ static void set_good_speed_features_framesize_independent(
     sf->intra_sf.disable_smooth_intra =
         !frame_is_intra_only(&cpi->common) || (cpi->rc.frames_to_key != 1);
 
-    sf->rd_sf.perform_coeff_opt = is_boosted_arf2_bwd_type ? 2 : 3;
+    sf->rd_sf.perform_coeff_opt = is_boosted_arf2_bwd_type ? 3 : 4;
 
     sf->lpf_sf.prune_wiener_based_on_src_var = 1;
     sf->lpf_sf.prune_sgr_based_on_wiener = !allow_screen_content_tools;
@@ -530,7 +537,7 @@ static void set_good_speed_features_framesize_independent(
     // is reset during winner mode processing
     sf->tx_sf.use_intra_txb_hash = 0;
 
-    sf->rd_sf.perform_coeff_opt = is_boosted_arf2_bwd_type ? 2 : 4;
+    sf->rd_sf.perform_coeff_opt = is_boosted_arf2_bwd_type ? 3 : 5;
     sf->rd_sf.tx_domain_dist_thres_level = 2;
 
     // TODO(any): Extend multi-winner mode processing support for inter frames
@@ -1236,7 +1243,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
 
   // assert ensures that coeff_opt_dist_thresholds is accessed correctly
   assert(cpi->sf.rd_sf.perform_coeff_opt >= 0 &&
-         cpi->sf.rd_sf.perform_coeff_opt < 5);
+         cpi->sf.rd_sf.perform_coeff_opt < 6);
   memcpy(cpi->coeff_opt_dist_threshold,
          coeff_opt_dist_thresholds[cpi->sf.rd_sf.perform_coeff_opt],
          sizeof(cpi->coeff_opt_dist_threshold));
@@ -1271,6 +1278,10 @@ void av1_set_speed_features_qindex_dependent(AV1_COMP *cpi, int speed) {
   const int is_720p_or_larger = AOMMIN(cm->width, cm->height) >= 720;
   if (is_720p_or_larger && cpi->oxcf.mode == GOOD && speed == 0) {
     if (cm->base_qindex <= 80) {
+      sf->rd_sf.perform_coeff_opt = 2;
+      memcpy(cpi->coeff_opt_dist_threshold,
+             coeff_opt_dist_thresholds[sf->rd_sf.perform_coeff_opt],
+             sizeof(cpi->coeff_opt_dist_threshold));
       sf->part_sf.simple_motion_search_split =
           cm->features.allow_screen_content_tools ? 1 : 2;
       sf->tx_sf.inter_tx_size_search_init_depth_rect = 1;
