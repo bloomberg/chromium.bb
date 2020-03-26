@@ -649,7 +649,8 @@ bool CompareCandidateMotionVectors(const int16_t& lhs, const int16_t& rhs) {
   return lhs > rhs;
 }
 
-void SortWeightIndexStack(const int size, int16_t* const weight_index_stack) {
+void SortWeightIndexStack(const int size, const int sort_to_n,
+                          int16_t* const weight_index_stack) {
   if (size <= 1) return;
   if (size <= 3) {
     // Specialize small sort sizes to speed up.
@@ -664,10 +665,20 @@ void SortWeightIndexStack(const int size, int16_t* const weight_index_stack) {
     }
     weight_index_stack[0] = weight_index_0;
     weight_index_stack[1] = weight_index_1;
-  } else {
-    std::sort(&weight_index_stack[0], &weight_index_stack[size],
-              CompareCandidateMotionVectors);
+    return;
   }
+  if (sort_to_n == 1) {
+    // std::max_element() is not efficient. Find the max element in a loop.
+    int16_t max_element = weight_index_stack[0];
+    int i = 1;
+    do {
+      max_element = std::max(max_element, weight_index_stack[i]);
+    } while (++i < size);
+    weight_index_stack[0] = max_element;
+    return;
+  }
+  std::partial_sort(&weight_index_stack[0], &weight_index_stack[sort_to_n],
+                    &weight_index_stack[size], CompareCandidateMotionVectors);
 }
 
 // 7.10.2.14 (part 2).
@@ -819,14 +830,16 @@ void FindMvStack(const Tile::Block& block, bool is_compound,
     // The sort of |weight_index_stack| could be moved to Tile::AssignIntraMv()
     // and Tile::AssignInterMv(), and only do a partial sort to the max index we
     // need. However, the speed gain is trivial.
-    SortWeightIndexStack(prediction_parameters.nearest_mv_count,
-                         prediction_parameters.weight_index_stack);
     // For intra case, only the first 1 or 2 mvs in the stack will be used.
     // For inter case, |prediction_parameters.ref_mv_index| is at most 3.
+    // We only need to do the partial sort up to the first 4 mvs.
+    SortWeightIndexStack(prediction_parameters.nearest_mv_count, 4,
+                         prediction_parameters.weight_index_stack);
     // When there are 4 or more nearest mvs, the other mvs will not be used.
     if (prediction_parameters.nearest_mv_count < 4) {
       SortWeightIndexStack(
           num_mv_found - prediction_parameters.nearest_mv_count,
+          4 - prediction_parameters.nearest_mv_count,
           prediction_parameters.weight_index_stack +
               prediction_parameters.nearest_mv_count);
     }
