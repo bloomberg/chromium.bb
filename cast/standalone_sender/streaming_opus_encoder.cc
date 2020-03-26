@@ -59,6 +59,14 @@ StreamingOpusEncoder::StreamingOpusEncoder(int num_channels,
 
 StreamingOpusEncoder::~StreamingOpusEncoder() = default;
 
+int StreamingOpusEncoder::GetBitrate() const {
+  opus_int32 bitrate;
+  const auto ctl_result =
+      opus_encoder_ctl(encoder(), OPUS_GET_BITRATE(&bitrate));
+  OSP_CHECK_EQ(ctl_result, OPUS_OK);
+  return bitrate;
+}
+
 void StreamingOpusEncoder::UseStandardQuality() {
   const auto ctl_result =
       opus_encoder_ctl(encoder(), OPUS_SET_BITRATE(OPUS_AUTO));

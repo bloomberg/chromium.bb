@@ -39,6 +39,8 @@ class StreamingOpusEncoder {
   int num_channels() const { return num_channels_; }
   int sample_rate() const { return sender_->rtp_timebase(); }
 
+  int GetBitrate() const;
+
   // Sets the encoder back to its "AUTO" bitrate setting, for standard quality.
   // This and UseHighQuality() may be called as often as needed as conditions
   // change.
