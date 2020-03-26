@@ -23,7 +23,7 @@ if (!build_with_chromium) {
     include_dirs = []
     lib_dirs = []
     libs = []
-    if (have_ffmpeg && have_libopus) {
+    if (have_ffmpeg && have_libopus && have_libvpx) {
       defines += [ "CAST_STANDALONE_SENDER_HAVE_EXTERNAL_LIBS" ]
       sources += [
         "ffmpeg_glue.cc",
@@ -32,10 +32,13 @@ if (!build_with_chromium) {
         "simulated_capturer.h",
         "streaming_opus_encoder.cc",
         "streaming_opus_encoder.h",
+        "streaming_vp8_encoder.cc",
+        "streaming_vp8_encoder.h",
       ]
-      include_dirs += ffmpeg_include_dirs + libopus_include_dirs
-      lib_dirs += ffmpeg_lib_dirs + libopus_lib_dirs
-      libs += ffmpeg_libs + libopus_libs
+      include_dirs +=
+          ffmpeg_include_dirs + libopus_include_dirs + libvpx_include_dirs
+      lib_dirs += ffmpeg_lib_dirs + libopus_lib_dirs + libvpx_lib_dirs
+      libs += ffmpeg_libs + libopus_libs + libvpx_libs
     }
   }
 }
