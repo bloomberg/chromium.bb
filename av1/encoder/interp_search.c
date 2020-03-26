@@ -612,7 +612,7 @@ int64_t av1_interpolation_filter_search(
   av1_init_rd_stats(&rd_stats);
 
   int match_found_idx = -1;
-  const InterpFilter assign_filter = cm->interp_filter;
+  const InterpFilter assign_filter = cm->features.interp_filter;
 
   match_found_idx = av1_find_interp_filter_match(
       mbmi, cpi, assign_filter, need_search, args->interp_filter_stats,

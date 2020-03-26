@@ -1053,7 +1053,7 @@ static void alloc_altref_frame_buffer(AV1_COMP *cpi) {
           &cpi->alt_ref_buffer, oxcf->width, oxcf->height,
           seq_params->subsampling_x, seq_params->subsampling_y,
           seq_params->use_highbitdepth, cpi->oxcf.border_in_pixels,
-          cm->byte_alignment, NULL, NULL, NULL))
+          cm->features.byte_alignment, NULL, NULL, NULL))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate altref buffer");
 }
@@ -1061,10 +1061,11 @@ static void alloc_altref_frame_buffer(AV1_COMP *cpi) {
 static void alloc_util_frame_buffers(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   const SequenceHeader *const seq_params = &cm->seq_params;
+  const int byte_alignment = cm->features.byte_alignment;
   if (aom_realloc_frame_buffer(
           &cpi->last_frame_uf, cm->width, cm->height, seq_params->subsampling_x,
           seq_params->subsampling_y, seq_params->use_highbitdepth,
-          cpi->oxcf.border_in_pixels, cm->byte_alignment, NULL, NULL, NULL))
+          cpi->oxcf.border_in_pixels, byte_alignment, NULL, NULL, NULL))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate last frame buffer");
 
@@ -1072,14 +1073,14 @@ static void alloc_util_frame_buffers(AV1_COMP *cpi) {
           &cpi->trial_frame_rst, cm->superres_upscaled_width,
           cm->superres_upscaled_height, seq_params->subsampling_x,
           seq_params->subsampling_y, seq_params->use_highbitdepth,
-          AOM_RESTORATION_FRAME_BORDER, cm->byte_alignment, NULL, NULL, NULL))
+          AOM_RESTORATION_FRAME_BORDER, byte_alignment, NULL, NULL, NULL))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate trial restored frame buffer");
 
   if (aom_realloc_frame_buffer(
           &cpi->scaled_source, cm->width, cm->height, seq_params->subsampling_x,
           seq_params->subsampling_y, seq_params->use_highbitdepth,
-          cpi->oxcf.border_in_pixels, cm->byte_alignment, NULL, NULL, NULL))
+          cpi->oxcf.border_in_pixels, byte_alignment, NULL, NULL, NULL))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate scaled source buffer");
 
@@ -1087,7 +1088,7 @@ static void alloc_util_frame_buffers(AV1_COMP *cpi) {
           &cpi->scaled_last_source, cm->width, cm->height,
           seq_params->subsampling_x, seq_params->subsampling_y,
           seq_params->use_highbitdepth, cpi->oxcf.border_in_pixels,
-          cm->byte_alignment, NULL, NULL, NULL))
+          byte_alignment, NULL, NULL, NULL))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate scaled last source buffer");
 }
@@ -2841,11 +2842,11 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   cpi->refresh_golden_frame = 0;
   cpi->refresh_bwd_ref_frame = 0;
 
-  cm->refresh_frame_context = (oxcf->frame_parallel_decoding_mode)
-                                  ? REFRESH_FRAME_CONTEXT_DISABLED
-                                  : REFRESH_FRAME_CONTEXT_BACKWARD;
+  cm->features.refresh_frame_context = (oxcf->frame_parallel_decoding_mode)
+                                           ? REFRESH_FRAME_CONTEXT_DISABLED
+                                           : REFRESH_FRAME_CONTEXT_BACKWARD;
   if (oxcf->large_scale_tile)
-    cm->refresh_frame_context = REFRESH_FRAME_CONTEXT_DISABLED;
+    cm->features.refresh_frame_context = REFRESH_FRAME_CONTEXT_DISABLED;
 
   if (x->palette_buffer == NULL) {
     CHECK_MEM_ERROR(cm, x->palette_buffer,
@@ -2889,8 +2890,9 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   rc->worst_quality = cpi->oxcf.worst_allowed_q;
   rc->best_quality = cpi->oxcf.best_allowed_q;
 
-  cm->interp_filter = oxcf->large_scale_tile ? EIGHTTAP_REGULAR : SWITCHABLE;
-  cm->switchable_motion_mode = 1;
+  cm->features.interp_filter =
+      oxcf->large_scale_tile ? EIGHTTAP_REGULAR : SWITCHABLE;
+  cm->features.switchable_motion_mode = 1;
 
   if (cpi->oxcf.render_width > 0 && cpi->oxcf.render_height > 0) {
     cm->render_width = cpi->oxcf.render_width;
@@ -2976,11 +2978,11 @@ static INLINE void setup_tpl_buffers(AV1_COMP *cpi) {
         aom_calloc(cpi->tpl_stats_buffer[frame].width *
                        cpi->tpl_stats_buffer[frame].height,
                    sizeof(*cpi->tpl_stats_buffer[frame].tpl_stats_ptr)));
-    if (aom_alloc_frame_buffer(&cpi->tpl_rec_pool[frame], cm->width, cm->height,
-                               cm->seq_params.subsampling_x,
-                               cm->seq_params.subsampling_y,
-                               cm->seq_params.use_highbitdepth,
-                               AOM_ENC_NO_SCALE_BORDER, cm->byte_alignment))
+    if (aom_alloc_frame_buffer(
+            &cpi->tpl_rec_pool[frame], cm->width, cm->height,
+            cm->seq_params.subsampling_x, cm->seq_params.subsampling_y,
+            cm->seq_params.use_highbitdepth, AOM_ENC_NO_SCALE_BORDER,
+            cm->features.byte_alignment))
       aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                          "Failed to allocate frame buffer");
   }
@@ -3864,8 +3866,8 @@ static void scale_references(AV1_COMP *cpi) {
             ref->border < AOM_BORDER_IN_PIXELS) {
           RefCntBuffer *ref_fb = get_ref_frame_buf(cm, ref_frame);
           if (aom_yv12_realloc_with_new_border(
-                  &ref_fb->buf, AOM_BORDER_IN_PIXELS, cm->byte_alignment,
-                  num_planes) != 0) {
+                  &ref_fb->buf, AOM_BORDER_IN_PIXELS,
+                  cm->features.byte_alignment, num_planes) != 0) {
             aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                                "Failed to allocate frame buffer");
           }
@@ -3888,7 +3890,7 @@ static void scale_references(AV1_COMP *cpi) {
                   &new_fb->buf, cm->width, cm->height,
                   cm->seq_params.subsampling_x, cm->seq_params.subsampling_y,
                   cm->seq_params.use_highbitdepth, AOM_BORDER_IN_PIXELS,
-                  cm->byte_alignment, NULL, NULL, NULL)) {
+                  cm->features.byte_alignment, NULL, NULL, NULL)) {
             if (force_scaling) {
               // Release the reference acquired in the get_free_fb() call above.
               --new_fb->ref_count;
@@ -4031,8 +4033,8 @@ static void set_size_independent_vars(AV1_COMP *cpi) {
 
   av1_set_speed_features_framesize_independent(cpi, cpi->speed);
   av1_set_rd_speed_thresholds(cpi);
-  cm->interp_filter = SWITCHABLE;
-  cm->switchable_motion_mode = 1;
+  cm->features.interp_filter = SWITCHABLE;
+  cm->features.switchable_motion_mode = 1;
 }
 
 #if !CONFIG_REALTIME_ONLY
@@ -4354,7 +4356,8 @@ void av1_set_frame_size(AV1_COMP *cpi, int width, int height) {
   if (aom_realloc_frame_buffer(
           &cm->cur_frame->buf, cm->width, cm->height, seq_params->subsampling_x,
           seq_params->subsampling_y, seq_params->use_highbitdepth,
-          cpi->oxcf.border_in_pixels, cm->byte_alignment, NULL, NULL, NULL))
+          cpi->oxcf.border_in_pixels, cm->features.byte_alignment, NULL, NULL,
+          NULL))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate frame buffer");
 
@@ -4726,7 +4729,8 @@ static void superres_post_encode(AV1_COMP *cpi) {
             &cpi->scaled_source, cm->superres_upscaled_width,
             cm->superres_upscaled_height, cm->seq_params.subsampling_x,
             cm->seq_params.subsampling_y, cm->seq_params.use_highbitdepth,
-            AOM_BORDER_IN_PIXELS, cm->byte_alignment, NULL, NULL, NULL))
+            AOM_BORDER_IN_PIXELS, cm->features.byte_alignment, NULL, NULL,
+            NULL))
       aom_internal_error(
           &cm->error, AOM_CODEC_MEM_ERROR,
           "Failed to reallocate scaled source buffer for superres");
@@ -4908,7 +4912,7 @@ static void finalize_encoded_frame(AV1_COMP *const cpi) {
     }
   }
 
-  fix_interp_filter(&cm->interp_filter, cpi->td.counts);
+  fix_interp_filter(&cm->features.interp_filter, cpi->td.counts);
 }
 
 static int get_regulated_q_overshoot(AV1_COMP *const cpi, int q_low, int q_high,
@@ -5725,7 +5729,7 @@ static void save_cur_buf(AV1_COMP *cpi) {
                              ybf->y_crop_height, ybf->subsampling_x,
                              ybf->subsampling_y,
                              ybf->flags & YV12_FLAG_HIGHBITDEPTH, ybf->border,
-                             cm->byte_alignment) != AOM_CODEC_OK) {
+                             cm->features.byte_alignment) != AOM_CODEC_OK) {
     aom_internal_error(
         &cm->error, AOM_CODEC_MEM_ERROR,
         "Failed to allocate copy buffer for saving coding context");
@@ -6429,7 +6433,7 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   av1_accumulate_frame_counts(&aggregate_fc, &cpi->counts);
 #endif  // CONFIG_ENTROPY_STATS
 
-  if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {
+  if (features->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {
     *cm->fc = cpi->tile_data[largest_tile_id].tctx;
     av1_reset_cdf_symbol_counters(cm->fc);
   }
@@ -6502,7 +6506,7 @@ int av1_encode(AV1_COMP *const cpi, uint8_t *const dest,
 
   current_frame->refresh_frame_flags = frame_params->refresh_frame_flags;
   cm->features.error_resilient_mode = frame_params->error_resilient_mode;
-  cm->primary_ref_frame = frame_params->primary_ref_frame;
+  cm->features.primary_ref_frame = frame_params->primary_ref_frame;
   cm->current_frame.frame_type = frame_params->frame_type;
   cm->show_frame = frame_params->show_frame;
   cpi->ref_frame_flags = frame_params->ref_frame_flags;
@@ -6773,11 +6777,11 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   av1_set_high_precision_mv(cpi, 1, 0);
 
   // Normal defaults
-  cm->refresh_frame_context = oxcf->frame_parallel_decoding_mode
-                                  ? REFRESH_FRAME_CONTEXT_DISABLED
-                                  : REFRESH_FRAME_CONTEXT_BACKWARD;
+  cm->features.refresh_frame_context = oxcf->frame_parallel_decoding_mode
+                                           ? REFRESH_FRAME_CONTEXT_DISABLED
+                                           : REFRESH_FRAME_CONTEXT_BACKWARD;
   if (oxcf->large_scale_tile)
-    cm->refresh_frame_context = REFRESH_FRAME_CONTEXT_DISABLED;
+    cm->features.refresh_frame_context = REFRESH_FRAME_CONTEXT_DISABLED;
 
   // Initialize fields related to forward keyframes
   cpi->no_show_kf = 0;

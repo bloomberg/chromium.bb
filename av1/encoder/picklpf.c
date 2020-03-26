@@ -147,7 +147,7 @@ static int search_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
       bias = (bias * cpi->twopass.section_intra_rating) / 20;
 
     // yx, bias less for large block size
-    if (cm->tx_mode != ONLY_4X4) bias >>= 1;
+    if (cm->features.tx_mode != ONLY_4X4) bias >>= 1;
 
     if (filt_direction <= 0 && filt_low != filt_mid) {
       // Get Low filter error score

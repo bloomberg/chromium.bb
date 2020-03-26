@@ -202,7 +202,7 @@ static void set_ext_overrides(AV1_COMP *const cpi,
   }
 
   if (cpi->ext_refresh_frame_context_pending) {
-    cm->refresh_frame_context = cpi->ext_refresh_frame_context;
+    cm->features.refresh_frame_context = cpi->ext_refresh_frame_context;
     cpi->ext_refresh_frame_context_pending = 0;
   }
   cm->features.allow_ref_frame_mvs = cpi->ext_use_ref_frame_mvs;

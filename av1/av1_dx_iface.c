@@ -382,7 +382,7 @@ static void init_buffer_callbacks(aom_codec_alg_priv_t *ctx) {
   BufferPool *const pool = cm->buffer_pool;
 
   cm->cur_frame = NULL;
-  cm->byte_alignment = ctx->byte_alignment;
+  cm->features.byte_alignment = ctx->byte_alignment;
   pbi->skip_loop_filter = ctx->skip_loop_filter;
   pbi->skip_film_grain = ctx->skip_film_grain;
 
@@ -1243,7 +1243,7 @@ static aom_codec_err_t ctrl_set_byte_alignment(aom_codec_alg_priv_t *ctx,
   if (ctx->frame_worker) {
     AVxWorker *const worker = ctx->frame_worker;
     FrameWorkerData *const frame_worker_data = (FrameWorkerData *)worker->data1;
-    frame_worker_data->pbi->common.byte_alignment = byte_alignment;
+    frame_worker_data->pbi->common.features.byte_alignment = byte_alignment;
   }
   return AOM_CODEC_OK;
 }

@@ -208,7 +208,7 @@ static void read_drl_idx(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
 
 static MOTION_MODE read_motion_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
                                     MB_MODE_INFO *mbmi, aom_reader *r) {
-  if (cm->switchable_motion_mode == 0) return SIMPLE_TRANSLATION;
+  if (cm->features.switchable_motion_mode == 0) return SIMPLE_TRANSLATION;
   if (mbmi->skip_mode) return SIMPLE_TRANSLATION;
 
   const MOTION_MODE last_motion_mode_allowed = motion_mode_allowed(
@@ -1007,26 +1007,27 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   }
 }
 
-static INLINE void read_mb_interp_filter(AV1_COMMON *const cm,
-                                         MACROBLOCKD *const xd,
+static INLINE void read_mb_interp_filter(const MACROBLOCKD *const xd,
+                                         InterpFilter interp_filter,
+                                         bool enable_dual_filter,
                                          MB_MODE_INFO *const mbmi,
                                          aom_reader *r) {
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
 
   if (!av1_is_interp_needed(xd)) {
-    set_default_interp_filters(mbmi, cm->interp_filter);
+    set_default_interp_filters(mbmi, interp_filter);
     return;
   }
 
-  if (cm->interp_filter != SWITCHABLE) {
-    mbmi->interp_filters = av1_broadcast_interp_filter(cm->interp_filter);
+  if (interp_filter != SWITCHABLE) {
+    mbmi->interp_filters = av1_broadcast_interp_filter(interp_filter);
   } else {
     InterpFilter ref0_filter[2] = { EIGHTTAP_REGULAR, EIGHTTAP_REGULAR };
     for (int dir = 0; dir < 2; ++dir) {
       const int ctx = av1_get_pred_context_switchable_interp(xd, dir);
       ref0_filter[dir] = (InterpFilter)aom_read_symbol(
           r, ec_ctx->switchable_interp_cdf[ctx], SWITCHABLE_FILTERS, ACCT_STR);
-      if (cm->seq_params.enable_dual_filter == 0) {
+      if (!enable_dual_filter) {
         ref0_filter[1] = ref0_filter[0];
         break;
       }
@@ -1450,7 +1451,8 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
     }
   }
 
-  read_mb_interp_filter(cm, xd, mbmi, r);
+  read_mb_interp_filter(xd, features->interp_filter,
+                        cm->seq_params.enable_dual_filter, mbmi, r);
 
   const int mi_row = xd->mi_row;
   const int mi_col = xd->mi_col;

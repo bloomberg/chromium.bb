@@ -230,8 +230,8 @@ void av1_model_rd_curvfit(BLOCK_SIZE bsize, double sse_norm, double xqr,
 void av1_model_rd_surffit(BLOCK_SIZE bsize, double sse_norm, double xm,
                           double yl, double *rate_f, double *distbysse_f);
 
-int av1_get_switchable_rate(const AV1_COMMON *const cm, MACROBLOCK *x,
-                            const MACROBLOCKD *xd);
+int av1_get_switchable_rate(const MACROBLOCK *x, const MACROBLOCKD *xd,
+                            InterpFilter interp_filter);
 
 YV12_BUFFER_CONFIG *av1_get_scaled_ref_frame(const struct AV1_COMP *cpi,
                                              int ref_frame);

@@ -1229,6 +1229,7 @@ static int64_t motion_mode_rd(
     const BUFFER_SET *orig_dst, int64_t *best_est_rd, int do_tx_search,
     InterModesInfo *inter_modes_info, int eval_motion_mode) {
   const AV1_COMMON *const cm = &cpi->common;
+  const FeatureFlags *const features = &cm->features;
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *xd = &x->e_mbd;
   MB_MODE_INFO *mbmi = xd->mi[0];
@@ -1252,9 +1253,9 @@ static int64_t motion_mode_rd(
   aom_clear_system_state();
   mbmi->num_proj_ref = 1;  // assume num_proj_ref >=1
   MOTION_MODE last_motion_mode_allowed = SIMPLE_TRANSLATION;
-  if (cm->switchable_motion_mode) {
+  if (features->switchable_motion_mode) {
     last_motion_mode_allowed = motion_mode_allowed(
-        xd->global_motion, xd, mbmi, cm->features.allow_warped_motion);
+        xd->global_motion, xd, mbmi, features->allow_warped_motion);
   }
 
   if (last_motion_mode_allowed == WARPED_CAUSAL) {
@@ -1268,8 +1269,10 @@ static int64_t motion_mode_rd(
   const MB_MODE_INFO base_mbmi = *mbmi;
   MB_MODE_INFO best_mbmi;
   SimpleRDState *const simple_states = &args->simple_rd_state[mbmi->ref_mv_idx];
+  const int interp_filter = features->interp_filter;
   const int switchable_rate =
-      av1_is_interp_needed(xd) ? av1_get_switchable_rate(cm, x, xd) : 0;
+      av1_is_interp_needed(xd) ? av1_get_switchable_rate(x, xd, interp_filter)
+                               : 0;
   int64_t best_rd = INT64_MAX;
   int best_rate_mv = rate_mv0;
   const int mi_row = xd->mi_row;
@@ -1351,8 +1354,8 @@ static int64_t motion_mode_rd(
       int pts[SAMPLES_ARRAY_SIZE], pts_inref[SAMPLES_ARRAY_SIZE];
       mbmi->motion_mode = WARPED_CAUSAL;
       mbmi->wm_params.wmtype = DEFAULT_WMTYPE;
-      mbmi->interp_filters = av1_broadcast_interp_filter(
-          av1_unswitchable_filter(cm->interp_filter));
+      mbmi->interp_filters =
+          av1_broadcast_interp_filter(av1_unswitchable_filter(interp_filter));
 
       memcpy(pts, pts0, total_samples * 2 * sizeof(*pts0));
       memcpy(pts_inref, pts_inref0, total_samples * 2 * sizeof(*pts_inref0));
@@ -1569,8 +1572,8 @@ static int64_t motion_mode_rd(
 
     if (this_mode == GLOBALMV || this_mode == GLOBAL_GLOBALMV) {
       if (is_nontrans_global_motion(xd, xd->mi[0])) {
-        mbmi->interp_filters = av1_broadcast_interp_filter(
-            av1_unswitchable_filter(cm->interp_filter));
+        mbmi->interp_filters =
+            av1_broadcast_interp_filter(av1_unswitchable_filter(interp_filter));
       }
     }
 
@@ -1944,7 +1947,7 @@ static int64_t simple_translation_pred_rd(
     mbmi->comp_group_idx = 0;
     mbmi->compound_idx = 1;
   }
-  set_default_interp_filters(mbmi, cm->interp_filter);
+  set_default_interp_filters(mbmi, cm->features.interp_filter);
 
   const int mi_row = xd->mi_row;
   const int mi_col = xd->mi_col;
@@ -2485,7 +2488,7 @@ static int64_t handle_inter_mode(
     if (is_comp_pred) {
       // Find matching interp filter or set to default interp filter
       const int need_search = av1_is_interp_needed(xd);
-      const InterpFilter assign_filter = cm->interp_filter;
+      const InterpFilter assign_filter = cm->features.interp_filter;
       int is_luma_interp_done = 0;
       av1_find_interp_filter_match(mbmi, cpi, assign_filter, need_search,
                                    args->interp_filter_stats,
@@ -2961,7 +2964,7 @@ static AOM_INLINE void rd_pick_skip_mode(
   mbmi->ref_mv_idx = 0;
   mbmi->skip_mode = mbmi->skip = 1;
 
-  set_default_interp_filters(mbmi, cm->interp_filter);
+  set_default_interp_filters(mbmi, cm->features.interp_filter);
 
   set_ref_ptrs(cm, xd, mbmi->ref_frame[0], mbmi->ref_frame[1]);
   for (int i = 0; i < num_planes; i++) {
@@ -3029,7 +3032,8 @@ static AOM_INLINE void rd_pick_skip_mode(
         (INTERINTRA_MODE)(II_DC_PRED - 1);
     search_state->best_mbmode.filter_intra_mode_info.use_filter_intra = 0;
 
-    set_default_interp_filters(&search_state->best_mbmode, cm->interp_filter);
+    set_default_interp_filters(&search_state->best_mbmode,
+                               cm->features.interp_filter);
 
     search_state->best_mode_index = mode_index;
 
@@ -3793,7 +3797,7 @@ static INLINE void init_mbmi(MB_MODE_INFO *mbmi, PREDICTION_MODE curr_mode,
   mbmi->mv[0].as_int = mbmi->mv[1].as_int = 0;
   mbmi->motion_mode = SIMPLE_TRANSLATION;
   mbmi->interintra_mode = (INTERINTRA_MODE)(II_DC_PRED - 1);
-  set_default_interp_filters(mbmi, cm->interp_filter);
+  set_default_interp_filters(mbmi, cm->features.interp_filter);
 }
 
 static AOM_INLINE void collect_single_states(MACROBLOCK *x,
@@ -4188,6 +4192,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                                const BLOCK_SIZE bsize, PICK_MODE_CONTEXT *ctx,
                                int64_t best_rd_so_far) {
   AV1_COMMON *const cm = &cpi->common;
+  const FeatureFlags *const features = &cm->features;
   const int num_planes = av1_num_planes(cm);
   const SPEED_FEATURES *const sf = &cpi->sf;
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -4707,20 +4712,20 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       const NN_CONFIG *nn_config = (AOMMIN(cm->width, cm->height) <= 480)
                                        ? &av1_intrap_nn_config
                                        : &av1_intrap_hd_nn_config;
-      float features[6];
+      float nn_features[6];
       float scores[2] = { 0.0f };
       float probs[2] = { 0.0f };
 
-      features[0] = (float)search_state.best_mbmode.skip;
-      features[1] = (float)mi_size_wide_log2[bsize];
-      features[2] = (float)mi_size_high_log2[bsize];
-      features[3] = (float)intra_cost;
-      features[4] = (float)inter_cost;
+      nn_features[0] = (float)search_state.best_mbmode.skip;
+      nn_features[1] = (float)mi_size_wide_log2[bsize];
+      nn_features[2] = (float)mi_size_high_log2[bsize];
+      nn_features[3] = (float)intra_cost;
+      nn_features[4] = (float)inter_cost;
       const int ac_q = av1_ac_quant_QTX(x->qindex, 0, xd->bd);
       const int ac_q_max = av1_ac_quant_QTX(255, 0, xd->bd);
-      features[5] = (float)(ac_q_max / ac_q);
+      nn_features[5] = (float)(ac_q_max / ac_q);
 
-      av1_nn_predict(features, nn_config, 1, scores);
+      av1_nn_predict(nn_features, nn_config, 1, scores);
       aom_clear_system_state();
       av1_nn_softmax(scores, probs, 2);
 
@@ -4799,8 +4804,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   // Only try palette mode when the best mode so far is an intra mode.
   const int try_palette =
       cpi->oxcf.enable_palette &&
-      av1_allow_palette(cm->features.allow_screen_content_tools,
-                        mbmi->sb_type) &&
+      av1_allow_palette(features->allow_screen_content_tools, mbmi->sb_type) &&
       !is_inter_mode(search_state.best_mbmode.mode);
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
   RD_STATS this_rd_cost;
@@ -4851,12 +4855,13 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     return;
   }
 
-  assert((cm->interp_filter == SWITCHABLE) ||
-         (cm->interp_filter ==
+  const InterpFilter interp_filter = features->interp_filter;
+  assert((interp_filter == SWITCHABLE) ||
+         (interp_filter ==
           search_state.best_mbmode.interp_filters.as_filters.y_filter) ||
          !is_inter_block(&search_state.best_mbmode));
-  assert((cm->interp_filter == SWITCHABLE) ||
-         (cm->interp_filter ==
+  assert((interp_filter == SWITCHABLE) ||
+         (interp_filter ==
           search_state.best_mbmode.interp_filters.as_filters.x_filter) ||
          !is_inter_block(&search_state.best_mbmode));
 
@@ -4875,8 +4880,8 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   if (mbmi->mode == GLOBALMV || mbmi->mode == GLOBAL_GLOBALMV) {
     // Correct the interp filters for GLOBALMV
     if (is_nontrans_global_motion(xd, xd->mi[0])) {
-      int_interpfilters filters = av1_broadcast_interp_filter(
-          av1_unswitchable_filter(cm->interp_filter));
+      int_interpfilters filters =
+          av1_broadcast_interp_filter(av1_unswitchable_filter(interp_filter));
       assert(mbmi->interp_filters.as_int == filters.as_int);
       (void)filters;
     }
@@ -4918,6 +4923,7 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
                                         PICK_MODE_CONTEXT *ctx,
                                         int64_t best_rd_so_far) {
   const AV1_COMMON *const cm = &cpi->common;
+  const FeatureFlags *const features = &cm->features;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
   unsigned char segment_id = mbmi->segment_id;
@@ -4960,8 +4966,8 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
   mbmi->ref_frame[1] = NONE_FRAME;
   mbmi->mv[0].as_int =
       gm_get_motion_vector(&cm->global_motion[mbmi->ref_frame[0]],
-                           cm->features.allow_high_precision_mv, bsize, mi_col,
-                           mi_row, cm->features.cur_frame_force_integer_mv)
+                           features->allow_high_precision_mv, bsize, mi_col,
+                           mi_row, features->cur_frame_force_integer_mv)
           .as_int;
   mbmi->tx_size = max_txsize_lookup[bsize];
   x->force_skip = 1;
@@ -4979,10 +4985,11 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
                                              mbmi->num_proj_ref, bsize);
   }
 
-  set_default_interp_filters(mbmi, cm->interp_filter);
+  const InterpFilter interp_filter = features->interp_filter;
+  set_default_interp_filters(mbmi, interp_filter);
 
-  if (cm->interp_filter != SWITCHABLE) {
-    best_filter = cm->interp_filter;
+  if (interp_filter != SWITCHABLE) {
+    best_filter = interp_filter;
   } else {
     best_filter = EIGHTTAP_REGULAR;
     if (av1_is_interp_needed(xd) &&
@@ -4992,7 +4999,7 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
       int best_rs = INT_MAX;
       for (i = 0; i < SWITCHABLE_FILTERS; ++i) {
         mbmi->interp_filters = av1_broadcast_interp_filter(i);
-        rs = av1_get_switchable_rate(cm, x, xd);
+        rs = av1_get_switchable_rate(x, xd, interp_filter);
         if (rs < best_rs) {
           best_rs = rs;
           best_filter = mbmi->interp_filters.as_filters.y_filter;
@@ -5002,7 +5009,7 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
   }
   // Set the appropriate filter
   mbmi->interp_filters = av1_broadcast_interp_filter(best_filter);
-  rate2 += av1_get_switchable_rate(cm, x, xd);
+  rate2 += av1_get_switchable_rate(x, xd, interp_filter);
 
   if (cm->current_frame.reference_mode == REFERENCE_MODE_SELECT)
     rate2 += comp_inter_cost[comp_pred];
@@ -5022,8 +5029,8 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
     return;
   }
 
-  assert((cm->interp_filter == SWITCHABLE) ||
-         (cm->interp_filter == mbmi->interp_filters.as_filters.y_filter));
+  assert((interp_filter == SWITCHABLE) ||
+         (interp_filter == mbmi->interp_filters.as_filters.y_filter));
 
   if (cpi->sf.inter_sf.adaptive_rd_thresh) {
     av1_update_rd_thresh_fact(cm, x->thresh_freq_fact,

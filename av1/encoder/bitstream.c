@@ -269,7 +269,7 @@ static AOM_INLINE void write_motion_mode(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                          const MB_MODE_INFO *mbmi,
                                          aom_writer *w) {
   MOTION_MODE last_motion_mode_allowed =
-      cm->switchable_motion_mode
+      cm->features.switchable_motion_mode
           ? motion_mode_allowed(cm->global_motion, xd, mbmi,
                                 cm->features.allow_warped_motion)
           : SIMPLE_TRANSLATION;
@@ -603,21 +603,20 @@ static AOM_INLINE void write_angle_delta(aom_writer *w, int angle_delta,
                    2 * MAX_ANGLE_DELTA + 1);
 }
 
-static AOM_INLINE void write_mb_interp_filter(AV1_COMP *cpi,
+static AOM_INLINE void write_mb_interp_filter(AV1_COMMON *const cm,
                                               const MACROBLOCKD *xd,
                                               aom_writer *w) {
-  AV1_COMMON *const cm = &cpi->common;
   const MB_MODE_INFO *const mbmi = xd->mi[0];
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
 
   if (!av1_is_interp_needed(xd)) {
-    int_interpfilters filters =
-        av1_broadcast_interp_filter(av1_unswitchable_filter(cm->interp_filter));
+    int_interpfilters filters = av1_broadcast_interp_filter(
+        av1_unswitchable_filter(cm->features.interp_filter));
     assert(mbmi->interp_filters.as_int == filters.as_int);
     (void)filters;
     return;
   }
-  if (cm->interp_filter == SWITCHABLE) {
+  if (cm->features.interp_filter == SWITCHABLE) {
     int dir;
     for (dir = 0; dir < 2; ++dir) {
       const int ctx = av1_get_pred_context_switchable_interp(xd, dir);
@@ -1214,7 +1213,7 @@ static AOM_INLINE void pack_inter_mode_mvs(AV1_COMP *cpi, aom_writer *w) {
         }
       }
     }
-    write_mb_interp_filter(cpi, xd, w);
+    write_mb_interp_filter(cm, xd, w);
   }
 }
 
@@ -1514,7 +1513,7 @@ static AOM_INLINE void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
   const int is_inter_tx = is_inter_block(mbmi);
   const int skip = mbmi->skip;
   const int segment_id = mbmi->segment_id;
-  if (cm->tx_mode == TX_MODE_SELECT && block_signals_txsize(bsize) &&
+  if (cm->features.tx_mode == TX_MODE_SELECT && block_signals_txsize(bsize) &&
       !(is_inter_tx && skip) && !xd->lossless[segment_id]) {
     if (is_inter_tx) {  // This implies skip flag is 0.
       const TX_SIZE max_tx_size = get_vartx_max_txsize(xd, bsize, 0);
@@ -2064,7 +2063,7 @@ static AOM_INLINE void encode_segmentation(AV1_COMMON *cm, MACROBLOCKD *xd,
   if (!seg->enabled) return;
 
   // Write update flags
-  if (cm->primary_ref_frame == PRIMARY_REF_NONE) {
+  if (cm->features.primary_ref_frame == PRIMARY_REF_NONE) {
     assert(seg->update_map == 1);
     seg->temporal_update = 0;
     assert(seg->update_data == 1);
@@ -2923,7 +2922,7 @@ static AOM_INLINE void write_uncompressed_header_obu(
           seq_params->order_hint_info.order_hint_bits_minus_1 + 1);
 
     if (!features->error_resilient_mode && !frame_is_intra_only(cm)) {
-      aom_wb_write_literal(wb, cm->primary_ref_frame, PRIMARY_REF_BITS);
+      aom_wb_write_literal(wb, features->primary_ref_frame, PRIMARY_REF_BITS);
     }
   }
 
@@ -3047,8 +3046,8 @@ static AOM_INLINE void write_uncompressed_header_obu(
 
       if (!features->cur_frame_force_integer_mv)
         aom_wb_write_bit(wb, features->allow_high_precision_mv);
-      write_frame_interp_filter(cm->interp_filter, wb);
-      aom_wb_write_bit(wb, cm->switchable_motion_mode);
+      write_frame_interp_filter(features->interp_filter, wb);
+      aom_wb_write_bit(wb, features->switchable_motion_mode);
       if (frame_might_allow_ref_frame_mvs(cm)) {
         aom_wb_write_bit(wb, features->allow_ref_frame_mvs);
       } else {
@@ -3060,11 +3059,11 @@ static AOM_INLINE void write_uncompressed_header_obu(
   const int might_bwd_adapt = !(seq_params->reduced_still_picture_hdr) &&
                               !(features->disable_cdf_update);
   if (cm->tiles.large_scale)
-    assert(cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_DISABLED);
+    assert(features->refresh_frame_context == REFRESH_FRAME_CONTEXT_DISABLED);
 
   if (might_bwd_adapt) {
     aom_wb_write_bit(
-        wb, cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_DISABLED);
+        wb, features->refresh_frame_context == REFRESH_FRAME_CONTEXT_DISABLED);
   }
 
   write_tile_info(cm, saved_wb, wb);
@@ -3102,9 +3101,9 @@ static AOM_INLINE void write_uncompressed_header_obu(
 
   // Write TX mode
   if (features->coded_lossless)
-    assert(cm->tx_mode == ONLY_4X4);
+    assert(features->tx_mode == ONLY_4X4);
   else
-    aom_wb_write_bit(wb, cm->tx_mode == TX_MODE_SELECT);
+    aom_wb_write_bit(wb, features->tx_mode == TX_MODE_SELECT);
 
   if (!frame_is_intra_only(cm)) {
     const int use_hybrid_pred =

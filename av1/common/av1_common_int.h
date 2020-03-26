@@ -318,8 +318,7 @@ typedef struct {
   int frame_refs_short_signaling;
 } CurrentFrame;
 
-// Struct containing some boolean flags indicating whether some features are
-// allowed/used or not.
+// Struct containing some frame level features.
 typedef struct {
   bool disable_cdf_update;
   bool allow_high_precision_mv;
@@ -333,6 +332,14 @@ typedef struct {
   bool all_lossless;    // frame is fully lossless at the upscaled resolution.
   bool reduced_tx_set_used;
   bool error_resilient_mode;
+  bool switchable_motion_mode;
+  TX_MODE tx_mode;
+  InterpFilter interp_filter;
+  int primary_ref_frame;
+  int byte_alignment;
+  // Flag signaling how frame contexts should be updated at the end of
+  // a frame decode
+  REFRESH_FRAME_CONTEXT_MODE refresh_frame_context;
 } FeatureFlags;
 
 // Struct containing params related to tiles.
@@ -525,9 +532,6 @@ typedef struct AV1Common {
   // Params related to MB_MODE_INFO arrays and related info.
   CommonModeInfoParams mi_params;
 
-  /* profile settings */
-  TX_MODE tx_mode;
-
 #if CONFIG_ENTROPY_STATS
   int coef_cdf_category;
 #endif
@@ -562,10 +566,6 @@ typedef struct AV1Common {
 
   uint8_t *last_frame_seg_map;
 
-  InterpFilter interp_filter;
-
-  int switchable_motion_mode;
-
   loop_filter_info_n lf_info;
   RestorationInfo rst_info[MAX_MB_PLANE];
 
@@ -576,10 +576,6 @@ typedef struct AV1Common {
   // Output of loop restoration
   YV12_BUFFER_CONFIG rst_frame;
 
-  // Flag signaling how frame contexts should be updated at the end of
-  // a frame decode
-  REFRESH_FRAME_CONTEXT_MODE refresh_frame_context;
-
   int ref_frame_sign_bias[REF_FRAMES]; /* Two state 0, 1 */
 
   struct loopfilter lf;
@@ -587,12 +583,9 @@ typedef struct AV1Common {
 
   FRAME_CONTEXT *fc; /* this frame entropy */
   FRAME_CONTEXT *default_frame_context;
-  int primary_ref_frame;
 
   // Parameters related to tiling.
   CommonTileParams tiles;
-
-  int byte_alignment;
 
   // External BufferPool passed from outside.
   BufferPool *buffer_pool;
@@ -770,8 +763,9 @@ static INLINE struct scale_factors *get_ref_scale_factors(
 
 static INLINE RefCntBuffer *get_primary_ref_frame_buf(
     const AV1_COMMON *const cm) {
-  if (cm->primary_ref_frame == PRIMARY_REF_NONE) return NULL;
-  const int map_idx = get_ref_frame_map_idx(cm, cm->primary_ref_frame + 1);
+  const int primary_ref_frame = cm->features.primary_ref_frame;
+  if (primary_ref_frame == PRIMARY_REF_NONE) return NULL;
+  const int map_idx = get_ref_frame_map_idx(cm, primary_ref_frame + 1);
   return (map_idx != INVALID_IDX) ? cm->ref_frame_map[map_idx] : NULL;
 }
 

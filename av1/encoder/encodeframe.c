@@ -648,7 +648,7 @@ static AOM_INLINE void update_state(const AV1_COMP *const cpi, ThreadData *td,
       update_global_motion_used(mi_addr->mode, bsize, mi_addr, rdc);
     }
 
-    if (cm->interp_filter == SWITCHABLE &&
+    if (cm->features.interp_filter == SWITCHABLE &&
         mi_addr->motion_mode != WARPED_CAUSAL &&
         !is_nontrans_global_motion(xd, xd->mi[0])) {
       update_filter_type_count(td->counts, xd, mi_addr);
@@ -1342,7 +1342,7 @@ static AOM_INLINE void update_stats(const AV1_COMMON *const cm,
       }
 
       const MOTION_MODE motion_allowed =
-          cm->switchable_motion_mode
+          cm->features.switchable_motion_mode
               ? motion_mode_allowed(xd->global_motion, xd, mbmi,
                                     cm->features.allow_warped_motion)
               : SIMPLE_TRANSLATION;
@@ -1409,7 +1409,7 @@ static AOM_INLINE void update_stats(const AV1_COMMON *const cm,
     }
   }
 
-  if (inter_block && cm->interp_filter == SWITCHABLE &&
+  if (inter_block && cm->features.interp_filter == SWITCHABLE &&
       mbmi->motion_mode != WARPED_CAUSAL &&
       !is_nontrans_global_motion(xd, mbmi)) {
     update_filter_type_cdf(xd, mbmi);
@@ -1657,7 +1657,7 @@ static AOM_INLINE void encode_b(const AV1_COMP *const cpi,
           segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_REF_FRAME);
       if (!seg_ref_active && inter_block) {
         const MOTION_MODE motion_allowed =
-            cm->switchable_motion_mode
+            cm->features.switchable_motion_mode
                 ? motion_mode_allowed(xd->global_motion, xd, mbmi,
                                       cm->features.allow_warped_motion)
                 : SIMPLE_TRANSLATION;
@@ -5900,7 +5900,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
   const TX_SIZE_SEARCH_METHOD tx_search_type =
       cpi->tx_size_search_methods[eval_type];
   assert(cpi->oxcf.enable_tx64 || tx_search_type != USE_LARGESTALL);
-  cm->tx_mode = select_tx_mode(cpi, tx_search_type);
+  features->tx_mode = select_tx_mode(cpi, tx_search_type);
 
   if (cpi->sf.tx_sf.tx_type_search.prune_tx_type_using_stats) {
     const FRAME_UPDATE_TYPE update_type = get_frame_update_type(&cpi->gf_group);
@@ -5952,7 +5952,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
 
   if (cm->current_frame.frame_type != KEY_FRAME &&
       cpi->sf.interp_sf.adaptive_interp_filter_search == 2 &&
-      cm->interp_filter == SWITCHABLE) {
+      features->interp_filter == SWITCHABLE) {
     const FRAME_UPDATE_TYPE update_type = get_frame_update_type(&cpi->gf_group);
 
     for (i = 0; i < SWITCHABLE_FILTER_CONTEXTS; i++) {
@@ -5986,10 +5986,11 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
 void av1_encode_frame(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   CurrentFrame *const current_frame = &cm->current_frame;
+  FeatureFlags *const features = &cm->features;
   const int num_planes = av1_num_planes(cm);
   // Indicates whether or not to use a default reduced set for ext-tx
   // rather than the potential full set of 16 transforms
-  cm->features.reduced_tx_set_used = cpi->oxcf.reduced_tx_type_set;
+  features->reduced_tx_set_used = cpi->oxcf.reduced_tx_type_set;
 
   // Make sure segment_id is no larger than last_active_segid.
   if (cm->seg.enabled && cm->seg.update_map) {
@@ -6061,10 +6062,10 @@ void av1_encode_frame(AV1_COMP *cpi) {
     else
       current_frame->reference_mode = REFERENCE_MODE_SELECT;
 
-    cm->interp_filter = SWITCHABLE;
-    if (cm->tiles.large_scale) cm->interp_filter = EIGHTTAP_REGULAR;
+    features->interp_filter = SWITCHABLE;
+    if (cm->tiles.large_scale) features->interp_filter = EIGHTTAP_REGULAR;
 
-    cm->switchable_motion_mode = 1;
+    features->switchable_motion_mode = 1;
 
     rdc->compound_ref_used_flag = 0;
     rdc->skip_mode_used_flag = 0;
@@ -6092,8 +6093,9 @@ void av1_encode_frame(AV1_COMP *cpi) {
       skip_mode_info->skip_mode_flag = 0;
 
     if (!cm->tiles.large_scale) {
-      if (cm->tx_mode == TX_MODE_SELECT && cpi->td.mb.txb_split_count == 0)
-        cm->tx_mode = TX_MODE_LARGEST;
+      if (features->tx_mode == TX_MODE_SELECT &&
+          cpi->td.mb.txb_split_count == 0)
+        features->tx_mode = TX_MODE_LARGEST;
     }
   } else {
     encode_frame_internal(cpi);

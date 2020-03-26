@@ -917,7 +917,7 @@ static INLINE void init_mbmi(MB_MODE_INFO *mbmi, PREDICTION_MODE pred_mode,
   mbmi->motion_mode = SIMPLE_TRANSLATION;
   mbmi->num_proj_ref = 1;
   mbmi->interintra_mode = 0;
-  set_default_interp_filters(mbmi, cm->interp_filter);
+  set_default_interp_filters(mbmi, cm->features.interp_filter);
 }
 
 #if CONFIG_INTERNAL_STATS
@@ -1333,7 +1333,7 @@ static void search_filter_ref(AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *this_rdc,
     else
       model_rd_for_sb_y(cpi, bsize, x, xd, &pf_rate[i], &pf_dist[i],
                         &skip_txfm[i], NULL, &pf_var[i], &pf_sse[i], 1);
-    pf_rate[i] += av1_get_switchable_rate(cm, x, xd);
+    pf_rate[i] += av1_get_switchable_rate(x, xd, cm->features.interp_filter);
     cost = RDCOST(x->rdmult, pf_rate[i], pf_dist[i]);
     pf_tx_size[i] = mi->tx_size;
     if (cost < best_cost) {
@@ -1592,7 +1592,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   // filter_ref, we use a less strict condition on assigning filter_ref.
   // This is to reduce the probabily of entering the flow of not assigning
   // filter_ref and then skip filter search.
-  filter_ref = cm->interp_filter;
+  filter_ref = cm->features.interp_filter;
 
   // initialize mode decisions
   av1_invalid_rd_stats(&best_rdc);
