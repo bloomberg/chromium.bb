@@ -45,20 +45,21 @@ def _GetProjectPath(path):
 
 
 def _GetPylintrc(path):
-  """Locate the pylintrc file that applies to |path|."""
+  """Locate pylintrc or .pylintrc file that applies to |path|.
+
+  If not found - use the default.
+  """
   path = os.path.realpath(path)
   project_path = _GetProjectPath(path)
   parent = os.path.dirname(path)
   while project_path and parent.startswith(project_path):
-    pylintrc = os.path.join(parent, 'pylintrc')
-    if os.path.isfile(pylintrc):
-      break
+    for rc_name in ('pylintrc', '.pylintrc'):
+      pylintrc = os.path.join(parent, rc_name)
+      if os.path.isfile(pylintrc):
+        return pylintrc
     parent = os.path.dirname(parent)
 
-  if project_path is None or not os.path.isfile(pylintrc):
-    pylintrc = os.path.join(constants.SOURCE_ROOT, 'chromite', 'pylintrc')
-
-  return pylintrc
+  return os.path.join(constants.SOURCE_ROOT, 'chromite', 'pylintrc')
 
 
 def _GetPylintGroups(paths):
