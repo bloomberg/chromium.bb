@@ -43,7 +43,7 @@
         {
           "builder": "RELEASE",
           "experimental": true,
-          "leader_board": false,
+          "leader_board": true,
           "board_group": "asurada",
           "arch": "ARM_INTERNAL"
         }
