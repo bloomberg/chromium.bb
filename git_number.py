@@ -142,7 +142,7 @@ def finalize(targets):
 
   idx = os.path.join(git.run('rev-parse', '--git-dir'), 'number.idx')
   env = os.environ.copy()
-  env['GIT_INDEX_FILE'] = idx
+  env['GIT_INDEX_FILE'] = str(idx)
 
   progress_message = 'Finalizing: (%%(count)d/%d)' % len(DIRTY_TREES)
   with git.ProgressPrinter(progress_message) as inc:
