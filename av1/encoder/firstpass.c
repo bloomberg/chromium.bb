@@ -345,6 +345,132 @@ typedef struct {
   double brightness_factor;
 } FRAME_STATS;
 
+#define UL_INTRA_THRESH 50
+#define INVALID_ROW -1
+// Computes and returns the intra pred error of a block.
+// intra pred error: sum of squared error of the intra predicted residual.
+// Inputs:
+//   cpi: the encoder setting. Only a few params in it will be used.
+//   this_frame: the current frame buffer.
+//   tile: tile information (not used in first pass, already init to zero)
+//   mb_row: row index in the unit of first pass block size.
+//   mb_col: column index in the unit of first pass block size.
+//   y_offset: the offset of y frame buffer, indicating the starting point of
+//             the current block.
+//   uv_offset: the offset of u and v frame buffer, indicating the starting
+//              point of the current block.
+//   fp_block_size: first pass block size.
+//   qindex: quantization step size to encode the frame.
+//   stats: frame encoding stats.
+// Modifies:
+//   stats->intra_skip_count
+//   stats->image_data_start_row
+//   stats->intra_factor
+//   stats->brightness_factor
+//   stats->intra_error
+//   stats->frame_avg_wavelet_energy
+// Returns:
+//   this_intra_error.
+static int firstpass_intra_prediction(
+    AV1_COMP *cpi, YV12_BUFFER_CONFIG *const this_frame,
+    const TileInfo *const tile, const int mb_row, const int mb_col,
+    const int y_offset, const int uv_offset, const BLOCK_SIZE fp_block_size,
+    const int qindex, FRAME_STATS *const stats) {
+  const AV1_COMMON *const cm = &cpi->common;
+  const CommonModeInfoParams *const mi_params = &cm->mi_params;
+  const SequenceHeader *const seq_params = &cm->seq_params;
+  MACROBLOCK *const x = &cpi->td.mb;
+  MACROBLOCKD *const xd = &x->e_mbd;
+  const int mb_scale = mi_size_wide[fp_block_size];
+  const int use_dc_pred = (mb_col || mb_row) && (!mb_col || !mb_row);
+  const int num_planes = av1_num_planes(cm);
+  const BLOCK_SIZE bsize = get_bsize(mi_params, mb_row, mb_col);
+
+  aom_clear_system_state();
+  set_mi_offsets(mi_params, xd, mb_row * mb_scale, mb_col * mb_scale);
+  xd->plane[0].dst.buf = this_frame->y_buffer + y_offset;
+  xd->plane[1].dst.buf = this_frame->u_buffer + uv_offset;
+  xd->plane[2].dst.buf = this_frame->v_buffer + uv_offset;
+  xd->left_available = (mb_col != 0);
+  xd->mi[0]->sb_type = bsize;
+  xd->mi[0]->ref_frame[0] = INTRA_FRAME;
+  set_mi_row_col(xd, tile, mb_row * mb_scale, mi_size_high[bsize],
+                 mb_col * mb_scale, mi_size_wide[bsize], mi_params->mi_rows,
+                 mi_params->mi_cols);
+  set_plane_n4(xd, mi_size_wide[bsize], mi_size_high[bsize], num_planes);
+  xd->mi[0]->segment_id = 0;
+  xd->lossless[xd->mi[0]->segment_id] = (qindex == 0);
+  xd->mi[0]->mode = DC_PRED;
+  xd->mi[0]->tx_size =
+      use_dc_pred ? (bsize >= fp_block_size ? TX_16X16 : TX_8X8) : TX_4X4;
+
+  av1_encode_intra_block_plane(cpi, x, bsize, 0, DRY_RUN_NORMAL, 0);
+  int this_intra_error = aom_get_mb_ss(x->plane[0].src_diff);
+
+  if (this_intra_error < UL_INTRA_THRESH) {
+    ++stats->intra_skip_count;
+  } else if ((mb_col > 0) && (stats->image_data_start_row == INVALID_ROW)) {
+    stats->image_data_start_row = mb_row;
+  }
+
+  if (seq_params->use_highbitdepth) {
+    switch (seq_params->bit_depth) {
+      case AOM_BITS_8: break;
+      case AOM_BITS_10: this_intra_error >>= 4; break;
+      case AOM_BITS_12: this_intra_error >>= 8; break;
+      default:
+        assert(0 &&
+               "seq_params->bit_depth should be AOM_BITS_8, "
+               "AOM_BITS_10 or AOM_BITS_12");
+        return -1;
+    }
+  }
+
+  aom_clear_system_state();
+  double log_intra = log(this_intra_error + 1.0);
+  if (log_intra < 10.0) {
+    stats->intra_factor += 1.0 + ((10.0 - log_intra) * 0.05);
+  } else {
+    stats->intra_factor += 1.0;
+  }
+
+  int level_sample;
+  if (seq_params->use_highbitdepth) {
+    level_sample = CONVERT_TO_SHORTPTR(x->plane[0].src.buf)[0];
+  } else {
+    level_sample = x->plane[0].src.buf[0];
+  }
+  if ((level_sample < DARK_THRESH) && (log_intra < 9.0)) {
+    stats->brightness_factor += 1.0 + (0.01 * (DARK_THRESH - level_sample));
+  } else {
+    stats->brightness_factor += 1.0;
+  }
+
+  // Intrapenalty below deals with situations where the intra and inter
+  // error scores are very low (e.g. a plain black frame).
+  // We do not have special cases in first pass for 0,0 and nearest etc so
+  // all inter modes carry an overhead cost estimate for the mv.
+  // When the error score is very low this causes us to pick all or lots of
+  // INTRA modes and throw lots of key frames.
+  // This penalty adds a cost matching that of a 0,0 mv to the intra case.
+  this_intra_error += INTRA_MODE_PENALTY;
+
+  // Accumulate the intra error.
+  stats->intra_error += (int64_t)this_intra_error;
+
+  const int hbd = is_cur_buf_hbd(xd);
+  const int stride = x->plane[0].src.stride;
+  uint8_t *buf = x->plane[0].src.buf;
+  for (int r8 = 0; r8 < 2; ++r8) {
+    for (int c8 = 0; c8 < 2; ++c8) {
+      stats->frame_avg_wavelet_energy += av1_haar_ac_sad_8x8_uint8_input(
+          buf + c8 * 8 + r8 * 8 * stride, stride, hbd);
+    }
+  }
+
+  return this_intra_error;
+}
+
 // Updates the first pass stats of this frame.
 // Input:
 //   cpi: the encoder setting. Only a few params in it will be used.
@@ -462,8 +588,6 @@ static void print_reconstruction_frame(
   fclose(recon_file);
 }
 
-#define UL_INTRA_THRESH 50
-#define INVALID_ROW -1
 #define FIRST_PASS_ALT_REF_DISTANCE 16
 void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
   MACROBLOCK *const x = &cpi->td.mb;
@@ -579,92 +703,10 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
                           cpi->oxcf.border_in_pixels);
 
     for (int mb_col = 0; mb_col < mi_params->mb_cols; ++mb_col) {
-      int this_intra_error;
-      const int use_dc_pred = (mb_col || mb_row) && (!mb_col || !mb_row);
       const BLOCK_SIZE bsize = get_bsize(mi_params, mb_row, mb_col);
-      double log_intra;
-      int level_sample;
-
-      aom_clear_system_state();
-
-      set_mi_offsets(mi_params, xd, mb_row * mb_scale, mb_col * mb_scale);
-      xd->plane[0].dst.buf = this_frame->y_buffer + recon_yoffset;
-      xd->plane[1].dst.buf = this_frame->u_buffer + recon_uvoffset;
-      xd->plane[2].dst.buf = this_frame->v_buffer + recon_uvoffset;
-      xd->left_available = (mb_col != 0);
-      xd->mi[0]->sb_type = bsize;
-      xd->mi[0]->ref_frame[0] = INTRA_FRAME;
-      set_mi_row_col(xd, &tile, mb_row * mb_scale, mi_size_high[bsize],
-                     mb_col * mb_scale, mi_size_wide[bsize], mi_params->mi_rows,
-                     mi_params->mi_cols);
-
-      set_plane_n4(xd, mi_size_wide[bsize], mi_size_high[bsize], num_planes);
-
-      // Do intra 16x16 prediction.
-      xd->mi[0]->segment_id = 0;
-      xd->lossless[xd->mi[0]->segment_id] = (qindex == 0);
-      xd->mi[0]->mode = DC_PRED;
-      xd->mi[0]->tx_size =
-          use_dc_pred ? (bsize >= fp_block_size ? TX_16X16 : TX_8X8) : TX_4X4;
-      av1_encode_intra_block_plane(cpi, x, bsize, 0, DRY_RUN_NORMAL, 0);
-      this_intra_error = aom_get_mb_ss(x->plane[0].src_diff);
-
-      if (this_intra_error < UL_INTRA_THRESH) {
-        ++stats.intra_skip_count;
-      } else if ((mb_col > 0) && (stats.image_data_start_row == INVALID_ROW)) {
-        stats.image_data_start_row = mb_row;
-      }
-
-      if (seq_params->use_highbitdepth) {
-        switch (seq_params->bit_depth) {
-          case AOM_BITS_8: break;
-          case AOM_BITS_10: this_intra_error >>= 4; break;
-          case AOM_BITS_12: this_intra_error >>= 8; break;
-          default:
-            assert(0 &&
-                   "seq_params->bit_depth should be AOM_BITS_8, "
-                   "AOM_BITS_10 or AOM_BITS_12");
-            return;
-        }
-      }
-
-      aom_clear_system_state();
-      log_intra = log(this_intra_error + 1.0);
-      if (log_intra < 10.0)
-        stats.intra_factor += 1.0 + ((10.0 - log_intra) * 0.05);
-      else
-        stats.intra_factor += 1.0;
-
-      if (seq_params->use_highbitdepth)
-        level_sample = CONVERT_TO_SHORTPTR(x->plane[0].src.buf)[0];
-      else
-        level_sample = x->plane[0].src.buf[0];
-      if ((level_sample < DARK_THRESH) && (log_intra < 9.0))
-        stats.brightness_factor += 1.0 + (0.01 * (DARK_THRESH - level_sample));
-      else
-        stats.brightness_factor += 1.0;
-
-      // Intrapenalty below deals with situations where the intra and inter
-      // error scores are very low (e.g. a plain black frame).
-      // We do not have special cases in first pass for 0,0 and nearest etc so
-      // all inter modes carry an overhead cost estimate for the mv.
-      // When the error score is very low this causes us to pick all or lots of
-      // INTRA modes and throw lots of key frames.
-      // This penalty adds a cost matching that of a 0,0 mv to the intra case.
-      this_intra_error += INTRA_MODE_PENALTY;
-
-      // Accumulate the intra error.
-      stats.intra_error += (int64_t)this_intra_error;
-
-      const int hbd = is_cur_buf_hbd(xd);
-      const int stride = x->plane[0].src.stride;
-      uint8_t *buf = x->plane[0].src.buf;
-      for (int r8 = 0; r8 < 2; ++r8) {
-        for (int c8 = 0; c8 < 2; ++c8) {
-          stats.frame_avg_wavelet_energy += av1_haar_ac_sad_8x8_uint8_input(
-              buf + c8 * 8 + r8 * 8 * stride, stride, hbd);
-        }
-      }
+      int this_intra_error = firstpass_intra_prediction(
+          cpi, this_frame, &tile, mb_row, mb_col, recon_yoffset, recon_uvoffset,
+          fp_block_size, qindex, &stats);
 
       // Set up limit values for motion vectors to prevent them extending
       // outside the UMV borders.
