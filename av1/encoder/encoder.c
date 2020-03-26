@@ -656,10 +656,6 @@ static void enc_set_mb_mi(CommonModeInfoParams *mi_params, int width,
 
   mi_params->mi_alloc_bsize = is_4k_or_larger ? BLOCK_8X8 : BLOCK_4X4;
   const int mi_alloc_size_1d = mi_size_wide[mi_params->mi_alloc_bsize];
-  mi_params->mi_alloc_rows =
-      (mi_params->mi_rows + mi_alloc_size_1d - 1) / mi_alloc_size_1d;
-  mi_params->mi_alloc_cols =
-      (mi_params->mi_cols + mi_alloc_size_1d - 1) / mi_alloc_size_1d;
   mi_params->mi_alloc_stride =
       (mi_params->mi_stride + mi_alloc_size_1d - 1) / mi_alloc_size_1d;
 
@@ -705,21 +701,31 @@ static void dealloc_context_buffers_ext(AV1_COMP *cpi) {
   if (cpi->mbmi_ext_frame_base) {
     aom_free(cpi->mbmi_ext_frame_base);
     cpi->mbmi_ext_frame_base = NULL;
+    cpi->mbmi_ext_alloc_size = 0;
   }
 }
 
 static void alloc_context_buffers_ext(AV1_COMP *cpi) {
   AV1_COMMON *cm = &cpi->common;
-  const int new_ext_mi_size =
-      cm->mi_params.mi_alloc_rows * cm->mi_params.mi_alloc_cols;
+  const CommonModeInfoParams *const mi_params = &cm->mi_params;
 
-  if (new_ext_mi_size > cpi->mi_ext_alloc_size) {
+  const int mi_alloc_size_1d = mi_size_wide[mi_params->mi_alloc_bsize];
+  const int mi_alloc_rows =
+      (mi_params->mi_rows + mi_alloc_size_1d - 1) / mi_alloc_size_1d;
+  const int mi_alloc_cols =
+      (mi_params->mi_cols + mi_alloc_size_1d - 1) / mi_alloc_size_1d;
+  const int new_ext_mi_size = mi_alloc_rows * mi_alloc_cols;
+
+  if (new_ext_mi_size > cpi->mbmi_ext_alloc_size) {
     dealloc_context_buffers_ext(cpi);
     CHECK_MEM_ERROR(
         cm, cpi->mbmi_ext_frame_base,
         aom_calloc(new_ext_mi_size, sizeof(*cpi->mbmi_ext_frame_base)));
-    cpi->mi_ext_alloc_size = new_ext_mi_size;
+    cpi->mbmi_ext_alloc_size = new_ext_mi_size;
   }
+  // The stride needs to be updated regardless of whether new allocation
+  // happened or not.
+  cpi->mbmi_ext_stride = mi_alloc_cols;
 }
 
 static void reset_film_grain_chroma_params(aom_film_grain_t *pars) {
@@ -1207,11 +1213,7 @@ static void update_frame_size(AV1_COMP *cpi) {
 
   av1_init_macroblockd(cm, xd, NULL);
 
-  const int ext_mi_size =
-      cm->mi_params.mi_alloc_rows * cm->mi_params.mi_alloc_cols;
   alloc_context_buffers_ext(cpi);
-  memset(cpi->mbmi_ext_frame_base, 0,
-         ext_mi_size * sizeof(*cpi->mbmi_ext_frame_base));
   set_tile_info(cpi);
 }
 

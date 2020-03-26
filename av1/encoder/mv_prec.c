@@ -186,7 +186,7 @@ static AOM_INLINE void collect_mv_stats_b(MV_STATS *mv_stats,
   const MB_MODE_INFO *mbmi =
       mi_params->mi_grid_base[mi_row * mi_params->mi_stride + mi_col];
   const MB_MODE_INFO_EXT_FRAME *mbmi_ext_frame =
-      cpi->mbmi_ext_frame_base + get_mi_ext_idx(mi_params, mi_row, mi_col);
+      cpi->mbmi_ext_frame_base + get_mi_ext_idx(cpi, mi_row, mi_col);
 
   if (!is_inter_block(mbmi)) {
     mv_stats->intra_count++;

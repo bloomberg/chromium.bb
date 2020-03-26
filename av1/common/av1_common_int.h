@@ -374,12 +374,12 @@ struct CommonModeInfoParams {
   // Corresponds to upper left visible macroblock
   MB_MODE_INFO *mi;
   int mi_alloc_size;
+  int mi_alloc_stride;
   // The minimum size each allocated mi can correspond to.
   // For decoder, this is always BLOCK_4X4.
   // For encoder, this is currently set to BLOCK_4X4 for resolution below 4k,
   // and BLOCK_8X8 for resolution above 4k
   BLOCK_SIZE mi_alloc_bsize;
-  int mi_alloc_rows, mi_alloc_cols, mi_alloc_stride;
 
   // Grid of pointers to 4x4 MB_MODE_INFO structs. Any 4x4 not in the visible
   // area will be NULL.
@@ -1224,15 +1224,6 @@ static INLINE int get_alloc_mi_idx(const CommonModeInfoParams *const mi_params,
   const int mi_alloc_col = mi_col / mi_alloc_size_1d;
 
   return mi_alloc_row * mi_params->mi_alloc_stride + mi_alloc_col;
-}
-
-static INLINE int get_mi_ext_idx(const CommonModeInfoParams *const mi_params,
-                                 int mi_row, int mi_col) {
-  const int mi_alloc_size_1d = mi_size_wide[mi_params->mi_alloc_bsize];
-  const int mi_alloc_row = mi_row / mi_alloc_size_1d;
-  const int mi_alloc_col = mi_col / mi_alloc_size_1d;
-
-  return mi_alloc_row * mi_params->mi_alloc_cols + mi_alloc_col;
 }
 
 // For this partition block, set pointers in mi_params->mi_grid_base and xd->mi.

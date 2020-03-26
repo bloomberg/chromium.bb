@@ -64,8 +64,6 @@ static void dec_set_mb_mi(CommonModeInfoParams *mi_params, int width,
   mi_params->MBs = mi_params->mb_rows * mi_params->mb_cols;
 
   mi_params->mi_alloc_bsize = BLOCK_4X4;
-  mi_params->mi_alloc_rows = mi_params->mi_rows;
-  mi_params->mi_alloc_cols = mi_params->mi_cols;
   mi_params->mi_alloc_stride = mi_params->mi_stride;
 
   assert(mi_size_wide[mi_params->mi_alloc_bsize] ==

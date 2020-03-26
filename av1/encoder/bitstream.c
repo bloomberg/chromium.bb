@@ -1474,7 +1474,7 @@ static AOM_INLINE void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
   const int grid_idx = mi_row * mi_params->mi_stride + mi_col;
   xd->mi = mi_params->mi_grid_base + grid_idx;
   cpi->td.mb.mbmi_ext_frame =
-      cpi->mbmi_ext_frame_base + get_mi_ext_idx(mi_params, mi_row, mi_col);
+      cpi->mbmi_ext_frame_base + get_mi_ext_idx(cpi, mi_row, mi_col);
   xd->tx_type_map = mi_params->tx_type_map + grid_idx;
   xd->tx_type_map_stride = mi_params->mi_stride;
 

@@ -831,6 +831,8 @@ typedef struct AV1_COMP {
   ThreadData td;
   FRAME_COUNTS counts;
   MB_MODE_INFO_EXT_FRAME *mbmi_ext_frame_base;
+  int mbmi_ext_alloc_size;
+  int mbmi_ext_stride;
   CB_COEFF_BUFFER *coeff_buffer_base;
   Dequants dequants;
   AV1_COMMON common;
@@ -840,7 +842,6 @@ typedef struct AV1_COMP {
   int no_show_kf;
 
   TRELLIS_OPT_TYPE optimize_seg_arr[MAX_SEGMENTS];
-  int mi_ext_alloc_size;
 
   YV12_BUFFER_CONFIG *source;
   YV12_BUFFER_CONFIG *last_source;  // NULL for first frame and alt_ref frames
@@ -1542,15 +1543,25 @@ static INLINE int encode_show_existing_frame(const AV1_COMMON *cm) {
                                      cm->current_frame.frame_type == KEY_FRAME);
 }
 
+// Get index into the 'cpi->mbmi_ext_frame_base' array for the given 'mi_row'
+// and 'mi_col'.
+static INLINE int get_mi_ext_idx(const AV1_COMP *const cpi, int mi_row,
+                                 int mi_col) {
+  const BLOCK_SIZE mi_ext_bsize = cpi->common.mi_params.mi_alloc_bsize;
+  const int mi_ext_size_1d = mi_size_wide[mi_ext_bsize];
+  const int mi_ext_row = mi_row / mi_ext_size_1d;
+  const int mi_ext_col = mi_col / mi_ext_size_1d;
+  return mi_ext_row * cpi->mbmi_ext_stride + mi_ext_col;
+}
+
 // Lighter version of set_offsets that only sets the mode info
 // pointers.
 static INLINE void set_mode_info_offsets(const AV1_COMP *const cpi,
                                          MACROBLOCK *const x,
                                          MACROBLOCKD *const xd, int mi_row,
                                          int mi_col) {
-  const CommonModeInfoParams *const mi_params = &cpi->common.mi_params;
-  set_mi_offsets(mi_params, xd, mi_row, mi_col);
-  const int ext_idx = get_mi_ext_idx(mi_params, mi_row, mi_col);
+  set_mi_offsets(&cpi->common.mi_params, xd, mi_row, mi_col);
+  const int ext_idx = get_mi_ext_idx(cpi, mi_row, mi_col);
   x->mbmi_ext_frame = cpi->mbmi_ext_frame_base + ext_idx;
 }
 
