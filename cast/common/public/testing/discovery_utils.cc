@@ -7,22 +7,10 @@
 #include <sstream>
 
 #include "discovery/dnssd/public/dns_sd_instance_record.h"
+#include "util/stringprintf.h"
 
 namespace openscreen {
 namespace cast {
-namespace {
-
-std::string WriteToHex(const std::vector<uint8_t> data) {
-  std::stringstream s;
-  s << "[";
-  for (uint8_t val : data) {
-    s << std::hex << val << ", ";
-  }
-  std::string result = s.str();
-  return result.substr(0, result.size() - 1).append("]");
-}
-
-}  // namespace
 
 discovery::DnsSdTxtRecord CreateValidTxt() {
   discovery::DnsSdTxtRecord txt;
@@ -55,7 +43,7 @@ void CompareTxtInt(const discovery::DnsSdTxtRecord& txt,
   ASSERT_FALSE(value.is_error())
       << "key: '" << key << "'' expected: '" << expected << "'";
   const std::vector<uint8_t>& data = value.value().get();
-  std::string parsed_value = WriteToHex(data);
+  std::string parsed_value = HexEncode(data);
   ASSERT_EQ(data.size(), size_t{1})
       << "expected one byte value for key: '" << key << "' got size: '"
       << data.size() << "' bytes";
