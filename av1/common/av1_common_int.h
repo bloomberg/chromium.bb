@@ -322,18 +322,18 @@ typedef struct {
 // Struct containing some boolean flags indicating whether some features are
 // allowed/used or not.
 typedef struct {
-  uint8_t disable_cdf_update;
-  int allow_high_precision_mv;
-  uint8_t cur_frame_force_integer_mv;  // 0 the default in AOM, 1 only integer
-  uint8_t allow_screen_content_tools;
-  int allow_intrabc;
-  int allow_warped_motion;
+  bool disable_cdf_update;
+  bool allow_high_precision_mv;
+  bool cur_frame_force_integer_mv;  // 0 the default in AOM, 1 only integer
+  bool allow_screen_content_tools;
+  bool allow_intrabc;
+  bool allow_warped_motion;
   // Whether to use previous frames' motion vectors for prediction.
-  int allow_ref_frame_mvs;
-  int coded_lossless;  // frame is fully lossless at the coded resolution.
-  int all_lossless;    // frame is fully lossless at the upscaled resolution.
-  int reduced_tx_set_used;
-  int error_resilient_mode;
+  bool allow_ref_frame_mvs;
+  bool coded_lossless;  // frame is fully lossless at the coded resolution.
+  bool all_lossless;    // frame is fully lossless at the upscaled resolution.
+  bool reduced_tx_set_used;
+  bool error_resilient_mode;
 } FeatureFlags;
 
 // Struct containing params related to tiles.
