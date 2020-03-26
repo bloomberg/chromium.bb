@@ -231,8 +231,9 @@ static int alloc_mi(CommonModeInfoParams *mi_params) {
       mi_params->mi_grid_size < mi_grid_size) {
     mi_params->free_mi(mi_params);
 
-    mi_params->mi = aom_calloc(alloc_mi_size, sizeof(*mi_params->mi));
-    if (!mi_params->mi) return 1;
+    mi_params->mi_alloc =
+        aom_calloc(alloc_mi_size, sizeof(*mi_params->mi_alloc));
+    if (!mi_params->mi_alloc) return 1;
     mi_params->mi_alloc_size = alloc_mi_size;
 
     mi_params->mi_grid_base = (MB_MODE_INFO **)aom_calloc(

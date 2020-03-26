@@ -362,32 +362,49 @@ typedef struct CommonTileParams {
 // Struct containing params related to MB_MODE_INFO arrays and related info.
 typedef struct CommonModeInfoParams CommonModeInfoParams;
 struct CommonModeInfoParams {
-  // MBs, mb_rows/cols is in 16-pixel units; mi_rows/cols is in
-  // MB_MODE_INFO (4-pixel) units.
-  int MBs;
+  // Number of rows/cols in the frame in 16 pixel units.
+  // This is computed from frame width and height aligned to a multiple of 8.
   int mb_rows;
   int mb_cols;
+  // Total MBs = mb_rows * mb_cols.
+  int MBs;
 
+  // Number of rows/cols in the frame in 4 pixel (MB_MODE_INFO) units.
+  // This is computed from frame width and height aligned to a multiple of 8.
   int mi_rows;
   int mi_cols;
 
-  // Corresponds to upper left visible macroblock
-  MB_MODE_INFO *mi;
+  // An array of MB_MODE_INFO structs for every 'mi_alloc_bsize' sized block
+  // in the frame.
+  // Note: This array should be treated like a scratch memory, and should NOT be
+  // accessed directly, in most cases. Please use 'mi_grid_base' array instead.
+  MB_MODE_INFO *mi_alloc;
+  // Number of allocated elements in 'mi_alloc'.
   int mi_alloc_size;
+  // Stride for 'mi_alloc' array.
   int mi_alloc_stride;
-  // The minimum size each allocated mi can correspond to.
+  // The minimum block size that each element in 'mi_alloc' can correspond to.
   // For decoder, this is always BLOCK_4X4.
-  // For encoder, this is currently set to BLOCK_4X4 for resolution below 4k,
-  // and BLOCK_8X8 for resolution above 4k
+  // For encoder, this is currently set to BLOCK_4X4 for resolution < 4k,
+  // and BLOCK_8X8 for resolution >= 4k.
   BLOCK_SIZE mi_alloc_bsize;
 
-  // Grid of pointers to 4x4 MB_MODE_INFO structs. Any 4x4 not in the visible
-  // area will be NULL.
+  // Grid of pointers to 4x4 MB_MODE_INFO structs allocated in 'mi_alloc'.
+  // It's possible that:
+  // - Multiple pointers in the grid point to the same element in 'mi_alloc'
+  // (for example, for all 4x4 blocks that belong to the same partition block).
+  // - Some pointers can be NULL (for example, for blocks outside visible area).
   MB_MODE_INFO **mi_grid_base;
+  // Number of allocated elements in 'mi_grid_base' (and 'tx_type_map' also).
   int mi_grid_size;
+  // Stride for 'mi_grid_base' (and 'tx_type_map' also).
   int mi_stride;
 
-  uint8_t *tx_type_map;
+  // An array of tx types for each 4x4 block in the frame.
+  // Number of allocated elements is same as 'mi_grid_size', and stride is
+  // same as 'mi_grid_size'. So, indexing into 'tx_type_map' is same as that of
+  // 'mi_grid_base'.
+  TX_TYPE *tx_type_map;
 
   // Function pointers to allow separate logic for encoder and decoder.
   void (*free_mi)(struct CommonModeInfoParams *mi_params);
@@ -1233,7 +1250,7 @@ static INLINE void set_mi_offsets(const CommonModeInfoParams *const mi_params,
   // 'mi_grid_base' should point to appropriate memory in 'mi'.
   const int mi_grid_idx = get_mi_grid_idx(mi_params, mi_row, mi_col);
   const int mi_alloc_idx = get_alloc_mi_idx(mi_params, mi_row, mi_col);
-  mi_params->mi_grid_base[mi_grid_idx] = &mi_params->mi[mi_alloc_idx];
+  mi_params->mi_grid_base[mi_grid_idx] = &mi_params->mi_alloc[mi_alloc_idx];
   // 'xd->mi' should point to an offset in 'mi_grid_base';
   xd->mi = mi_params->mi_grid_base + mi_grid_idx;
   // 'xd->tx_type_map' should point to an offset in 'mi_params->tx_type_map'.

@@ -670,7 +670,8 @@ static void enc_set_mb_mi(CommonModeInfoParams *mi_params, int width,
 static void enc_setup_mi(CommonModeInfoParams *mi_params) {
   const int mi_grid_size =
       mi_params->mi_stride * calc_mi_size(mi_params->mi_rows);
-  memset(mi_params->mi, 0, mi_params->mi_alloc_size * sizeof(*mi_params->mi));
+  memset(mi_params->mi_alloc, 0,
+         mi_params->mi_alloc_size * sizeof(*mi_params->mi_alloc));
   memset(mi_params->mi_grid_base, 0,
          mi_grid_size * sizeof(*mi_params->mi_grid_base));
   memset(mi_params->tx_type_map, 0,
@@ -678,8 +679,8 @@ static void enc_setup_mi(CommonModeInfoParams *mi_params) {
 }
 
 static void enc_free_mi(CommonModeInfoParams *mi_params) {
-  aom_free(mi_params->mi);
-  mi_params->mi = NULL;
+  aom_free(mi_params->mi_alloc);
+  mi_params->mi_alloc = NULL;
   aom_free(mi_params->mi_grid_base);
   mi_params->mi_grid_base = NULL;
   mi_params->mi_alloc_size = 0;

@@ -1844,7 +1844,7 @@ static AOM_INLINE void set_fixed_partitioning(AV1_COMP *cpi,
   const int mi_rows_remaining = tile->mi_row_end - mi_row;
   const int mi_cols_remaining = tile->mi_col_end - mi_col;
   MB_MODE_INFO *const mi_upper_left =
-      mi_params->mi + get_alloc_mi_idx(mi_params, mi_row, mi_col);
+      mi_params->mi_alloc + get_alloc_mi_idx(mi_params, mi_row, mi_col);
   int bh = mi_size_high[bsize];
   int bw = mi_size_wide[bsize];
 
@@ -4442,7 +4442,7 @@ static AOM_INLINE void encode_nonrd_sb(AV1_COMP *cpi, ThreadData *td,
 // Memset the mbmis at the current superblock to 0
 static INLINE void reset_mbmi(CommonModeInfoParams *const mi_params,
                               BLOCK_SIZE sb_size, int mi_row, int mi_col) {
-  // size of sb in unit of mi_grid (BLOCK_4X4)
+  // size of sb in unit of mi (BLOCK_4X4)
   const int sb_size_mi = mi_size_wide[sb_size];
   const int mi_alloc_size_1d = mi_size_wide[mi_params->mi_alloc_bsize];
   // size of sb in unit of allocated mi size
@@ -4450,7 +4450,7 @@ static INLINE void reset_mbmi(CommonModeInfoParams *const mi_params,
   assert(mi_params->mi_alloc_stride % sb_size_alloc_mi == 0 &&
          "mi is not allocated as a multiple of sb!");
   assert(mi_params->mi_stride % sb_size_mi == 0 &&
-         "mi_grid is not allocated as a multiple of sb!");
+         "mi_grid_base is not allocated as a multiple of sb!");
 
   const int mi_rows = mi_size_high[sb_size];
   for (int cur_mi_row = 0; cur_mi_row < mi_rows; cur_mi_row++) {
@@ -4465,8 +4465,8 @@ static INLINE void reset_mbmi(CommonModeInfoParams *const mi_params,
     memset(&mi_params->tx_type_map[mi_grid_idx], 0,
            sb_size_mi * sizeof(*mi_params->tx_type_map));
     if (cur_mi_row % mi_alloc_size_1d == 0) {
-      memset(&mi_params->mi[alloc_mi_idx], 0,
-             sb_size_alloc_mi * sizeof(*mi_params->mi));
+      memset(&mi_params->mi_alloc[alloc_mi_idx], 0,
+             sb_size_alloc_mi * sizeof(*mi_params->mi_alloc));
     }
   }
 }
@@ -4500,7 +4500,8 @@ static INLINE void backup_sb_state(SB_FIRST_PASS_STATS *sb_fp_stats,
          sizeof(sb_fp_stats->thresh_freq_fact));
 
   const int alloc_mi_idx = get_alloc_mi_idx(&cm->mi_params, mi_row, mi_col);
-  sb_fp_stats->current_qindex = cm->mi_params.mi[alloc_mi_idx].current_qindex;
+  sb_fp_stats->current_qindex =
+      cm->mi_params.mi_alloc[alloc_mi_idx].current_qindex;
 
 #if CONFIG_INTERNAL_STATS
   memcpy(sb_fp_stats->mode_chosen_counts, cpi->mode_chosen_counts,
@@ -4531,7 +4532,8 @@ static INLINE void restore_sb_state(const SB_FIRST_PASS_STATS *sb_fp_stats,
          sizeof(sb_fp_stats->thresh_freq_fact));
 
   const int alloc_mi_idx = get_alloc_mi_idx(&cm->mi_params, mi_row, mi_col);
-  cm->mi_params.mi[alloc_mi_idx].current_qindex = sb_fp_stats->current_qindex;
+  cm->mi_params.mi_alloc[alloc_mi_idx].current_qindex =
+      sb_fp_stats->current_qindex;
 
 #if CONFIG_INTERNAL_STATS
   memcpy(cpi->mode_chosen_counts, sb_fp_stats->mode_chosen_counts,
