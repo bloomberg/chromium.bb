@@ -221,18 +221,7 @@ class BootstrapStage(PatchChangesStage):
 
   def HandleApplyFailures(self, failures):
     """Handle the case where patches fail to apply."""
-    if self._run.config.pre_cq:
-      # Let the PreCQSync stage handle this failure. The PreCQSync stage will
-      # comment on CLs with the appropriate message when they fail to apply.
-      #
-      # WARNING: For manifest patches, the Pre-CQ attempts to apply external
-      # patches to the internal manifest, and this means we may flag a conflict
-      # here even if the patch applies cleanly. TODO(davidjames): Fix this.
-      logging.PrintBuildbotStepWarnings()
-      logging.error('Failed applying patches: %s\n'.join(
-          str(x) for x in failures))
-    else:
-      PatchChangesStage.HandleApplyFailures(self, failures)
+    PatchChangesStage.HandleApplyFailures(self, failures)
 
   def _PerformStageInTempDir(self):
     # The plan for the builders is to use master branch to bootstrap other

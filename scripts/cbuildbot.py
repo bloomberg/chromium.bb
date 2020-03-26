@@ -86,9 +86,7 @@ def _IsDistributedBuilder(options, chrome_rev, build_config):
   Returns:
     True if the builder should be a distributed_builder
   """
-  if build_config['pre_cq']:
-    return True
-  elif not options.buildbot:
+  if not options.buildbot:
     return False
   elif chrome_rev in (constants.CHROME_REV_TOT,
                       constants.CHROME_REV_LOCAL,

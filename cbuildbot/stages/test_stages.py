@@ -176,7 +176,7 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
   def TestsEnabled(self, builder_run):
     """Abstract the logic to decide if tests are enabled."""
     if (builder_run.options.remote_trybot and
-        (builder_run.options.hwtest or builder_run.config.pre_cq)):
+        builder_run.options.hwtest):
       return not builder_run.options.debug_forced
     else:
       return not builder_run.options.debug

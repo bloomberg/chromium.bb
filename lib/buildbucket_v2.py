@@ -79,7 +79,7 @@ def UpdateSelfCommonBuildProperties(
     full_version: (Optional) full version of the build.
         Eg "R74-11671.0.0-b3416654".
     toolchain_url: (Optional) toolchain_url of the build.
-    build_type: (Optional) One of ('paladin', 'full', 'canary', 'pre_cq',...).
+    build_type: (Optional) One of ('full', 'canary', ...).
     unibuild: (Optional) Boolean indicating whether build is unibuild.
     suite_scheduling: (Optional)
     killed_child_builds: (Optional) A list of Buildbucket IDs of child builds

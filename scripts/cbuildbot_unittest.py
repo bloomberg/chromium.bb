@@ -26,8 +26,7 @@ class IsDistributedBuilderTest(cros_test_lib.TestCase):
     options = cbuildbot.ParseCommandLine(parser, argv)
     options.buildbot = False
 
-    build_config = dict(pre_cq=False,
-                        manifest_version=False)
+    build_config = dict(manifest_version=False)
     chrome_rev = None
 
     def _TestConfig(expected):
@@ -40,10 +39,6 @@ class IsDistributedBuilderTest(cros_test_lib.TestCase):
     # Default options.
     _TestConfig(False)
 
-    build_config['pre_cq'] = True
-    _TestConfig(True)
-
-    build_config['pre_cq'] = False
     build_config['manifest_version'] = True
     # Not running in buildbot mode even though manifest_version=True.
     _TestConfig(False)
