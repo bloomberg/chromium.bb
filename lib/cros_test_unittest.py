@@ -275,7 +275,8 @@ class CrOSTesterAutotest(CrOSTesterBase):
   def testInsideChrootAutotest(self, check_inside_chroot_mock):
     """Tests running an autotest from within the chroot."""
     # Checks that mock version has been called.
-    check_inside_chroot_mock.assert_called()
+    # TODO(crbug/1065172): Invalid assertion that had previously been mocked.
+    # check_inside_chroot_mock.assert_called()
 
     self._tester.autotest = ['accessibility_Sanity']
     self._tester.results_dir = '/mnt/host/source/test_results'
@@ -292,7 +293,8 @@ class CrOSTesterAutotest(CrOSTesterBase):
   def testOutsideChrootAutotest(self, check_inside_chroot_mock):
     """Tests running an autotest from outside the chroot."""
     # Checks that mock version has been called.
-    check_inside_chroot_mock.assert_called()
+    # TODO(crbug/1065172): Invalid assertion that had previously been mocked.
+    # check_inside_chroot_mock.assert_called()
 
     self._tester.autotest = ['accessibility_Sanity']
     # Capture the run command. This is necessary beacuse the mock doesn't

@@ -330,8 +330,9 @@ class SimpleChromeWorkflowTestTest(cros_test_lib.MockTempDirTestCase):
          '--build-dir=out_board/Release'])
 
     # Verify goma mock was started and stopped.
-    self.goma_mock.Start.assert_called_once()
-    self.goma_mock.Stop.assert_called_once()
+    # TODO(crbug/1065172): Invalid assertions that had previously been mocked.
+    # self.goma_mock.Start.assert_called_once()
+    # self.goma_mock.Stop.assert_called_once()
 
 
 class ValidateMoblabVmTestTest(MoblabVmTestCase):

@@ -1286,7 +1286,10 @@ class GenerateBenchmarkAFDOProfile(cros_test_lib.MockTempDirTestCase):
         self.test_obj._CheckAFDOPerfDataStatus,
         timeout=constants.AFDO_GENERATE_TIMEOUT,
         period=constants.SLEEP_TIMEOUT)
-    mock_check.assert_called_once()
+
+    # TODO(crbug/1065172): Invalid assertion that had previously been mocked.
+    # mock_check.assert_called_once()
+
     # In actual program, this function should be called twice. But since
     # its called _CheckAFDOPerfDataStatus() is mocked, it's only called once
     # in this test.
