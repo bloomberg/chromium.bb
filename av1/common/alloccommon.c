@@ -217,10 +217,41 @@ int av1_alloc_above_context_buffers(AV1_COMMON *cm,
   return 0;
 }
 
+// Allocate the dynamically allocated arrays in 'mi_params' assuming
+// 'mi_params->set_mb_mi()' was already called earlier to initialize the rest of
+// the struct members.
+static int alloc_mi(CommonModeInfoParams *mi_params) {
+  const int aligned_mi_rows = calc_mi_size(mi_params->mi_rows);
+  const int mi_grid_size = mi_params->mi_stride * aligned_mi_rows;
+  const int alloc_size_1d = mi_size_wide[mi_params->mi_alloc_bsize];
+  const int alloc_mi_size =
+      mi_params->mi_alloc_stride * (aligned_mi_rows / alloc_size_1d);
+
+  if (mi_params->mi_alloc_size < alloc_mi_size ||
+      mi_params->mi_grid_size < mi_grid_size) {
+    mi_params->free_mi(mi_params);
+
+    mi_params->mi = aom_calloc(alloc_mi_size, sizeof(*mi_params->mi));
+    if (!mi_params->mi) return 1;
+    mi_params->mi_alloc_size = alloc_mi_size;
+
+    mi_params->mi_grid_base = (MB_MODE_INFO **)aom_calloc(
+        mi_grid_size, sizeof(*mi_params->mi_grid_base));
+    if (!mi_params->mi_grid_base) return 1;
+    mi_params->mi_grid_size = mi_grid_size;
+
+    mi_params->tx_type_map =
+        aom_calloc(mi_grid_size, sizeof(*mi_params->tx_type_map));
+    if (!mi_params->tx_type_map) return 1;
+  }
+
+  return 0;
+}
+
 int av1_alloc_context_buffers(AV1_COMMON *cm, int width, int height) {
   CommonModeInfoParams *const mi_params = &cm->mi_params;
   mi_params->set_mb_mi(mi_params, width, height);
-  if (mi_params->alloc_mi(mi_params)) goto fail;
+  if (alloc_mi(mi_params)) goto fail;
   return 0;
 
 fail:

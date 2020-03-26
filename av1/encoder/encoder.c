@@ -681,35 +681,6 @@ static void enc_setup_mi(CommonModeInfoParams *mi_params) {
          mi_grid_size * sizeof(*mi_params->tx_type_map));
 }
 
-static int enc_alloc_mi(CommonModeInfoParams *mi_params) {
-  const int mi_grid_size =
-      mi_params->mi_stride * calc_mi_size(mi_params->mi_rows);
-  const int alloc_size_1d = mi_size_wide[mi_params->mi_alloc_bsize];
-  const int alloc_mi_size = mi_params->mi_alloc_stride *
-                            (calc_mi_size(mi_params->mi_rows) / alloc_size_1d);
-
-  if (mi_params->mi_alloc_size < alloc_mi_size ||
-      mi_params->mi_grid_size < mi_grid_size) {
-    mi_params->free_mi(mi_params);
-
-    mi_params->mi = aom_calloc(alloc_mi_size, sizeof(*mi_params->mi));
-    if (!mi_params->mi) return 1;
-    mi_params->mi_alloc_size = alloc_mi_size;
-
-    mi_params->mi_grid_base =
-        (MB_MODE_INFO **)aom_calloc(mi_grid_size, sizeof(MB_MODE_INFO *));
-    if (!mi_params->mi_grid_base) return 1;
-    mi_params->mi_grid_size = mi_grid_size;
-
-    mi_params->tx_type_map =
-        aom_calloc(calc_mi_size(mi_params->mi_rows) * mi_params->mi_stride,
-                   sizeof(*mi_params->tx_type_map));
-    if (!mi_params->tx_type_map) return 1;
-  }
-
-  return 0;
-}
-
 static void enc_free_mi(CommonModeInfoParams *mi_params) {
   aom_free(mi_params->mi);
   mi_params->mi = NULL;
@@ -3038,7 +3009,6 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf, BufferPool *const pool,
   cm->error.setjmp = 1;
 
   CommonModeInfoParams *const mi_params = &cm->mi_params;
-  mi_params->alloc_mi = enc_alloc_mi;
   mi_params->free_mi = enc_free_mi;
   mi_params->setup_mi = enc_setup_mi;
   mi_params->set_mb_mi = enc_set_mb_mi;

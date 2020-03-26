@@ -83,32 +83,6 @@ static void dec_setup_mi(CommonModeInfoParams *mi_params) {
          mi_grid_size * sizeof(*mi_params->mi_grid_base));
 }
 
-static int dec_alloc_mi(CommonModeInfoParams *mi_params) {
-  const int mi_grid_size =
-      mi_params->mi_stride * calc_mi_size(mi_params->mi_rows);
-
-  if (mi_params->mi_alloc_size < mi_grid_size ||
-      mi_params->mi_grid_size < mi_grid_size) {
-    mi_params->free_mi(mi_params);
-
-    mi_params->mi = aom_calloc(mi_grid_size, sizeof(*mi_params->mi));
-    if (!mi_params->mi) return 1;
-    mi_params->mi_alloc_size = mi_grid_size;
-
-    mi_params->mi_grid_base =
-        (MB_MODE_INFO **)aom_calloc(mi_grid_size, sizeof(MB_MODE_INFO *));
-    if (!mi_params->mi_grid_base) return 1;
-    mi_params->mi_grid_size = mi_grid_size;
-
-    mi_params->tx_type_map =
-        aom_calloc(calc_mi_size(mi_params->mi_rows) * mi_params->mi_stride,
-                   sizeof(*mi_params->tx_type_map));
-    if (!mi_params->tx_type_map) return 1;
-  }
-
-  return 0;
-}
-
 static void dec_free_mi(CommonModeInfoParams *mi_params) {
   aom_free(mi_params->mi);
   mi_params->mi = NULL;
@@ -159,7 +133,6 @@ AV1Decoder *av1_decoder_create(BufferPool *const pool) {
 
   cm->seq_params.bit_depth = AOM_BITS_8;
 
-  cm->mi_params.alloc_mi = dec_alloc_mi;
   cm->mi_params.free_mi = dec_free_mi;
   cm->mi_params.setup_mi = dec_setup_mi;
   cm->mi_params.set_mb_mi = dec_set_mb_mi;

@@ -389,8 +389,7 @@ struct CommonModeInfoParams {
 
   uint8_t *tx_type_map;
 
-  // Separate mi functions between encoder and decoder.
-  int (*alloc_mi)(struct CommonModeInfoParams *mi_params);
+  // Function pointers to allow separate logic for encoder and decoder.
   void (*free_mi)(struct CommonModeInfoParams *mi_params);
   void (*setup_mi)(struct CommonModeInfoParams *mi_params);
   void (*set_mb_mi)(struct CommonModeInfoParams *mi_params, int width,
