@@ -13,7 +13,6 @@ import datetime
 from chromite.lib import buildbucket_lib
 from chromite.lib import builder_status_lib
 from chromite.lib import build_requests
-from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import metrics
@@ -256,15 +255,6 @@ class SlaveStatus(object):
         logging.info('Not retriable build %s reached the build retry limit %d.',
                      build, constants.BUILDBUCKET_BUILD_RETRY_LIMIT)
         continue
-
-      # If build is in self.status, it means a build tuple has been
-      # inserted into CIDB buildTable.
-      if build in self.new_cidb_status_dict:
-        if not config_lib.RetryAlreadyStartedSlaves(self.config):
-          logging.info('Not retriable build %s started already.', build)
-          continue
-
-        assert self.buildstore.AreClientsReady()
 
       builds_to_retry.add(build)
 
