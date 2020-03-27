@@ -885,8 +885,8 @@ class GitWrapper(SCMWrapper):
     except NoUsableRevError as e:
       # If the DEPS entry's url and hash changed, try to update the origin.
       # See also http://crbug.com/520067.
-      logging.warn(
-          'Couldn\'t find usable revision, will retrying to update instead: %s',
+      logging.warning(
+          "Couldn't find usable revision, will retrying to update instead: %s",
           e.message)
       return self.update(options, [], file_list)
 

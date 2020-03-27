@@ -601,7 +601,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
               self.url))
       # In theory we could keep it as a shadow of the other one. In
       # practice, simply ignore it.
-      logging.warn('Won\'t process duplicate dependency %s' % sibling)
+      logging.warning("Won't process duplicate dependency %s" % sibling)
       return False
     return True
 
