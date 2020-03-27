@@ -3342,15 +3342,16 @@ def CMDbaseurl(parser, args):
 
 def color_for_status(status):
   """Maps a Changelist status to color, for CMDstatus and other tools."""
+  BOLD = '\033[1m'
   return {
-    'unsent': Fore.YELLOW,
-    'waiting': Fore.BLUE,
-    'reply': Fore.YELLOW,
-    'not lgtm': Fore.RED,
-    'lgtm': Fore.GREEN,
-    'commit': Fore.MAGENTA,
-    'closed': Fore.CYAN,
-    'error': Fore.WHITE,
+    'unsent': BOLD + Fore.YELLOW,
+    'waiting': BOLD + Fore.RED,
+    'reply': BOLD + Fore.YELLOW,
+    'not lgtm': BOLD + Fore.RED,
+    'lgtm': BOLD + Fore.GREEN,
+    'commit': BOLD + Fore.MAGENTA,
+    'closed': BOLD + Fore.CYAN,
+    'error': BOLD + Fore.WHITE,
   }.get(status, Fore.WHITE)
 
 
@@ -3724,7 +3725,9 @@ def CMDstatus(parser, args):
       url += ' (broken)'
 
     color = color_for_status(status)
-    reset = Fore.RESET
+    # Turn off bold as well as colors.
+    END = '\033[0m'
+    reset = Fore.RESET + END
     if not setup_color.IS_TTY:
       color = ''
       reset = ''
