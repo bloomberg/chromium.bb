@@ -39,6 +39,13 @@ void CheckSingleNsecRecordType(const MdnsMessage& message, DnsType type) {
   EXPECT_EQ(rdata.types()[0], type);
 }
 
+void CheckPtrDomain(const MdnsRecord& record, const DomainName& domain) {
+  ASSERT_EQ(record.dns_type(), DnsType::kPTR);
+  const PtrRecordRdata& rdata = absl::get<PtrRecordRdata>(record.rdata());
+
+  EXPECT_EQ(rdata.ptr_domain(), domain);
+}
+
 void ExpectContainsNsecRecordType(const std::vector<MdnsRecord>& records,
                                   DnsType type) {
   auto it = std::find_if(
@@ -70,10 +77,21 @@ class MockRecordHandler : public MdnsResponder::RecordHandler {
 
   std::vector<MdnsRecord::ConstRef> GetRecords(const DomainName& name,
                                                DnsType type,
-                                               DnsClass clazz) {
+                                               DnsClass clazz) override {
     std::vector<MdnsRecord::ConstRef> records;
     for (const auto& record : records_) {
       if (type == DnsType::kANY || record.dns_type() == type) {
+        records.push_back(record);
+      }
+    }
+
+    return records;
+  }
+
+  std::vector<MdnsRecord::ConstRef> GetPtrRecords(DnsClass clazz) override {
+    std::vector<MdnsRecord::ConstRef> records;
+    for (const auto& record : records_) {
+      if (record.dns_type() == DnsType::kPTR) {
         records.push_back(record);
       }
     }
@@ -177,6 +195,15 @@ class MdnsResponderTest : public testing::Test {
     return message;
   }
 
+  MdnsMessage CreateTypeEnumerationQuery() {
+    MdnsQuestion question(type_enumeration_domain_, DnsType::kPTR,
+                          DnsClass::kANY, ResponseType::kMulticast);
+    MdnsMessage message(0, MessageType::Query);
+    message.AddQuestion(std::move(question));
+
+    return message;
+  }
+
   FakeClock clock_;
   FakeTaskRunner task_runner_;
   FakeUdpSocket socket_;
@@ -188,6 +215,7 @@ class MdnsResponderTest : public testing::Test {
   MdnsResponder responder_;
 
   DomainName domain_{"instance", "_googlecast", "_tcp", "local"};
+  DomainName type_enumeration_domain_{"_services", "_dns-sd", "_udp", "local"};
   IPEndpoint endpoint_{IPAddress(192, 168, 0, 0), 80};
 };
 
@@ -687,6 +715,47 @@ TEST_F(MdnsResponderTest, PtrQueryGiveCorrectNsecForOnlySrv) {
         return Error::None();
       });
   OnMessageReceived(message, endpoint_);
+}
+
+TEST_F(MdnsResponderTest, EnumerateAllQuery) {
+  MdnsMessage message = CreateTypeEnumerationQuery();
+
+  EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillOnce(Return(false));
+  EXPECT_CALL(record_handler_, HasRecords(_, _, _))
+      .WillRepeatedly(Return(true));
+  const auto ptr = GetFakePtrRecord(domain_);
+  record_handler_.AddRecord(ptr);
+  record_handler_.AddRecord(GetFakeSrvRecord(domain_));
+  record_handler_.AddRecord(GetFakeTxtRecord(domain_));
+  record_handler_.AddRecord(GetFakeARecord(domain_));
+  OnMessageReceived(message, endpoint_);
+
+  EXPECT_CALL(sender_, SendMulticast(_))
+      .WillOnce([this, &ptr](const MdnsMessage& message) -> Error {
+        EXPECT_EQ(message.questions().size(), size_t{0});
+        EXPECT_EQ(message.authority_records().size(), size_t{0});
+
+        EXPECT_EQ(message.answers().size(), size_t{1});
+        EXPECT_TRUE(ContainsRecordType(message.answers(), DnsType::kPTR));
+        EXPECT_EQ(message.answers()[0].name(), type_enumeration_domain_);
+        CheckPtrDomain(message.answers()[0], ptr.name());
+        return Error::None();
+      });
+  clock_.Advance(Clock::duration(kMaximumSharedRecordResponseDelayMs));
+}
+
+TEST_F(MdnsResponderTest, EnumerateAllQueryNoResults) {
+  MdnsMessage message = CreateTypeEnumerationQuery();
+
+  EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillOnce(Return(false));
+  EXPECT_CALL(record_handler_, HasRecords(_, _, _))
+      .WillRepeatedly(Return(true));
+  const auto ptr = GetFakePtrRecord(domain_);
+  record_handler_.AddRecord(GetFakeSrvRecord(domain_));
+  record_handler_.AddRecord(GetFakeTxtRecord(domain_));
+  record_handler_.AddRecord(GetFakeARecord(domain_));
+  OnMessageReceived(message, endpoint_);
+  clock_.Advance(Clock::duration(kMaximumSharedRecordResponseDelayMs));
 }
 
 }  // namespace discovery

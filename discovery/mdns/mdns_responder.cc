@@ -18,6 +18,9 @@ namespace openscreen {
 namespace discovery {
 namespace {
 
+const std::array<std::string, 3> kServiceEnumerationDomainLabels{
+    "_services", "_dns-sd", "_udp"};
+
 enum AddResult { kNonePresent = 0, kAdded, kAlreadyKnown };
 
 std::chrono::seconds GetTtlForRecordType(DnsType type) {
@@ -219,6 +222,55 @@ void ApplyQueryResults(MdnsMessage* message,
   // queries.
 }
 
+// Determines if the provided query is a type enumeration query as described in
+// RFC 6763 section 9.
+bool IsServiceTypeEnumerationQuery(const MdnsQuestion& question) {
+  if (question.dns_type() != DnsType::kPTR) {
+    return false;
+  }
+
+  if (question.name().labels().size() <
+      kServiceEnumerationDomainLabels.size()) {
+    return false;
+  }
+
+  const auto question_it = question.name().labels().begin();
+  return std::equal(question_it,
+                    question_it + kServiceEnumerationDomainLabels.size(),
+                    kServiceEnumerationDomainLabels.begin(),
+                    kServiceEnumerationDomainLabels.end());
+}
+
+// Creates the expected response to a type enumeration query as described in RFC
+// 6763 section 9.
+void ApplyServiceTypeEnumerationResults(
+    MdnsMessage* message,
+    MdnsResponder::RecordHandler* record_handler,
+    const DomainName& name,
+    DnsClass clazz) {
+  if (name.labels().size() < kServiceEnumerationDomainLabels.size()) {
+    return;
+  }
+
+  std::vector<MdnsRecord::ConstRef> records =
+      record_handler->GetPtrRecords(clazz);
+
+  // skip "_services._dns-sd._udp." which was already checked for in above
+  // method and just use the domain.
+  const auto domain_it =
+      name.labels().begin() + kServiceEnumerationDomainLabels.size();
+  for (const MdnsRecord& record : records) {
+    // Skip the 2 label service name in the PTR record's name.
+    const auto record_it = record.name().labels().begin() + 2;
+    if (std::equal(domain_it, name.labels().end(), record_it,
+                   record.name().labels().end())) {
+      message->AddAnswer(MdnsRecord(name, DnsType::kPTR, record.dns_class(),
+                                    RecordType::kShared, record.ttl(),
+                                    PtrRecordRdata(record.name())));
+    }
+  }
+}
+
 }  // namespace
 
 MdnsResponder::MdnsResponder(RecordHandler* record_handler,
@@ -273,44 +325,60 @@ void MdnsResponder::OnMessageReceived(const MdnsMessage& message,
   const std::vector<MdnsRecord>& known_answers = message.answers();
 
   for (const auto& question : message.questions()) {
+    OSP_DVLOG << "\tProcessing mDNS Query for domain: '"
+              << question.name().ToString() << "', type: '"
+              << question.dns_type() << "'";
+
     // NSEC records should not be queried for.
     if (question.dns_type() == DnsType::kNSEC) {
       continue;
     }
 
+    // Only respond to queries for which one of the following is true:
+    // - This host is the sole owner of that domain.
+    // - A record corresponding to this question has been published.
+    // - The query is a service enumeration query.
+    const bool is_service_enumeration = IsServiceTypeEnumerationQuery(question);
     const bool is_exclusive_owner =
         ownership_handler_->IsDomainClaimed(question.name());
-    if (is_exclusive_owner ||
-        record_handler_->HasRecords(question.name(), question.dns_type(),
-                                    question.dns_class())) {
-      std::function<void(const MdnsMessage&)> send_response;
-      if (question.response_type() == ResponseType::kMulticast) {
-        send_response = [this](const MdnsMessage& message) {
-          sender_->SendMulticast(message);
-        };
-      } else {
-        OSP_DCHECK(question.response_type() == ResponseType::kUnicast);
-        send_response = [this, src](const MdnsMessage& message) {
-          sender_->SendMessage(message, src);
-        };
-      }
+    if (!is_service_enumeration && !is_exclusive_owner &&
+        !record_handler_->HasRecords(question.name(), question.dns_type(),
+                                     question.dns_class())) {
+      OSP_DVLOG << "\tmDNS Query processed and no relevant records found!";
+      continue;
+    } else if (is_service_enumeration) {
+      OSP_DVLOG << "\tmDNS Query is for service type enumeration!";
+    }
 
-      if (is_exclusive_owner) {
+    // Relevant records are published, so send them out using the response type
+    // dictated in the question.
+    std::function<void(const MdnsMessage&)> send_response;
+    if (question.response_type() == ResponseType::kMulticast) {
+      send_response = [this](const MdnsMessage& message) {
+        sender_->SendMulticast(message);
+      };
+    } else {
+      OSP_DCHECK(question.response_type() == ResponseType::kUnicast);
+      send_response = [this, src](const MdnsMessage& message) {
+        sender_->SendMessage(message, src);
+      };
+    }
+
+    // If this host is the exclusive owner, respond immediately. Else, there may
+    // be network contention if all hosts respond simultaneously, so delay the
+    // response as dictated by RFC 6762.
+    if (is_exclusive_owner) {
+      SendResponse(question, known_answers, send_response, is_exclusive_owner);
+    } else {
+      const auto delay = random_delay_->GetSharedRecordResponseDelay();
+      std::function<void()> response = [this, question, known_answers,
+                                        send_response, is_exclusive_owner]() {
         SendResponse(question, known_answers, send_response,
                      is_exclusive_owner);
-      } else {
-        const auto delay = random_delay_->GetSharedRecordResponseDelay();
-        std::function<void()> response = [this, question, known_answers,
-                                          send_response, is_exclusive_owner]() {
-          SendResponse(question, known_answers, send_response,
-                       is_exclusive_owner);
-        };
-        task_runner_->PostTaskWithDelay(response, delay);
-      }
+      };
+      task_runner_->PostTaskWithDelay(response, delay);
     }
   }
-
-  OSP_DVLOG << "\tmDNS Query processed!";
 }
 
 void MdnsResponder::SendResponse(
@@ -322,17 +390,28 @@ void MdnsResponder::SendResponse(
 
   MdnsMessage message(CreateMessageId(), MessageType::Response);
 
-  // NOTE: The exclusive ownership of this record cannot change before this
-  // method is called. Exclusive ownership cannot be gained for a record which
-  // has previously been published, and if this host is the exclusive owner then
-  // this method will have been called without any delay on the task runner
-  ApplyQueryResults(&message, record_handler_, question.name(), known_answers,
-                    question.dns_type(), question.dns_class(),
-                    is_exclusive_owner);
+  if (IsServiceTypeEnumerationQuery(question)) {
+    // This is a special case defined in RFC 6763 section 9, so handle it
+    // separately.
+    ApplyServiceTypeEnumerationResults(&message, record_handler_,
+                                       question.name(), question.dns_class());
+  } else {
+    // NOTE: The exclusive ownership of this record cannot change before this
+    // method is called. Exclusive ownership cannot be gained for a record which
+    // has previously been published, and if this host is the exclusive owner
+    // then this method will have been called without any delay on the task
+    // runner
+    ApplyQueryResults(&message, record_handler_, question.name(), known_answers,
+                      question.dns_type(), question.dns_class(),
+                      is_exclusive_owner);
+  }
 
   // Send the response only if it contains answers to the query.
   if (!message.answers().empty()) {
+    OSP_DVLOG << "\tmDNS Query processed and response sent!";
     send_response(message);
+  } else {
+    OSP_DVLOG << "\tmDNS Query processed and no response sent!";
   }
 }
 

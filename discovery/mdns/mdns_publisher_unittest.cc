@@ -53,6 +53,7 @@ class MockProbeManager : public MdnsProbeManager {
 
 class MdnsPublisherTesting : public MdnsPublisher {
  public:
+  using MdnsPublisher::GetPtrRecords;
   using MdnsPublisher::GetRecords;
   using MdnsPublisher::MdnsPublisher;
 
@@ -284,6 +285,7 @@ TEST_F(MdnsPublisherTest, PTRRecordRegistrationWorkflow) {
   ASSERT_EQ(records.size(), size_t{0});
   ASSERT_NE(record, record2);
   ASSERT_TRUE(records.empty());
+  ASSERT_EQ(publisher_.GetPtrRecords(DnsClass::kANY).size(), size_t{0});
 
   // Register a new record.
   EXPECT_CALL(sender_, SendMulticast(_))
@@ -294,12 +296,14 @@ TEST_F(MdnsPublisherTest, PTRRecordRegistrationWorkflow) {
   clock_.Advance(kAnnounceGoodbyeDelay);
   testing::Mock::VerifyAndClearExpectations(&sender_);
   CheckPublishedRecords(ptr_domain_, type, {record});
+  ASSERT_EQ(publisher_.GetPtrRecords(DnsClass::kANY).size(), size_t{1});
 
   // Re-register the same record.
   EXPECT_FALSE(publisher_.RegisterRecord(record).ok());
   clock_.Advance(kAnnounceGoodbyeDelay);
   testing::Mock::VerifyAndClearExpectations(&sender_);
   CheckPublishedRecords(ptr_domain_, type, {record});
+  ASSERT_EQ(publisher_.GetPtrRecords(DnsClass::kANY).size(), size_t{1});
 
   // Register a second record.
   EXPECT_CALL(sender_, SendMulticast(_))
@@ -310,6 +314,7 @@ TEST_F(MdnsPublisherTest, PTRRecordRegistrationWorkflow) {
   clock_.Advance(kAnnounceGoodbyeDelay);
   testing::Mock::VerifyAndClearExpectations(&sender_);
   CheckPublishedRecords(ptr_domain_, type, {record, record2});
+  ASSERT_EQ(publisher_.GetPtrRecords(DnsClass::kANY).size(), size_t{2});
 
   // Delete an existing record.
   EXPECT_CALL(sender_, SendMulticast(_))
@@ -320,12 +325,14 @@ TEST_F(MdnsPublisherTest, PTRRecordRegistrationWorkflow) {
   clock_.Advance(kAnnounceGoodbyeDelay);
   testing::Mock::VerifyAndClearExpectations(&sender_);
   CheckPublishedRecords(ptr_domain_, type, {record});
+  ASSERT_EQ(publisher_.GetPtrRecords(DnsClass::kANY).size(), size_t{1});
 
   // Delete a non-existing record.
   EXPECT_FALSE(publisher_.UnregisterRecord(record2).ok());
   clock_.Advance(kAnnounceGoodbyeDelay);
   testing::Mock::VerifyAndClearExpectations(&sender_);
   CheckPublishedRecords(ptr_domain_, type, {record});
+  ASSERT_EQ(publisher_.GetPtrRecords(DnsClass::kANY).size(), size_t{1});
 
   // Delete the last record
   EXPECT_CALL(sender_, SendMulticast(_))
@@ -336,6 +343,7 @@ TEST_F(MdnsPublisherTest, PTRRecordRegistrationWorkflow) {
   clock_.Advance(kAnnounceGoodbyeDelay);
   testing::Mock::VerifyAndClearExpectations(&sender_);
   CheckPublishedRecords(ptr_domain_, type, {});
+  ASSERT_EQ(publisher_.GetPtrRecords(DnsClass::kANY).size(), size_t{0});
 }
 
 TEST_F(MdnsPublisherTest, RegisteringUnownedRecordsFail) {
