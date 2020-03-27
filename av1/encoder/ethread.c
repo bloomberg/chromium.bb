@@ -425,7 +425,7 @@ static AOM_INLINE void create_enc_workers(AV1_COMP *cpi, int num_workers) {
 
       // Set up pc_tree.
       thread_data->td->pc_tree = NULL;
-      av1_setup_pc_tree(cm, thread_data->td);
+      av1_setup_pc_tree(cpi, thread_data->td);
 
       CHECK_MEM_ERROR(cm, thread_data->td->above_pred_buf,
                       (uint8_t *)aom_memalign(

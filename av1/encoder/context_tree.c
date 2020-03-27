@@ -135,12 +135,12 @@ static AOM_INLINE void free_tree_contexts(PC_TREE *tree, const int num_planes) {
 // partition level. There are contexts for none, horizontal, vertical, and
 // split.  Along with a block_size value and a selected block_size which
 // represents the state of our search.
-void av1_setup_pc_tree(AV1_COMMON *cm, ThreadData *td) {
-  int i, j;
+void av1_setup_pc_tree(AV1_COMP *const cpi, ThreadData *td) {
+  AV1_COMMON *const cm = &cpi->common;
+  int i, j, stat_generation_stage = is_stat_generation_stage(cpi);
   const int tree_nodes_inc = 1024;
-  const int leaf_factor = 4;
-  const int leaf_nodes = 256 * leaf_factor;
-  const int tree_nodes = tree_nodes_inc + 256 + 64 + 16 + 4 + 1;
+  const int tree_nodes =
+      stat_generation_stage ? 1 : (tree_nodes_inc + 256 + 64 + 16 + 4 + 1);
   int pc_tree_index = 0;
   PC_TREE *this_pc;
   PC_TREE_SHARED_BUFFERS shared_bufs;
@@ -165,24 +165,38 @@ void av1_setup_pc_tree(AV1_COMMON *cm, ThreadData *td) {
     shared_bufs.dqcoeff_buf[i] = td->tree_dqcoeff_buf[i];
   }
 
-  // Sets up all the leaf nodes in the tree.
-  for (pc_tree_index = 0; pc_tree_index < leaf_nodes; ++pc_tree_index) {
-    PC_TREE *const tree = &td->pc_tree[pc_tree_index];
-    tree->block_size = square[0];
-    alloc_tree_contexts(cm, tree, 16, 1, &shared_bufs);
-  }
+  if (!stat_generation_stage) {
+    const int leaf_factor = 4;
+    const int leaf_nodes = 256 * leaf_factor;
 
-  // Each node has 4 leaf nodes, fill each block_size level of the tree
-  // from leafs to the root.
-  for (nodes = leaf_nodes >> 2; nodes > 0; nodes >>= 2) {
-    for (i = 0; i < nodes; ++i) {
+    // Sets up all the leaf nodes in the tree.
+    for (pc_tree_index = 0; pc_tree_index < leaf_nodes; ++pc_tree_index) {
       PC_TREE *const tree = &td->pc_tree[pc_tree_index];
-      alloc_tree_contexts(cm, tree, 16 << (2 * square_index), 0, &shared_bufs);
-      tree->block_size = square[square_index];
-      for (j = 0; j < 4; j++) tree->split[j] = this_pc++;
-      ++pc_tree_index;
+      tree->block_size = square[0];
+      alloc_tree_contexts(cm, tree, 16, 1, &shared_bufs);
     }
-    ++square_index;
+
+    // Each node has 4 leaf nodes, fill each block_size level of the tree
+    // from leafs to the root.
+    for (nodes = leaf_nodes >> 2; nodes > 0; nodes >>= 2) {
+      for (i = 0; i < nodes; ++i) {
+        PC_TREE *const tree = &td->pc_tree[pc_tree_index];
+        alloc_tree_contexts(cm, tree, 16 << (2 * square_index), 0,
+                            &shared_bufs);
+        tree->block_size = square[square_index];
+        for (j = 0; j < 4; j++) tree->split[j] = this_pc++;
+        ++pc_tree_index;
+      }
+      ++square_index;
+    }
+  } else {
+    // Allocation for firstpass/LAP stage
+    // TODO(Mufaddal): refactor square_index to use a common block_size macro
+    // from firstpass.c
+    PC_TREE *const tree = &td->pc_tree[pc_tree_index];
+    square_index = 2;
+    alloc_tree_contexts(cm, tree, 16 << (2 * square_index), 1, &shared_bufs);
+    tree->block_size = square[square_index];
   }
 
   // Set up the root node for the largest superblock size
@@ -200,10 +214,13 @@ void av1_setup_pc_tree(AV1_COMMON *cm, ThreadData *td) {
   }
 }
 
-void av1_free_pc_tree(ThreadData *td, const int num_planes) {
+void av1_free_pc_tree(const AV1_COMP *const cpi, ThreadData *td,
+                      const int num_planes) {
+  int stat_generation_stage = is_stat_generation_stage(cpi);
   if (td->pc_tree != NULL) {
     const int tree_nodes_inc = 1024;
-    const int tree_nodes = tree_nodes_inc + 256 + 64 + 16 + 4 + 1;
+    const int tree_nodes =
+        stat_generation_stage ? 1 : (tree_nodes_inc + 256 + 64 + 16 + 4 + 1);
     for (int i = 0; i < tree_nodes; ++i) {
       free_tree_contexts(&td->pc_tree[i], num_planes);
     }
