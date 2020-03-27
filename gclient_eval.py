@@ -605,6 +605,7 @@ def _UpdateAstString(tokens, node, value):
   quote_char = ''
   if isinstance(node, ast.Str):
     quote_char = tokens[position][1][0]
+    value = value.encode('unicode_escape').decode('utf-8')
   tokens[position][1] = quote_char + value + quote_char
   node.s = value
 
@@ -759,12 +760,13 @@ def SetRevision(gclient_dict, dep_name, new_revision):
     if isinstance(node, ast.BinOp):
       node = node.right
 
-    token = tokens[node.lineno, node.col_offset][1][1:-1]
-    if isinstance(node, ast.Str) and token != node.s:
-      raise ValueError(
-          'Can\'t update value for %s. Multiline strings and implicitly '
-          'concatenated strings are not supported.\n'
-          'Consider reformatting the DEPS file.' % dep_key)
+    if isinstance(node, ast.Str):
+      token = _gclient_eval(tokens[node.lineno, node.col_offset][1])
+      if token != node.s:
+        raise ValueError(
+            'Can\'t update value for %s. Multiline strings and implicitly '
+            'concatenated strings are not supported.\n'
+            'Consider reformatting the DEPS file.' % dep_key)
 
 
     if not isinstance(node, ast.Call) and not isinstance(node, ast.Str):

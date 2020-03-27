@@ -663,6 +663,19 @@ class RevisionTest(unittest.TestCase):
     ]
     self.assert_gets_and_sets_revision(before, after)
 
+  def test_revision_windows_local_path(self):
+    before = [
+        'deps = {',
+        '  "src/dep": "file:///C:\\\\path.git@deadbeef",',
+        '}',
+    ]
+    after = [
+        'deps = {',
+        '  "src/dep": "file:///C:\\\\path.git@deadfeed",',
+        '}',
+    ]
+    self.assert_gets_and_sets_revision(before, after)
+
   def test_revision_multiline_strings(self):
     deps = [
         'deps = {',
