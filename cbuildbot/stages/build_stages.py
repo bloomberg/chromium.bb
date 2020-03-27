@@ -671,7 +671,8 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
     # packages causing races & build failures.
     clean_build = (
         self._run.config.build_type == constants.CANARY_TYPE or
-        self._run.config.build_type == constants.FULL_TYPE)
+        self._run.config.build_type == constants.FULL_TYPE or
+        self._run.config.build_type == constants.TOOLCHAIN_TYPE)
 
     # Set property to specify bisection builder job to run for Findit.
     logging.PrintKitchenSetBuildProperty(
