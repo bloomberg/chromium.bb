@@ -5633,6 +5633,8 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
 
   if (!is_stat_generation_stage(cpi) && av1_use_hash_me(cpi) &&
       !cpi->sf.rt_sf.use_nonrd_pick_mode) {
+    // TODO(any): move this outside of the recoding loop to avoid recalculating
+    // the hash table.
     // add to hash table
     const int pic_width = cpi->source->y_crop_width;
     const int pic_height = cpi->source->y_crop_height;
@@ -5652,7 +5654,8 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
       }
     }
 
-    av1_hash_table_create(&cm->cur_frame->hash_table);
+    av1_hash_table_init(&x->intrabc_hash_table, x);
+    av1_hash_table_create(&x->intrabc_hash_table);
     av1_generate_block_2x2_hash_value(cpi->source, block_hash_values[0],
                                       is_block_same[0], &cpi->td.mb);
     // Hash data generated for screen contents is used for intraBC ME
@@ -5667,7 +5670,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
           is_block_same[dst_idx], &cpi->td.mb);
       if (size >= min_alloc_size) {
         av1_add_to_hash_map_by_row_with_precal_data(
-            &cm->cur_frame->hash_table, block_hash_values[dst_idx],
+            &x->intrabc_hash_table, block_hash_values[dst_idx],
             is_block_same[dst_idx][2], pic_width, pic_height, size);
       }
     }
@@ -5972,6 +5975,11 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
         cpi->switchable_interp_probs[update_type][i][j] = prob;
       }
     }
+  }
+
+  if (!is_stat_generation_stage(cpi) && av1_use_hash_me(cpi) &&
+      !cpi->sf.rt_sf.use_nonrd_pick_mode) {
+    av1_hash_table_destroy(&x->intrabc_hash_table);
   }
 }
 

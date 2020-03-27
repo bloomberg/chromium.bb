@@ -98,9 +98,6 @@ void av1_hash_table_init(hash_table *p_hash_table, MACROBLOCK *x) {
     x->g_crc_initialized = 1;
   }
   p_hash_table->p_lookup_table = NULL;
-#if CONFIG_DEBUG
-  p_hash_table->has_content = 0;
-#endif
 }
 
 void av1_hash_table_clear_all(hash_table *p_hash_table) {
@@ -114,18 +111,12 @@ void av1_hash_table_clear_all(hash_table *p_hash_table) {
       p_hash_table->p_lookup_table[i] = NULL;
     }
   }
-#if CONFIG_DEBUG
-  p_hash_table->has_content = 0;
-#endif
 }
 
 void av1_hash_table_destroy(hash_table *p_hash_table) {
   av1_hash_table_clear_all(p_hash_table);
   aom_free(p_hash_table->p_lookup_table);
   p_hash_table->p_lookup_table = NULL;
-#if CONFIG_DEBUG
-  p_hash_table->has_content = 0;
-#endif
 }
 
 void av1_hash_table_create(hash_table *p_hash_table) {
@@ -137,9 +128,6 @@ void av1_hash_table_create(hash_table *p_hash_table) {
       (Vector **)aom_malloc(sizeof(p_hash_table->p_lookup_table[0]) * kMaxAddr);
   memset(p_hash_table->p_lookup_table, 0,
          sizeof(p_hash_table->p_lookup_table[0]) * kMaxAddr);
-#if CONFIG_DEBUG
-  p_hash_table->has_content = 0;
-#endif
 }
 
 static void hash_table_add_to_table(hash_table *p_hash_table,
@@ -328,9 +316,6 @@ void av1_add_to_hash_map_by_row_with_precal_data(hash_table *p_hash_table,
   assert(add_value >= 0);
   add_value <<= kSrcBits;
   const int crc_mask = (1 << kSrcBits) - 1;
-#if CONFIG_DEBUG
-  p_hash_table->has_content = 1;
-#endif
 
   for (int x_pos = 0; x_pos < x_end; x_pos++) {
     for (int y_pos = 0; y_pos < y_end; y_pos++) {

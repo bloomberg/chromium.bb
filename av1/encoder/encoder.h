@@ -1375,14 +1375,6 @@ static INLINE int av1_use_hash_me(const AV1_COMP *const cpi) {
           frame_is_intra_only(&cpi->common));
 }
 
-static INLINE hash_table *av1_get_ref_frame_hash_map(
-    const AV1_COMMON *cm, MV_REFERENCE_FRAME ref_frame) {
-  const int map_idx = get_ref_frame_map_idx(cm, ref_frame);
-  RefCntBuffer *buf =
-      (map_idx != INVALID_IDX) ? cm->ref_frame_map[map_idx] : NULL;
-  return buf ? &buf->hash_table : NULL;
-}
-
 static INLINE const YV12_BUFFER_CONFIG *get_ref_frame_yv12_buf(
     const AV1_COMMON *const cm, MV_REFERENCE_FRAME ref_frame) {
   const RefCntBuffer *const buf = get_ref_frame_buf(cm, ref_frame);

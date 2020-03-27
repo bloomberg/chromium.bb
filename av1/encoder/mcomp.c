@@ -1543,7 +1543,7 @@ void av1_intrabc_hash_search(const AV1_COMP *cpi, MACROBLOCK *x,
     int best_hash_cost = INT_MAX;
 
     // for the hashMap
-    hash_table *ref_frame_hash = &cpi->common.cur_frame->hash_table;
+    hash_table *ref_frame_hash = &x->intrabc_hash_table;
 
     av1_get_block_hash_value(what, what_stride, block_width, &hash_value1,
                              &hash_value2, is_cur_buf_hbd(&x->e_mbd), x);

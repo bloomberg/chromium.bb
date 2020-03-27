@@ -3455,7 +3455,6 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf, BufferPool *const pool,
 
 void av1_remove_compressor(AV1_COMP *cpi) {
   AV1_COMMON *cm;
-  unsigned int i;
   int t;
 
   if (!cpi) return;
@@ -3621,9 +3620,6 @@ void av1_remove_compressor(AV1_COMP *cpi) {
 #endif  // CONFIG_INTERNAL_STATS
 
   av1_remove_common(cm);
-  for (i = 0; i < FRAME_BUFFERS; ++i) {
-    av1_hash_table_destroy(&cm->buffer_pool->frame_bufs[i].hash_table);
-  }
 #if CONFIG_HTB_TRELLIS
   if (cpi->sf.use_hash_based_trellis) hbt_destroy();
 #endif  // CONFIG_HTB_TRELLIS
@@ -4266,11 +4262,6 @@ static void init_ref_frame_bufs(AV1_COMP *cpi) {
   }
   for (i = 0; i < FRAME_BUFFERS; ++i) {
     pool->frame_bufs[i].ref_count = 0;
-  }
-  if (cm->seq_params.force_screen_content_tools) {
-    for (i = 0; i < FRAME_BUFFERS; ++i) {
-      av1_hash_table_init(&pool->frame_bufs[i].hash_table, &cpi->td.mb);
-    }
   }
 }
 
@@ -5248,7 +5239,6 @@ static void set_encoding_params_for_screen_content(AV1_COMP *cpi,
   cpi->is_screen_content_type = 1;
   cpi->sf.part_sf.partition_search_type = FIXED_PARTITION;
   cpi->sf.part_sf.always_this_block_size = BLOCK_32X32;
-  av1_hash_table_create(&cm->cur_frame->hash_table);
 }
 
 // Determines whether to use screen content tools for the key frame group.
@@ -5337,8 +5327,6 @@ static void determine_sc_tools_with_encoding(AV1_COMP *cpi, const int q_orig) {
         allow_intrabc_orig_decision, is_screen_content_type_orig_decision, pass,
         projected_size_pass, psnr);
   }
-
-  av1_hash_table_destroy(&cm->cur_frame->hash_table);
 
   // Set partition speed feature back.
   cpi->sf.part_sf.partition_search_type = partition_search_type_orig;
@@ -6192,20 +6180,6 @@ static void set_mb_ssim_rdmult_scaling(AV1_COMP *cpi) {
   }
 }
 
-#if CONFIG_DEBUG
-static int hash_me_has_at_most_two_refs(RefCntBuffer *frame_bufs) {
-  int total_count = 0;
-  for (int frame_idx = 0; frame_idx < FRAME_BUFFERS; ++frame_idx) {
-    if (frame_bufs[frame_idx].hash_table.has_content > 1) {
-      return 0;
-    }
-    total_count += frame_bufs[frame_idx].hash_table.has_content;
-  }
-
-  return total_count <= 2;
-}
-#endif
-
 extern void av1_print_frame_contexts(const FRAME_CONTEXT *fc,
                                      const char *filename);
 
@@ -6298,11 +6272,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   } else {
     cpi->common.features.cur_frame_force_integer_mv = 0;
   }
-
-#if CONFIG_DEBUG
-  assert(hash_me_has_at_most_two_refs(cm->buffer_pool->frame_bufs) &&
-         "Hash-me is leaking memory!");
-#endif
 
   // Set default state for segment based loop filter update flags.
   cm->lf.mode_ref_delta_update = 0;

@@ -314,6 +314,7 @@ struct macroblock {
   // [first hash/second hash]
   // [two buffers used ping-pong]
   uint32_t *hash_value_buffer[2][2];
+  hash_table intrabc_hash_table;
 
   CRC_CALCULATOR crc_calculator1;
   CRC_CALCULATOR crc_calculator2;
