@@ -1110,19 +1110,19 @@ static void alloc_compressor_data(AV1_COMP *cpi) {
   alloc_context_buffers_ext(cpi);
 
   aom_free(cpi->tile_tok[0][0]);
+  aom_free(cpi->tplist[0][0]);
 
-  {
+  if (!is_stat_generation_stage(cpi)) {
     unsigned int tokens =
         get_token_alloc(cm->mi_params.mb_rows, cm->mi_params.mb_cols,
                         MAX_SB_SIZE_LOG2, num_planes);
     CHECK_MEM_ERROR(cm, cpi->tile_tok[0][0],
                     aom_calloc(tokens, sizeof(*cpi->tile_tok[0][0])));
-  }
-  aom_free(cpi->tplist[0][0]);
 
-  CHECK_MEM_ERROR(cm, cpi->tplist[0][0],
-                  aom_calloc(sb_rows * MAX_TILE_ROWS * MAX_TILE_COLS,
-                             sizeof(*cpi->tplist[0][0])));
+    CHECK_MEM_ERROR(cm, cpi->tplist[0][0],
+                    aom_calloc(sb_rows * MAX_TILE_ROWS * MAX_TILE_COLS,
+                               sizeof(*cpi->tplist[0][0])));
+  }
 
   av1_setup_pc_tree(cpi, &cpi->td);
 }
