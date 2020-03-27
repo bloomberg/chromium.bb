@@ -64,11 +64,12 @@ ErrorOr<std::unique_ptr<DiscoveryState>> StartDiscovery(
 
   // TODO(jophba): update after ServiceInfo update patch lands.
   ServiceInfo info;
+  info.port = kCastTlsPort;
   if (interface.GetIpAddressV4()) {
-    info.v4_endpoint = IPEndpoint{interface.GetIpAddressV4(), kCastTlsPort};
+    info.v4_address = interface.GetIpAddressV4();
   }
   if (interface.GetIpAddressV6()) {
-    info.v6_endpoint = IPEndpoint{interface.GetIpAddressV6(), kCastTlsPort};
+    info.v6_address = interface.GetIpAddressV6();
   }
 
   OSP_CHECK(std::any_of(interface.hardware_address.begin(),

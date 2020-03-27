@@ -150,7 +150,8 @@ class DiscoveryE2ETest : public testing::Test {
  protected:
   ServiceInfo GetInfoV4() {
     ServiceInfo hosted_service;
-    hosted_service.v4_endpoint = IPEndpoint{{10, 0, 0, 1}, 25252};
+    hosted_service.v4_address = IPAddress{10, 0, 0, 1};
+    hosted_service.port = 25252;
     hosted_service.unique_id = "id1";
     hosted_service.model_name = "openscreen-ModelV4";
     hosted_service.friendly_name = "DemoV4!";
@@ -159,7 +160,8 @@ class DiscoveryE2ETest : public testing::Test {
 
   ServiceInfo GetInfoV6() {
     ServiceInfo hosted_service;
-    hosted_service.v6_endpoint = IPEndpoint{{1, 2, 3, 4, 5, 6, 7, 8}, 25253};
+    hosted_service.v6_address = IPAddress{1, 2, 3, 4, 5, 6, 7, 8};
+    hosted_service.port = 25252;
     hosted_service.unique_id = "id2";
     hosted_service.model_name = "openscreen-ModelV6";
     hosted_service.friendly_name = "DemoV6!";
@@ -168,8 +170,9 @@ class DiscoveryE2ETest : public testing::Test {
 
   ServiceInfo GetInfoV4V6() {
     ServiceInfo hosted_service;
-    hosted_service.v4_endpoint = IPEndpoint{{10, 0, 0, 2}, 25254};
-    hosted_service.v6_endpoint = IPEndpoint{{1, 2, 3, 4, 5, 6, 7, 9}, 25255};
+    hosted_service.v4_address = IPAddress{10, 0, 0, 2};
+    hosted_service.v6_address = IPAddress{1, 2, 3, 4, 5, 6, 7, 9};
+    hosted_service.port = 25254;
     hosted_service.unique_id = "id3";
     hosted_service.model_name = "openscreen-ModelV4andV6";
     hosted_service.friendly_name = "DemoV4andV6!";

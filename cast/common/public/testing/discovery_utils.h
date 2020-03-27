@@ -17,8 +17,9 @@ namespace cast {
 // Constants used for testing.
 static const IPAddress kAddressV4(192, 168, 0, 0);
 static const IPAddress kAddressV6(1, 2, 3, 4, 5, 6, 7, 8);
-static const IPEndpoint kEndpointV4{kAddressV4, 0};
-static const IPEndpoint kEndpointV6{kAddressV6, 0};
+static constexpr uint16_t kPort = 80;
+static const IPEndpoint kEndpointV4{kAddressV4, kPort};
+static const IPEndpoint kEndpointV6{kAddressV6, kPort};
 static constexpr char kTestUniqueId[] = "1234";
 static constexpr char kFriendlyName[] = "Friendly Name 123";
 static constexpr char kModelName[] = "Openscreen";

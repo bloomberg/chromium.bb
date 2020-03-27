@@ -31,7 +31,8 @@ class CastPlatformClientTest : public ::testing::Test {
     router_.TakeSocket(&mock_error_handler_,
                        std::move(fake_cast_socket_pair_.socket));
 
-    receiver_.v4_endpoint = IPEndpoint{{192, 168, 0, 17}, 4434};
+    receiver_.v4_address = IPAddress{192, 168, 0, 17};
+    receiver_.port = 4434;
     receiver_.unique_id = "deviceId1";
     platform_client_.AddOrUpdateReceiver(receiver_, socket_->socket_id());
   }

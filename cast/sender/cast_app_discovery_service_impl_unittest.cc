@@ -29,7 +29,8 @@ class CastAppDiscoveryServiceImplTest : public ::testing::Test {
     router_.TakeSocket(&mock_error_handler_,
                        std::move(fake_cast_socket_pair_.socket));
 
-    receiver_.v4_endpoint = fake_cast_socket_pair_.remote_endpoint;
+    receiver_.v4_address = fake_cast_socket_pair_.remote_endpoint.address;
+    receiver_.port = fake_cast_socket_pair_.remote_endpoint.port;
     receiver_.unique_id = "deviceId1";
     receiver_.friendly_name = "Some Name";
   }
@@ -254,7 +255,8 @@ TEST_F(CastAppDiscoveryServiceImplTest,
   router_.TakeSocket(&mock_error_handler_, std::move(fake_sockets2.socket));
   ServiceInfo receiver2;
   receiver2.unique_id = "deviceId2";
-  receiver2.v4_endpoint = fake_sockets2.remote_endpoint;
+  receiver2.v4_address = fake_sockets2.remote_endpoint.address;
+  receiver2.port = fake_sockets2.remote_endpoint.port;
 
   // Adding new receiver causes availability requests for both apps to be sent
   // to the new receiver.

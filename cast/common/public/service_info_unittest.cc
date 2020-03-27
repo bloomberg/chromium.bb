@@ -21,10 +21,11 @@ TEST(ServiceInfoTests, ConvertValidFromDnsSd) {
   ErrorOr<ServiceInfo> info = DnsSdRecordToServiceInfo(record);
   ASSERT_TRUE(info.is_value());
   EXPECT_EQ(info.value().unique_id, kTestUniqueId);
-  EXPECT_TRUE(info.value().v4_endpoint);
-  EXPECT_EQ(info.value().v4_endpoint, kEndpointV4);
-  EXPECT_TRUE(info.value().v6_endpoint);
-  EXPECT_EQ(info.value().v6_endpoint, kEndpointV6);
+  EXPECT_TRUE(info.value().v4_address);
+  EXPECT_EQ(info.value().v4_address, kAddressV4);
+  EXPECT_TRUE(info.value().v6_address);
+  EXPECT_EQ(info.value().v6_address, kAddressV6);
+  EXPECT_EQ(info.value().port, kPort);
   EXPECT_EQ(info.value().unique_id, kTestUniqueId);
   EXPECT_EQ(info.value().protocol_version, kTestVersion);
   EXPECT_EQ(info.value().capabilities, kCapabilitiesParsed);
@@ -38,9 +39,10 @@ TEST(ServiceInfoTests, ConvertValidFromDnsSd) {
   info = DnsSdRecordToServiceInfo(record);
   ASSERT_TRUE(info.is_value());
   EXPECT_EQ(info.value().unique_id, kTestUniqueId);
-  EXPECT_TRUE(info.value().v4_endpoint);
-  EXPECT_EQ(info.value().v4_endpoint, kEndpointV4);
-  EXPECT_FALSE(info.value().v6_endpoint);
+  EXPECT_TRUE(info.value().v4_address);
+  EXPECT_EQ(info.value().v4_address, kAddressV4);
+  EXPECT_FALSE(info.value().v6_address);
+  EXPECT_EQ(info.value().port, kPort);
   EXPECT_EQ(info.value().unique_id, kTestUniqueId);
   EXPECT_EQ(info.value().protocol_version, kTestVersion);
   EXPECT_EQ(info.value().capabilities, kCapabilitiesParsed);
@@ -54,9 +56,9 @@ TEST(ServiceInfoTests, ConvertValidFromDnsSd) {
   info = DnsSdRecordToServiceInfo(record);
   ASSERT_TRUE(info.is_value());
   EXPECT_EQ(info.value().unique_id, kTestUniqueId);
-  EXPECT_FALSE(info.value().v4_endpoint);
-  EXPECT_TRUE(info.value().v6_endpoint);
-  EXPECT_EQ(info.value().v6_endpoint, kEndpointV6);
+  EXPECT_FALSE(info.value().v4_address);
+  EXPECT_TRUE(info.value().v6_address);
+  EXPECT_EQ(info.value().v6_address, kAddressV6);
   EXPECT_EQ(info.value().unique_id, kTestUniqueId);
   EXPECT_EQ(info.value().protocol_version, kTestVersion);
   EXPECT_EQ(info.value().capabilities, kCapabilitiesParsed);
@@ -112,8 +114,9 @@ TEST(ServiceInfoTests, ConvertInvalidFromDnsSd) {
 
 TEST(ServiceInfoTests, ConvertValidToDnsSd) {
   ServiceInfo info;
-  info.v4_endpoint = kEndpointV4;
-  info.v6_endpoint = kEndpointV6;
+  info.v4_address = kAddressV4;
+  info.v6_address = kAddressV6;
+  info.port = kPort;
   info.unique_id = kTestUniqueId;
   info.protocol_version = kTestVersion;
   info.capabilities = kCapabilitiesParsed;
@@ -133,7 +136,7 @@ TEST(ServiceInfoTests, ConvertValidToDnsSd) {
   CompareTxtInt(record.txt(), kVersionId, kTestVersion);
   CompareTxtInt(record.txt(), kStatusId, kStatus);
 
-  info.v6_endpoint = IPEndpoint{};
+  info.v6_address = IPAddress{};
   record = ServiceInfoToDnsSdRecord(info);
   EXPECT_TRUE(record.address_v4());
   EXPECT_EQ(record.address_v4(), kEndpointV4);
@@ -145,8 +148,8 @@ TEST(ServiceInfoTests, ConvertValidToDnsSd) {
   CompareTxtInt(record.txt(), kVersionId, kTestVersion);
   CompareTxtInt(record.txt(), kStatusId, kStatus);
 
-  info.v6_endpoint = kEndpointV6;
-  info.v4_endpoint = IPEndpoint{};
+  info.v6_address = kAddressV6;
+  info.v4_address = IPAddress{};
   record = ServiceInfoToDnsSdRecord(info);
   EXPECT_FALSE(record.address_v4());
   EXPECT_TRUE(record.address_v6());
@@ -172,8 +175,9 @@ TEST(ServiceInfoTests, ConvertInvalidToDnsSd) {
 
 TEST(ServiceInfoTests, IdentityChecks) {
   ServiceInfo info;
-  info.v4_endpoint = kEndpointV4;
-  info.v6_endpoint = kEndpointV6;
+  info.v4_address = kAddressV4;
+  info.v6_address = kAddressV6;
+  info.port = kPort;
   info.unique_id = kTestUniqueId;
   info.protocol_version = kTestVersion;
   info.capabilities = kCapabilitiesParsed;
