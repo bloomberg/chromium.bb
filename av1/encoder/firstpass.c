@@ -471,6 +471,269 @@ static int firstpass_intra_prediction(
   return this_intra_error;
 }
 
+// Returns the sum of square error between source and reference blocks.
+static int get_prediction_error_bitdepth(const int is_high_bitdepth,
+                                         const int bitdepth,
+                                         const BLOCK_SIZE block_size,
+                                         const struct buf_2d *src,
+                                         const struct buf_2d *ref) {
+  (void)is_high_bitdepth;
+  (void)bitdepth;
+#if CONFIG_AV1_HIGHBITDEPTH
+  if (is_high_bitdepth) {
+    return highbd_get_prediction_error(block_size, src, ref, bitdepth);
+  }
+#endif  // CONFIG_AV1_HIGHBITDEPTH
+  return get_prediction_error(block_size, src, ref);
+}
+
+// Accumulates motion vector stats.
+// Modifies member variables of "stats".
+static void accumulate_mv_stats(const MV best_mv, const FULLPEL_MV mv,
+                                const int mb_row, const int mb_col,
+                                const int mb_rows, const int mb_cols,
+                                MV *last_mv, FRAME_STATS *stats) {
+  if (is_zero_mv(&best_mv)) return;
+
+  ++stats->mv_count;
+  // Non-zero vector, was it different from the last non zero vector?
+  if (!is_equal_mv(&best_mv, last_mv)) ++stats->new_mv_count;
+  *last_mv = best_mv;
+
+  // Does the row vector point inwards or outwards?
+  if (mb_row < mb_rows / 2) {
+    if (mv.row > 0) {
+      --stats->sum_in_vectors;
+    } else if (mv.row < 0) {
+      ++stats->sum_in_vectors;
+    }
+  } else if (mb_row > mb_rows / 2) {
+    if (mv.row > 0) {
+      ++stats->sum_in_vectors;
+    } else if (mv.row < 0) {
+      --stats->sum_in_vectors;
+    }
+  }
+
+  // Does the col vector point inwards or outwards?
+  if (mb_col < mb_cols / 2) {
+    if (mv.col > 0) {
+      --stats->sum_in_vectors;
+    } else if (mv.col < 0) {
+      ++stats->sum_in_vectors;
+    }
+  } else if (mb_col > mb_cols / 2) {
+    if (mv.col > 0) {
+      ++stats->sum_in_vectors;
+    } else if (mv.col < 0) {
+      --stats->sum_in_vectors;
+    }
+  }
+}
+
+#define LOW_MOTION_ERROR_THRESH 25
+// Computes and returns the inter prediction error from the last frame.
+// Computes inter prediction errors from the golden and alt ref frams and
+// Updates stats accordingly.
+// Inputs:
+//   cpi: the encoder setting. Only a few params in it will be used.
+//   last_frame: the frame buffer of the last frame.
+//   golden_frame: the frame buffer of the golden frame.
+//   alt_ref_frame: the frame buffer of the alt ref frame.
+//   mb_row: row index in the unit of first pass block size.
+//   mb_col: column index in the unit of first pass block size.
+//   recon_yoffset: the y offset of the reconstructed  frame buffer,
+//                  indicating the starting point of the current block.
+//   recont_uvoffset: the u/v offset of the reconstructed frame buffer,
+//                    indicating the starting point of the current block.
+//   src_yoffset: the y offset of the source frame buffer.
+//   alt_ref_frame_offset: the y offset of the alt ref frame buffer.
+//   fp_block_size: first pass block size.
+//   this_intra_error: the intra prediction error of this block.
+//   raw_motion_err_counts: the count of raw motion vectors.
+//   raw_motion_err_list: the array that records the raw motion error.
+//   best_ref_mv: best reference mv found so far.
+//   last_mv: last mv.
+//   stats: frame encoding stats.
+//  Modifies:
+//    raw_motion_err_list
+//    best_ref_mv
+//    last_mv
+//    stats: many member params in it.
+//  Returns:
+//    this_inter_error
+static int firstpass_inter_prediction(
+    AV1_COMP *cpi, const YV12_BUFFER_CONFIG *const last_frame,
+    const YV12_BUFFER_CONFIG *const golden_frame,
+    const YV12_BUFFER_CONFIG *const alt_ref_frame, const int mb_row,
+    const int mb_col, const int recon_yoffset, const int recon_uvoffset,
+    const int src_yoffset, const int alt_ref_frame_yoffset,
+    const BLOCK_SIZE fp_block_size, const int this_intra_error,
+    const int raw_motion_err_counts, int *raw_motion_err_list, MV *best_ref_mv,
+    MV *last_mv, FRAME_STATS *stats) {
+  int this_inter_error = this_intra_error;
+  AV1_COMMON *const cm = &cpi->common;
+  const CommonModeInfoParams *const mi_params = &cm->mi_params;
+  CurrentFrame *const current_frame = &cm->current_frame;
+  MACROBLOCK *const x = &cpi->td.mb;
+  MACROBLOCKD *const xd = &x->e_mbd;
+  const int is_high_bitdepth = is_cur_buf_hbd(xd);
+  const int bitdepth = xd->bd;
+  const int mb_scale = mi_size_wide[fp_block_size];
+  const BLOCK_SIZE bsize = get_bsize(mi_params, mb_row, mb_col);
+  const int fp_block_size_height = block_size_wide[fp_block_size];
+  // Assume 0,0 motion with no mv overhead.
+  FULLPEL_MV mv = kZeroFullMv;
+  FULLPEL_MV tmp_mv = kZeroFullMv;
+  xd->plane[0].pre[0].buf = last_frame->y_buffer + recon_yoffset;
+  // Set up limit values for motion vectors to prevent them extending
+  // outside the UMV borders.
+  av1_set_mv_col_limits(mi_params, &x->mv_limits, (mb_col << 2),
+                        (fp_block_size_height >> MI_SIZE_LOG2),
+                        cpi->oxcf.border_in_pixels);
+
+  int motion_error =
+      get_prediction_error_bitdepth(is_high_bitdepth, bitdepth, bsize,
+                                    &x->plane[0].src, &xd->plane[0].pre[0]);
+
+  // Compute the motion error of the 0,0 motion using the last source
+  // frame as the reference. Skip the further motion search on
+  // reconstructed frame if this error is small.
+  struct buf_2d unscaled_last_source_buf_2d;
+  unscaled_last_source_buf_2d.buf =
+      cpi->unscaled_last_source->y_buffer + src_yoffset;
+  unscaled_last_source_buf_2d.stride = cpi->unscaled_last_source->y_stride;
+  const int raw_motion_error = get_prediction_error_bitdepth(
+      is_high_bitdepth, bitdepth, bsize, &x->plane[0].src,
+      &unscaled_last_source_buf_2d);
+  raw_motion_err_list[raw_motion_err_counts] = raw_motion_error;
+
+  // TODO(pengchong): Replace the hard-coded threshold
+  if (raw_motion_error > LOW_MOTION_ERROR_THRESH) {
+    // Test last reference frame using the previous best mv as the
+    // starting point (best reference) for the search.
+    first_pass_motion_search(cpi, x, best_ref_mv, &mv, &motion_error);
+
+    // If the current best reference mv is not centered on 0,0 then do a
+    // 0,0 based search as well.
+    if (!is_zero_mv(best_ref_mv)) {
+      int tmp_err = INT_MAX;
+      first_pass_motion_search(cpi, x, &kZeroMv, &tmp_mv, &tmp_err);
+
+      if (tmp_err < motion_error) {
+        motion_error = tmp_err;
+        mv = tmp_mv;
+      }
+    }
+
+    // Motion search in 2nd reference frame.
+    int gf_motion_error = motion_error;
+    if ((current_frame->frame_number > 1) && golden_frame != NULL) {
+      // Assume 0,0 motion with no mv overhead.
+      xd->plane[0].pre[0].buf = golden_frame->y_buffer + recon_yoffset;
+      xd->plane[0].pre[0].stride = golden_frame->y_stride;
+      gf_motion_error =
+          get_prediction_error_bitdepth(is_high_bitdepth, bitdepth, bsize,
+                                        &x->plane[0].src, &xd->plane[0].pre[0]);
+      first_pass_motion_search(cpi, x, &kZeroMv, &tmp_mv, &gf_motion_error);
+    }
+    if (gf_motion_error < motion_error && gf_motion_error < this_intra_error) {
+      ++stats->second_ref_count;
+    }
+    // In accumulating a score for the 2nd reference frame take the
+    // best of the motion predicted score and the intra coded error
+    // (just as will be done for) accumulation of "coded_error" for
+    // the last frame.
+    if ((current_frame->frame_number > 1) && golden_frame != NULL) {
+      stats->sr_coded_error += AOMMIN(gf_motion_error, this_intra_error);
+    } else {
+      // TODO(chengchen): I believe logically this should also be changed to
+      // stats->sr_coded_error += AOMMIN(gf_motion_error, this_intra_error).
+      stats->sr_coded_error += motion_error;
+    }
+
+    // Motion search in 3rd reference frame.
+    int alt_motion_error = motion_error;
+    if (alt_ref_frame != NULL) {
+      xd->plane[0].pre[0].buf = alt_ref_frame->y_buffer + alt_ref_frame_yoffset;
+      xd->plane[0].pre[0].stride = alt_ref_frame->y_stride;
+      alt_motion_error =
+          get_prediction_error_bitdepth(is_high_bitdepth, bitdepth, bsize,
+                                        &x->plane[0].src, &xd->plane[0].pre[0]);
+      first_pass_motion_search(cpi, x, &kZeroMv, &tmp_mv, &alt_motion_error);
+    }
+    if (alt_motion_error < motion_error && alt_motion_error < gf_motion_error &&
+        alt_motion_error < this_intra_error) {
+      ++stats->third_ref_count;
+    }
+    // In accumulating a score for the 3rd reference frame take the
+    // best of the motion predicted score and the intra coded error
+    // (just as will be done for) accumulation of "coded_error" for
+    // the last frame.
+    if (alt_ref_frame != NULL) {
+      stats->tr_coded_error += AOMMIN(alt_motion_error, this_intra_error);
+    } else {
+      // TODO(chengchen): I believe logically this should also be changed to
+      // stats->tr_coded_error += AOMMIN(alt_motion_error, this_intra_error).
+      stats->tr_coded_error += motion_error;
+    }
+
+    // Reset to last frame as reference buffer.
+    xd->plane[0].pre[0].buf = last_frame->y_buffer + recon_yoffset;
+    xd->plane[1].pre[0].buf = last_frame->u_buffer + recon_uvoffset;
+    xd->plane[2].pre[0].buf = last_frame->v_buffer + recon_uvoffset;
+  } else {
+    stats->sr_coded_error += motion_error;
+    stats->tr_coded_error += motion_error;
+  }
+
+  // Start by assuming that intra mode is best.
+  best_ref_mv->row = 0;
+  best_ref_mv->col = 0;
+
+  if (motion_error <= this_intra_error) {
+    aom_clear_system_state();
+
+    // Keep a count of cases where the inter and intra were very close
+    // and very low. This helps with scene cut detection for example in
+    // cropped clips with black bars at the sides or top and bottom.
+    if (((this_intra_error - INTRA_MODE_PENALTY) * 9 <= motion_error * 10) &&
+        (this_intra_error < (2 * INTRA_MODE_PENALTY))) {
+      stats->neutral_count += 1.0;
+      // Also track cases where the intra is not much worse than the inter
+      // and use this in limiting the GF/arf group length.
+    } else if ((this_intra_error > NCOUNT_INTRA_THRESH) &&
+               (this_intra_error < (NCOUNT_INTRA_FACTOR * motion_error))) {
+      stats->neutral_count +=
+          (double)motion_error / DOUBLE_DIVIDE_CHECK((double)this_intra_error);
+    }
+
+    const MV best_mv = get_mv_from_fullmv(&mv);
+    this_inter_error = motion_error;
+    xd->mi[0]->mode = NEWMV;
+    xd->mi[0]->mv[0].as_mv = best_mv;
+    xd->mi[0]->tx_size = TX_4X4;
+    xd->mi[0]->ref_frame[0] = LAST_FRAME;
+    xd->mi[0]->ref_frame[1] = NONE_FRAME;
+    av1_enc_build_inter_predictor(cm, xd, mb_row * mb_scale, mb_col * mb_scale,
+                                  NULL, bsize, AOM_PLANE_Y, AOM_PLANE_Y);
+    av1_encode_sby_pass1(cpi, x, bsize);
+    stats->sum_mvr += best_mv.row;
+    stats->sum_mvr_abs += abs(best_mv.row);
+    stats->sum_mvc += best_mv.col;
+    stats->sum_mvc_abs += abs(best_mv.col);
+    stats->sum_mvrs += best_mv.row * best_mv.row;
+    stats->sum_mvcs += best_mv.col * best_mv.col;
+    ++stats->inter_count;
+
+    *best_ref_mv = best_mv;
+    accumulate_mv_stats(best_mv, mv, mb_row, mb_col, mi_params->mb_rows,
+                        mi_params->mb_cols, last_mv, stats);
+  }
+
+  return this_inter_error;
+}
+
 // Updates the first pass stats of this frame.
 // Input:
 //   cpi: the encoder setting. Only a few params in it will be used.
@@ -599,13 +862,12 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
   MACROBLOCKD *const xd = &x->e_mbd;
   const PICK_MODE_CONTEXT *ctx =
       &cpi->td.pc_root[MAX_MIB_SIZE_LOG2 - MIN_MIB_SIZE_LOG2]->none;
-  MV lastmv = kZeroMv;
+  MV last_mv = kZeroMv;
   const int qindex = find_fp_qindex(seq_params->bit_depth);
   // First pass coding proceeds in raster scan order with unit size of 16x16.
   const BLOCK_SIZE fp_block_size = BLOCK_16X16;
   const int fp_block_size_width = block_size_high[fp_block_size];
   const int fp_block_size_height = block_size_wide[fp_block_size];
-  const int mb_scale = mi_size_wide[fp_block_size];
   int *raw_motion_err_list;
   int raw_motion_err_counts = 0;
   CHECK_MEM_ERROR(cm, raw_motion_err_list,
@@ -703,243 +965,23 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
                           cpi->oxcf.border_in_pixels);
 
     for (int mb_col = 0; mb_col < mi_params->mb_cols; ++mb_col) {
-      const BLOCK_SIZE bsize = get_bsize(mi_params, mb_row, mb_col);
       int this_intra_error = firstpass_intra_prediction(
           cpi, this_frame, &tile, mb_row, mb_col, recon_yoffset, recon_uvoffset,
           fp_block_size, qindex, &stats);
 
-      // Set up limit values for motion vectors to prevent them extending
-      // outside the UMV borders.
-      av1_set_mv_col_limits(mi_params, &x->mv_limits, (mb_col << 2),
-                            (fp_block_size_height >> MI_SIZE_LOG2),
-                            cpi->oxcf.border_in_pixels);
-
-      if (!frame_is_intra_only(cm)) {  // Do a motion search
-        int tmp_err, motion_error, raw_motion_error;
-        // Assume 0,0 motion with no mv overhead.
-        FULLPEL_MV mv = kZeroFullMv, tmp_mv = kZeroFullMv;
-        struct buf_2d unscaled_last_source_buf_2d;
-
-        xd->plane[0].pre[0].buf = last_frame->y_buffer + recon_yoffset;
-#if CONFIG_AV1_HIGHBITDEPTH
-        if (is_cur_buf_hbd(xd)) {
-          motion_error = highbd_get_prediction_error(
-              bsize, &x->plane[0].src, &xd->plane[0].pre[0], xd->bd);
-        } else {
-          motion_error = get_prediction_error(bsize, &x->plane[0].src,
-                                              &xd->plane[0].pre[0]);
-        }
-#else
-        motion_error =
-            get_prediction_error(bsize, &x->plane[0].src, &xd->plane[0].pre[0]);
-#endif
-
-        // Compute the motion error of the 0,0 motion using the last source
-        // frame as the reference. Skip the further motion search on
-        // reconstructed frame if this error is small.
-        unscaled_last_source_buf_2d.buf =
-            cpi->unscaled_last_source->y_buffer + src_yoffset;
-        unscaled_last_source_buf_2d.stride =
-            cpi->unscaled_last_source->y_stride;
-#if CONFIG_AV1_HIGHBITDEPTH
-        if (is_cur_buf_hbd(xd)) {
-          raw_motion_error = highbd_get_prediction_error(
-              bsize, &x->plane[0].src, &unscaled_last_source_buf_2d, xd->bd);
-        } else {
-          raw_motion_error = get_prediction_error(bsize, &x->plane[0].src,
-                                                  &unscaled_last_source_buf_2d);
-        }
-#else
-        raw_motion_error = get_prediction_error(bsize, &x->plane[0].src,
-                                                &unscaled_last_source_buf_2d);
-#endif
-        // TODO(pengchong): Replace the hard-coded threshold
-        if (raw_motion_error > 25) {
-          // Test last reference frame using the previous best mv as the
-          // starting point (best reference) for the search.
-          first_pass_motion_search(cpi, x, &best_ref_mv, &mv, &motion_error);
-
-          // If the current best reference mv is not centered on 0,0 then do a
-          // 0,0 based search as well.
-          if (!is_zero_mv(&best_ref_mv)) {
-            tmp_err = INT_MAX;
-            first_pass_motion_search(cpi, x, &kZeroMv, &tmp_mv, &tmp_err);
-
-            if (tmp_err < motion_error) {
-              motion_error = tmp_err;
-              mv = tmp_mv;
-            }
-          }
-
-          // Motion search in 2nd reference frame.
-          int gf_motion_error;
-          if ((current_frame->frame_number > 1) && golden_frame != NULL) {
-            // Assume 0,0 motion with no mv overhead.
-            xd->plane[0].pre[0].buf = golden_frame->y_buffer + recon_yoffset;
-#if CONFIG_AV1_HIGHBITDEPTH
-            if (is_cur_buf_hbd(xd)) {
-              gf_motion_error = highbd_get_prediction_error(
-                  bsize, &x->plane[0].src, &xd->plane[0].pre[0], xd->bd);
-            } else {
-              gf_motion_error = get_prediction_error(bsize, &x->plane[0].src,
-                                                     &xd->plane[0].pre[0]);
-            }
-#else
-            gf_motion_error = get_prediction_error(bsize, &x->plane[0].src,
-                                                   &xd->plane[0].pre[0]);
-#endif
-            first_pass_motion_search(cpi, x, &kZeroMv, &tmp_mv,
-                                     &gf_motion_error);
-
-            if (gf_motion_error < motion_error &&
-                gf_motion_error < this_intra_error)
-              ++stats.second_ref_count;
-
-            // Reset to last frame as reference buffer.
-            xd->plane[0].pre[0].buf = last_frame->y_buffer + recon_yoffset;
-            xd->plane[1].pre[0].buf = last_frame->u_buffer + recon_uvoffset;
-            xd->plane[2].pre[0].buf = last_frame->v_buffer + recon_uvoffset;
-
-            // In accumulating a score for the 2nd reference frame take the
-            // best of the motion predicted score and the intra coded error
-            // (just as will be done for) accumulation of "coded_error" for
-            // the last frame.
-            if (gf_motion_error < this_intra_error)
-              stats.sr_coded_error += gf_motion_error;
-            else
-              stats.sr_coded_error += this_intra_error;
-          } else {
-            gf_motion_error = motion_error;
-            stats.sr_coded_error += motion_error;
-          }
-
-          // Motion search in 3rd reference frame.
-          if (alt_ref_frame != NULL) {
-            xd->plane[0].pre[0].buf =
-                alt_ref_frame->y_buffer + alt_ref_frame_yoffset;
-            xd->plane[0].pre[0].stride = alt_ref_frame->y_stride;
-            int alt_motion_error;
-#if CONFIG_AV1_HIGHBITDEPTH
-            if (is_cur_buf_hbd(xd)) {
-              alt_motion_error = highbd_get_prediction_error(
-                  bsize, &x->plane[0].src, &xd->plane[0].pre[0], xd->bd);
-            } else {
-              alt_motion_error = get_prediction_error(bsize, &x->plane[0].src,
-                                                      &xd->plane[0].pre[0]);
-            }
-#else
-            alt_motion_error = get_prediction_error(bsize, &x->plane[0].src,
-                                                    &xd->plane[0].pre[0]);
-#endif
-            first_pass_motion_search(cpi, x, &kZeroMv, &tmp_mv,
-                                     &alt_motion_error);
-
-            if (alt_motion_error < motion_error &&
-                alt_motion_error < gf_motion_error &&
-                alt_motion_error < this_intra_error)
-              ++stats.third_ref_count;
-
-            // Reset to last frame as reference buffer.
-            xd->plane[0].pre[0].buf = last_frame->y_buffer + recon_yoffset;
-            xd->plane[0].pre[0].stride = last_frame->y_stride;
-
-            // In accumulating a score for the 3rd reference frame take the
-            // best of the motion predicted score and the intra coded error
-            // (just as will be done for) accumulation of "coded_error" for
-            // the last frame.
-            stats.tr_coded_error += AOMMIN(alt_motion_error, this_intra_error);
-          } else {
-            stats.tr_coded_error += motion_error;
-          }
-        } else {
-          stats.sr_coded_error += motion_error;
-          stats.tr_coded_error += motion_error;
-        }
-
-        // Start by assuming that intra mode is best.
-        best_ref_mv.row = 0;
-        best_ref_mv.col = 0;
-
-        if (motion_error <= this_intra_error) {
-          aom_clear_system_state();
-
-          // Keep a count of cases where the inter and intra were very close
-          // and very low. This helps with scene cut detection for example in
-          // cropped clips with black bars at the sides or top and bottom.
-          if (((this_intra_error - INTRA_MODE_PENALTY) * 9 <=
-               motion_error * 10) &&
-              (this_intra_error < (2 * INTRA_MODE_PENALTY))) {
-            stats.neutral_count += 1.0;
-            // Also track cases where the intra is not much worse than the inter
-            // and use this in limiting the GF/arf group length.
-          } else if ((this_intra_error > NCOUNT_INTRA_THRESH) &&
-                     (this_intra_error <
-                      (NCOUNT_INTRA_FACTOR * motion_error))) {
-            stats.neutral_count +=
-                (double)motion_error /
-                DOUBLE_DIVIDE_CHECK((double)this_intra_error);
-          }
-
-          MV best_mv = get_mv_from_fullmv(&mv);
-          this_intra_error = motion_error;
-          xd->mi[0]->mode = NEWMV;
-          xd->mi[0]->mv[0].as_mv = best_mv;
-          xd->mi[0]->tx_size = TX_4X4;
-          xd->mi[0]->ref_frame[0] = LAST_FRAME;
-          xd->mi[0]->ref_frame[1] = NONE_FRAME;
-          av1_enc_build_inter_predictor(cm, xd, mb_row * mb_scale,
-                                        mb_col * mb_scale, NULL, bsize,
-                                        AOM_PLANE_Y, AOM_PLANE_Y);
-          av1_encode_sby_pass1(cpi, x, bsize);
-          stats.sum_mvr += best_mv.row;
-          stats.sum_mvr_abs += abs(best_mv.row);
-          stats.sum_mvc += best_mv.col;
-          stats.sum_mvc_abs += abs(best_mv.col);
-          stats.sum_mvrs += best_mv.row * best_mv.row;
-          stats.sum_mvcs += best_mv.col * best_mv.col;
-          ++stats.inter_count;
-
-          best_ref_mv = best_mv;
-
-          if (!is_zero_mv(&best_mv)) {
-            ++stats.mv_count;
-            // Non-zero vector, was it different from the last non zero vector?
-            if (!is_equal_mv(&best_mv, &lastmv)) ++stats.new_mv_count;
-            lastmv = best_mv;
-
-            // Does the row vector point inwards or outwards?
-            if (mb_row < mi_params->mb_rows / 2) {
-              if (mv.row > 0)
-                --stats.sum_in_vectors;
-              else if (mv.row < 0)
-                ++stats.sum_in_vectors;
-            } else if (mb_row > mi_params->mb_rows / 2) {
-              if (mv.row > 0)
-                ++stats.sum_in_vectors;
-              else if (mv.row < 0)
-                --stats.sum_in_vectors;
-            }
-
-            // Does the col vector point inwards or outwards?
-            if (mb_col < mi_params->mb_cols / 2) {
-              if (mv.col > 0)
-                --stats.sum_in_vectors;
-              else if (mv.col < 0)
-                ++stats.sum_in_vectors;
-            } else if (mb_col > mi_params->mb_cols / 2) {
-              if (mv.col > 0)
-                ++stats.sum_in_vectors;
-              else if (mv.col < 0)
-                --stats.sum_in_vectors;
-            }
-          }
-        }
-        raw_motion_err_list[raw_motion_err_counts++] = raw_motion_error;
+      if (!frame_is_intra_only(cm)) {
+        const int this_inter_error = firstpass_inter_prediction(
+            cpi, last_frame, golden_frame, alt_ref_frame, mb_row, mb_col,
+            recon_yoffset, recon_uvoffset, src_yoffset, alt_ref_frame_yoffset,
+            fp_block_size, this_intra_error, raw_motion_err_counts,
+            raw_motion_err_list, &best_ref_mv, &last_mv, &stats);
+        stats.coded_error += this_inter_error;
+        ++raw_motion_err_counts;
       } else {
-        stats.sr_coded_error += (int64_t)this_intra_error;
-        stats.tr_coded_error += (int64_t)this_intra_error;
+        stats.sr_coded_error += this_intra_error;
+        stats.tr_coded_error += this_intra_error;
+        stats.coded_error += this_intra_error;
       }
-      stats.coded_error += (int64_t)this_intra_error;
 
       // Adjust to the next column of MBs.
       x->plane[0].src.buf += fp_block_size_width;
@@ -958,8 +1000,6 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
                            uv_mb_height * mi_params->mb_cols;
     x->plane[2].src.buf += uv_mb_height * x->plane[1].src.stride -
                            uv_mb_height * mi_params->mb_cols;
-
-    aom_clear_system_state();
   }
   const double raw_err_stdev =
       raw_motion_error_stdev(raw_motion_err_list, raw_motion_err_counts);
