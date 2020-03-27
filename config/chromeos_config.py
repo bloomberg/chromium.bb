@@ -2610,6 +2610,12 @@ def ApplyCustomOverrides(site_config):
           'hw_tests_disabled_bug': 'https://crbug.com/1000717',
       },
 
+      'asurada-release': {
+          'hw_tests': [],
+          'hw_tests_override': [],
+          'hw_tests_disabled_bug': 'https://b/150746591',
+      },
+
       # The board does not exist in the lab. See crbug.com/1003981
       'beaglebone_servo-release': {
           'hw_tests': [],
