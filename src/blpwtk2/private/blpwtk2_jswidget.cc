@@ -74,7 +74,8 @@ bool JsWidget::Initialize(blink::WebPluginContainer* container)
     d_container = container;
     v8::HandleScope handleScope(v8::Isolate::GetCurrent());
     v8::Context::Scope contextScope(d_frame->MainWorldScriptContext());
-    blink::WebDOMEvent event = blink::WebDOMEvent::CreateCustomEvent(d_frame->ScriptIsolate(), "bbOnInitialize", false, false, v8::Local<v8::Value>{});
+    blink::WebDOMEvent event = blink::WebDOMEvent::CreateCustomEvent(
+        d_frame->ScriptIsolate(), "bbOnInitialize", false, false, v8::Null(v8::Isolate::GetCurrent()));
     DispatchEvent(event);
     return true;
 }
