@@ -4187,6 +4187,40 @@ static AOM_INLINE void evaluate_motion_mode_for_winner_candidates(
 // Indicates number of winner simple translation modes to be used
 static unsigned int num_winner_motion_modes[3] = { 0, 10, 3 };
 
+static void record_best_compound(REFERENCE_MODE reference_mode,
+                                 RD_STATS *rd_stats, int comp_pred, int rdmult,
+                                 InterModeSearchState *search_state,
+                                 int compmode_cost) {
+  int64_t single_rd, hybrid_rd, single_rate, hybrid_rate;
+
+  if (reference_mode == REFERENCE_MODE_SELECT) {
+    single_rate = rd_stats->rate - compmode_cost;
+    hybrid_rate = rd_stats->rate;
+  } else {
+    single_rate = rd_stats->rate;
+    hybrid_rate = rd_stats->rate + compmode_cost;
+  }
+
+  single_rd = RDCOST(rdmult, single_rate, rd_stats->dist);
+  hybrid_rd = RDCOST(rdmult, hybrid_rate, rd_stats->dist);
+
+  if (!comp_pred) {
+    if (single_rd <
+        search_state->intra_search_state.best_pred_rd[SINGLE_REFERENCE])
+      search_state->intra_search_state.best_pred_rd[SINGLE_REFERENCE] =
+          single_rd;
+  } else {
+    if (single_rd <
+        search_state->intra_search_state.best_pred_rd[COMPOUND_REFERENCE])
+      search_state->intra_search_state.best_pred_rd[COMPOUND_REFERENCE] =
+          single_rd;
+  }
+  if (hybrid_rd <
+      search_state->intra_search_state.best_pred_rd[REFERENCE_MODE_SELECT])
+    search_state->intra_search_state.best_pred_rd[REFERENCE_MODE_SELECT] =
+        hybrid_rd;
+}
+
 void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                                MACROBLOCK *x, RD_STATS *rd_cost,
                                const BLOCK_SIZE bsize, PICK_MODE_CONTEXT *ctx,
@@ -4567,34 +4601,8 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
     /* keep record of best compound/single-only prediction */
     if (!disable_skip) {
-      int64_t single_rd, hybrid_rd, single_rate, hybrid_rate;
-
-      if (cm->current_frame.reference_mode == REFERENCE_MODE_SELECT) {
-        single_rate = rd_stats.rate - compmode_cost;
-        hybrid_rate = rd_stats.rate;
-      } else {
-        single_rate = rd_stats.rate;
-        hybrid_rate = rd_stats.rate + compmode_cost;
-      }
-
-      single_rd = RDCOST(x->rdmult, single_rate, rd_stats.dist);
-      hybrid_rd = RDCOST(x->rdmult, hybrid_rate, rd_stats.dist);
-
-      if (!comp_pred) {
-        if (single_rd <
-            search_state.intra_search_state.best_pred_rd[SINGLE_REFERENCE])
-          search_state.intra_search_state.best_pred_rd[SINGLE_REFERENCE] =
-              single_rd;
-      } else {
-        if (single_rd <
-            search_state.intra_search_state.best_pred_rd[COMPOUND_REFERENCE])
-          search_state.intra_search_state.best_pred_rd[COMPOUND_REFERENCE] =
-              single_rd;
-      }
-      if (hybrid_rd <
-          search_state.intra_search_state.best_pred_rd[REFERENCE_MODE_SELECT])
-        search_state.intra_search_state.best_pred_rd[REFERENCE_MODE_SELECT] =
-            hybrid_rd;
+      record_best_compound(cm->current_frame.reference_mode, &rd_stats,
+                           comp_pred, x->rdmult, &search_state, compmode_cost);
     }
   }
 
