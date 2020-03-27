@@ -120,6 +120,24 @@ class TestLuciContext(unittest.TestCase):
     # The file is gone outside 'with' block.
     self.assertFalse(os.path.exists(path))
 
+  def test_to_utf8_bytes(self):
+    input_dict = {b'key1': b'value1', b'key2': b'value2'}
+    output_dict = luci_context._to_utf8(input_dict)
+    self.assertDictEqual(input_dict, output_dict)
+
+  def test_to_utf8_str(self):
+    input_dict = {'key1': 'value1', 'key2': 'value2'}
+    output_dict = luci_context._to_utf8(input_dict)
+    self.assertDictEqual(input_dict, output_dict)
+
+  def test_to_utf8_unicode(self):
+    input_dict = {
+        six.u('key1'): six.u('value1'),
+        six.u('key2'): six.u('value2')
+    }
+    output_dict = luci_context._to_utf8(input_dict)
+    self.assertDictEqual({'key1': 'value1', 'key2': 'value2'}, output_dict)
+
 
 if __name__ == '__main__':
   # Pop it out of the environment to make sure we start clean.
