@@ -56,23 +56,18 @@ class TlsDataRouterPosix : public SocketHandleWaiter::Subscriber {
   // Deregister a TlsConnection.
   void DeregisterConnection(TlsConnectionPosix* connection);
 
-  // Takes ownership of a StreamSocket and registers that should be watched for
-  // incoming Tcp Connections with the SocketHandleWaiter.
-  void RegisterSocketObserver(std::unique_ptr<StreamSocketPosix> socket,
+  // Takes ownership of a StreamSocket and registers that it should be watched
+  // for incoming TCP connections with the SocketHandleWaiter.
+  void RegisterAcceptObserver(std::unique_ptr<StreamSocketPosix> socket,
                               SocketObserver* observer);
 
-  // Stops watching a Tcp Connections for incoming connections.
+  // Stops watching a TCP socket for incoming connections.
   // NOTE: This will destroy the StreamSocket.
-  virtual void DeregisterSocketObserver(StreamSocketPosix* socket);
+  virtual void DeregisterAcceptObserver(StreamSocketPosix* socket);
 
   // Method to be executed on TlsConnection destruction. This is expected to
   // block until the networking thread is not using the provided connection.
   void OnConnectionDestroyed(TlsConnectionPosix* connection);
-
-  // Performs Read and Write operations for all connections or until the timeout
-  // has been hit, whichever is first. In the latter case, the following
-  // iteration will continue from wherever the previous iteration left off.
-  void PerformNetworkingOperations(Clock::duration timeout);
 
   // SocketHandleWaiter::Subscriber overrides.
   void ProcessReadyHandle(SocketHandleWaiter::SocketHandleRef handle) override;
@@ -90,45 +85,33 @@ class TlsDataRouterPosix : public SocketHandleWaiter::Subscriber {
   friend class TestingDataRouter;
 
  private:
-  enum class NetworkingOperation { kReading, kWriting };
-
   void OnSocketDestroyed(StreamSocketPosix* socket,
                          bool skip_locking_for_testing);
 
   void RemoveWatchedSocket(StreamSocketPosix* socket);
-
-  // Helper methods for PerformNetworkingOperations.
-  NetworkingOperation GetNextMode(NetworkingOperation state);
-  std::vector<TlsConnectionPosix*>::iterator GetConnection(
-      TlsConnectionPosix* current);
 
   SocketHandleWaiter* waiter_;
 
   // Mutex guarding connections_ vector.
   mutable std::mutex connections_mutex_;
 
-  // Mutex guarding socket_mappings_.
-  mutable std::mutex socket_mutex_;
+  // Mutex guarding |accept_socket_mappings_|.
+  mutable std::mutex accept_socket_mutex_;
 
   // Function to get the current time.
   std::function<Clock::time_point()> now_function_;
 
-  // Information related to how much of PerformNetworkingOperations(...) was
-  // completed before hitting the timeout.
-  NetworkingOperation last_operation_ = NetworkingOperation::kReading;
-  TlsConnectionPosix* last_connection_processed_ = nullptr;
-
   // Mapping from all sockets to the observer that should be called when the
   // socket recognizes an incoming connection.
-  std::unordered_map<StreamSocketPosix*, SocketObserver*> socket_mappings_
-      GUARDED_BY(socket_mutex_);
+  std::unordered_map<StreamSocketPosix*, SocketObserver*>
+      accept_socket_mappings_ GUARDED_BY(accept_socket_mutex_);
 
   // Set of all TlsConnectionPosix objects currently registered.
   std::vector<TlsConnectionPosix*> connections_ GUARDED_BY(connections_mutex_);
 
   // StreamSockets currently owned by this object, being watched for
-  std::vector<std::unique_ptr<StreamSocketPosix>> watched_stream_sockets_
-      GUARDED_BY(connections_mutex_);
+  std::vector<std::unique_ptr<StreamSocketPosix>> accept_stream_sockets_
+      GUARDED_BY(accept_socket_mutex_);
 };
 
 }  // namespace openscreen

@@ -134,7 +134,7 @@ void TlsConnectionFactoryPosix::Listen(const IPEndpoint& local_address,
 
   OSP_DCHECK(platform_client_);
   if (platform_client_) {
-    platform_client_->tls_data_router()->RegisterSocketObserver(
+    platform_client_->tls_data_router()->RegisterAcceptObserver(
         std::move(socket), this);
   }
 }

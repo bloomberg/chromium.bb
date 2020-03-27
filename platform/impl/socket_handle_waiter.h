@@ -35,7 +35,7 @@ class SocketHandleWaiter {
     virtual void ProcessReadyHandle(SocketHandleRef handle) = 0;
   };
 
-  SocketHandleWaiter() = default;
+  explicit SocketHandleWaiter(ClockNowFunctionPtr now_function);
   virtual ~SocketHandleWaiter() = default;
 
   // Start notifying |subscriber| whenever |handle| has an event. May be called
@@ -72,8 +72,15 @@ class SocketHandleWaiter {
       const Clock::duration& timeout) = 0;
 
  private:
-  // Call the subscriber associated with each changed handle.
-  void ProcessReadyHandles(const std::vector<SocketHandleRef>& handles);
+  struct HandleWithSubscriber {
+    SocketHandleRef handle;
+    Subscriber* subscriber;
+  };
+
+  // Call the subscriber associated with each changed handle.  Handles are only
+  // processed until |timeout| is exceeded.  Must be called with |mutex_| held.
+  void ProcessReadyHandles(const std::vector<HandleWithSubscriber>& handles,
+                           Clock::duration timeout);
 
   // Guards against concurrent access to all other class data members.
   std::mutex mutex_;
@@ -89,6 +96,8 @@ class SocketHandleWaiter {
   // that is watching them.
   std::unordered_map<SocketHandleRef, Subscriber*, SocketHandleHash>
       handle_mappings_;
+
+  const ClockNowFunctionPtr now_function_;
 };
 
 }  // namespace openscreen

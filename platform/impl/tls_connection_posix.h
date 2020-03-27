@@ -41,6 +41,8 @@ class TlsConnectionPosix : public TlsConnection {
   // automatically by TlsConnectionFactoryPosix after the handshake completes.
   void RegisterConnectionWithDataRouter(PlatformClientPosix* platform_client);
 
+  const SocketHandle& socket_handle() const { return socket_->socket_handle(); }
+
  protected:
   friend class TlsConnectionFactoryPosix;
 

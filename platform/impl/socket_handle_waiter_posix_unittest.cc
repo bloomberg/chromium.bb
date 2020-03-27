@@ -14,6 +14,7 @@
 #include "gtest/gtest.h"
 #include "platform/impl/socket_handle_posix.h"
 #include "platform/impl/timeval_posix.h"
+#include "platform/test/fake_clock.h"
 
 namespace openscreen {
 namespace {
@@ -31,10 +32,14 @@ class TestingSocketHandleWaiter : public SocketHandleWaiter {
  public:
   using SocketHandleRef = SocketHandleWaiter::SocketHandleRef;
 
+  TestingSocketHandleWaiter() : SocketHandleWaiter(&FakeClock::now) {}
+
   MOCK_METHOD2(
       AwaitSocketsReadable,
       ErrorOr<std::vector<SocketHandleRef>>(const std::vector<SocketHandleRef>&,
                                             const Clock::duration&));
+
+  FakeClock fake_clock{Clock::time_point{Clock::duration{1234567}}};
 };
 
 }  // namespace

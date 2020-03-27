@@ -18,7 +18,7 @@ class SocketHandleWaiterPosix : public SocketHandleWaiter {
  public:
   using SocketHandleRef = SocketHandleWaiter::SocketHandleRef;
 
-  SocketHandleWaiterPosix();
+  explicit SocketHandleWaiterPosix(ClockNowFunctionPtr now_function);
   ~SocketHandleWaiterPosix() override;
 
   // Runs the Wait function in a loop until the below RequestStopSoon function
@@ -34,8 +34,6 @@ class SocketHandleWaiterPosix : public SocketHandleWaiter {
       const Clock::duration& timeout) override;
 
  private:
-  fd_set read_handles_;
-
   // Atomic so that we can perform atomic exchanges.
   std::atomic_bool is_running_;
 };
