@@ -84,6 +84,12 @@ class MdnsQuerierTest : public testing::Test {
                          RecordType::kShared,
                          std::chrono::seconds(0),  // a goodbye record
                          ARecordRdata(IPAddress{192, 168, 0, 1})),
+        record2_created_(DomainName{"testing", "local"},
+                         DnsType::kAAAA,
+                         DnsClass::kIN,
+                         RecordType::kUnique,
+                         std::chrono::seconds(120),
+                         AAAARecordRdata(IPAddress{1, 2, 3, 4, 5, 6, 7, 8})),
         nsec_record_created_(
             DomainName{"testing", "local"},
             DnsType::kNSEC,
@@ -132,21 +138,14 @@ class MdnsQuerierTest : public testing::Test {
   bool ContainsRecord(MdnsQuerier* querier,
                       const MdnsRecord& record,
                       DnsType type = DnsType::kANY) {
-    auto records_its = querier->records_.equal_range(record.name());
-    return std::find_if(
-               records_its.first, records_its.second,
-               [&record, type](
-                   const std::pair<const DomainName,
-                                   std::unique_ptr<MdnsRecordTracker>>& pair) {
-                 if (type != pair.second->dns_type() && type != DnsType::kANY) {
-                   return false;
-                 }
+    auto record_trackers =
+        querier->records_.Find(record.name(), type, record.dns_class());
 
-                 return pair.second->dns_class() == record.dns_class() &&
-                        pair.second->record_type() == record.record_type() &&
-                        pair.second->ttl() == record.ttl() &&
-                        pair.second->rdata() == record.rdata();
-               }) != records_its.second;
+    return std::find_if(record_trackers.begin(), record_trackers.end(),
+                        [&record](const MdnsRecordTracker& tracker) {
+                          return tracker.rdata() == record.rdata() &&
+                                 tracker.ttl() == record.ttl();
+                        }) != record_trackers.end();
   }
 
   size_t RecordCount(MdnsQuerier* querier) { return querier->records_.size(); }
@@ -165,6 +164,7 @@ class MdnsQuerierTest : public testing::Test {
   MdnsRecord record0_deleted_;
   MdnsRecord record1_created_;
   MdnsRecord record1_deleted_;
+  MdnsRecord record2_created_;
   MdnsRecord nsec_record_created_;
 };
 
@@ -579,6 +579,36 @@ TEST_F(MdnsQuerierTest, NoCallbackCalledWhenSecondNsecRecordReceived) {
   EXPECT_FALSE(
       ContainsRecord(querier.get(), nsec_record_created_, DnsType::kA));
   EXPECT_TRUE(ContainsRecord(querier.get(), multi_type_nsec, DnsType::kA));
+}
+
+TEST_F(MdnsQuerierTest, TestMaxRecordsRespected) {
+  config_.querier_max_records_cached = 1;
+  std::unique_ptr<MdnsQuerier> querier = CreateQuerier();
+
+  // Set up so an A record has been received
+  StrictMock<MockRecordChangedCallback> callback;
+  querier->StartQuery(DomainName{"testing", "local"}, DnsType::kANY,
+                      DnsClass::kIN, &callback);
+  querier->StartQuery(DomainName{"poking", "local"}, DnsType::kANY,
+                      DnsClass::kIN, &callback);
+  auto packet = CreatePacketWithRecord(record0_created_);
+  EXPECT_CALL(callback,
+              OnRecordChanged(record0_created_, RecordChangedEvent::kCreated));
+  receiver_.OnRead(&socket_, std::move(packet));
+  ASSERT_EQ(RecordCount(querier.get()), size_t{1});
+  EXPECT_TRUE(ContainsRecord(querier.get(), record0_created_, DnsType::kA));
+  EXPECT_FALSE(ContainsRecord(querier.get(), record1_created_, DnsType::kA));
+  testing::Mock::VerifyAndClearExpectations(&callback);
+
+  EXPECT_CALL(callback,
+              OnRecordChanged(record0_created_, RecordChangedEvent::kExpired));
+  EXPECT_CALL(callback,
+              OnRecordChanged(record1_created_, RecordChangedEvent::kCreated));
+  packet = CreatePacketWithRecord(record1_created_);
+  receiver_.OnRead(&socket_, std::move(packet));
+  ASSERT_EQ(RecordCount(querier.get()), size_t{1});
+  EXPECT_FALSE(ContainsRecord(querier.get(), record0_created_, DnsType::kA));
+  EXPECT_TRUE(ContainsRecord(querier.get(), record1_created_, DnsType::kA));
 }
 
 }  // namespace discovery

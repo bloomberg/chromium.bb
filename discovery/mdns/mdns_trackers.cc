@@ -80,12 +80,12 @@ MdnsTracker::MdnsTracker(MdnsSender* sender,
 MdnsTracker::~MdnsTracker() {
   send_alarm_.Cancel();
 
-  for (MdnsTracker* node : adjacent_nodes_) {
+  for (const MdnsTracker* node : adjacent_nodes_) {
     node->RemovedReverseAdjacency(this);
   }
 }
 
-bool MdnsTracker::AddAdjacentNode(MdnsTracker* node) {
+bool MdnsTracker::AddAdjacentNode(const MdnsTracker* node) const {
   OSP_DCHECK(node);
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
 
@@ -94,12 +94,12 @@ bool MdnsTracker::AddAdjacentNode(MdnsTracker* node) {
     return false;
   }
 
-  node->AddReverseAdjacency(this);
   adjacent_nodes_.push_back(node);
+  node->AddReverseAdjacency(this);
   return true;
 }
 
-bool MdnsTracker::RemoveAdjacentNode(MdnsTracker* node) {
+bool MdnsTracker::RemoveAdjacentNode(const MdnsTracker* node) const {
   OSP_DCHECK(node);
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
 
@@ -108,19 +108,19 @@ bool MdnsTracker::RemoveAdjacentNode(MdnsTracker* node) {
     return false;
   }
 
-  node->RemovedReverseAdjacency(this);
   adjacent_nodes_.erase(it);
+  node->RemovedReverseAdjacency(this);
   return true;
 }
 
-void MdnsTracker::AddReverseAdjacency(MdnsTracker* node) {
+void MdnsTracker::AddReverseAdjacency(const MdnsTracker* node) const {
   OSP_DCHECK(std::find(adjacent_nodes_.begin(), adjacent_nodes_.end(), node) ==
              adjacent_nodes_.end());
 
   adjacent_nodes_.push_back(node);
 }
 
-void MdnsTracker::RemovedReverseAdjacency(MdnsTracker* node) {
+void MdnsTracker::RemovedReverseAdjacency(const MdnsTracker* node) const {
   auto it = std::find(adjacent_nodes_.begin(), adjacent_nodes_.end(), node);
   OSP_DCHECK(it != adjacent_nodes_.end());
 
@@ -214,12 +214,12 @@ ErrorOr<MdnsRecordTracker::UpdateType> MdnsRecordTracker::Update(
 }
 
 bool MdnsRecordTracker::AddAssociatedQuery(
-    MdnsQuestionTracker* question_tracker) {
+    const MdnsQuestionTracker* question_tracker) const {
   return AddAdjacentNode(question_tracker);
 }
 
 bool MdnsRecordTracker::RemoveAssociatedQuery(
-    MdnsQuestionTracker* question_tracker) {
+    const MdnsQuestionTracker* question_tracker) const {
   return RemoveAdjacentNode(question_tracker);
 }
 
@@ -237,15 +237,19 @@ void MdnsRecordTracker::ExpireSoon() {
   ScheduleFollowUpQuery();
 }
 
-bool MdnsRecordTracker::IsNearingExpiry() {
+void MdnsRecordTracker::ExpireNow() {
+  record_expired_callback_(this, record_);
+}
+
+bool MdnsRecordTracker::IsNearingExpiry() const {
   return (now_function_() - start_time_) > record_.ttl() / 2;
 }
 
-bool MdnsRecordTracker::SendQuery() {
+bool MdnsRecordTracker::SendQuery() const {
   const Clock::time_point expiration_time = start_time_ + record_.ttl();
   bool is_expired = (now_function_() >= expiration_time);
   if (!is_expired) {
-    for (MdnsTracker* tracker : adjacent_nodes()) {
+    for (const MdnsTracker* tracker : adjacent_nodes()) {
       tracker->SendQuery();
     }
   } else {
@@ -328,18 +332,18 @@ MdnsQuestionTracker::MdnsQuestionTracker(MdnsQuestion question,
 MdnsQuestionTracker::~MdnsQuestionTracker() = default;
 
 bool MdnsQuestionTracker::AddAssociatedRecord(
-    MdnsRecordTracker* record_tracker) {
+    const MdnsRecordTracker* record_tracker) const {
   return AddAdjacentNode(record_tracker);
 }
 
 bool MdnsQuestionTracker::RemoveAssociatedRecord(
-    MdnsRecordTracker* record_tracker) {
+    const MdnsRecordTracker* record_tracker) const {
   return RemoveAdjacentNode(record_tracker);
 }
 
 std::vector<MdnsRecord> MdnsQuestionTracker::GetRecords() const {
   std::vector<MdnsRecord> records;
-  for (MdnsTracker* tracker : adjacent_nodes()) {
+  for (const MdnsTracker* tracker : adjacent_nodes()) {
     OSP_DCHECK(tracker->tracker_type() == TrackerType::kRecordTracker);
 
     // This call cannot result in an infinite loop because MdnsRecordTracker
@@ -353,7 +357,7 @@ std::vector<MdnsRecord> MdnsQuestionTracker::GetRecords() const {
   return records;
 }
 
-bool MdnsQuestionTracker::SendQuery() {
+bool MdnsQuestionTracker::SendQuery() const {
   // NOTE: The RFC does not specify the minimum interval between queries for
   // multiple records of the same query when initiated for different reasons
   // (such as for different record refreshes or for one record refresh and the
@@ -372,7 +376,8 @@ bool MdnsQuestionTracker::SendQuery() {
   for (auto it = adjacent_nodes().begin(); it != adjacent_nodes().end();) {
     OSP_DCHECK((*it)->tracker_type() == TrackerType::kRecordTracker);
 
-    MdnsRecordTracker* record_tracker = static_cast<MdnsRecordTracker*>(*it);
+    const MdnsRecordTracker* record_tracker =
+        static_cast<const MdnsRecordTracker*>(*it);
     if (record_tracker->IsNearingExpiry()) {
       it++;
       continue;

@@ -57,11 +57,11 @@ class MdnsTracker {
   virtual ~MdnsTracker();
 
   // Returns the record type represented by this tracker.
-  TrackerType tracker_type() { return tracker_type_; }
+  TrackerType tracker_type() const { return tracker_type_; }
 
   // Sends a query message via MdnsSender. Returns false if a follow up query
   // should NOT be scheduled and true otherwise.
-  virtual bool SendQuery() = 0;
+  virtual bool SendQuery() const = 0;
 
   // Returns the records currently associated with this tracker.
   virtual std::vector<MdnsRecord> GetRecords() const = 0;
@@ -72,10 +72,10 @@ class MdnsTracker {
 
   // These methods create a bidirectional adjacency with another node in the
   // graph.
-  bool AddAdjacentNode(MdnsTracker* tracker);
-  bool RemoveAdjacentNode(MdnsTracker* tracker);
+  bool AddAdjacentNode(const MdnsTracker* tracker) const;
+  bool RemoveAdjacentNode(const MdnsTracker* tracker) const;
 
-  const std::vector<MdnsTracker*>& adjacent_nodes() const {
+  const std::vector<const MdnsTracker*>& adjacent_nodes() const {
     return adjacent_nodes_;
   }
 
@@ -88,11 +88,11 @@ class MdnsTracker {
 
  private:
   // These methods are used to ensure the bidirectional-ness of this graph.
-  void AddReverseAdjacency(MdnsTracker* tracker);
-  void RemovedReverseAdjacency(MdnsTracker* tracker);
+  void AddReverseAdjacency(const MdnsTracker* tracker) const;
+  void RemovedReverseAdjacency(const MdnsTracker* tracker) const;
 
   // Adjacency list for this graph node.
-  std::vector<MdnsTracker*> adjacent_nodes_;
+  mutable std::vector<const MdnsTracker*> adjacent_nodes_;
 };
 
 class MdnsQuestionTracker;
@@ -102,7 +102,7 @@ class MdnsQuestionTracker;
 class MdnsRecordTracker : public MdnsTracker {
  public:
   using RecordExpiredCallback =
-      std::function<void(MdnsRecordTracker*, const MdnsRecord&)>;
+      std::function<void(const MdnsRecordTracker*, const MdnsRecord&)>;
 
   // NOTE: In the case that |record| is of type NSEC, |dns_type| is expected to
   // differ from |record|'s type.
@@ -131,15 +131,18 @@ class MdnsRecordTracker : public MdnsTracker {
   ErrorOr<UpdateType> Update(const MdnsRecord& new_record);
 
   // Adds or removed a question which this record answers.
-  bool AddAssociatedQuery(MdnsQuestionTracker* question_tracker);
-  bool RemoveAssociatedQuery(MdnsQuestionTracker* question_tracker);
+  bool AddAssociatedQuery(const MdnsQuestionTracker* question_tracker) const;
+  bool RemoveAssociatedQuery(const MdnsQuestionTracker* question_tracker) const;
 
   // Sets record to expire after 1 seconds as per RFC 6762
   void ExpireSoon();
 
+  // Expires the record now
+  void ExpireNow();
+
   // Returns true if half of the record's TTL has passed, and false otherwise.
   // Half is used due to specifications in RFC 6762 section 7.1.
-  bool IsNearingExpiry();
+  bool IsNearingExpiry() const;
 
   // Returns information about the stored record.
   //
@@ -153,11 +156,13 @@ class MdnsRecordTracker : public MdnsTracker {
   // runtime error due to DCHECKS and that Rdata's associated type will not
   // match DnsType when |record_| is of type NSEC. Therefore, creating such
   // records should be guarded by is_negative_response() checks.
+  const DomainName& name() const { return record_.name(); }
   DnsType dns_type() const { return dns_type_; }
   DnsClass dns_class() const { return record_.dns_class(); }
   RecordType record_type() const { return record_.record_type(); }
   std::chrono::seconds ttl() const { return record_.ttl(); }
   const Rdata& rdata() const { return record_.rdata(); }
+
   bool is_negative_response() const {
     return record_.dns_type() == DnsType::kNSEC;
   }
@@ -172,7 +177,7 @@ class MdnsRecordTracker : public MdnsTracker {
   Clock::time_point GetNextSendTime();
 
   // MdnsTracker overrides.
-  bool SendQuery() override;
+  bool SendQuery() const override;
   void ScheduleFollowUpQuery() override;
   std::vector<MdnsRecord> GetRecords() const override;
 
@@ -209,8 +214,8 @@ class MdnsQuestionTracker : public MdnsTracker {
   ~MdnsQuestionTracker() override;
 
   // Adds or removed an answer to a the question posed by this tracker.
-  bool AddAssociatedRecord(MdnsRecordTracker* record_tracker);
-  bool RemoveAssociatedRecord(MdnsRecordTracker* record_tracker);
+  bool AddAssociatedRecord(const MdnsRecordTracker* record_tracker) const;
+  bool RemoveAssociatedRecord(const MdnsRecordTracker* record_tracker) const;
 
   // Returns a reference to the tracked question.
   const MdnsQuestion& question() const { return question_; }
@@ -224,7 +229,7 @@ class MdnsQuestionTracker : public MdnsTracker {
   bool HasReceivedAllResponses();
 
   // MdnsTracker overrides.
-  bool SendQuery() override;
+  bool SendQuery() const override;
   void ScheduleFollowUpQuery() override;
   std::vector<MdnsRecord> GetRecords() const override;
 
@@ -235,7 +240,7 @@ class MdnsQuestionTracker : public MdnsTracker {
   Clock::duration send_delay_;
 
   // Last time that this tracker's question was asked.
-  TrivialClockTraits::time_point last_send_time_;
+  mutable TrivialClockTraits::time_point last_send_time_;
 
   // Specifies whether this query is intended to be a one-shot query, as defined
   // in RFC 6762 section 5.1.

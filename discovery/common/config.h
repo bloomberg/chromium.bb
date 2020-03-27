@@ -12,13 +12,31 @@ namespace discovery {
 
 // This struct provides parameters needed to initialize the discovery pipeline.
 struct Config {
+  /*****************************************
+   * Networking Settings
+   *****************************************/
+
   // Network Interface on which mDNS should be run.
   InterfaceInfo interface;
+
+  /*****************************************
+   * Publisher Settings
+   *****************************************/
+
+  // Determines whether publishing of services is enabled.
+  bool enable_publication = true;
 
   // Number of times new mDNS records should be announced, using an exponential
   // back off. See RFC 6762 section 8.3 for further details. Per RFC, this value
   // is expected to be in the range of 2 to 8.
   int new_record_announcement_count = 8;
+
+  /*****************************************
+   * Querier Settings
+   *****************************************/
+
+  // Determines whether querying is enabled.
+  bool enable_querying = true;
 
   // Number of times new mDNS records should be announced, using an exponential
   // back off. -1 signifies that there should be no maximum.
@@ -26,9 +44,10 @@ struct Config {
   // different value during testing.
   int new_query_announcement_count = -1;
 
-  // Determines whether querying and publishing of services is enabled.
-  bool enable_querying = true;
-  bool enable_publication = true;
+  // Limit on the size to which the mDNS Querier Cache may grow. This is used to
+  // prevent a malicious or misbehaving mDNS client from causing the memory
+  // used by mDNS to grow in an unbounded fashion.
+  int querier_max_records_cached = 1024;
 };
 
 }  // namespace discovery

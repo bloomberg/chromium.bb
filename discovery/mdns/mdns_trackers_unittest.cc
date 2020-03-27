@@ -106,7 +106,7 @@ class MdnsTrackerTest : public testing::Test {
       DnsType type) {
     return std::make_unique<MdnsRecordTracker>(
         record, type, &sender_, &task_runner_, &FakeClock::now, &random_,
-        [this](MdnsRecordTracker* tracker, const MdnsRecord& record) {
+        [this](const MdnsRecordTracker* tracker, const MdnsRecord& record) {
           expiration_called_ = true;
         });
   }
