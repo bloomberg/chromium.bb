@@ -12,6 +12,7 @@
 #ifndef AOM_AV1_COMMON_QUANT_COMMON_H_
 #define AOM_AV1_COMMON_QUANT_COMMON_H_
 
+#include <stdbool.h>
 #include "aom/aom_codec.h"
 #include "av1/common/seg_common.h"
 #include "av1/common/enums.h"
@@ -37,12 +38,18 @@ extern "C" {
 #define DEFAULT_QM_LAST 9
 
 struct AV1Common;
+struct macroblockd;
 
 int16_t av1_dc_quant_QTX(int qindex, int delta, aom_bit_depth_t bit_depth);
 int16_t av1_ac_quant_QTX(int qindex, int delta, aom_bit_depth_t bit_depth);
 
 int av1_get_qindex(const struct segmentation *seg, int segment_id,
                    int base_qindex);
+
+// Returns true if we should use quantization matrix.
+bool av1_use_qmatrix(const struct AV1Common *cm,
+                     const struct macroblockd *const xd, int segment_id);
+
 // Reduce the large number of quantizers to a smaller number of levels for which
 // different matrices may be defined
 static INLINE int aom_get_qmlevel(int qindex, int first, int last) {

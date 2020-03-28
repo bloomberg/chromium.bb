@@ -2079,7 +2079,6 @@ static AOM_INLINE void setup_quantization(AV1_COMMON *const cm,
 static AOM_INLINE void setup_segmentation_dequant(AV1_COMMON *const cm,
                                                   MACROBLOCKD *const xd) {
   const int bit_depth = cm->seq_params.bit_depth;
-  const int using_qm = cm->using_qmatrix;
   // When segmentation is disabled, only the first value is used.  The
   // remaining are don't cares.
   const int max_segments = cm->seg.enabled ? MAX_SEGMENTS : 1;
@@ -2096,20 +2095,20 @@ static AOM_INLINE void setup_segmentation_dequant(AV1_COMMON *const cm,
         av1_dc_quant_QTX(qindex, cm->v_dc_delta_q, bit_depth);
     cm->v_dequant_QTX[i][1] =
         av1_ac_quant_QTX(qindex, cm->v_ac_delta_q, bit_depth);
-    const int lossless = xd->lossless[i];
+    const int use_qmatrix = av1_use_qmatrix(cm, xd, i);
     // NB: depends on base index so there is only 1 set per frame
     // No quant weighting when lossless or signalled not using QM
-    int qmlevel = (lossless || using_qm == 0) ? NUM_QM_LEVELS - 1 : cm->qm_y;
+    const int qmlevel_y = use_qmatrix ? cm->qm_y : NUM_QM_LEVELS - 1;
     for (int j = 0; j < TX_SIZES_ALL; ++j) {
-      cm->y_iqmatrix[i][j] = av1_iqmatrix(cm, qmlevel, AOM_PLANE_Y, j);
+      cm->y_iqmatrix[i][j] = av1_iqmatrix(cm, qmlevel_y, AOM_PLANE_Y, j);
     }
-    qmlevel = (lossless || using_qm == 0) ? NUM_QM_LEVELS - 1 : cm->qm_u;
+    const int qmlevel_u = use_qmatrix ? cm->qm_u : NUM_QM_LEVELS - 1;
     for (int j = 0; j < TX_SIZES_ALL; ++j) {
-      cm->u_iqmatrix[i][j] = av1_iqmatrix(cm, qmlevel, AOM_PLANE_U, j);
+      cm->u_iqmatrix[i][j] = av1_iqmatrix(cm, qmlevel_u, AOM_PLANE_U, j);
     }
-    qmlevel = (lossless || using_qm == 0) ? NUM_QM_LEVELS - 1 : cm->qm_v;
+    const int qmlevel_v = use_qmatrix ? cm->qm_v : NUM_QM_LEVELS - 1;
     for (int j = 0; j < TX_SIZES_ALL; ++j) {
-      cm->v_iqmatrix[i][j] = av1_iqmatrix(cm, qmlevel, AOM_PLANE_V, j);
+      cm->v_iqmatrix[i][j] = av1_iqmatrix(cm, qmlevel_v, AOM_PLANE_V, j);
     }
   }
 }

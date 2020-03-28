@@ -225,6 +225,12 @@ int av1_get_qindex(const struct segmentation *seg, int segment_id,
   }
 }
 
+bool av1_use_qmatrix(const AV1_COMMON *cm, const MACROBLOCKD *const xd,
+                     int segment_id) {
+  // True if we are using Q matrix and this is not a lossless segment.
+  return cm->using_qmatrix && !xd->lossless[segment_id];
+}
+
 const qm_val_t *av1_iqmatrix(AV1_COMMON *cm, int qmlevel, int plane,
                              TX_SIZE tx_size) {
   assert(cm->giqmatrix[qmlevel][plane][tx_size] != NULL ||
