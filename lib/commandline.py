@@ -631,9 +631,14 @@ class BaseParser(object):
           default=self.default_log_level,
           help='Set logging level to report at.')
       self.add_common_argument_to_group(
-          self.debug_group, '--log_format', action='store',
+          self.debug_group, '--log-format', action='store',
           default=constants.LOGGER_FMT,
           help='Set logging format to use.')
+      # Backwards compat name.  We should delete this at some point.
+      self.add_common_argument_to_group(
+          self.debug_group, '--log_format', action='store',
+          default=constants.LOGGER_FMT,
+          help=argparse.SUPPRESS)
       if self.debug_enabled:
         self.add_common_argument_to_group(
             self.debug_group, '--debug', action='store_const', const='debug',
