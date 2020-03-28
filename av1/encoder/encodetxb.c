@@ -1750,12 +1750,8 @@ int av1_optimize_txb_new(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
   const int shift = av1_get_tx_scale(tx_size);
   int eob = p->eobs[block];
   const int16_t *dequant = p->dequant_QTX;
-  const TX_SIZE qm_tx_size = av1_get_adjusted_tx_size(tx_size);
   const qm_val_t *iqmatrix =
-      IS_2D_TRANSFORM(tx_type)
-          ? pd->seg_iqmatrix[xd->mi[0]->segment_id][qm_tx_size]
-          : cpi->common.quant_params
-                .giqmatrix[NUM_QM_LEVELS - 1][0][qm_tx_size];
+      av1_get_iqmatrix(&cpi->common.quant_params, xd, plane, tx_size, tx_type);
   const int block_offset = BLOCK_OFFSET(block);
   tran_low_t *qcoeff = p->qcoeff + block_offset;
   tran_low_t *dqcoeff = pd->dqcoeff + block_offset;
@@ -1948,11 +1944,8 @@ int av1_optimize_txb(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
       2;
   uint8_t levels_buf[TX_PAD_2D];
   uint8_t *const levels = set_levels(levels_buf, width);
-  const TX_SIZE qm_tx_size = av1_get_adjusted_tx_size(tx_size);
   const qm_val_t *iqmatrix =
-      IS_2D_TRANSFORM(tx_type)
-          ? pd->seg_iqmatrix[mbmi->segment_id][qm_tx_size]
-          : cm->quant_params.giqmatrix[NUM_QM_LEVELS - 1][0][qm_tx_size];
+      av1_get_iqmatrix(&cpi->common.quant_params, xd, plane, tx_size, tx_type);
   assert(width == (1 << bwl));
   const int tx_type_cost =
       get_tx_type_cost(x, xd, plane, tx_size, tx_type, reduced_tx_set_used);

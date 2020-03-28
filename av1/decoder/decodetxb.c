@@ -161,11 +161,8 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
       av1_get_tx_type(xd, plane_type, blk_row, blk_col, tx_size,
                       cm->features.reduced_tx_set_used);
   const TX_CLASS tx_class = tx_type_to_class[tx_type];
-  const TX_SIZE qm_tx_size = av1_get_adjusted_tx_size(tx_size);
   const qm_val_t *iqmatrix =
-      IS_2D_TRANSFORM(tx_type)
-          ? pd->seg_iqmatrix[mbmi->segment_id][qm_tx_size]
-          : cm->quant_params.giqmatrix[NUM_QM_LEVELS - 1][0][qm_tx_size];
+      av1_get_iqmatrix(&cm->quant_params, xd, plane, tx_size, tx_type);
   const SCAN_ORDER *const scan_order = get_scan(tx_size, tx_type);
   const int16_t *const scan = scan_order->scan;
   int eob_extra = 0;

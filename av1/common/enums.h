@@ -291,8 +291,6 @@ enum {
   EXT_TX_SET_TYPES
 } UENUM1BYTE(TxSetType);
 
-#define IS_2D_TRANSFORM(tx_type) (tx_type < IDTX)
-
 #define EXT_TX_SIZES 4       // number of sizes that use extended transforms
 #define EXT_TX_SETS_INTER 4  // Sets of transform selections for INTER
 #define EXT_TX_SETS_INTRA 3  // Sets of transform selections for INTRA

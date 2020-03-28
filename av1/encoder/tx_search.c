@@ -1102,7 +1102,7 @@ static INLINE void recon_intra(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
                                                     : AV1_XFORM_QUANT_FP)
                           : AV1_XFORM_QUANT_FP,
                       cpi->use_quant_b_adapt, &quant_param_intra);
-      av1_setup_qmatrix(&cm->quant_params, x, plane, tx_size, best_tx_type,
+      av1_setup_qmatrix(&cm->quant_params, xd, plane, tx_size, best_tx_type,
                         &quant_param_intra);
       av1_xform_quant(x, plane, block, blk_row, blk_col, plane_bsize,
                       &txfm_param_intra, &quant_param_intra);
@@ -2208,7 +2208,7 @@ static void search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     if (!(allowed_tx_mask & (1 << tx_type))) continue;
     txfm_param.tx_type = tx_type;
     if (av1_use_qmatrix(&cm->quant_params, xd, mbmi->segment_id)) {
-      av1_setup_qmatrix(&cm->quant_params, x, plane, tx_size, tx_type,
+      av1_setup_qmatrix(&cm->quant_params, xd, plane, tx_size, tx_type,
                         &quant_param);
     }
     if (plane == 0) xd->tx_type_map[tx_type_map_idx] = tx_type;

@@ -244,6 +244,36 @@ const qm_val_t *av1_qmatrix(const CommonQuantParams *quant_params, int qmlevel,
   return quant_params->gqmatrix[qmlevel][plane][tx_size];
 }
 
+// Returns true if the tx_type corresponds to non-identity transform in both
+// horizontal and vertical directions.
+static INLINE bool is_2d_transform(TX_TYPE tx_type) { return (tx_type < IDTX); }
+
+const qm_val_t *av1_get_iqmatrix(const CommonQuantParams *const quant_params,
+                                 const MACROBLOCKD *const xd, int plane,
+                                 TX_SIZE tx_size, TX_TYPE tx_type) {
+  const struct macroblockd_plane *const pd = &xd->plane[plane];
+  const MB_MODE_INFO *const mbmi = xd->mi[0];
+  const int seg_id = mbmi->segment_id;
+  const TX_SIZE qm_tx_size = av1_get_adjusted_tx_size(tx_size);
+  // Use a flat matrix (i.e. no weighting) for 1D and Identity transforms
+  return is_2d_transform(tx_type)
+             ? pd->seg_iqmatrix[seg_id][qm_tx_size]
+             : quant_params->giqmatrix[NUM_QM_LEVELS - 1][0][qm_tx_size];
+}
+
+const qm_val_t *av1_get_qmatrix(const CommonQuantParams *const quant_params,
+                                const MACROBLOCKD *const xd, int plane,
+                                TX_SIZE tx_size, TX_TYPE tx_type) {
+  const struct macroblockd_plane *const pd = &xd->plane[plane];
+  const MB_MODE_INFO *const mbmi = xd->mi[0];
+  const int seg_id = mbmi->segment_id;
+  const TX_SIZE qm_tx_size = av1_get_adjusted_tx_size(tx_size);
+  // Use a flat matrix (i.e. no weighting) for 1D and Identity transforms
+  return is_2d_transform(tx_type)
+             ? pd->seg_qmatrix[seg_id][qm_tx_size]
+             : quant_params->gqmatrix[NUM_QM_LEVELS - 1][0][qm_tx_size];
+}
+
 #define QM_TOTAL_SIZE 3344
 // We only use wt_matrix_ref[q] and iwt_matrix_ref[q]
 // for q = 0, ..., NUM_QM_LEVELS - 2.
