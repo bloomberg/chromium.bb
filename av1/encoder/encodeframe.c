@@ -1901,7 +1901,6 @@ static AOM_INLINE void rd_use_partition(
   BLOCK_SIZE sub_subsize = BLOCK_4X4;
   int splits_below = 0;
   BLOCK_SIZE bs_type = mib[0]->sb_type;
-  int do_partition_search = 1;
   PICK_MODE_CONTEXT *ctx_none = &pc_tree->none;
 
   if (mi_row >= mi_params->mi_rows || mi_col >= mi_params->mi_cols) return;
@@ -1930,9 +1929,12 @@ static AOM_INLINE void rd_use_partition(
   const int orig_rdmult = x->rdmult;
   setup_block_rdmult(cpi, x, mi_row, mi_col, bsize, NO_AQ, NULL);
 
-  if (do_partition_search &&
-      cpi->sf.part_sf.partition_search_type == SEARCH_PARTITION &&
-      cpi->sf.part_sf.adjust_partitioning_from_last_frame) {
+  if (cpi->sf.part_sf.partition_search_type == SEARCH_PARTITION ||
+      (cpi->sf.part_sf.partition_search_type == VAR_BASED_PARTITION &&
+       (cpi->sf.part_sf.adjust_var_based_rd_partitioning == 2 ||
+        (cpi->sf.part_sf.adjust_var_based_rd_partitioning == 1 &&
+         cm->quant_params.base_qindex > 190 && bsize <= BLOCK_32X32 &&
+         !frame_is_intra_only(cm))))) {
     // Check if any of the sub blocks are further split.
     if (partition == PARTITION_SPLIT && subsize > BLOCK_8X8) {
       sub_subsize = get_partition_subsize(subsize, PARTITION_SPLIT);
@@ -2021,6 +2023,11 @@ static AOM_INLINE void rd_use_partition(
       }
       break;
     case PARTITION_SPLIT:
+      if (cpi->sf.part_sf.adjust_var_based_rd_partitioning == 1 &&
+          none_rdc.rate < INT_MAX && none_rdc.skip == 1) {
+        av1_invalid_rd_stats(&last_part_rdc);
+        break;
+      }
       last_part_rdc.rate = 0;
       last_part_rdc.dist = 0;
       last_part_rdc.rdcost = 0;
@@ -2062,9 +2069,9 @@ static AOM_INLINE void rd_use_partition(
         RDCOST(x->rdmult, last_part_rdc.rate, last_part_rdc.dist);
   }
 
-  if (do_partition_search &&
-      cpi->sf.part_sf.adjust_partitioning_from_last_frame &&
-      cpi->sf.part_sf.partition_search_type == SEARCH_PARTITION &&
+  if ((cpi->sf.part_sf.partition_search_type == SEARCH_PARTITION ||
+       (cpi->sf.part_sf.partition_search_type == VAR_BASED_PARTITION &&
+        cpi->sf.part_sf.adjust_var_based_rd_partitioning == 2)) &&
       partition != PARTITION_SPLIT && bsize > BLOCK_8X8 &&
       (mi_row + bs < mi_params->mi_rows ||
        mi_row + hbs == mi_params->mi_rows) &&

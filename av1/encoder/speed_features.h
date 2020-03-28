@@ -367,9 +367,10 @@ typedef struct PARTITION_SPEED_FEATURES {
   BLOCK_SIZE default_min_partition_size;
   BLOCK_SIZE default_max_partition_size;
 
-  // Whether or not we allow partitions one smaller or one greater than the last
-  // frame's partitioning. Only used if use_lastframe_partitioning is set.
-  int adjust_partitioning_from_last_frame;
+  // Sets level of adjustmet of variace-based partitioning during
+  // rd_use_partition 0 - no partition adjusment 1 - adjust partition for small
+  // blocks and high QP 2 - always adjust partitioning
+  int adjust_var_based_rd_partitioning;
 
   // Partition search early breakout thresholds.
   int64_t partition_search_breakout_dist_thr;

@@ -800,6 +800,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->part_sf.max_intra_bsize = BLOCK_32X32;
     sf->part_sf.partition_search_breakout_rate_thr = 500;
     sf->part_sf.partition_search_type = VAR_BASED_PARTITION;
+    sf->part_sf.adjust_var_based_rd_partitioning = 1;
 
     sf->mv_sf.search_method = FAST_DIAMOND;
     sf->mv_sf.subpel_force_stop = QUARTER_PEL;
@@ -911,7 +912,7 @@ static AOM_INLINE void init_part_sf(PARTITION_SPEED_FEATURES *part_sf) {
   part_sf->auto_min_partition_based_on_simple_motion = 0;
   part_sf->default_max_partition_size = BLOCK_LARGEST;
   part_sf->default_min_partition_size = BLOCK_4X4;
-  part_sf->adjust_partitioning_from_last_frame = 0;
+  part_sf->adjust_var_based_rd_partitioning = 0;
   part_sf->allow_partition_search_skip = 0;
   part_sf->max_intra_bsize = BLOCK_LARGEST;
   // This setting only takes effect when partition_search_type is set
