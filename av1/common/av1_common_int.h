@@ -573,24 +573,43 @@ typedef struct AV1Common {
   // Quantization params.
   CommonQuantParams quant_params;
 
-  uint8_t *last_frame_seg_map;
-
-  loop_filter_info_n lf_info;
-  RestorationInfo rst_info[MAX_MB_PLANE];
-
-  // Pointer to a scratch buffer used by self-guided restoration
-  int32_t *rst_tmpbuf;
-  RestorationLineBuffers *rlbs;
-
-  // Output of loop restoration
-  YV12_BUFFER_CONFIG rst_frame;
-
-  int ref_frame_sign_bias[REF_FRAMES]; /* Two state 0, 1 */
-
-  struct loopfilter lf;
+  // Segmentation info for current frame.
   struct segmentation seg;
 
-  FRAME_CONTEXT *fc; /* this frame entropy */
+  // Segmentation map for previous frame.
+  uint8_t *last_frame_seg_map;
+
+  // Deblocking filter parameters.
+  loop_filter_info_n lf_info;
+  struct loopfilter lf;
+
+  // Loop Restoration filter parameters.
+  RestorationInfo rst_info[MAX_MB_PLANE];  // Loop Restoration filter info.
+  int32_t *rst_tmpbuf;  // Scratch buffer for self-guided restoration filter.
+  RestorationLineBuffers *rlbs;  // Line buffers required by loop restoration.
+  YV12_BUFFER_CONFIG rst_frame;  // Stores the output of loop restoration.
+
+  // CDEF (Constrained Directional Enhancement Filter) parameters.
+  CdefInfo cdef_info;
+
+  // Parameters for film grain synthesis.
+  aom_film_grain_t film_grain_params;
+
+  // Parameters for delta quantization and delta loop filter level.
+  DeltaQInfo delta_q_info;
+
+  // Global motion parameters for each reference frame.
+  WarpedMotionParams global_motion[REF_FRAMES];
+
+  // Elements part of the sequence header, that are applicable for all the
+  // frames in the video.
+  SequenceHeader seq_params;
+
+  // Current CDFs of all the symbols for the current frame.
+  FRAME_CONTEXT *fc;
+  // Default CDFs used when features.primary_ref_frame = PRIMARY_REF_NONE
+  // (e.g. for a keyframe). These default CDFs are defined by the bitstream and
+  // copied from default CDF tables for each symbol.
   FRAME_CONTEXT *default_frame_context;
 
   // Parameters related to tiling.
@@ -602,17 +621,12 @@ typedef struct AV1Common {
   PARTITION_CONTEXT **above_seg_context;
   ENTROPY_CONTEXT **above_context[MAX_MB_PLANE];
   TXFM_CONTEXT **above_txfm_context;
-  WarpedMotionParams global_motion[REF_FRAMES];
-  aom_film_grain_t film_grain_params;
-
-  CdefInfo cdef_info;
-  DeltaQInfo delta_q_info;  // Delta Q and Delta LF parameters
-
-  SequenceHeader seq_params;
   int current_frame_id;
   int ref_frame_id[REF_FRAMES];
   TPL_MV_REF *tpl_mvs;
   int tpl_mvs_mem_size;
+
+  int ref_frame_sign_bias[REF_FRAMES]; /* Two state 0, 1 */
   // TODO(jingning): This can be combined with sign_bias later.
   int8_t ref_frame_side[REF_FRAMES];
 
