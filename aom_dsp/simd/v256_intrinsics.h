@@ -374,16 +374,4 @@ SIMD_INLINE uint32_t v256_sad_u16_sum(sad256_internal_u16 s) {
   return c_v256_sad_u16_sum(s);
 }
 
-typedef uint32_t sad256_internal_u16;
-SIMD_INLINE sad256_internal_u16 v256_sad_u16_init(void) {
-  return c_v256_sad_u16_init();
-}
-SIMD_INLINE sad256_internal_u16 v256_sad_u16(sad256_internal_u16 s, v256 a,
-                                             v256 b) {
-  return c_v256_sad_u16(s, a, b);
-}
-SIMD_INLINE uint32_t v256_sad_u16_sum(sad256_internal_u16 s) {
-  return c_v256_sad_u16_sum(s);
-}
-
 #endif  // AOM_AOM_DSP_SIMD_V256_INTRINSICS_H_

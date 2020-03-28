@@ -78,7 +78,6 @@ SIMD_INLINE c_ssd128_internal v128_ssd_u8(c_ssd128_internal s, v128 a, v128 b) {
 SIMD_INLINE uint32_t v128_ssd_u8_sum(c_ssd128_internal s) {
   return c_v128_ssd_u8_sum(s);
 }
-}
 SIMD_INLINE int64_t v128_dotp_su8(v128 a, v128 b) {
   return c_v128_dotp_su8(a, b);
 }
