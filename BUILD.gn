@@ -31,6 +31,7 @@ if (current_cpu == "x86" || current_cpu == "x64") {
     include_dirs = [ "simd/nasm/" ]
 
     if (current_cpu == "x86") {
+      include_dirs += [ "simd/i386/" ]
       sources = [
         "simd/i386/jccolor-avx2.asm",
         "simd/i386/jccolor-mmx.asm",
@@ -82,6 +83,7 @@ if (current_cpu == "x86" || current_cpu == "x64") {
         "PIC",
       ]
     } else if (current_cpu == "x64") {
+      include_dirs += [ "simd/x86_64/" ]
       sources = [
         "simd/x86_64/jccolor-avx2.asm",
         "simd/x86_64/jccolor-sse2.asm",
