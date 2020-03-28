@@ -994,7 +994,8 @@ static aom_codec_err_t ctrl_get_last_quantizer(aom_codec_alg_priv_t *ctx,
                                                va_list args) {
   int *const arg = va_arg(args, int *);
   if (arg == NULL) return AOM_CODEC_INVALID_PARAM;
-  *arg = ((FrameWorkerData *)ctx->frame_worker->data1)->pbi->common.base_qindex;
+  *arg = ((FrameWorkerData *)ctx->frame_worker->data1)
+             ->pbi->common.quant_params.base_qindex;
   return AOM_CODEC_OK;
 }
 

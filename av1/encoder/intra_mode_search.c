@@ -1733,7 +1733,8 @@ int64_t av1_handle_intra_mode(IntraModeSearchState *intra_search_state,
   const int mode_cost =
       x->mbmode_cost[size_group_lookup[bsize]][mode] + ref_frame_cost;
   const int intra_cost_penalty = av1_get_intra_cost_penalty(
-      cm->base_qindex, cm->y_dc_delta_q, cm->seq_params.bit_depth);
+      cm->quant_params.base_qindex, cm->quant_params.y_dc_delta_q,
+      cm->seq_params.bit_depth);
   const int skip_ctx = av1_get_skip_context(xd);
 
   int known_rate = mode_cost;

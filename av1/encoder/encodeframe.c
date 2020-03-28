@@ -240,9 +240,9 @@ static BLOCK_SIZE get_rd_var_based_fixed_partition(AV1_COMP *cpi, MACROBLOCK *x,
 
 static int set_deltaq_rdmult(const AV1_COMP *const cpi, MACROBLOCKD *const xd) {
   const AV1_COMMON *const cm = &cpi->common;
-
-  return av1_compute_rd_mult(
-      cpi, cm->base_qindex + xd->delta_qindex + cm->y_dc_delta_q);
+  const CommonQuantParams *quant_params = &cm->quant_params;
+  return av1_compute_rd_mult(cpi, quant_params->base_qindex + xd->delta_qindex +
+                                      quant_params->y_dc_delta_q);
 }
 
 static AOM_INLINE void set_ssim_rdmult(const AV1_COMP *const cpi,
@@ -336,8 +336,10 @@ static int set_segment_rdmult(const AV1_COMP *const cpi, MACROBLOCK *const x,
   const AV1_COMMON *const cm = &cpi->common;
   av1_init_plane_quantizers(cpi, x, segment_id);
   aom_clear_system_state();
-  int segment_qindex = av1_get_qindex(&cm->seg, segment_id, cm->base_qindex);
-  return av1_compute_rd_mult(cpi, segment_qindex + cm->y_dc_delta_q);
+  const int segment_qindex =
+      av1_get_qindex(&cm->seg, segment_id, cm->quant_params.base_qindex);
+  return av1_compute_rd_mult(cpi,
+                             segment_qindex + cm->quant_params.y_dc_delta_q);
 }
 
 static AOM_INLINE void setup_block_rdmult(const AV1_COMP *const cpi,
@@ -4028,12 +4030,13 @@ static int get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
   int64_t mc_dep_cost = 0;
   const int mi_wide = mi_size_wide[bsize];
   const int mi_high = mi_size_high[bsize];
+  const int base_qindex = cm->quant_params.base_qindex;
 
-  if (tpl_frame->is_valid == 0) return cm->base_qindex;
+  if (tpl_frame->is_valid == 0) return base_qindex;
 
-  if (!is_frame_tpl_eligible(cpi)) return cm->base_qindex;
+  if (!is_frame_tpl_eligible(cpi)) return base_qindex;
 
-  if (cpi->gf_group.index >= MAX_LAG_BUFFERS) return cm->base_qindex;
+  if (cpi->gf_group.index >= MAX_LAG_BUFFERS) return base_qindex;
 
 #if !USE_TPL_CLASSIC_MODEL
   int64_t mc_count = 0, mc_saved = 0;
@@ -4073,13 +4076,13 @@ static int get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
     beta = (r0 / rk);
     assert(beta > 0.0);
   }
-  offset = av1_get_deltaq_offset(cpi, cm->base_qindex, beta);
+  offset = av1_get_deltaq_offset(cpi, base_qindex, beta);
   aom_clear_system_state();
 
   const DeltaQInfo *const delta_q_info = &cm->delta_q_info;
   offset = AOMMIN(offset, delta_q_info->delta_q_res * 9 - 1);
   offset = AOMMAX(offset, -delta_q_info->delta_q_res * 9 + 1);
-  int qindex = cm->base_qindex + offset;
+  int qindex = cm->quant_params.base_qindex + offset;
   qindex = AOMMIN(qindex, MAXQ);
   qindex = AOMMAX(qindex, MINQ);
 
@@ -4099,7 +4102,7 @@ static AOM_INLINE void setup_delta_q(AV1_COMP *const cpi, ThreadData *td,
   // Delta-q modulation based on variance
   av1_setup_src_planes(x, cpi->source, mi_row, mi_col, num_planes, sb_size);
 
-  int current_qindex = cm->base_qindex;
+  int current_qindex = cm->quant_params.base_qindex;
   if (cpi->oxcf.deltaq_mode == DELTA_Q_PERCEPTUAL) {
     if (DELTA_Q_PERCEPTUAL_MODULATION == 1) {
       const int block_wavelet_energy_level =
@@ -4126,7 +4129,7 @@ static AOM_INLINE void setup_delta_q(AV1_COMP *const cpi, ThreadData *td,
     current_qindex =
         clamp(current_qindex, delta_q_res, 256 - delta_q_info->delta_q_res);
   } else {
-    current_qindex = cm->base_qindex;
+    current_qindex = cm->quant_params.base_qindex;
   }
 
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -4140,7 +4143,7 @@ static AOM_INLINE void setup_delta_q(AV1_COMP *const cpi, ThreadData *td,
   current_qindex = AOMMAX(current_qindex, MINQ + 1);
   assert(current_qindex > 0);
 
-  xd->delta_qindex = current_qindex - cm->base_qindex;
+  xd->delta_qindex = current_qindex - cm->quant_params.base_qindex;
   set_offsets(cpi, tile_info, x, mi_row, mi_col, sb_size);
   xd->mi[0]->current_qindex = current_qindex;
   av1_init_plane_quantizers(cpi, x, xd->mi[0]->segment_id);
@@ -4869,7 +4872,7 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
   // Reset delta for every tile
   if (mi_row == tile_info->mi_row_start || cpi->row_mt) {
     if (cm->delta_q_info.delta_q_present_flag)
-      xd->current_qindex = cm->base_qindex;
+      xd->current_qindex = cm->quant_params.base_qindex;
     if (cm->delta_q_info.delta_lf_present_flag) {
       av1_reset_loop_filter_delta(xd, av1_num_planes(cm));
     }
@@ -5686,13 +5689,15 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
     }
   }
 
+  const CommonQuantParams *quant_params = &cm->quant_params;
   for (i = 0; i < MAX_SEGMENTS; ++i) {
-    const int qindex = cm->seg.enabled
-                           ? av1_get_qindex(&cm->seg, i, cm->base_qindex)
-                           : cm->base_qindex;
-    xd->lossless[i] = qindex == 0 && cm->y_dc_delta_q == 0 &&
-                      cm->u_dc_delta_q == 0 && cm->u_ac_delta_q == 0 &&
-                      cm->v_dc_delta_q == 0 && cm->v_ac_delta_q == 0;
+    const int qindex =
+        cm->seg.enabled ? av1_get_qindex(&cm->seg, i, quant_params->base_qindex)
+                        : quant_params->base_qindex;
+    xd->lossless[i] =
+        qindex == 0 && quant_params->y_dc_delta_q == 0 &&
+        quant_params->u_dc_delta_q == 0 && quant_params->u_ac_delta_q == 0 &&
+        quant_params->v_dc_delta_q == 0 && quant_params->v_ac_delta_q == 0;
     if (xd->lossless[i]) cpi->has_lossless_segment = 1;
     xd->qindex[i] = qindex;
     if (xd->lossless[i]) {
@@ -5733,12 +5738,12 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
 
   // update delta_q_present_flag and delta_lf_present_flag based on
   // base_qindex
-  cm->delta_q_info.delta_q_present_flag &= cm->base_qindex > 0;
-  cm->delta_q_info.delta_lf_present_flag &= cm->base_qindex > 0;
+  cm->delta_q_info.delta_q_present_flag &= quant_params->base_qindex > 0;
+  cm->delta_q_info.delta_lf_present_flag &= quant_params->base_qindex > 0;
 
   av1_frame_init_quantizer(cpi);
   av1_initialize_rd_consts(cpi);
-  av1_initialize_me_consts(cpi, x, cm->base_qindex);
+  av1_initialize_me_consts(cpi, x, quant_params->base_qindex);
 
   init_encode_frame_mb_context(cpi);
   set_default_interp_skip_flags(cpi);

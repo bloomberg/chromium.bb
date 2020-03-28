@@ -1277,7 +1277,7 @@ void av1_set_speed_features_qindex_dependent(AV1_COMP *cpi, int speed) {
   SPEED_FEATURES *const sf = &cpi->sf;
   const int is_720p_or_larger = AOMMIN(cm->width, cm->height) >= 720;
   if (is_720p_or_larger && cpi->oxcf.mode == GOOD && speed == 0) {
-    if (cm->base_qindex <= 80) {
+    if (cm->quant_params.base_qindex <= 80) {
       sf->rd_sf.perform_coeff_opt = 2;
       memcpy(cpi->coeff_opt_dist_threshold,
              coeff_opt_dist_thresholds[sf->rd_sf.perform_coeff_opt],

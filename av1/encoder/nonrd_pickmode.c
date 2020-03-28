@@ -1536,11 +1536,13 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   const int bw = block_size_wide[bsize];
   const int pixels_in_block = bh * bw;
   struct buf_2d orig_dst = pd->dst;
+  const CommonQuantParams *quant_params = &cm->quant_params;
 #if COLLECT_PICK_MODE_STAT
   aom_usec_timer_start(&ms_stat.timer2);
 #endif
   int intra_cost_penalty = av1_get_intra_cost_penalty(
-      cm->base_qindex, cm->y_dc_delta_q, cm->seq_params.bit_depth);
+      quant_params->base_qindex, quant_params->y_dc_delta_q,
+      cm->seq_params.bit_depth);
   int64_t inter_mode_thresh = RDCOST(x->rdmult, intra_cost_penalty, 0);
   const int perform_intra_pred = cpi->sf.rt_sf.check_intra_pred_nonrd;
   int use_modeled_non_rd_cost = 0;
@@ -1658,7 +1660,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   const int use_model_yrd_large =
       cpi->oxcf.rc_mode == AOM_CBR && large_block &&
       !cyclic_refresh_segment_id_boosted(xd->mi[0]->segment_id) &&
-      cm->base_qindex;
+      quant_params->base_qindex;
 
 #if COLLECT_PICK_MODE_STAT
   ms_stat.num_blocks[bsize]++;
@@ -1671,9 +1673,9 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
   // TODO(marpan): Look into reducing these conditions. For now constrain
   // it to avoid significant bdrate loss.
-  if (cpi->sf.rt_sf.use_modeled_non_rd_cost && cm->base_qindex > 120 &&
-      x->source_variance > 100 && bsize <= BLOCK_16X16 &&
-      x->content_state_sb != kLowVarHighSumdiff &&
+  if (cpi->sf.rt_sf.use_modeled_non_rd_cost &&
+      quant_params->base_qindex > 120 && x->source_variance > 100 &&
+      bsize <= BLOCK_16X16 && x->content_state_sb != kLowVarHighSumdiff &&
       x->content_state_sb != kHighSad)
     use_modeled_non_rd_cost = 1;
 

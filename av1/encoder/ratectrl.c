@@ -492,7 +492,7 @@ void av1_rc_update_rate_correction_factors(AV1_COMP *cpi, int width,
         av1_cyclic_refresh_estimate_bits_at_q(cpi, rate_correction_factor);
   } else {
     projected_size_based_on_q = av1_estimate_bits_at_q(
-        cpi->common.current_frame.frame_type, cm->base_qindex, MBs,
+        cm->current_frame.frame_type, cm->quant_params.base_qindex, MBs,
         rate_correction_factor, cm->seq_params.bit_depth);
   }
   // Work out a size correction factor.
@@ -510,7 +510,7 @@ void av1_rc_update_rate_correction_factors(AV1_COMP *cpi, int width,
   }
 
   cpi->rc.q_2_frame = cpi->rc.q_1_frame;
-  cpi->rc.q_1_frame = cm->base_qindex;
+  cpi->rc.q_1_frame = cm->quant_params.base_qindex;
   cpi->rc.rc_2_frame = cpi->rc.rc_1_frame;
   if (correction_factor > 110)
     cpi->rc.rc_1_frame = -1;
@@ -1566,7 +1566,7 @@ void av1_rc_postencode_update(AV1_COMP *cpi, uint64_t bytes_used) {
   const int is_intrnl_arf =
       gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE;
 
-  const int qindex = cm->base_qindex;
+  const int qindex = cm->quant_params.base_qindex;
 
   // Update rate control heuristics
   rc->projected_frame_size = (int)(bytes_used << 3);

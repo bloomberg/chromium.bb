@@ -419,6 +419,41 @@ struct CommonModeInfoParams {
                     int height);
 };
 
+// Parameters related to quantization.
+typedef struct CommonQuantParams CommonQuantParams;
+struct CommonQuantParams {
+  // Base qIndex of the frame in the range 0 to 255.
+  // The qindex per block may have a delta from this: see 'delta_q_info' below.
+  int base_qindex;
+
+  int y_dc_delta_q;
+  int u_dc_delta_q;
+  int v_dc_delta_q;
+  int u_ac_delta_q;
+  int v_ac_delta_q;
+
+  // The dequantizers below are true dequantizers used only in the
+  // dequantization process.  They have the same coefficient
+  // shift/scale as TX.
+  int16_t y_dequant_QTX[MAX_SEGMENTS][2];
+  int16_t u_dequant_QTX[MAX_SEGMENTS][2];
+  int16_t v_dequant_QTX[MAX_SEGMENTS][2];
+
+  // Global quant matrix tables
+  const qm_val_t *giqmatrix[NUM_QM_LEVELS][3][TX_SIZES_ALL];
+  const qm_val_t *gqmatrix[NUM_QM_LEVELS][3][TX_SIZES_ALL];
+
+  // Local quant matrix tables for each frame
+  const qm_val_t *y_iqmatrix[MAX_SEGMENTS][TX_SIZES_ALL];
+  const qm_val_t *u_iqmatrix[MAX_SEGMENTS][TX_SIZES_ALL];
+  const qm_val_t *v_iqmatrix[MAX_SEGMENTS][TX_SIZES_ALL];
+
+  int using_qmatrix;
+  int qm_y;
+  int qm_u;
+  int qm_v;
+};
+
 typedef struct AV1Common {
   // Information about the current frame that is being coded.
   CurrentFrame current_frame;
@@ -535,34 +570,8 @@ typedef struct AV1Common {
 #if CONFIG_ENTROPY_STATS
   int coef_cdf_category;
 #endif
-
-  int base_qindex;
-  int y_dc_delta_q;
-  int u_dc_delta_q;
-  int v_dc_delta_q;
-  int u_ac_delta_q;
-  int v_ac_delta_q;
-
-  // The dequantizers below are true dequantizers used only in the
-  // dequantization process.  They have the same coefficient
-  // shift/scale as TX.
-  int16_t y_dequant_QTX[MAX_SEGMENTS][2];
-  int16_t u_dequant_QTX[MAX_SEGMENTS][2];
-  int16_t v_dequant_QTX[MAX_SEGMENTS][2];
-
-  // Global quant matrix tables
-  const qm_val_t *giqmatrix[NUM_QM_LEVELS][3][TX_SIZES_ALL];
-  const qm_val_t *gqmatrix[NUM_QM_LEVELS][3][TX_SIZES_ALL];
-
-  // Local quant matrix tables for each frame
-  const qm_val_t *y_iqmatrix[MAX_SEGMENTS][TX_SIZES_ALL];
-  const qm_val_t *u_iqmatrix[MAX_SEGMENTS][TX_SIZES_ALL];
-  const qm_val_t *v_iqmatrix[MAX_SEGMENTS][TX_SIZES_ALL];
-
-  int using_qmatrix;
-  int qm_y;
-  int qm_u;
-  int qm_v;
+  // Quantization params.
+  CommonQuantParams quant_params;
 
   uint8_t *last_frame_seg_map;
 
@@ -836,25 +845,28 @@ static INLINE void av1_init_above_context(AV1_COMMON *cm, MACROBLOCKD *xd,
 static INLINE void av1_init_macroblockd(AV1_COMMON *cm, MACROBLOCKD *xd,
                                         tran_low_t *dqcoeff) {
   const int num_planes = av1_num_planes(cm);
+  const CommonQuantParams *const quant_params = &cm->quant_params;
+
   for (int i = 0; i < num_planes; ++i) {
     xd->plane[i].dqcoeff = dqcoeff;
 
     if (xd->plane[i].plane_type == PLANE_TYPE_Y) {
-      memcpy(xd->plane[i].seg_dequant_QTX, cm->y_dequant_QTX,
-             sizeof(cm->y_dequant_QTX));
-      memcpy(xd->plane[i].seg_iqmatrix, cm->y_iqmatrix, sizeof(cm->y_iqmatrix));
+      memcpy(xd->plane[i].seg_dequant_QTX, quant_params->y_dequant_QTX,
+             sizeof(quant_params->y_dequant_QTX));
+      memcpy(xd->plane[i].seg_iqmatrix, quant_params->y_iqmatrix,
+             sizeof(quant_params->y_iqmatrix));
 
     } else {
       if (i == AOM_PLANE_U) {
-        memcpy(xd->plane[i].seg_dequant_QTX, cm->u_dequant_QTX,
-               sizeof(cm->u_dequant_QTX));
-        memcpy(xd->plane[i].seg_iqmatrix, cm->u_iqmatrix,
-               sizeof(cm->u_iqmatrix));
+        memcpy(xd->plane[i].seg_dequant_QTX, quant_params->u_dequant_QTX,
+               sizeof(quant_params->u_dequant_QTX));
+        memcpy(xd->plane[i].seg_iqmatrix, quant_params->u_iqmatrix,
+               sizeof(quant_params->u_iqmatrix));
       } else {
-        memcpy(xd->plane[i].seg_dequant_QTX, cm->v_dequant_QTX,
-               sizeof(cm->v_dequant_QTX));
-        memcpy(xd->plane[i].seg_iqmatrix, cm->v_iqmatrix,
-               sizeof(cm->v_iqmatrix));
+        memcpy(xd->plane[i].seg_dequant_QTX, quant_params->v_dequant_QTX,
+               sizeof(quant_params->v_dequant_QTX));
+        memcpy(xd->plane[i].seg_iqmatrix, quant_params->v_iqmatrix,
+               sizeof(quant_params->v_iqmatrix));
       }
     }
   }

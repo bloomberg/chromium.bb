@@ -794,7 +794,7 @@ void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
   const FeatureFlags *const features = &cm->features;
   const int is_inter = is_inter_block(mbmi);
   if (get_ext_tx_types(tx_size, is_inter, features->reduced_tx_set_used) > 1 &&
-      ((!cm->seg.enabled && cm->base_qindex > 0) ||
+      ((!cm->seg.enabled && cm->quant_params.base_qindex > 0) ||
        (cm->seg.enabled && xd->qindex[mbmi->segment_id] > 0)) &&
       !mbmi->skip &&
       !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
@@ -1691,7 +1691,7 @@ static AOM_INLINE void write_modes(AV1_COMP *const cpi,
   av1_init_above_context(cm, xd, tile->tile_row);
 
   if (cpi->common.delta_q_info.delta_q_present_flag) {
-    xd->current_qindex = cpi->common.base_qindex;
+    xd->current_qindex = cpi->common.quant_params.base_qindex;
     if (cpi->common.delta_q_info.delta_lf_present_flag) {
       av1_reset_loop_filter_delta(xd, av1_num_planes(cm));
     }
@@ -2026,31 +2026,31 @@ static AOM_INLINE void write_delta_q(struct aom_write_bit_buffer *wb,
   }
 }
 
-static AOM_INLINE void encode_quantization(const AV1_COMMON *const cm,
-                                           struct aom_write_bit_buffer *wb) {
-  const int num_planes = av1_num_planes(cm);
-
-  aom_wb_write_literal(wb, cm->base_qindex, QINDEX_BITS);
-  write_delta_q(wb, cm->y_dc_delta_q);
+static AOM_INLINE void encode_quantization(
+    const CommonQuantParams *const quant_params, int num_planes,
+    bool separate_uv_delta_q, struct aom_write_bit_buffer *wb) {
+  aom_wb_write_literal(wb, quant_params->base_qindex, QINDEX_BITS);
+  write_delta_q(wb, quant_params->y_dc_delta_q);
   if (num_planes > 1) {
-    int diff_uv_delta = (cm->u_dc_delta_q != cm->v_dc_delta_q) ||
-                        (cm->u_ac_delta_q != cm->v_ac_delta_q);
-    if (cm->seq_params.separate_uv_delta_q) aom_wb_write_bit(wb, diff_uv_delta);
-    write_delta_q(wb, cm->u_dc_delta_q);
-    write_delta_q(wb, cm->u_ac_delta_q);
+    int diff_uv_delta =
+        (quant_params->u_dc_delta_q != quant_params->v_dc_delta_q) ||
+        (quant_params->u_ac_delta_q != quant_params->v_ac_delta_q);
+    if (separate_uv_delta_q) aom_wb_write_bit(wb, diff_uv_delta);
+    write_delta_q(wb, quant_params->u_dc_delta_q);
+    write_delta_q(wb, quant_params->u_ac_delta_q);
     if (diff_uv_delta) {
-      write_delta_q(wb, cm->v_dc_delta_q);
-      write_delta_q(wb, cm->v_ac_delta_q);
+      write_delta_q(wb, quant_params->v_dc_delta_q);
+      write_delta_q(wb, quant_params->v_ac_delta_q);
     }
   }
-  aom_wb_write_bit(wb, cm->using_qmatrix);
-  if (cm->using_qmatrix) {
-    aom_wb_write_literal(wb, cm->qm_y, QM_LEVEL_BITS);
-    aom_wb_write_literal(wb, cm->qm_u, QM_LEVEL_BITS);
-    if (!cm->seq_params.separate_uv_delta_q)
-      assert(cm->qm_u == cm->qm_v);
+  aom_wb_write_bit(wb, quant_params->using_qmatrix);
+  if (quant_params->using_qmatrix) {
+    aom_wb_write_literal(wb, quant_params->qm_y, QM_LEVEL_BITS);
+    aom_wb_write_literal(wb, quant_params->qm_u, QM_LEVEL_BITS);
+    if (!separate_uv_delta_q)
+      assert(quant_params->qm_u == quant_params->qm_v);
     else
-      aom_wb_write_literal(wb, cm->qm_v, QM_LEVEL_BITS);
+      aom_wb_write_literal(wb, quant_params->qm_v, QM_LEVEL_BITS);
   }
 }
 
@@ -2826,6 +2826,7 @@ static AOM_INLINE void write_uncompressed_header_obu(
     struct aom_write_bit_buffer *wb) {
   AV1_COMMON *const cm = &cpi->common;
   const SequenceHeader *const seq_params = &cm->seq_params;
+  const CommonQuantParams *quant_params = &cm->quant_params;
   MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
   CurrentFrame *const current_frame = &cm->current_frame;
   FeatureFlags *const features = &cm->features;
@@ -3067,16 +3068,17 @@ static AOM_INLINE void write_uncompressed_header_obu(
   }
 
   write_tile_info(cm, saved_wb, wb);
-  encode_quantization(cm, wb);
+  encode_quantization(quant_params, av1_num_planes(cm),
+                      cm->seq_params.separate_uv_delta_q, wb);
   encode_segmentation(cm, xd, wb);
 
   const DeltaQInfo *const delta_q_info = &cm->delta_q_info;
-  if (delta_q_info->delta_q_present_flag) assert(cm->base_qindex > 0);
-  if (cm->base_qindex > 0) {
+  if (delta_q_info->delta_q_present_flag) assert(quant_params->base_qindex > 0);
+  if (quant_params->base_qindex > 0) {
     aom_wb_write_bit(wb, delta_q_info->delta_q_present_flag);
     if (delta_q_info->delta_q_present_flag) {
       aom_wb_write_literal(wb, get_msb(delta_q_info->delta_q_res), 2);
-      xd->current_qindex = cm->base_qindex;
+      xd->current_qindex = quant_params->base_qindex;
       if (features->allow_intrabc)
         assert(delta_q_info->delta_lf_present_flag == 0);
       else

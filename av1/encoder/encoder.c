@@ -3430,7 +3430,7 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf, BufferPool *const pool,
    * av1_init_quantizer() for every frame.
    */
   av1_init_quantizer(cpi);
-  av1_qm_init(cm);
+  av1_qm_init(&cm->quant_params, av1_num_planes(cm));
 
   av1_loop_filter_init(cm);
   cm->superres_scale_denominator = SCALE_NUMERATOR;
@@ -5837,7 +5837,7 @@ static int encode_with_and_without_superres(AV1_COMP *cpi, size_t *size,
 
   // Note: Both use common rdmult based on base qindex of fullres.
   const int64_t rdmult =
-      av1_compute_rd_mult_based_on_qindex(cpi, cm->base_qindex);
+      av1_compute_rd_mult_based_on_qindex(cpi, cm->quant_params.base_qindex);
 
 #if SUPERRES_RECODE_ALL_RATIOS
   // Find the best rdcost among all superres denoms.
@@ -6904,7 +6904,9 @@ int av1_set_internal_size(AV1_COMP *cpi, AOM_SCALING horiz_mode,
   return 0;
 }
 
-int av1_get_quantizer(AV1_COMP *cpi) { return cpi->common.base_qindex; }
+int av1_get_quantizer(AV1_COMP *cpi) {
+  return cpi->common.quant_params.base_qindex;
+}
 
 int av1_convert_sect5obus_to_annexb(uint8_t *buffer, size_t *frame_size) {
   size_t output_size = 0;

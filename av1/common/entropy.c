@@ -29,7 +29,7 @@ static int get_q_ctx(int q) {
 }
 
 void av1_default_coef_probs(AV1_COMMON *cm) {
-  const int index = get_q_ctx(cm->base_qindex);
+  const int index = get_q_ctx(cm->quant_params.base_qindex);
 #if CONFIG_ENTROPY_STATS
   cm->coef_cdf_category = index;
 #endif

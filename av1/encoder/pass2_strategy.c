@@ -2780,7 +2780,7 @@ void av1_twopass_postencode_update(AV1_COMP *cpi) {
     const int pyramid_level = cpi->gf_group.layer_depth[cpi->gf_group.index];
     int i;
     for (i = pyramid_level; i <= MAX_ARF_LAYERS; ++i) {
-      rc->active_best_quality[i] = cpi->common.base_qindex;
+      rc->active_best_quality[i] = cpi->common.quant_params.base_qindex;
       // if (pyramid_level >= 2) {
       //   rc->active_best_quality[pyramid_level] =
       //     AOMMAX(rc->active_best_quality[pyramid_level],
@@ -2805,7 +2805,8 @@ void av1_twopass_postencode_update(AV1_COMP *cpi) {
             (double)twopass->rolling_arf_group_actual_bits /
                 (double)twopass->rolling_arf_group_target_bits,
             twopass->bpm_factor,
-            av1_convert_qindex_to_q(cm->base_qindex, cm->seq_params.bit_depth),
+            av1_convert_qindex_to_q(quant_params->base_qindex,
+                                    cm->seq_params.bit_depth),
             av1_convert_qindex_to_q(rc->active_worst_quality,
                                     cm->seq_params.bit_depth));
     fclose(fpfile);

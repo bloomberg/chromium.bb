@@ -137,7 +137,7 @@ AV1Decoder *av1_decoder_create(BufferPool *const pool) {
 
   av1_loop_filter_init(cm);
 
-  av1_qm_init(cm);
+  av1_qm_init(&cm->quant_params, av1_num_planes(cm));
   av1_loop_restoration_precal();
 #if CONFIG_ACCOUNTING
   pbi->acct_enabled = 1;

@@ -96,28 +96,27 @@ static int compute_deltaq(const AV1_COMP *cpi, int q, double rate_factor) {
 int av1_cyclic_refresh_estimate_bits_at_q(const AV1_COMP *cpi,
                                           double correction_factor) {
   const AV1_COMMON *const cm = &cpi->common;
+  const FRAME_TYPE frame_type = cm->current_frame.frame_type;
+  const int base_qindex = cm->quant_params.base_qindex;
+  const int bit_depth = cm->seq_params.bit_depth;
   const CYCLIC_REFRESH *const cr = cpi->cyclic_refresh;
-  int estimated_bits;
-  int mbs = cm->mi_params.MBs;
-  int num4x4bl = mbs << 4;
+  const int mbs = cm->mi_params.MBs;
+  const int num4x4bl = mbs << 4;
   // Weight for non-base segments: use actual number of blocks refreshed in
   // previous/just encoded frame. Note number of blocks here is in 4x4 units.
-  double weight_segment1 = (double)cr->actual_num_seg1_blocks / num4x4bl;
-  double weight_segment2 = (double)cr->actual_num_seg2_blocks / num4x4bl;
+  const double weight_segment1 = (double)cr->actual_num_seg1_blocks / num4x4bl;
+  const double weight_segment2 = (double)cr->actual_num_seg2_blocks / num4x4bl;
   // Take segment weighted average for estimated bits.
-  estimated_bits =
+  const int estimated_bits =
       (int)((1.0 - weight_segment1 - weight_segment2) *
-                av1_estimate_bits_at_q(cm->current_frame.frame_type,
-                                       cm->base_qindex, mbs, correction_factor,
-                                       cm->seq_params.bit_depth) +
+                av1_estimate_bits_at_q(frame_type, base_qindex, mbs,
+                                       correction_factor, bit_depth) +
             weight_segment1 * av1_estimate_bits_at_q(
-                                  cm->current_frame.frame_type,
-                                  cm->base_qindex + cr->qindex_delta[1], mbs,
-                                  correction_factor, cm->seq_params.bit_depth) +
+                                  frame_type, base_qindex + cr->qindex_delta[1],
+                                  mbs, correction_factor, bit_depth) +
             weight_segment2 * av1_estimate_bits_at_q(
-                                  cm->current_frame.frame_type,
-                                  cm->base_qindex + cr->qindex_delta[2], mbs,
-                                  correction_factor, cm->seq_params.bit_depth));
+                                  frame_type, base_qindex + cr->qindex_delta[2],
+                                  mbs, correction_factor, bit_depth));
   return estimated_bits;
 }
 
@@ -293,10 +292,10 @@ static void cyclic_refresh_update_map(AV1_COMP *const cpi) {
     // TODO(any): Ensure the population of
     // cpi->common.features.allow_screen_content_tools and use the same instead
     // of cpi->oxcf.content == AOM_CONTENT_SCREEN
-    int qindex_thresh =
-        cpi->oxcf.content == AOM_CONTENT_SCREEN
-            ? av1_get_qindex(&cm->seg, CR_SEGMENT_ID_BOOST2, cm->base_qindex)
-            : 0;
+    int qindex_thresh = cpi->oxcf.content == AOM_CONTENT_SCREEN
+                            ? av1_get_qindex(&cm->seg, CR_SEGMENT_ID_BOOST2,
+                                             cm->quant_params.base_qindex)
+                            : 0;
     assert(mi_row >= 0 && mi_row < mi_params->mi_rows);
     assert(mi_col >= 0 && mi_col < mi_params->mi_cols);
     bl_index = mi_row * mi_params->mi_cols + mi_col;
@@ -431,8 +430,8 @@ void av1_cyclic_refresh_setup(AV1_COMP *const cpi) {
     }
     return;
   } else {
-    const double q =
-        av1_convert_qindex_to_q(cm->base_qindex, cm->seq_params.bit_depth);
+    const double q = av1_convert_qindex_to_q(cm->quant_params.base_qindex,
+                                             cm->seq_params.bit_depth);
     aom_clear_system_state();
     // Set rate threshold to some multiple (set to 2 for now) of the target
     // rate (target is given by sb64_target_rate and scaled by 256).
@@ -463,20 +462,22 @@ void av1_cyclic_refresh_setup(AV1_COMP *const cpi) {
     av1_enable_segfeature(seg, CR_SEGMENT_ID_BOOST2, SEG_LVL_ALT_Q);
 
     // Set the q delta for segment BOOST1.
+    const CommonQuantParams *const quant_params = &cm->quant_params;
     int qindex_delta =
-        compute_deltaq(cpi, cm->base_qindex, cr->rate_ratio_qdelta);
+        compute_deltaq(cpi, quant_params->base_qindex, cr->rate_ratio_qdelta);
     cr->qindex_delta[1] = qindex_delta;
 
     // Compute rd-mult for segment BOOST1.
-    const int qindex2 =
-        clamp(cm->base_qindex + cm->y_dc_delta_q + qindex_delta, 0, MAXQ);
+    const int qindex2 = clamp(
+        quant_params->base_qindex + quant_params->y_dc_delta_q + qindex_delta,
+        0, MAXQ);
     cr->rdmult = av1_compute_rd_mult(cpi, qindex2);
 
     av1_set_segdata(seg, CR_SEGMENT_ID_BOOST1, SEG_LVL_ALT_Q, qindex_delta);
 
     // Set a more aggressive (higher) q delta for segment BOOST2.
     qindex_delta = compute_deltaq(
-        cpi, cm->base_qindex,
+        cpi, quant_params->base_qindex,
         AOMMIN(CR_MAX_RATE_TARGET_RATIO,
                0.1 * cr->rate_boost_fac * cr->rate_ratio_qdelta));
     cr->qindex_delta[2] = qindex_delta;

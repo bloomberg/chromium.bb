@@ -1754,7 +1754,8 @@ int av1_optimize_txb_new(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
   const qm_val_t *iqmatrix =
       IS_2D_TRANSFORM(tx_type)
           ? pd->seg_iqmatrix[xd->mi[0]->segment_id][qm_tx_size]
-          : cpi->common.giqmatrix[NUM_QM_LEVELS - 1][0][qm_tx_size];
+          : cpi->common.quant_params
+                .giqmatrix[NUM_QM_LEVELS - 1][0][qm_tx_size];
   const int block_offset = BLOCK_OFFSET(block);
   tran_low_t *qcoeff = p->qcoeff + block_offset;
   tran_low_t *dqcoeff = pd->dqcoeff + block_offset;
@@ -1951,7 +1952,7 @@ int av1_optimize_txb(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
   const qm_val_t *iqmatrix =
       IS_2D_TRANSFORM(tx_type)
           ? pd->seg_iqmatrix[mbmi->segment_id][qm_tx_size]
-          : cm->giqmatrix[NUM_QM_LEVELS - 1][0][qm_tx_size];
+          : cm->quant_params.giqmatrix[NUM_QM_LEVELS - 1][0][qm_tx_size];
   assert(width == (1 << bwl));
   const int tx_type_cost =
       get_tx_type_cost(x, xd, plane, tx_size, tx_type, reduced_tx_set_used);
@@ -2036,7 +2037,7 @@ static void update_tx_type_count(const AV1_COMP *cpi, const AV1_COMMON *cm,
   }
 
   if (get_ext_tx_types(tx_size, is_inter, reduced_tx_set_used) > 1 &&
-      cm->base_qindex > 0 && !mbmi->skip &&
+      cm->quant_params.base_qindex > 0 && !mbmi->skip &&
       !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
     const int eset = get_ext_tx_set(tx_size, is_inter, reduced_tx_set_used);
     if (eset > 0) {

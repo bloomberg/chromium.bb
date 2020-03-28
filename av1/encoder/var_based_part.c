@@ -684,10 +684,11 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
   if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ && cm->seg.enabled &&
       cyclic_refresh_segment_id_boosted(segment_id) &&
       cpi->sf.rt_sf.use_nonrd_pick_mode) {
-    int q = av1_get_qindex(&cm->seg, segment_id, cm->base_qindex);
+    int q = av1_get_qindex(&cm->seg, segment_id, cm->quant_params.base_qindex);
     set_vbp_thresholds(cpi, thresholds, q, content_state);
   } else {
-    set_vbp_thresholds(cpi, thresholds, cm->base_qindex, content_state);
+    set_vbp_thresholds(cpi, thresholds, cm->quant_params.base_qindex,
+                       content_state);
   }
 
   if (is_small_sb) {

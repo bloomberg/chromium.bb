@@ -44,6 +44,7 @@ static const int segment_id[ENERGY_SPAN] = { 0, 1, 1, 2, 3, 4 };
 
 void av1_vaq_frame_setup(AV1_COMP *cpi) {
   AV1_COMMON *cm = &cpi->common;
+  const int base_qindex = cm->quant_params.base_qindex;
   struct segmentation *seg = &cm->seg;
   int i;
 
@@ -78,15 +79,15 @@ void av1_vaq_frame_setup(AV1_COMP *cpi) {
       // Set up avg segment id to be 1.0 and adjust the other segments around
       // it.
       int qindex_delta = av1_compute_qdelta_by_rate(
-          &cpi->rc, cm->current_frame.frame_type, cm->base_qindex,
+          &cpi->rc, cm->current_frame.frame_type, base_qindex,
           rate_ratio[i] / avg_ratio, cm->seq_params.bit_depth);
 
       // We don't allow qindex 0 in a segment if the base value is not 0.
       // Q index 0 (lossless) implies 4x4 encoding only and in AQ mode a segment
       // Q delta is sometimes applied without going back around the rd loop.
       // This could lead to an illegal combination of partition size and q.
-      if ((cm->base_qindex != 0) && ((cm->base_qindex + qindex_delta) == 0)) {
-        qindex_delta = -cm->base_qindex + 1;
+      if ((base_qindex != 0) && ((base_qindex + qindex_delta) == 0)) {
+        qindex_delta = -base_qindex + 1;
       }
 
       av1_set_segdata(seg, i, SEG_LVL_ALT_Q, qindex_delta);
@@ -193,12 +194,13 @@ int av1_compute_q_from_energy_level_deltaq_mode(const AV1_COMP *const cpi,
   } else {
     rate_level = block_var_level;
   }
+  const int base_qindex = cm->quant_params.base_qindex;
   int qindex_delta = av1_compute_qdelta_by_rate(
-      &cpi->rc, cm->current_frame.frame_type, cm->base_qindex,
+      &cpi->rc, cm->current_frame.frame_type, base_qindex,
       deltaq_rate_ratio[rate_level], cm->seq_params.bit_depth);
 
-  if ((cm->base_qindex != 0) && ((cm->base_qindex + qindex_delta) == 0)) {
-    qindex_delta = -cm->base_qindex + 1;
+  if ((base_qindex != 0) && ((base_qindex + qindex_delta) == 0)) {
+    qindex_delta = -base_qindex + 1;
   }
-  return cm->base_qindex + qindex_delta;
+  return base_qindex + qindex_delta;
 }

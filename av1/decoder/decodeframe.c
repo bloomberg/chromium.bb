@@ -1450,12 +1450,14 @@ static AOM_INLINE void parse_decode_block(AV1Decoder *const pbi,
     for (int i = 0; i < MAX_SEGMENTS; i++) {
       const int current_qindex =
           av1_get_qindex(&cm->seg, i, xd->current_qindex);
+      const CommonQuantParams *const quant_params = &cm->quant_params;
       for (int j = 0; j < num_planes; ++j) {
-        const int dc_delta_q =
-            j == 0 ? cm->y_dc_delta_q
-                   : (j == 1 ? cm->u_dc_delta_q : cm->v_dc_delta_q);
-        const int ac_delta_q =
-            j == 0 ? 0 : (j == 1 ? cm->u_ac_delta_q : cm->v_ac_delta_q);
+        const int dc_delta_q = j == 0 ? quant_params->y_dc_delta_q
+                                      : (j == 1 ? quant_params->u_dc_delta_q
+                                                : quant_params->v_dc_delta_q);
+        const int ac_delta_q = j == 0 ? 0
+                                      : (j == 1 ? quant_params->u_ac_delta_q
+                                                : quant_params->v_ac_delta_q);
         xd->plane[j].seg_dequant_QTX[i][0] = av1_dc_quant_QTX(
             current_qindex, dc_delta_q, cm->seq_params.bit_depth);
         xd->plane[j].seg_dequant_QTX[i][1] = av1_ac_quant_QTX(
@@ -2036,42 +2038,42 @@ static INLINE int read_delta_q(struct aom_read_bit_buffer *rb) {
   return aom_rb_read_bit(rb) ? aom_rb_read_inv_signed_literal(rb, 6) : 0;
 }
 
-static AOM_INLINE void setup_quantization(AV1_COMMON *const cm,
+static AOM_INLINE void setup_quantization(CommonQuantParams *quant_params,
+                                          int num_planes,
+                                          bool separate_uv_delta_q,
                                           struct aom_read_bit_buffer *rb) {
-  const SequenceHeader *const seq_params = &cm->seq_params;
-  const int num_planes = av1_num_planes(cm);
-  cm->base_qindex = aom_rb_read_literal(rb, QINDEX_BITS);
-  cm->y_dc_delta_q = read_delta_q(rb);
+  quant_params->base_qindex = aom_rb_read_literal(rb, QINDEX_BITS);
+  quant_params->y_dc_delta_q = read_delta_q(rb);
   if (num_planes > 1) {
     int diff_uv_delta = 0;
-    if (seq_params->separate_uv_delta_q) diff_uv_delta = aom_rb_read_bit(rb);
-    cm->u_dc_delta_q = read_delta_q(rb);
-    cm->u_ac_delta_q = read_delta_q(rb);
+    if (separate_uv_delta_q) diff_uv_delta = aom_rb_read_bit(rb);
+    quant_params->u_dc_delta_q = read_delta_q(rb);
+    quant_params->u_ac_delta_q = read_delta_q(rb);
     if (diff_uv_delta) {
-      cm->v_dc_delta_q = read_delta_q(rb);
-      cm->v_ac_delta_q = read_delta_q(rb);
+      quant_params->v_dc_delta_q = read_delta_q(rb);
+      quant_params->v_ac_delta_q = read_delta_q(rb);
     } else {
-      cm->v_dc_delta_q = cm->u_dc_delta_q;
-      cm->v_ac_delta_q = cm->u_ac_delta_q;
+      quant_params->v_dc_delta_q = quant_params->u_dc_delta_q;
+      quant_params->v_ac_delta_q = quant_params->u_ac_delta_q;
     }
   } else {
-    cm->u_dc_delta_q = 0;
-    cm->u_ac_delta_q = 0;
-    cm->v_dc_delta_q = 0;
-    cm->v_ac_delta_q = 0;
+    quant_params->u_dc_delta_q = 0;
+    quant_params->u_ac_delta_q = 0;
+    quant_params->v_dc_delta_q = 0;
+    quant_params->v_ac_delta_q = 0;
   }
-  cm->using_qmatrix = aom_rb_read_bit(rb);
-  if (cm->using_qmatrix) {
-    cm->qm_y = aom_rb_read_literal(rb, QM_LEVEL_BITS);
-    cm->qm_u = aom_rb_read_literal(rb, QM_LEVEL_BITS);
-    if (!seq_params->separate_uv_delta_q)
-      cm->qm_v = cm->qm_u;
+  quant_params->using_qmatrix = aom_rb_read_bit(rb);
+  if (quant_params->using_qmatrix) {
+    quant_params->qm_y = aom_rb_read_literal(rb, QM_LEVEL_BITS);
+    quant_params->qm_u = aom_rb_read_literal(rb, QM_LEVEL_BITS);
+    if (!separate_uv_delta_q)
+      quant_params->qm_v = quant_params->qm_u;
     else
-      cm->qm_v = aom_rb_read_literal(rb, QM_LEVEL_BITS);
+      quant_params->qm_v = aom_rb_read_literal(rb, QM_LEVEL_BITS);
   } else {
-    cm->qm_y = 0;
-    cm->qm_u = 0;
-    cm->qm_v = 0;
+    quant_params->qm_y = 0;
+    quant_params->qm_u = 0;
+    quant_params->qm_v = 0;
   }
 }
 
@@ -2082,33 +2084,37 @@ static AOM_INLINE void setup_segmentation_dequant(AV1_COMMON *const cm,
   // When segmentation is disabled, only the first value is used.  The
   // remaining are don't cares.
   const int max_segments = cm->seg.enabled ? MAX_SEGMENTS : 1;
+  CommonQuantParams *const quant_params = &cm->quant_params;
   for (int i = 0; i < max_segments; ++i) {
     const int qindex = xd->qindex[i];
-    cm->y_dequant_QTX[i][0] =
-        av1_dc_quant_QTX(qindex, cm->y_dc_delta_q, bit_depth);
-    cm->y_dequant_QTX[i][1] = av1_ac_quant_QTX(qindex, 0, bit_depth);
-    cm->u_dequant_QTX[i][0] =
-        av1_dc_quant_QTX(qindex, cm->u_dc_delta_q, bit_depth);
-    cm->u_dequant_QTX[i][1] =
-        av1_ac_quant_QTX(qindex, cm->u_ac_delta_q, bit_depth);
-    cm->v_dequant_QTX[i][0] =
-        av1_dc_quant_QTX(qindex, cm->v_dc_delta_q, bit_depth);
-    cm->v_dequant_QTX[i][1] =
-        av1_ac_quant_QTX(qindex, cm->v_ac_delta_q, bit_depth);
-    const int use_qmatrix = av1_use_qmatrix(cm, xd, i);
+    quant_params->y_dequant_QTX[i][0] =
+        av1_dc_quant_QTX(qindex, quant_params->y_dc_delta_q, bit_depth);
+    quant_params->y_dequant_QTX[i][1] = av1_ac_quant_QTX(qindex, 0, bit_depth);
+    quant_params->u_dequant_QTX[i][0] =
+        av1_dc_quant_QTX(qindex, quant_params->u_dc_delta_q, bit_depth);
+    quant_params->u_dequant_QTX[i][1] =
+        av1_ac_quant_QTX(qindex, quant_params->u_ac_delta_q, bit_depth);
+    quant_params->v_dequant_QTX[i][0] =
+        av1_dc_quant_QTX(qindex, quant_params->v_dc_delta_q, bit_depth);
+    quant_params->v_dequant_QTX[i][1] =
+        av1_ac_quant_QTX(qindex, quant_params->v_ac_delta_q, bit_depth);
+    const int use_qmatrix = av1_use_qmatrix(quant_params, xd, i);
     // NB: depends on base index so there is only 1 set per frame
     // No quant weighting when lossless or signalled not using QM
-    const int qmlevel_y = use_qmatrix ? cm->qm_y : NUM_QM_LEVELS - 1;
+    const int qmlevel_y = use_qmatrix ? quant_params->qm_y : NUM_QM_LEVELS - 1;
     for (int j = 0; j < TX_SIZES_ALL; ++j) {
-      cm->y_iqmatrix[i][j] = av1_iqmatrix(cm, qmlevel_y, AOM_PLANE_Y, j);
+      quant_params->y_iqmatrix[i][j] =
+          av1_iqmatrix(quant_params, qmlevel_y, AOM_PLANE_Y, j);
     }
-    const int qmlevel_u = use_qmatrix ? cm->qm_u : NUM_QM_LEVELS - 1;
+    const int qmlevel_u = use_qmatrix ? quant_params->qm_u : NUM_QM_LEVELS - 1;
     for (int j = 0; j < TX_SIZES_ALL; ++j) {
-      cm->u_iqmatrix[i][j] = av1_iqmatrix(cm, qmlevel_u, AOM_PLANE_U, j);
+      quant_params->u_iqmatrix[i][j] =
+          av1_iqmatrix(quant_params, qmlevel_u, AOM_PLANE_U, j);
     }
-    const int qmlevel_v = use_qmatrix ? cm->qm_v : NUM_QM_LEVELS - 1;
+    const int qmlevel_v = use_qmatrix ? quant_params->qm_v : NUM_QM_LEVELS - 1;
     for (int j = 0; j < TX_SIZES_ALL; ++j) {
-      cm->v_iqmatrix[i][j] = av1_iqmatrix(cm, qmlevel_v, AOM_PLANE_V, j);
+      quant_params->v_iqmatrix[i][j] =
+          av1_iqmatrix(quant_params, qmlevel_v, AOM_PLANE_V, j);
     }
   }
 }
@@ -3053,7 +3059,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
       td->bit_reader = &tile_data->bit_reader;
       av1_zero(td->cb_buffer_base.dqcoeff);
       av1_tile_init(&td->xd.tile, cm, row, col);
-      td->xd.current_qindex = cm->base_qindex;
+      td->xd.current_qindex = cm->quant_params.base_qindex;
       setup_bool_decoder(tile_bs_buf->data, data_end, tile_bs_buf->size,
                          &cm->error, td->bit_reader, allow_update_cdf);
 #if CONFIG_ACCOUNTING
@@ -3123,7 +3129,7 @@ static AOM_INLINE void tile_worker_hook_init(
   td->bit_reader = &tile_data->bit_reader;
   av1_zero(td->cb_buffer_base.dqcoeff);
   av1_tile_init(&td->xd.tile, cm, tile_row, tile_col);
-  td->xd.current_qindex = cm->base_qindex;
+  td->xd.current_qindex = cm->quant_params.base_qindex;
   setup_bool_decoder(tile_buffer->data, thread_data->data_end,
                      tile_buffer->size, &thread_data->error_info,
                      td->bit_reader, allow_update_cdf);
@@ -5173,7 +5179,9 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                        "Minimum tile width requirement not satisfied");
   }
 
-  setup_quantization(cm, rb);
+  CommonQuantParams *const quant_params = &cm->quant_params;
+  setup_quantization(quant_params, av1_num_planes(cm),
+                     cm->seq_params.separate_uv_delta_q, rb);
   xd->bd = (int)seq_params->bit_depth;
 
   if (cm->num_allocated_above_context_planes < av1_num_planes(cm) ||
@@ -5196,9 +5204,9 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   cm->delta_q_info.delta_lf_present_flag = 0;
   cm->delta_q_info.delta_lf_multi = 0;
   cm->delta_q_info.delta_q_present_flag =
-      cm->base_qindex > 0 ? aom_rb_read_bit(rb) : 0;
+      quant_params->base_qindex > 0 ? aom_rb_read_bit(rb) : 0;
   if (cm->delta_q_info.delta_q_present_flag) {
-    xd->current_qindex = cm->base_qindex;
+    xd->current_qindex = quant_params->base_qindex;
     cm->delta_q_info.delta_q_res = 1 << aom_rb_read_literal(rb, 2);
     if (!features->allow_intrabc)
       cm->delta_q_info.delta_lf_present_flag = aom_rb_read_bit(rb);
@@ -5212,10 +5220,11 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   xd->cur_frame_force_integer_mv = features->cur_frame_force_integer_mv;
 
   for (int i = 0; i < MAX_SEGMENTS; ++i) {
-    const int qindex = av1_get_qindex(&cm->seg, i, cm->base_qindex);
-    xd->lossless[i] = qindex == 0 && cm->y_dc_delta_q == 0 &&
-                      cm->u_dc_delta_q == 0 && cm->u_ac_delta_q == 0 &&
-                      cm->v_dc_delta_q == 0 && cm->v_ac_delta_q == 0;
+    const int qindex = av1_get_qindex(&cm->seg, i, quant_params->base_qindex);
+    xd->lossless[i] =
+        qindex == 0 && quant_params->y_dc_delta_q == 0 &&
+        quant_params->u_dc_delta_q == 0 && quant_params->u_ac_delta_q == 0 &&
+        quant_params->v_dc_delta_q == 0 && quant_params->v_ac_delta_q == 0;
     xd->qindex[i] = qindex;
   }
   features->coded_lossless = is_coded_lossless(cm, xd);

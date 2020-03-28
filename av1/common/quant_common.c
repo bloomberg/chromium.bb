@@ -225,23 +225,23 @@ int av1_get_qindex(const struct segmentation *seg, int segment_id,
   }
 }
 
-bool av1_use_qmatrix(const AV1_COMMON *cm, const MACROBLOCKD *const xd,
-                     int segment_id) {
+bool av1_use_qmatrix(const CommonQuantParams *quant_params,
+                     const MACROBLOCKD *const xd, int segment_id) {
   // True if we are using Q matrix and this is not a lossless segment.
-  return cm->using_qmatrix && !xd->lossless[segment_id];
+  return quant_params->using_qmatrix && !xd->lossless[segment_id];
 }
 
-const qm_val_t *av1_iqmatrix(AV1_COMMON *cm, int qmlevel, int plane,
-                             TX_SIZE tx_size) {
-  assert(cm->giqmatrix[qmlevel][plane][tx_size] != NULL ||
+const qm_val_t *av1_iqmatrix(const CommonQuantParams *quant_params, int qmlevel,
+                             int plane, TX_SIZE tx_size) {
+  assert(quant_params->giqmatrix[qmlevel][plane][tx_size] != NULL ||
          qmlevel == NUM_QM_LEVELS - 1);
-  return cm->giqmatrix[qmlevel][plane][tx_size];
+  return quant_params->giqmatrix[qmlevel][plane][tx_size];
 }
-const qm_val_t *av1_qmatrix(AV1_COMMON *cm, int qmlevel, int plane,
-                            TX_SIZE tx_size) {
-  assert(cm->gqmatrix[qmlevel][plane][tx_size] != NULL ||
+const qm_val_t *av1_qmatrix(const CommonQuantParams *quant_params, int qmlevel,
+                            int plane, TX_SIZE tx_size) {
+  assert(quant_params->gqmatrix[qmlevel][plane][tx_size] != NULL ||
          qmlevel == NUM_QM_LEVELS - 1);
-  return cm->gqmatrix[qmlevel][plane][tx_size];
+  return quant_params->gqmatrix[qmlevel][plane][tx_size];
 }
 
 #define QM_TOTAL_SIZE 3344
@@ -250,27 +250,27 @@ const qm_val_t *av1_qmatrix(AV1_COMMON *cm, int qmlevel, int plane,
 static const qm_val_t wt_matrix_ref[NUM_QM_LEVELS - 1][2][QM_TOTAL_SIZE];
 static const qm_val_t iwt_matrix_ref[NUM_QM_LEVELS - 1][2][QM_TOTAL_SIZE];
 
-void av1_qm_init(AV1_COMMON *cm) {
-  const int num_planes = av1_num_planes(cm);
-  int q, c, t;
-  int current;
-  for (q = 0; q < NUM_QM_LEVELS; ++q) {
-    for (c = 0; c < num_planes; ++c) {
-      current = 0;
-      for (t = 0; t < TX_SIZES_ALL; ++t) {
+void av1_qm_init(CommonQuantParams *quant_params, int num_planes) {
+  for (int q = 0; q < NUM_QM_LEVELS; ++q) {
+    for (int c = 0; c < num_planes; ++c) {
+      int current = 0;
+      for (int t = 0; t < TX_SIZES_ALL; ++t) {
         const int size = tx_size_2d[t];
         const int qm_tx_size = av1_get_adjusted_tx_size(t);
         if (q == NUM_QM_LEVELS - 1) {
-          cm->gqmatrix[q][c][t] = NULL;
-          cm->giqmatrix[q][c][t] = NULL;
+          quant_params->gqmatrix[q][c][t] = NULL;
+          quant_params->giqmatrix[q][c][t] = NULL;
         } else if (t != qm_tx_size) {  // Reuse matrices for 'qm_tx_size'
           assert(t > qm_tx_size);
-          cm->gqmatrix[q][c][t] = cm->gqmatrix[q][c][qm_tx_size];
-          cm->giqmatrix[q][c][t] = cm->giqmatrix[q][c][qm_tx_size];
+          quant_params->gqmatrix[q][c][t] =
+              quant_params->gqmatrix[q][c][qm_tx_size];
+          quant_params->giqmatrix[q][c][t] =
+              quant_params->giqmatrix[q][c][qm_tx_size];
         } else {
           assert(current + size <= QM_TOTAL_SIZE);
-          cm->gqmatrix[q][c][t] = &wt_matrix_ref[q][c >= 1][current];
-          cm->giqmatrix[q][c][t] = &iwt_matrix_ref[q][c >= 1][current];
+          quant_params->gqmatrix[q][c][t] = &wt_matrix_ref[q][c >= 1][current];
+          quant_params->giqmatrix[q][c][t] =
+              &iwt_matrix_ref[q][c >= 1][current];
           current += size;
         }
       }

@@ -61,8 +61,9 @@ static bool is_sb_aq_enabled(const AV1_COMP *const cpi) {
 
 void av1_setup_in_frame_q_adj(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
+  const int base_qindex = cm->quant_params.base_qindex;
   struct segmentation *const seg = &cm->seg;
-  int resolution_change =
+  const int resolution_change =
       cm->prev_frame && (cm->width != cm->prev_frame->width ||
                          cm->height != cm->prev_frame->height);
 
@@ -80,7 +81,7 @@ void av1_setup_in_frame_q_adj(AV1_COMP *cpi) {
   if (is_frame_aq_enabled(cpi)) {
     int segment;
     const int aq_strength =
-        get_aq_c_strength(cm->base_qindex, cm->seq_params.bit_depth);
+        get_aq_c_strength(base_qindex, cm->seq_params.bit_depth);
 
     // Clear down the segment map.
     memset(cpi->segmentation_map, DEFAULT_AQ2_SEG,
@@ -105,17 +106,17 @@ void av1_setup_in_frame_q_adj(AV1_COMP *cpi) {
       if (segment == DEFAULT_AQ2_SEG) continue;
 
       qindex_delta = av1_compute_qdelta_by_rate(
-          &cpi->rc, cm->current_frame.frame_type, cm->base_qindex,
+          &cpi->rc, cm->current_frame.frame_type, base_qindex,
           aq_c_q_adj_factor[aq_strength][segment], cm->seq_params.bit_depth);
 
       // For AQ complexity mode, we dont allow Q0 in a segment if the base
       // Q is not 0. Q0 (lossless) implies 4x4 only and in AQ mode 2 a segment
       // Q delta is sometimes applied without going back around the rd loop.
       // This could lead to an illegal combination of partition size and q.
-      if ((cm->base_qindex != 0) && ((cm->base_qindex + qindex_delta) == 0)) {
-        qindex_delta = -cm->base_qindex + 1;
+      if ((base_qindex != 0) && ((base_qindex + qindex_delta) == 0)) {
+        qindex_delta = -base_qindex + 1;
       }
-      if ((cm->base_qindex + qindex_delta) > 0) {
+      if ((base_qindex + qindex_delta) > 0) {
         av1_enable_segfeature(seg, segment, SEG_LVL_ALT_Q);
         av1_set_segdata(seg, segment, SEG_LVL_ALT_Q, qindex_delta);
       }
@@ -152,8 +153,8 @@ void av1_caq_select_segment(const AV1_COMP *cpi, MACROBLOCK *mb, BLOCK_SIZE bs,
     const int target_rate = (int)(num / denom);
     double logvar;
     double low_var_thresh;
-    const int aq_strength =
-        get_aq_c_strength(cm->base_qindex, cm->seq_params.bit_depth);
+    const int aq_strength = get_aq_c_strength(cm->quant_params.base_qindex,
+                                              cm->seq_params.bit_depth);
 
     aom_clear_system_state();
     low_var_thresh =

@@ -1260,7 +1260,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
   cpi->td.mb.e_mbd.delta_qindex = 0;
 
   if (!frame_params.show_existing_frame) {
-    cm->using_qmatrix = cpi->oxcf.using_qm;
+    cm->quant_params.using_qmatrix = cpi->oxcf.using_qm;
     cpi->min_qmlevel = cpi->oxcf.qm_minlevel;
     cpi->max_qmlevel = cpi->oxcf.qm_maxlevel;
 #if !CONFIG_REALTIME_ONLY

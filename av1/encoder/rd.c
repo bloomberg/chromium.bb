@@ -391,23 +391,23 @@ int av1_get_deltaq_offset(const AV1_COMP *cpi, int qindex, double beta) {
 int av1_get_adaptive_rdmult(const AV1_COMP *cpi, double beta) {
   assert(beta > 0.0);
   const AV1_COMMON *cm = &cpi->common;
-  int64_t q =
-      av1_dc_quant_QTX(cm->base_qindex, 0, cpi->common.seq_params.bit_depth);
+  int64_t q = av1_dc_quant_QTX(cm->quant_params.base_qindex, 0,
+                               cm->seq_params.bit_depth);
   int64_t rdmult = 0;
 
-  switch (cpi->common.seq_params.bit_depth) {
+  switch (cm->seq_params.bit_depth) {
     case AOM_BITS_8: rdmult = (int)((88 * q * q / beta) / 24); break;
     case AOM_BITS_10:
       rdmult = ROUND_POWER_OF_TWO((int)((88 * q * q / beta) / 24), 4);
       break;
     default:
-      assert(cpi->common.seq_params.bit_depth == AOM_BITS_12);
+      assert(cm->seq_params.bit_depth == AOM_BITS_12);
       rdmult = ROUND_POWER_OF_TWO((int)((88 * q * q / beta) / 24), 8);
       break;
   }
 
   if (is_stat_consumption_stage(cpi) &&
-      (cpi->common.current_frame.frame_type != KEY_FRAME)) {
+      (cm->current_frame.frame_type != KEY_FRAME)) {
     const GF_GROUP *const gf_group = &cpi->gf_group;
     const FRAME_UPDATE_TYPE frame_type = gf_group->update_type[gf_group->index];
     const int boost_index = AOMMIN(15, (cpi->rc.gfu_boost / 100));
@@ -451,10 +451,10 @@ static void set_block_thresholds(const AV1_COMMON *cm, RD_OPT *rd) {
   int i, bsize, segment_id;
 
   for (segment_id = 0; segment_id < MAX_SEGMENTS; ++segment_id) {
-    const int qindex =
-        clamp(av1_get_qindex(&cm->seg, segment_id, cm->base_qindex) +
-                  cm->y_dc_delta_q,
-              0, MAXQ);
+    const int qindex = clamp(
+        av1_get_qindex(&cm->seg, segment_id, cm->quant_params.base_qindex) +
+            cm->quant_params.y_dc_delta_q,
+        0, MAXQ);
     const int q = compute_rd_thresh_factor(qindex, cm->seq_params.bit_depth);
 
     for (bsize = 0; bsize < BLOCK_SIZES_ALL; ++bsize) {
@@ -589,7 +589,8 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
 
   aom_clear_system_state();
 
-  rd->RDMULT = av1_compute_rd_mult(cpi, cm->base_qindex + cm->y_dc_delta_q);
+  rd->RDMULT = av1_compute_rd_mult(
+      cpi, cm->quant_params.base_qindex + cm->quant_params.y_dc_delta_q);
 
   set_error_per_bit(x, rd->RDMULT);
 
