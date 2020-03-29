@@ -89,7 +89,7 @@ SIMD_INLINE c_ssd256_internal_s16 v256_ssd_s16(c_ssd256_internal_s16 s, v256 a,
                                                v256 b) {
   return c_v256_ssd_s16(s, a, b);
 }
-SIMD_INLINE uint32_t v256_ssd_s16_sum(c_ssd256_internal_s16 s) {
+SIMD_INLINE uint64_t v256_ssd_s16_sum(c_ssd256_internal_s16 s) {
   return c_v256_ssd_s16_sum(s);
 }
 
