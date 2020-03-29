@@ -973,9 +973,9 @@ aom_codec_err_t aom_codec_enc_init_multi_ver(
   aom_codec_enc_init_multi_ver(ctx, iface, cfg, num_enc, flags, dsf,   \
                                AOM_ENCODER_ABI_VERSION)
 
-/*!\brief Get a default configuration
+/*!\brief Get the default configuration for a usage.
  *
- * Initializes a encoder configuration structure with default values. Supports
+ * Initializes an encoder configuration structure with default values. Supports
  * the notion of "usages" so that an algorithm may offer different default
  * settings depending on the user's intended goal. This function \ref SHOULD
  * be called by all applications to initialize the configuration structure
@@ -983,7 +983,9 @@ aom_codec_err_t aom_codec_enc_init_multi_ver(
  *
  * \param[in]    iface     Pointer to the algorithm interface to use.
  * \param[out]   cfg       Configuration buffer to populate.
- * \param[in]    reserved  Must set to 0.
+ * \param[in]    usage     Algorithm specific usage value. For AV1, must be
+ *                         set to AOM_USAGE_GOOD_QUALITY (0) or
+ *                         AOM_USAGE_REALTIME (1).
  *
  * \retval #AOM_CODEC_OK
  *     The configuration was populated.
@@ -994,7 +996,7 @@ aom_codec_err_t aom_codec_enc_init_multi_ver(
  */
 aom_codec_err_t aom_codec_enc_config_default(aom_codec_iface_t *iface,
                                              aom_codec_enc_cfg_t *cfg,
-                                             unsigned int reserved);
+                                             unsigned int usage);
 
 /*!\brief Set or change configuration
  *

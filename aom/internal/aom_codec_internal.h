@@ -262,21 +262,6 @@ typedef aom_image_t *(*aom_codec_get_preview_frame_fn_t)(
 typedef aom_codec_err_t (*aom_codec_enc_mr_get_mem_loc_fn_t)(
     const aom_codec_enc_cfg_t *cfg, void **mem_loc);
 
-/*!\brief usage configuration mapping
- *
- * This structure stores the mapping between usage identifiers and
- * configuration structures. Each algorithm provides a list of these
- * mappings. This list is searched by the aom_codec_enc_config_default()
- * wrapper function to determine which config to return. The special value
- * {-1, {0}} is used to indicate end-of-list, and must be present. At least
- * one mapping must be present, in addition to the end-of-list.
- *
- */
-typedef const struct aom_codec_enc_cfg_map {
-  int usage;
-  aom_codec_enc_cfg_t cfg;
-} aom_codec_enc_cfg_map_t;
-
 /*!\brief Decoder algorithm interface interface
  *
  * All decoders \ref MUST expose a variable of this type.
@@ -297,10 +282,9 @@ struct aom_codec_iface {
     aom_codec_set_fb_fn_t set_fb_fn; /**< \copydoc ::aom_codec_set_fb_fn_t */
   } dec;
   struct aom_codec_enc_iface {
-    int cfg_map_count;
-    aom_codec_enc_cfg_map_t
-        *cfg_maps;                /**< \copydoc ::aom_codec_enc_cfg_map_t */
-    aom_codec_encode_fn_t encode; /**< \copydoc ::aom_codec_encode_fn_t */
+    int cfg_count;
+    const aom_codec_enc_cfg_t *cfgs; /**< \copydoc ::aom_codec_enc_cfg_t */
+    aom_codec_encode_fn_t encode;    /**< \copydoc ::aom_codec_encode_fn_t */
     aom_codec_get_cx_data_fn_t
         get_cx_data; /**< \copydoc ::aom_codec_get_cx_data_fn_t */
     aom_codec_enc_config_set_fn_t

@@ -1421,7 +1421,7 @@ CODEC_INTERFACE(aom_codec_av1_dx) = {
   {
       // NOLINT
       0,
-      NULL,  // aom_codec_enc_cfg_map_t
+      NULL,  // aom_codec_enc_cfg_t
       NULL,  // aom_codec_encode_fn_t
       NULL,  // aom_codec_get_cx_data_fn_t
       NULL,  // aom_codec_enc_config_set_fn_t

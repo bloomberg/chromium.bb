@@ -38,7 +38,7 @@ struct AvxEncoderConfig {
   const struct AvxInterface *codec;
   int passes;
   int pass;
-  int usage;
+  unsigned int usage;
   ColorInputType color_type;
   int quiet;
   int verbose;

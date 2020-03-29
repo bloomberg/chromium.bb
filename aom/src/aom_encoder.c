@@ -146,23 +146,20 @@ aom_codec_err_t aom_codec_enc_init_multi_ver(
 
 aom_codec_err_t aom_codec_enc_config_default(aom_codec_iface_t *iface,
                                              aom_codec_enc_cfg_t *cfg,
-                                             unsigned int reserved) {
+                                             unsigned int usage) {
   aom_codec_err_t res;
-  aom_codec_enc_cfg_map_t *map;
   int i;
 
-  if (!iface || !cfg || reserved > INT_MAX)
+  if (!iface || !cfg)
     res = AOM_CODEC_INVALID_PARAM;
   else if (!(iface->caps & AOM_CODEC_CAP_ENCODER))
     res = AOM_CODEC_INCAPABLE;
   else {
     res = AOM_CODEC_INVALID_PARAM;
 
-    for (i = 0; i < iface->enc.cfg_map_count; ++i) {
-      map = iface->enc.cfg_maps + i;
-      if (map->usage == (int)reserved) {
-        *cfg = map->cfg;
-        cfg->g_usage = reserved;
+    for (i = 0; i < iface->enc.cfg_count; ++i) {
+      if (iface->enc.cfgs[i].g_usage == usage) {
+        *cfg = iface->enc.cfgs[i];
         res = AOM_CODEC_OK;
         break;
       }

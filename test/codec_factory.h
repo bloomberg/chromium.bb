@@ -46,7 +46,7 @@ class CodecFactory {
                                  TwopassStatsStore *stats) const = 0;
 
   virtual aom_codec_err_t DefaultEncoderConfig(aom_codec_enc_cfg_t *cfg,
-                                               int usage) const = 0;
+                                               unsigned int usage) const = 0;
 };
 
 /* Provide CodecTestWith<n>Params classes for a variable number of parameters
@@ -148,7 +148,7 @@ class AV1CodecFactory : public CodecFactory {
   }
 
   virtual aom_codec_err_t DefaultEncoderConfig(aom_codec_enc_cfg_t *cfg,
-                                               int usage) const {
+                                               unsigned int usage) const {
 #if CONFIG_AV1_ENCODER
     return aom_codec_enc_config_default(aom_codec_av1_cx(), cfg, usage);
 #else

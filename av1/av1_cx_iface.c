@@ -2756,149 +2756,147 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { -1, NULL },
 };
 
-static aom_codec_enc_cfg_map_t encoder_usage_cfg_map[] = {
-  { 0,
-    {
-        // NOLINT
-        AOM_USAGE_GOOD_QUALITY,  // g_usage - non-realtime usage
-        0,                       // g_threads
-        0,                       // g_profile
+static const aom_codec_enc_cfg_t encoder_usage_cfg[] = {
+  {
+      // NOLINT
+      AOM_USAGE_GOOD_QUALITY,  // g_usage - non-realtime usage
+      0,                       // g_threads
+      0,                       // g_profile
 
-        320,         // g_width
-        240,         // g_height
-        0,           // g_limit
-        0,           // g_forced_max_frame_width
-        0,           // g_forced_max_frame_height
-        AOM_BITS_8,  // g_bit_depth
-        8,           // g_input_bit_depth
+      320,         // g_width
+      240,         // g_height
+      0,           // g_limit
+      0,           // g_forced_max_frame_width
+      0,           // g_forced_max_frame_height
+      AOM_BITS_8,  // g_bit_depth
+      8,           // g_input_bit_depth
 
-        { 1, 30 },  // g_timebase
+      { 1, 30 },  // g_timebase
 
-        0,  // g_error_resilient
+      0,  // g_error_resilient
 
-        AOM_RC_ONE_PASS,  // g_pass
+      AOM_RC_ONE_PASS,  // g_pass
 
-        19,  // g_lag_in_frames
+      19,  // g_lag_in_frames
 
-        0,                // rc_dropframe_thresh
-        RESIZE_NONE,      // rc_resize_mode
-        SCALE_NUMERATOR,  // rc_resize_denominator
-        SCALE_NUMERATOR,  // rc_resize_kf_denominator
+      0,                // rc_dropframe_thresh
+      RESIZE_NONE,      // rc_resize_mode
+      SCALE_NUMERATOR,  // rc_resize_denominator
+      SCALE_NUMERATOR,  // rc_resize_kf_denominator
 
-        SUPERRES_NONE,    // rc_superres_mode
-        SCALE_NUMERATOR,  // rc_superres_denominator
-        SCALE_NUMERATOR,  // rc_superres_kf_denominator
-        63,               // rc_superres_qthresh
-        32,               // rc_superres_kf_qthresh
+      SUPERRES_NONE,    // rc_superres_mode
+      SCALE_NUMERATOR,  // rc_superres_denominator
+      SCALE_NUMERATOR,  // rc_superres_kf_denominator
+      63,               // rc_superres_qthresh
+      32,               // rc_superres_kf_qthresh
 
-        AOM_VBR,      // rc_end_usage
-        { NULL, 0 },  // rc_twopass_stats_in
-        { NULL, 0 },  // rc_firstpass_mb_stats_in
-        256,          // rc_target_bandwidth
-        0,            // rc_min_quantizer
-        63,           // rc_max_quantizer
-        25,           // rc_undershoot_pct
-        25,           // rc_overshoot_pct
+      AOM_VBR,      // rc_end_usage
+      { NULL, 0 },  // rc_twopass_stats_in
+      { NULL, 0 },  // rc_firstpass_mb_stats_in
+      256,          // rc_target_bandwidth
+      0,            // rc_min_quantizer
+      63,           // rc_max_quantizer
+      25,           // rc_undershoot_pct
+      25,           // rc_overshoot_pct
 
-        6000,  // rc_max_buffer_size
-        4000,  // rc_buffer_initial_size
-        5000,  // rc_buffer_optimal_size
+      6000,  // rc_max_buffer_size
+      4000,  // rc_buffer_initial_size
+      5000,  // rc_buffer_optimal_size
 
-        50,    // rc_two_pass_vbrbias
-        0,     // rc_two_pass_vbrmin_section
-        2000,  // rc_two_pass_vbrmax_section
+      50,    // rc_two_pass_vbrbias
+      0,     // rc_two_pass_vbrmin_section
+      2000,  // rc_two_pass_vbrmax_section
 
-        // keyframing settings (kf)
-        0,                       // fwd_kf_enabled
-        AOM_KF_AUTO,             // g_kfmode
-        0,                       // kf_min_dist
-        9999,                    // kf_max_dist
-        0,                       // sframe_dist
-        1,                       // sframe_mode
-        0,                       // large_scale_tile
-        0,                       // monochrome
-        0,                       // full_still_picture_hdr
-        0,                       // save_as_annexb
-        0,                       // tile_width_count
-        0,                       // tile_height_count
-        { 0 },                   // tile_widths
-        { 0 },                   // tile_heights
-        0,                       // use_fixed_qp_offsets
-        { -1, -1, -1, -1, -1 },  // fixed_qp_offsets
-        { 0, 128, 128, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-          0, 0,   0,   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },  // cfg
-    } },
-  { 1,
-    {
-        // NOLINT
-        AOM_USAGE_REALTIME,  // g_usage - real-time usage
-        0,                   // g_threads
-        0,                   // g_profile
+      // keyframing settings (kf)
+      0,                       // fwd_kf_enabled
+      AOM_KF_AUTO,             // g_kfmode
+      0,                       // kf_min_dist
+      9999,                    // kf_max_dist
+      0,                       // sframe_dist
+      1,                       // sframe_mode
+      0,                       // large_scale_tile
+      0,                       // monochrome
+      0,                       // full_still_picture_hdr
+      0,                       // save_as_annexb
+      0,                       // tile_width_count
+      0,                       // tile_height_count
+      { 0 },                   // tile_widths
+      { 0 },                   // tile_heights
+      0,                       // use_fixed_qp_offsets
+      { -1, -1, -1, -1, -1 },  // fixed_qp_offsets
+      { 0, 128, 128, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0,   0,   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },  // cfg
+  },
+  {
+      // NOLINT
+      AOM_USAGE_REALTIME,  // g_usage - real-time usage
+      0,                   // g_threads
+      0,                   // g_profile
 
-        320,         // g_width
-        240,         // g_height
-        0,           // g_limit
-        0,           // g_forced_max_frame_width
-        0,           // g_forced_max_frame_height
-        AOM_BITS_8,  // g_bit_depth
-        8,           // g_input_bit_depth
+      320,         // g_width
+      240,         // g_height
+      0,           // g_limit
+      0,           // g_forced_max_frame_width
+      0,           // g_forced_max_frame_height
+      AOM_BITS_8,  // g_bit_depth
+      8,           // g_input_bit_depth
 
-        { 1, 30 },  // g_timebase
+      { 1, 30 },  // g_timebase
 
-        0,  // g_error_resilient
+      0,  // g_error_resilient
 
-        AOM_RC_ONE_PASS,  // g_pass
+      AOM_RC_ONE_PASS,  // g_pass
 
-        1,  // g_lag_in_frames
+      1,  // g_lag_in_frames
 
-        0,                // rc_dropframe_thresh
-        RESIZE_NONE,      // rc_resize_mode
-        SCALE_NUMERATOR,  // rc_resize_denominator
-        SCALE_NUMERATOR,  // rc_resize_kf_denominator
+      0,                // rc_dropframe_thresh
+      RESIZE_NONE,      // rc_resize_mode
+      SCALE_NUMERATOR,  // rc_resize_denominator
+      SCALE_NUMERATOR,  // rc_resize_kf_denominator
 
-        0,                // rc_superres_mode
-        SCALE_NUMERATOR,  // rc_superres_denominator
-        SCALE_NUMERATOR,  // rc_superres_kf_denominator
-        63,               // rc_superres_qthresh
-        32,               // rc_superres_kf_qthresh
+      0,                // rc_superres_mode
+      SCALE_NUMERATOR,  // rc_superres_denominator
+      SCALE_NUMERATOR,  // rc_superres_kf_denominator
+      63,               // rc_superres_qthresh
+      32,               // rc_superres_kf_qthresh
 
-        AOM_CBR,      // rc_end_usage
-        { NULL, 0 },  // rc_twopass_stats_in
-        { NULL, 0 },  // rc_firstpass_mb_stats_in
-        256,          // rc_target_bandwidth
-        0,            // rc_min_quantizer
-        63,           // rc_max_quantizer
-        25,           // rc_undershoot_pct
-        25,           // rc_overshoot_pct
+      AOM_CBR,      // rc_end_usage
+      { NULL, 0 },  // rc_twopass_stats_in
+      { NULL, 0 },  // rc_firstpass_mb_stats_in
+      256,          // rc_target_bandwidth
+      0,            // rc_min_quantizer
+      63,           // rc_max_quantizer
+      25,           // rc_undershoot_pct
+      25,           // rc_overshoot_pct
 
-        6000,  // rc_max_buffer_size
-        4000,  // rc_buffer_initial_size
-        5000,  // rc_buffer_optimal_size
+      6000,  // rc_max_buffer_size
+      4000,  // rc_buffer_initial_size
+      5000,  // rc_buffer_optimal_size
 
-        50,    // rc_two_pass_vbrbias
-        0,     // rc_two_pass_vbrmin_section
-        2000,  // rc_two_pass_vbrmax_section
+      50,    // rc_two_pass_vbrbias
+      0,     // rc_two_pass_vbrmin_section
+      2000,  // rc_two_pass_vbrmax_section
 
-        // keyframing settings (kf)
-        0,                       // fwd_kf_enabled
-        AOM_KF_AUTO,             // g_kfmode
-        0,                       // kf_min_dist
-        9999,                    // kf_max_dist
-        0,                       // sframe_dist
-        1,                       // sframe_mode
-        0,                       // large_scale_tile
-        0,                       // monochrome
-        0,                       // full_still_picture_hdr
-        0,                       // save_as_annexb
-        0,                       // tile_width_count
-        0,                       // tile_height_count
-        { 0 },                   // tile_widths
-        { 0 },                   // tile_heights
-        0,                       // use_fixed_qp_offsets
-        { -1, -1, -1, -1, -1 },  // fixed_qp_offsets
-        { 0, 128, 128, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-          0, 0,   0,   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },  // cfg
-    } },
+      // keyframing settings (kf)
+      0,                       // fwd_kf_enabled
+      AOM_KF_AUTO,             // g_kfmode
+      0,                       // kf_min_dist
+      9999,                    // kf_max_dist
+      0,                       // sframe_dist
+      1,                       // sframe_mode
+      0,                       // large_scale_tile
+      0,                       // monochrome
+      0,                       // full_still_picture_hdr
+      0,                       // save_as_annexb
+      0,                       // tile_width_count
+      0,                       // tile_height_count
+      { 0 },                   // tile_widths
+      { 0 },                   // tile_heights
+      0,                       // use_fixed_qp_offsets
+      { -1, -1, -1, -1, -1 },  // fixed_qp_offsets
+      { 0, 128, 128, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0,   0,   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },  // cfg
+  },
 };
 
 #ifndef VERSION_STRING
@@ -2922,8 +2920,8 @@ CODEC_INTERFACE(aom_codec_av1_cx) = {
   },
   {
       // NOLINT
-      2,                           // 2 cfg map
-      encoder_usage_cfg_map,       // aom_codec_enc_cfg_map_t
+      2,                           // 2 cfg
+      encoder_usage_cfg,           // aom_codec_enc_cfg_t
       encoder_encode,              // aom_codec_encode_fn_t
       encoder_get_cxdata,          // aom_codec_get_cx_data_fn_t
       encoder_set_config,          // aom_codec_enc_config_set_fn_t
