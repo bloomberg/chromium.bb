@@ -238,7 +238,7 @@ class BootstrapStage(PatchChangesStage):
     def _clone_and_patch(subdir, project):
       """Clone & patch a project."""
       url = '%s/%s' % (constants.EXTERNAL_GOB_URL, project)
-      checkout = os.path.join(self.tempdir, 'chromite')
+      checkout = os.path.join(self.tempdir, subdir)
       reference_repo = os.path.join(constants.SOURCE_ROOT, subdir, '.git')
       git.Clone(checkout, url, reference=reference_repo)
       git.RunGit(checkout, ['checkout', filter_branch])
