@@ -271,25 +271,28 @@ def _get_deploy_config(build_target):
   """Get the relevant deploy config for |build_target|."""
   module = _get_config_module(build_target)
 
-  force_fast = None
-  if hasattr(module, 'is_fast_required'):
-    force_fast = module.is_fast_required
+  # Get the force fast function if available.
+  force_fast = getattr(module, 'is_fast_required', None)
 
-  servo_force_command = None
-  if (hasattr(module, 'DEPLOY_SERVO_FORCE_FLASHROM') and
-      module.DEPLOY_SERVO_FORCE_FLASHROM):
-    servo_force_command = DeployConfig.FORCE_FLASHROM
+  # Check the force servo command options.
+  servo_force = None
+  if getattr(module, 'DEPLOY_SERVO_FORCE_FLASHROM', False):
+    servo_force = DeployConfig.FORCE_FLASHROM
+  elif getattr(module, 'DEPLOY_SERVO_FORCE_FUTILITY', False):
+    servo_force = DeployConfig.FORCE_FUTILITY
 
-  ssh_force_command = None
-  if (hasattr(module, 'DEPLOY_SSH_FORCE_FUTILITY') and
-      module.DEPLOY_SSH_FORCE_FUTILITY):
-    ssh_force_command = DeployConfig.FORCE_FUTILITY
+  # Check the force SSH command options.
+  ssh_force = None
+  if getattr(module, 'DEPLOY_SSH_FORCE_FLASHROM', False):
+    ssh_force = DeployConfig.FORCE_FLASHROM
+  elif getattr(module, 'DEPLOY_SSH_FORCE_FUTILITY', False):
+    ssh_force = DeployConfig.FORCE_FUTILITY
 
   return DeployConfig(
       module.get_commands,
       force_fast=force_fast,
-      servo_force_command=servo_force_command,
-      ssh_force_command=ssh_force_command)
+      servo_force_command=servo_force,
+      ssh_force_command=ssh_force)
 
 
 def _get_config_module(build_target):
