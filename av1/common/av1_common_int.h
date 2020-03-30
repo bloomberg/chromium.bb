@@ -454,6 +454,34 @@ struct CommonQuantParams {
   int qm_v;
 };
 
+// Context used for transmitting various symbols in the bistream.
+typedef struct CommonContexts CommonContexts;
+struct CommonContexts {
+  // Context used by 'FRAME_CONTEXT.partition_cdf' to transmit partition type.
+  // partition[i][j] is the context for ith tile row, jth mi_col.
+  PARTITION_CONTEXT **partition;
+
+  // Context used to derive context for multiple symbols:
+  // - 'TXB_CTX.txb_skip_ctx' used by 'FRAME_CONTEXT.txb_skip_cdf' to transmit
+  // to transmit skip_txfm flag.
+  // - 'TXB_CTX.dc_sign_ctx' used by 'FRAME_CONTEXT.dc_sign_cdf' to transmit
+  // sign.
+  // entropy[i][j][k] is the context for ith plane, jth tile row, kth mi_col.
+  ENTROPY_CONTEXT **entropy[MAX_MB_PLANE];
+
+  // Context used to derive context for 'FRAME_CONTEXT.txfm_partition_cdf' to
+  // transmit 'is_split' flag to indicate if this transform block should be
+  // split into smaller sub-blocks.
+  // txfm[i][j] is the context for ith tile row, jth mi_col.
+  TXFM_CONTEXT **txfm;
+
+  // Dimensions that were used to allocate the arrays above.
+  // If these dimensions change, the arrays may have to be re-allocated.
+  int num_planes;     // Corresponds to av1_num_planes(cm)
+  int num_tile_rows;  // Corresponds to cm->tiles.row
+  int num_mi_cols;    // Corresponds to cm->mi_params.mi_cols
+};
+
 typedef struct AV1Common {
   // Information about the current frame that is being coded.
   CurrentFrame current_frame;
@@ -618,9 +646,12 @@ typedef struct AV1Common {
   // External BufferPool passed from outside.
   BufferPool *buffer_pool;
 
-  PARTITION_CONTEXT **above_seg_context;
-  ENTROPY_CONTEXT **above_context[MAX_MB_PLANE];
-  TXFM_CONTEXT **above_txfm_context;
+  // Above context buffers and their sizes.
+  // Note: above contexts are allocated in this struct, as their size is
+  // dependent on frame width, while left contexts are declared and allocated in
+  // MACROBLOCKD struct, as they have a fixed size.
+  CommonContexts above_contexts;
+
   int current_frame_id;
   int ref_frame_id[REF_FRAMES];
   TPL_MV_REF *tpl_mvs;
@@ -634,9 +665,6 @@ typedef struct AV1Common {
   int spatial_layer_id;
   unsigned int number_temporal_layers;
   unsigned int number_spatial_layers;
-  int num_allocated_above_context_mi_col;
-  int num_allocated_above_contexts;
-  int num_allocated_above_context_planes;
 
 #if TXCOEFF_TIMER
   int64_t cum_txcoeff_timer;
@@ -846,14 +874,14 @@ static INLINE int av1_num_planes(const AV1_COMMON *cm) {
   return cm->seq_params.monochrome ? 1 : MAX_MB_PLANE;
 }
 
-static INLINE void av1_init_above_context(AV1_COMMON *cm, MACROBLOCKD *xd,
-                                          const int tile_row) {
-  const int num_planes = av1_num_planes(cm);
+static INLINE void av1_init_above_context(CommonContexts *above_contexts,
+                                          int num_planes, int tile_row,
+                                          MACROBLOCKD *xd) {
   for (int i = 0; i < num_planes; ++i) {
-    xd->above_context[i] = cm->above_context[i][tile_row];
+    xd->above_context[i] = above_contexts->entropy[i][tile_row];
   }
-  xd->above_seg_context = cm->above_seg_context[tile_row];
-  xd->above_txfm_context = cm->above_txfm_context[tile_row];
+  xd->above_seg_context = above_contexts->partition[tile_row];
+  xd->above_txfm_context = above_contexts->txfm[tile_row];
 }
 
 static INLINE void av1_init_macroblockd(AV1_COMMON *cm, MACROBLOCKD *xd,
@@ -1186,26 +1214,30 @@ static INLINE void av1_zero_above_context(AV1_COMMON *const cm,
   const int width = mi_col_end - mi_col_start;
   const int aligned_width =
       ALIGN_POWER_OF_TWO(width, seq_params->mib_size_log2);
-
   const int offset_y = mi_col_start;
   const int width_y = aligned_width;
   const int offset_uv = offset_y >> seq_params->subsampling_x;
   const int width_uv = width_y >> seq_params->subsampling_x;
+  CommonContexts *const above_contexts = &cm->above_contexts;
 
-  av1_zero_array(cm->above_context[0][tile_row] + offset_y, width_y);
+  av1_zero_array(above_contexts->entropy[0][tile_row] + offset_y, width_y);
   if (num_planes > 1) {
-    if (cm->above_context[1][tile_row] && cm->above_context[2][tile_row]) {
-      av1_zero_array(cm->above_context[1][tile_row] + offset_uv, width_uv);
-      av1_zero_array(cm->above_context[2][tile_row] + offset_uv, width_uv);
+    if (above_contexts->entropy[1][tile_row] &&
+        above_contexts->entropy[2][tile_row]) {
+      av1_zero_array(above_contexts->entropy[1][tile_row] + offset_uv,
+                     width_uv);
+      av1_zero_array(above_contexts->entropy[2][tile_row] + offset_uv,
+                     width_uv);
     } else {
       aom_internal_error(xd->error_info, AOM_CODEC_CORRUPT_FRAME,
                          "Invalid value of planes");
     }
   }
 
-  av1_zero_array(cm->above_seg_context[tile_row] + mi_col_start, aligned_width);
+  av1_zero_array(above_contexts->partition[tile_row] + mi_col_start,
+                 aligned_width);
 
-  memset(cm->above_txfm_context[tile_row] + mi_col_start,
+  memset(above_contexts->txfm[tile_row] + mi_col_start,
          tx_size_wide[TX_SIZES_LARGEST], aligned_width * sizeof(TXFM_CONTEXT));
 }
 

@@ -342,7 +342,8 @@ static int enc_row_mt_worker_hook(void *arg1, void *unused) {
       memcpy(td->mb.e_mbd.tile_ctx, &this_tile->tctx, sizeof(FRAME_CONTEXT));
     }
 
-    av1_init_above_context(cm, &td->mb.e_mbd, tile_row);
+    av1_init_above_context(&cm->above_contexts, av1_num_planes(cm), tile_row,
+                           &td->mb.e_mbd);
 
     cfl_init(&td->mb.e_mbd.cfl, &cm->seq_params);
     av1_crc32c_calculator_init(&td->mb.mb_rd_record.crc_calculator);

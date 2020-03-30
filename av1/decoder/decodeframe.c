@@ -3072,7 +3072,8 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
       }
 #endif
       av1_init_macroblockd(cm, &td->xd, NULL);
-      av1_init_above_context(cm, &td->xd, row);
+      av1_init_above_context(&cm->above_contexts, av1_num_planes(cm), row,
+                             &td->xd);
 
       // Initialise the tile context from the frame context
       tile_data->tctx = *cm->fc;
@@ -3144,7 +3145,8 @@ static AOM_INLINE void tile_worker_hook_init(
 #endif
   av1_init_macroblockd(cm, &td->xd, NULL);
   td->xd.error_info = &thread_data->error_info;
-  av1_init_above_context(cm, &td->xd, tile_row);
+  av1_init_above_context(&cm->above_contexts, av1_num_planes(cm), tile_row,
+                         &td->xd);
 
   // Initialise the tile context from the frame context
   tile_data->tctx = *cm->fc;
@@ -5184,13 +5186,17 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                      cm->seq_params.separate_uv_delta_q, rb);
   xd->bd = (int)seq_params->bit_depth;
 
-  if (cm->num_allocated_above_context_planes < av1_num_planes(cm) ||
-      cm->num_allocated_above_context_mi_col < cm->mi_params.mi_cols ||
-      cm->num_allocated_above_contexts < cm->tiles.rows) {
-    av1_free_above_context_buffers(cm, cm->num_allocated_above_contexts);
-    if (av1_alloc_above_context_buffers(cm, cm->tiles.rows))
+  CommonContexts *const above_contexts = &cm->above_contexts;
+  if (above_contexts->num_planes < av1_num_planes(cm) ||
+      above_contexts->num_mi_cols < cm->mi_params.mi_cols ||
+      above_contexts->num_tile_rows < cm->tiles.rows) {
+    av1_free_above_context_buffers(above_contexts);
+    if (av1_alloc_above_context_buffers(above_contexts, cm->tiles.rows,
+                                        cm->mi_params.mi_cols,
+                                        av1_num_planes(cm))) {
       aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                          "Failed to allocate context buffers");
+    }
   }
 
   if (features->primary_ref_frame == PRIMARY_REF_NONE) {

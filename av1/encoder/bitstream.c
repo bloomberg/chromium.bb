@@ -1487,7 +1487,7 @@ static AOM_INLINE void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
   set_mi_row_col(xd, tile, mi_row, bh, mi_col, bw, mi_params->mi_rows,
                  mi_params->mi_cols);
 
-  xd->above_txfm_context = cm->above_txfm_context[tile->tile_row] + mi_col;
+  xd->above_txfm_context = cm->above_contexts.txfm[tile->tile_row] + mi_col;
   xd->left_txfm_context =
       xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
 
@@ -1685,21 +1685,21 @@ static AOM_INLINE void write_modes(AV1_COMP *const cpi,
   const int mi_row_end = tile->mi_row_end;
   const int mi_col_start = tile->mi_col_start;
   const int mi_col_end = tile->mi_col_end;
-  int mi_row, mi_col, sb_row_in_tile;
+  const int num_planes = av1_num_planes(cm);
 
   av1_zero_above_context(cm, xd, mi_col_start, mi_col_end, tile->tile_row);
-  av1_init_above_context(cm, xd, tile->tile_row);
+  av1_init_above_context(&cm->above_contexts, num_planes, tile->tile_row, xd);
 
   if (cpi->common.delta_q_info.delta_q_present_flag) {
     xd->current_qindex = cpi->common.quant_params.base_qindex;
     if (cpi->common.delta_q_info.delta_lf_present_flag) {
-      av1_reset_loop_filter_delta(xd, av1_num_planes(cm));
+      av1_reset_loop_filter_delta(xd, num_planes);
     }
   }
 
-  for (mi_row = mi_row_start; mi_row < mi_row_end;
+  for (int mi_row = mi_row_start; mi_row < mi_row_end;
        mi_row += cm->seq_params.mib_size) {
-    sb_row_in_tile =
+    const int sb_row_in_tile =
         (mi_row - tile->mi_row_start) >> cm->seq_params.mib_size_log2;
     const TOKENEXTRA *tok =
         cpi->tplist[tile_row][tile_col][sb_row_in_tile].start;
@@ -1708,7 +1708,7 @@ static AOM_INLINE void write_modes(AV1_COMP *const cpi,
 
     av1_zero_left_context(xd);
 
-    for (mi_col = mi_col_start; mi_col < mi_col_end;
+    for (int mi_col = mi_col_start; mi_col < mi_col_end;
          mi_col += cm->seq_params.mib_size) {
       cpi->td.mb.cb_coef_buff = av1_get_cb_coeff_buffer(cpi, mi_row, mi_col);
       write_modes_sb(cpi, tile, w, &tok, tok_end, mi_row, mi_col,

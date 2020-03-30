@@ -397,7 +397,7 @@ static AOM_INLINE void set_offsets_without_segment_id(
   set_mode_info_offsets(cpi, x, xd, mi_row, mi_col);
 
   set_skip_context(xd, mi_row, mi_col, num_planes);
-  xd->above_txfm_context = cm->above_txfm_context[tile->tile_row] + mi_col;
+  xd->above_txfm_context = cm->above_contexts.txfm[tile->tile_row] + mi_col;
   xd->left_txfm_context =
       xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
 
@@ -1913,7 +1913,8 @@ static AOM_INLINE void rd_use_partition(
 
   pc_tree->partitioning = partition;
 
-  xd->above_txfm_context = cm->above_txfm_context[tile_info->tile_row] + mi_col;
+  xd->above_txfm_context =
+      cm->above_contexts.txfm[tile_info->tile_row] + mi_col;
   xd->left_txfm_context =
       xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
   save_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);
@@ -2209,7 +2210,8 @@ static AOM_INLINE void nonrd_use_partition(AV1_COMP *cpi, ThreadData *td,
 
   pc_tree->partitioning = partition;
 
-  xd->above_txfm_context = cm->above_txfm_context[tile_info->tile_row] + mi_col;
+  xd->above_txfm_context =
+      cm->above_contexts.txfm[tile_info->tile_row] + mi_col;
   xd->left_txfm_context =
       xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
 
@@ -2240,7 +2242,7 @@ static AOM_INLINE void nonrd_use_partition(AV1_COMP *cpi, ThreadData *td,
               mi_col + x_idx >= mi_params->mi_cols)
             continue;
           xd->above_txfm_context =
-              cm->above_txfm_context[tile_info->tile_row] + mi_col + x_idx;
+              cm->above_contexts.txfm[tile_info->tile_row] + mi_col + x_idx;
           xd->left_txfm_context =
               xd->left_txfm_context_buffer + ((mi_row + y_idx) & MAX_MIB_MASK);
           pc_tree->split[i]->partitioning = PARTITION_NONE;
@@ -2324,7 +2326,7 @@ static AOM_INLINE void nonrd_use_partition(AV1_COMP *cpi, ThreadData *td,
         av1_invalid_rd_stats(&none_rdc);
         save_context(x, &x_ctx, mi_row, mi_col, bsize, 3);
         xd->above_txfm_context =
-            cm->above_txfm_context[tile_info->tile_row] + mi_col;
+            cm->above_contexts.txfm[tile_info->tile_row] + mi_col;
         xd->left_txfm_context =
             xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
         pc_tree->partitioning = PARTITION_NONE;
@@ -2346,7 +2348,7 @@ static AOM_INLINE void nonrd_use_partition(AV1_COMP *cpi, ThreadData *td,
                 (mi_col + x_idx >= mi_params->mi_cols))
               continue;
             xd->above_txfm_context =
-                cm->above_txfm_context[tile_info->tile_row] + mi_col + x_idx;
+                cm->above_contexts.txfm[tile_info->tile_row] + mi_col + x_idx;
             xd->left_txfm_context = xd->left_txfm_context_buffer +
                                     ((mi_row + y_idx) & MAX_MIB_MASK);
             pc_tree->split[i]->partitioning = PARTITION_NONE;
@@ -2806,7 +2808,8 @@ static bool rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
     partition_vert_allowed &= !has_cols;
   }
 
-  xd->above_txfm_context = cm->above_txfm_context[tile_info->tile_row] + mi_col;
+  xd->above_txfm_context =
+      cm->above_contexts.txfm[tile_info->tile_row] + mi_col;
   xd->left_txfm_context =
       xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
   save_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);
@@ -4486,7 +4489,8 @@ static INLINE void backup_sb_state(SB_FIRST_PASS_STATS *sb_fp_stats,
   const int num_planes = av1_num_planes(cm);
   const BLOCK_SIZE sb_size = cm->seq_params.sb_size;
 
-  xd->above_txfm_context = cm->above_txfm_context[tile_info->tile_row] + mi_col;
+  xd->above_txfm_context =
+      cm->above_contexts.txfm[tile_info->tile_row] + mi_col;
   xd->left_txfm_context =
       xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
   save_context(x, &sb_fp_stats->x_ctx, mi_row, mi_col, sb_size, num_planes);
@@ -5051,19 +5055,19 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
   TileDataEnc *const this_tile =
       &cpi->tile_data[tile_row * cm->tiles.cols + tile_col];
   const TileInfo *const tile_info = &this_tile->tile_info;
-  int mi_row;
 
   if (!cpi->sf.rt_sf.use_nonrd_pick_mode) av1_inter_mode_data_init(this_tile);
 
   av1_zero_above_context(cm, &td->mb.e_mbd, tile_info->mi_col_start,
                          tile_info->mi_col_end, tile_row);
-  av1_init_above_context(cm, &td->mb.e_mbd, tile_row);
+  av1_init_above_context(&cm->above_contexts, av1_num_planes(cm), tile_row,
+                         &td->mb.e_mbd);
 
   if (cpi->oxcf.enable_cfl_intra) cfl_init(&td->mb.e_mbd.cfl, &cm->seq_params);
 
   av1_crc32c_calculator_init(&td->mb.mb_rd_record.crc_calculator);
 
-  for (mi_row = tile_info->mi_row_start; mi_row < tile_info->mi_row_end;
+  for (int mi_row = tile_info->mi_row_start; mi_row < tile_info->mi_row_end;
        mi_row += cm->seq_params.mib_size) {
     av1_encode_sb_row(cpi, td, tile_row, tile_col, mi_row);
   }
@@ -6186,7 +6190,7 @@ static AOM_INLINE void tx_partition_count_update(const AV1_COMMON *const cm,
   const int bw = tx_size_wide_unit[max_tx_size];
 
   xd->above_txfm_context =
-      cm->above_txfm_context[xd->tile.tile_row] + xd->mi_col;
+      cm->above_contexts.txfm[xd->tile.tile_row] + xd->mi_col;
   xd->left_txfm_context =
       xd->left_txfm_context_buffer + (xd->mi_row & MAX_MIB_MASK);
 
@@ -6246,7 +6250,7 @@ static AOM_INLINE void tx_partition_set_contexts(const AV1_COMMON *const cm,
   const int bw = tx_size_wide_unit[max_tx_size];
 
   xd->above_txfm_context =
-      cm->above_txfm_context[xd->tile.tile_row] + xd->mi_col;
+      cm->above_contexts.txfm[xd->tile.tile_row] + xd->mi_col;
   xd->left_txfm_context =
       xd->left_txfm_context_buffer + (xd->mi_row & MAX_MIB_MASK);
 

@@ -4338,11 +4338,14 @@ void av1_set_frame_size(AV1_COMP *cpi, int width, int height) {
   alloc_frame_mvs(cm, cm->cur_frame);
 
   // Allocate above context buffers
-  if (cm->num_allocated_above_context_planes < av1_num_planes(cm) ||
-      cm->num_allocated_above_context_mi_col < cm->mi_params.mi_cols ||
-      cm->num_allocated_above_contexts < cm->tiles.rows) {
-    av1_free_above_context_buffers(cm, cm->num_allocated_above_contexts);
-    if (av1_alloc_above_context_buffers(cm, cm->tiles.rows))
+  CommonContexts *const above_contexts = &cm->above_contexts;
+  if (above_contexts->num_planes < av1_num_planes(cm) ||
+      above_contexts->num_mi_cols < cm->mi_params.mi_cols ||
+      above_contexts->num_tile_rows < cm->tiles.rows) {
+    av1_free_above_context_buffers(above_contexts);
+    if (av1_alloc_above_context_buffers(above_contexts, cm->tiles.rows,
+                                        cm->mi_params.mi_cols,
+                                        av1_num_planes(cm)))
       aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                          "Failed to allocate context buffers");
   }
