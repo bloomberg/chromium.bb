@@ -2924,7 +2924,6 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   }
   update_frame_size(cpi);
 
-  cpi->alt_ref_source = NULL;
   rc->is_src_frame_alt_ref = 0;
 
   set_tile_info(cpi);
@@ -3027,10 +3026,6 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf, BufferPool *const pool,
       (FRAME_CONTEXT *)aom_memalign(32, sizeof(*cm->default_frame_context)));
   memset(cm->fc, 0, sizeof(*cm->fc));
   memset(cm->default_frame_context, 0, sizeof(*cm->default_frame_context));
-
-  cpi->resize_state = 0;
-  cpi->resize_avg_qp = 0;
-  cpi->resize_buffer_underflow = 0;
 
   cpi->common.buffer_pool = pool;
 

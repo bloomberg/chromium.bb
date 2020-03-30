@@ -838,7 +838,6 @@ typedef struct AV1_COMP {
   AV1_COMMON common;
   AV1EncoderConfig oxcf;
   struct lookahead_ctx *lookahead;
-  struct lookahead_entry *alt_ref_source;
   int no_show_kf;
 
   TRELLIS_OPT_TYPE optimize_seg_arr[MAX_SEGMENTS];
@@ -863,7 +862,6 @@ typedef struct AV1_COMP {
   double cs_rate_array[32];
   int rate_size;
   int rate_index;
-  int previous_index;
 
   unsigned int row_mt;
   RefCntBuffer *scaled_ref_buf[INTER_REFS_PER_FRAME];
@@ -1033,10 +1031,6 @@ typedef struct AV1_COMP {
   TOKENEXTRA *tile_tok[MAX_TILE_ROWS][MAX_TILE_COLS];
   TOKENLIST *tplist[MAX_TILE_ROWS][MAX_TILE_COLS];
 
-  int resize_state;
-  int resize_avg_qp;
-  int resize_buffer_underflow;
-
   // Sequence parameters have been transmitted already and locked
   // or not. Once locked av1_change_config cannot change the seq
   // parameters.
@@ -1068,7 +1062,6 @@ typedef struct AV1_COMP {
   AVxWorker *workers;
   struct EncWorkerData *tile_thr_data;
   int existing_fb_idx_to_show;
-  int is_arf_filter_off[MAX_INTERNAL_ARFS + 1];
   int global_motion_search_done;
   int internal_altref_allowed;
   // A flag to indicate if intrabc is ever used in current frame.
@@ -1134,7 +1127,6 @@ typedef struct AV1_COMP {
   // Filter mask to allow certain interp_filter type.
   uint16_t interp_filter_search_mask;
 
-  int preserve_arf_as_gld;
   MultiThreadHandle multi_thread_ctxt;
   void (*row_mt_sync_read_ptr)(AV1RowMTSync *const, int, int);
   void (*row_mt_sync_write_ptr)(AV1RowMTSync *const, int, int, const int);
