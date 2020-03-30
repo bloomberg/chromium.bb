@@ -351,6 +351,7 @@
     nyan_kitty-release
     octavius-release
     octopus-release
+    orchestra-release
     orco-release
     palkia-release
     puff-release
@@ -1521,6 +1522,7 @@
     nyan_kitty-release-tryjob
     octavius-release-tryjob
     octopus-release-tryjob
+    orchestra-release-tryjob
     orco-release-tryjob
     palkia-release-tryjob
     puff-release-tryjob
@@ -1689,6 +1691,11 @@
   octopus-payloads-tryjob
   octopus-release-tryjob
   octopus-unittest-stress
+  orchestra-full-tryjob
+  orchestra-llvm-next-toolchain-tryjob
+  orchestra-llvm-toolchain-tryjob
+  orchestra-release-tryjob
+  orchestra-unittest-stress
   orco-factory-rambi-6420.B-factorybranch-tryjob
   orco-full-tryjob
   orco-llvm-next-toolchain-tryjob
