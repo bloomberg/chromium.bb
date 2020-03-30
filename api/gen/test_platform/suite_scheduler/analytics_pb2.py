@@ -24,7 +24,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='test_platform.suite_scheduler',
   syntax='proto3',
   serialized_options=_b('ZGgo.chromium.org/chromiumos/infra/proto/go/test_platform/suite_scheduler'),
-  serialized_pb=_b('\n-test_platform/suite_scheduler/analytics.proto\x12\x1dtest_platform.suite_scheduler\x1a\x1c\x63hromite/api/artifacts.proto\x1a\x17\x63hromiumos/common.proto\x1a\x17\x63hromiumos/branch.proto\x1a\x15\x64\x65vice/model_id.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x95\x01\n\tBuildInfo\x12-\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12\x11\n\tmilestone\x18\x02 \x01(\r\x12\x19\n\x11\x63hrome_os_version\x18\x03 \x01(\t\x12+\n\x04type\x18\x04 \x01(\x0e\x32\x1d.chromiumos.Branch.BranchType\"\x99\x01\n\x11\x46irmwareBuildInfo\x12-\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12+\n\x04type\x18\x02 \x01(\x0e\x32\x1d.chromiumos.Branch.BranchType\x12(\n\x08\x61rtifact\x18\x03 \x01(\x0b\x32\x16.chromite.api.Artifact\"\xaa\x02\n\x0c\x42ranchFilter\x12\x44\n\x07\x63hannel\x18\x01 \x01(\x0e\x32\x33.test_platform.suite_scheduler.BranchFilter.Channel\x12\x46\n\x08operator\x18\x02 \x01(\x0e\x32\x34.test_platform.suite_scheduler.BranchFilter.Operator\x12\x0b\n\x03lag\x18\x03 \x01(\x05\"L\n\x07\x43hannel\x12\x16\n\x12\x42RANCH_REF_NOT_SET\x10\x00\x12\n\n\x06MASTER\x10\x01\x12\x07\n\x03\x44\x45V\x10\x02\x12\x08\n\x04\x42\x45TA\x10\x03\x12\n\n\x06STABLE\x10\x04\"1\n\x08Operator\x12\r\n\tUNDEFINED\x10\x00\x12\x06\n\x02\x45Q\x10\x01\x12\x06\n\x02GE\x10\x02\x12\x06\n\x02LE\x10\x03\"\xf6\x01\n\x0c\x42uildFilters\x12#\n\x1bonly_hwtest_sanity_required\x18\x01 \x01(\x08\x12\x43\n\x0e\x62ranch_filters\x18\x02 \x03(\x0b\x32+.test_platform.suite_scheduler.BranchFilter\x12=\n\x16\x66irmware_ro_build_spec\x18\x03 \x01(\x0e\x32\x1d.chromiumos.Branch.BranchType\x12=\n\x16\x66irmware_rw_build_spec\x18\x04 \x01(\x0e\x32\x1d.chromiumos.Branch.BranchType\"\xc2\x03\n\x12ScheduleJobTrigger\x12Q\n\x06weekly\x18\x01 \x01(\x0b\x32?.test_platform.suite_scheduler.ScheduleJobTrigger.WeeklyTriggerH\x00\x12S\n\x07nightly\x18\x02 \x01(\x0b\x32@.test_platform.suite_scheduler.ScheduleJobTrigger.NightlyTriggerH\x00\x12U\n\x08interval\x18\x03 \x01(\x0b\x32\x41.test_platform.suite_scheduler.ScheduleJobTrigger.IntervalTriggerH\x00\x12\x42\n\rbuild_filters\x18\x04 \x01(\x0b\x32+.test_platform.suite_scheduler.BuildFilters\x1a\x1c\n\rWeeklyTrigger\x12\x0b\n\x03\x64\x61y\x18\x01 \x01(\r\x1a\x1e\n\x0eNightlyTrigger\x12\x0c\n\x04hour\x18\x01 \x01(\r\x1a \n\x0fIntervalTrigger\x12\r\n\x05pause\x18\x01 \x01(\rB\t\n\x07trigger\"\xcd\x01\n\x0bScheduleJob\x12\x1e\n\x05model\x18\x01 \x01(\x0b\x32\x0f.device.ModelId\x12-\n\x0c\x62uild_target\x18\x02 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12\x18\n\x0equeued_task_id\x18\x03 \x01(\tH\x00\x12\x17\n\rjustification\x18\x04 \x01(\tH\x00\x12\x32\n\x0egenerated_time\x18\x05 \x01(\x0b\x32\x1a.google.protobuf.TimestampB\x08\n\x06result\"\xa4\x05\n\x12ScheduleJobSection\x12\x10\n\x08job_name\x18\x01 \x01(\t\x12O\n\x14schedule_job_trigger\x18\x02 \x01(\x0b\x32\x31.test_platform.suite_scheduler.ScheduleJobTrigger\x12\x1f\n\x06models\x18\x03 \x03(\x0b\x32\x0f.device.ModelId\x12.\n\rbuild_targets\x18\x04 \x03(\x0b\x32\x17.chromiumos.BuildTarget\x12V\n\x0ematched_builds\x18\x05 \x03(\x0b\x32>.test_platform.suite_scheduler.ScheduleJobSection.MatchedBuild\x12\x41\n\rschedule_jobs\x18\x06 \x03(\x0b\x32*.test_platform.suite_scheduler.ScheduleJob\x1a\xbe\x02\n\x0cMatchedBuild\x12\x41\n\rrelease_build\x18\x01 \x01(\x0b\x32(.test_platform.suite_scheduler.BuildInfoH\x00\x12?\n\x0brelax_build\x18\x02 \x01(\x0b\x32(.test_platform.suite_scheduler.BuildInfoH\x00\x12M\n\x11\x66irmware_ro_build\x18\x03 \x01(\x0b\x32\x30.test_platform.suite_scheduler.FirmwareBuildInfoH\x00\x12M\n\x11\x66irmware_rw_build\x18\x04 \x01(\x0b\x32\x30.test_platform.suite_scheduler.FirmwareBuildInfoH\x00\x42\x0c\n\ncros_build\")\n\x11\x45xecutionResponse\x12\x14\n\x0c\x63tp_build_id\x18\x01 \x01(\t\"\'\n\x0e\x45xecutionError\x12\x15\n\rerror_message\x18\x01 \x01(\t\"\xe9\x01\n\rExecutionTask\x12\x16\n\x0equeued_task_id\x18\x01 \x01(\t\x12\x44\n\x08response\x18\x02 \x01(\x0b\x32\x30.test_platform.suite_scheduler.ExecutionResponseH\x00\x12>\n\x05\x65rror\x18\x03 \x01(\x0b\x32-.test_platform.suite_scheduler.ExecutionErrorH\x00\x12\x30\n\x0crequest_sent\x18\x04 \x01(\x0b\x32\x1a.google.protobuf.TimestampB\x08\n\x06resultBIZGgo.chromium.org/chromiumos/infra/proto/go/test_platform/suite_schedulerb\x06proto3')
+  serialized_pb=_b('\n-test_platform/suite_scheduler/analytics.proto\x12\x1dtest_platform.suite_scheduler\x1a\x1c\x63hromite/api/artifacts.proto\x1a\x17\x63hromiumos/common.proto\x1a\x17\x63hromiumos/branch.proto\x1a\x15\x64\x65vice/model_id.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x95\x01\n\tBuildInfo\x12-\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12\x11\n\tmilestone\x18\x02 \x01(\r\x12\x19\n\x11\x63hrome_os_version\x18\x03 \x01(\t\x12+\n\x04type\x18\x04 \x01(\x0e\x32\x1d.chromiumos.Branch.BranchType\"\x99\x01\n\x11\x46irmwareBuildInfo\x12-\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12+\n\x04type\x18\x02 \x01(\x0e\x32\x1d.chromiumos.Branch.BranchType\x12(\n\x08\x61rtifact\x18\x03 \x01(\x0b\x32\x16.chromite.api.Artifact\"\xaa\x02\n\x0c\x42ranchFilter\x12\x44\n\x07\x63hannel\x18\x01 \x01(\x0e\x32\x33.test_platform.suite_scheduler.BranchFilter.Channel\x12\x46\n\x08operator\x18\x02 \x01(\x0e\x32\x34.test_platform.suite_scheduler.BranchFilter.Operator\x12\x0b\n\x03lag\x18\x03 \x01(\x05\"L\n\x07\x43hannel\x12\x16\n\x12\x42RANCH_REF_NOT_SET\x10\x00\x12\n\n\x06MASTER\x10\x01\x12\x07\n\x03\x44\x45V\x10\x02\x12\x08\n\x04\x42\x45TA\x10\x03\x12\n\n\x06STABLE\x10\x04\"1\n\x08Operator\x12\r\n\tUNDEFINED\x10\x00\x12\x06\n\x02\x45Q\x10\x01\x12\x06\n\x02GE\x10\x02\x12\x06\n\x02LE\x10\x03\"\xf6\x01\n\x0c\x42uildFilters\x12#\n\x1bonly_hwtest_sanity_required\x18\x01 \x01(\x08\x12\x43\n\x0e\x62ranch_filters\x18\x02 \x03(\x0b\x32+.test_platform.suite_scheduler.BranchFilter\x12=\n\x16\x66irmware_ro_build_spec\x18\x03 \x01(\x0e\x32\x1d.chromiumos.Branch.BranchType\x12=\n\x16\x66irmware_rw_build_spec\x18\x04 \x01(\x0e\x32\x1d.chromiumos.Branch.BranchType\"\xc2\x03\n\x12ScheduleJobTrigger\x12Q\n\x06weekly\x18\x01 \x01(\x0b\x32?.test_platform.suite_scheduler.ScheduleJobTrigger.WeeklyTriggerH\x00\x12S\n\x07nightly\x18\x02 \x01(\x0b\x32@.test_platform.suite_scheduler.ScheduleJobTrigger.NightlyTriggerH\x00\x12U\n\x08interval\x18\x03 \x01(\x0b\x32\x41.test_platform.suite_scheduler.ScheduleJobTrigger.IntervalTriggerH\x00\x12\x42\n\rbuild_filters\x18\x04 \x01(\x0b\x32+.test_platform.suite_scheduler.BuildFilters\x1a\x1c\n\rWeeklyTrigger\x12\x0b\n\x03\x64\x61y\x18\x01 \x01(\r\x1a\x1e\n\x0eNightlyTrigger\x12\x0c\n\x04hour\x18\x01 \x01(\r\x1a \n\x0fIntervalTrigger\x12\r\n\x05pause\x18\x01 \x01(\rB\t\n\x07trigger\"\xcd\x01\n\x0bScheduleJob\x12\x1e\n\x05model\x18\x01 \x01(\x0b\x32\x0f.device.ModelId\x12-\n\x0c\x62uild_target\x18\x02 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12\x18\n\x0equeued_task_id\x18\x03 \x01(\tH\x00\x12\x17\n\rjustification\x18\x04 \x01(\tH\x00\x12\x32\n\x0egenerated_time\x18\x05 \x01(\x0b\x32\x1a.google.protobuf.TimestampB\x08\n\x06result\"\xc1\x05\n\x12ScheduleJobSection\x12\x10\n\x08job_name\x18\x01 \x01(\t\x12O\n\x14schedule_job_trigger\x18\x02 \x01(\x0b\x32\x31.test_platform.suite_scheduler.ScheduleJobTrigger\x12\x1f\n\x06models\x18\x03 \x03(\x0b\x32\x0f.device.ModelId\x12.\n\rbuild_targets\x18\x04 \x03(\x0b\x32\x17.chromiumos.BuildTarget\x12V\n\x0ematched_builds\x18\x05 \x03(\x0b\x32>.test_platform.suite_scheduler.ScheduleJobSection.MatchedBuild\x12\x41\n\rschedule_jobs\x18\x06 \x03(\x0b\x32*.test_platform.suite_scheduler.ScheduleJob\x12\x0c\n\x04pool\x18\x07 \x01(\t\x12\r\n\x05suite\x18\x08 \x01(\t\x1a\xbe\x02\n\x0cMatchedBuild\x12\x41\n\rrelease_build\x18\x01 \x01(\x0b\x32(.test_platform.suite_scheduler.BuildInfoH\x00\x12?\n\x0brelax_build\x18\x02 \x01(\x0b\x32(.test_platform.suite_scheduler.BuildInfoH\x00\x12M\n\x11\x66irmware_ro_build\x18\x03 \x01(\x0b\x32\x30.test_platform.suite_scheduler.FirmwareBuildInfoH\x00\x12M\n\x11\x66irmware_rw_build\x18\x04 \x01(\x0b\x32\x30.test_platform.suite_scheduler.FirmwareBuildInfoH\x00\x42\x0c\n\ncros_build\")\n\x11\x45xecutionResponse\x12\x14\n\x0c\x63tp_build_id\x18\x01 \x01(\t\"\'\n\x0e\x45xecutionError\x12\x15\n\rerror_message\x18\x01 \x01(\t\"\xe9\x01\n\rExecutionTask\x12\x16\n\x0equeued_task_id\x18\x01 \x01(\t\x12\x44\n\x08response\x18\x02 \x01(\x0b\x32\x30.test_platform.suite_scheduler.ExecutionResponseH\x00\x12>\n\x05\x65rror\x18\x03 \x01(\x0b\x32-.test_platform.suite_scheduler.ExecutionErrorH\x00\x12\x30\n\x0crequest_sent\x18\x04 \x01(\x0b\x32\x1a.google.protobuf.TimestampB\x08\n\x06resultBIZGgo.chromium.org/chromiumos/infra/proto/go/test_platform/suite_schedulerb\x06proto3')
   ,
   dependencies=[chromite_dot_api_dot_artifacts__pb2.DESCRIPTOR,chromiumos_dot_common__pb2.DESCRIPTOR,chromiumos_dot_branch__pb2.DESCRIPTOR,device_dot_model__id__pb2.DESCRIPTOR,google_dot_protobuf_dot_timestamp__pb2.DESCRIPTOR,])
 
@@ -548,8 +548,8 @@ _SCHEDULEJOBSECTION_MATCHEDBUILD = _descriptor.Descriptor(
       name='cros_build', full_name='test_platform.suite_scheduler.ScheduleJobSection.MatchedBuild.cros_build',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=2094,
-  serialized_end=2412,
+  serialized_start=2123,
+  serialized_end=2441,
 )
 
 _SCHEDULEJOBSECTION = _descriptor.Descriptor(
@@ -601,6 +601,20 @@ _SCHEDULEJOBSECTION = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='pool', full_name='test_platform.suite_scheduler.ScheduleJobSection.pool', index=6,
+      number=7, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='suite', full_name='test_platform.suite_scheduler.ScheduleJobSection.suite', index=7,
+      number=8, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -614,7 +628,7 @@ _SCHEDULEJOBSECTION = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=1736,
-  serialized_end=2412,
+  serialized_end=2441,
 )
 
 
@@ -644,8 +658,8 @@ _EXECUTIONRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2414,
-  serialized_end=2455,
+  serialized_start=2443,
+  serialized_end=2484,
 )
 
 
@@ -675,8 +689,8 @@ _EXECUTIONERROR = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2457,
-  serialized_end=2496,
+  serialized_start=2486,
+  serialized_end=2525,
 )
 
 
@@ -730,8 +744,8 @@ _EXECUTIONTASK = _descriptor.Descriptor(
       name='result', full_name='test_platform.suite_scheduler.ExecutionTask.result',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=2499,
-  serialized_end=2732,
+  serialized_start=2528,
+  serialized_end=2761,
 )
 
 _BUILDINFO.fields_by_name['build_target'].message_type = chromiumos_dot_common__pb2._BUILDTARGET

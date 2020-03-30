@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='test_platform.skylab_test_runner',
   syntax='proto3',
   serialized_options=_b('ZJgo.chromium.org/chromiumos/infra/proto/go/test_platform/skylab_test_runner'),
-  serialized_pb=_b('\n-test_platform/skylab_test_runner/result.proto\x12 test_platform.skylab_test_runner\x1a\x1ftest_platform/common/task.proto\"\xc9\x07\n\x06Result\x12L\n\x0f\x61utotest_result\x18\x01 \x01(\x0b\x32\x31.test_platform.skylab_test_runner.Result.AutotestH\x00\x12?\n\x06prejob\x18\x02 \x01(\x0b\x32/.test_platform.skylab_test_runner.Result.Prejob\x12\x33\n\x08log_data\x18\x03 \x01(\x0b\x32!.test_platform.common.TaskLogData\x12J\n\x0cstate_update\x18\x04 \x01(\x0b\x32\x34.test_platform.skylab_test_runner.Result.StateUpdate\x1a\xe6\x02\n\x08\x41utotest\x12N\n\ntest_cases\x18\x01 \x03(\x0b\x32:.test_platform.skylab_test_runner.Result.Autotest.TestCase\x12\x12\n\nincomplete\x18\x02 \x01(\x08\x12 \n\x18synchronous_log_data_url\x18\x03 \x01(\t\x1a\xd3\x01\n\x08TestCase\x12\x0c\n\x04name\x18\x01 \x01(\t\x12S\n\x07verdict\x18\x02 \x01(\x0e\x32\x42.test_platform.skylab_test_runner.Result.Autotest.TestCase.Verdict\x12\x1e\n\x16human_readable_summary\x18\x03 \x01(\t\"D\n\x07Verdict\x12\x15\n\x11VERDICT_UNDEFINED\x10\x00\x12\x10\n\x0cVERDICT_PASS\x10\x01\x12\x10\n\x0cVERDICT_FAIL\x10\x02\x1a\x98\x02\n\x06Prejob\x12\x42\n\x04step\x18\x01 \x03(\x0b\x32\x34.test_platform.skylab_test_runner.Result.Prejob.Step\x1a\xc9\x01\n\x04Step\x12\x0c\n\x04name\x18\x01 \x01(\t\x12M\n\x07verdict\x18\x02 \x01(\x0e\x32<.test_platform.skylab_test_runner.Result.Prejob.Step.Verdict\x12\x1e\n\x16human_readable_summary\x18\x03 \x01(\t\"D\n\x07Verdict\x12\x15\n\x11VERDICT_UNDEFINED\x10\x00\x12\x10\n\x0cVERDICT_PASS\x10\x01\x12\x10\n\x0cVERDICT_FAIL\x10\x02\x1a \n\x0bStateUpdate\x12\x11\n\tdut_state\x18\x01 \x01(\tB\t\n\x07harnessBLZJgo.chromium.org/chromiumos/infra/proto/go/test_platform/skylab_test_runnerb\x06proto3')
+  serialized_pb=_b('\n-test_platform/skylab_test_runner/result.proto\x12 test_platform.skylab_test_runner\x1a\x1ftest_platform/common/task.proto\"0\n\x0c\x41syncResults\x12\x10\n\x08logs_url\x18\x01 \x01(\t\x12\x0e\n\x06gs_url\x18\x02 \x01(\t\"\x94\x08\n\x06Result\x12L\n\x0f\x61utotest_result\x18\x01 \x01(\x0b\x32\x31.test_platform.skylab_test_runner.Result.AutotestH\x00\x12?\n\x06prejob\x18\x02 \x01(\x0b\x32/.test_platform.skylab_test_runner.Result.Prejob\x12\x37\n\x08log_data\x18\x03 \x01(\x0b\x32!.test_platform.common.TaskLogDataB\x02\x18\x01\x12J\n\x0cstate_update\x18\x04 \x01(\x0b\x32\x34.test_platform.skylab_test_runner.Result.StateUpdate\x12\x45\n\rasync_results\x18\x05 \x01(\x0b\x32..test_platform.skylab_test_runner.AsyncResults\x1a\xe6\x02\n\x08\x41utotest\x12N\n\ntest_cases\x18\x01 \x03(\x0b\x32:.test_platform.skylab_test_runner.Result.Autotest.TestCase\x12\x12\n\nincomplete\x18\x02 \x01(\x08\x12 \n\x18synchronous_log_data_url\x18\x03 \x01(\t\x1a\xd3\x01\n\x08TestCase\x12\x0c\n\x04name\x18\x01 \x01(\t\x12S\n\x07verdict\x18\x02 \x01(\x0e\x32\x42.test_platform.skylab_test_runner.Result.Autotest.TestCase.Verdict\x12\x1e\n\x16human_readable_summary\x18\x03 \x01(\t\"D\n\x07Verdict\x12\x15\n\x11VERDICT_UNDEFINED\x10\x00\x12\x10\n\x0cVERDICT_PASS\x10\x01\x12\x10\n\x0cVERDICT_FAIL\x10\x02\x1a\x98\x02\n\x06Prejob\x12\x42\n\x04step\x18\x01 \x03(\x0b\x32\x34.test_platform.skylab_test_runner.Result.Prejob.Step\x1a\xc9\x01\n\x04Step\x12\x0c\n\x04name\x18\x01 \x01(\t\x12M\n\x07verdict\x18\x02 \x01(\x0e\x32<.test_platform.skylab_test_runner.Result.Prejob.Step.Verdict\x12\x1e\n\x16human_readable_summary\x18\x03 \x01(\t\"D\n\x07Verdict\x12\x15\n\x11VERDICT_UNDEFINED\x10\x00\x12\x10\n\x0cVERDICT_PASS\x10\x01\x12\x10\n\x0cVERDICT_FAIL\x10\x02\x1a \n\x0bStateUpdate\x12\x11\n\tdut_state\x18\x01 \x01(\tB\t\n\x07harnessBLZJgo.chromium.org/chromiumos/infra/proto/go/test_platform/skylab_test_runnerb\x06proto3')
   ,
   dependencies=[test__platform_dot_common_dot_task__pb2.DESCRIPTOR,])
 
@@ -47,8 +47,8 @@ _RESULT_AUTOTEST_TESTCASE_VERDICT = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=690,
-  serialized_end=758,
+  serialized_start=815,
+  serialized_end=883,
 )
 _sym_db.RegisterEnumDescriptor(_RESULT_AUTOTEST_TESTCASE_VERDICT)
 
@@ -73,10 +73,48 @@ _RESULT_PREJOB_STEP_VERDICT = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=690,
-  serialized_end=758,
+  serialized_start=815,
+  serialized_end=883,
 )
 _sym_db.RegisterEnumDescriptor(_RESULT_PREJOB_STEP_VERDICT)
+
+
+_ASYNCRESULTS = _descriptor.Descriptor(
+  name='AsyncResults',
+  full_name='test_platform.skylab_test_runner.AsyncResults',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='logs_url', full_name='test_platform.skylab_test_runner.AsyncResults.logs_url', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='gs_url', full_name='test_platform.skylab_test_runner.AsyncResults.gs_url', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=116,
+  serialized_end=164,
+)
 
 
 _RESULT_AUTOTEST_TESTCASE = _descriptor.Descriptor(
@@ -120,8 +158,8 @@ _RESULT_AUTOTEST_TESTCASE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=547,
-  serialized_end=758,
+  serialized_start=672,
+  serialized_end=883,
 )
 
 _RESULT_AUTOTEST = _descriptor.Descriptor(
@@ -164,8 +202,8 @@ _RESULT_AUTOTEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=400,
-  serialized_end=758,
+  serialized_start=525,
+  serialized_end=883,
 )
 
 _RESULT_PREJOB_STEP = _descriptor.Descriptor(
@@ -209,8 +247,8 @@ _RESULT_PREJOB_STEP = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=840,
-  serialized_end=1041,
+  serialized_start=965,
+  serialized_end=1166,
 )
 
 _RESULT_PREJOB = _descriptor.Descriptor(
@@ -239,8 +277,8 @@ _RESULT_PREJOB = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=761,
-  serialized_end=1041,
+  serialized_start=886,
+  serialized_end=1166,
 )
 
 _RESULT_STATEUPDATE = _descriptor.Descriptor(
@@ -269,8 +307,8 @@ _RESULT_STATEUPDATE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1043,
-  serialized_end=1075,
+  serialized_start=1168,
+  serialized_end=1200,
 )
 
 _RESULT = _descriptor.Descriptor(
@@ -300,10 +338,17 @@ _RESULT = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=_b('\030\001'), file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='state_update', full_name='test_platform.skylab_test_runner.Result.state_update', index=3,
       number=4, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='async_results', full_name='test_platform.skylab_test_runner.Result.async_results', index=4,
+      number=5, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -323,8 +368,8 @@ _RESULT = _descriptor.Descriptor(
       name='harness', full_name='test_platform.skylab_test_runner.Result.harness',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=117,
-  serialized_end=1086,
+  serialized_start=167,
+  serialized_end=1211,
 )
 
 _RESULT_AUTOTEST_TESTCASE.fields_by_name['verdict'].enum_type = _RESULT_AUTOTEST_TESTCASE_VERDICT
@@ -342,11 +387,20 @@ _RESULT.fields_by_name['autotest_result'].message_type = _RESULT_AUTOTEST
 _RESULT.fields_by_name['prejob'].message_type = _RESULT_PREJOB
 _RESULT.fields_by_name['log_data'].message_type = test__platform_dot_common_dot_task__pb2._TASKLOGDATA
 _RESULT.fields_by_name['state_update'].message_type = _RESULT_STATEUPDATE
+_RESULT.fields_by_name['async_results'].message_type = _ASYNCRESULTS
 _RESULT.oneofs_by_name['harness'].fields.append(
   _RESULT.fields_by_name['autotest_result'])
 _RESULT.fields_by_name['autotest_result'].containing_oneof = _RESULT.oneofs_by_name['harness']
+DESCRIPTOR.message_types_by_name['AsyncResults'] = _ASYNCRESULTS
 DESCRIPTOR.message_types_by_name['Result'] = _RESULT
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
+
+AsyncResults = _reflection.GeneratedProtocolMessageType('AsyncResults', (_message.Message,), dict(
+  DESCRIPTOR = _ASYNCRESULTS,
+  __module__ = 'test_platform.skylab_test_runner.result_pb2'
+  # @@protoc_insertion_point(class_scope:test_platform.skylab_test_runner.AsyncResults)
+  ))
+_sym_db.RegisterMessage(AsyncResults)
 
 Result = _reflection.GeneratedProtocolMessageType('Result', (_message.Message,), dict(
 
@@ -397,4 +451,5 @@ _sym_db.RegisterMessage(Result.StateUpdate)
 
 
 DESCRIPTOR._options = None
+_RESULT.fields_by_name['log_data']._options = None
 # @@protoc_insertion_point(module_scope)
