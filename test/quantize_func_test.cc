@@ -514,7 +514,17 @@ const QuantizeParam kQParamArrayNEON[] = {
   make_tuple(&av1_quantize_fp_c, &av1_quantize_fp_neon,
              static_cast<TX_SIZE>(TX_8X32), TYPE_FP, AOM_BITS_8),
   make_tuple(&av1_quantize_fp_c, &av1_quantize_fp_neon,
-             static_cast<TX_SIZE>(TX_32X8), TYPE_FP, AOM_BITS_8)
+             static_cast<TX_SIZE>(TX_32X8), TYPE_FP, AOM_BITS_8),
+  make_tuple(&av1_quantize_fp_32x32_c, &av1_quantize_fp_32x32_neon,
+             static_cast<TX_SIZE>(TX_32X32), TYPE_FP, AOM_BITS_8),
+  make_tuple(&av1_quantize_fp_64x64_c, &av1_quantize_fp_64x64_neon,
+             static_cast<TX_SIZE>(TX_64X64), TYPE_FP, AOM_BITS_8),
+  make_tuple(&aom_quantize_b_c, &aom_quantize_b_neon,
+             static_cast<TX_SIZE>(TX_16X16), TYPE_B, AOM_BITS_8),
+  make_tuple(&aom_quantize_b_32x32_c, &aom_quantize_b_32x32_neon,
+             static_cast<TX_SIZE>(TX_32X32), TYPE_B, AOM_BITS_8),
+  make_tuple(&aom_quantize_b_64x64_c, &aom_quantize_b_64x64_neon,
+             static_cast<TX_SIZE>(TX_64X64), TYPE_B, AOM_BITS_8)
 };
 
 INSTANTIATE_TEST_SUITE_P(NEON, QuantizeTest,
