@@ -276,11 +276,13 @@ def _get_deploy_config(build_target):
     force_fast = module.is_fast_required
 
   servo_force_command = None
-  if hasattr(module, '__use_flashrom__') and module.__use_flashrom__:
+  if (hasattr(module, 'DEPLOY_SERVO_FORCE_FLASHROM') and
+      module.DEPLOY_SERVO_FORCE_FLASHROM):
     servo_force_command = DeployConfig.FORCE_FLASHROM
 
   ssh_force_command = None
-  if hasattr(module, 'use_futility_ssh') and module.use_futility_ssh:
+  if (hasattr(module, 'DEPLOY_SSH_FORCE_FUTILITY') and
+      module.DEPLOY_SSH_FORCE_FUTILITY):
     ssh_force_command = DeployConfig.FORCE_FUTILITY
 
   return DeployConfig(

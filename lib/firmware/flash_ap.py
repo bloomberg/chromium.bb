@@ -297,7 +297,8 @@ def _deploy_servo(image, module, flashrom, fast, verbose, port, dryrun):
     logging.notice('There is a known error with the board and servo type being '
                    'used, enabling --fast to bypass this problem.')
     fast = True
-  if hasattr(module, '__use_flashrom__') and module.__use_flashrom__:
+  if (hasattr(module, 'DEPLOY_SERVO_FORCE_FLASHROM') and
+      module.DEPLOY_SERVO_FORCE_FLASHROM):
     # Futility needs VBoot to flash so boards without functioning VBoot
     # can set this attribute to True to force the use of flashrom.
     flashrom = True
@@ -334,8 +335,8 @@ def _deploy_ssh(image, module, flashrom, fast, verbose, ip, dryrun):
   """
   logging.info('Attempting to flash via ssh.')
   # TODO(b/143241417): Can't use flashrom over ssh on wilco.
-  if (hasattr(module, 'use_futility_ssh') and module.use_futility_ssh and
-      flashrom):
+  if (hasattr(module, 'DEPLOY_SSH_FORCE_FUTILITY') and
+      module.DEPLOY_SSH_FORCE_FUTILITY and flashrom):
     logging.warning('Flashing with flashrom over ssh on this device fails '
                     'consistently, flashing with futility instead.')
     flashrom = False
