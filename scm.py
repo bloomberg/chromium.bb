@@ -4,6 +4,7 @@
 
 """SCM-specific utility classes."""
 
+import distutils.version
 import glob
 import io
 import os
@@ -113,8 +114,8 @@ class GIT(object):
   def Capture(args, cwd, strip_out=True, **kwargs):
     env = GIT.ApplyEnvVars(kwargs)
     output = subprocess2.check_output(
-        ['git'] + args, cwd=cwd, stderr=subprocess2.PIPE, env=env,
-        **kwargs).decode('utf-8', 'replace')
+        ['git'] + args, cwd=cwd, stderr=subprocess2.PIPE, env=env, **kwargs)
+    output = output.decode('utf-8', 'replace')
     return output.strip() if strip_out else output
 
   @staticmethod
@@ -406,13 +407,7 @@ class GIT(object):
     """Asserts git's version is at least min_version."""
     if cls.current_version is None:
       current_version = cls.Capture(['--version'], '.')
-      matched = re.search(r'version ([0-9\.]+)', current_version)
-      cls.current_version = matched.group(1)
-    current_version_list = list(map(only_int, cls.current_version.split('.')))
-    for min_ver in map(int, min_version.split('.')):
-      ver = current_version_list.pop(0)
-      if ver < min_ver:
-        return (False, cls.current_version)
-      elif ver > min_ver:
-        return (True, cls.current_version)
-    return (True, cls.current_version)
+      matched = re.search(r'git version (.+)', current_version)
+      cls.current_version = distutils.version.LooseVersion(matched.group(1))
+    min_version = distutils.version.LooseVersion(min_version)
+    return (min_version <= cls.current_version, cls.current_version)
