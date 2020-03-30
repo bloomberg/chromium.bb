@@ -262,7 +262,7 @@ def GetParser():
                       help='Board root where the profile should be created.')
   parser.add_argument('-p', '--profile',
                       help='The portage configuration profile to use.')
-  parser.add_argument('-v', '--variant', help='Board variant.')
+  parser.add_argument('--variant', help='Board variant.')
 
   group = parser.add_argument_group('Advanced options')
   group.add_argument('--filesystem-prefix',

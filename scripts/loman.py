@@ -135,7 +135,7 @@ def GetParser():
                          default=False, help='Is this a workon package?')
   subparser.add_argument('-r', '--remote',
                          help='Remote project name (for non-workon packages).')
-  subparser.add_argument('-v', '--revision',
+  subparser.add_argument('--revision',
                          help='Use to override the manifest defined default '
                               'revision used for a given project.')
   subparser.add_argument('project', help='Name of project in the manifest.')
