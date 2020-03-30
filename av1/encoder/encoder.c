@@ -1104,9 +1104,11 @@ static void alloc_compressor_data(AV1_COMP *cpi) {
       ALIGN_POWER_OF_TWO(cm->mi_params.mi_rows, cm->seq_params.mib_size_log2);
   int sb_rows = mi_rows_aligned_to_sb >> cm->seq_params.mib_size_log2;
 
-  av1_alloc_txb_buf(cpi);
+  if (!is_stat_generation_stage(cpi)) {
+    av1_alloc_txb_buf(cpi);
 
-  alloc_context_buffers_ext(cpi);
+    alloc_context_buffers_ext(cpi);
+  }
 
   aom_free(cpi->tile_tok[0][0]);
   aom_free(cpi->tplist[0][0]);
@@ -1213,7 +1215,7 @@ static void update_frame_size(AV1_COMP *cpi) {
 
   av1_init_macroblockd(cm, xd, NULL);
 
-  alloc_context_buffers_ext(cpi);
+  if (!is_stat_generation_stage(cpi)) alloc_context_buffers_ext(cpi);
   set_tile_info(cpi);
 }
 
