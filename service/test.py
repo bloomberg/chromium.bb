@@ -131,7 +131,10 @@ def ChromitePytest():
   Returns:
     bool: True iff all tests passed, False otherwise.
   """
-  cmd = ['pytest', constants.CHROMITE_DIR]
+  cmd = [
+      os.path.join(constants.CHROMITE_SCRIPTS_DIR, 'run_pytest'),
+      constants.CHROMITE_DIR,
+  ]
   result = cros_build_lib.run(cmd, check=False)
   return result.returncode == 0
 
