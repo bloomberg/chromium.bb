@@ -2092,8 +2092,9 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   if (args->dry_run == OUTPUT_ENABLED) {
     MB_MODE_INFO *mbmi = xd->mi[0];
     TXB_CTX txb_ctx;
-    get_txb_ctx(plane_bsize, tx_size, plane, pd->above_context + blk_col,
-                pd->left_context + blk_row, &txb_ctx);
+    get_txb_ctx(plane_bsize, tx_size, plane,
+                pd->above_entropy_context + blk_col,
+                pd->left_entropy_context + blk_row, &txb_ctx);
     const int bwl = get_txb_bwl(tx_size);
     const int width = get_txb_wide(tx_size);
     const int height = get_txb_high(tx_size);
@@ -2118,8 +2119,8 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
     eob_txb[block] = eob;
 
     if (eob == 0) {
-      av1_set_contexts(xd, pd, plane, plane_bsize, tx_size, 0, blk_col,
-                       blk_row);
+      av1_set_entropy_contexts(xd, pd, plane, plane_bsize, tx_size, 0, blk_col,
+                               blk_row);
       return;
     }
     const int segment_id = mbmi->segment_id;
@@ -2220,8 +2221,8 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
     tcoeff = qcoeff;
   }
   const int cul_level = av1_get_txb_entropy_context(tcoeff, scan_order, eob);
-  av1_set_contexts(xd, pd, plane, plane_bsize, tx_size, cul_level, blk_col,
-                   blk_row);
+  av1_set_entropy_contexts(xd, pd, plane, plane_bsize, tx_size, cul_level,
+                           blk_col, blk_row);
 }
 
 void av1_update_txb_context(const AV1_COMP *cpi, ThreadData *td,
@@ -2234,7 +2235,7 @@ void av1_update_txb_context(const AV1_COMP *cpi, ThreadData *td,
   MB_MODE_INFO *const mbmi = xd->mi[0];
   struct tokenize_b_args arg = { cpi, td, 0, allow_update_cdf, dry_run };
   if (mbmi->skip) {
-    av1_reset_skip_context(xd, bsize, num_planes);
+    av1_reset_entropy_context(xd, bsize, num_planes);
     return;
   }
 

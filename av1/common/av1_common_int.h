@@ -878,9 +878,9 @@ static INLINE void av1_init_above_context(CommonContexts *above_contexts,
                                           int num_planes, int tile_row,
                                           MACROBLOCKD *xd) {
   for (int i = 0; i < num_planes; ++i) {
-    xd->above_context[i] = above_contexts->entropy[i][tile_row];
+    xd->above_entropy_context[i] = above_contexts->entropy[i][tile_row];
   }
-  xd->above_seg_context = above_contexts->partition[tile_row];
+  xd->above_partition_context = above_contexts->partition[tile_row];
   xd->above_txfm_context = above_contexts->txfm[tile_row];
 }
 
@@ -917,8 +917,8 @@ static INLINE void av1_init_macroblockd(AV1_COMMON *cm, MACROBLOCKD *xd,
   cfl_init(&xd->cfl, &cm->seq_params);
 }
 
-static INLINE void set_skip_context(MACROBLOCKD *xd, int mi_row, int mi_col,
-                                    const int num_planes) {
+static INLINE void set_entropy_context(MACROBLOCKD *xd, int mi_row, int mi_col,
+                                       const int num_planes) {
   int i;
   int row_offset = mi_row;
   int col_offset = mi_col;
@@ -932,8 +932,10 @@ static INLINE void set_skip_context(MACROBLOCKD *xd, int mi_row, int mi_col,
       col_offset = mi_col - 1;
     int above_idx = col_offset;
     int left_idx = row_offset & MAX_MIB_MASK;
-    pd->above_context = &xd->above_context[i][above_idx >> pd->subsampling_x];
-    pd->left_context = &xd->left_context[i][left_idx >> pd->subsampling_y];
+    pd->above_entropy_context =
+        &xd->above_entropy_context[i][above_idx >> pd->subsampling_x];
+    pd->left_entropy_context =
+        &xd->left_entropy_context[i][left_idx >> pd->subsampling_y];
   }
 }
 
@@ -1041,9 +1043,9 @@ static INLINE aom_cdf_prob *get_y_mode_cdf(FRAME_CONTEXT *tile_ctx,
 static INLINE void update_partition_context(MACROBLOCKD *xd, int mi_row,
                                             int mi_col, BLOCK_SIZE subsize,
                                             BLOCK_SIZE bsize) {
-  PARTITION_CONTEXT *const above_ctx = xd->above_seg_context + mi_col;
+  PARTITION_CONTEXT *const above_ctx = xd->above_partition_context + mi_col;
   PARTITION_CONTEXT *const left_ctx =
-      xd->left_seg_context + (mi_row & MAX_MIB_MASK);
+      xd->left_partition_context + (mi_row & MAX_MIB_MASK);
 
   const int bw = mi_size_wide[bsize];
   const int bh = mi_size_high[bsize];
@@ -1138,9 +1140,9 @@ static INLINE void update_ext_partition_context(MACROBLOCKD *xd, int mi_row,
 
 static INLINE int partition_plane_context(const MACROBLOCKD *xd, int mi_row,
                                           int mi_col, BLOCK_SIZE bsize) {
-  const PARTITION_CONTEXT *above_ctx = xd->above_seg_context + mi_col;
+  const PARTITION_CONTEXT *above_ctx = xd->above_partition_context + mi_col;
   const PARTITION_CONTEXT *left_ctx =
-      xd->left_seg_context + (mi_row & MAX_MIB_MASK);
+      xd->left_partition_context + (mi_row & MAX_MIB_MASK);
   // Minimum partition point is 8x8. Offset the bsl accordingly.
   const int bsl = mi_size_wide_log2[bsize] - mi_size_wide_log2[BLOCK_8X8];
   int above = (*above_ctx >> bsl) & 1, left = (*left_ctx >> bsl) & 1;
@@ -1242,8 +1244,8 @@ static INLINE void av1_zero_above_context(AV1_COMMON *const cm,
 }
 
 static INLINE void av1_zero_left_context(MACROBLOCKD *const xd) {
-  av1_zero(xd->left_context);
-  av1_zero(xd->left_seg_context);
+  av1_zero(xd->left_entropy_context);
+  av1_zero(xd->left_partition_context);
 
   memset(xd->left_txfm_context_buffer, tx_size_high[TX_SIZES_LARGEST],
          sizeof(xd->left_txfm_context_buffer));

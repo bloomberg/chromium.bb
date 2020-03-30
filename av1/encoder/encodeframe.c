@@ -396,7 +396,7 @@ static AOM_INLINE void set_offsets_without_segment_id(
 
   set_mode_info_offsets(cpi, x, xd, mi_row, mi_col);
 
-  set_skip_context(xd, mi_row, mi_col, num_planes);
+  set_entropy_context(xd, mi_row, mi_col, num_planes);
   xd->above_txfm_context = cm->above_contexts.txfm[tile->tile_row] + mi_col;
   xd->left_txfm_context =
       xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
@@ -1499,19 +1499,20 @@ static AOM_INLINE void restore_context(MACROBLOCK *x,
   for (p = 0; p < num_planes; p++) {
     int tx_col = mi_col;
     int tx_row = mi_row & MAX_MIB_MASK;
-    memcpy(xd->above_context[p] + (tx_col >> xd->plane[p].subsampling_x),
-           ctx->a + num_4x4_blocks_wide * p,
-           (sizeof(ENTROPY_CONTEXT) * num_4x4_blocks_wide) >>
-               xd->plane[p].subsampling_x);
-    memcpy(xd->left_context[p] + (tx_row >> xd->plane[p].subsampling_y),
+    memcpy(
+        xd->above_entropy_context[p] + (tx_col >> xd->plane[p].subsampling_x),
+        ctx->a + num_4x4_blocks_wide * p,
+        (sizeof(ENTROPY_CONTEXT) * num_4x4_blocks_wide) >>
+            xd->plane[p].subsampling_x);
+    memcpy(xd->left_entropy_context[p] + (tx_row >> xd->plane[p].subsampling_y),
            ctx->l + num_4x4_blocks_high * p,
            (sizeof(ENTROPY_CONTEXT) * num_4x4_blocks_high) >>
                xd->plane[p].subsampling_y);
   }
-  memcpy(xd->above_seg_context + mi_col, ctx->sa,
-         sizeof(*xd->above_seg_context) * mi_width);
-  memcpy(xd->left_seg_context + (mi_row & MAX_MIB_MASK), ctx->sl,
-         sizeof(xd->left_seg_context[0]) * mi_height);
+  memcpy(xd->above_partition_context + mi_col, ctx->sa,
+         sizeof(*xd->above_partition_context) * mi_width);
+  memcpy(xd->left_partition_context + (mi_row & MAX_MIB_MASK), ctx->sl,
+         sizeof(xd->left_partition_context[0]) * mi_height);
   xd->above_txfm_context = ctx->p_ta;
   xd->left_txfm_context = ctx->p_tl;
   memcpy(xd->above_txfm_context, ctx->ta,
@@ -1533,17 +1534,18 @@ static AOM_INLINE void save_context(const MACROBLOCK *x,
   for (p = 0; p < num_planes; ++p) {
     int tx_col = mi_col;
     int tx_row = mi_row & MAX_MIB_MASK;
-    memcpy(ctx->a + mi_width * p,
-           xd->above_context[p] + (tx_col >> xd->plane[p].subsampling_x),
-           (sizeof(ENTROPY_CONTEXT) * mi_width) >> xd->plane[p].subsampling_x);
+    memcpy(
+        ctx->a + mi_width * p,
+        xd->above_entropy_context[p] + (tx_col >> xd->plane[p].subsampling_x),
+        (sizeof(ENTROPY_CONTEXT) * mi_width) >> xd->plane[p].subsampling_x);
     memcpy(ctx->l + mi_height * p,
-           xd->left_context[p] + (tx_row >> xd->plane[p].subsampling_y),
+           xd->left_entropy_context[p] + (tx_row >> xd->plane[p].subsampling_y),
            (sizeof(ENTROPY_CONTEXT) * mi_height) >> xd->plane[p].subsampling_y);
   }
-  memcpy(ctx->sa, xd->above_seg_context + mi_col,
-         sizeof(*xd->above_seg_context) * mi_width);
-  memcpy(ctx->sl, xd->left_seg_context + (mi_row & MAX_MIB_MASK),
-         sizeof(xd->left_seg_context[0]) * mi_height);
+  memcpy(ctx->sa, xd->above_partition_context + mi_col,
+         sizeof(*xd->above_partition_context) * mi_width);
+  memcpy(ctx->sl, xd->left_partition_context + (mi_row & MAX_MIB_MASK),
+         sizeof(xd->left_partition_context[0]) * mi_height);
   memcpy(ctx->ta, xd->above_txfm_context,
          sizeof(*xd->above_txfm_context) * mi_width);
   memcpy(ctx->tl, xd->left_txfm_context,

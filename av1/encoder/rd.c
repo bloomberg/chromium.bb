@@ -968,8 +968,8 @@ static void get_entropy_contexts_plane(BLOCK_SIZE plane_bsize,
                                        ENTROPY_CONTEXT t_left[MAX_MIB_SIZE]) {
   const int num_4x4_w = mi_size_wide[plane_bsize];
   const int num_4x4_h = mi_size_high[plane_bsize];
-  const ENTROPY_CONTEXT *const above = pd->above_context;
-  const ENTROPY_CONTEXT *const left = pd->left_context;
+  const ENTROPY_CONTEXT *const above = pd->above_entropy_context;
+  const ENTROPY_CONTEXT *const left = pd->left_entropy_context;
 
   memcpy(t_above, above, sizeof(ENTROPY_CONTEXT) * num_4x4_w);
   memcpy(t_left, left, sizeof(ENTROPY_CONTEXT) * num_4x4_h);

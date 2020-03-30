@@ -337,11 +337,12 @@ void av1_read_coeffs_txb_facade(const AV1_COMMON *const cm,
       get_plane_block_size(bsize, pd->subsampling_x, pd->subsampling_y);
 
   TXB_CTX txb_ctx;
-  get_txb_ctx(plane_bsize, tx_size, plane, pd->above_context + col,
-              pd->left_context + row, &txb_ctx);
+  get_txb_ctx(plane_bsize, tx_size, plane, pd->above_entropy_context + col,
+              pd->left_entropy_context + row, &txb_ctx);
   const uint8_t cul_level =
       av1_read_coeffs_txb(cm, xd, r, row, col, plane, &txb_ctx, tx_size);
-  av1_set_contexts(xd, pd, plane, plane_bsize, tx_size, cul_level, col, row);
+  av1_set_entropy_contexts(xd, pd, plane, plane_bsize, tx_size, cul_level, col,
+                           row);
 
   if (is_inter_block(mbmi)) {
     const PLANE_TYPE plane_type = get_plane_type(plane);
