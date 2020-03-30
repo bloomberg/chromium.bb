@@ -28,6 +28,7 @@ from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import gob_util
 from chromite.lib import gs
+from chromite.lib import gs_unittest
 from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.lib import portage_util
@@ -722,7 +723,7 @@ class LatestAFDOArtifactTest(cros_test_lib.RunCommandTempDirTestCase):
     self.assertIn('No valid latest artifact was found', str(context.exception))
 
 
-class UploadAFDOArtifactToGSBucketTest(cros_test_lib.MockTempDirTestCase):
+class UploadAFDOArtifactToGSBucketTest(gs_unittest.AbstractGSContextTest):
   """Test top-level function _UploadAFDOArtifactToGSBucket."""
 
   # pylint: disable=protected-access
