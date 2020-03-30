@@ -249,6 +249,7 @@ static void set_rt_speed_feature_framesize_dependent(const AV1_COMP *const cpi,
   (void)is_720p_or_larger;  // Not used so far
 
   if (!is_360p_or_larger) {
+    if (speed >= 6) sf->rt_sf.force_tx_search_off = 1;
     if (speed >= 8) sf->rt_sf.use_nonrd_filter_search = 0;
   }
   if (is_360p_or_larger) {
@@ -824,7 +825,6 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->lpf_sf.cdef_pick_method = CDEF_PICK_FROM_Q;
     sf->lpf_sf.lpf_pick = LPF_PICK_FROM_Q;
 
-    sf->rt_sf.force_tx_search_off = 1;
     sf->rt_sf.mode_search_skip_flags |= FLAG_SKIP_INTRA_DIRMISMATCH;
     sf->rt_sf.num_inter_modes_for_tx_search = 5;
     sf->rt_sf.skip_interp_filter_search = 1;
