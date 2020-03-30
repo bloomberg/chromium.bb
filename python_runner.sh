@@ -48,16 +48,13 @@ SCRIPT="${SCRIPT-${BASENAME//-/_}.py}"
 # standalone, but allow other PATH manipulations to take priority.
 PATH=$PATH:$DEPOT_TOOLS
 
-# MINGW will equal 0 if we're running on Windows under MinGW.
-MINGW=$(uname -s | grep MINGW > /dev/null; echo $?)
-
 if [[ $GCLIENT_PY3 = 1 ]]; then
   # Explicitly run on Python 3
   vpython3 "$DEPOT_TOOLS/$SCRIPT" "$@"
 elif [[ $GCLIENT_PY3 = 0 ]]; then
   # Explicitly run on Python 2
   vpython "$DEPOT_TOOLS/$SCRIPT" "$@"
-elif [[ $MINGW = 0 ]]; then
+elif [[ $(uname -s) = MINGW* || $(uname -s) = CYGWIN* ]]; then
   # Run on Python 2 on Windows for now, allows default to be flipped.
   vpython "$DEPOT_TOOLS/$SCRIPT" "$@"
 else
