@@ -292,7 +292,8 @@ def _deploy_servo(image, module, flashrom, fast, verbose, port, dryrun):
   dut_ctl = DutControl(port)
   servo = servo_lib.get(dut_ctl)
   # TODO(b/143240576): Fast mode is sometimes necessary to flash successfully.
-  if not fast and module.is_fast_required(not flashrom, servo):
+  if (not fast and hasattr(module, 'is_fast_required') and
+      module.is_fast_required(not flashrom, servo)):
     logging.notice('There is a known error with the board and servo type being '
                    'used, enabling --fast to bypass this problem.')
     fast = True
