@@ -62,6 +62,18 @@
       ]
     },
     {
+      "name": "atlas-blueznext",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "poppy",
+          "arch": "X86_INTERNAL"
+        }
+      ]
+    },
+    {
       "name": "atlas-kvm",
       "configs": [
         {

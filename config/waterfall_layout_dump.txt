@@ -240,6 +240,7 @@
     arkham-release
     asuka-release
     asurada-release
+    atlas-blueznext-release
     atlas-kvm-release
     atlas-release
     auron_paine-release
@@ -496,6 +497,11 @@
   asurada-payloads-tryjob
   asurada-release-tryjob
   asurada-unittest-stress
+  atlas-blueznext-full-tryjob
+  atlas-blueznext-llvm-next-toolchain-tryjob
+  atlas-blueznext-llvm-toolchain-tryjob
+  atlas-blueznext-release-tryjob
+  atlas-blueznext-unittest-stress
   atlas-factory-atlas-11907.B-factorybranch-tryjob
   atlas-full-tryjob
   atlas-kvm-full-tryjob
@@ -1411,6 +1417,7 @@
     arkham-release-tryjob
     asuka-release-tryjob
     asurada-release-tryjob
+    atlas-blueznext-release-tryjob
     atlas-kvm-release-tryjob
     atlas-release-tryjob
     auron_paine-release-tryjob
