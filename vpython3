@@ -47,11 +47,11 @@ MINGW=$(uname -s | grep MINGW > /dev/null; echo $?)
 if [[ $MINGW = 0 ]]; then
   cmd.exe //c $0.bat "$@"
 elif [[ $DEPOT_TOOLS_BOOTSTRAP_PYTHON3 != 0 ]]; then
-  if [[ ! -e $base_dir/python3_bin_reldir.txt ]]; then
+  if [[ ! -e "$base_dir/python3_bin_reldir.txt" ]]; then
     source "$base_dir/bootstrap_python3"
     bootstrap_python3
   fi
-  PYTHON3_BIN_RELDIR="$base_dir/$(cat $base_dir/python3_bin_reldir.txt | xargs echo)"
+  PYTHON3_BIN_RELDIR="$base_dir/$(cat "$base_dir/python3_bin_reldir.txt" | xargs echo)"
   exec "$base_dir/.cipd_bin/vpython3" -vpython-interpreter  "$PYTHON3_BIN_RELDIR/python3" "$@"
 else
   exec "$base_dir/.cipd_bin/vpython3" "$@"
