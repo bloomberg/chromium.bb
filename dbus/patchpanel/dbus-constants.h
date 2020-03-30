@@ -20,6 +20,7 @@ const char kTerminaVmStartupMethod[] = "TerminaVmStartup";
 const char kTerminaVmShutdownMethod[] = "TerminaVmShutdown";
 const char kPluginVmStartupMethod[] = "PluginVmStartup";
 const char kPluginVmShutdownMethod[] = "PluginVmShutdown";
+const char kSetVpnIntentMethod[] = "SetVpnIntent";
 
 }  // namespace patchpanel
 
