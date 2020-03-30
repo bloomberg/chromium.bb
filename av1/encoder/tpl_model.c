@@ -159,11 +159,10 @@ static uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
   const uint8_t *mask = NULL;
   const int mask_stride = 0;
   const int invert_mask = 0;
-  const int do_reset_fractional_mv = 1;
   SUBPEL_MOTION_SEARCH_PARAMS ms_params;
   av1_make_default_subpel_ms_params(&ms_params, cpi, x, bsize, &center_mv,
                                     cost_list, second_pred, mask, mask_stride,
-                                    invert_mask, do_reset_fractional_mv);
+                                    invert_mask);
   ms_params.forced_stop = EIGHTH_PEL;
   ms_params.var_params.subpel_search_type = USE_2_TAPS;
   ms_params.mv_cost_params.mv_cost_type = MV_COST_NONE;

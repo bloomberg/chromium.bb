@@ -87,18 +87,19 @@ void av1_make_default_fullpel_ms_params(
   init_mv_cost_params(&ms_params->mv_cost_params, x, ref_mv);
 }
 
-void av1_make_default_subpel_ms_params(
-    SUBPEL_MOTION_SEARCH_PARAMS *ms_params, const struct AV1_COMP *cpi,
-    const MACROBLOCK *x, BLOCK_SIZE bsize, const MV *ref_mv,
-    const int *cost_list, const uint8_t *second_pred, const uint8_t *mask,
-    int mask_stride, int invert_mask, int do_reset_fractional_mv) {
+void av1_make_default_subpel_ms_params(SUBPEL_MOTION_SEARCH_PARAMS *ms_params,
+                                       const struct AV1_COMP *cpi,
+                                       const MACROBLOCK *x, BLOCK_SIZE bsize,
+                                       const MV *ref_mv, const int *cost_list,
+                                       const uint8_t *second_pred,
+                                       const uint8_t *mask, int mask_stride,
+                                       int invert_mask) {
   const AV1_COMMON *cm = &cpi->common;
   // High level params
   ms_params->allow_hp = cm->features.allow_high_precision_mv;
   ms_params->forced_stop = cpi->sf.mv_sf.subpel_force_stop;
   ms_params->iters_per_step = cpi->sf.mv_sf.subpel_iters_per_step;
   ms_params->cost_list = cond_cost_list_const(cpi, cost_list);
-  ms_params->do_reset_fractional_mv = do_reset_fractional_mv;
 
   av1_set_subpel_mv_search_range(&ms_params->mv_limits, &x->mv_limits, ref_mv);
 
@@ -2507,12 +2508,26 @@ static AOM_INLINE void get_cost_surf_min(const int *cost_list, int *ir, int *ic,
                          (cost_list[4] - 2 * cost_list[0] + cost_list[2]));
 }
 
+// Checks the list of mvs searched in the last iteration and see if we are
+// repeating it. If so, return 1. Otherwise we update the last_mv_search_list
+// with current_mv and return 0.
+static INLINE int check_repeated_mv_and_update(int_mv *last_mv_search_list,
+                                               const MV current_mv, int iter) {
+  if (last_mv_search_list) {
+    if (CHECK_MV_EQUAL(last_mv_search_list[iter].as_mv, current_mv)) {
+      return 1;
+    }
+
+    last_mv_search_list[iter].as_mv = current_mv;
+  }
+  return 0;
+}
+
 int av1_find_best_sub_pixel_tree_pruned_evenmore(
     MACROBLOCKD *xd, const AV1_COMMON *const cm,
     const SUBPEL_MOTION_SEARCH_PARAMS *ms_params, MV start_mv, MV *bestmv,
     int *distortion, unsigned int *sse1, int_mv *last_mv_search_list) {
   (void)cm;
-  (void)last_mv_search_list;
   const int allow_hp = ms_params->allow_hp;
   const int forced_stop = ms_params->forced_stop;
   const int iters_per_step = ms_params->iters_per_step;
@@ -2521,12 +2536,20 @@ int av1_find_best_sub_pixel_tree_pruned_evenmore(
   const MV_COST_PARAMS *mv_cost_params = &ms_params->mv_cost_params;
   const SUBPEL_SEARCH_VAR_PARAMS *var_params = &ms_params->var_params;
 
+  // The iteration we are current searching for. Iter 0 corresponds to fullpel
+  // mv, iter 1 to half pel, and so on
+  int iter = 0;
+  int hstep = INIT_SUBPEL_STEP_SIZE;  // Step size, initialized to 4/8=1/2 pel
   unsigned int besterr = INT_MAX;
-  int hstep = INIT_SUBPEL_STEP_SIZE;
   *bestmv = start_mv;
 
   besterr = setup_center_error(xd, bestmv, var_params, mv_cost_params, sse1,
                                distortion);
+
+  if (check_repeated_mv_and_update(last_mv_search_list, *bestmv, iter)) {
+    return INT_MAX;
+  }
+  iter++;
 
   if (cost_list && cost_list[0] != INT_MAX && cost_list[1] != INT_MAX &&
       cost_list[2] != INT_MAX && cost_list[3] != INT_MAX &&
@@ -2547,6 +2570,11 @@ int av1_find_best_sub_pixel_tree_pruned_evenmore(
     // Each subsequent iteration checks at least one point in common with
     // the last iteration could be 2 ( if diag selected) 1/4 pel
     if (forced_stop != HALF_PEL) {
+      if (check_repeated_mv_and_update(last_mv_search_list, *bestmv, iter)) {
+        return INT_MAX;
+      }
+      iter++;
+
       hstep >>= 1;
       start_mv = *bestmv;
       two_level_checks_fast(start_mv, bestmv, hstep, mv_limits, var_params,
@@ -2556,6 +2584,11 @@ int av1_find_best_sub_pixel_tree_pruned_evenmore(
   }
 
   if (allow_hp && forced_stop == EIGHTH_PEL) {
+    if (check_repeated_mv_and_update(last_mv_search_list, *bestmv, iter)) {
+      return INT_MAX;
+    }
+    iter++;
+
     hstep >>= 1;
     start_mv = *bestmv;
     two_level_checks_fast(start_mv, bestmv, hstep, mv_limits, var_params,
@@ -2571,7 +2604,6 @@ int av1_find_best_sub_pixel_tree_pruned_more(
     const SUBPEL_MOTION_SEARCH_PARAMS *ms_params, MV start_mv, MV *bestmv,
     int *distortion, unsigned int *sse1, int_mv *last_mv_search_list) {
   (void)cm;
-  (void)last_mv_search_list;
   const int allow_hp = ms_params->allow_hp;
   const int forced_stop = ms_params->forced_stop;
   const int iters_per_step = ms_params->iters_per_step;
@@ -2580,12 +2612,21 @@ int av1_find_best_sub_pixel_tree_pruned_more(
   const MV_COST_PARAMS *mv_cost_params = &ms_params->mv_cost_params;
   const SUBPEL_SEARCH_VAR_PARAMS *var_params = &ms_params->var_params;
 
+  // The iteration we are current searching for. Iter 0 corresponds to fullpel
+  // mv, iter 1 to half pel, and so on
+  int iter = 0;
+  int hstep = INIT_SUBPEL_STEP_SIZE;  // Step size, initialized to 4/8=1/2 pel
   unsigned int besterr = INT_MAX;
-  int hstep = INIT_SUBPEL_STEP_SIZE;
   *bestmv = start_mv;
 
   besterr = setup_center_error(xd, bestmv, var_params, mv_cost_params, sse1,
                                distortion);
+
+  if (check_repeated_mv_and_update(last_mv_search_list, *bestmv, iter)) {
+    return INT_MAX;
+  }
+  iter++;
+
   if (cost_list && cost_list[0] != INT_MAX && cost_list[1] != INT_MAX &&
       cost_list[2] != INT_MAX && cost_list[3] != INT_MAX &&
       cost_list[4] != INT_MAX && is_cost_list_wellbehaved(cost_list)) {
@@ -2607,6 +2648,11 @@ int av1_find_best_sub_pixel_tree_pruned_more(
   // Each subsequent iteration checks at least one point in common with
   // the last iteration could be 2 ( if diag selected) 1/4 pel
   if (forced_stop != HALF_PEL) {
+    if (check_repeated_mv_and_update(last_mv_search_list, *bestmv, iter)) {
+      return INT_MAX;
+    }
+    iter++;
+
     hstep >>= 1;
     start_mv = *bestmv;
     two_level_checks_fast(start_mv, bestmv, hstep, mv_limits, var_params,
@@ -2615,6 +2661,11 @@ int av1_find_best_sub_pixel_tree_pruned_more(
   }
 
   if (allow_hp && forced_stop == EIGHTH_PEL) {
+    if (check_repeated_mv_and_update(last_mv_search_list, *bestmv, iter)) {
+      return INT_MAX;
+    }
+    iter++;
+
     hstep >>= 1;
     start_mv = *bestmv;
     two_level_checks_fast(start_mv, bestmv, hstep, mv_limits, var_params,
@@ -2630,7 +2681,6 @@ int av1_find_best_sub_pixel_tree_pruned(
     const SUBPEL_MOTION_SEARCH_PARAMS *ms_params, MV start_mv, MV *bestmv,
     int *distortion, unsigned int *sse1, int_mv *last_mv_search_list) {
   (void)cm;
-  (void)last_mv_search_list;
   const int allow_hp = ms_params->allow_hp;
   const int forced_stop = ms_params->forced_stop;
   const int iters_per_step = ms_params->iters_per_step;
@@ -2639,12 +2689,25 @@ int av1_find_best_sub_pixel_tree_pruned(
   const MV_COST_PARAMS *mv_cost_params = &ms_params->mv_cost_params;
   const SUBPEL_SEARCH_VAR_PARAMS *var_params = &ms_params->var_params;
 
+  // The iteration we are current searching for. Iter 0 corresponds to fullpel
+  // mv, iter 1 to half pel, and so on
+  int iter = 0;
+  int hstep = INIT_SUBPEL_STEP_SIZE;  // Step size, initialized to 4/8=1/2 pel
   unsigned int besterr = INT_MAX;
-  int hstep = INIT_SUBPEL_STEP_SIZE;
   *bestmv = start_mv;
+
+  const int do_reset_fractional_mv = ms_params->do_reset_fractional_mv;
+  if (do_reset_fractional_mv && last_mv_search_list) {
+    av1_set_fractional_mv(last_mv_search_list);
+  }
 
   besterr = setup_center_error(xd, bestmv, var_params, mv_cost_params, sse1,
                                distortion);
+  if (check_repeated_mv_and_update(last_mv_search_list, *bestmv, iter)) {
+    return INT_MAX;
+  }
+  iter++;
+
   if (cost_list && cost_list[0] != INT_MAX && cost_list[1] != INT_MAX &&
       cost_list[2] != INT_MAX && cost_list[3] != INT_MAX &&
       cost_list[4] != INT_MAX) {
@@ -2706,6 +2769,11 @@ int av1_find_best_sub_pixel_tree_pruned(
   // Each subsequent iteration checks at least one point in common with
   // the last iteration could be 2 ( if diag selected) 1/4 pel
   if (forced_stop != HALF_PEL) {
+    if (check_repeated_mv_and_update(last_mv_search_list, *bestmv, iter)) {
+      return INT_MAX;
+    }
+    iter++;
+
     hstep >>= 1;
     start_mv = *bestmv;
     two_level_checks_fast(start_mv, bestmv, hstep, mv_limits, var_params,
@@ -2714,6 +2782,11 @@ int av1_find_best_sub_pixel_tree_pruned(
   }
 
   if (allow_hp && forced_stop == EIGHTH_PEL) {
+    if (check_repeated_mv_and_update(last_mv_search_list, *bestmv, iter)) {
+      return INT_MAX;
+    }
+    iter++;
+
     hstep >>= 1;
     start_mv = *bestmv;
     two_level_checks_fast(start_mv, bestmv, hstep, mv_limits, var_params,
@@ -2739,8 +2812,10 @@ int av1_find_best_sub_pixel_tree(MACROBLOCKD *xd, const AV1_COMMON *const cm,
       ms_params->var_params.subpel_search_type;
   const SubpelMvLimits *mv_limits = &ms_params->mv_limits;
 
+  // How many steps to take. A round of 0 means fullpel search only, 1 means
+  // half-pel, and so on.
   const int round = AOMMIN(FULL_PEL - forced_stop, 3 - !allow_hp);
-  int hstep = INIT_SUBPEL_STEP_SIZE;
+  int hstep = INIT_SUBPEL_STEP_SIZE;  // Step size, initialized to 4/8=1/2 pel
 
   unsigned int besterr = INT_MAX;
 
@@ -2760,12 +2835,9 @@ int av1_find_best_sub_pixel_tree(MACROBLOCKD *xd, const AV1_COMMON *const cm,
 
   for (int iter = 0; iter < round; ++iter) {
     MV iter_center_mv = *bestmv;
-    if (last_mv_search_list) {
-      if (CHECK_MV_EQUAL(last_mv_search_list[iter].as_mv, iter_center_mv)) {
-        return INT_MAX;
-      }
-
-      last_mv_search_list[iter].as_mv = iter_center_mv;
+    if (check_repeated_mv_and_update(last_mv_search_list, iter_center_mv,
+                                     iter)) {
+      return INT_MAX;
     }
 
     MV diag_step;

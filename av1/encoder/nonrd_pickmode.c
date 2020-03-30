@@ -177,11 +177,10 @@ static int combined_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
     const uint8_t *mask = NULL;
     const int mask_stride = 0;
     const int invert_mask = 0;
-    const int reset_fractional_mv = 1;
     SUBPEL_MOTION_SEARCH_PARAMS ms_params;
     av1_make_default_subpel_ms_params(&ms_params, cpi, x, bsize, &ref_mv,
                                       cost_list, second_pred, mask, mask_stride,
-                                      invert_mask, reset_fractional_mv);
+                                      invert_mask);
     MV subpel_start_mv = get_mv_from_fullmv(&x->best_mv.as_fullmv);
     cpi->find_fractional_mv_step(xd, cm, &ms_params, subpel_start_mv,
                                  &x->best_mv.as_mv, &dis, &x->pred_sse[ref],
@@ -240,11 +239,10 @@ static int search_new_mv(AV1_COMP *cpi, MACROBLOCK *x,
     const uint8_t *mask = NULL;
     const int mask_stride = 0;
     const int invert_mask = 0;
-    const int reset_fractional_mv = 1;
     SUBPEL_MOTION_SEARCH_PARAMS ms_params;
     av1_make_default_subpel_ms_params(&ms_params, cpi, x, bsize, &ref_mv,
                                       cost_list, second_pred, mask, mask_stride,
-                                      invert_mask, reset_fractional_mv);
+                                      invert_mask);
     MV start_mv = get_mv_from_fullmv(&x->best_mv.as_fullmv);
     cpi->find_fractional_mv_step(xd, cm, &ms_params, start_mv,
                                  &x->best_mv.as_mv, &dis,
