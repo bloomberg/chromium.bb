@@ -187,8 +187,10 @@ class AndroidMetadataStage(generic_stages.BuilderStage,
       branches.add(uprev_branch)
 
       # If we uprev Android, branch/version must be consistent.
-      assert len(versions) <= 1, 'Multiple Android versions: %r' % versions
-      assert len(branches) <= 1, 'Multiple Android branches: %r' % branches
+      # TODO(b/152768977): Provide assertion that awares about ARCVM PFQ for
+      # union builds. In last case, there are 2 versions and branches.
+      # assert len(versions) <= 1, 'Multiple Android versions: %r' % versions
+      # assert len(branches) <= 1, 'Multiple Android branches: %r' % branches
 
     # If there is a unique one across all the boards, treat it as the version
     # for the build.
