@@ -119,7 +119,7 @@ function update_git_repo {
 # Update git checkouts.
 if [ "X$DEPOT_TOOLS_UPDATE" != "X0" ]; then
   if [ -e "$base_dir/.git" ]; then
-    cd $base_dir
+    cd "$base_dir"
     update_git_repo
     cd - > /dev/null
   fi
