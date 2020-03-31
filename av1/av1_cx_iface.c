@@ -2192,7 +2192,7 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
           }
           const uint32_t obu_header_offset = 0;
           obu_header_size = av1_write_obu_header(
-              cpi, OBU_TEMPORAL_DELIMITER, 0,
+              &cpi->level_params, OBU_TEMPORAL_DELIMITER, 0,
               (uint8_t *)(ctx->pending_cx_data + obu_header_offset));
 
           // OBUs are preceded/succeeded by an unsigned leb128 coded integer.
@@ -2616,8 +2616,10 @@ static aom_codec_err_t ctrl_set_chroma_subsampling_y(aom_codec_alg_priv_t *ctx,
 static aom_codec_err_t ctrl_get_seq_level_idx(aom_codec_alg_priv_t *ctx,
                                               va_list args) {
   int *const arg = va_arg(args, int *);
+  const AV1_COMP *const cpi = ctx->cpi;
   if (arg == NULL) return AOM_CODEC_INVALID_PARAM;
-  return av1_get_seq_level_idx(ctx->cpi, arg);
+  return av1_get_seq_level_idx(&cpi->common.seq_params, &cpi->level_params,
+                               arg);
 }
 
 static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {

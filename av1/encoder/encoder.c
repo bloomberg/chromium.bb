@@ -894,7 +894,7 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
   }
 
   for (int i = 0; i < MAX_NUM_OPERATING_POINTS; ++i) {
-    aom_free(cpi->level_info[i]);
+    aom_free(cpi->level_params.level_info[i]);
   }
 
   if (cpi->use_svc) av1_free_svc_cyclic_refresh(cpi);
@@ -2770,6 +2770,7 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   const int num_planes = av1_num_planes(cm);
   RATE_CONTROL *const rc = &cpi->rc;
   MACROBLOCK *const x = &cpi->td.mb;
+  AV1LevelParams *const level_params = &cpi->level_params;
 
   if (seq_params->profile != oxcf->profile) seq_params->profile = oxcf->profile;
   seq_params->bit_depth = oxcf->bit_depth;
@@ -2819,24 +2820,25 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   x->e_mbd.bd = (int)seq_params->bit_depth;
   x->e_mbd.global_motion = cm->global_motion;
 
-  memcpy(cpi->target_seq_level_idx, cpi->oxcf.target_seq_level_idx,
-         sizeof(cpi->target_seq_level_idx));
-  cpi->keep_level_stats = 0;
+  memcpy(level_params->target_seq_level_idx, cpi->oxcf.target_seq_level_idx,
+         sizeof(level_params->target_seq_level_idx));
+  level_params->keep_level_stats = 0;
   for (int i = 0; i < MAX_NUM_OPERATING_POINTS; ++i) {
-    if (cpi->target_seq_level_idx[i] <= SEQ_LEVELS) {
-      cpi->keep_level_stats |= 1u << i;
-      if (!cpi->level_info[i]) {
-        CHECK_MEM_ERROR(cm, cpi->level_info[i],
-                        aom_calloc(1, sizeof(*cpi->level_info[i])));
+    if (level_params->target_seq_level_idx[i] <= SEQ_LEVELS) {
+      level_params->keep_level_stats |= 1u << i;
+      if (!level_params->level_info[i]) {
+        CHECK_MEM_ERROR(cm, level_params->level_info[i],
+                        aom_calloc(1, sizeof(*level_params->level_info[i])));
       }
     }
   }
 
   // TODO(huisu@): level targeting currently only works for the 0th operating
   // point, so scalable coding is not supported yet.
-  if (cpi->target_seq_level_idx[0] < SEQ_LEVELS) {
+  if (level_params->target_seq_level_idx[0] < SEQ_LEVELS) {
     // Adjust encoder config in order to meet target level.
-    config_target_level(cpi, cpi->target_seq_level_idx[0], seq_params->tier[0]);
+    config_target_level(cpi, level_params->target_seq_level_idx[0],
+                        seq_params->tier[0]);
   }
 
   if ((has_no_stats_stage(cpi)) && (oxcf->rc_mode == AOM_Q)) {
@@ -6838,7 +6840,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   }
 #endif
 
-  if (cpi->keep_level_stats && !is_stat_generation_stage(cpi)) {
+  if (cpi->level_params.keep_level_stats && !is_stat_generation_stage(cpi)) {
     // Initialize level info. at the beginning of each sequence.
     if (cm->current_frame.frame_type == KEY_FRAME && cm->show_frame) {
       av1_init_level_info(cpi);
@@ -7110,8 +7112,8 @@ aom_fixed_buf_t *av1_get_global_headers(AV1_COMP *cpi) {
   if (payload_offset + sequence_header_size > sizeof(header_buf)) return NULL;
   memmove(&header_buf[payload_offset], &header_buf[0], sequence_header_size);
 
-  if (av1_write_obu_header(cpi, OBU_SEQUENCE_HEADER, 0, &header_buf[0]) !=
-      obu_header_size) {
+  if (av1_write_obu_header(&cpi->level_params, OBU_SEQUENCE_HEADER, 0,
+                           &header_buf[0]) != obu_header_size) {
     return NULL;
   }
 

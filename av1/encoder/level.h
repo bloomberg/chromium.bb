@@ -155,6 +155,19 @@ typedef struct {
   DECODER_MODEL decoder_models[SEQ_LEVELS];
 } AV1LevelInfo;
 
+typedef struct AV1LevelParams {
+  // Specifies the level that the coded video sequence conforms to for each
+  // operating point.
+  AV1_LEVEL target_seq_level_idx[MAX_NUM_OPERATING_POINTS];
+  // Bit mask to indicate whether to keep level stats for corresponding
+  // operating points.
+  uint32_t keep_level_stats;
+  // Level information for each operating point.
+  AV1LevelInfo *level_info[MAX_NUM_OPERATING_POINTS];
+  // Count the number of OBU_FRAME and OBU_FRAME_HEADER for level calculation.
+  int frame_header_count;
+} AV1LevelParams;
+
 static INLINE int is_in_operating_point(int operating_point,
                                         int temporal_layer_id,
                                         int spatial_layer_id) {
@@ -170,7 +183,8 @@ void av1_update_level_info(struct AV1_COMP *cpi, size_t size, int64_t ts_start,
                            int64_t ts_end);
 
 // Return sequence level indices in seq_level_idx[MAX_NUM_OPERATING_POINTS].
-aom_codec_err_t av1_get_seq_level_idx(const struct AV1_COMP *cpi,
+aom_codec_err_t av1_get_seq_level_idx(const SequenceHeader *seq_params,
+                                      const AV1LevelParams *level_params,
                                       int *seq_level_idx);
 
 // Print the status of the decoder model(for debugging).

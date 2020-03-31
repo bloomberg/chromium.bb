@@ -1166,14 +1166,8 @@ typedef struct AV1_COMP {
   uint64_t frame_component_time[kTimingComponents];
 #endif
 
-  // The following data are for AV1 bitstream levels.
-  AV1_LEVEL target_seq_level_idx[MAX_NUM_OPERATING_POINTS];
-  // Bit mask to indicate whether to keep level stats for corresponding
-  // operating points.
-  uint32_t keep_level_stats;
-  AV1LevelInfo *level_info[MAX_NUM_OPERATING_POINTS];
-  // Count the number of OBU_FRAME and OBU_FRAME_HEADER for level calculation.
-  int frame_header_count;
+  // Parameters for AV1 bitstream levels.
+  AV1LevelParams level_params;
 
   // whether any no-zero delta_q was actually used
   int deltaq_used;
