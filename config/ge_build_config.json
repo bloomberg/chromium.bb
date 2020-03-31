@@ -2661,6 +2661,14 @@
         },
         {
           "board_name": "hatch-arc-r",
+          "name": "nightfury",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 436,
+          "is_active": true
+        },
+        {
+          "board_name": "hatch-arc-r",
           "name": "unprovisioned_dratini",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",

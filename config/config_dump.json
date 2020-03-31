@@ -17499,6 +17499,7 @@
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"hatch-arc-r\",\n    \"name\": \"kindred\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"hatch-arc-r\",\n    \"name\": \"kled\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"hatch-arc-r\",\n    \"name\": \"kohaku\",\n    \"test_suites\": []\n}",
+            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"hatch-arc-r\",\n    \"name\": \"nightfury\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"hatch-arc-r\",\n    \"name\": \"unprovisioned_dratini\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"hatch-arc-r\",\n    \"name\": \"unprovisioned_jinlon\",\n    \"test_suites\": []\n}"
         ],
@@ -17534,6 +17535,7 @@
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"hatch-arc-r\",\n    \"name\": \"kindred\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"hatch-arc-r\",\n    \"name\": \"kled\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"hatch-arc-r\",\n    \"name\": \"kohaku\",\n    \"test_suites\": []\n}",
+            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"hatch-arc-r\",\n    \"name\": \"nightfury\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"hatch-arc-r\",\n    \"name\": \"unprovisioned_dratini\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"hatch-arc-r\",\n    \"name\": \"unprovisioned_jinlon\",\n    \"test_suites\": []\n}"
         ],
