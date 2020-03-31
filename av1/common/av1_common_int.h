@@ -223,6 +223,8 @@ typedef struct {
 // Note: All syntax elements of sequence_header_obu that need to be
 // bit-identical across multiple sequence headers must be part of this struct,
 // so that consistency is checked by are_seq_headers_consistent() function.
+// One exception is the last member 'op_params' that is ignored by
+// are_seq_headers_consistent() function.
 typedef struct SequenceHeader {
   int num_bits_width;
   int num_bits_height;
@@ -261,15 +263,6 @@ typedef struct SequenceHeader {
   uint8_t enable_restoration;          // To turn on/off loop restoration
   BITSTREAM_PROFILE profile;
 
-  // Operating point info.
-  int operating_points_cnt_minus_1;
-  int operating_point_idc[MAX_NUM_OPERATING_POINTS];
-  uint8_t display_model_info_present_flag;
-  uint8_t decoder_model_info_present_flag;
-  AV1_LEVEL seq_level_idx[MAX_NUM_OPERATING_POINTS];
-  uint8_t tier[MAX_NUM_OPERATING_POINTS];  // seq_tier in the spec. One bit: 0
-                                           // or 1.
-
   // Color config.
   aom_bit_depth_t bit_depth;  // AOM_BITS_8 in profile 0 or 1,
                               // AOM_BITS_10 or AOM_BITS_12 in profile 2 or 3.
@@ -284,6 +277,22 @@ typedef struct SequenceHeader {
   aom_chroma_sample_position_t chroma_sample_position;
   uint8_t separate_uv_delta_q;
   uint8_t film_grain_params_present;
+
+  // Operating point info.
+  int operating_points_cnt_minus_1;
+  int operating_point_idc[MAX_NUM_OPERATING_POINTS];
+  int timing_info_present;
+  aom_timing_info_t timing_info;
+  uint8_t decoder_model_info_present_flag;
+  aom_dec_model_info_t decoder_model_info;
+  uint8_t display_model_info_present_flag;
+  AV1_LEVEL seq_level_idx[MAX_NUM_OPERATING_POINTS];
+  uint8_t tier[MAX_NUM_OPERATING_POINTS];  // seq_tier in spec. One bit: 0 or 1.
+
+  // IMPORTANT: the op_params member must be at the end of the struct so that
+  // are_seq_headers_consistent() can be implemented with a memcmp() call.
+  // TODO(urvang): We probably don't need the +1 here.
+  aom_dec_model_op_parameters_t op_params[MAX_NUM_OPERATING_POINTS + 1];
 } SequenceHeader;
 
 typedef struct {
@@ -520,12 +529,16 @@ typedef struct AV1Common {
   // Note: The numerator is fixed to be SCALE_NUMERATOR.
   uint8_t superres_scale_denominator;
 
-  int timing_info_present;
-  aom_timing_info_t timing_info;
-  int buffer_removal_time_present;
-  aom_dec_model_info_t buffer_model;
-  aom_dec_model_op_parameters_t op_params[MAX_NUM_OPERATING_POINTS + 1];
-  aom_op_timing_info_t op_frame_timing[MAX_NUM_OPERATING_POINTS + 1];
+  // If true, buffer removal times are present.
+  bool buffer_removal_time_present;
+  // buffer_removal_times[op_num] specifies the frame removal time in units of
+  // DecCT clock ticks counted from the removal time of the last random access
+  // point for operating point op_num.
+  // TODO(urvang): We probably don't need the +1 here.
+  uint32_t buffer_removal_times[MAX_NUM_OPERATING_POINTS + 1];
+  // Presentation time of the frame in clock ticks DispCT counted from the
+  // removal time of the last random access point for the operating point that
+  // is being decoded.
   uint32_t frame_presentation_time;
 
   // Buffer where previous frame is stored.

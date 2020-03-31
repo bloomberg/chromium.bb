@@ -1285,20 +1285,21 @@ static void set_bitstream_level_tier(SequenceHeader *seq, AV1_COMMON *cm,
     level = SEQ_LEVEL_6_2;
   }
 
+  SequenceHeader *const seq_params = &cm->seq_params;
   for (int i = 0; i < MAX_NUM_OPERATING_POINTS; ++i) {
     seq->seq_level_idx[i] = level;
     // Set the maximum parameters for bitrate and buffer size for this profile,
     // level, and tier
-    cm->op_params[i].bitrate = av1_max_level_bitrate(
+    seq_params->op_params[i].bitrate = av1_max_level_bitrate(
         cm->seq_params.profile, seq->seq_level_idx[i], seq->tier[i]);
     // Level with seq_level_idx = 31 returns a high "dummy" bitrate to pass the
     // check
-    if (cm->op_params[i].bitrate == 0)
+    if (seq_params->op_params[i].bitrate == 0)
       aom_internal_error(
           &cm->error, AOM_CODEC_UNSUP_BITSTREAM,
           "AV1 does not support this combination of profile, level, and tier.");
     // Buffer size in bits/s is bitrate in bits/s * 1 s
-    cm->op_params[i].buffer_size = cm->op_params[i].bitrate;
+    seq_params->op_params[i].buffer_size = seq_params->op_params[i].bitrate;
   }
 }
 
@@ -1379,78 +1380,79 @@ static void init_seq_coding_tools(SequenceHeader *seq, AV1_COMMON *cm,
 
 static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
   AV1_COMMON *const cm = &cpi->common;
+  SequenceHeader *const seq_params = &cm->seq_params;
 
   cpi->oxcf = *oxcf;
   cpi->framerate = oxcf->init_framerate;
 
-  cm->seq_params.profile = oxcf->profile;
-  cm->seq_params.bit_depth = oxcf->bit_depth;
-  cm->seq_params.use_highbitdepth = oxcf->use_highbitdepth;
-  cm->seq_params.color_primaries = oxcf->color_primaries;
-  cm->seq_params.transfer_characteristics = oxcf->transfer_characteristics;
-  cm->seq_params.matrix_coefficients = oxcf->matrix_coefficients;
-  cm->seq_params.monochrome = oxcf->monochrome;
-  cm->seq_params.chroma_sample_position = oxcf->chroma_sample_position;
-  cm->seq_params.color_range = oxcf->color_range;
-  cm->timing_info_present = oxcf->timing_info_present;
-  cm->timing_info.num_units_in_display_tick =
+  seq_params->profile = oxcf->profile;
+  seq_params->bit_depth = oxcf->bit_depth;
+  seq_params->use_highbitdepth = oxcf->use_highbitdepth;
+  seq_params->color_primaries = oxcf->color_primaries;
+  seq_params->transfer_characteristics = oxcf->transfer_characteristics;
+  seq_params->matrix_coefficients = oxcf->matrix_coefficients;
+  seq_params->monochrome = oxcf->monochrome;
+  seq_params->chroma_sample_position = oxcf->chroma_sample_position;
+  seq_params->color_range = oxcf->color_range;
+  seq_params->timing_info_present = oxcf->timing_info_present;
+  seq_params->timing_info.num_units_in_display_tick =
       oxcf->timing_info.num_units_in_display_tick;
-  cm->timing_info.time_scale = oxcf->timing_info.time_scale;
-  cm->timing_info.equal_picture_interval =
+  seq_params->timing_info.time_scale = oxcf->timing_info.time_scale;
+  seq_params->timing_info.equal_picture_interval =
       oxcf->timing_info.equal_picture_interval;
-  cm->timing_info.num_ticks_per_picture =
+  seq_params->timing_info.num_ticks_per_picture =
       oxcf->timing_info.num_ticks_per_picture;
 
-  cm->seq_params.display_model_info_present_flag =
+  seq_params->display_model_info_present_flag =
       oxcf->display_model_info_present_flag;
-  cm->seq_params.decoder_model_info_present_flag =
+  seq_params->decoder_model_info_present_flag =
       oxcf->decoder_model_info_present_flag;
   if (oxcf->decoder_model_info_present_flag) {
     // set the decoder model parameters in schedule mode
-    cm->buffer_model.num_units_in_decoding_tick =
+    seq_params->decoder_model_info.num_units_in_decoding_tick =
         oxcf->buffer_model.num_units_in_decoding_tick;
     cm->buffer_removal_time_present = 1;
-    av1_set_aom_dec_model_info(&cm->buffer_model);
-    av1_set_dec_model_op_parameters(&cm->op_params[0]);
-  } else if (cm->timing_info_present &&
-             cm->timing_info.equal_picture_interval &&
-             !cm->seq_params.decoder_model_info_present_flag) {
+    av1_set_aom_dec_model_info(&seq_params->decoder_model_info);
+    av1_set_dec_model_op_parameters(&seq_params->op_params[0]);
+  } else if (seq_params->timing_info_present &&
+             seq_params->timing_info.equal_picture_interval &&
+             !seq_params->decoder_model_info_present_flag) {
     // set the decoder model parameters in resource availability mode
-    av1_set_resource_availability_parameters(&cm->op_params[0]);
+    av1_set_resource_availability_parameters(&seq_params->op_params[0]);
   } else {
-    cm->op_params[0].initial_display_delay =
+    seq_params->op_params[0].initial_display_delay =
         10;  // Default value (not signaled)
   }
 
-  if (cm->seq_params.monochrome) {
-    cm->seq_params.subsampling_x = 1;
-    cm->seq_params.subsampling_y = 1;
-  } else if (cm->seq_params.color_primaries == AOM_CICP_CP_BT_709 &&
-             cm->seq_params.transfer_characteristics == AOM_CICP_TC_SRGB &&
-             cm->seq_params.matrix_coefficients == AOM_CICP_MC_IDENTITY) {
-    cm->seq_params.subsampling_x = 0;
-    cm->seq_params.subsampling_y = 0;
+  if (seq_params->monochrome) {
+    seq_params->subsampling_x = 1;
+    seq_params->subsampling_y = 1;
+  } else if (seq_params->color_primaries == AOM_CICP_CP_BT_709 &&
+             seq_params->transfer_characteristics == AOM_CICP_TC_SRGB &&
+             seq_params->matrix_coefficients == AOM_CICP_MC_IDENTITY) {
+    seq_params->subsampling_x = 0;
+    seq_params->subsampling_y = 0;
   } else {
-    if (cm->seq_params.profile == 0) {
-      cm->seq_params.subsampling_x = 1;
-      cm->seq_params.subsampling_y = 1;
-    } else if (cm->seq_params.profile == 1) {
-      cm->seq_params.subsampling_x = 0;
-      cm->seq_params.subsampling_y = 0;
+    if (seq_params->profile == 0) {
+      seq_params->subsampling_x = 1;
+      seq_params->subsampling_y = 1;
+    } else if (seq_params->profile == 1) {
+      seq_params->subsampling_x = 0;
+      seq_params->subsampling_y = 0;
     } else {
-      if (cm->seq_params.bit_depth == AOM_BITS_12) {
-        cm->seq_params.subsampling_x = oxcf->chroma_subsampling_x;
-        cm->seq_params.subsampling_y = oxcf->chroma_subsampling_y;
+      if (seq_params->bit_depth == AOM_BITS_12) {
+        seq_params->subsampling_x = oxcf->chroma_subsampling_x;
+        seq_params->subsampling_y = oxcf->chroma_subsampling_y;
       } else {
-        cm->seq_params.subsampling_x = 1;
-        cm->seq_params.subsampling_y = 0;
+        seq_params->subsampling_x = 1;
+        seq_params->subsampling_y = 0;
       }
     }
   }
 
   cm->width = oxcf->width;
   cm->height = oxcf->height;
-  set_sb_size(&cm->seq_params,
+  set_sb_size(seq_params,
               select_sb_size(cpi));  // set sb size before allocations
   alloc_compressor_data(cpi);
 
@@ -2775,13 +2777,13 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   assert(IMPLIES(seq_params->profile <= PROFILE_1,
                  seq_params->bit_depth <= AOM_BITS_10));
 
-  cm->timing_info_present = oxcf->timing_info_present;
-  cm->timing_info.num_units_in_display_tick =
+  seq_params->timing_info_present = oxcf->timing_info_present;
+  seq_params->timing_info.num_units_in_display_tick =
       oxcf->timing_info.num_units_in_display_tick;
-  cm->timing_info.time_scale = oxcf->timing_info.time_scale;
-  cm->timing_info.equal_picture_interval =
+  seq_params->timing_info.time_scale = oxcf->timing_info.time_scale;
+  seq_params->timing_info.equal_picture_interval =
       oxcf->timing_info.equal_picture_interval;
-  cm->timing_info.num_ticks_per_picture =
+  seq_params->timing_info.num_ticks_per_picture =
       oxcf->timing_info.num_ticks_per_picture;
 
   seq_params->display_model_info_present_flag =
@@ -2790,18 +2792,18 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
       oxcf->decoder_model_info_present_flag;
   if (oxcf->decoder_model_info_present_flag) {
     // set the decoder model parameters in schedule mode
-    cm->buffer_model.num_units_in_decoding_tick =
+    seq_params->decoder_model_info.num_units_in_decoding_tick =
         oxcf->buffer_model.num_units_in_decoding_tick;
     cm->buffer_removal_time_present = 1;
-    av1_set_aom_dec_model_info(&cm->buffer_model);
-    av1_set_dec_model_op_parameters(&cm->op_params[0]);
-  } else if (cm->timing_info_present &&
-             cm->timing_info.equal_picture_interval &&
+    av1_set_aom_dec_model_info(&seq_params->decoder_model_info);
+    av1_set_dec_model_op_parameters(&seq_params->op_params[0]);
+  } else if (seq_params->timing_info_present &&
+             seq_params->timing_info.equal_picture_interval &&
              !seq_params->decoder_model_info_present_flag) {
     // set the decoder model parameters in resource availability mode
-    av1_set_resource_availability_parameters(&cm->op_params[0]);
+    av1_set_resource_availability_parameters(&seq_params->op_params[0]);
   } else {
-    cm->op_params[0].initial_display_delay =
+    seq_params->op_params[0].initial_display_delay =
         10;  // Default value (not signaled)
   }
 
@@ -6387,7 +6389,7 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
           (frame_is_intra_only(cm) || !cm->show_frame) ? 0 : 1;
       break;
   }
-  cm->timing_info_present &= !seq_params->reduced_still_picture_hdr;
+  seq_params->timing_info_present &= !seq_params->reduced_still_picture_hdr;
 
   int largest_tile_id = 0;
 #if CONFIG_SUPERRES_IN_RECODE
@@ -7074,7 +7076,7 @@ aom_fixed_buf_t *av1_get_global_headers(AV1_COMP *cpi) {
 
   uint8_t header_buf[512] = { 0 };
   const uint32_t sequence_header_size =
-      av1_write_sequence_header_obu(cpi, &header_buf[0]);
+      av1_write_sequence_header_obu(&cpi->common.seq_params, &header_buf[0]);
   assert(sequence_header_size <= sizeof(header_buf));
   if (sequence_header_size == 0) return NULL;
 

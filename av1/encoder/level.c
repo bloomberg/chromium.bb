@@ -507,18 +507,19 @@ void av1_decoder_model_init(const AV1_COMP *const cpi, AV1_LEVEL level,
   dfg_interval_queue->head = 0;
   dfg_interval_queue->size = 0;
 
-  if (cm->timing_info_present) {
+  if (seq_params->timing_info_present) {
     decoder_model->num_ticks_per_picture =
-        cm->timing_info.num_ticks_per_picture;
+        seq_params->timing_info.num_ticks_per_picture;
     decoder_model->display_clock_tick =
-        cm->timing_info.num_units_in_display_tick / cm->timing_info.time_scale;
+        seq_params->timing_info.num_units_in_display_tick /
+        seq_params->timing_info.time_scale;
   } else {
     decoder_model->num_ticks_per_picture = 1;
     decoder_model->display_clock_tick = 1.0 / cpi->framerate;
   }
 
   decoder_model->initial_display_delay =
-      cm->op_params[op_index].initial_display_delay;
+      seq_params->op_params[op_index].initial_display_delay;
   decoder_model->initial_presentation_delay = INVALID_TIME;
   decoder_model->decode_rate = av1_level_defs[level].max_decode_rate;
 }

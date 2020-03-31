@@ -4327,64 +4327,59 @@ void av1_read_color_config(struct aom_read_bit_buffer *rb,
   seq_params->separate_uv_delta_q = aom_rb_read_bit(rb);
 }
 
-void av1_read_timing_info_header(AV1_COMMON *cm,
+void av1_read_timing_info_header(aom_timing_info_t *timing_info,
+                                 struct aom_internal_error_info *error,
                                  struct aom_read_bit_buffer *rb) {
-  cm->timing_info.num_units_in_display_tick = aom_rb_read_unsigned_literal(
-      rb, 32);  // Number of units in a display tick
-  cm->timing_info.time_scale =
-      aom_rb_read_unsigned_literal(rb, 32);  // Time scale
-  if (cm->timing_info.num_units_in_display_tick == 0 ||
-      cm->timing_info.time_scale == 0) {
+  timing_info->num_units_in_display_tick =
+      aom_rb_read_unsigned_literal(rb,
+                                   32);  // Number of units in a display tick
+  timing_info->time_scale = aom_rb_read_unsigned_literal(rb, 32);  // Time scale
+  if (timing_info->num_units_in_display_tick == 0 ||
+      timing_info->time_scale == 0) {
     aom_internal_error(
-        &cm->error, AOM_CODEC_UNSUP_BITSTREAM,
+        error, AOM_CODEC_UNSUP_BITSTREAM,
         "num_units_in_display_tick and time_scale must be greater than 0.");
   }
-  cm->timing_info.equal_picture_interval =
+  timing_info->equal_picture_interval =
       aom_rb_read_bit(rb);  // Equal picture interval bit
-  if (cm->timing_info.equal_picture_interval) {
+  if (timing_info->equal_picture_interval) {
     const uint32_t num_ticks_per_picture_minus_1 = aom_rb_read_uvlc(rb);
     if (num_ticks_per_picture_minus_1 == UINT32_MAX) {
       aom_internal_error(
-          &cm->error, AOM_CODEC_UNSUP_BITSTREAM,
+          error, AOM_CODEC_UNSUP_BITSTREAM,
           "num_ticks_per_picture_minus_1 cannot be (1 << 32) − 1.");
     }
-    cm->timing_info.num_ticks_per_picture = num_ticks_per_picture_minus_1 + 1;
+    timing_info->num_ticks_per_picture = num_ticks_per_picture_minus_1 + 1;
   }
 }
 
-void av1_read_decoder_model_info(AV1_COMMON *cm,
+void av1_read_decoder_model_info(aom_dec_model_info_t *decoder_model_info,
                                  struct aom_read_bit_buffer *rb) {
-  cm->buffer_model.encoder_decoder_buffer_delay_length =
+  decoder_model_info->encoder_decoder_buffer_delay_length =
       aom_rb_read_literal(rb, 5) + 1;
-  cm->buffer_model.num_units_in_decoding_tick = aom_rb_read_unsigned_literal(
-      rb, 32);  // Number of units in a decoding tick
-  cm->buffer_model.buffer_removal_time_length = aom_rb_read_literal(rb, 5) + 1;
-  cm->buffer_model.frame_presentation_time_length =
+  decoder_model_info->num_units_in_decoding_tick =
+      aom_rb_read_unsigned_literal(rb,
+                                   32);  // Number of units in a decoding tick
+  decoder_model_info->buffer_removal_time_length =
+      aom_rb_read_literal(rb, 5) + 1;
+  decoder_model_info->frame_presentation_time_length =
       aom_rb_read_literal(rb, 5) + 1;
 }
 
-void av1_read_op_parameters_info(AV1_COMMON *const cm,
-                                 struct aom_read_bit_buffer *rb, int op_num) {
-  // The cm->op_params array has MAX_NUM_OPERATING_POINTS + 1 elements.
-  if (op_num > MAX_NUM_OPERATING_POINTS) {
-    aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
-                       "AV1 does not support %d decoder model operating points",
-                       op_num + 1);
-  }
-
-  cm->op_params[op_num].decoder_buffer_delay = aom_rb_read_unsigned_literal(
-      rb, cm->buffer_model.encoder_decoder_buffer_delay_length);
-
-  cm->op_params[op_num].encoder_buffer_delay = aom_rb_read_unsigned_literal(
-      rb, cm->buffer_model.encoder_decoder_buffer_delay_length);
-
-  cm->op_params[op_num].low_delay_mode_flag = aom_rb_read_bit(rb);
+void av1_read_op_parameters_info(aom_dec_model_op_parameters_t *op_params,
+                                 int buffer_delay_length,
+                                 struct aom_read_bit_buffer *rb) {
+  op_params->decoder_buffer_delay =
+      aom_rb_read_unsigned_literal(rb, buffer_delay_length);
+  op_params->encoder_buffer_delay =
+      aom_rb_read_unsigned_literal(rb, buffer_delay_length);
+  op_params->low_delay_mode_flag = aom_rb_read_bit(rb);
 }
 
 static AOM_INLINE void read_temporal_point_info(
     AV1_COMMON *const cm, struct aom_read_bit_buffer *rb) {
   cm->frame_presentation_time = aom_rb_read_unsigned_literal(
-      rb, cm->buffer_model.frame_presentation_time_length);
+      rb, cm->seq_params.decoder_model_info.frame_presentation_time_length);
 }
 
 void av1_read_sequence_header(AV1_COMMON *cm, struct aom_read_bit_buffer *rb,
@@ -4703,7 +4698,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                            "Buffer does not contain a decoded frame");
       }
       if (seq_params->decoder_model_info_present_flag &&
-          cm->timing_info.equal_picture_interval == 0) {
+          seq_params->timing_info.equal_picture_interval == 0) {
         read_temporal_point_info(cm, rb);
       }
       if (seq_params->frame_id_numbers_present_flag) {
@@ -4781,7 +4776,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     cm->showable_frame = current_frame->frame_type != KEY_FRAME;
     if (cm->show_frame) {
       if (seq_params->decoder_model_info_present_flag &&
-          cm->timing_info.equal_picture_interval == 0)
+          seq_params->timing_info.equal_picture_interval == 0)
         read_temporal_point_info(cm, rb);
     } else {
       // See if this frame can be used as show_existing_frame in future
@@ -4882,7 +4877,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     if (cm->buffer_removal_time_present) {
       for (int op_num = 0;
            op_num < seq_params->operating_points_cnt_minus_1 + 1; op_num++) {
-        if (cm->op_params[op_num].decoder_model_param_present_flag) {
+        if (seq_params->op_params[op_num].decoder_model_param_present_flag) {
           if ((((seq_params->operating_point_idc[op_num] >>
                  cm->temporal_layer_id) &
                 0x1) &&
@@ -4890,14 +4885,13 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                  (cm->spatial_layer_id + 8)) &
                 0x1)) ||
               seq_params->operating_point_idc[op_num] == 0) {
-            cm->op_frame_timing[op_num].buffer_removal_time =
-                aom_rb_read_unsigned_literal(
-                    rb, cm->buffer_model.buffer_removal_time_length);
+            cm->buffer_removal_times[op_num] = aom_rb_read_unsigned_literal(
+                rb, seq_params->decoder_model_info.buffer_removal_time_length);
           } else {
-            cm->op_frame_timing[op_num].buffer_removal_time = 0;
+            cm->buffer_removal_times[op_num] = 0;
           }
         } else {
-          cm->op_frame_timing[op_num].buffer_removal_time = 0;
+          cm->buffer_removal_times[op_num] = 0;
         }
       }
     }

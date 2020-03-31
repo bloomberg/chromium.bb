@@ -23,7 +23,8 @@ struct aom_write_bit_buffer;
 // Writes only the OBU Sequence Header payload, and returns the size of the
 // payload written to 'dst'. This function does not write the OBU header, the
 // optional extension, or the OBU size to 'dst'.
-uint32_t av1_write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst);
+uint32_t av1_write_sequence_header_obu(const SequenceHeader *seq_params,
+                                       uint8_t *const dst);
 
 // Writes the OBU header byte, and the OBU header extension byte when
 // 'obu_extension' is non-zero. Returns number of bytes written to 'dst'.
