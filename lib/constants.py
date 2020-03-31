@@ -326,6 +326,7 @@ ANDROID_PI_BUILD_TARGETS = {
     # X86 target as there's no other similar executables right now.
     # We put it in two buckets because we have separate ACLs for arm and x86.
     # http://b/128405786
+    'APPS': ('linux-apps', 'org.chromium.arc.cachebuilder.jar'),
     'ARM': ('linux-cheets_arm-user', r'(\.zip|/XkbToKcmConverter)$'),
     'ARM64': ('linux-cheets_arm64-user', r'(\.zip|/XkbToKcmConverter)$'),
     'X86': ('linux-cheets_x86-user', r'(\.zip|/XkbToKcmConverter)$'),
@@ -348,6 +349,7 @@ ANDROID_QT_BUILD_TARGETS = {
 }
 ANDROID_VMPI_BUILD_TARGETS = {
     # For XkbToKcmConverter, see the comment in ANDROID_PI_BUILD_TARGETS.
+    'APPS': ('linux-apps', 'org.chromium.arc.cachebuilder.jar'),
     'ARM_USERDEBUG': ('linux-bertha_arm-userdebug',
                       r'(\.zip|/XkbToKcmConverter)$'),
     'X86_USERDEBUG': ('linux-bertha_x86-userdebug',
@@ -387,6 +389,7 @@ ANDROID_VMRVC_BUILD_TARGETS = {
 
 ARC_BUCKET_URL = 'gs://chromeos-arc-images/builds'
 ARC_BUCKET_ACLS = {
+    'APPS': 'googlestorage_acl_public.txt',
     'ARM': 'googlestorage_acl_arm.txt',
     'ARM64': 'googlestorage_acl_arm.txt',
     'X86': 'googlestorage_acl_x86.txt',
