@@ -2349,7 +2349,8 @@ class Changelist(object):
     # the tree hash of the parent branch. The upside is less likely bogus
     # requests to reupload parent change just because it's uploadhash is
     # missing, yet the downside likely exists, too (albeit unknown to me yet).
-    parent = self._GitGetBranchConfigValue('gerritsquashhash', '')
+    parent = scm.GIT.GetBranchConfig(
+        settings.GetRoot(), upstream_branch_name, 'gerritsquashhash')
     # Verify that the upstream branch has been uploaded too, otherwise
     # Gerrit will create additional CLs when uploading.
     if not parent or (RunGitSilent(['rev-parse', upstream_branch + ':']) !=
