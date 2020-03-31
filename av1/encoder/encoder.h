@@ -920,7 +920,6 @@ typedef struct AV1_COMP {
 
   struct aom_codec_pkt_list *output_pkt_list;
 
-  int static_mb_pct;  // % forced skip mbs by segmentation
   int ref_frame_flags;
   int ext_ref_frame_flags;
 
@@ -1039,9 +1038,6 @@ typedef struct AV1_COMP {
   // 4 - vbp_threshold_8x8;
   int64_t vbp_thresholds[5];
   int64_t vbp_threshold_minmax;
-  int64_t vbp_threshold_sad;
-  int64_t vbp_threshold_copy;
-  BLOCK_SIZE vbp_bsize_min;
 
   int obmc_probs[FRAME_UPDATE_TYPES][BLOCK_SIZES_ALL];
   int warped_probs[FRAME_UPDATE_TYPES];

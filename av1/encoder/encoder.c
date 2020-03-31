@@ -909,7 +909,6 @@ static void configure_static_seg_features(AV1_COMP *cpi) {
            cm->mi_params.mi_rows * cm->mi_params.mi_cols);
     seg->update_map = 0;
     seg->update_data = 0;
-    cpi->static_mb_pct = 0;
 
     // Disable segmentation
     av1_disable_segmentation(seg);
@@ -923,7 +922,6 @@ static void configure_static_seg_features(AV1_COMP *cpi) {
            cm->mi_params.mi_rows * cm->mi_params.mi_cols);
     seg->update_map = 0;
     seg->update_data = 0;
-    cpi->static_mb_pct = 0;
 
     // Disable segmentation and individual segment features by default
     av1_disable_segmentation(seg);
@@ -976,7 +974,7 @@ static void configure_static_seg_features(AV1_COMP *cpi) {
         av1_enable_segfeature(seg, 1, SEG_LVL_ALT_LF_V);
 
         // Segment coding disabled for compred testing
-        if (high_q || (cpi->static_mb_pct == 100)) {
+        if (high_q) {
           av1_set_segdata(seg, 1, SEG_LVL_REF_FRAME, ALTREF_FRAME);
           av1_enable_segfeature(seg, 1, SEG_LVL_REF_FRAME);
           av1_enable_segfeature(seg, 1, SEG_LVL_SKIP);
@@ -1471,7 +1469,6 @@ static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
   // change includes all joint functionality
   av1_change_config(cpi, oxcf);
 
-  cpi->static_mb_pct = 0;
   cpi->ref_frame_flags = 0;
 
   // Reset resize pending flags

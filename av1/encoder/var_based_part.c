@@ -563,36 +563,12 @@ static AOM_INLINE void set_low_temp_var_flag(
 
 void av1_set_variance_partition_thresholds(AV1_COMP *cpi, int q,
                                            int content_state) {
-  AV1_COMMON *const cm = &cpi->common;
   SPEED_FEATURES *const sf = &cpi->sf;
-  const int is_key_frame = frame_is_intra_only(cm);
   if (sf->part_sf.partition_search_type != VAR_BASED_PARTITION) {
     return;
   } else {
     set_vbp_thresholds(cpi, cpi->vbp_thresholds, q, content_state);
-    // The thresholds below are not changed locally.
-    if (is_key_frame) {
-      cpi->vbp_threshold_sad = 0;
-      cpi->vbp_threshold_copy = 0;
-      cpi->vbp_bsize_min = BLOCK_8X8;
-    } else {
-      if (cm->width <= 352 && cm->height <= 288)
-        cpi->vbp_threshold_sad = 10;
-      else
-        cpi->vbp_threshold_sad = (cpi->dequants.y_dequant_QTX[q][1] << 1) > 1000
-                                     ? (cpi->dequants.y_dequant_QTX[q][1] << 1)
-                                     : 1000;
-      cpi->vbp_bsize_min = BLOCK_16X16;
-      if (cm->width <= 352 && cm->height <= 288)
-        cpi->vbp_threshold_copy = 4000;
-      else if (cm->width <= 640 && cm->height <= 360)
-        cpi->vbp_threshold_copy = 8000;
-      else
-        cpi->vbp_threshold_copy =
-            (cpi->dequants.y_dequant_QTX[q][1] << 3) > 8000
-                ? (cpi->dequants.y_dequant_QTX[q][1] << 3)
-                : 8000;
-    }
+    // The threshold below is not changed locally.
     cpi->vbp_threshold_minmax = 15 + (q >> 3);
   }
 }
@@ -777,21 +753,6 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
 
     d = xd->plane[0].dst.buf;
     dp = xd->plane[0].dst.stride;
-
-    // If the y_sad is very small, take 64x64 as partition and exit.
-    // Don't check on boosted segment for now, as 64x64 is suppressed there.
-#if 0
-    if (segment_id == CR_SEGMENT_ID_BASE && y_sad < cpi->vbp_threshold_sad) {
-      const int block_width = num_8x8_blocks_wide_lookup[BLOCK_64X64];
-      const int block_height = num_8x8_blocks_high_lookup[BLOCK_64X64];
-      if (mi_col + block_width / 2 < cm->mi_params.mi_cols &&
-          mi_row + block_height / 2 < cm->mi_params.mi_rows) {
-        set_block_size(cpi, x, xd, mi_row, mi_col, BLOCK_128X128);
-        x->variance_low[0] = 1;
-        return 0;
-      }
-    }
-#endif
   } else {
     d = AV1_VAR_OFFS;
     dp = 0;
