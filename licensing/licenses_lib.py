@@ -178,6 +178,7 @@ LICENCES_IGNORE = [
 # The full names of packages which we want to generate license information for
 # even though they have an empty installation size.
 SIZE_EXEMPT_PACKAGES = [
+    'net-print/konica-minolta-printing-license',
     'net-print/xerox-printing-license',
 ]
 
