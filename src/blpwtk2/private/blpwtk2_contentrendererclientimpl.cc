@@ -47,6 +47,7 @@
 #include <content/public/renderer/render_thread.h>
 #include <content/public/renderer/render_view.h>
 #include <net/base/net_errors.h>
+#include <mojo/public/cpp/bindings/binder_map.h>
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 #include <skia/ext/fontmgr_default.h>
@@ -210,6 +211,11 @@ bool ContentRendererClientImpl::ShouldBindFrameSinkProvider()
     }
 
     return false;
+}
+
+void ContentRendererClientImpl::ExposeInterfacesToBrowser(mojo::BinderMap* binders)
+{
+    // blpwtk2: expose services to browser
 }
 
 void ContentRendererClientImpl::OnBindInterface(
