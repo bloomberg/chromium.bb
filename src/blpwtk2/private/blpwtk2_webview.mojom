@@ -146,6 +146,8 @@ interface WebViewHost {
 
     setParent(uint32 window) => (int32 status, uint32 parent);
         // Reparent the webview under 'window'.
+
+    rootWindowCompositionChanged();
 };
 
 // The WebViewClient is implemented in the render process.  It's very
