@@ -3377,7 +3377,7 @@ def BranchScheduleConfig():
       # Uncomment this when R83 is branched
       # '0 6 * * *',
       '0 5 * * *',
-      '0 16 * * 0',
+      '0 7 * * 1,3',
   ]
 
   PFQ_SCHEDULE = [
