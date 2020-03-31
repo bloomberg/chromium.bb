@@ -40,6 +40,7 @@
 #include <content/child/font_warmup_win.h>
 #include <content/public/renderer/render_thread.h>
 #include <net/base/net_errors.h>
+#include <mojo/public/cpp/bindings/binder_map.h>
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 #include <skia/ext/fontmgr_default.h>
@@ -153,6 +154,11 @@ bool ContentRendererClientImpl::OverrideCreatePlugin(
     blink::WebPlugin** plugin)
 {
     return false;
+}
+
+void ContentRendererClientImpl::ExposeInterfacesToBrowser(mojo::BinderMap* binders)
+{
+    // blpwtk2: expose services to browser
 }
 
 void ContentRendererClientImpl::OnBindInterface(

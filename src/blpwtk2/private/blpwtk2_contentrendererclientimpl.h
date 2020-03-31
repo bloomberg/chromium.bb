@@ -81,6 +81,8 @@ class ContentRendererClientImpl : public content::ContentRendererClient,
     // Allows the embedder to override the ResourceLoaderBridge used.
     // If it returns NULL, the content layer will use the default loader.
 
+    void ExposeInterfacesToBrowser(mojo::BinderMap* binders) override;
+
     bool OverrideCreatePlugin(
         content::RenderFrame           *render_frame,
         const blink::WebPluginParams&   params,
