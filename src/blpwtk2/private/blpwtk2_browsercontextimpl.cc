@@ -140,9 +140,8 @@ BrowserContextImpl::BrowserContextImpl(const std::string& dataDir)
         SpellcheckServiceFactory::GetInstance();
     }
 
-    d_prefRegistry->RegisterBooleanPref(prefs::kPrintingEnabled, true);
-
     d_prefRegistry->RegisterStringPref(language::prefs::kAcceptLanguages, "en-US,en;q=0.5");
+    d_prefRegistry->RegisterBooleanPref(prefs::kPrintingEnabled, true);
 
     // Register this context with the dependency manager.
     BrowserContextDependencyManager* dependencyManager = BrowserContextDependencyManager::GetInstance();
