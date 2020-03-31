@@ -17,21 +17,18 @@ import os
 import shutil
 
 from chromite.cbuildbot import commands
-from chromite.cbuildbot import prebuilts
-from chromite.cbuildbot.stages import generic_stages
-from chromite.lib import chroot_lib
+from chromite.lib import failures_lib
 from chromite.lib import config_lib
 from chromite.lib import constants
+from chromite.cbuildbot import prebuilts
+from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
-from chromite.lib import failures_lib
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import path_util
 from chromite.lib import portage_util
-from chromite.lib import sysroot_lib
-from chromite.service import artifacts as artifacts_service
 
 _FULL_BINHOST = 'FULL_BINHOST'
 _PORTAGE_BINHOST = 'PORTAGE_BINHOST'
@@ -735,12 +732,13 @@ class UploadTestArtifactsStage(generic_stages.BoardSpecificBuilderStage,
     """Build the autotest tarballs."""
     with osutils.TempDir(prefix='cbuildbot-autotest') as tempdir:
       with self.ArtifactUploader(strict=True) as queue:
-        chroot = chroot_lib.Chroot(os.path.join(self._build_root, 'chroot'))
-        sysroot_path = os.path.join('build', self._current_board)
-        sysroot = sysroot_lib.Sysroot(sysroot_path)
-        logging.info('Running artifacts_service.BundleAutotestFiles')
-        for tarball in artifacts_service.BundleAutotestFiles(
-            chroot, sysroot, tempdir):
+        cwd = os.path.abspath(
+            os.path.join(self._build_root, 'chroot', 'build',
+                         self._current_board, constants.AUTOTEST_BUILD_PATH,
+                         '..'))
+        logging.info('Running commands.BuildAutotestTarballsForHWTest')
+        for tarball in commands.BuildAutotestTarballsForHWTest(
+            self._build_root, cwd, tempdir):
           queue.put([tarball])
 
   def BuildTastTarball(self):
