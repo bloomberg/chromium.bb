@@ -4758,7 +4758,7 @@ def _RunClangFormatDiff(opts, clang_diff_files, top_dir, upstream_commit):
     except clang_format.NotFoundError as e:
       DieWithError(e)
 
-    cmd = ['vpython', script, '-p0']
+    cmd = [sys.executable, script, '-p0']
     if not opts.dry_run and not opts.diff:
       cmd.append('-i')
 
