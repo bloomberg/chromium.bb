@@ -1,5 +1,5 @@
 {
-  "name": "cts-experiment",
+  "name": "@webgpu/cts",
   "version": "0.1.0",
   "description": "",
   "scripts": {
@@ -7,15 +7,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kainino0x/cts-experiment.git"
+    "url": "git+https://github.com/gpuweb/cts.git"
   },
   "author": "WebGPU CTS Contributors",
   "private": true,
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/kainino0x/cts-experiment/issues"
+    "url": "https://github.com/gpuweb/cts/issues"
   },
-  "homepage": "https://github.com/kainino0x/cts-experiment#readme",
+  "homepage": "https://github.com/gpuweb/cts#readme",
   "devDependencies": {
     "@babel/cli": "^7.7.7",
     "@babel/core": "^7.7.7",
