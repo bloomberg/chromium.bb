@@ -2532,6 +2532,14 @@
         },
         {
           "board_name": "hatch",
+          "name": "nightfury",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 372,
+          "is_active": true
+        },
+        {
+          "board_name": "hatch",
           "name": "unprovisioned_dratini",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
@@ -2782,6 +2790,14 @@
         },
         {
           "board_name": "hatch-diskswap",
+          "name": "nightfury",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 424,
+          "is_active": true
+        },
+        {
+          "board_name": "hatch-diskswap",
           "name": "unprovisioned_dratini",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
@@ -2880,6 +2896,14 @@
         {
           "board_name": "hatch-kvm",
           "name": "kohaku",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 431,
+          "is_active": true
+        },
+        {
+          "board_name": "hatch-kvm",
+          "name": "nightfury",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
           "board_id": 431,
