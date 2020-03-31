@@ -362,6 +362,7 @@
     reef-release
     reks-release
     relm-release
+    reven-release
     rikku-cfm-release
     rikku-release
     romer-release
@@ -1545,6 +1546,7 @@
     reef-release-tryjob
     reks-release-tryjob
     relm-release-tryjob
+    reven-release-tryjob
     rikku-cfm-release-tryjob
     rikku-release-tryjob
     romer-release-tryjob
@@ -1775,6 +1777,11 @@
   relm-payloads-tryjob
   relm-release-tryjob
   relm-unittest-stress
+  reven-full-tryjob
+  reven-llvm-next-toolchain-tryjob
+  reven-llvm-toolchain-tryjob
+  reven-release-tryjob
+  reven-unittest-stress
   rikku-cfm-full-tryjob
   rikku-cfm-llvm-next-toolchain-tryjob
   rikku-cfm-llvm-toolchain-tryjob
