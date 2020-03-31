@@ -143,14 +143,25 @@ class FakeIsolateServerHandler(httpserver.Handler):
     logging.info('PUT %s', self.path)
     if self.path.startswith('/FAKE_GCS/'):
       namespace, h = self.path[len('/FAKE_GCS/'):].split('/', 1)
+      md5_hash = hashlib.md5()
       if self.server.store_hash_instead:
         a = ALGO()
         for c in self.yield_body():
+          md5_hash.update(c)
           a.update(c)
         self.server.contents.setdefault(namespace, {})[h] = a.hexdigest()
       else:
-        self.server.contents.setdefault(namespace, {})[h] = self.read_body()
-      self.send_octet_stream('')
+        body = self.read_body()
+        md5_hash.update(body)
+        self.server.contents.setdefault(namespace, {})[h] = body
+
+      self.send_octet_stream(
+          '',
+          headers={
+              # This is to simulate
+              # https://cloud.google.com/storage/docs/xml-api/reference-headers#xgooghash
+              'x-goog-hash': 'md5=' + base64.b64encode(md5_hash.digest()),
+          })
     else:
       raise NotImplementedError(self.path)
 

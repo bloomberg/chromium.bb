@@ -24,10 +24,12 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
     self.end_headers()
     json.dump(data, self.wfile)
 
-  def send_octet_stream(self, data):
+  def send_octet_stream(self, data, headers=None):
     """Sends a binary response."""
     self.send_response(200)
     self.send_header('Content-type', 'application/octet-stream')
+    for key, value in (headers or {}).items():
+      self.send_header(key, value)
     self.end_headers()
     self.wfile.write(data)
 

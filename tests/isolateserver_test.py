@@ -749,24 +749,33 @@ class IsolateServerStorageApiTest(TestCase):
          'gs_upload_url': '%s/FAKE_GCS/whatevs/1234' % server_ref.url,
          'upload_ticket': 'ticket!'}]}
     requests = [
-      self.mock_contains_request(
-          server_ref, contains_request, contains_response),
-      (
-        '%s/FAKE_GCS/whatevs/1234' % server_ref.url,
-        {
-          'data': data,
-          'content_type': 'application/octet-stream',
-          'method': 'PUT',
-          'headers': {'Cache-Control': 'public, max-age=31536000'},
-        },
-        '',
-        None,
-      ),
-      (
-        '%s/_ah/api/isolateservice/v1/finalize_gs_upload' % server_ref.url,
-        {'data': {'upload_ticket': 'ticket!'}},
-        None,
-      ),
+        self.mock_contains_request(server_ref, contains_request,
+                                   contains_response),
+        (
+            '%s/FAKE_GCS/whatevs/1234' % server_ref.url,
+            {
+                'data': data,
+                'content_type': 'application/octet-stream',
+                'method': 'PUT',
+                'headers': {
+                    'Cache-Control': 'public, max-age=31536000'
+                },
+            },
+            '',
+            {
+                'x-goog-hash':
+                    'md5=' + base64.b64encode(hashlib.md5(data).digest())
+            },
+        ),
+        (
+            '%s/_ah/api/isolateservice/v1/finalize_gs_upload' % server_ref.url,
+            {
+                'data': {
+                    'upload_ticket': 'ticket!'
+                }
+            },
+            None,
+        ),
     ]
     self.expected_requests(requests)
     storage = isolate_storage.IsolateServer(server_ref)

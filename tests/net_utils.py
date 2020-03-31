@@ -93,8 +93,8 @@ class TestCase(auto_stub.TestCase):
             expected_kwargs(kwargs)
           else:
             self.assertEqual(expected_kwargs, kwargs)
-          if result is not None:
-            return make_fake_response(result, url, headers)
+          if result is not None or headers is not None:
+            return make_fake_response(result, url, headers=headers)
           return None
     self.fail('Unknown request %s' % url)
     return None
