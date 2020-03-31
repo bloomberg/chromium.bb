@@ -1204,22 +1204,6 @@ static INLINE int max_block_high(const MACROBLOCKD *xd, BLOCK_SIZE bsize,
   return max_blocks_high >> MI_SIZE_LOG2;
 }
 
-static INLINE int max_intra_block_width(const MACROBLOCKD *xd,
-                                        BLOCK_SIZE plane_bsize, int plane,
-                                        TX_SIZE tx_size) {
-  const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane)
-                              << MI_SIZE_LOG2;
-  return ALIGN_POWER_OF_TWO(max_blocks_wide, tx_size_wide_log2[tx_size]);
-}
-
-static INLINE int max_intra_block_height(const MACROBLOCKD *xd,
-                                         BLOCK_SIZE plane_bsize, int plane,
-                                         TX_SIZE tx_size) {
-  const int max_blocks_high = max_block_high(xd, plane_bsize, plane)
-                              << MI_SIZE_LOG2;
-  return ALIGN_POWER_OF_TWO(max_blocks_high, tx_size_high_log2[tx_size]);
-}
-
 static INLINE void av1_zero_above_context(AV1_COMMON *const cm,
                                           const MACROBLOCKD *xd,
                                           int mi_col_start, int mi_col_end,

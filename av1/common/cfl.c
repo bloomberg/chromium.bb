@@ -403,6 +403,22 @@ void cfl_store_tx(MACROBLOCKD *const xd, int row, int col, TX_SIZE tx_size,
   cfl_store(cfl, dst, pd->dst.stride, row, col, tx_size, is_cur_buf_hbd(xd));
 }
 
+static INLINE int max_intra_block_width(const MACROBLOCKD *xd,
+                                        BLOCK_SIZE plane_bsize, int plane,
+                                        TX_SIZE tx_size) {
+  const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane)
+                              << MI_SIZE_LOG2;
+  return ALIGN_POWER_OF_TWO(max_blocks_wide, tx_size_wide_log2[tx_size]);
+}
+
+static INLINE int max_intra_block_height(const MACROBLOCKD *xd,
+                                         BLOCK_SIZE plane_bsize, int plane,
+                                         TX_SIZE tx_size) {
+  const int max_blocks_high = max_block_high(xd, plane_bsize, plane)
+                              << MI_SIZE_LOG2;
+  return ALIGN_POWER_OF_TWO(max_blocks_high, tx_size_high_log2[tx_size]);
+}
+
 void cfl_store_block(MACROBLOCKD *const xd, BLOCK_SIZE bsize, TX_SIZE tx_size) {
   CFL_CTX *const cfl = &xd->cfl;
   struct macroblockd_plane *const pd = &xd->plane[AOM_PLANE_Y];
