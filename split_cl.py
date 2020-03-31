@@ -18,6 +18,7 @@ import gclient_utils
 import git_footers
 import owners
 import owners_finder
+import scm
 
 import git_common as git
 
@@ -147,9 +148,9 @@ def GetFilesSplitByOwners(owners_database, files):
     values are lists of files sharing an OWNERS file.
   """
   files_split_by_owners = collections.defaultdict(list)
-  for _, f in files:
-    enclosing_dir = owners_database.enclosing_dir_with_owners(f)
-    files_split_by_owners[enclosing_dir].append(f)
+  for action, path in files:
+    enclosing_dir = owners_database.enclosing_dir_with_owners(path)
+    files_split_by_owners[enclosing_dir].append((action, path))
   return files_split_by_owners
 
 
