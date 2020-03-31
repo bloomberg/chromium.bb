@@ -1,4 +1,4 @@
-# WebGPU CTS
+# WebGPU Conformance Test Suite
 
 ## >>> [**Contribution Guidelines**](https://github.com/gpuweb/gpuweb/wiki/WebGPU-CTS-guidelines) <<<
 
@@ -19,7 +19,7 @@ After checking out the repository and installing Yarn, run these commands to
 set up dependencies:
 
 ```sh
-cd cts/
+cd webgpu/
 yarn install
 
 npx grunt  # show available grunt commands
@@ -45,7 +45,7 @@ npx grunt test
 To test in a browser under the standalone harness, run `grunt serve`, then
 open:
 
-- http://localhost:8080/ (defaults to ?runnow=0&q=cts)
+- http://localhost:8080/ (defaults to ?runnow=0&worker=0&debug=0&q=webgpu:)
 - http://localhost:8080/?runnow=1&q=unittests:
 - http://localhost:8080/?runnow=1&q=unittests:basic:&q=unittests:params:
 
@@ -53,14 +53,14 @@ open:
 
 To see debug logs in a browser, use the `debug=1` query string:
 
-- http://localhost:8080/?q=cts:validation&debug=1
+- http://localhost:8080/?q=webgpu:validation&debug=1
 
 ### Making Changes
 
 To add new tests, simply imitate the pattern in neigboring tests or
 neighboring files. New test files must be named ending in `.spec.ts`.
 
-For an example, see `src/suites/cts/examples.spec.ts`.
+For an example test file, see `src/webgpu/examples.spec.ts`.
 
 Since this project is written in TypeScript, it integrates best with Visual
 Studio Code. There are also some default settings (in `.vscode/settings.json`)

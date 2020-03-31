@@ -12,28 +12,28 @@
 //
 // For example, for the following 9 cases:
 //
-//   cts:a/foo:foo1={"x":1}
-//   cts:a/foo:foo1={"x":2}
-//   cts:a/foo:foo2={"x":1}
-//   cts:a/foo:foo2={"x":2}
-//   cts:a/bar:bar1={"x":1}
-//   cts:a/bar:bar1={"x":2}
-//   cts:a/bar:bar1={"x":3}
-//   cts:a/bar:bar2={"x":1}
-//   cts:a/bar:bar2={"x":2}
+//   webgpu:a/foo:foo1={"x":1}
+//   webgpu:a/foo:foo1={"x":2}
+//   webgpu:a/foo:foo2={"x":1}
+//   webgpu:a/foo:foo2={"x":2}
+//   webgpu:a/bar:bar1={"x":1}
+//   webgpu:a/bar:bar1={"x":2}
+//   webgpu:a/bar:bar1={"x":3}
+//   webgpu:a/bar:bar2={"x":1}
+//   webgpu:a/bar:bar2={"x":2}
 //
 // and the following suppressions:
 //
-//   [ Win ] ?q=cts:a/bar:bar1={"x":1} [ Failure ]
-//   [ Mac ] ?q=cts:a/bar:bar1={"x":3} [ Failure ]
+//   [ Win ] ?q=webgpu:a/bar:bar1={"x":1} [ Failure ]
+//   [ Mac ] ?q=webgpu:a/bar:bar1={"x":3} [ Failure ]
 //
 // the following list of 5 variants gives enough granularity to suppress only the failing cases:
 //
-//   ?q=cts:a/foo:
-//   ?q=cts:a/bar:bar1={"x":1} <- [ Win ]
-//   ?q=cts:a/bar:bar1={"x":2}
-//   ?q=cts:a/bar:bar1={"x":3} <- [ Mac ]
-//   ?q=cts:a/bar:bar2~
+//   ?q=webgpu:a/foo:
+//   ?q=webgpu:a/bar:bar1={"x":1} <- [ Win ]
+//   ?q=webgpu:a/bar:bar1={"x":2}
+//   ?q=webgpu:a/bar:bar1={"x":3} <- [ Mac ]
+//   ?q=webgpu:a/bar:bar2~
 
-require('../src/tools/setup-ts-in-node.js');
-require('../src/tools/gen_wpt_cts_html.ts');
+require('../src/common/tools/setup-ts-in-node.js');
+require('../src/common/tools/gen_wpt_cts_html.ts');

@@ -4,7 +4,7 @@ module.exports = function (grunt) {
     pkg: grunt.file.readJSON('package.json'),
 
     clean: {
-      constants: ['src/constants.ts'],
+      constants: ['src/constants.ts', 'src/common/constants.ts'],
       out: ['out/', 'out-wpt'],
     },
 
@@ -23,11 +23,11 @@ module.exports = function (grunt) {
       },
       'generate-listings': {
         cmd: 'node',
-        args: ['tools/gen_listings', 'cts', 'unittests'],
+        args: ['tools/gen_listings', 'webgpu', 'unittests'],
       },
       'generate-wpt-cts-html': {
         cmd: 'node',
-        args: ['tools/gen_wpt_cts_html', 'out-wpt/cts.html', 'templates/cts.html'],
+        args: ['tools/gen_wpt_cts_html', 'out-wpt/cts.html', 'src/common/templates/cts.html'],
       },
       test: {
         cmd: 'node',
@@ -37,12 +37,9 @@ module.exports = function (grunt) {
         cmd: 'node',
         args: [
           'node_modules/@babel/cli/bin/babel',
-          '--source-maps',
-          'true',
-          '--extensions',
-          '.ts',
-          '--out-dir',
-          'out/',
+          '--source-maps=true',
+          '--extensions=.ts',
+          '--out-dir=out/',
           'src/',
         ],
       },
@@ -63,7 +60,7 @@ module.exports = function (grunt) {
             expand: true,
             cwd: 'node_modules/@webgpu/types/src',
             src: 'constants.ts',
-            dest: 'src/',
+            dest: 'src/common/',
           },
         ],
       },
@@ -73,18 +70,18 @@ module.exports = function (grunt) {
             expand: true,
             cwd: 'node_modules/@webgpu/glslang/dist/web-devel',
             src: 'glslang.{js,wasm}',
-            dest: 'out/',
+            dest: 'out/common/',
           },
         ],
       },
       'out-wpt': {
         files: [
           { expand: true, cwd: '.', src: 'LICENSE.txt', dest: 'out-wpt/' },
-          { expand: true, cwd: 'out', src: 'constants.js', dest: 'out-wpt/' },
-          { expand: true, cwd: 'out', src: 'framework/**/*.js', dest: 'out-wpt/' },
-          { expand: true, cwd: 'out', src: 'suites/cts/**/*.js', dest: 'out-wpt/' },
-          { expand: true, cwd: 'out', src: 'runtime/wpt.js', dest: 'out-wpt/' },
-          { expand: true, cwd: 'out', src: 'runtime/helper/**/*.js', dest: 'out-wpt/' },
+          { expand: true, cwd: 'out', src: 'common/constants.js', dest: 'out-wpt/' },
+          { expand: true, cwd: 'out', src: 'common/framework/**/*.js', dest: 'out-wpt/' },
+          { expand: true, cwd: 'out', src: 'webgpu/**/*.js', dest: 'out-wpt/' },
+          { expand: true, cwd: 'out', src: 'common/runtime/wpt.js', dest: 'out-wpt/' },
+          { expand: true, cwd: 'out', src: 'common/runtime/helper/**/*.js', dest: 'out-wpt/' },
         ],
       },
     },

@@ -14,11 +14,11 @@ A single suite has a directory structure, and many _test spec files_
 (`.spec.ts` files containing tests) and _READMEs_.
 Each member of a suite is identified by its path within the suite.
 
-**Example:** `src/suites/*/`
+**Example:** `src/webgpu/`
 
 ### README
 
-**Example:** `src/suites/**/README.txt`
+**Example:** `src/webgpu/README.txt`
 
 Describes (in prose) the contents of a subdirectory in a suite.
 
@@ -33,8 +33,8 @@ Comprised of suite name (`suite`) and test spec file path relative to the suite 
 
 **Type:** `TestSpecID`
 
-**Example:** `{ suite: 'cts', path: 'command_buffer/compute/basic' }` corresponds to
-`src/suites/cts/command_buffer/compute/basic.spec.ts`.
+**Example:** `{ suite: 'webgpu', path: 'command_buffer/compute/basic' }` corresponds to
+`src/webgpu/command_buffer/compute/basic.spec.ts`.
 
 ### Test Case ID
 
@@ -59,7 +59,7 @@ test files can be discovered by the web runner (since it does not have filesyste
 
 ### Listing File
 
-**Example:** `out/suites/*/index.js`
+**Example:** `out/webgpu/index.js`
 
 ## Test Spec
 
@@ -74,7 +74,7 @@ Always contains one `RunCaseIterable`.
 
 A single `.spec.ts` file. It always contains one _test group_.
 
-**Example:** `src/suites/**/*.spec.ts`
+**Example:** `src/webgpu/**/*.spec.ts`
 
 ### Filtered Test Spec
 
