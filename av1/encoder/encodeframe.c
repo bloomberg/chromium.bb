@@ -289,7 +289,7 @@ static int get_hier_tpl_rdmult(const AV1_COMP *const cpi, MACROBLOCK *const x,
   assert(IMPLIES(cpi->gf_group.size > 0,
                  cpi->gf_group.index < cpi->gf_group.size));
   const int tpl_idx = cpi->gf_group.index;
-  const TplDepFrame *tpl_frame = &cpi->tpl_frame[tpl_idx];
+  const TplDepFrame *tpl_frame = &cpi->tpl_data.tpl_frame[tpl_idx];
   MACROBLOCKD *const xd = &x->e_mbd;
   const int deltaq_rdmult = set_deltaq_rdmult(cpi, xd);
   if (tpl_frame->is_valid == 0) return deltaq_rdmult;
@@ -3895,7 +3895,8 @@ static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int analysis_type,
   assert(IMPLIES(cpi->gf_group.size > 0,
                  cpi->gf_group.index < cpi->gf_group.size));
   const int tpl_idx = cpi->gf_group.index;
-  TplDepFrame *tpl_frame = &cpi->tpl_frame[tpl_idx];
+  TplParams *const tpl_data = &cpi->tpl_data;
+  TplDepFrame *tpl_frame = &tpl_data->tpl_frame[tpl_idx];
   TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
   int tpl_stride = tpl_frame->stride;
   int64_t intra_cost = 0;
@@ -3916,7 +3917,7 @@ static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int analysis_type,
   const int mi_col_end_sr =
       coded_to_superres_mi(mi_col + mi_wide, cm->superres_scale_denominator);
   const int mi_cols_sr = av1_pixels_to_mi(cm->superres_upscaled_width);
-  const int step = 1 << cpi->tpl_stats_block_mis_log2;
+  const int step = 1 << tpl_data->tpl_stats_block_mis_log2;
   for (int row = mi_row; row < mi_row + mi_high; row += step) {
     for (int col = mi_col_sr; col < mi_col_end_sr; col += step) {
       if (row >= cm->mi_params.mi_rows || col >= mi_cols_sr) continue;
@@ -3978,7 +3979,7 @@ static int get_tpl_stats_b(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
 
   AV1_COMMON *const cm = &cpi->common;
   const int gf_group_index = cpi->gf_group.index;
-  TplDepFrame *tpl_frame = &cpi->tpl_frame[gf_group_index];
+  TplDepFrame *tpl_frame = &cpi->tpl_data.tpl_frame[gf_group_index];
   TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
   int tpl_stride = tpl_frame->stride;
   const int mi_wide = mi_size_wide[bsize];
@@ -4027,7 +4028,8 @@ static int get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
   assert(IMPLIES(cpi->gf_group.size > 0,
                  cpi->gf_group.index < cpi->gf_group.size));
   const int tpl_idx = cpi->gf_group.index;
-  TplDepFrame *tpl_frame = &cpi->tpl_frame[tpl_idx];
+  TplParams *const tpl_data = &cpi->tpl_data;
+  TplDepFrame *tpl_frame = &tpl_data->tpl_frame[tpl_idx];
   TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
   int tpl_stride = tpl_frame->stride;
   int64_t intra_cost = 0;
@@ -4049,7 +4051,7 @@ static int get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
   const int mi_col_end_sr =
       coded_to_superres_mi(mi_col + mi_wide, cm->superres_scale_denominator);
   const int mi_cols_sr = av1_pixels_to_mi(cm->superres_upscaled_width);
-  const int step = 1 << cpi->tpl_stats_block_mis_log2;
+  const int step = 1 << tpl_data->tpl_stats_block_mis_log2;
   for (int row = mi_row; row < mi_row + mi_high; row += step) {
     for (int col = mi_col_sr; col < mi_col_end_sr; col += step) {
       if (row >= cm->mi_params.mi_rows || col >= mi_cols_sr) continue;
@@ -4553,7 +4555,8 @@ static void init_ref_frame_space(AV1_COMP *cpi, ThreadData *td, int mi_row,
   const CommonModeInfoParams *const mi_params = &cm->mi_params;
   MACROBLOCK *x = &td->mb;
   const int frame_idx = cpi->gf_group.index;
-  TplDepFrame *tpl_frame = &cpi->tpl_frame[frame_idx];
+  TplParams *const tpl_data = &cpi->tpl_data;
+  TplDepFrame *tpl_frame = &tpl_data->tpl_frame[frame_idx];
 
   av1_zero(x->search_ref_frame);
 
@@ -4572,7 +4575,7 @@ static void init_ref_frame_space(AV1_COMP *cpi, ThreadData *td, int mi_row,
   TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
   const int tpl_stride = tpl_frame->stride;
   int64_t inter_cost[INTER_REFS_PER_FRAME] = { 0 };
-  const int step = 1 << cpi->tpl_stats_block_mis_log2;
+  const int step = 1 << tpl_data->tpl_stats_block_mis_log2;
   const BLOCK_SIZE sb_size = cm->seq_params.sb_size;
   const int mi_row_end =
       AOMMIN(mi_size_high[sb_size] + mi_row, mi_params->mi_rows);

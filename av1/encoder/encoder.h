@@ -183,6 +183,28 @@ typedef struct TplDepFrame {
   int base_rdmult;
 } TplDepFrame;
 
+typedef struct TplParams {
+  // Block granularity of tpl score storage.
+  uint8_t tpl_stats_block_mis_log2;
+
+  // Buffer to store the frame level tpl information for each frame in a gf
+  // group. tpl_stats_buffer[i] stores the tpl information of ith frame in a gf
+  // group
+  TplDepFrame tpl_stats_buffer[MAX_LENGTH_TPL_FRAME_STATS];
+
+  // Buffer to store tpl stats at block granularity.
+  // tpl_stats_pool[i][j] stores the tpl stats of jth block of ith frame in a gf
+  // group.
+  TplDepStats *tpl_stats_pool[MAX_LAG_BUFFERS];
+
+  // Buffer to store tpl reconstructed frame.
+  // tpl_rec_pool[i] stores the reconstructed frame of ith frame in a gf group.
+  YV12_BUFFER_CONFIG tpl_rec_pool[MAX_LAG_BUFFERS];
+
+  // Pointer to tpl_stats_buffer.
+  TplDepFrame *tpl_frame;
+} TplParams;
+
 typedef enum {
   COST_UPD_SB,
   COST_UPD_SBROW,
@@ -861,11 +883,7 @@ typedef struct AV1_COMP {
   YV12_BUFFER_CONFIG scaled_last_source;
   YV12_BUFFER_CONFIG *unfiltered_source;
 
-  uint8_t tpl_stats_block_mis_log2;  // block granularity of tpl score storage
-  TplDepFrame tpl_stats_buffer[MAX_LENGTH_TPL_FRAME_STATS];
-  TplDepStats *tpl_stats_pool[MAX_LAG_BUFFERS];
-  YV12_BUFFER_CONFIG tpl_rec_pool[MAX_LAG_BUFFERS];
-  TplDepFrame *tpl_frame;
+  TplParams tpl_data;
 
   // For a still frame, this flag is set to 1 to skip partition search.
   int partition_search_skippable_frame;
