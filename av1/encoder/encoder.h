@@ -826,6 +826,19 @@ typedef struct {
   int valid;
 } MV_STATS;
 
+typedef struct {
+  int frame_width;
+  int frame_height;
+  int mi_rows;
+  int mi_cols;
+  int mb_rows;
+  int mb_cols;
+  int num_mbs;
+  aom_bit_depth_t bit_depth;
+  int subsampling_x;
+  int subsampling_y;
+} FRAME_INFO;
+
 typedef struct AV1_COMP {
   QUANTS quants;
   ThreadData td;

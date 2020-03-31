@@ -287,19 +287,6 @@ typedef struct SequenceHeader {
 } SequenceHeader;
 
 typedef struct {
-  int frame_width;
-  int frame_height;
-  int mi_rows;
-  int mi_cols;
-  int mb_rows;
-  int mb_cols;
-  int num_mbs;
-  aom_bit_depth_t bit_depth;
-  int subsampling_x;
-  int subsampling_y;
-} FRAME_INFO;
-
-typedef struct {
   int skip_mode_allowed;
   int skip_mode_flag;
   int ref_frame_idx_0;
@@ -1507,22 +1494,6 @@ static INLINE int is_valid_seq_level_idx(AV1_LEVEL seq_level_idx) {
           seq_level_idx != SEQ_LEVEL_4_2 && seq_level_idx != SEQ_LEVEL_4_3 &&
           seq_level_idx != SEQ_LEVEL_7_0 && seq_level_idx != SEQ_LEVEL_7_1 &&
           seq_level_idx != SEQ_LEVEL_7_2 && seq_level_idx != SEQ_LEVEL_7_3);
-}
-
-static INLINE void init_frame_info(FRAME_INFO *frame_info,
-                                   const AV1_COMMON *const cm) {
-  const CommonModeInfoParams *const mi_params = &cm->mi_params;
-  const SequenceHeader *const seq_params = &cm->seq_params;
-  frame_info->frame_width = cm->width;
-  frame_info->frame_height = cm->height;
-  frame_info->mi_cols = mi_params->mi_cols;
-  frame_info->mi_rows = mi_params->mi_rows;
-  frame_info->mb_cols = mi_params->mb_cols;
-  frame_info->mb_rows = mi_params->mb_rows;
-  frame_info->num_mbs = mi_params->MBs;
-  frame_info->bit_depth = seq_params->bit_depth;
-  frame_info->subsampling_x = seq_params->subsampling_x;
-  frame_info->subsampling_y = seq_params->subsampling_y;
 }
 
 #ifdef __cplusplus
