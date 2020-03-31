@@ -219,7 +219,22 @@ generating projects and a solution for the Microsoft IDE:
 
 ~~~
     # This does not require a bash shell; Command Prompt (cmd.exe) is fine.
+    # This assumes the build host is a Windows x64 computer.
+
+    # To build with Visual Studio 2019 for the x64 target:
     $ cmake path/to/aom -G "Visual Studio 16 2019"
+    $ cmake --build .
+
+    # To build with Visual Studio 2019 for the 32-bit x86 target:
+    $ cmake path/to/aom -G "Visual Studio 16 2019" -A Win32
+    $ cmake --build .
+
+    # To build with Visual Studio 2017 for the x64 target:
+    $ cmake path/to/aom -G "Visual Studio 15 2017" -T host=x64 -A x64
+    $ cmake --build .
+
+    # To build with Visual Studio 2017 for the 32-bit x86 target:
+    $ cmake path/to/aom -G "Visual Studio 15 2017" -T host=x64
     $ cmake --build .
 ~~~
 
