@@ -419,18 +419,27 @@ struct CommonModeInfoParams {
                     int height);
 };
 
-// Parameters related to quantization.
+// Parameters related to quantization at the frame level.
 typedef struct CommonQuantParams CommonQuantParams;
 struct CommonQuantParams {
-  // Base qIndex of the frame in the range 0 to 255.
-  // The qindex per block may have a delta from this: see 'delta_q_info' below.
+  // Base qindex of the frame in the range 0 to 255.
   int base_qindex;
 
+  // Delta of qindex (from base_qindex) for Y plane DC coefficient.
+  // Note: y_ac_delta_q is implicitly 0.
   int y_dc_delta_q;
+
+  // Delta of qindex (from base_qindex) for U plane DC and AC coefficients.
   int u_dc_delta_q;
   int v_dc_delta_q;
+
+  // Delta of qindex (from base_qindex) for V plane DC and AC coefficients.
+  // Same as those for U plane if cm->seq_params.separate_uv_delta_q == 0.
   int u_ac_delta_q;
   int v_ac_delta_q;
+
+  // Note: The qindex per superblock may have a delta from the qindex obtained
+  // at frame level from parameters above, based on 'cm->delta_q_info'.
 
   // The dequantizers below are true dequantizers used only in the
   // dequantization process.  They have the same coefficient
@@ -448,10 +457,14 @@ struct CommonQuantParams {
   const qm_val_t *u_iqmatrix[MAX_SEGMENTS][TX_SIZES_ALL];
   const qm_val_t *v_iqmatrix[MAX_SEGMENTS][TX_SIZES_ALL];
 
-  int using_qmatrix;
-  int qm_y;
-  int qm_u;
-  int qm_v;
+  // Flag indicating whether quantization matrices are being used:
+  //  - If true, qm_level_y, qm_level_u and qm_level_v indicate the level
+  //    indices to be used to access appropriate global quant matrix tables.
+  //  - If false, we implicitly use level index 'NUM_QM_LEVELS - 1'.
+  bool using_qmatrix;
+  int qmatrix_level_y;
+  int qmatrix_level_u;
+  int qmatrix_level_v;
 };
 
 // Context used for transmitting various symbols in the bistream.

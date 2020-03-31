@@ -2064,16 +2064,16 @@ static AOM_INLINE void setup_quantization(CommonQuantParams *quant_params,
   }
   quant_params->using_qmatrix = aom_rb_read_bit(rb);
   if (quant_params->using_qmatrix) {
-    quant_params->qm_y = aom_rb_read_literal(rb, QM_LEVEL_BITS);
-    quant_params->qm_u = aom_rb_read_literal(rb, QM_LEVEL_BITS);
+    quant_params->qmatrix_level_y = aom_rb_read_literal(rb, QM_LEVEL_BITS);
+    quant_params->qmatrix_level_u = aom_rb_read_literal(rb, QM_LEVEL_BITS);
     if (!separate_uv_delta_q)
-      quant_params->qm_v = quant_params->qm_u;
+      quant_params->qmatrix_level_v = quant_params->qmatrix_level_u;
     else
-      quant_params->qm_v = aom_rb_read_literal(rb, QM_LEVEL_BITS);
+      quant_params->qmatrix_level_v = aom_rb_read_literal(rb, QM_LEVEL_BITS);
   } else {
-    quant_params->qm_y = 0;
-    quant_params->qm_u = 0;
-    quant_params->qm_v = 0;
+    quant_params->qmatrix_level_y = 0;
+    quant_params->qmatrix_level_u = 0;
+    quant_params->qmatrix_level_v = 0;
   }
 }
 
@@ -2101,17 +2101,20 @@ static AOM_INLINE void setup_segmentation_dequant(AV1_COMMON *const cm,
     const int use_qmatrix = av1_use_qmatrix(quant_params, xd, i);
     // NB: depends on base index so there is only 1 set per frame
     // No quant weighting when lossless or signalled not using QM
-    const int qmlevel_y = use_qmatrix ? quant_params->qm_y : NUM_QM_LEVELS - 1;
+    const int qmlevel_y =
+        use_qmatrix ? quant_params->qmatrix_level_y : NUM_QM_LEVELS - 1;
     for (int j = 0; j < TX_SIZES_ALL; ++j) {
       quant_params->y_iqmatrix[i][j] =
           av1_iqmatrix(quant_params, qmlevel_y, AOM_PLANE_Y, j);
     }
-    const int qmlevel_u = use_qmatrix ? quant_params->qm_u : NUM_QM_LEVELS - 1;
+    const int qmlevel_u =
+        use_qmatrix ? quant_params->qmatrix_level_u : NUM_QM_LEVELS - 1;
     for (int j = 0; j < TX_SIZES_ALL; ++j) {
       quant_params->u_iqmatrix[i][j] =
           av1_iqmatrix(quant_params, qmlevel_u, AOM_PLANE_U, j);
     }
-    const int qmlevel_v = use_qmatrix ? quant_params->qm_v : NUM_QM_LEVELS - 1;
+    const int qmlevel_v =
+        use_qmatrix ? quant_params->qmatrix_level_v : NUM_QM_LEVELS - 1;
     for (int j = 0; j < TX_SIZES_ALL; ++j) {
       quant_params->v_iqmatrix[i][j] =
           av1_iqmatrix(quant_params, qmlevel_v, AOM_PLANE_V, j);

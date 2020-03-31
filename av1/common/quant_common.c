@@ -226,8 +226,8 @@ int av1_get_qindex(const struct segmentation *seg, int segment_id,
 }
 
 bool av1_use_qmatrix(const CommonQuantParams *quant_params,
-                     const MACROBLOCKD *const xd, int segment_id) {
-  // True if we are using Q matrix and this is not a lossless segment.
+                     const struct macroblockd *xd, int segment_id) {
+  // True if explicit Q matrix levels and this is not a lossless segment.
   return quant_params->using_qmatrix && !xd->lossless[segment_id];
 }
 

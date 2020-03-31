@@ -47,7 +47,7 @@ int16_t av1_ac_quant_QTX(int qindex, int delta, aom_bit_depth_t bit_depth);
 int av1_get_qindex(const struct segmentation *seg, int segment_id,
                    int base_qindex);
 
-// Returns true if we should use quantization matrix.
+// Returns true if we are using quantization matrix.
 bool av1_use_qmatrix(const struct CommonQuantParams *quant_params,
                      const struct macroblockd *xd, int segment_id);
 

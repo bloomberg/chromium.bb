@@ -677,7 +677,8 @@ void av1_init_plane_quantizers(const AV1_COMP *cpi, MACROBLOCK *x,
   const int use_qmatrix = av1_use_qmatrix(quant_params, xd, segment_id);
 
   // Y
-  const int qmlevel_y = use_qmatrix ? quant_params->qm_y : NUM_QM_LEVELS - 1;
+  const int qmlevel_y =
+      use_qmatrix ? quant_params->qmatrix_level_y : NUM_QM_LEVELS - 1;
   x->plane[0].quant_QTX = quants->y_quant[qindex];
   x->plane[0].quant_fp_QTX = quants->y_quant_fp[qindex];
   x->plane[0].round_fp_QTX = quants->y_round_fp[qindex];
@@ -693,7 +694,8 @@ void av1_init_plane_quantizers(const AV1_COMP *cpi, MACROBLOCK *x,
          sizeof(quant_params->giqmatrix[qmlevel_y][0]));
 
   // U
-  const int qmlevel_u = use_qmatrix ? quant_params->qm_u : NUM_QM_LEVELS - 1;
+  const int qmlevel_u =
+      use_qmatrix ? quant_params->qmatrix_level_u : NUM_QM_LEVELS - 1;
   x->plane[1].quant_QTX = quants->u_quant[qindex];
   x->plane[1].quant_fp_QTX = quants->u_quant_fp[qindex];
   x->plane[1].round_fp_QTX = quants->u_round_fp[qindex];
@@ -708,7 +710,8 @@ void av1_init_plane_quantizers(const AV1_COMP *cpi, MACROBLOCK *x,
          quant_params->giqmatrix[qmlevel_u][1],
          sizeof(quant_params->giqmatrix[qmlevel_u][1]));
   // V
-  const int qmlevel_v = use_qmatrix ? quant_params->qm_v : NUM_QM_LEVELS - 1;
+  const int qmlevel_v =
+      use_qmatrix ? quant_params->qmatrix_level_v : NUM_QM_LEVELS - 1;
   x->plane[2].quant_QTX = quants->v_quant[qindex];
   x->plane[2].quant_fp_QTX = quants->v_quant_fp[qindex];
   x->plane[2].round_fp_QTX = quants->v_round_fp[qindex];
@@ -747,16 +750,16 @@ void av1_set_quantizer(AV1_COMP *cpi, int q) {
   quant_params->u_ac_delta_q = 0;
   quant_params->v_dc_delta_q = 0;
   quant_params->v_ac_delta_q = 0;
-  quant_params->qm_y = aom_get_qmlevel(quant_params->base_qindex,
-                                       cpi->min_qmlevel, cpi->max_qmlevel);
-  quant_params->qm_u =
+  quant_params->qmatrix_level_y = aom_get_qmlevel(
+      quant_params->base_qindex, cpi->min_qmlevel, cpi->max_qmlevel);
+  quant_params->qmatrix_level_u =
       aom_get_qmlevel(quant_params->base_qindex + quant_params->u_ac_delta_q,
                       cpi->min_qmlevel, cpi->max_qmlevel);
 
   if (!cm->seq_params.separate_uv_delta_q)
-    quant_params->qm_v = quant_params->qm_u;
+    quant_params->qmatrix_level_v = quant_params->qmatrix_level_u;
   else
-    quant_params->qm_v =
+    quant_params->qmatrix_level_v =
         aom_get_qmlevel(quant_params->base_qindex + quant_params->v_ac_delta_q,
                         cpi->min_qmlevel, cpi->max_qmlevel);
 }

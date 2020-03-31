@@ -2045,12 +2045,12 @@ static AOM_INLINE void encode_quantization(
   }
   aom_wb_write_bit(wb, quant_params->using_qmatrix);
   if (quant_params->using_qmatrix) {
-    aom_wb_write_literal(wb, quant_params->qm_y, QM_LEVEL_BITS);
-    aom_wb_write_literal(wb, quant_params->qm_u, QM_LEVEL_BITS);
+    aom_wb_write_literal(wb, quant_params->qmatrix_level_y, QM_LEVEL_BITS);
+    aom_wb_write_literal(wb, quant_params->qmatrix_level_u, QM_LEVEL_BITS);
     if (!separate_uv_delta_q)
-      assert(quant_params->qm_u == quant_params->qm_v);
+      assert(quant_params->qmatrix_level_u == quant_params->qmatrix_level_v);
     else
-      aom_wb_write_literal(wb, quant_params->qm_v, QM_LEVEL_BITS);
+      aom_wb_write_literal(wb, quant_params->qmatrix_level_v, QM_LEVEL_BITS);
   }
 }
 
