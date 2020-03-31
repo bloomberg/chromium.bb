@@ -2799,7 +2799,7 @@ int av1_find_best_sub_pixel_tree_pruned(
 
 int av1_find_best_sub_pixel_tree(MACROBLOCKD *xd, const AV1_COMMON *const cm,
                                  const SUBPEL_MOTION_SEARCH_PARAMS *ms_params,
-                                 const MV start_mv, MV *bestmv, int *distortion,
+                                 MV start_mv, MV *bestmv, int *distortion,
                                  unsigned int *sse1,
                                  int_mv *last_mv_search_list) {
   const int allow_hp = ms_params->allow_hp;
@@ -2870,7 +2870,7 @@ int av1_find_best_sub_pixel_tree(MACROBLOCKD *xd, const AV1_COMMON *const cm,
 // Returns the maximum MV.
 int av1_return_max_sub_pixel_mv(MACROBLOCKD *xd, const AV1_COMMON *const cm,
                                 const SUBPEL_MOTION_SEARCH_PARAMS *ms_params,
-                                const MV start_mv, MV *bestmv, int *distortion,
+                                MV start_mv, MV *bestmv, int *distortion,
                                 unsigned int *sse1,
                                 int_mv *last_mv_search_list) {
   (void)xd;
@@ -2897,7 +2897,7 @@ int av1_return_max_sub_pixel_mv(MACROBLOCKD *xd, const AV1_COMMON *const cm,
 // Returns the minimum MV.
 int av1_return_min_sub_pixel_mv(MACROBLOCKD *xd, const AV1_COMMON *const cm,
                                 const SUBPEL_MOTION_SEARCH_PARAMS *ms_params,
-                                const MV start_mv, MV *bestmv, int *distortion,
+                                MV start_mv, MV *bestmv, int *distortion,
                                 unsigned int *sse1,
                                 int_mv *last_mv_search_list) {
   (void)xd;
@@ -3299,7 +3299,7 @@ static AOM_FORCE_INLINE void obmc_second_level_check_v2(
 
 int av1_find_best_obmc_sub_pixel_tree_up(
     MACROBLOCKD *xd, const AV1_COMMON *const cm,
-    const SUBPEL_MOTION_SEARCH_PARAMS *ms_params, const MV start_mv, MV *bestmv,
+    const SUBPEL_MOTION_SEARCH_PARAMS *ms_params, MV start_mv, MV *bestmv,
     int *distortion, unsigned int *sse1, int_mv *last_mv_search_list) {
   (void)last_mv_search_list;
   const int allow_hp = ms_params->allow_hp;

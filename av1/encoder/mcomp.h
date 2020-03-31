@@ -282,8 +282,8 @@ void av1_make_default_subpel_ms_params(SUBPEL_MOTION_SEARCH_PARAMS *ms_params,
 
 typedef int(fractional_mv_step_fp)(MACROBLOCKD *xd, const AV1_COMMON *const cm,
                                    const SUBPEL_MOTION_SEARCH_PARAMS *ms_params,
-                                   const MV start_mv, MV *bestmv,
-                                   int *distortion, unsigned int *sse1,
+                                   MV start_mv, MV *bestmv, int *distortion,
+                                   unsigned int *sse1,
                                    int_mv *last_mv_search_list);
 
 extern fractional_mv_step_fp av1_find_best_sub_pixel_tree;

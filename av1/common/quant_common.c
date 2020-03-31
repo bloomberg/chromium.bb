@@ -248,8 +248,8 @@ const qm_val_t *av1_qmatrix(const CommonQuantParams *quant_params, int qmlevel,
 // horizontal and vertical directions.
 static INLINE bool is_2d_transform(TX_TYPE tx_type) { return (tx_type < IDTX); }
 
-const qm_val_t *av1_get_iqmatrix(const CommonQuantParams *const quant_params,
-                                 const MACROBLOCKD *const xd, int plane,
+const qm_val_t *av1_get_iqmatrix(const CommonQuantParams *quant_params,
+                                 const MACROBLOCKD *xd, int plane,
                                  TX_SIZE tx_size, TX_TYPE tx_type) {
   const struct macroblockd_plane *const pd = &xd->plane[plane];
   const MB_MODE_INFO *const mbmi = xd->mi[0];
@@ -261,8 +261,8 @@ const qm_val_t *av1_get_iqmatrix(const CommonQuantParams *const quant_params,
              : quant_params->giqmatrix[NUM_QM_LEVELS - 1][0][qm_tx_size];
 }
 
-const qm_val_t *av1_get_qmatrix(const CommonQuantParams *const quant_params,
-                                const MACROBLOCKD *const xd, int plane,
+const qm_val_t *av1_get_qmatrix(const CommonQuantParams *quant_params,
+                                const MACROBLOCKD *xd, int plane,
                                 TX_SIZE tx_size, TX_TYPE tx_type) {
   const struct macroblockd_plane *const pd = &xd->plane[plane];
   const MB_MODE_INFO *const mbmi = xd->mi[0];

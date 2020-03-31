@@ -339,7 +339,7 @@ void av1_setup_quant(TX_SIZE tx_size, int use_optimize_b, int xform_quant_idx,
   qparam->iqmatrix = NULL;
 }
 void av1_setup_qmatrix(const CommonQuantParams *quant_params,
-                       const MACROBLOCKD *const xd, int plane, TX_SIZE tx_size,
+                       const MACROBLOCKD *xd, int plane, TX_SIZE tx_size,
                        TX_TYPE tx_type, QUANT_PARAM *qparam) {
   qparam->qmatrix = av1_get_qmatrix(quant_params, xd, plane, tx_size, tx_type);
   qparam->iqmatrix =
