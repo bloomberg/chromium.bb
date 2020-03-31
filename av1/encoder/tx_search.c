@@ -3467,10 +3467,9 @@ void av1_txfm_rd_in_plane(MACROBLOCK *x, const AV1_COMP *cpi,
   }
 }
 
-int av1_txfm_search(const AV1_COMP *cpi, const TileDataEnc *tile_data,
-                    MACROBLOCK *x, BLOCK_SIZE bsize, RD_STATS *rd_stats,
-                    RD_STATS *rd_stats_y, RD_STATS *rd_stats_uv, int mode_rate,
-                    int64_t ref_best_rd) {
+int av1_txfm_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
+                    RD_STATS *rd_stats, RD_STATS *rd_stats_y,
+                    RD_STATS *rd_stats_uv, int mode_rate, int64_t ref_best_rd) {
   /*
    * This function combines y and uv planes' transform search processes
    * together, when the prediction is generated. It first does subtraction to
@@ -3482,7 +3481,6 @@ int av1_txfm_search(const AV1_COMP *cpi, const TileDataEnc *tile_data,
   const AV1_COMMON *cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
-  const int ref_frame_1 = mbmi->ref_frame[1];
   const int64_t mode_rd = RDCOST(x->rdmult, mode_rate, 0);
   const int64_t rd_thresh =
       ref_best_rd == INT64_MAX ? INT64_MAX : ref_best_rd - mode_rd;
@@ -3494,7 +3492,6 @@ int av1_txfm_search(const AV1_COMP *cpi, const TileDataEnc *tile_data,
   // Account for minimum skip and non_skip rd.
   // Eventually either one of them will be added to mode_rate
   const int64_t min_header_rd_possible = RDCOST(x->rdmult, min_header_rate, 0);
-  (void)tile_data;
 
   if (min_header_rd_possible > ref_best_rd) {
     av1_invalid_rd_stats(rd_stats_y);
@@ -3520,12 +3517,7 @@ int av1_txfm_search(const AV1_COMP *cpi, const TileDataEnc *tile_data,
       set_blk_skip(x, 0, i, rd_stats_y->skip);
   }
 
-  if (rd_stats_y->rate == INT_MAX) {
-    // TODO(angiebird): check if we need this
-    // restore_dst_buf(xd, *orig_dst, num_planes);
-    mbmi->ref_frame[1] = ref_frame_1;
-    return 0;
-  }
+  if (rd_stats_y->rate == INT_MAX) return 0;
 
   av1_merge_rd_stats(rd_stats, rd_stats_y);
 
@@ -3541,9 +3533,9 @@ int av1_txfm_search(const AV1_COMP *cpi, const TileDataEnc *tile_data,
     // Invalidate rd_stats_y to skip the rest of the motion modes search
     if (tokenonly_rdy -
             (tokenonly_rdy >> cpi->sf.inter_sf.prune_motion_mode_level) >
-        rd_thresh)
+        rd_thresh) {
       av1_invalid_rd_stats(rd_stats_y);
-    mbmi->ref_frame[1] = ref_frame_1;
+    }
     return 0;
   }
 
@@ -3559,10 +3551,7 @@ int av1_txfm_search(const AV1_COMP *cpi, const TileDataEnc *tile_data,
     }
     const int is_cost_valid_uv =
         av1_super_block_uvrd(cpi, x, rd_stats_uv, bsize, ref_best_chroma_rd);
-    if (!is_cost_valid_uv) {
-      mbmi->ref_frame[1] = ref_frame_1;
-      return 0;
-    }
+    if (!is_cost_valid_uv) return 0;
     av1_merge_rd_stats(rd_stats, rd_stats_uv);
   }
 
@@ -3578,10 +3567,7 @@ int av1_txfm_search(const AV1_COMP *cpi, const TileDataEnc *tile_data,
     // here mbmi->skip temporarily plays a role as what this_skip2 does
 
     const int64_t tmprd = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
-    if (tmprd > ref_best_rd) {
-      mbmi->ref_frame[1] = ref_frame_1;
-      return 0;
-    }
+    if (tmprd > ref_best_rd) return 0;
   } else if (!xd->lossless[mbmi->segment_id] &&
              (RDCOST(x->rdmult,
                      rd_stats_y->rate + rd_stats_uv->rate + skip_flag_cost[0],

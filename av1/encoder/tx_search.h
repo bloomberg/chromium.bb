@@ -69,10 +69,9 @@ void av1_txfm_rd_in_plane(MACROBLOCK *x, const AV1_COMP *cpi,
                           TX_SIZE tx_size, int use_fast_coef_casting,
                           FAST_TX_SEARCH_MODE ftxs_mode, int skip_trellis);
 
-int av1_txfm_search(const AV1_COMP *cpi, const TileDataEnc *tile_data,
-                    MACROBLOCK *x, BLOCK_SIZE bsize, RD_STATS *rd_stats,
-                    RD_STATS *rd_stats_y, RD_STATS *rd_stats_uv, int mode_rate,
-                    int64_t ref_best_rd);
+int av1_txfm_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
+                    RD_STATS *rd_stats, RD_STATS *rd_stats_y,
+                    RD_STATS *rd_stats_uv, int mode_rate, int64_t ref_best_rd);
 
 #ifdef __cplusplus
 }  // extern "C"

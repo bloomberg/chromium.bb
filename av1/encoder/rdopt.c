@@ -1530,8 +1530,8 @@ static int64_t motion_mode_rd(
         if (!eval_txfm) continue;
       }
 
-      if (!av1_txfm_search(cpi, tile_data, x, bsize, rd_stats, rd_stats_y,
-                           rd_stats_uv, rd_stats->rate, ref_best_rd)) {
+      if (!av1_txfm_search(cpi, x, bsize, rd_stats, rd_stats_y, rd_stats_uv,
+                           rd_stats->rate, ref_best_rd)) {
         if (rd_stats_y->rate == INT_MAX && mode_index == 0) {
           if (cpi->sf.inter_sf.prune_single_motion_modes_by_simple_trans &&
               !is_comp_pred) {
@@ -2778,7 +2778,7 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
                                         dvcost, MV_COST_WEIGHT_SUB);
     const int rate_mode = x->intrabc_cost[1];
     RD_STATS rd_stats_yuv, rd_stats_y, rd_stats_uv;
-    if (!av1_txfm_search(cpi, NULL, x, bsize, &rd_stats_yuv, &rd_stats_y,
+    if (!av1_txfm_search(cpi, x, bsize, &rd_stats_yuv, &rd_stats_y,
                          &rd_stats_uv, rate_mode + rate_mv, INT64_MAX))
       continue;
     rd_stats_yuv.rdcost =
@@ -4724,8 +4724,8 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
         if (!eval_txfm) continue;
       }
 
-      if (!av1_txfm_search(cpi, tile_data, x, bsize, &rd_stats, &rd_stats_y,
-                           &rd_stats_uv, mode_rate, search_state.best_rd)) {
+      if (!av1_txfm_search(cpi, x, bsize, &rd_stats, &rd_stats_y, &rd_stats_uv,
+                           mode_rate, search_state.best_rd)) {
         continue;
       } else if (cpi->sf.inter_sf.inter_mode_rd_model_estimation == 1) {
         inter_mode_data_push(tile_data, mbmi->sb_type, rd_stats.sse,
