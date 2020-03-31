@@ -202,6 +202,10 @@ void SpellcheckCharAttribute::CreateRuleSets(const std::string& language) {
                          kDisallowContraction));
 }
 
+UScriptCode SpellcheckCharAttribute::GetScriptCode() const {
+  return script_code_;
+}
+
 bool SpellcheckCharAttribute::OutputChar(UChar c,
                                          base::string16* output) const {
   // Call the language-specific function if necessary.
