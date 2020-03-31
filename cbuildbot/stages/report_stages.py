@@ -268,9 +268,12 @@ class BuildStartStage(generic_stages.BuilderStage):
                       'crbug.com/679974 and crbug.com/685889', e)
         raise e
 
-      self._run.attrs.metadata.UpdateWithDict({'build_id': build_id,
-                                               'buildbucket_id': buildbucket_id,
-                                               'db_type': db_type})
+      master_bb_id = self._run.options.master_buildbucket_id
+      self._run.attrs.metadata.UpdateWithDict(
+          {'build_id': build_id,
+           'buildbucket_id': buildbucket_id,
+           'master_buildbucket_id': master_bb_id,
+           'db_type': db_type})
       logging.info('Inserted build_id %s into cidb database type %s.',
                    build_id, db_type)
       logging.PrintBuildbotStepText('database: %s, build_id: %s' %
