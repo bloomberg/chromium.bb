@@ -107,7 +107,7 @@ class RemoteNebraskaWrapper(multiprocessing.Process):
       **kwargs: See remote_access.RemoteDevice documentation.
     """
     kwargs.setdefault('debug_level', logging.DEBUG)
-    return self._device.RunCommand(*args, **kwargs)
+    return self._device.run(*args, **kwargs)
 
   def _PortFileExists(self):
     """Checks whether the port file exists in the remove device or not."""

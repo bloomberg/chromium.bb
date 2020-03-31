@@ -55,9 +55,6 @@ class ChromiumOSDeviceFake(object):
   def IsSELinuxEnforced(self):
     return True
 
-  def RunCommand(self, cmd, **_kwargs):
-    self.cmds.append(cmd)
-
   def run(self, cmd, **_kwargs):
     self.cmds.append(cmd)
 

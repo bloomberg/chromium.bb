@@ -50,7 +50,7 @@ class CrosUpdateTest(cros_test_lib.RunCommandTestCase):
 
   @mock.patch.object(cros_update.CrOSUpdateTrigger, '_MakeStatusUrl',
                      return_value='foo-url')
-  @mock.patch.object(remote_access.RemoteDevice, 'RunCommand',
+  @mock.patch.object(remote_access.RemoteDevice, 'run',
                      return_value=cros_build_lib.CommandResult(output='output'))
   def test_QuickProvision(self, run_command_call, _):
     """Tests launching quick provision."""

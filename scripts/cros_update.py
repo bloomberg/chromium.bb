@@ -188,7 +188,7 @@ class CrOSUpdateTrigger(object):
     # Quick provision script issues a reboot and might result in the SSH
     # connection being terminated so set ssh_error_ok so that output can
     # still be captured.
-    results = device.RunCommand(
+    results = device.run(
         ' '.join(cmd), log_output=True, capture_output=True,
         ssh_error_ok=True, shell=True, encoding='utf-8')
     key_re = re.compile(r'^KEYVAL: ([^\d\W]\w*)=(.*)$')

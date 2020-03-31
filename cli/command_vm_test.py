@@ -246,8 +246,8 @@ class CommandVMTest(object):
     with remote_access.ChromiumOSDeviceHandler(
         remote_access.LOCALHOST, port=self.port) as device:
       try:
-        device.RunCommand(['python', '-c', '"import cherrypy"'])
-        device.RunCommand(['qmerge', '-h'])
+        device.run(['python', '-c', '"import cherrypy"'])
+        device.run(['qmerge', '-h'])
       except cros_build_lib.RunCommandError as e:
         logging.error('Unable to verify packages installed on VM: %s', e)
         raise CommandError()

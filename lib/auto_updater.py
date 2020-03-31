@@ -331,9 +331,8 @@ class ChromiumOSUpdater(BaseUpdater):
       A list of values in the order of |keys|.
     """
     keys = keys or ['CURRENT_OP']
-    result = device.RunCommand([cls.REMOTE_UPDATE_ENGINE_BIN_FILENAME,
-                                '--status'],
-                               capture_output=True, log_output=True)
+    result = device.run([cls.REMOTE_UPDATE_ENGINE_BIN_FILENAME, '--status'],
+                        capture_output=True, log_output=True)
 
     if not result.output:
       raise Exception('Cannot get update status')
@@ -360,7 +359,7 @@ class ChromiumOSUpdater(BaseUpdater):
       device: a ChromiumOSDevice object, defines whose root device we
           want to fetch.
     """
-    rootdev = device.RunCommand(
+    rootdev = device.run(
         ['rootdev', '-s'], capture_output=True).output.strip()
     logging.debug('Current root device is %s', rootdev)
     return rootdev
@@ -372,8 +371,8 @@ class ChromiumOSUpdater(BaseUpdater):
       device: a ChromiumOSDevice object, defines the target root device.
     """
     try:
-      result = device.RunCommand(['start', 'update-engine'],
-                                 capture_output=True, log_output=True).output
+      result = device.run(['start', 'update-engine'],
+                          capture_output=True, log_output=True).stdout
       if 'start/running' in result:
         logging.info('update engine was not running, so we started it.')
     except cros_build_lib.RunCommandError as e:
@@ -395,7 +394,7 @@ class ChromiumOSUpdater(BaseUpdater):
 
   def _GetDevicePythonSysPath(self):
     """Get python sys.path of the given |device|."""
-    sys_path = self.device.RunCommand(
+    sys_path = self.device.run(
         ['python', '-c', '"import json, sys; json.dump(sys.path, sys.stdout)"'],
         capture_output=True, log_output=True).output
     return json.loads(sys_path)
@@ -440,7 +439,7 @@ class ChromiumOSUpdater(BaseUpdater):
     part = self.GetRootDev(self.device)
     logging.warning('Reverting update; Boot partition will be %s', part)
     try:
-      self.device.RunCommand(['/postinst', part], **self._cmd_kwargs)
+      self.device.run(['/postinst', part], **self._cmd_kwargs)
     except cros_build_lib.RunCommandError as e:
       logging.warning('Reverting the boot partition failed: %s', e)
 
@@ -465,7 +464,7 @@ class ChromiumOSUpdater(BaseUpdater):
              '--omaha_url="%s"' % nebraska_url]
 
       self._StartPerformanceMonitoringForAUTest()
-      self.device.RunCommand(cmd, **self._cmd_kwargs)
+      self.device.run(cmd, **self._cmd_kwargs)
 
       # If we are using a progress bar, update it every 0.5s instead of 10s.
       if command.UseProgressBar():
@@ -498,7 +497,7 @@ class ChromiumOSUpdater(BaseUpdater):
         if op == UPDATE_STATUS_IDLE:
           # Something went wrong. Try to get last error code.
           cmd = ['cat', self.REMOTE_UPDATE_ENGINE_LOGFILE_PATH]
-          log = self.device.RunCommand(cmd).output.strip().splitlines()
+          log = self.device.run(cmd).stdout.strip().splitlines()
           err_str = 'Updating payload state for error code: '
           targets = [line for line in log if err_str in line]
           logging.debug('Error lines found: %s', targets)
@@ -662,7 +661,7 @@ class ChromiumOSUpdater(BaseUpdater):
     old_root_dev = self.GetRootDev(self.device)
     self.device.Reboot()
     if self._clobber_stateful:
-      self.device.RunCommand(['mkdir', '-p', self.device.work_dir])
+      self.device.run(['mkdir', '-p', self.device.work_dir])
 
     if self._do_rootfs_update:
       logging.notice('Verifying that the device has been updated...')
@@ -741,7 +740,7 @@ class ChromiumOSUpdater(BaseUpdater):
 
     cmd = ['python', self.REMOTE_UPDATE_ENGINE_PERF_SCRIPT_PATH, '--start-bg']
     try:
-      perf_id = self.device.RunCommand(cmd).output.strip()
+      perf_id = self.device.run(cmd).stdout.strip()
       logging.info('update_engine_performance_monitors pid is %s.', perf_id)
       self.perf_id = perf_id
     except cros_build_lib.RunCommandError as e:
@@ -754,9 +753,9 @@ class ChromiumOSUpdater(BaseUpdater):
     cmd = ['python', self.REMOTE_UPDATE_ENGINE_PERF_SCRIPT_PATH, '--stop-bg',
            self.perf_id]
     try:
-      perf_json_data = self.device.RunCommand(cmd).output.strip()
-      self.device.RunCommand(['echo', json.dumps(perf_json_data), '>',
-                              self.REMOTE_UPDATE_ENGINE_PERF_RESULTS_PATH])
+      perf_json_data = self.device.run(cmd).stdout.strip()
+      self.device.run(['echo', json.dumps(perf_json_data), '>',
+                       self.REMOTE_UPDATE_ENGINE_PERF_RESULTS_PATH])
     except cros_build_lib.RunCommandError as e:
       logging.debug('Could not stop performance monitoring process: %s', e)
 
@@ -898,10 +897,10 @@ class ChromiumOSUpdater(BaseUpdater):
     if (expected_kernel_state and
         active_kernel_state != expected_kernel_state):
       logging.debug('Dumping partition table.')
-      self.device.RunCommand(['cgpt', 'show', '$(rootdev -s -d)'],
-                             **self._cmd_kwargs)
+      self.device.run(['cgpt', 'show', '$(rootdev -s -d)'],
+                      **self._cmd_kwargs)
       logging.debug('Dumping crossystem for firmware debugging.')
-      self.device.RunCommand(['crossystem', '--all'], **self._cmd_kwargs)
+      self.device.run(['crossystem', '--all'], **self._cmd_kwargs)
       raise RootfsUpdateError(rollback_message)
 
     # Make sure chromeos-setgoodkernel runs
@@ -912,7 +911,7 @@ class ChromiumOSUpdater(BaseUpdater):
           self.KERNEL_UPDATE_TIMEOUT,
           period=5)
     except timeout_util.TimeoutError:
-      services_status = self.device.RunCommand(
+      services_status = self.device.run(
           ['status', 'system-services'], capture_output=True,
           log_output=True).output
       logging.debug('System services_status: %r', services_status)
@@ -953,7 +952,7 @@ class ChromiumOSUpdater(BaseUpdater):
     return retry_util.RetryException(
         remote_access.SSHConnectionError,
         MAX_RETRY,
-        self.device.RunCommand,
+        self.device.run,
         cmd, delay_sec=DELAY_SEC_FOR_RETRY, **kwargs)
 
   # TODO(crbug.com/872441): cros_autoupdate in platform/dev-utils package still
@@ -1161,7 +1160,7 @@ class ChromiumOSUpdater(BaseUpdater):
     """Post check for the whole auto-update process."""
     logging.debug('Post check for the whole CrOS update...')
     start_time = time.time()
-    # Not use 'sh' here since current device.RunCommand cannot recognize
+    # Not use 'sh' here since current device.run cannot recognize
     # the content of $FILE.
     autoreboot_cmd = ('FILE="%s" ; [ -f "$FILE" ] || '
                       '( touch "$FILE" ; start autoreboot )')
@@ -1218,7 +1217,7 @@ class ChromiumOSUpdater(BaseUpdater):
       nebraska_url = nebraska.GetURL(critical_update=True, no_update=True)
       cmd = [self.REMOTE_UPDATE_ENGINE_BIN_FILENAME, '--check_for_update',
              '--omaha_url="%s"' % nebraska_url]
-      self.device.RunCommand(cmd, **self._cmd_kwargs)
+      self.device.run(cmd, **self._cmd_kwargs)
       op = self.GetUpdateStatus(self.device)[0]
       logging.info('Post update check status: %s', op)
     except Exception as err:

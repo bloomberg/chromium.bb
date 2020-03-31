@@ -278,7 +278,7 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
 
       self.PatchObject(lab_xfer, '_EnsureDeviceDirectory')
       self.PatchObject(lab_xfer, '_GetCurlCmdForPayloadDownload')
-      self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand')
+      self.PatchObject(remote_access.ChromiumOSDevice, 'run')
 
       CrOS_LabTransfer._TransferUpdateUtilsPackage()
       self.assertListEqual(
@@ -288,7 +288,7 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
   def testTransferUpdateUtilsRunCmdCalls(self):
     """Test methods calls of LabTransfer._TransferUpdateUtilsPackage().
 
-    Test whether remote_access.ChromiumOSDevice.RunCommand() is being called
+    Test whether remote_access.ChromiumOSDevice.run() is being called
     the correct number of times with the correct arguments.
     """
     with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
@@ -298,11 +298,11 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
                    'http://0.0.0.0:8000/static/nebraska.py']]
 
       self.PatchObject(lab_xfer, '_EnsureDeviceDirectory')
-      self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand')
+      self.PatchObject(remote_access.ChromiumOSDevice, 'run')
 
       CrOS_LabTransfer._TransferUpdateUtilsPackage()
       self.assertListEqual(
-          remote_access.ChromiumOSDevice.RunCommand.call_args_list,
+          remote_access.ChromiumOSDevice.run.call_args_list,
           [mock.call(x) for x in expected])
 
   def testTransferUpdateUtilsEnsureDirCalls(self):
@@ -317,7 +317,7 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
       expected = [os.path.join(device.work_dir, 'src'), device.work_dir]
 
       self.PatchObject(lab_xfer, '_EnsureDeviceDirectory')
-      self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand')
+      self.PatchObject(remote_access.ChromiumOSDevice, 'run')
 
       CrOS_LabTransfer._TransferUpdateUtilsPackage()
       self.assertListEqual(lab_xfer._EnsureDeviceDirectory.call_args_list,
@@ -330,7 +330,7 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
           device, staging_server='http://wrong:server')
       self.PatchObject(auto_updater_transfer.LabTransfer,
                        '_EnsureDeviceDirectory')
-      self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand',
+      self.PatchObject(remote_access.ChromiumOSDevice, 'run',
                        side_effect=cros_build_lib.RunCommandError('fail'))
       self.assertRaises(cros_build_lib.RunCommandError,
                         CrOS_LabTransfer._TransferUpdateUtilsPackage)
@@ -342,7 +342,7 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
           device, staging_server='http://wrong:server')
       self.PatchObject(auto_updater_transfer.LabTransfer,
                        '_EnsureDeviceDirectory')
-      self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand',
+      self.PatchObject(remote_access.ChromiumOSDevice, 'run',
                        side_effect=cros_build_lib.RunCommandError('fail'))
       self.assertRaises(cros_build_lib.RunCommandError,
                         CrOS_LabTransfer._TransferStatefulUpdate)
@@ -361,7 +361,7 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
 
       self.PatchObject(lab_xfer, '_EnsureDeviceDirectory')
       self.PatchObject(lab_xfer, '_GetCurlCmdForPayloadDownload')
-      self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand')
+      self.PatchObject(remote_access.ChromiumOSDevice, 'run')
       expected = [
           {'payload_dir': device.work_dir,
            'payload_filename': 'stateful.tgz',
@@ -375,7 +375,7 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
   def testTransferStatefulRunCmdCalls(self):
     """Test methods calls of LabTransfer._TransferStatefulUpdate().
 
-    Test whether remote_access.ChromiumOSDevice.RunCommand() is being called
+    Test whether remote_access.ChromiumOSDevice.run() is being called
     the correct number of times with the correct arguments.
     """
     with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
@@ -386,11 +386,11 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
            'http://0.0.0.0:8000/static/stateful.tgz']]
 
       self.PatchObject(lab_xfer, '_EnsureDeviceDirectory')
-      self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand')
+      self.PatchObject(remote_access.ChromiumOSDevice, 'run')
 
       CrOS_LabTransfer._TransferStatefulUpdate()
       self.assertListEqual(
-          remote_access.ChromiumOSDevice.RunCommand.call_args_list,
+          remote_access.ChromiumOSDevice.run.call_args_list,
           [mock.call(x) for x in expected])
 
   def testTransferStatefulEnsureDirCalls(self):
@@ -406,7 +406,7 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
       expected = [CrOS_LabTransfer._device_payload_dir]
 
       self.PatchObject(lab_xfer, '_EnsureDeviceDirectory')
-      self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand')
+      self.PatchObject(remote_access.ChromiumOSDevice, 'run')
 
       CrOS_LabTransfer._TransferStatefulUpdate()
       self.assertListEqual(lab_xfer._EnsureDeviceDirectory.call_args_list,
@@ -431,7 +431,7 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
                        'test_stateful.tgz')
       self.PatchObject(lab_xfer, '_EnsureDeviceDirectory')
       self.PatchObject(lab_xfer, '_GetCurlCmdForPayloadDownload')
-      self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand')
+      self.PatchObject(remote_access.ChromiumOSDevice, 'run')
 
       expected = [
           {'payload_dir': CrOS_LabTransfer._device_restore_dir,
@@ -449,7 +449,7 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
   def testTransferStatefulOriginalPayloadRunCmdCalls(self):
     """Test methods calls of LabTransfer._TransferStatefulUpdate().
 
-    Test whether remote_access.ChromiumOSDevice.RunCommand() is being called
+    Test whether remote_access.ChromiumOSDevice.run() is being called
     the correct number of times with the correct arguments when original
     payload directory exists.
     """
@@ -465,11 +465,11 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
            'http://0.0.0.0:8000/static/stateful.tgz']]
 
       self.PatchObject(lab_xfer, '_EnsureDeviceDirectory')
-      self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand')
+      self.PatchObject(remote_access.ChromiumOSDevice, 'run')
 
       CrOS_LabTransfer._TransferStatefulUpdate()
       self.assertListEqual(
-          remote_access.ChromiumOSDevice.RunCommand.call_args_list,
+          remote_access.ChromiumOSDevice.run.call_args_list,
           [mock.call(x) for x in expected])
 
 
@@ -490,7 +490,7 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
                   CrOS_LabTransfer._device_restore_dir]
 
       self.PatchObject(lab_xfer, '_EnsureDeviceDirectory')
-      self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand')
+      self.PatchObject(remote_access.ChromiumOSDevice, 'run')
 
       CrOS_LabTransfer._TransferStatefulUpdate()
       self.assertListEqual(lab_xfer._EnsureDeviceDirectory.call_args_list,
@@ -505,7 +505,7 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
           payload_name='test_update.gz')
       self.PatchObject(auto_updater_transfer.LabTransfer,
                        '_EnsureDeviceDirectory')
-      self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand',
+      self.PatchObject(remote_access.ChromiumOSDevice, 'run',
                        side_effect=cros_build_lib.RunCommandError('fail'))
       self.assertRaises(cros_build_lib.RunCommandError,
                         CrOS_LabTransfer._TransferRootfsUpdate)
@@ -529,7 +529,7 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
 
       self.PatchObject(lab_xfer, '_EnsureDeviceDirectory')
       self.PatchObject(lab_xfer, '_GetCurlCmdForPayloadDownload')
-      self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand')
+      self.PatchObject(remote_access.ChromiumOSDevice, 'run')
       self.PatchObject(remote_access.ChromiumOSDevice, 'CopyToWorkDir')
 
       CrOS_LabTransfer._TransferRootfsUpdate()
@@ -541,7 +541,7 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
   def testTransferRootfsRunCmdCalls(self):
     """Test method calls of LabTransfer._TransferRootfsUpdate().
 
-    Test whether remote_access.ChromiumOSDevice.RunCommand() is being called
+    Test whether remote_access.ChromiumOSDevice.run() is being called
     the correct number of times with the correct arguments.
     """
     with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
@@ -554,18 +554,18 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
                    'http://0.0.0.0:8000/static/test_update.gz']]
 
       self.PatchObject(lab_xfer, '_EnsureDeviceDirectory')
-      self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand')
+      self.PatchObject(remote_access.ChromiumOSDevice, 'run')
       self.PatchObject(remote_access.ChromiumOSDevice, 'CopyToWorkDir')
 
       CrOS_LabTransfer._TransferRootfsUpdate()
       self.assertListEqual(
-          remote_access.ChromiumOSDevice.RunCommand.call_args_list,
+          remote_access.ChromiumOSDevice.run.call_args_list,
           [mock.call(x) for x in expected])
 
   def testTransferRootfsRunCmdLocalPayloadProps(self):
     """Test method calls of LabTransfer._TransferRootfsUpdate().
 
-    Test whether remote_access.ChromiumOSDevice.RunCommand() is being called
+    Test whether remote_access.ChromiumOSDevice.run() is being called
     the correct number of times with the correct arguments when
     LabTransfer.LocalPayloadPropsFile is set to a valid local filepath.
     """
@@ -584,12 +584,12 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
            'http://0.0.0.0:8000/static/test_update.gz']]
 
       self.PatchObject(lab_xfer, '_EnsureDeviceDirectory')
-      self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand')
+      self.PatchObject(remote_access.ChromiumOSDevice, 'run')
       self.PatchObject(remote_access.ChromiumOSDevice, 'CopyToWorkDir')
 
       CrOS_LabTransfer._TransferRootfsUpdate()
       self.assertListEqual(
-          remote_access.ChromiumOSDevice.RunCommand.call_args_list,
+          remote_access.ChromiumOSDevice.run.call_args_list,
           [mock.call(x) for x in expected])
 
   def testTransferRootfsEnsureDirCalls(self):
@@ -606,7 +606,7 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
       expected = [CrOS_LabTransfer._device_payload_dir]
 
       self.PatchObject(lab_xfer, '_EnsureDeviceDirectory')
-      self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand')
+      self.PatchObject(remote_access.ChromiumOSDevice, 'run')
       self.PatchObject(remote_access.ChromiumOSDevice, 'CopyToWorkDir')
 
       CrOS_LabTransfer._TransferRootfsUpdate()
@@ -635,7 +635,7 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
                    'log_output': True, 'test': 'test'}]
 
       self.PatchObject(lab_xfer, '_EnsureDeviceDirectory')
-      self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand')
+      self.PatchObject(remote_access.ChromiumOSDevice, 'run')
       self.PatchObject(remote_access.ChromiumOSDevice, 'CopyToWorkDir')
 
       CrOS_LabTransfer._TransferRootfsUpdate()

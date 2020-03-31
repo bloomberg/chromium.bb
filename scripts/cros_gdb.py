@@ -395,7 +395,7 @@ To install the debug symbols for all available packages, run:
         '-e', '/proc/%s/exe' % self.pid,
     ]
     try:
-      res = device.RunCommand(command, capture_output=True)
+      res = device.run(command, capture_output=True)
       if res.returncode == 0:
         self.inf_cmd = res.output.rstrip('\n')
     except cros_build_lib.RunCommandError:

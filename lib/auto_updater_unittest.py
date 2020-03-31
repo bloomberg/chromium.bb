@@ -773,7 +773,7 @@ class ChromiumOSUpdaterRunErrorTest(ChromiumOSErrorTest):
       self.prepareRootfsUpdate()
       self.PatchObject(nebraska_wrapper.RemoteNebraskaWrapper, 'Start')
       self.PatchObject(nebraska_wrapper.RemoteNebraskaWrapper, 'GetURL')
-      self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand',
+      self.PatchObject(remote_access.ChromiumOSDevice, 'run',
                        side_effect=cros_build_lib.RunCommandError('fail'))
       self.PatchObject(auto_updater.ChromiumOSUpdater,
                        'RevertBootPartition')
@@ -796,7 +796,7 @@ class ChromiumOSUpdaterRunErrorTest(ChromiumOSErrorTest):
       self.prepareRootfsUpdate()
       self.PatchObject(nebraska_wrapper.RemoteNebraskaWrapper, 'Start')
       self.PatchObject(nebraska_wrapper.RemoteNebraskaWrapper, 'GetURL')
-      self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand')
+      self.PatchObject(remote_access.ChromiumOSDevice, 'run')
       self.PatchObject(auto_updater.ChromiumOSUpdater, 'GetUpdateStatus',
                        side_effect=ValueError('Cannot get update status'))
       self.PatchObject(auto_updater.ChromiumOSUpdater,
@@ -818,7 +818,7 @@ class ChromiumOSUpdaterRunErrorTest(ChromiumOSErrorTest):
       self.prepareRootfsUpdate()
       self.PatchObject(nebraska_wrapper.RemoteNebraskaWrapper, 'Start')
       self.PatchObject(nebraska_wrapper.RemoteNebraskaWrapper, 'GetURL')
-      mock_run = self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand')
+      mock_run = self.PatchObject(remote_access.ChromiumOSDevice, 'run')
       self.PatchObject(auto_updater.ChromiumOSUpdater, 'GetUpdateStatus',
                        side_effect=(
                            ('UPDATE_STATUS_DOWNLOADING', '0.5'),
@@ -845,7 +845,7 @@ class ChromiumOSUpdaterRunErrorTest(ChromiumOSErrorTest):
       CrOS_AU = auto_updater.ChromiumOSUpdater(
           device, None, self._payload_dir, do_rootfs_update=False,
           transfer_class=auto_updater_transfer.LocalTransfer)
-      self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand',
+      self.PatchObject(remote_access.ChromiumOSDevice, 'run',
                        side_effect=cros_build_lib.RunCommandError('fail'))
       self.PatchObject(stateful_updater.StatefulUpdater, 'Update',
                        side_effect=stateful_updater.Error())
@@ -860,7 +860,7 @@ class ChromiumOSUpdaterRunErrorTest(ChromiumOSErrorTest):
       CrOS_AU = auto_updater.ChromiumOSUpdater(
           device, None, self._payload_dir, do_stateful_update=False,
           transfer_class=auto_updater_transfer.LocalTransfer)
-      self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand')
+      self.PatchObject(remote_access.ChromiumOSDevice, 'run')
       self.PatchObject(auto_updater.ChromiumOSUpdater, 'SetupRootfsUpdate')
       self.PatchObject(auto_updater.ChromiumOSUpdater, 'UpdateRootfs')
       self.PatchObject(auto_updater.ChromiumOSUpdater, 'GetRootDev',
@@ -878,7 +878,7 @@ class ChromiumOSUpdaterRunErrorTest(ChromiumOSErrorTest):
           transfer_class=auto_updater_transfer.LocalTransfer)
       self.PatchObject(auto_updater.ChromiumOSUpdater, 'SetupRootfsUpdate')
       self.PatchObject(auto_updater.ChromiumOSUpdater, 'UpdateRootfs')
-      self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand')
+      self.PatchObject(remote_access.ChromiumOSDevice, 'run')
       self.PatchObject(auto_updater.ChromiumOSUpdater, 'GetRootDev',
                        return_value=None)
       self.PatchObject(auto_updater.ChromiumOSUpdater,
@@ -896,7 +896,7 @@ class ChromiumOSUpdaterRunErrorTest(ChromiumOSErrorTest):
       CrOS_AU = auto_updater.ChromiumOSUpdater(
           device, None, self._payload_dir, do_rootfs_update=False,
           transfer_class=auto_updater_transfer.LocalTransfer)
-      self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand')
+      self.PatchObject(remote_access.ChromiumOSDevice, 'run')
       self.PatchObject(auto_updater.ChromiumOSUpdater, 'GetRootDev',
                        return_value=None)
       self.PatchObject(stateful_updater.StatefulUpdater, 'Update')

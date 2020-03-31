@@ -184,7 +184,7 @@ class Transfer(six.with_metaclass(abc.ABCMeta, object)):
     Args:
       directory: The directory to be made on the device.
     """
-    self._device.RunCommand(['mkdir', '-p', directory], **self._cmd_kwargs)
+    self._device.run(['mkdir', '-p', directory], **self._cmd_kwargs)
 
   @abc.abstractmethod
   def GetPayloadPropsFile(self):
@@ -471,7 +471,7 @@ class LabTransfer(Transfer):
     source_dir = os.path.join(self._device.work_dir, 'src')
     self._EnsureDeviceDirectory(source_dir)
 
-    self._device.RunCommand(self._GetCurlCmdForPayloadDownload(
+    self._device.run(self._GetCurlCmdForPayloadDownload(
         payload_dir=source_dir,
         payload_filename=nebraska_wrapper.NEBRASKA_FILENAME))
 
@@ -494,13 +494,13 @@ class LabTransfer(Transfer):
     if self._original_payload_dir:
       logging.info('Copying original stateful payload to device...')
       self._EnsureDeviceDirectory(self._device_restore_dir)
-      self._device.RunCommand(self._GetCurlCmdForPayloadDownload(
+      self._device.run(self._GetCurlCmdForPayloadDownload(
           payload_dir=self._device_restore_dir,
           build_id=self._original_payload_dir,
           payload_filename=STATEFUL_FILENAME))
 
     logging.info('Copying target stateful payload to device...')
-    self._device.RunCommand(self._GetCurlCmdForPayloadDownload(
+    self._device.run(self._GetCurlCmdForPayloadDownload(
         payload_dir=self._device.work_dir, build_id=self._payload_dir,
         payload_filename=STATEFUL_FILENAME))
 
@@ -519,7 +519,7 @@ class LabTransfer(Transfer):
     # will avoid a disk copy but has the potential to be harder to debug if
     # update engine does not report the error clearly.
 
-    self._device.RunCommand(self._GetCurlCmdForPayloadDownload(
+    self._device.run(self._GetCurlCmdForPayloadDownload(
         payload_dir=self._device_payload_dir, build_id=self._payload_dir,
         payload_filename=self._payload_name))
 

@@ -775,7 +775,7 @@ def _Emerge(device, pkg_path, root, extra_args=None):
   # Clean out the dirs first if we had a previous emerge on the device so as to
   # free up space for this emerge.  The last emerge gets implicitly cleaned up
   # when the device connection deletes its work_dir.
-  device.RunCommand(
+  device.run(
       ['rm', '-rf', pkg_dir, portage_tmpdir, '&&',
        'mkdir', '-p', pkg_dir, portage_tmpdir], remote_sudo=True)
 
@@ -816,8 +816,8 @@ def _Emerge(device, pkg_path, root, extra_args=None):
                   'load the new .so. This is expected, and you will just need '
                   'to build and flash a new image if you have problems.')
   try:
-    result = device.RunCommand(cmd, extra_env=extra_env, remote_sudo=True,
-                               capture_output=True, debug_level=logging.INFO)
+    result = device.run(cmd, extra_env=extra_env, remote_sudo=True,
+                        capture_output=True, debug_level=logging.INFO)
 
     pattern = ('A requested package will not be merged because '
                'it is listed in package.provided')
@@ -850,18 +850,18 @@ def _RestoreSELinuxContext(device, pkgpath, root):
   """
   enforced = device.IsSELinuxEnforced()
   if enforced:
-    device.RunCommand(['setenforce', '0'])
+    device.run(['setenforce', '0'])
   pkgroot = os.path.join(device.work_dir, 'packages')
   pkg_dirname = os.path.basename(os.path.dirname(pkgpath))
   pkgpath_device = os.path.join(pkgroot, pkg_dirname, os.path.basename(pkgpath))
   # Testing shows restorecon splits on newlines instead of spaces.
-  device.RunCommand(
+  device.run(
       ['cd', root, '&&',
        'tar', 'tf', pkgpath_device, '|',
        'restorecon', '-i', '-f', '-'],
       remote_sudo=True)
   if enforced:
-    device.RunCommand(['setenforce', '1'])
+    device.run(['setenforce', '1'])
 
 
 def _GetPackagesByCPV(cpvs, strip, sysroot):
@@ -930,15 +930,14 @@ def _Unmerge(device, pkg, root):
   logging.notice('Unmerging %s.', pkg_name)
   cmd = ['qmerge', '--yes']
   # Check if qmerge is available on the device. If not, use emerge.
-  if device.RunCommand(
-      ['qmerge', '--version'], check=False).returncode != 0:
+  if device.run(['qmerge', '--version'], check=False).returncode != 0:
     cmd = ['emerge']
 
   cmd.extend(['--unmerge', pkg, '--root=%s' % root])
   try:
     # Always showing the emerge output for clarity.
-    device.RunCommand(cmd, capture_output=False, remote_sudo=True,
-                      debug_level=logging.INFO)
+    device.run(cmd, capture_output=False, remote_sudo=True,
+               debug_level=logging.INFO)
   except Exception:
     logging.error('Failed to unmerge package %s', pkg_name)
     raise
@@ -975,7 +974,7 @@ def _EmergePackages(pkgs, device, strip, sysroot, root, emerge_args):
   # Restart dlcservice so it picks up the newly installed DLC modules (in case
   # we installed new DLC images).
   if dlc_deployed:
-    device.RunCommand(['restart', 'dlcservice'])
+    device.run(['restart', 'dlcservice'])
 
 
 def _UnmergePackages(pkgs, device, root, pkgs_attrs):
@@ -989,7 +988,7 @@ def _UnmergePackages(pkgs, device, root, pkgs_attrs):
   # Restart dlcservice so it picks up the uninstalled DLC modules (in case we
   # uninstalled DLC images).
   if dlc_uninstalled:
-    device.RunCommand(['restart', 'dlcservice'])
+    device.run(['restart', 'dlcservice'])
 
 
 def _UninstallDLCImage(device, pkg_attrs):
@@ -998,8 +997,8 @@ def _UninstallDLCImage(device, pkg_attrs):
     dlc_id = pkg_attrs[_DLC_ID]
     logging.notice('Uninstalling DLC image for %s', dlc_id)
 
-    device.RunCommand(['sudo', '-u', 'chronos', 'dlcservice_util',
-                       '--uninstall', '--dlc_ids=%s' % dlc_id])
+    device.run(['sudo', '-u', 'chronos', 'dlcservice_util', '--uninstall',
+                '--dlc_ids=%s' % dlc_id])
     return True
   else:
     logging.debug('DLC_ID not found in package')
@@ -1071,13 +1070,12 @@ def _GetDLCInfo(device, pkg_path, from_dut):
   if from_dut:
     # On DUT, |pkg_path| is the directory which contains environment file.
     environment_path = os.path.join(pkg_path, _ENVIRONMENT_FILENAME)
-    result = device.RunCommand(['test', '-f', environment_path],
-                               check=False, encoding=None)
+    result = device.run(['test', '-f', environment_path],
+                        check=False, encoding=None)
     if result.returncode == 1:
       # The package is not installed on DUT yet. Skip extracting info.
       return None, None
-    result = device.RunCommand(['bzip2', '-d', '-c', environment_path],
-                               encoding=None)
+    result = device.run(['bzip2', '-d', '-c', environment_path], encoding=None)
     environment_content = result.output
   else:
     # On host, pkg_path is tbz2 file which contains environment file.
