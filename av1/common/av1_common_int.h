@@ -652,19 +652,38 @@ typedef struct AV1Common {
   // MACROBLOCKD struct, as they have a fixed size.
   CommonContexts above_contexts;
 
+  // When cm->seq_params.frame_id_numbers_present_flag == 1, current and
+  // reference frame IDs are signaled in the bitstream.
   int current_frame_id;
   int ref_frame_id[REF_FRAMES];
-  TPL_MV_REF *tpl_mvs;
-  int tpl_mvs_mem_size;
 
-  int ref_frame_sign_bias[REF_FRAMES]; /* Two state 0, 1 */
+  // Motion vectors provided by motion field estimation.
+  // tpl_mvs[row * stride + col] stores MV for block at [mi_row, mi_col] where:
+  // mi_row = 2 * row,
+  // mi_col = 2 * col, and
+  // stride = cm->mi_params.mi_stride / 2
+  TPL_MV_REF *tpl_mvs;
+  // Allocated size of 'tpl_mvs' array. Refer to 'ensure_mv_buffer()' function.
+  int tpl_mvs_mem_size;
+  // ref_frame_sign_bias[k] is 1 if relative distance between reference 'k' and
+  // current frame is positive; and 0 otherwise.
+  int ref_frame_sign_bias[REF_FRAMES];
+  // ref_frame_side[k] is 1 if relative distance between reference 'k' and
+  // current frame is positive, -1 if relative distance is 0; and 0 otherwise.
   // TODO(jingning): This can be combined with sign_bias later.
   int8_t ref_frame_side[REF_FRAMES];
 
-  int temporal_layer_id;
-  int spatial_layer_id;
+  // Number of temporal layers: may be > 1 for SVC (scalable vector coding).
   unsigned int number_temporal_layers;
+  // Temporal layer ID of this frame
+  // (in the range 0 ... (number_temporal_layers - 1)).
+  int temporal_layer_id;
+
+  // Number of spatial layers: may be > 1 for SVC (scalable vector coding).
   unsigned int number_spatial_layers;
+  // Spatial layer ID of this frame
+  // (in the range 0 ... (number_spatial_layers - 1)).
+  int spatial_layer_id;
 
 #if TXCOEFF_TIMER
   int64_t cum_txcoeff_timer;
