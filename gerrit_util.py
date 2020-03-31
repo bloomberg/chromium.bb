@@ -366,7 +366,13 @@ def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
   headers = headers or {}
   bare_host = host.partition(':')[0]
 
-  a = Authenticator.get().get_auth_header(bare_host)
+  a = Authenticator.get()
+  # TODO(crbug.com/1059384): Automatically detect when running on cloudtop.
+  if isinstance(a, GceAuthenticator):
+    print('If you\'re on a cloudtop instance, export '
+          'SKIP_GCE_AUTH_FOR_GIT=1 in your env.')
+
+  a = a.get_auth_header(bare_host)
   if a:
     headers.setdefault('Authorization', a)
   else:
@@ -467,10 +473,6 @@ def ReadHttpResponse(conn, accept_statuses=frozenset([200])):
       host = auth_match.group(1) if auth_match else conn.req_host
       print('Authentication failed. Please make sure your .gitcookies '
             'file has credentials for %s.' % host)
-    # TODO(crbug.com/1059384): Automatically detect when running on cloudtop.
-    if isinstance(Authenticator.get(), GceAuthenticator):
-      print('If you\'re on a cloudtop instance, export '
-            'SKIP_GCE_AUTH_FOR_GIT=1 in your env.')
     print('Try:\n  git cl creds-check')
 
   reason = '%s: %s' % (response.reason, contents)
