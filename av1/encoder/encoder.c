@@ -2838,7 +2838,6 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
     rc->baseline_gf_interval = (MIN_GF_INTERVAL + MAX_GF_INTERVAL) / 2;
   }
 
-  cpi->refresh_last_frame = 1;
   cpi->refresh_golden_frame = 0;
   cpi->refresh_bwd_ref_frame = 0;
 
@@ -6515,7 +6514,6 @@ int av1_encode(AV1_COMP *const cpi, uint8_t *const dest,
   memcpy(cm->remapped_ref_idx, frame_params->remapped_ref_idx,
          REF_FRAMES * sizeof(*cm->remapped_ref_idx));
 
-  cpi->refresh_last_frame = frame_params->refresh_last_frame;
   cpi->refresh_golden_frame = frame_params->refresh_golden_frame;
   cpi->refresh_bwd_ref_frame = frame_params->refresh_bwd_ref_frame;
   cpi->refresh_alt_ref_frame = frame_params->refresh_alt_ref_frame;

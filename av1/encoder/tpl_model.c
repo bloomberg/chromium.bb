@@ -979,7 +979,6 @@ int av1_tpl_setup_stats(AV1_COMP *cpi, int gop_eval,
     av1_configure_buffer_updates(cpi, &this_frame_params,
                                  gf_group->update_type[gf_index], 0);
 
-    cpi->refresh_last_frame = this_frame_params.refresh_last_frame;
     cpi->refresh_golden_frame = this_frame_params.refresh_golden_frame;
     cpi->refresh_bwd_ref_frame = this_frame_params.refresh_bwd_ref_frame;
     cpi->refresh_alt_ref_frame = this_frame_params.refresh_alt_ref_frame;

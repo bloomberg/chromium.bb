@@ -872,14 +872,8 @@ typedef struct AV1_COMP {
   // after the current frame is encoded, the XYZ reference frame gets refreshed
   // (updated) to be the current frame.
   //
-  // Special case: 'refresh_last_frame' specifies that:
-  // - LAST_FRAME reference should be updated to be the current frame (as usual)
-  // - Also, LAST2_FRAME and LAST3_FRAME references are implicitly updated to be
-  // the two past reference frames just before LAST_FRAME that are available.
-  //
   // Note: Usually at most one of these refresh flags is true at a time.
   // But a key-frame is special, for which all the flags are true at once.
-  int refresh_last_frame;
   int refresh_golden_frame;
   int refresh_bwd_ref_frame;
   int refresh_alt_ref_frame;
@@ -1223,7 +1217,6 @@ struct EncodeFrameParams {
   int remapped_ref_idx[REF_FRAMES];
 
   // Flags which determine which reference buffers are refreshed by this frame
-  int refresh_last_frame;
   int refresh_golden_frame;
   int refresh_bwd_ref_frame;
   int refresh_alt_ref_frame;

@@ -47,28 +47,24 @@ void av1_configure_buffer_updates(AV1_COMP *const cpi,
 
   switch (type) {
     case KF_UPDATE:
-      frame_params->refresh_last_frame = 1;
       frame_params->refresh_golden_frame = 1;
       frame_params->refresh_bwd_ref_frame = 1;
       frame_params->refresh_alt_ref_frame = 1;
       break;
 
     case LF_UPDATE:
-      frame_params->refresh_last_frame = 1;
       frame_params->refresh_golden_frame = 0;
       frame_params->refresh_bwd_ref_frame = 0;
       frame_params->refresh_alt_ref_frame = 0;
       break;
 
     case GF_UPDATE:
-      frame_params->refresh_last_frame = 0;
       frame_params->refresh_golden_frame = 1;
       frame_params->refresh_bwd_ref_frame = 0;
       frame_params->refresh_alt_ref_frame = 0;
       break;
 
     case OVERLAY_UPDATE:
-      frame_params->refresh_last_frame = 0;
       frame_params->refresh_golden_frame = 1;
       frame_params->refresh_bwd_ref_frame = 0;
       frame_params->refresh_alt_ref_frame = 0;
@@ -77,7 +73,6 @@ void av1_configure_buffer_updates(AV1_COMP *const cpi,
       break;
 
     case ARF_UPDATE:
-      frame_params->refresh_last_frame = 0;
       frame_params->refresh_golden_frame = 0;
       // NOTE: BWDREF does not get updated along with ALTREF_FRAME.
       frame_params->refresh_bwd_ref_frame = 0;
@@ -85,7 +80,6 @@ void av1_configure_buffer_updates(AV1_COMP *const cpi,
       break;
 
     case INTNL_OVERLAY_UPDATE:
-      frame_params->refresh_last_frame = 1;
       frame_params->refresh_golden_frame = 0;
       frame_params->refresh_bwd_ref_frame = 0;
       frame_params->refresh_alt_ref_frame = 0;
@@ -94,7 +88,6 @@ void av1_configure_buffer_updates(AV1_COMP *const cpi,
       break;
 
     case INTNL_ARF_UPDATE:
-      frame_params->refresh_last_frame = 0;
       frame_params->refresh_golden_frame = 0;
       frame_params->refresh_bwd_ref_frame = 1;
       frame_params->refresh_alt_ref_frame = 0;
@@ -105,14 +98,12 @@ void av1_configure_buffer_updates(AV1_COMP *const cpi,
 
   if (cpi->ext_refresh_frame_flags_pending &&
       (!is_stat_generation_stage(cpi))) {
-    frame_params->refresh_last_frame = cpi->ext_refresh_last_frame;
     frame_params->refresh_golden_frame = cpi->ext_refresh_golden_frame;
     frame_params->refresh_alt_ref_frame = cpi->ext_refresh_alt_ref_frame;
     frame_params->refresh_bwd_ref_frame = cpi->ext_refresh_bwd_ref_frame;
   }
 
   if (force_refresh_all) {
-    frame_params->refresh_last_frame = 1;
     frame_params->refresh_golden_frame = 1;
     frame_params->refresh_bwd_ref_frame = 1;
     frame_params->refresh_alt_ref_frame = 1;
