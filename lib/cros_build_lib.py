@@ -1250,12 +1250,26 @@ def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
   # If tar fails with status 1, retry twice. Once after timeout seconds and
   # again 2*timeout seconds after that.
   for try_count in range(3):
-    result = rc_func(cmd, cwd=cwd, **dict(kwargs, check=False, input=rc_input))
+    try:
+      result = rc_func(cmd, cwd=cwd, **dict(kwargs, check=False,
+                                            input=rc_input))
+    except RunCommandError as rce:
+      # There are cases where run never executes the command (cannot find tar,
+      # cannot execute tar, such as when cwd does not exist). Although the run
+      # command will show low-level problems, we also want to log the context
+      # of what CreateTarball was trying to do.
+      logging.error('CreateTarball unable to run tar for %s in %s. cmd={%s}',
+                    target, cwd, cmd)
+      raise rce
     if result.returncode == 0:
       return result
     if result.returncode != 1 or try_count > 1:
       # Since the build is abandoned at this point, we will take 5
       # entire minutes to track down the competing process.
+      # Error will have the low-level tar command error, so log the context
+      # of the tar command (target file, current working dir).
+      logging.error('CreateTarball failed creating %s in %s. cmd={%s}',
+                    target, cwd, cmd)
       raise CreateTarballError('CreateTarball', result)
 
     assert result.returncode == 1

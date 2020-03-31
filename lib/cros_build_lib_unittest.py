@@ -1202,10 +1202,52 @@ class CreateTarballTests(cros_test_lib.TempDirTestCase):
     cros_build_lib.CreateTarball(self.target, largeInputDir, inputs=inputs)
 
 
-# Tests for tar failure retry logic.
+# Tests for tar exceptions.
+class FailedCreateTarballExceptionTests(cros_test_lib.TempDirTestCase,
+                                        cros_test_lib.LoggingTestCase):
+  """Tests exception handling for CreateTarball."""
 
+  def setUp(self):
+    self.inputDir = os.path.join(self.tempdir, 'BadInputDirectory')
+
+  def testSuccess(self):
+    """Verify tarball creation when cwd and target dir exist."""
+    target_dir = os.path.join(self.tempdir, 'target_dir')
+    target_file = os.path.join(target_dir, 'stuff.tar')
+    osutils.SafeMakedirs(target_dir)
+    working_dir = os.path.join(self.tempdir, 'working_dir')
+    osutils.SafeMakedirs(working_dir)
+    osutils.WriteFile(os.path.join(working_dir, 'file1.txt'), 'file1')
+    osutils.WriteFile(os.path.join(working_dir, 'file2.txt'), 'file2')
+    cros_build_lib.CreateTarball(target_file, working_dir)
+    target_contents = os.listdir(target_dir)
+    self.assertEqual(target_contents, ['stuff.tar'])
+
+  def testFailureBadTarget(self):
+    """Verify expected error when target does not exist."""
+    target_dir = os.path.join(self.tempdir, 'target_dir')
+    target_file = os.path.join(target_dir, 'stuff.tar')
+    working_dir = os.path.join(self.tempdir, 'working_dir')
+    osutils.SafeMakedirs(working_dir)
+    with cros_test_lib.LoggingCapturer() as logs:
+      with self.assertRaises(cros_build_lib.CreateTarballError):
+        cros_build_lib.CreateTarball(target_file, working_dir)
+      self.AssertLogsContain(logs, 'CreateTarball failed creating')
+
+  def testFailureBadWorkingDir(self):
+    """Verify expected error when cwd does not exist."""
+    target_dir = os.path.join(self.tempdir, 'target_dir')
+    osutils.SafeMakedirs(target_dir)
+    target_file = os.path.join(target_dir, 'stuff.tar')
+    working_dir = os.path.join(self.tempdir, 'working_dir')
+    with cros_test_lib.LoggingCapturer() as logs:
+      with self.assertRaises(cros_build_lib.RunCommandError):
+        cros_build_lib.CreateTarball(target_file, working_dir)
+      self.AssertLogsContain(logs, 'CreateTarball unable to run tar for')
+
+# Tests for tar failure retry logic.
 class FailedCreateTarballTests(cros_test_lib.MockTestCase):
-  """Tests special case error handling for CreateTarBall."""
+  """Tests special case error handling for CreateTarball."""
 
   def setUp(self):
     """Mock run mock."""
