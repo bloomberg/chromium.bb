@@ -25,6 +25,7 @@ from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import partial_mock
+from chromite.lib import sudo
 from chromite.lib.buildstore import FakeBuildStore
 from chromite.scripts import cbuildbot
 
@@ -383,6 +384,7 @@ class FullInterfaceTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(cgroups.Cgroup, 'IsSupported',
                      return_value=True)
     self.PatchObject(cgroups, 'SimpleContainChildren')
+    self.PatchObject(sudo.SudoKeepAlive, '_IdentifyTTY', return_value='unknown')
 
   def assertMain(self, args, common_options=True):
     if common_options:
