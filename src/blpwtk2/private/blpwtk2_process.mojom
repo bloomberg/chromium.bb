@@ -126,6 +126,10 @@ interface ProcessHost {
 
 
     // patch section: renderer ui
+    registerNativeViewForComposition(uint32 view);
+    unregisterNativeViewForComposition(uint32 view);
+        // These two functions allow a renderer-owned native view to
+        // host compositor output.
 
 
 
