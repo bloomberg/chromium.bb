@@ -2140,8 +2140,8 @@ static AOM_INLINE void get_block_level_tpl_stats(
        row += step) {
     for (int col = mi_col_sr; col < AOMMIN(mi_col_end_sr, mi_cols_sr);
          col += step) {
-      const TplDepStats *this_stats =
-          &tpl_stats[av1_tpl_ptr_pos(cpi, row, col, tpl_stride)];
+      const TplDepStats *this_stats = &tpl_stats[av1_tpl_ptr_pos(
+          row, col, tpl_stride, tpl_data->tpl_stats_block_mis_log2)];
 
       // Sums up the inter cost of corresponding ref frames
       for (int ref_idx = 0; ref_idx < INTER_REFS_PER_FRAME; ref_idx++) {

@@ -2677,12 +2677,12 @@ static void realloc_segmentation_maps(AV1_COMP *cpi) {
                   aom_calloc(mi_params->mi_rows * mi_params->mi_cols, 1));
 }
 
-static AOM_INLINE void set_tpl_stats_block_size(
-    int width, int height, uint8_t *tpl_stats_block_mis_log2) {
+static AOM_INLINE void set_tpl_stats_block_size(int width, int height,
+                                                uint8_t *block_mis_log2) {
   const int is_720p_or_larger = AOMMIN(width, height) >= 720;
 
   // 0: 4x4, 1: 8x8, 2: 16x16
-  *tpl_stats_block_mis_log2 = is_720p_or_larger ? 2 : 1;
+  *block_mis_log2 = is_720p_or_larger ? 2 : 1;
 }
 
 void av1_alloc_compound_type_rd_buffers(AV1_COMMON *const cm,
@@ -2953,9 +2953,10 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
 static INLINE void setup_tpl_buffers(AV1_COMMON *const cm,
                                      TplParams *const tpl_data) {
   CommonModeInfoParams *const mi_params = &cm->mi_params;
-
   set_tpl_stats_block_size(cm->width, cm->height,
                            &tpl_data->tpl_stats_block_mis_log2);
+  const uint8_t block_mis_log2 = tpl_data->tpl_stats_block_mis_log2;
+
   for (int frame = 0; frame < MAX_LENGTH_TPL_FRAME_STATS; ++frame) {
     const int mi_cols =
         ALIGN_POWER_OF_TWO(mi_params->mi_cols, MAX_MIB_SIZE_LOG2);
@@ -2963,10 +2964,8 @@ static INLINE void setup_tpl_buffers(AV1_COMMON *const cm,
         ALIGN_POWER_OF_TWO(mi_params->mi_rows, MAX_MIB_SIZE_LOG2);
 
     tpl_data->tpl_stats_buffer[frame].is_valid = 0;
-    tpl_data->tpl_stats_buffer[frame].width =
-        mi_cols >> tpl_data->tpl_stats_block_mis_log2;
-    tpl_data->tpl_stats_buffer[frame].height =
-        mi_rows >> tpl_data->tpl_stats_block_mis_log2;
+    tpl_data->tpl_stats_buffer[frame].width = mi_cols >> block_mis_log2;
+    tpl_data->tpl_stats_buffer[frame].height = mi_rows >> block_mis_log2;
     tpl_data->tpl_stats_buffer[frame].stride =
         tpl_data->tpl_stats_buffer[frame].width;
     tpl_data->tpl_stats_buffer[frame].mi_rows = mi_params->mi_rows;
@@ -4122,8 +4121,8 @@ static void process_tpl_stats_frame(AV1_COMP *cpi) {
 
     for (int row = 0; row < cm->mi_params.mi_rows; row += step) {
       for (int col = 0; col < mi_cols_sr; col += step) {
-        TplDepStats *this_stats =
-            &tpl_stats[av1_tpl_ptr_pos(cpi, row, col, tpl_stride)];
+        TplDepStats *this_stats = &tpl_stats[av1_tpl_ptr_pos(
+            row, col, tpl_stride, tpl_data->tpl_stats_block_mis_log2)];
         int64_t mc_dep_delta =
             RDCOST(tpl_frame->base_rdmult, this_stats->mc_dep_rate,
                    this_stats->mc_dep_dist);
