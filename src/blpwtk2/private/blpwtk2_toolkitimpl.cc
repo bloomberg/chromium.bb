@@ -667,6 +667,7 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
         d_isolateHolder->isolate()->Enter();
     }
 
+    ui::InitializeInputMethod();
     setDefaultLocaleIfWindowsLocaleIsNotSupported();
 }
 
