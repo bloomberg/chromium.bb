@@ -5675,10 +5675,11 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
     av1_generate_block_2x2_hash_value(cpi->source, block_hash_values[0],
                                       is_block_same[0], &cpi->td.mb);
     // Hash data generated for screen contents is used for intraBC ME
-    // TODO(any): Adjust max_size based on superblock size for intra frames
     const int min_alloc_size = block_size_wide[mi_params->mi_alloc_bsize];
+    const int max_sb_size =
+        (1 << (cm->seq_params.mib_size_log2 + MI_SIZE_LOG2));
     int src_idx = 0;
-    for (int size = 4; size <= 128; size *= 2, src_idx = !src_idx) {
+    for (int size = 4; size <= max_sb_size; size *= 2, src_idx = !src_idx) {
       const int dst_idx = !src_idx;
       av1_generate_block_hash_value(
           cpi->source, size, block_hash_values[src_idx],
