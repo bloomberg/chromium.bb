@@ -134,7 +134,7 @@ def generate_commit_message(
     if len(cleaned_lines) > log_limit:
       # Keep the first N/2 log entries and last N/2 entries.
       lines = logs.splitlines(True)
-      lines = lines[:log_limit/2] + ['(...)\n'] + lines[-log_limit/2:]
+      lines = lines[:log_limit//2] + ['(...)\n'] + lines[-log_limit//2:]
       logs = ''.join(lines)
     log_section += logs
   return header + log_section

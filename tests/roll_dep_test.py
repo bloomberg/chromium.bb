@@ -146,6 +146,38 @@ class RollDepTest(fake_repos.FakeReposTestBase):
     self.assertIn(expected_message, stdout)
     self.assertIn(expected_message, commit_message)
 
+  def testRollsDepLogLimit(self):
+    if not self.enabled:
+      return
+    stdout, stderr, returncode = self.call(
+        [ROLL_DEP, 'src/foo', '--log-limit', '1'])
+    expected_revision = self.githash('repo_2', 3)
+
+    self.assertEqual(stderr, '')
+    self.assertEqual(returncode, 0)
+
+    with open(os.path.join(self.src_dir, 'DEPS')) as f:
+      contents = f.read()
+
+    self.assertEqual(self.gitrevparse(self.foo_dir), expected_revision)
+    self.assertEqual([
+        'deps = {',
+        ' "src/foo": "file:///' + self.git_base.replace('\\', '\\\\') +
+        'repo_2@' + expected_revision + '",',
+        '}',
+        'hooks = [',
+        '  {"action": ["foo", "--android", "{checkout_android}"]}',
+        ']',
+    ], contents.splitlines())
+
+    commit_message = self.call(['git', 'log', '-n', '1'])[0]
+
+    expected_message = 'Roll src/foo/ %s..%s (2 commits)' % (
+        self.githash('repo_2', 1)[:9], self.githash('repo_2', 3)[:9])
+
+    self.assertIn(expected_message, stdout)
+    self.assertIn(expected_message, commit_message)
+
 
 if __name__ == '__main__':
   level = logging.DEBUG if '-v' in sys.argv else logging.FATAL
