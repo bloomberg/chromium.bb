@@ -22,6 +22,7 @@ source_set("util") {
     "crypto/secure_hash.h",
     "crypto/sha2.cc",
     "crypto/sha2.h",
+    "hashing.h",
     "integer_division.h",
     "json/json_serialization.cc",
     "json/json_serialization.h",
