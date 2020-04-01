@@ -96,7 +96,7 @@ extract it somewhere.
 extract the hidden ``.git'' folder which is necessary for 'depot_tools' to
 autoupdate itself. You can use ``Extract all...'' from the context menu though.
 
-Add 'depot_tools' to the 'start' of your PATH (must be ahead of any installs of
+Add 'depot_tools' to the 'front' of your PATH (must be ahead of any installs of
 Python). Assuming you unzipped the bundle to `C:\workspace\depot_tools`:
 
 With Administrator access: ::
