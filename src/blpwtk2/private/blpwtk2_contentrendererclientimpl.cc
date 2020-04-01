@@ -191,6 +191,16 @@ bool ContentRendererClientImpl::OverrideCreatePlugin(
 void ContentRendererClientImpl::ExposeInterfacesToBrowser(mojo::BinderMap* binders)
 {
     // blpwtk2: expose services to browser
+    auto task_runner = base::SequencedTaskRunnerHandle::Get();
+
+    binders->Add(
+        base::BindRepeating(
+            [](SpellCheck* spellcheck,
+                mojo::PendingReceiver<spellcheck::mojom::SpellChecker> receiver) {
+                    spellcheck->BindReceiver(std::move(receiver));
+                },
+                base::Unretained(d_spellcheck.get())),
+        task_runner);
 }
 
 bool ContentRendererClientImpl::Dispatch(IPC::Message *msg)
