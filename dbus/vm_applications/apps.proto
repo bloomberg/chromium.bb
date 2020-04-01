@@ -57,6 +57,11 @@ message App {
 }
 
 message ApplicationList {
+  enum VmType {
+    CROS_VM = 0;
+    PLUGIN_VM = 1;
+  }
+
   repeated App apps = 1;
 
   string vm_name = 2;
@@ -64,6 +69,8 @@ message ApplicationList {
 
   // The owner of the vm and container.
   string owner_id = 4;
+
+  VmType vm_type = 5;
 }
 
 // Used by the container to request that the host launches a new Terminal
