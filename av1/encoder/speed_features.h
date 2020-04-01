@@ -368,8 +368,9 @@ typedef struct PARTITION_SPEED_FEATURES {
   BLOCK_SIZE default_max_partition_size;
 
   // Sets level of adjustmet of variace-based partitioning during
-  // rd_use_partition 0 - no partition adjusment 1 - adjust partition for small
-  // blocks and high QP 2 - always adjust partitioning
+  // rd_use_partition 0 - no partition adjusment, 1 - try to merge partitions
+  // for small blocks and high QP, 2 - always try to merge leaf partitions, 3 -
+  // try to merge and split leaf partitions
   int adjust_var_based_rd_partitioning;
 
   // Partition search early breakout thresholds.

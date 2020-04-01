@@ -763,26 +763,13 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
   if (speed >= 5) {
     sf->hl_sf.recode_loop = ALLOW_RECODE_KFMAXBW;
 
-    sf->part_sf.partition_search_breakout_rate_thr = 300;
-
-    sf->mv_sf.search_method = BIGDIA;
-    sf->mv_sf.subpel_search_method = SUBPEL_TREE_PRUNED_MORE;
-
     sf->inter_sf.adaptive_rd_thresh = 4;
     sf->interp_sf.disable_filter_search_var_thresh = 200;
-
-    sf->intra_sf.intra_y_mode_mask[TX_64X64] = INTRA_DC_H_V;
-    sf->intra_sf.intra_uv_mode_mask[TX_64X64] = UV_INTRA_DC_H_V_CFL;
-    sf->intra_sf.intra_y_mode_mask[TX_32X32] = INTRA_DC_H_V;
-    sf->intra_sf.intra_uv_mode_mask[TX_32X32] = UV_INTRA_DC_H_V_CFL;
-    sf->intra_sf.intra_y_mode_mask[TX_16X16] = INTRA_DC_H_V;
-    sf->intra_sf.intra_uv_mode_mask[TX_16X16] = UV_INTRA_DC_H_V_CFL;
 
     sf->rd_sf.use_fast_coef_costing = 1;
     sf->rd_sf.tx_domain_dist_level = 2;
     sf->rd_sf.tx_domain_dist_thres_level = 2;
-
-    sf->winner_mode_sf.tx_size_search_level = 2;
+    sf->winner_mode_sf.tx_size_search_level = 1;
 
     sf->rt_sf.mode_search_skip_flags =
         (cm->current_frame.frame_type == KEY_FRAME)
@@ -790,9 +777,6 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
             : FLAG_SKIP_INTRA_DIRMISMATCH | FLAG_SKIP_INTRA_BESTINTER |
                   FLAG_SKIP_COMP_BESTINTRA | FLAG_SKIP_INTRA_LOWVAR |
                   FLAG_EARLY_TERMINATE;
-  }
-
-  if (speed >= 6) {
     sf->hl_sf.frame_parameter_update = 0;
 
     sf->part_sf.default_max_partition_size = BLOCK_128X128;
@@ -800,11 +784,12 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->part_sf.max_intra_bsize = BLOCK_32X32;
     sf->part_sf.partition_search_breakout_rate_thr = 500;
     sf->part_sf.partition_search_type = VAR_BASED_PARTITION;
-    sf->part_sf.adjust_var_based_rd_partitioning = 1;
+    sf->part_sf.adjust_var_based_rd_partitioning = 2;
 
     sf->mv_sf.search_method = FAST_DIAMOND;
     sf->mv_sf.subpel_force_stop = QUARTER_PEL;
     sf->mv_sf.use_fullpel_costlist = 1;
+    sf->mv_sf.subpel_search_method = SUBPEL_TREE_PRUNED_MORE;
 
     sf->inter_sf.adaptive_mode_search = 2;
     sf->inter_sf.inter_mode_rd_model_estimation = 2;
@@ -821,8 +806,6 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->rd_sf.optimize_coefficients = NO_TRELLIS_OPT;
     sf->rd_sf.simple_model_rd_from_var = 1;
 
-    sf->winner_mode_sf.tx_size_search_level = 1;
-
     sf->lpf_sf.cdef_pick_method = CDEF_PICK_FROM_Q;
     sf->lpf_sf.lpf_pick = LPF_PICK_FROM_Q;
 
@@ -832,6 +815,10 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->rt_sf.use_comp_ref_nonrd = 0;
     sf->rt_sf.use_real_time_ref_set = 1;
     sf->rt_sf.use_simple_rd_model = 1;
+  }
+
+  if (speed >= 6) {
+    sf->part_sf.adjust_var_based_rd_partitioning = 1;
   }
 
   if (speed >= 7) {
