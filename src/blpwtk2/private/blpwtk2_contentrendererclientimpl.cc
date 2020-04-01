@@ -188,6 +188,11 @@ bool ContentRendererClientImpl::OverrideCreatePlugin(
     return true;
 }
 
+void ContentRendererClientImpl::ExposeInterfacesToBrowser(mojo::BinderMap* binders)
+{
+    // blpwtk2: expose services to browser
+}
+
 bool ContentRendererClientImpl::Dispatch(IPC::Message *msg)
 {
     if (Statics::rendererUIEnabled &&
@@ -211,11 +216,6 @@ bool ContentRendererClientImpl::ShouldBindFrameSinkProvider()
     }
 
     return false;
-}
-
-void ContentRendererClientImpl::ExposeInterfacesToBrowser(mojo::BinderMap* binders)
-{
-    // blpwtk2: expose services to browser
 }
 
 void ContentRendererClientImpl::OnBindInterface(

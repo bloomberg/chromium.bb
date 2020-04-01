@@ -97,15 +97,14 @@ class ContentRendererClientImpl : public content::ContentRendererClient,
         // could be NULL. If it returns false, the content layer will create
         // the plugin.
 
+    blink::ThreadSafeBrowserInterfaceBrokerProxy* GetInterfaceBroker() const;
+
     bool Dispatch(IPC::Message *msg) override;
 
     void BindHostReceiver(
       mojo::PendingReceiver<content::mojom::FrameSinkProvider> receiver) override;
 
     bool ShouldBindFrameSinkProvider() override;
-
-
-    blink::ThreadSafeBrowserInterfaceBrokerProxy* GetInterfaceBroker() const;
 
   private:
     // service_manager::Service:
