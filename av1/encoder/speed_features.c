@@ -1276,6 +1276,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
 void av1_set_speed_features_qindex_dependent(AV1_COMP *cpi, int speed) {
   AV1_COMMON *const cm = &cpi->common;
   SPEED_FEATURES *const sf = &cpi->sf;
+  const int boosted = frame_is_boosted(cpi);
   const int is_720p_or_larger = AOMMIN(cm->width, cm->height) >= 720;
   if (is_720p_or_larger && cpi->oxcf.mode == GOOD && speed == 0) {
     if (cm->quant_params.base_qindex <= 80) {
@@ -1288,6 +1289,24 @@ void av1_set_speed_features_qindex_dependent(AV1_COMP *cpi, int speed) {
       sf->tx_sf.inter_tx_size_search_init_depth_rect = 1;
       sf->tx_sf.inter_tx_size_search_init_depth_sqr = 1;
       sf->tx_sf.intra_tx_size_search_init_depth_rect = 1;
+    }
+  }
+
+  if (cpi->oxcf.mode == GOOD && speed >= 3) {
+    // Disable extended partitions for lower quantizers
+    if (cm->quant_params.base_qindex <= 100 &&
+        !cm->features.allow_screen_content_tools && !boosted) {
+      sf->part_sf.ext_partition_eval_thresh = BLOCK_128X128;
+    }
+  }
+
+  if (cpi->oxcf.mode == GOOD && speed >= 4) {
+    // Disable extended partitions for lower quantizers
+    const int qindex_thresh = boosted ? 80 : 120;
+    if (cm->quant_params.base_qindex <= qindex_thresh &&
+        !cm->features.allow_screen_content_tools &&
+        !frame_is_intra_only(&cpi->common)) {
+      sf->part_sf.ext_partition_eval_thresh = BLOCK_128X128;
     }
   }
 }
