@@ -103,7 +103,8 @@ def Emerge(packages, sysroot, with_deps=True, rebuild_deps=True,
   if debug_output:
     cmd.append('--show-output')
 
-  cros_build_lib.sudo_run(cmd + packages)
+  # We might build chrome, in which case we need to pass 'CHROME_ORIGIN'.
+  cros_build_lib.sudo_run(cmd + packages, preserve_env=True)
 
 
 def UpdateChroot(board=None, update_host_packages=True):
