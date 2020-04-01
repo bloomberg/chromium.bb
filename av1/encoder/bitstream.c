@@ -2135,8 +2135,6 @@ static AOM_INLINE void write_tile_info_max_tile(
   aom_wb_write_bit(wb, tiles->uniform_spacing);
 
   if (tiles->uniform_spacing) {
-    // Uniform spaced tiles with power-of-two number of rows and columns
-    // tile columns
     int ones = tiles->log2_cols - tiles->min_log2_cols;
     while (ones--) {
       aom_wb_write_bit(wb, 1);

@@ -340,24 +340,46 @@ typedef struct {
 
 // Struct containing params related to tiles.
 typedef struct CommonTileParams {
-  int cols;
-  int rows;
-  int max_width_sb;
-  int max_height_sb;
-  int min_log2_cols;
-  int max_log2_cols;
-  int max_log2_rows;
-  int min_log2_rows;
-  int min_log2;
+  int cols;           // number of tile columns that frame is divided into
+  int rows;           // number of tile rows that frame is divided into
+  int max_width_sb;   // maximum tile width in superblock units.
+  int max_height_sb;  // maximum tile height in superblock units.
+  // Min width of non-rightmost tile in MI units. Only valid if cols > 1.
+  int min_inner_width;
+
+  // If true, tiles are uniformly spaced with power-of-two number of rows and
+  // columns.
+  // If false, tiles have explicitly configured widths and heights.
   int uniform_spacing;
-  int log2_cols;                        // only valid for uniform tiles
-  int log2_rows;                        // only valid for uniform tiles
-  int col_start_sb[MAX_TILE_COLS + 1];  // valid for 0 <= i <= tile_cols
-  int row_start_sb[MAX_TILE_ROWS + 1];  // valid for 0 <= i <= tile_rows
-  int width;                            // Width in MI units
-  int height;                           // Height in MI units
-  int min_inner_width;                  // min width of non-rightmost tile
+
+  // Following members are only valid when uniform_spacing == 1
+  int log2_cols;  // log2 of 'cols'.
+  int log2_rows;  // log2 of 'rows'.
+  int width;      // tile width in MI units
+  int height;     // tile height in MI units
+  // End of members that are only valid when uniform_spacing == 1
+
+  // Min num of tile columns possible based on 'max_width_sb' and frame width.
+  int min_log2_cols;
+  // Min num of tile rows possible based on 'max_height_sb' and frame height.
+  int min_log2_rows;
+  // Min num of tile columns possible based on frame width.
+  int max_log2_cols;
+  // Max num of tile columns possible based on frame width.
+  int max_log2_rows;
+  // log2 of min number of tiles (same as min_log2_cols + min_log2_rows).
+  int min_log2;
+  // col_start_sb[i] is the start position of tile column i in superblock units.
+  // valid for 0 <= i <= cols
+  int col_start_sb[MAX_TILE_COLS + 1];
+  // row_start_sb[i] is the start position of tile row i in superblock units.
+  // valid for 0 <= i <= rows
+  int row_start_sb[MAX_TILE_ROWS + 1];
+  // If true, we are using large scale tile mode.
   unsigned int large_scale;
+  // Only relevant when large_scale == 1.
+  // If true, the independent decoding of a single tile or a section of a frame
+  // is allowed.
   unsigned int single_tile_decoding;
 } CommonTileParams;
 
