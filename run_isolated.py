@@ -111,7 +111,8 @@ ISOLATED_TMP_DIR = u'it'
 ISOLATED_CLIENT_DIR = u'ic'
 
 # TODO(tikuta): take these parameter from luci-config?
-# Take revision from
+# Update tag by `./client/update_isolated.sh`.
+# Or take revision from
 # https://ci.chromium.org/p/infra-internal/g/infra-packagers/console
 ISOLATED_PACKAGE = 'infra/tools/luci/isolated/${platform}'
 ISOLATED_REVISION = 'git_revision:a1f1a26ca99c19aada812968e02928e4de4c7bd3'
