@@ -2565,12 +2565,12 @@ static void highbd_dr_prediction_32bit_z2_HxW_avx2(
       int y = r + 1;
       ydx = _mm256_set1_epi32(y * dx);
 
-      int base_x = (-y * dx) >> frac_bits_x;
+      int base_x = ((j << 6) - y * dx) >> frac_bits_x;
       int base_shift = 0;
-      if ((base_x + j) < (min_base_x - 1)) {
-        base_shift = (min_base_x - (base_x + j) - 1);
+      if ((base_x) < (min_base_x - 1)) {
+        base_shift = (min_base_x - base_x - 1);
       }
-      int base_min_diff = (min_base_x - base_x - j);
+      int base_min_diff = (min_base_x - base_x);
       if (base_min_diff > 16) {
         base_min_diff = 16;
       } else {
@@ -2580,9 +2580,8 @@ static void highbd_dr_prediction_32bit_z2_HxW_avx2(
       if (base_shift > 7) {
         resx[0] = _mm256_setzero_si256();
       } else {
-        a0_x128 = _mm_loadu_si128((__m128i *)(above + base_x + base_shift + j));
-        a1_x128 =
-            _mm_loadu_si128((__m128i *)(above + base_x + base_shift + 1 + j));
+        a0_x128 = _mm_loadu_si128((__m128i *)(above + base_x + base_shift));
+        a1_x128 = _mm_loadu_si128((__m128i *)(above + base_x + base_shift + 1));
         a0_x128 =
             _mm_shuffle_epi8(a0_x128, *(__m128i *)HighbdLoadMaskx[base_shift]);
         a1_x128 =
@@ -2607,16 +2606,16 @@ static void highbd_dr_prediction_32bit_z2_HxW_avx2(
             res, _mm256_castsi128_si256(_mm256_extracti128_si256(res, 1)));
       }
       int base_shift8 = 0;
-      if ((base_x + j + 8) < (min_base_x - 1)) {
-        base_shift8 = (min_base_x - (base_x + j + 8) - 1);
+      if ((base_x + 8) < (min_base_x - 1)) {
+        base_shift8 = (min_base_x - (base_x + 8) - 1);
       }
       if (base_shift8 > 7) {
         resx[1] = _mm256_setzero_si256();
       } else {
         a0_1_x128 =
-            _mm_loadu_si128((__m128i *)(above + base_x + base_shift8 + 8 + j));
+            _mm_loadu_si128((__m128i *)(above + base_x + base_shift8 + 8));
         a1_1_x128 =
-            _mm_loadu_si128((__m128i *)(above + base_x + base_shift8 + 9 + j));
+            _mm_loadu_si128((__m128i *)(above + base_x + base_shift8 + 9));
         a0_1_x128 = _mm_shuffle_epi8(a0_1_x128,
                                      *(__m128i *)HighbdLoadMaskx[base_shift8]);
         a1_1_x128 = _mm_shuffle_epi8(a1_1_x128,
@@ -2762,12 +2761,12 @@ static void highbd_dr_prediction_z2_HxW_avx2(
 
     for (int j = 0; j < W; j += 16) {
       j256 = _mm256_set1_epi16(j);
-      int base_x = (-y * dx) >> frac_bits_x;
+      int base_x = ((j << 6) - y * dx) >> frac_bits_x;
       int base_shift = 0;
-      if ((base_x + j) < (min_base_x - 1)) {
-        base_shift = (min_base_x - (base_x + j) - 1);
+      if ((base_x) < (min_base_x - 1)) {
+        base_shift = (min_base_x - (base_x)-1);
       }
-      int base_min_diff = (min_base_x - base_x - j);
+      int base_min_diff = (min_base_x - base_x);
       if (base_min_diff > 16) {
         base_min_diff = 16;
       } else {
@@ -2775,9 +2774,8 @@ static void highbd_dr_prediction_z2_HxW_avx2(
       }
 
       if (base_shift < 8) {
-        a0_x128 = _mm_loadu_si128((__m128i *)(above + base_x + base_shift + j));
-        a1_x128 =
-            _mm_loadu_si128((__m128i *)(above + base_x + base_shift + 1 + j));
+        a0_x128 = _mm_loadu_si128((__m128i *)(above + base_x + base_shift));
+        a1_x128 = _mm_loadu_si128((__m128i *)(above + base_x + base_shift + 1));
         a0_x128 =
             _mm_shuffle_epi8(a0_x128, *(__m128i *)HighbdLoadMaskx[base_shift]);
         a1_x128 =
@@ -2796,9 +2794,9 @@ static void highbd_dr_prediction_z2_HxW_avx2(
       }
       if (base_shift1 < 8) {
         a0_1_x128 =
-            _mm_loadu_si128((__m128i *)(above + base_x + base_shift1 + 8 + j));
+            _mm_loadu_si128((__m128i *)(above + base_x + base_shift1 + 8));
         a1_1_x128 =
-            _mm_loadu_si128((__m128i *)(above + base_x + base_shift1 + 9 + j));
+            _mm_loadu_si128((__m128i *)(above + base_x + base_shift1 + 9));
         a0_1_x128 = _mm_shuffle_epi8(a0_1_x128,
                                      *(__m128i *)HighbdLoadMaskx[base_shift1]);
         a1_1_x128 = _mm_shuffle_epi8(a1_1_x128,
