@@ -3909,9 +3909,7 @@ static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int analysis_type,
 
   if (cpi->gf_group.index >= MAX_LAG_BUFFERS) return orig_rdmult;
 
-#if !USE_TPL_CLASSIC_MODEL
   int64_t mc_count = 0, mc_saved = 0;
-#endif  // !USE_TPL_CLASSIC_MODEL
   int mi_count = 0;
   const int mi_col_sr =
       coded_to_superres_mi(mi_col, cm->superres_scale_denominator);
@@ -3929,10 +3927,8 @@ static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int analysis_type,
                  this_stats->mc_dep_dist);
       intra_cost += this_stats->recrf_dist << RDDIV_BITS;
       mc_dep_cost += (this_stats->recrf_dist << RDDIV_BITS) + mc_dep_delta;
-#if !USE_TPL_CLASSIC_MODEL
       mc_count += this_stats->mc_count;
       mc_saved += this_stats->mc_saved;
-#endif  // !USE_TPL_CLASSIC_MODEL
       mi_count++;
     }
   }
@@ -3946,7 +3942,6 @@ static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int analysis_type,
       const double rk = (double)intra_cost / mc_dep_cost;
       beta = (r0 / rk);
     }
-#if !USE_TPL_CLASSIC_MODEL
   } else if (analysis_type == 1) {
     const double mc_count_base = (mi_count * cpi->rd.mc_count_base);
     beta = (mc_count + 1.0) / (mc_count_base + 1.0);
@@ -3955,7 +3950,6 @@ static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int analysis_type,
     const double mc_saved_base = (mi_count * cpi->rd.mc_saved_base);
     beta = (mc_saved + 1.0) / (mc_saved_base + 1.0);
     beta = pow(beta, 0.5);
-#endif  // !USE_TPL_CLASSIC_MODEL
   }
 
   int rdmult = av1_get_adaptive_rdmult(cpi, beta);
@@ -4048,9 +4042,7 @@ static int get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
 
   if (cpi->gf_group.index >= MAX_LAG_BUFFERS) return base_qindex;
 
-#if !USE_TPL_CLASSIC_MODEL
   int64_t mc_count = 0, mc_saved = 0;
-#endif  // !USE_TPL_CLASSIC_MODEL
   int mi_count = 0;
   const int mi_col_sr =
       coded_to_superres_mi(mi_col, cm->superres_scale_denominator);
@@ -4068,10 +4060,8 @@ static int get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
                  this_stats->mc_dep_dist);
       intra_cost += this_stats->recrf_dist << RDDIV_BITS;
       mc_dep_cost += (this_stats->recrf_dist << RDDIV_BITS) + mc_dep_delta;
-#if !USE_TPL_CLASSIC_MODEL
       mc_count += this_stats->mc_count;
       mc_saved += this_stats->mc_saved;
-#endif  // !USE_TPL_CLASSIC_MODEL
       mi_count++;
     }
   }

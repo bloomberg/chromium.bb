@@ -27,8 +27,6 @@
 extern "C" {
 #endif
 
-// 1: use classic model 0: use count or saving stats
-#define USE_TPL_CLASSIC_MODEL 0
 #define MC_FLOW_BSIZE_1D 16
 #define MC_FLOW_NUM_PELS (MC_FLOW_BSIZE_1D * MC_FLOW_BSIZE_1D)
 #define MAX_MC_FLOW_BLK_IN_SB (MAX_SB_SIZE / MC_FLOW_BSIZE_1D)
