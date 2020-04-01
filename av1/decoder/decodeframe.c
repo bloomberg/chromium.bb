@@ -853,48 +853,42 @@ static AOM_INLINE void dec_build_inter_predictors_for_planes(
 static AOM_INLINE void dec_build_inter_predictors_sby(const AV1_COMMON *cm,
                                                       MACROBLOCKD *xd,
                                                       int mi_row, int mi_col,
-                                                      const BUFFER_SET *ctx,
                                                       BLOCK_SIZE bsize) {
   dec_build_inter_predictors_for_planes(cm, xd, mi_row, mi_col, 0, 0);
 
   if (is_interintra_pred(xd->mi[0])) {
-    BUFFER_SET default_ctx = { { xd->plane[0].dst.buf, NULL, NULL },
-                               { xd->plane[0].dst.stride, 0, 0 } };
-    if (!ctx) ctx = &default_ctx;
-    av1_build_interintra_predictors_sbp(cm, xd, xd->plane[0].dst.buf,
-                                        xd->plane[0].dst.stride, ctx, 0, bsize);
+    BUFFER_SET ctx = { { xd->plane[0].dst.buf, NULL, NULL },
+                       { xd->plane[0].dst.stride, 0, 0 } };
+    av1_build_interintra_predictors_sbp(
+        cm, xd, xd->plane[0].dst.buf, xd->plane[0].dst.stride, &ctx, 0, bsize);
   }
 }
 
 static AOM_INLINE void dec_build_inter_predictors_sbuv(const AV1_COMMON *cm,
                                                        MACROBLOCKD *xd,
                                                        int mi_row, int mi_col,
-                                                       const BUFFER_SET *ctx,
                                                        BLOCK_SIZE bsize) {
   dec_build_inter_predictors_for_planes(cm, xd, mi_row, mi_col, 1,
                                         MAX_MB_PLANE - 1);
 
   if (is_interintra_pred(xd->mi[0])) {
-    BUFFER_SET default_ctx = {
-      { NULL, xd->plane[1].dst.buf, xd->plane[2].dst.buf },
-      { 0, xd->plane[1].dst.stride, xd->plane[2].dst.stride }
-    };
-    if (!ctx) ctx = &default_ctx;
+    BUFFER_SET ctx = { { NULL, xd->plane[1].dst.buf, xd->plane[2].dst.buf },
+                       { 0, xd->plane[1].dst.stride,
+                         xd->plane[2].dst.stride } };
     av1_build_interintra_predictors_sbuv(
         cm, xd, xd->plane[1].dst.buf, xd->plane[2].dst.buf,
-        xd->plane[1].dst.stride, xd->plane[2].dst.stride, ctx, bsize);
+        xd->plane[1].dst.stride, xd->plane[2].dst.stride, &ctx, bsize);
   }
 }
 
 static AOM_INLINE void dec_build_inter_predictors_sb(const AV1_COMMON *cm,
                                                      MACROBLOCKD *xd,
                                                      int mi_row, int mi_col,
-                                                     BUFFER_SET *ctx,
                                                      BLOCK_SIZE bsize) {
   const int num_planes = av1_num_planes(cm);
-  dec_build_inter_predictors_sby(cm, xd, mi_row, mi_col, ctx, bsize);
+  dec_build_inter_predictors_sby(cm, xd, mi_row, mi_col, bsize);
   if (num_planes > 1)
-    dec_build_inter_predictors_sbuv(cm, xd, mi_row, mi_col, ctx, bsize);
+    dec_build_inter_predictors_sbuv(cm, xd, mi_row, mi_col, bsize);
 }
 
 static INLINE void dec_build_prediction_by_above_pred(
@@ -1097,7 +1091,7 @@ static AOM_INLINE void predict_inter_block(AV1_COMMON *const cm,
     }
   }
 
-  dec_build_inter_predictors_sb(cm, xd, mi_row, mi_col, NULL, bsize);
+  dec_build_inter_predictors_sb(cm, xd, mi_row, mi_col, bsize);
   if (mbmi->motion_mode == OBMC_CAUSAL) {
     dec_build_obmc_inter_predictors_sb(cm, xd);
   }
