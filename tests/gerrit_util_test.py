@@ -126,7 +126,7 @@ class CookiesAuthenticatorTest(unittest.TestCase):
         os.path.expanduser(os.path.join('~', '.gitcookies')),
         gerrit_util.CookiesAuthenticator().get_gitcookies_path())
 
-    subprocess2.check_output.side_effect = ['http.cookiefile']
+    subprocess2.check_output.side_effect = [b'http.cookiefile']
     self.assertEqual(
         'http.cookiefile',
         gerrit_util.CookiesAuthenticator().get_gitcookies_path())

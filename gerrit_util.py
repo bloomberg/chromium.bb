@@ -203,8 +203,9 @@ class CookiesAuthenticator(Authenticator):
     if os.getenv('GIT_COOKIES_PATH'):
       return os.getenv('GIT_COOKIES_PATH')
     try:
-      return subprocess2.check_output(
-          ['git', 'config', '--path', 'http.cookiefile']).strip()
+      path = subprocess2.check_output(
+          ['git', 'config', '--path', 'http.cookiefile'])
+      return path.decode('utf-8', 'ignore').strip()
     except subprocess2.CalledProcessError:
       return os.path.expanduser(os.path.join('~', '.gitcookies'))
 
