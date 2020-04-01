@@ -262,7 +262,6 @@ typedef struct {
   const int *cost_list;
   SUBPEL_FORCE_STOP forced_stop;
   int iters_per_step;
-  int do_reset_fractional_mv;
   SubpelMvLimits mv_limits;
 
   // For calculating mv cost

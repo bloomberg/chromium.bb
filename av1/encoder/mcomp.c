@@ -2696,11 +2696,6 @@ int av1_find_best_sub_pixel_tree_pruned(
   unsigned int besterr = INT_MAX;
   *bestmv = start_mv;
 
-  const int do_reset_fractional_mv = ms_params->do_reset_fractional_mv;
-  if (do_reset_fractional_mv && last_mv_search_list) {
-    av1_set_fractional_mv(last_mv_search_list);
-  }
-
   besterr = setup_center_error(xd, bestmv, var_params, mv_cost_params, sse1,
                                distortion);
   if (check_repeated_mv_and_update(last_mv_search_list, *bestmv, iter)) {
@@ -2805,7 +2800,6 @@ int av1_find_best_sub_pixel_tree(MACROBLOCKD *xd, const AV1_COMMON *const cm,
   const int allow_hp = ms_params->allow_hp;
   const int forced_stop = ms_params->forced_stop;
   const int iters_per_step = ms_params->iters_per_step;
-  const int do_reset_fractional_mv = ms_params->do_reset_fractional_mv;
   const MV_COST_PARAMS *mv_cost_params = &ms_params->mv_cost_params;
   const SUBPEL_SEARCH_VAR_PARAMS *var_params = &ms_params->var_params;
   const SUBPEL_SEARCH_TYPE subpel_search_type =
@@ -2827,10 +2821,6 @@ int av1_find_best_sub_pixel_tree(MACROBLOCKD *xd, const AV1_COMMON *const cm,
   } else {
     besterr = setup_center_error(xd, bestmv, var_params, mv_cost_params, sse1,
                                  distortion);
-  }
-
-  if (do_reset_fractional_mv && last_mv_search_list) {
-    av1_set_fractional_mv(last_mv_search_list);
   }
 
   for (int iter = 0; iter < round; ++iter) {
@@ -3305,7 +3295,6 @@ int av1_find_best_obmc_sub_pixel_tree_up(
   const int allow_hp = ms_params->allow_hp;
   const int forced_stop = ms_params->forced_stop;
   const int iters_per_step = ms_params->iters_per_step;
-  // const int do_reset_fractional_mv = ms_params->do_reset_fractional_mv;
   const MV_COST_PARAMS *mv_cost_params = &ms_params->mv_cost_params;
   const SUBPEL_SEARCH_VAR_PARAMS *var_params = &ms_params->var_params;
   const SUBPEL_SEARCH_TYPE subpel_search_type =
