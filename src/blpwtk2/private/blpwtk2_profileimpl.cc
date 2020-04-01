@@ -40,9 +40,9 @@
 #include <components/printing/renderer/print_render_frame_helper.h>
 #include <mojo/public/cpp/bindings/strong_binding.h>
 #include <services/service_manager/public/cpp/connector.h>
+#include <services/service_manager/public/cpp/service_filter.h>
 #include <third_party/blink/renderer/core/page/bb_window_hooks.h>
 #include <third_party/blink/public/platform/web_cache.h>
-#include <services/service_manager/public/cpp/service_filter.h>
 
 namespace blpwtk2 {
 
