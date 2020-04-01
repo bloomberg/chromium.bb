@@ -21,6 +21,7 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
+from chromite.lib import device
 from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.lib import remote_access
@@ -111,6 +112,24 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
         % self.TempFilePath('chromiumos_qemu_image.bin'),
     ])
     self.assertCommandContains(['-enable-kvm'])
+
+  @mock.patch('chromite.lib.device.Device.WaitForBoot')
+  def testStartRetriesSuccess(self, mock_wait):
+    """Start() should return normally if WaitForBoot fails transiently once."""
+    mock_wait.side_effect = (
+        device.DeviceError('error'),
+        True,
+    )
+    self._vm.Start()
+
+  @mock.patch('chromite.lib.device.Device.WaitForBoot')
+  def testStartRetriesFailure(self, mock_wait):
+    """Start() should raise a DeviceError if WaitForBoot fails all attempts."""
+    mock_wait.side_effect = (
+        device.DeviceError('error'),
+        device.DeviceError('error'),
+    )
+    self.assertRaises(device.DeviceError, self._vm.Start)
 
   def testStartWithVMX(self):
     """Verify vmx is enabled if the host supports nested virtualizaton."""

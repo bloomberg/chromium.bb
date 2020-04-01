@@ -63,7 +63,7 @@ class Device(object):
     if self.ssh_port:
       self.device_addr += ':%d' % self.ssh_port
 
-  def WaitForBoot(self, sleep=5):
+  def WaitForBoot(self, max_retry=10, sleep=5):
     """Wait for the device to boot up.
 
     Wait for the ssh connection to become active.
@@ -71,7 +71,7 @@ class Device(object):
     try:
       result = retry_util.RetryException(
           exception=remote_access.SSHConnectionError,
-          max_retry=10,
+          max_retry=max_retry,
           functor=lambda: self.remote_run(cmd=['true']),
           sleep=sleep)
     except remote_access.SSHConnectionError:

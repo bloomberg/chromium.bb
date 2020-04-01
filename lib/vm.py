@@ -388,24 +388,8 @@ class VM(device.Device):
     if self.stop:
       self.Stop()
 
-  def Start(self):
-    """Start the VM."""
-
-    self.Stop()
-
-    logging.debug('Start VM')
-    self._SetQemuPath()
-    self._SetVMImagePath()
-
-    self._CreateVMDir()
-    if self.copy_on_write:
-      self._CreateQcow2Image()
-    # Make sure we can read these files later on by creating them as ourselves.
-    osutils.Touch(self.kvm_serial)
-    for pipe in [self.kvm_pipe_in, self.kvm_pipe_out]:
-      os.mkfifo(pipe, 0o600)
-    osutils.Touch(self.pidfile)
-
+  def _GetQemuArgs(self):
+    """Returns the args to qemu used to launch the VM."""
     # Append 'check' to warn if the requested CPU is not fully supported.
     if 'check' not in self.qemu_cpu.split(','):
       self.qemu_cpu += ',check'
@@ -458,10 +442,44 @@ class VM(device.Device):
       qemu_args += ['-display', 'none']
     logging.info('Pid file: %s', self.pidfile)
 
-    # Add use_sudo support to cros_build_lib.run.
-    run = cros_build_lib.sudo_run if self.use_sudo else cros_build_lib.run
-    run(qemu_args, dryrun=self.dryrun)
-    self.WaitForBoot()
+    return qemu_args
+
+  def Start(self, retries=1):
+    """Start the VM.
+
+    Args:
+      retries: Number of times to retry launching the VM if it fails to boot-up.
+    """
+    self._SetQemuPath()
+    self._SetVMImagePath()
+    qemu_args = self._GetQemuArgs()
+
+    for attempt in range(0, retries + 1):
+      self.Stop()
+
+      logging.debug('Start VM, attempt #%d', attempt)
+
+      self._CreateVMDir()
+      if self.copy_on_write:
+        self._CreateQcow2Image()
+      # Make sure we can read these files later on by creating them as
+      # ourselves.
+      osutils.Touch(self.kvm_serial)
+      for pipe in [self.kvm_pipe_in, self.kvm_pipe_out]:
+        os.mkfifo(pipe, 0o600)
+      osutils.Touch(self.pidfile)
+
+      # Add use_sudo support to cros_build_lib.run.
+      run = cros_build_lib.sudo_run if self.use_sudo else cros_build_lib.run
+      run(qemu_args, dryrun=self.dryrun)
+      try:
+        self.WaitForBoot()
+        return
+      except device.DeviceError:
+        if attempt == retries:
+          raise
+        else:
+          logging.warning('Error when launching VM. Retrying...')
 
   def _GetVMPid(self):
     """Get the pid of the VM.
@@ -594,16 +612,17 @@ class VM(device.Device):
     # utility-process, 3 renderers.
     _WaitForProc('chrome', 8)
 
-  def WaitForBoot(self, sleep=5):
+  def WaitForBoot(self, max_retry=3, sleep=5):
     """Wait for the VM to boot up.
 
     Wait for ssh connection to become active, and wait for all expected chrome
-    processes to be launched.
+    processes to be launched. Set max_retry to a lower value since we can easily
+    restart the VM if something is stuck and timing out.
     """
     if not os.path.exists(self.vm_dir):
       self.Start()
 
-    super(VM, self).WaitForBoot(sleep=sleep)
+    super(VM, self).WaitForBoot(sleep=sleep, max_retry=max_retry)
 
     # Chrome can take a while to start with software emulation.
     if not self.enable_kvm:
