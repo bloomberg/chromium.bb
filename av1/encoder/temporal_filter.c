@@ -54,21 +54,22 @@
 //   ref_mv: Reference motion vector, which is commonly inherited from the
 //           motion search result of previous frame.
 //   subblock_mvs: Pointer to the result motion vectors for 4 sub-blocks.
-//   subblock_errors: Pointer to the search errors for 4 sub-blocks.
+//   subblock_mses: Pointer to the search errors (MSE) for 4 sub-blocks.
 // Returns:
-//   Search error of the entire block.
+//   Search error (MSE) of the entire block.
 static int tf_motion_search(AV1_COMP *cpi,
                             const YV12_BUFFER_CONFIG *frame_to_filter,
                             const YV12_BUFFER_CONFIG *ref_frame,
                             const BLOCK_SIZE block_size, const int mb_row,
                             const int mb_col, MV *ref_mv, MV *subblock_mvs,
-                            int *subblock_errors) {
+                            int *subblock_mses) {
   // Frame information
   const int min_frame_size = AOMMIN(cpi->common.width, cpi->common.height);
 
   // Block information (ONLY Y-plane is used for motion search).
   const int mb_height = block_size_high[block_size];
   const int mb_width = block_size_wide[block_size];
+  const int mb_pels = mb_height * mb_width;
   const int y_stride = frame_to_filter->y_stride;
   assert(y_stride == ref_frame->y_stride);
   const int y_offset = mb_row * mb_height * y_stride + mb_col * mb_width;
@@ -110,14 +111,14 @@ static int tf_motion_search(AV1_COMP *cpi,
   mbd->plane[0].pre[0].buf = ref_frame->y_buffer + y_offset;
   mbd->plane[0].pre[0].stride = y_stride;
   // Unused intermediate results for motion search.
-  unsigned int sse;
+  unsigned int sse, error;
   int distortion;
   int cost_list[5];
 
   // Do motion search.
   // NOTE: In `av1_full_pixel_search()` and `find_fractional_mv_step()`, the
   // searched result will be stored in `mb->best_mv`.
-  int block_error = INT_MAX;
+  int block_mse = INT_MAX;
   mb->mv_cost_type = mv_cost_type;
 
   av1_make_default_fullpel_ms_params(&full_ms_params, cpi, mb, block_size,
@@ -137,9 +138,10 @@ static int tf_motion_search(AV1_COMP *cpi,
     mb->best_mv.as_mv.row = GET_MV_SUBPEL(mv_row);
     mb->best_mv.as_mv.col = GET_MV_SUBPEL(mv_col);
     const int mv_offset = mv_row * y_stride + mv_col;
-    block_error = cpi->fn_ptr[block_size].vf(
+    error = cpi->fn_ptr[block_size].vf(
         ref_frame->y_buffer + y_offset + mv_offset, y_stride,
         frame_to_filter->y_buffer + y_offset, y_stride, &sse);
+    block_mse = DIVIDE_AND_ROUND(error, mb_pels);
     mb->e_mbd.mi[0]->mv[0] = mb->best_mv;
   } else {  // Do fractional search on the entire block and all sub-blocks.
     av1_make_default_subpel_ms_params(&ms_params, cpi, mb, block_size,
@@ -148,16 +150,17 @@ static int tf_motion_search(AV1_COMP *cpi,
     ms_params.forced_stop = EIGHTH_PEL;
     ms_params.var_params.subpel_search_type = subpel_search_type;
     MV subpel_start_mv = get_mv_from_fullmv(&mb->best_mv.as_fullmv);
-    block_error = cpi->find_fractional_mv_step(
-        &mb->e_mbd, &cpi->common, &ms_params, subpel_start_mv,
-        &mb->best_mv.as_mv, &distortion, &sse, NULL);
-
+    error = cpi->find_fractional_mv_step(&mb->e_mbd, &cpi->common, &ms_params,
+                                         subpel_start_mv, &mb->best_mv.as_mv,
+                                         &distortion, &sse, NULL);
+    block_mse = DIVIDE_AND_ROUND(error, mb_pels);
     mb->e_mbd.mi[0]->mv[0] = mb->best_mv;
     *ref_mv = mb->best_mv.as_mv;
     // On 4 sub-blocks.
     const BLOCK_SIZE subblock_size = ss_size_lookup[block_size][1][1];
     const int subblock_height = block_size_high[subblock_size];
     const int subblock_width = block_size_wide[subblock_size];
+    const int subblock_pels = subblock_height * subblock_width;
     start_mv = get_fullmv_from_mv(ref_mv);
 
     int subblock_idx = 0;
@@ -185,10 +188,10 @@ static int tf_motion_search(AV1_COMP *cpi,
         ms_params.forced_stop = EIGHTH_PEL;
         ms_params.var_params.subpel_search_type = subpel_search_type;
         subpel_start_mv = get_mv_from_fullmv(&mb->best_mv.as_fullmv);
-        subblock_errors[subblock_idx] = cpi->find_fractional_mv_step(
+        error = cpi->find_fractional_mv_step(
             &mb->e_mbd, &cpi->common, &ms_params, subpel_start_mv,
             &mb->best_mv.as_mv, &distortion, &sse, NULL);
-
+        subblock_mses[subblock_idx] = DIVIDE_AND_ROUND(error, subblock_pels);
         subblock_mvs[subblock_idx] = mb->best_mv.as_mv;
         ++subblock_idx;
       }
@@ -200,7 +203,7 @@ static int tf_motion_search(AV1_COMP *cpi,
   mbd->plane[0].pre[0] = ori_pre_buf;
   mb->mv_cost_type = ori_mv_cost_type;
 
-  return block_error;
+  return block_mse;
 }
 
 // Helper function to get weight according to thresholds.
@@ -217,8 +220,8 @@ static INLINE int get_weight_by_thresh(const int value, const int low,
 // TODO(any): Many magic numbers are used in this function. They may be tuned
 // to improve the performance.
 // Inputs:
-//   block_error: Motion search error for the entire block.
-//   subblock_errors: Pointer to the search errors for 4 sub-blocks.
+//   block_mse: Motion search error (MSE) for the entire block.
+//   subblock_mses: Pointer to the search errors (MSE) for 4 sub-blocks.
 //   use_planewise_strategy: Whether to use plane-wise filtering strategy. This
 //                           field will affect the filter weight for the
 //                           to-filter frame.
@@ -228,15 +231,14 @@ static INLINE int get_weight_by_thresh(const int value, const int low,
 //                            sub-block. If not using sub-blocks, the first
 //                            element will be used for the entire block.
 // Returns: Whether to use 4 sub-blocks to replace the original block.
-static int tf_get_filter_weight(const int block_error,
-                                const int *subblock_errors,
+static int tf_get_filter_weight(const int block_mse, const int *subblock_mses,
                                 const int use_planewise_strategy,
                                 const int is_second_arf,
                                 int *subblock_filter_weights) {
-  // `block_error` is initialized as INT_MAX and will be overwritten after
+  // `block_mse` is initialized as INT_MAX and will be overwritten after the
   // motion search with reference frame, therefore INT_MAX can ONLY be accessed
   // by to-filter frame.
-  if (block_error == INT_MAX) {
+  if (block_mse == INT_MAX) {
     const int weight = use_planewise_strategy ? TF_PLANEWISE_FILTER_WEIGHT_SCALE
                                               : is_second_arf ? 64 : 32;
     subblock_filter_weights[0] = subblock_filter_weights[1] =
@@ -244,26 +246,25 @@ static int tf_get_filter_weight(const int block_error,
     return 0;
   }
 
-  const int thresh_low = is_second_arf ? 5000 : 10000;
-  const int thresh_high = is_second_arf ? 10000 : 20000;
+  const int thresh_low = is_second_arf ? 20 : 40;
+  const int thresh_high = is_second_arf ? 40 : 80;
 
-  int min_subblock_error = INT_MAX;
-  int max_subblock_error = INT_MIN;
-  int sum_subblock_error = 0;
+  int min_subblock_mse = INT_MAX;
+  int max_subblock_mse = INT_MIN;
+  int sum_subblock_mse = 0;
   for (int i = 0; i < 4; ++i) {
-    sum_subblock_error += subblock_errors[i];
-    min_subblock_error = AOMMIN(min_subblock_error, subblock_errors[i]);
-    max_subblock_error = AOMMAX(max_subblock_error, subblock_errors[i]);
+    sum_subblock_mse += subblock_mses[i];
+    min_subblock_mse = AOMMIN(min_subblock_mse, subblock_mses[i]);
+    max_subblock_mse = AOMMAX(max_subblock_mse, subblock_mses[i]);
     subblock_filter_weights[i] =
-        get_weight_by_thresh(subblock_errors[i], thresh_low, thresh_high);
+        get_weight_by_thresh(subblock_mses[i], thresh_low, thresh_high);
   }
 
-  if (((block_error * 15 < sum_subblock_error * 16) &&
-       max_subblock_error - min_subblock_error < 12000) ||
-      ((block_error * 14 < sum_subblock_error * 16) &&
-       max_subblock_error - min_subblock_error < 6000)) {  // No split.
-    const int weight =
-        get_weight_by_thresh(block_error, thresh_low * 4, thresh_high * 4);
+  if (((block_mse * 15 < sum_subblock_mse * 4) &&
+       max_subblock_mse - min_subblock_mse < 48) ||
+      ((block_mse * 14 < sum_subblock_mse * 4) &&
+       max_subblock_mse - min_subblock_mse < 24)) {  // No split.
+    const int weight = get_weight_by_thresh(block_mse, thresh_low, thresh_high);
     subblock_filter_weights[0] = subblock_filter_weights[1] =
         subblock_filter_weights[2] = subblock_filter_weights[3] = weight;
     return 0;
@@ -981,8 +982,8 @@ static FRAME_DIFF tf_do_filtering(
         // Motion search.
         MV subblock_mvs[4] = { kZeroMv, kZeroMv, kZeroMv, kZeroMv };
         int subblock_filter_weights[4] = { 0, 0, 0, 0 };
-        int block_error = INT_MAX;
-        int subblock_errors[4] = { INT_MAX, INT_MAX, INT_MAX, INT_MAX };
+        int block_mse = INT_MAX;
+        int subblock_mses[4] = { INT_MAX, INT_MAX, INT_MAX, INT_MAX };
 
         if (frame == filter_frame_idx) {  // Frame to be filtered.
           // Set motion vector as 0 for the frame to be filtered.
@@ -991,18 +992,18 @@ static FRAME_DIFF tf_do_filtering(
           ref_mv.row *= -1;
           ref_mv.col *= -1;
         } else {  // Other reference frames.
-          block_error = tf_motion_search(cpi, frame_to_filter, frames[frame],
-                                         block_size, mb_row, mb_col, &ref_mv,
-                                         subblock_mvs, subblock_errors);
+          block_mse = tf_motion_search(cpi, frame_to_filter, frames[frame],
+                                       block_size, mb_row, mb_col, &ref_mv,
+                                       subblock_mvs, subblock_mses);
           // Do not pass down the reference motion vector if error is too large.
-          if (block_error > (3000 << (mbd->bd - 8))) {
+          if (block_mse > (3 << (mbd->bd - 8))) {
             ref_mv = kZeroMv;
           }
         }
 
         // Build predictor.
         int use_subblock = tf_get_filter_weight(
-            block_error, subblock_errors, use_planewise_strategy, is_second_arf,
+            block_mse, subblock_mses, use_planewise_strategy, is_second_arf,
             subblock_filter_weights);
         tf_build_predictor(frames[frame], mbd, block_size, mb_row, mb_col,
                            num_planes, scale, use_subblock, subblock_mvs, pred);
