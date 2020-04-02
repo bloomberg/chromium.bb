@@ -44,6 +44,7 @@
 // feature 0
 // feature 1
 // feature 2
+#define BLPWTK2_FEATURE_PRINTPDF
 // feature 3
 // feature 4
 // feature 5
@@ -53,6 +54,7 @@
 // feature 9
 // feature 10
 // feature 11
+#define BLPWTK2_FEATURE_DOCPRINTER
 // feature 12
 // feature 13
 // feature 14
