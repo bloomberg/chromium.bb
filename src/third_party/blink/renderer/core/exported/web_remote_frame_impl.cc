@@ -471,6 +471,13 @@ void WebRemoteFrameImpl::RenderFallbackContent() const {
   owner->RenderFallbackContent(frame_);
 }
 
+void WebRemoteFrameImpl::DrawInCanvas(
+    const WebRect& rect,
+    const WebString& style_class,
+    cc::PaintCanvas* canvas) {
+  NOTREACHED();
+}
+
 WebRemoteFrameImpl::WebRemoteFrameImpl(
     WebTreeScopeType scope,
     WebRemoteFrameClient* client,
