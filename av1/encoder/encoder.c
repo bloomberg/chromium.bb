@@ -6993,6 +6993,16 @@ static void svc_set_updates_external_ref_frame_config(AV1_COMP *cpi) {
   }
 }
 
+static int svc_set_references_external_ref_frame_config(AV1_COMP *cpi) {
+  // LAST_FRAME (0), LAST2_FRAME(1), LAST3_FRAME(2), GOLDEN_FRAME(3),
+  // BWDREF_FRAME(4), ALTREF2_FRAME(5), ALTREF_FRAME(6).
+  int ref = AOM_REFFRAME_ALL;
+  for (int i = 0; i < INTER_REFS_PER_FRAME; i++) {
+    if (!cpi->svc.reference[i]) ref ^= (1 << i);
+  }
+  return ref;
+}
+
 void av1_apply_encoding_flags(AV1_COMP *cpi, aom_enc_frame_flags_t flags) {
   // TODO(yunqingwang): For what references to use, external encoding flags
   // should be consistent with internal reference frame selection. Need to
@@ -7022,6 +7032,11 @@ void av1_apply_encoding_flags(AV1_COMP *cpi, aom_enc_frame_flags_t flags) {
     }
 
     av1_use_as_reference(cpi, ref);
+  } else {
+    if (cpi->svc.external_ref_frame_config) {
+      int ref = svc_set_references_external_ref_frame_config(cpi);
+      av1_use_as_reference(cpi, ref);
+    }
   }
 
   if (flags &

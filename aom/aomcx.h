@@ -1320,6 +1320,7 @@ typedef struct aom_svc_params {
 typedef struct aom_svc_ref_frame_config {
   // 7 references: LAST_FRAME (0), LAST2_FRAME(1), LAST3_FRAME(2),
   // GOLDEN_FRAME(3), BWDREF_FRAME(4), ALTREF2_FRAME(5), ALTREF_FRAME(6).
+  int reference[7]; /**< Reference flag for each of the 7 references. */
   /*! Buffer slot index for each of 7 references. */
   int ref_idx[7];
   int refresh[8]; /**< Refresh flag for each of the 8 slots. */

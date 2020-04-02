@@ -258,8 +258,10 @@ static int set_layer_pattern(int layering_mode, int superframe_cnt,
   // LAST_FRAME (0), LAST2_FRAME(1), LAST3_FRAME(2), GOLDEN_FRAME(3),
   // BWDREF_FRAME(4), ALTREF2_FRAME(5), ALTREF_FRAME(6).
   for (i = 0; i < INTER_REFS_PER_FRAME; i++) ref_frame_config->ref_idx[i] = i;
+  for (i = 0; i < INTER_REFS_PER_FRAME; i++) ref_frame_config->reference[i] = 0;
   for (i = 0; i < REF_FRAMES; i++) ref_frame_config->refresh[i] = 0;
-  // Note only use LAST and GF for prediction in non-rd mode (speed 8).
+  // Note for this layered patterns only use LAST and GF for prediction in
+  // non-rd mode (speed >= 7).
   int layer_flags = AOM_EFLAG_NO_REF_LAST2 | AOM_EFLAG_NO_REF_LAST3 |
                     AOM_EFLAG_NO_REF_ARF | AOM_EFLAG_NO_REF_BWD |
                     AOM_EFLAG_NO_REF_ARF2;
@@ -347,7 +349,7 @@ static int set_layer_pattern(int layering_mode, int superframe_cnt,
       }
       break;
     case 4:
-      // 2-temporla layer with the old update flags, not with the new
+      // 2-temporal layer with the old update flags, not with the new
       // SVC control.
       *use_svc_control = 0;
       //    1    3    5
@@ -420,6 +422,10 @@ static int set_layer_pattern(int layering_mode, int superframe_cnt,
       // 3 spatial and 3 temporal layer.
       // No overlap in buffer updates between TL2 and TL1.
       // TL2 updates slot 3 and 4, TL1 updates 5, 6, 7.
+      // Set the references via the svc_ref_frame_config control.
+      layer_flags = 0;
+      // Always reference LAST.
+      ref_frame_config->reference[0] = 1;
       if (superframe_cnt % 4 == 0) {
         // Base temporal layer.
         layer_id->temporal_layer_id = 0;
@@ -429,7 +435,6 @@ static int set_layer_pattern(int layering_mode, int superframe_cnt,
           for (i = 0; i < INTER_REFS_PER_FRAME; i++)
             ref_frame_config->ref_idx[i] = 0;
           ref_frame_config->refresh[0] = 1;
-          layer_flags |= AOM_EFLAG_NO_REF_GF;
         } else if (layer_id->spatial_layer_id == 1) {
           // Reference LAST and GOLDEN. Set buffer_idx for LAST to slot 1,
           // GOLDEN (and all other refs) to slot 0.
@@ -458,7 +463,6 @@ static int set_layer_pattern(int layering_mode, int superframe_cnt,
             ref_frame_config->ref_idx[i] = 0;
           ref_frame_config->ref_idx[3] = 3;
           ref_frame_config->refresh[3] = 1;
-          layer_flags |= AOM_EFLAG_NO_REF_GF;
         } else if (layer_id->spatial_layer_id == 1) {
           // Reference LAST and GOLDEN. Set buffer_idx for LAST to slot 1,
           // GOLDEN (and all other refs) to slot 3.
@@ -487,7 +491,6 @@ static int set_layer_pattern(int layering_mode, int superframe_cnt,
             ref_frame_config->ref_idx[i] = 0;
           ref_frame_config->ref_idx[3] = 5 - shift;
           ref_frame_config->refresh[5 - shift] = 1;
-          layer_flags |= AOM_EFLAG_NO_REF_GF;
         } else if (layer_id->spatial_layer_id == 1) {
           // Reference LAST and GOLDEN. Set buffer_idx for LAST to slot 1,
           // GOLDEN (and all other refs) to slot 5.
@@ -519,7 +522,6 @@ static int set_layer_pattern(int layering_mode, int superframe_cnt,
           ref_frame_config->ref_idx[0] = 5 - shift;
           ref_frame_config->ref_idx[3] = 3;
           ref_frame_config->refresh[3] = 1;
-          layer_flags |= AOM_EFLAG_NO_REF_GF;
         } else if (layer_id->spatial_layer_id == 1) {
           // Reference LAST and GOLDEN. Set buffer_idx for LAST to slot 6,
           // GOLDEN to slot 3. Set LAST2 to slot 4 and update slot 4.
@@ -538,6 +540,8 @@ static int set_layer_pattern(int layering_mode, int superframe_cnt,
           ref_frame_config->ref_idx[3] = 4;
         }
       }
+      if (layer_id->spatial_layer_id > 0)
+        ref_frame_config->reference[3] = 1;  // Reference GOLDEN.
       break;
     default: assert(0); die("Error: Unsupported temporal layering mode!\n");
   }

@@ -2523,8 +2523,10 @@ static aom_codec_err_t ctrl_set_svc_ref_frame_config(aom_codec_alg_priv_t *ctx,
   aom_svc_ref_frame_config_t *const data =
       va_arg(args, aom_svc_ref_frame_config_t *);
   cpi->svc.external_ref_frame_config = 1;
-  for (unsigned int i = 0; i < INTER_REFS_PER_FRAME; ++i)
+  for (unsigned int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
+    cpi->svc.reference[i] = data->reference[i];
     cpi->svc.ref_idx[i] = data->ref_idx[i];
+  }
   for (unsigned int i = 0; i < REF_FRAMES; ++i)
     cpi->svc.refresh[i] = data->refresh[i];
   return AOM_CODEC_OK;
