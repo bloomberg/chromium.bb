@@ -460,9 +460,11 @@ def CleanupChrootMount(chroot=None, buildroot=None, delete=False,
     # TODO(lamontjones): Dump some information to help find the process still
     # inside the chroot, causing crbug.com/923432.  In the end, this is likely
     # to become fuser -k.
-    fuser = cros_build_lib.sudo_run(['fuser', chroot], check=False)
-    lsof = cros_build_lib.sudo_run(['lsof', chroot], check=False)
-    ps = cros_build_lib.run(['ps', 'auxf'], check=False)
+    fuser = cros_build_lib.sudo_run(['fuser', chroot], check=False,
+                                    capture_output=True)
+    lsof = cros_build_lib.sudo_run(['lsof', chroot], check=False,
+                                   capture_output=True)
+    ps = cros_build_lib.run(['ps', 'auxf'], check=False, capture_output=True)
     raise Error(
         'Umount failed: %s.\nfuser output=%s\nlsof output=%s\nps output=%s\n' %
         (e.result.error, fuser.output, lsof.output, ps.output))

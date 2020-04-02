@@ -129,7 +129,6 @@ def Token(service_account_json=None):
   result = cros_build_lib.run(
       cmd,
       print_cmd=False,
-      mute_output=True,
       capture_output=True,
       check=False,
       encoding='utf-8')
@@ -223,7 +222,6 @@ def GitCreds(service_account_json=None):
   result = cros_build_lib.run(
       cmd,
       print_cmd=False,
-      mute_output=True,
       capture_output=True,
       check=False,
       encoding='utf-8')

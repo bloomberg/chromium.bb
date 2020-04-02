@@ -34,7 +34,7 @@ class ProtoGeneratedTest(cros_test_lib.TempDirTestCase):
         pb2s.extend(curpb)
 
     cmd = ['md5sum'] + pb2s
-    output = cros_build_lib.run(cmd).output
+    output = cros_build_lib.run(cmd, stdout=True, encoding='utf-8').stdout
 
     for line in output.splitlines():
       md5, filename = line.split()

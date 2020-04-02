@@ -1594,7 +1594,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
       right_dir: Path to the right dir.
     """
     result = cros_build_lib.run(['diff', '-rq', left_dir, right_dir],
-                                check=False, encoding='utf-8')
+                                check=False, encoding='utf-8', stdout=True)
     self.assertFalse(result.output)
 
   def AssertNoRemoteDiff(self):

@@ -1077,9 +1077,8 @@ def SourceEnvironment(script, whitelist, ifs=',', env=None, multiline=False):
     env = {}
   elif env is True:
     env = None
-  output = cros_build_lib.run(['bash'], env=env, stdout=True,
-                              stderr=True, print_cmd=False,
-                              encoding='utf-8',
+  output = cros_build_lib.run(['bash'], env=env, capture_output=True,
+                              print_cmd=False, encoding='utf-8',
                               input='\n'.join(dump_script)).output
   return key_value_store.LoadData(output, multiline=multiline)
 

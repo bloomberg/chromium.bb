@@ -203,45 +203,50 @@ class TestRunCommandNoMock(cros_test_lib.TestCase):
   def testInputBytes(self):
     """Verify input argument when it is bytes."""
     for data in (b'', b'foo', b'bar\nhigh'):
-      result = cros_build_lib.run(['cat'], input=data)
+      result = cros_build_lib.run(['cat'], input=data, capture_output=True)
       self.assertEqual(result.stdout, data)
 
   def testInputBytesEncoding(self):
     """Verify bytes input argument when encoding is set."""
     for data in (b'', b'foo', b'bar\nhigh'):
-      result = cros_build_lib.run(['cat'], input=data, encoding='utf-8')
+      result = cros_build_lib.run(['cat'], input=data, encoding='utf-8',
+                                  capture_output=True)
       self.assertEqual(result.stdout, data.decode('utf-8'))
 
   def testInputString(self):
     """Verify input argument when it is a string."""
     for data in ('', 'foo', 'bar\nhigh'):
-      result = cros_build_lib.run(['cat'], input=data)
+      result = cros_build_lib.run(['cat'], input=data, capture_output=True)
       self.assertEqual(result.stdout, data.encode('utf-8'))
 
   def testInputStringEncoding(self):
     """Verify bytes input argument when encoding is set."""
     for data in ('', 'foo', 'bar\nhigh'):
-      result = cros_build_lib.run(['cat'], input=data, encoding='utf-8')
+      result = cros_build_lib.run(['cat'], input=data, encoding='utf-8',
+                                  capture_output=True)
       self.assertEqual(result.stdout, data)
 
   def testInputFileObject(self):
     """Verify input argument when it is a file object."""
-    result = cros_build_lib.run(['cat'], input=open('/dev/null'))
+    result = cros_build_lib.run(['cat'], input=open('/dev/null'),
+                                capture_output=True)
     self.assertEqual(result.output, b'')
 
     with open(__file__) as f:
-      result = cros_build_lib.run(['cat'], input=f)
+      result = cros_build_lib.run(['cat'], input=f, capture_output=True)
       self.assertEqual(result.stdout,
                        osutils.ReadFile(__file__, mode='rb'))
 
   def testInputFileDescriptor(self):
     """Verify input argument when it is a file descriptor."""
     with open('/dev/null') as f:
-      result = cros_build_lib.run(['cat'], input=f.fileno())
+      result = cros_build_lib.run(['cat'], input=f.fileno(),
+                                  capture_output=True)
       self.assertEqual(result.output, b'')
 
     with open(__file__) as f:
-      result = cros_build_lib.run(['cat'], input=f.fileno())
+      result = cros_build_lib.run(['cat'], input=f.fileno(),
+                                  capture_output=True)
       self.assertEqual(result.stdout,
                        osutils.ReadFile(__file__, mode='rb'))
 

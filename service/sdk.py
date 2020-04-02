@@ -328,7 +328,8 @@ def _EnsureSnapshottableState(chroot=None, replace=False):
   cache_dir = chroot.cache_dir if chroot else None
   chroot_path = chroot.path if chroot else None
 
-  res = cros_build_lib.run(cmd, check=False, encoding='utf-8')
+  res = cros_build_lib.run(cmd, check=False, encoding='utf-8',
+                           capture_output=True)
 
   if res.returncode == 0:
     return
