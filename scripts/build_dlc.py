@@ -62,16 +62,6 @@ def HashFile(file_path):
   return sha256.hexdigest()
 
 
-def CopyFileSudo(src_path, dst_path):
-  """Copy a file with sudo permissions to a destination.
-
-  Args:
-    src_path: File to copy.
-    dst_path: Destination path of the file.
-  """
-  cros_build_lib.sudo_run(['cp', src_path, dst_path])
-
-
 def GetValueInJsonFile(json_path, key, default_value=None):
   """Reads file containing JSON and returns value or default_value for key.
 
@@ -569,16 +559,16 @@ def InstallDlcImages(sysroot, dlc_id=None, install_root_dir=None, preload=False,
                        'flag is set and the DLC does not support preloading.',
                        d_id)
         else:
-          osutils.SafeMakedirs(install_root_dir, sudo=True)
-          source_dlc_dir = os.path.join(dlc_build_dir, d_id, d_package)
+          osutils.SafeMakedirsNonRoot(install_root_dir)
           install_dlc_dir = os.path.join(install_root_dir, d_id, d_package)
-          osutils.SafeMakedirs(install_dlc_dir, sudo=True)
+          osutils.SafeMakedirsNonRoot(install_dlc_dir)
+          source_dlc_dir = os.path.join(dlc_build_dir, d_id, d_package)
           for filepath in (os.path.join(source_dlc_dir, fname) for fname in
                            os.listdir(source_dlc_dir) if
                            fname.endswith('.img')):
             logging.info('Copying DLC(%s) image from %s to %s: ', d_id,
                          filepath, install_dlc_dir)
-            CopyFileSudo(filepath, install_dlc_dir)
+            shutil.copy(filepath, install_dlc_dir)
             logging.info('Done copying DLC to %s.', install_dlc_dir)
       else:
         logging.info('install_root_dir value was not provided. Copying dlc'
