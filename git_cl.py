@@ -4750,22 +4750,21 @@ def _RunClangFormatDiff(opts, clang_diff_files, top_dir, upstream_commit):
       if opts.diff:
         sys.stdout.write(stdout)
   else:
+    env = os.environ.copy()
+    env['PATH'] = str(os.path.dirname(clang_format_tool))
     try:
       script = clang_format.FindClangFormatScriptInChromiumTree(
           'clang-format-diff.py')
     except clang_format.NotFoundError as e:
       DieWithError(e)
 
-    cmd = ['vpython', script, '-p0']
+    cmd = [sys.executable, script, '-p0']
     if not opts.dry_run and not opts.diff:
       cmd.append('-i')
 
     diff_cmd = BuildGitDiffCmd('-U0', upstream_commit, clang_diff_files)
     diff_output = RunGit(diff_cmd).encode('utf-8')
 
-    env = os.environ.copy()
-    env['PATH'] = (
-        str(os.path.dirname(clang_format_tool)) + os.pathsep + env['PATH'])
     stdout = RunCommand(cmd, stdin=diff_output, cwd=top_dir, env=env)
     if opts.diff:
       sys.stdout.write(stdout)
