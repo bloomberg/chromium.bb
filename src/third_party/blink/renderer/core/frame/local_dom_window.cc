@@ -106,6 +106,7 @@
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
@@ -219,6 +220,14 @@ LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
                              &LocalDOMWindow::WarnUnusedPreloads),
       should_print_when_finished_loading_(false) {}
 
+LocalDOMWindow::LocalDOMWindow()
+    : DOMWindow(),
+      visualViewport_(MakeGarbageCollected<DOMVisualViewport>(this)),
+      unused_preloads_timer_(Thread::MainThread()->GetTaskRunner(),
+                             this,
+                             &LocalDOMWindow::WarnUnusedPreloads),
+      should_print_when_finished_loading_(false) {}
+
 void LocalDOMWindow::ClearDocument() {
   if (!document_)
     return;
@@ -295,6 +304,19 @@ Document* LocalDOMWindow::InstallNewDocument(const String& mime_type,
   if (GetFrame()->GetPage() && GetFrame()->View()) {
     GetFrame()->GetPage()->GetChromeClient().InstallSupplements(*GetFrame());
   }
+
+  return document_;
+}
+
+Document* LocalDOMWindow::InstallNewUnintializedDocument(
+  const String& mime_type,
+  const DocumentInit& init,
+  bool force_xhtml) {
+  DCHECK_EQ(init.GetFrame(), GetFrame());
+
+  ClearDocument();
+
+  document_ = CreateDocument(mime_type, init, force_xhtml);
 
   return document_;
 }
