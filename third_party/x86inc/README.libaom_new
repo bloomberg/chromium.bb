@@ -12,3 +12,4 @@ Get configuration from config/aom_config.asm.
 Prefix functions with aom by default.
 Manage name mangling (prefixing with '_') manually because 'PREFIX' does not
   exist in libaom.
+Copy PIC 'GLOBAL' macros from x86_abi_support.asm
