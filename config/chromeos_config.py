@@ -1131,9 +1131,12 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
   # Since these builders upload different profiles, we can start
   # them at the same time, as soon as we might get a new benchmark
   # profile.
-  ChromeAFDOPublishBuilders('silvermont', 'samus', '0 5/12 * * *')
-  ChromeAFDOPublishBuilders('airmont', 'snappy', '0 5/12 * * *')
-  ChromeAFDOPublishBuilders('broadwell', 'eve', '0 5/12 * * *')
+  # FIXME(tcwang): Temporarily reduce the frequency of producing
+  # new AFDO profiles, to reduce the image size flunctuation
+  # See crbug.com/1067439.
+  ChromeAFDOPublishBuilders('silvermont', 'samus', '0 5 * * 0,4')
+  ChromeAFDOPublishBuilders('airmont', 'snappy', '0 5 * * 0,4')
+  ChromeAFDOPublishBuilders('broadwell', 'eve', '0 5 * * 0,4')
 
   def KernelAFDOPublishBuilders(name, board, schedule):
     site_config.Add(
@@ -3402,9 +3405,11 @@ def BranchScheduleConfig():
       # increase lab pressure on chell boards
       '0 8/12 * * *',
       # Start verification builders after 7 hours
-      '0 3/12 * * *',
-      '0 3/12 * * *',
-      '0 3/12 * * *',
+      # FIXME(tcwang): Reduce the frequency of AFDO updates to every 3 days
+      # See crbug.com/1067439.
+      '0 3 * * 0,4',
+      '0 3 * * 0,4',
+      '0 3 * * 0,4',
   ]
 
   for ((branch, android_pfq, chrome_pfq, orderfile, afdo),

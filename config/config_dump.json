@@ -8008,7 +8008,7 @@
         "health_alert_recipients": [
             "c-compiler-chrome@google.com"
         ],
-        "schedule": "0 5/12 * * *",
+        "schedule": "0 5 * * 0,4",
         "useflags": [
             "-cros-debug",
             "afdo_verify",
@@ -8045,7 +8045,7 @@
         "health_alert_recipients": [
             "c-compiler-chrome@google.com"
         ],
-        "schedule": "0 5/12 * * *",
+        "schedule": "0 5 * * 0,4",
         "useflags": [
             "-cros-debug",
             "afdo_verify",
@@ -8082,7 +8082,7 @@
         "health_alert_recipients": [
             "c-compiler-chrome@google.com"
         ],
-        "schedule": "0 5/12 * * *",
+        "schedule": "0 5 * * 0,4",
         "useflags": [
             "-cros-debug",
             "afdo_verify",
