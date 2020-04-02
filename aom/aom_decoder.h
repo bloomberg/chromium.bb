@@ -107,8 +107,8 @@ typedef struct aom_codec_dec_cfg {
  * function directly, to ensure that the ABI version number parameter
  * is properly initialized.
  *
- * If the library was configured with --disable-multithread, this call
- * is not thread safe and should be guarded with a lock if being used
+ * If the library was configured with cmake -DCONFIG_MULTITHREAD=0, this
+ * call is not thread safe and should be guarded with a lock if being used
  * in a multithreaded context.
  *
  * \param[in]    ctx     Pointer to this instance's context.
@@ -179,15 +179,15 @@ aom_codec_err_t aom_codec_get_stream_info(aom_codec_ctx_t *ctx,
 /*!\brief Decode data
  *
  * Processes a buffer of coded data. If the processing results in a new
- * decoded frame becoming available, PUT_SLICE and PUT_FRAME events may be
- * generated, as appropriate. Encoded data \ref MUST be passed in DTS (decode
+ * decoded frame becoming available, put_slice and put_frame callbacks may be
+ * invoked, as appropriate. Encoded data \ref MUST be passed in DTS (decode
  * time stamp) order. Frames produced will always be in PTS (presentation
  * time stamp) order.
  *
  * \param[in] ctx          Pointer to this instance's context
  * \param[in] data         Pointer to this block of new coded data. If
- *                         NULL, a AOM_CODEC_CB_PUT_FRAME event is posted
- *                         for the previously decoded frame.
+ *                         NULL, the put_frame callback is invoked for
+ *                         the previously decoded frame.
  * \param[in] data_sz      Size of the coded data, in bytes.
  * \param[in] user_priv    Application specific data to associate with
  *                         this frame.
@@ -220,11 +220,10 @@ aom_image_t *aom_codec_get_frame(aom_codec_ctx_t *ctx, aom_codec_iter_t *iter);
 
 /*!\defgroup cap_put_frame Frame-Based Decoding Functions
  *
- * The following functions are required to be implemented for all decoders
- * that advertise the AOM_CODEC_CAP_PUT_FRAME capability. Calling these
- * functions
- * for codecs that don't advertise this capability will result in an error
- * code being returned, usually AOM_CODEC_ERROR
+ * The following function is required to be implemented for all decoders
+ * that advertise the AOM_CODEC_CAP_PUT_FRAME capability. Calling this
+ * function for codecs that don't advertise this capability will result in
+ * an error code being returned, usually AOM_CODEC_INCAPABLE.
  * @{
  */
 
@@ -248,8 +247,9 @@ typedef void (*aom_codec_put_frame_cb_fn_t)(void *user_priv,
  * \retval #AOM_CODEC_OK
  *     Callback successfully registered.
  * \retval #AOM_CODEC_ERROR
- *     Decoder context not initialized, or algorithm not capable of
- *     posting slice completion.
+ *     Decoder context not initialized.
+ * \retval #AOM_CODEC_INCAPABLE
+ *     Algorithm not capable of posting frame completion.
  */
 aom_codec_err_t aom_codec_register_put_frame_cb(aom_codec_ctx_t *ctx,
                                                 aom_codec_put_frame_cb_fn_t cb,
@@ -259,18 +259,17 @@ aom_codec_err_t aom_codec_register_put_frame_cb(aom_codec_ctx_t *ctx,
 
 /*!\defgroup cap_put_slice Slice-Based Decoding Functions
  *
- * The following functions are required to be implemented for all decoders
- * that advertise the AOM_CODEC_CAP_PUT_SLICE capability. Calling these
- * functions
- * for codecs that don't advertise this capability will result in an error
- * code being returned, usually AOM_CODEC_ERROR
+ * The following function is required to be implemented for all decoders
+ * that advertise the AOM_CODEC_CAP_PUT_SLICE capability. Calling this
+ * function for codecs that don't advertise this capability will result in
+ * an error code being returned, usually AOM_CODEC_INCAPABLE.
  * @{
  */
 
 /*!\brief put slice callback prototype
  *
  * This callback is invoked by the decoder to notify the application of
- * the availability of partially decoded image data. The
+ * the availability of partially decoded image data.
  */
 typedef void (*aom_codec_put_slice_cb_fn_t)(void *user_priv,
                                             const aom_image_t *img,
@@ -289,8 +288,9 @@ typedef void (*aom_codec_put_slice_cb_fn_t)(void *user_priv,
  * \retval #AOM_CODEC_OK
  *     Callback successfully registered.
  * \retval #AOM_CODEC_ERROR
- *     Decoder context not initialized, or algorithm not capable of
- *     posting slice completion.
+ *     Decoder context not initialized.
+ * \retval #AOM_CODEC_INCAPABLE
+ *     Algorithm not capable of posting slice completion.
  */
 aom_codec_err_t aom_codec_register_put_slice_cb(aom_codec_ctx_t *ctx,
                                                 aom_codec_put_slice_cb_fn_t cb,
@@ -300,10 +300,10 @@ aom_codec_err_t aom_codec_register_put_slice_cb(aom_codec_ctx_t *ctx,
 
 /*!\defgroup cap_external_frame_buffer External Frame Buffer Functions
  *
- * The following section is required to be implemented for all decoders
+ * The following function is required to be implemented for all decoders
  * that advertise the AOM_CODEC_CAP_EXTERNAL_FRAME_BUFFER capability.
  * Calling this function for codecs that don't advertise this capability
- * will result in an error code being returned, usually AOM_CODEC_ERROR.
+ * will result in an error code being returned, usually AOM_CODEC_INCAPABLE.
  *
  * \note
  * Currently this only works with AV1.
@@ -328,13 +328,13 @@ aom_codec_err_t aom_codec_register_put_slice_cb(aom_codec_ctx_t *ctx,
  * \retval #AOM_CODEC_INVALID_PARAM
  *     One or more of the callbacks were NULL.
  * \retval #AOM_CODEC_ERROR
- *     Decoder context not initialized, or algorithm not capable of
- *     using external frame buffers.
+ *     Decoder context not initialized.
+ * \retval #AOM_CODEC_INCAPABLE
+ *     Algorithm not capable of using external frame buffers.
  *
  * \note
  * When decoding AV1, the application may be required to pass in at least
- * #AOM_MAXIMUM_WORK_BUFFERS external frame
- * buffers.
+ * #AOM_MAXIMUM_WORK_BUFFERS external frame buffers.
  */
 aom_codec_err_t aom_codec_set_frame_buffer_functions(
     aom_codec_ctx_t *ctx, aom_get_frame_buffer_cb_fn_t cb_get,
