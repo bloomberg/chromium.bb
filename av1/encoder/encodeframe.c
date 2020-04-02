@@ -4416,6 +4416,7 @@ static AOM_INLINE void encode_nonrd_sb(AV1_COMP *cpi, ThreadData *td,
                       get_mi_grid_idx(&cm->mi_params, mi_row, mi_col);
   const BLOCK_SIZE sb_size = cm->seq_params.sb_size;
   if (sf->rt_sf.source_metrics_sb_nonrd && sb_size == BLOCK_64X64 &&
+      cpi->svc.number_spatial_layers == 1 &&
       cm->current_frame.frame_type != KEY_FRAME) {
     int shift = cpi->source->y_stride * (mi_row << 2) + (mi_col << 2);
     source_content_sb(cpi, x, shift);

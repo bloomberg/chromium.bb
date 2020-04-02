@@ -1781,7 +1781,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     if (!segfeature_active(seg, mi->segment_id, SEG_LVL_REF_FRAME)) {
       // Check for skipping GOLDEN and ALTREF based pred_mv_sad.
       if (cpi->sf.rt_sf.nonrd_prune_ref_frame_search > 0 &&
-          ref_frame != LAST_FRAME) {
+          x->pred_mv_sad[ref_frame] != INT_MAX && ref_frame != LAST_FRAME) {
         if ((int64_t)(x->pred_mv_sad[ref_frame]) > thresh_sad_pred)
           ref_frame_skip_mask |= (1 << ref_frame);
       }
