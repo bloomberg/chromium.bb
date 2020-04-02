@@ -1,5 +1,19 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
+#
+# Copyright (C) 2008 The Android Open Source Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """Repo launcher.
 
@@ -13,6 +27,7 @@ from __future__ import print_function
 import datetime
 import os
 import platform
+import shlex
 import subprocess
 import sys
 
@@ -117,22 +132,8 @@ REPO_REV = os.environ.get('REPO_REV')
 if not REPO_REV:
   REPO_REV = 'stable'
 
-# Copyright (C) 2008 Google Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 # increment this whenever we make important changes to this script
-VERSION = (2, 4)
+VERSION = (2, 5)
 
 # increment this if the MAINTAINER_KEYS block is modified
 KEYRING_VERSION = (2, 3)
@@ -250,8 +251,6 @@ else:
 home_dot_repo = os.path.expanduser('~/.repoconfig')
 gpg_dir = os.path.join(home_dot_repo, 'gnupg')
 
-extra_args = []
-
 
 def GetParser(gitc_init=False):
   """Setup the CLI parser."""
@@ -264,9 +263,12 @@ def GetParser(gitc_init=False):
 
   # Logging.
   group = parser.add_option_group('Logging options')
+  group.add_option('-v', '--verbose',
+                   dest='output_mode', action='store_true',
+                   help='show all output')
   group.add_option('-q', '--quiet',
-                   action='store_true', default=False,
-                   help='be quiet')
+                   dest='output_mode', action='store_false',
+                   help='only show errors')
 
   # Manifest.
   group = parser.add_option_group('Manifest options')
@@ -326,8 +328,10 @@ def GetParser(gitc_init=False):
   group = parser.add_option_group('repo Version options')
   group.add_option('--repo-url', metavar='URL',
                    help='repo repository location ($REPO_URL)')
-  group.add_option('--repo-branch', metavar='REVISION',
+  group.add_option('--repo-rev', metavar='REV',
                    help='repo branch or revision ($REPO_REV)')
+  group.add_option('--repo-branch', dest='repo_rev',
+                   help=optparse.SUPPRESS_HELP)
   group.add_option('--no-repo-verify',
                    dest='repo_verify', default=True, action='store_false',
                    help='do not verify repo source code')
@@ -381,7 +385,16 @@ def run_command(cmd, **kwargs):
   # Run & package the results.
   proc = subprocess.Popen(cmd, **kwargs)
   (stdout, stderr) = proc.communicate(input=cmd_input)
-  trace.print(':', ' '.join(cmd))
+  dbg = ': ' + ' '.join(cmd)
+  if cmd_input is not None:
+    dbg += ' 0<|'
+  if stdout == subprocess.PIPE:
+    dbg += ' 1>|'
+  if stderr == subprocess.PIPE:
+    dbg += ' 2>|'
+  elif stderr == subprocess.STDOUT:
+    dbg += ' 2>&1'
+  trace.print(dbg)
   ret = RunResult(proc.returncode, decode(stdout), decode(stderr))
 
   # If things failed, print useful debugging output.
@@ -450,6 +463,34 @@ class CloneFailure(Exception):
   """
 
 
+def check_repo_verify(repo_verify, quiet=False):
+  """Check the --repo-verify state."""
+  if not repo_verify:
+    print('repo: warning: verification of repo code has been disabled;\n'
+          'repo will not be able to verify the integrity of itself.\n',
+          file=sys.stderr)
+    return False
+
+  if NeedSetupGnuPG():
+    return SetupGnuPG(quiet)
+
+  return True
+
+
+def check_repo_rev(dst, rev, repo_verify=True, quiet=False):
+  """Check that |rev| is valid."""
+  do_verify = check_repo_verify(repo_verify, quiet=quiet)
+  remote_ref, local_rev = resolve_repo_rev(dst, rev)
+  if not quiet and not remote_ref.startswith('refs/heads/'):
+    print('warning: repo is not tracking a remote branch, so it will not '
+          'receive updates', file=sys.stderr)
+  if do_verify:
+    rev = verify_rev(dst, remote_ref, local_rev, quiet)
+  else:
+    rev = local_rev
+  return (remote_ref, rev)
+
+
 def _Init(args, gitc_init=False):
   """Installs repo by cloning it over the network.
   """
@@ -458,22 +499,11 @@ def _Init(args, gitc_init=False):
   if args:
     parser.print_usage()
     sys.exit(1)
+  opt.quiet = opt.output_mode is False
+  opt.verbose = opt.output_mode is True
 
-  url = opt.repo_url
-  if not url:
-    url = REPO_URL
-    extra_args.append('--repo-url=%s' % url)
-
-  branch = opt.repo_branch
-  if not branch:
-    branch = REPO_REV
-    extra_args.append('--repo-branch=%s' % branch)
-
-  if branch.startswith('refs/heads/'):
-    branch = branch[len('refs/heads/'):]
-  if branch.startswith('refs/'):
-    print("fatal: invalid branch name '%s'" % branch, file=sys.stderr)
-    raise CloneFailure()
+  url = opt.repo_url or REPO_URL
+  rev = opt.repo_rev or REPO_REV
 
   try:
     if gitc_init:
@@ -508,23 +538,13 @@ def _Init(args, gitc_init=False):
 
   _CheckGitVersion()
   try:
-    if not opt.repo_verify:
-      do_verify = False
-    else:
-      if NeedSetupGnuPG():
-        do_verify = SetupGnuPG(opt.quiet)
-      else:
-        do_verify = True
-
+    if not opt.quiet:
+      print('Downloading Repo source from', url)
     dst = os.path.abspath(os.path.join(repodir, S_repo))
-    _Clone(url, dst, opt.quiet, opt.clone_bundle)
+    _Clone(url, dst, opt.clone_bundle, opt.quiet, opt.verbose)
 
-    if do_verify:
-      rev = _Verify(dst, branch, opt.quiet)
-    else:
-      rev = 'refs/remotes/origin/%s^0' % branch
-
-    _Checkout(dst, branch, rev, opt.quiet)
+    remote_ref, rev = check_repo_rev(dst, rev, opt.repo_verify, quiet=opt.quiet)
+    _Checkout(dst, remote_ref, rev, opt.quiet)
 
     if not os.path.isfile(os.path.join(dst, 'repo')):
       print("warning: '%s' does not look like a git-repo repository, is "
@@ -589,7 +609,8 @@ def _CheckGitVersion():
 
   if ver_act < MIN_GIT_VERSION:
     need = '.'.join(map(str, MIN_GIT_VERSION))
-    print('fatal: git %s or later required' % need, file=sys.stderr)
+    print('fatal: git %s or later required; found %s' % (need, ver_act.full),
+          file=sys.stderr)
     raise CloneFailure()
 
 
@@ -693,6 +714,24 @@ def _SetConfig(cwd, name, value):
   run_git('config', name, value, cwd=cwd)
 
 
+def _GetRepoConfig(name):
+  """Read a repo configuration option."""
+  config = os.path.join(home_dot_repo, 'config')
+  if not os.path.exists(config):
+    return None
+
+  cmd = ['config', '--file', config, '--get', name]
+  ret = run_git(*cmd, check=False)
+  if ret.returncode == 0:
+    return ret.stdout
+  elif ret.returncode == 1:
+    return None
+  else:
+    print('repo: error: git %s failed:\n%s' % (' '.join(cmd), ret.stderr),
+          file=sys.stderr)
+    raise RunError()
+
+
 def _InitHttp():
   handlers = []
 
@@ -718,23 +757,22 @@ def _InitHttp():
   urllib.request.install_opener(urllib.request.build_opener(*handlers))
 
 
-def _Fetch(url, cwd, src, quiet):
-  if not quiet:
-    print('Get %s' % url, file=sys.stderr)
-
+def _Fetch(url, cwd, src, quiet, verbose):
   cmd = ['fetch']
-  if quiet:
+  if not verbose:
     cmd.append('--quiet')
+  err = None
+  if not quiet and sys.stdout.isatty():
+    cmd.append('--progress')
+  elif not verbose:
     err = subprocess.PIPE
-  else:
-    err = None
   cmd.append(src)
   cmd.append('+refs/heads/*:refs/remotes/origin/*')
   cmd.append('+refs/tags/*:refs/tags/*')
-  run_git(*cmd, stderr=err, cwd=cwd)
+  run_git(*cmd, stderr=err, capture_output=False, cwd=cwd)
 
 
-def _DownloadBundle(url, cwd, quiet):
+def _DownloadBundle(url, cwd, quiet, verbose):
   if not url.endswith('/'):
     url += '/'
   url += 'clone.bundle'
@@ -768,8 +806,8 @@ def _DownloadBundle(url, cwd, quiet):
       print('fatal: error %s' % e.reason, file=sys.stderr)
       raise CloneFailure()
     try:
-      if not quiet:
-        print('Get %s' % url, file=sys.stderr)
+      if verbose:
+        print('Downloading clone bundle %s' % url, file=sys.stderr)
       while True:
         buf = r.read(8192)
         if not buf:
@@ -784,14 +822,17 @@ def _DownloadBundle(url, cwd, quiet):
 def _ImportBundle(cwd):
   path = os.path.join(cwd, '.git', 'clone.bundle')
   try:
-    _Fetch(cwd, cwd, path, True)
+    _Fetch(cwd, cwd, path, True, False)
   finally:
     os.remove(path)
 
 
-def _Clone(url, cwd, quiet, clone_bundle):
+def _Clone(url, cwd, clone_bundle, quiet, verbose):
   """Clones a git repository to a new subdirectory of repodir
   """
+  if verbose:
+    print('Cloning git repository', url)
+
   try:
     os.mkdir(cwd)
   except OSError as e:
@@ -806,28 +847,88 @@ def _Clone(url, cwd, quiet, clone_bundle):
   _SetConfig(cwd,
              'remote.origin.fetch',
              '+refs/heads/*:refs/remotes/origin/*')
-  if clone_bundle and _DownloadBundle(url, cwd, quiet):
+  if clone_bundle and _DownloadBundle(url, cwd, quiet, verbose):
     _ImportBundle(cwd)
-  _Fetch(url, cwd, 'origin', quiet)
+  _Fetch(url, cwd, 'origin', quiet, verbose)
 
 
-def _Verify(cwd, branch, quiet):
-  """Verify the branch has been signed by a tag.
+def resolve_repo_rev(cwd, committish):
+  """Figure out what REPO_REV represents.
+
+  We support:
+  * refs/heads/xxx: Branch.
+  * refs/tags/xxx: Tag.
+  * xxx: Branch or tag or commit.
+
+  Args:
+    cwd: The git checkout to run in.
+    committish: The REPO_REV argument to resolve.
+
+  Returns:
+    A tuple of (remote ref, commit) as makes sense for the committish.
+    For branches, this will look like ('refs/heads/stable', <revision>).
+    For tags, this will look like ('refs/tags/v1.0', <revision>).
+    For commits, this will be (<revision>, <revision>).
   """
-  try:
-    ret = run_git('describe', 'origin/%s' % branch, cwd=cwd)
-    cur = ret.stdout.strip()
-  except CloneFailure:
-    print("fatal: branch '%s' has not been signed" % branch, file=sys.stderr)
-    raise
+  def resolve(committish):
+    ret = run_git('rev-parse', '--verify', '%s^{commit}' % (committish,),
+                  cwd=cwd, check=False)
+    return None if ret.returncode else ret.stdout.strip()
+
+  # An explicit branch.
+  if committish.startswith('refs/heads/'):
+    remote_ref = committish
+    committish = committish[len('refs/heads/'):]
+    rev = resolve('refs/remotes/origin/%s' % committish)
+    if rev is None:
+      print('repo: error: unknown branch "%s"' % (committish,),
+            file=sys.stderr)
+      raise CloneFailure()
+    return (remote_ref, rev)
+
+  # An explicit tag.
+  if committish.startswith('refs/tags/'):
+    remote_ref = committish
+    committish = committish[len('refs/tags/'):]
+    rev = resolve(remote_ref)
+    if rev is None:
+      print('repo: error: unknown tag "%s"' % (committish,),
+            file=sys.stderr)
+      raise CloneFailure()
+    return (remote_ref, rev)
+
+  # See if it's a short branch name.
+  rev = resolve('refs/remotes/origin/%s' % committish)
+  if rev:
+    return ('refs/heads/%s' % (committish,), rev)
+
+  # See if it's a tag.
+  rev = resolve('refs/tags/%s' % committish)
+  if rev:
+    return ('refs/tags/%s' % (committish,), rev)
+
+  # See if it's a commit.
+  rev = resolve(committish)
+  if rev and rev.lower().startswith(committish.lower()):
+    return (rev, rev)
+
+  # Give up!
+  print('repo: error: unable to resolve "%s"' % (committish,), file=sys.stderr)
+  raise CloneFailure()
+
+
+def verify_rev(cwd, remote_ref, rev, quiet):
+  """Verify the commit has been signed by a tag."""
+  ret = run_git('describe', rev, cwd=cwd)
+  cur = ret.stdout.strip()
 
   m = re.compile(r'^(.*)-[0-9]{1,}-g[0-9a-f]{1,}$').match(cur)
   if m:
     cur = m.group(1)
     if not quiet:
       print(file=sys.stderr)
-      print("info: Ignoring branch '%s'; using tagged release '%s'"
-            % (branch, cur), file=sys.stderr)
+      print("warning: '%s' is not signed; falling back to signed release '%s'"
+            % (remote_ref, cur), file=sys.stderr)
       print(file=sys.stderr)
 
   env = os.environ.copy()
@@ -836,13 +937,13 @@ def _Verify(cwd, branch, quiet):
   return '%s^0' % cur
 
 
-def _Checkout(cwd, branch, rev, quiet):
+def _Checkout(cwd, remote_ref, rev, quiet):
   """Checkout an upstream branch into the repository and track it.
   """
   run_git('update-ref', 'refs/heads/default', rev, cwd=cwd)
 
   _SetConfig(cwd, 'branch.default.remote', 'origin')
-  _SetConfig(cwd, 'branch.default.merge', 'refs/heads/%s' % branch)
+  _SetConfig(cwd, 'branch.default.merge', remote_ref)
 
   run_git('symbolic-ref', 'HEAD', 'refs/heads/default', cwd=cwd)
 
@@ -874,6 +975,25 @@ def _FindRepo():
 class _Options(object):
   help = False
   version = False
+
+
+def _ExpandAlias(name):
+  """Look up user registered aliases."""
+  # We don't resolve aliases for existing subcommands.  This matches git.
+  if name in {'gitc-init', 'help', 'init'}:
+    return name, []
+
+  alias = _GetRepoConfig('alias.%s' % (name,))
+  if alias is None:
+    return name, []
+
+  args = alias.strip().split(' ', 1)
+  name = args[0]
+  if len(args) == 2:
+    args = shlex.split(args[1])
+  else:
+    args = []
+  return name, args
 
 
 def _ParseArguments(args):
@@ -939,6 +1059,14 @@ def _Version():
   print('       (from %s)' % (__file__,))
   print('git %s' % (ParseGitVersion().full,))
   print('Python %s' % sys.version)
+  uname = platform.uname()
+  if sys.version_info.major < 3:
+    # Python 3 returns a named tuple, but Python 2 is simpler.
+    print(uname)
+  else:
+    print('OS %s %s (%s)' % (uname.system, uname.release, uname.version))
+    print('CPU %s (%s)' %
+          (uname.machine, uname.processor if uname.processor else 'unknown'))
   sys.exit(0)
 
 
@@ -974,12 +1102,18 @@ def _SetDefaultsTo(gitdir):
   global REPO_REV
 
   REPO_URL = gitdir
-  try:
-    ret = run_git('--git-dir=%s' % gitdir, 'symbolic-ref', 'HEAD')
-    REPO_REV = ret.stdout.strip()
-  except CloneFailure:
-    print('fatal: %s has no current branch' % gitdir, file=sys.stderr)
-    sys.exit(1)
+  ret = run_git('--git-dir=%s' % gitdir, 'symbolic-ref', 'HEAD', check=False)
+  if ret.returncode:
+    # If we're not tracking a branch (bisect/etc...), then fall back to commit.
+    print('repo: warning: %s has no current branch; using HEAD' % gitdir,
+          file=sys.stderr)
+    try:
+      ret = run_git('rev-parse', 'HEAD', cwd=gitdir)
+    except CloneFailure:
+      print('fatal: %s has invalid HEAD' % gitdir, file=sys.stderr)
+      sys.exit(1)
+
+  REPO_REV = ret.stdout.strip()
 
 
 def main(orig_args):
@@ -1004,6 +1138,11 @@ def main(orig_args):
           file=sys.stderr)
     sys.exit(1)
   if not repo_main:
+    # Only expand aliases here since we'll be parsing the CLI ourselves.
+    # If we had repo_main, alias expansion would happen in main.py.
+    cmd, alias_args = _ExpandAlias(cmd)
+    args = alias_args + args
+
     if opt.help:
       _Usage()
     if cmd == 'help':
@@ -1037,7 +1176,6 @@ def main(orig_args):
         '--wrapper-path=%s' % wrapper_path,
         '--']
   me.extend(orig_args)
-  me.extend(extra_args)
   exec_command(me)
   print("fatal: unable to start %s" % repo_main, file=sys.stderr)
   sys.exit(148)
