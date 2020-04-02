@@ -27,7 +27,6 @@
 #include "av1/encoder/firstpass.h"
 
 #define MAG_SIZE (4)
-#define MAX_NUM_ENHANCEMENT_LAYERS 3
 
 struct av1_extracfg {
   int cpu_used;
@@ -2460,7 +2459,7 @@ static aom_codec_err_t ctrl_set_scale_mode(aom_codec_alg_priv_t *ctx,
 static aom_codec_err_t ctrl_set_spatial_layer_id(aom_codec_alg_priv_t *ctx,
                                                  va_list args) {
   const int spatial_layer_id = va_arg(args, int);
-  if (spatial_layer_id > MAX_NUM_ENHANCEMENT_LAYERS)
+  if (spatial_layer_id >= MAX_NUM_SPATIAL_LAYERS)
     return AOM_CODEC_INVALID_PARAM;
   ctx->cpi->common.spatial_layer_id = spatial_layer_id;
   return AOM_CODEC_OK;
@@ -2469,7 +2468,7 @@ static aom_codec_err_t ctrl_set_spatial_layer_id(aom_codec_alg_priv_t *ctx,
 static aom_codec_err_t ctrl_set_number_spatial_layers(aom_codec_alg_priv_t *ctx,
                                                       va_list args) {
   const int number_spatial_layers = va_arg(args, int);
-  if (number_spatial_layers > MAX_NUM_ENHANCEMENT_LAYERS)
+  if (number_spatial_layers > MAX_NUM_SPATIAL_LAYERS)
     return AOM_CODEC_INVALID_PARAM;
   ctx->cpi->common.number_spatial_layers = number_spatial_layers;
   return AOM_CODEC_OK;

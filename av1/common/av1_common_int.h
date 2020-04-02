@@ -71,7 +71,7 @@ extern "C" {
 // clang-format seems to think this is a pointer dereference and not a
 // multiplication.
 #define MAX_NUM_OPERATING_POINTS \
-  MAX_NUM_TEMPORAL_LAYERS * MAX_NUM_SPATIAL_LAYERS
+  (MAX_NUM_TEMPORAL_LAYERS * MAX_NUM_SPATIAL_LAYERS)
 /* clang-format on */
 
 // TODO(jingning): Turning this on to set up transform coefficient
