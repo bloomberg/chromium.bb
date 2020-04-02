@@ -2569,11 +2569,8 @@ static AOM_INLINE void select_tx_block(
   }
 
   MACROBLOCKD *const xd = &x->e_mbd;
-  const int max_blocks_high = max_block_high(xd, plane_bsize, 0);
-  const int max_blocks_wide = max_block_wide(xd, plane_bsize, 0);
-  if (blk_row >= max_blocks_high || blk_col >= max_blocks_wide) return;
-
-  const int bw = mi_size_wide[plane_bsize];
+  assert(blk_row < max_block_high(xd, plane_bsize, 0) &&
+         blk_col < max_block_wide(xd, plane_bsize, 0));
   MB_MODE_INFO *const mbmi = xd->mi[0];
   const int ctx = txfm_partition_context(tx_above + blk_col, tx_left + blk_row,
                                          mbmi->sb_type, tx_size);
@@ -2648,6 +2645,7 @@ static AOM_INLINE void select_tx_block(
     }
     mbmi->tx_size = tx_size_selected;
     update_txk_array(xd, blk_row, blk_col, tx_size, no_split.tx_type);
+    const int bw = mi_size_wide[plane_bsize];
     set_blk_skip(x, 0, blk_row * bw + blk_col, rd_stats->skip);
   } else {
     *rd_stats = split_rd_stats;
@@ -3131,8 +3129,8 @@ static int64_t select_tx_size_and_type(const AV1_COMP *cpi, MACROBLOCK *x,
   int block = 0;
 
   av1_init_rd_stats(rd_stats);
-  for (int idy = 0; idy < mi_height; idy += bh) {
-    for (int idx = 0; idx < mi_width; idx += bw) {
+  for (int idy = 0; idy < max_block_high(xd, bsize, 0); idy += bh) {
+    for (int idx = 0; idx < max_block_wide(xd, bsize, 0); idx += bw) {
       const int64_t best_rd_sofar =
           (rd_thresh == INT64_MAX)
               ? INT64_MAX
