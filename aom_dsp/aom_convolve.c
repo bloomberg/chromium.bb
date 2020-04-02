@@ -74,7 +74,6 @@ static void convolve_vert(const uint8_t *src, ptrdiff_t src_stride,
 
 static const InterpKernel *get_filter_base(const int16_t *filter) {
   // NOTE: This assumes that the filter table is 256-byte aligned.
-  // TODO(agrange) Modify to make independent of table alignment.
   return (const InterpKernel *)(((intptr_t)filter) & ~((intptr_t)0xFF));
 }
 
