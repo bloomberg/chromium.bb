@@ -836,59 +836,27 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
   }
 }
 
-static AOM_INLINE void dec_build_inter_predictors_for_planes(
-    const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
-    int plane_from, int plane_to) {
-  const int mi_x = mi_col * MI_SIZE;
-  const int mi_y = mi_row * MI_SIZE;
-  for (int plane = plane_from; plane <= plane_to; ++plane) {
-    if (plane && !xd->is_chroma_ref) break;
-    const struct macroblockd_plane *pd = &xd->plane[plane];
-    const int bw = pd->width;
-    const int bh = pd->height;
-    dec_build_inter_predictors(cm, xd, plane, xd->mi[0], 0, bw, bh, mi_x, mi_y);
-  }
-}
-
-static AOM_INLINE void dec_build_inter_predictors_sby(const AV1_COMMON *cm,
-                                                      MACROBLOCKD *xd,
-                                                      int mi_row, int mi_col,
-                                                      BLOCK_SIZE bsize) {
-  dec_build_inter_predictors_for_planes(cm, xd, mi_row, mi_col, 0, 0);
-
-  if (is_interintra_pred(xd->mi[0])) {
-    BUFFER_SET ctx = { { xd->plane[0].dst.buf, NULL, NULL },
-                       { xd->plane[0].dst.stride, 0, 0 } };
-    av1_build_interintra_predictors_sbp(
-        cm, xd, xd->plane[0].dst.buf, xd->plane[0].dst.stride, &ctx, 0, bsize);
-  }
-}
-
-static AOM_INLINE void dec_build_inter_predictors_sbuv(const AV1_COMMON *cm,
-                                                       MACROBLOCKD *xd,
-                                                       int mi_row, int mi_col,
-                                                       BLOCK_SIZE bsize) {
-  dec_build_inter_predictors_for_planes(cm, xd, mi_row, mi_col, 1,
-                                        MAX_MB_PLANE - 1);
-
-  if (is_interintra_pred(xd->mi[0])) {
-    BUFFER_SET ctx = { { NULL, xd->plane[1].dst.buf, xd->plane[2].dst.buf },
-                       { 0, xd->plane[1].dst.stride,
-                         xd->plane[2].dst.stride } };
-    av1_build_interintra_predictors_sbuv(
-        cm, xd, xd->plane[1].dst.buf, xd->plane[2].dst.buf,
-        xd->plane[1].dst.stride, xd->plane[2].dst.stride, &ctx, bsize);
-  }
-}
-
-static AOM_INLINE void dec_build_inter_predictors_sb(const AV1_COMMON *cm,
-                                                     MACROBLOCKD *xd,
-                                                     int mi_row, int mi_col,
-                                                     BLOCK_SIZE bsize) {
+static AOM_INLINE void dec_build_inter_predictor(const AV1_COMMON *cm,
+                                                 MACROBLOCKD *xd, int mi_row,
+                                                 int mi_col, BLOCK_SIZE bsize) {
   const int num_planes = av1_num_planes(cm);
-  dec_build_inter_predictors_sby(cm, xd, mi_row, mi_col, bsize);
-  if (num_planes > 1)
-    dec_build_inter_predictors_sbuv(cm, xd, mi_row, mi_col, bsize);
+  for (int plane = 0; plane < num_planes; ++plane) {
+    if (plane && !xd->is_chroma_ref) break;
+    const int mi_x = mi_col * MI_SIZE;
+    const int mi_y = mi_row * MI_SIZE;
+    dec_build_inter_predictors(cm, xd, plane, xd->mi[0], 0,
+                               xd->plane[plane].width, xd->plane[plane].height,
+                               mi_x, mi_y);
+    if (is_interintra_pred(xd->mi[0])) {
+      BUFFER_SET ctx = { { xd->plane[0].dst.buf, xd->plane[1].dst.buf,
+                           xd->plane[2].dst.buf },
+                         { xd->plane[0].dst.stride, xd->plane[1].dst.stride,
+                           xd->plane[2].dst.stride } };
+      av1_build_interintra_predictor(cm, xd, xd->plane[plane].dst.buf,
+                                     xd->plane[plane].dst.stride, &ctx, plane,
+                                     bsize);
+    }
+  }
 }
 
 static INLINE void dec_build_prediction_by_above_pred(
@@ -1091,7 +1059,7 @@ static AOM_INLINE void predict_inter_block(AV1_COMMON *const cm,
     }
   }
 
-  dec_build_inter_predictors_sb(cm, xd, mi_row, mi_col, bsize);
+  dec_build_inter_predictor(cm, xd, mi_row, mi_col, bsize);
   if (mbmi->motion_mode == OBMC_CAUSAL) {
     dec_build_obmc_inter_predictors_sb(cm, xd);
   }

@@ -363,16 +363,10 @@ const uint8_t *av1_get_compound_type_mask(
     const INTERINTER_COMPOUND_DATA *const comp_data, BLOCK_SIZE sb_type);
 
 // build interintra_predictors for one plane
-void av1_build_interintra_predictors_sbp(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                         uint8_t *pred, int stride,
-                                         const BUFFER_SET *ctx, int plane,
-                                         BLOCK_SIZE bsize);
-
-void av1_build_interintra_predictors_sbuv(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                          uint8_t *upred, uint8_t *vpred,
-                                          int ustride, int vstride,
-                                          const BUFFER_SET *ctx,
-                                          BLOCK_SIZE bsize);
+void av1_build_interintra_predictor(const AV1_COMMON *cm, MACROBLOCKD *xd,
+                                    uint8_t *pred, int stride,
+                                    const BUFFER_SET *ctx, int plane,
+                                    BLOCK_SIZE bsize);
 
 void av1_build_intra_predictors_for_interintra(const AV1_COMMON *cm,
                                                MACROBLOCKD *xd,

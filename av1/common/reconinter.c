@@ -1195,10 +1195,10 @@ void av1_combine_interintra(MACROBLOCKD *xd, BLOCK_SIZE bsize, int plane,
 }
 
 // build interintra_predictors for one plane
-void av1_build_interintra_predictors_sbp(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                         uint8_t *pred, int stride,
-                                         const BUFFER_SET *ctx, int plane,
-                                         BLOCK_SIZE bsize) {
+void av1_build_interintra_predictor(const AV1_COMMON *cm, MACROBLOCKD *xd,
+                                    uint8_t *pred, int stride,
+                                    const BUFFER_SET *ctx, int plane,
+                                    BLOCK_SIZE bsize) {
   assert(bsize < BLOCK_SIZES_ALL);
   if (is_cur_buf_hbd(xd)) {
     DECLARE_ALIGNED(16, uint16_t, intrapredictor[MAX_SB_SQUARE]);
@@ -1214,13 +1214,4 @@ void av1_build_interintra_predictors_sbp(const AV1_COMMON *cm, MACROBLOCKD *xd,
     av1_combine_interintra(xd, bsize, plane, pred, stride, intrapredictor,
                            MAX_SB_SIZE);
   }
-}
-
-void av1_build_interintra_predictors_sbuv(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                          uint8_t *upred, uint8_t *vpred,
-                                          int ustride, int vstride,
-                                          const BUFFER_SET *ctx,
-                                          BLOCK_SIZE bsize) {
-  av1_build_interintra_predictors_sbp(cm, xd, upred, ustride, ctx, 1, bsize);
-  av1_build_interintra_predictors_sbp(cm, xd, vpred, vstride, ctx, 2, bsize);
 }

@@ -170,31 +170,6 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
   }
 }
 
-static void build_inter_predictors_for_plane(const AV1_COMMON *cm,
-                                             MACROBLOCKD *xd, int mi_row,
-                                             int mi_col, const BUFFER_SET *ctx,
-                                             BLOCK_SIZE bsize, int plane_idx) {
-  if (plane_idx && !xd->is_chroma_ref) return;
-
-  const struct macroblockd_plane *pd = &xd->plane[plane_idx];
-  const int mi_x = mi_col * MI_SIZE;
-  const int mi_y = mi_row * MI_SIZE;
-  build_inter_predictors(cm, xd, plane_idx, xd->mi[0], pd->width, pd->height,
-                         mi_x, mi_y);
-
-  if (is_interintra_pred(xd->mi[0])) {
-    BUFFER_SET default_ctx = { { NULL, NULL, NULL }, { 0, 0, 0 } };
-    if (!ctx) {
-      default_ctx.plane[plane_idx] = xd->plane[plane_idx].dst.buf;
-      default_ctx.stride[plane_idx] = xd->plane[plane_idx].dst.stride;
-      ctx = &default_ctx;
-    }
-    av1_build_interintra_predictors_sbp(cm, xd, xd->plane[plane_idx].dst.buf,
-                                        xd->plane[plane_idx].dst.stride, ctx,
-                                        plane_idx, bsize);
-  }
-}
-
 void av1_enc_build_inter_predictor_y(MACROBLOCKD *xd, int mi_row, int mi_col) {
   const int mi_x = mi_col * MI_SIZE;
   const int mi_y = mi_row * MI_SIZE;
@@ -222,9 +197,26 @@ void av1_enc_build_inter_predictor(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                    int mi_row, int mi_col,
                                    const BUFFER_SET *ctx, BLOCK_SIZE bsize,
                                    int plane_from, int plane_to) {
-  for (int plane_idx = plane_from; plane_idx <= plane_to; ++plane_idx) {
-    build_inter_predictors_for_plane(cm, xd, mi_row, mi_col, ctx, bsize,
-                                     plane_idx);
+  for (int plane = plane_from; plane <= plane_to; ++plane) {
+    if (plane && !xd->is_chroma_ref) break;
+    const int mi_x = mi_col * MI_SIZE;
+    const int mi_y = mi_row * MI_SIZE;
+    build_inter_predictors(cm, xd, plane, xd->mi[0], xd->plane[plane].width,
+                           xd->plane[plane].height, mi_x, mi_y);
+
+    if (is_interintra_pred(xd->mi[0])) {
+      BUFFER_SET default_ctx = {
+        { xd->plane[0].dst.buf, xd->plane[1].dst.buf, xd->plane[2].dst.buf },
+        { xd->plane[0].dst.stride, xd->plane[1].dst.stride,
+          xd->plane[2].dst.stride }
+      };
+      if (!ctx) {
+        ctx = &default_ctx;
+      }
+      av1_build_interintra_predictor(cm, xd, xd->plane[plane].dst.buf,
+                                     xd->plane[plane].dst.stride, ctx, plane,
+                                     bsize);
+    }
   }
 }
 
