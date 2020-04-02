@@ -20783,6 +20783,10 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "gce_tests": [
+            "{\n    \"test_suite\": \"gce-sanity\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}",
+            "{\n    \"test_suite\": \"gce-smoke\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}"
+        ],
         "health_alert_recipients": [
             "gci-alerts+buildbots@google.com"
         ],
@@ -20814,6 +20818,10 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "gce_tests": [
+            "{\n    \"test_suite\": \"gce-sanity\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}",
+            "{\n    \"test_suite\": \"gce-smoke\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}"
+        ],
         "health_alert_recipients": [
             "gci-alerts+buildbots@google.com"
         ],
@@ -20930,6 +20938,10 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "gce_tests": [
+            "{\n    \"test_suite\": \"gce-sanity\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}",
+            "{\n    \"test_suite\": \"gce-smoke\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}"
+        ],
         "health_alert_recipients": [
             "gci-alerts+buildbots@google.com"
         ],
@@ -20967,6 +20979,10 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "gce_tests": [
+            "{\n    \"test_suite\": \"gce-sanity\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}",
+            "{\n    \"test_suite\": \"gce-smoke\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}"
+        ],
         "health_alert_recipients": [
             "gci-alerts+buildbots@google.com"
         ],
@@ -21026,6 +21042,10 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "gce_tests": [
+            "{\n    \"test_suite\": \"gce-sanity\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}",
+            "{\n    \"test_suite\": \"gce-smoke\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}"
+        ],
         "health_alert_recipients": [
             "gci-alerts+buildbots@google.com"
         ],
@@ -21058,6 +21078,10 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "gce_tests": [
+            "{\n    \"test_suite\": \"gce-sanity\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}",
+            "{\n    \"test_suite\": \"gce-smoke\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}"
+        ],
         "health_alert_recipients": [
             "gci-alerts+buildbots@google.com"
         ],
@@ -21434,6 +21458,10 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "gce_tests": [
+            "{\n    \"test_suite\": \"gce-sanity\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}",
+            "{\n    \"test_suite\": \"gce-smoke\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}"
+        ],
         "health_alert_recipients": [
             "gci-alerts+buildbots@google.com"
         ],
@@ -21470,6 +21498,10 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "gce_tests": [
+            "{\n    \"test_suite\": \"gce-sanity\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}",
+            "{\n    \"test_suite\": \"gce-smoke\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}"
+        ],
         "health_alert_recipients": [
             "gci-alerts+buildbots@google.com"
         ],
@@ -21558,6 +21590,10 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "gce_tests": [
+            "{\n    \"test_suite\": \"gce-sanity\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}",
+            "{\n    \"test_suite\": \"gce-smoke\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}"
+        ],
         "health_alert_recipients": [
             "gci-alerts+buildbots@google.com"
         ],
@@ -21589,6 +21625,10 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "gce_tests": [
+            "{\n    \"test_suite\": \"gce-sanity\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}",
+            "{\n    \"test_suite\": \"gce-smoke\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}"
+        ],
         "health_alert_recipients": [
             "gci-alerts+buildbots@google.com"
         ],
@@ -21705,6 +21745,10 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "gce_tests": [
+            "{\n    \"test_suite\": \"gce-sanity\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}",
+            "{\n    \"test_suite\": \"gce-smoke\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}"
+        ],
         "health_alert_recipients": [
             "gci-alerts+buildbots@google.com"
         ],
@@ -21742,6 +21786,10 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "gce_tests": [
+            "{\n    \"test_suite\": \"gce-sanity\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}",
+            "{\n    \"test_suite\": \"gce-smoke\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}"
+        ],
         "health_alert_recipients": [
             "gci-alerts+buildbots@google.com"
         ],
@@ -21872,6 +21920,10 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "gce_tests": [
+            "{\n    \"test_suite\": \"gce-sanity\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}",
+            "{\n    \"test_suite\": \"gce-smoke\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}"
+        ],
         "health_alert_recipients": [
             "gci-alerts+buildbots@google.com"
         ],
@@ -21903,6 +21955,10 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "gce_tests": [
+            "{\n    \"test_suite\": \"gce-sanity\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}",
+            "{\n    \"test_suite\": \"gce-smoke\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}"
+        ],
         "health_alert_recipients": [
             "gci-alerts+buildbots@google.com"
         ],
@@ -22019,6 +22075,10 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "gce_tests": [
+            "{\n    \"test_suite\": \"gce-sanity\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}",
+            "{\n    \"test_suite\": \"gce-smoke\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}"
+        ],
         "health_alert_recipients": [
             "gci-alerts+buildbots@google.com"
         ],
@@ -22054,6 +22114,10 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "gce_tests": [
+            "{\n    \"test_suite\": \"gce-sanity\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}",
+            "{\n    \"test_suite\": \"gce-smoke\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}"
+        ],
         "health_alert_recipients": [
             "gci-alerts+buildbots@google.com"
         ],

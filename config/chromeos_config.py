@@ -312,6 +312,10 @@ def GeneralTemplates(site_config):
       vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
                                         test_suite='smoke')],
       vm_tests_override=None,
+      gce_tests=[config_lib.GCETestConfig(constants.GCE_SUITE_TEST_TYPE,
+                                          test_suite='gce-sanity'),
+                 config_lib.GCETestConfig(constants.GCE_SUITE_TEST_TYPE,
+                                          test_suite='gce-smoke')],
   )
 
   # No GCE tests for lakitu-nc; Enable 'hsm' profile by default.
