@@ -131,6 +131,16 @@ static AOM_INLINE void free_tree_contexts(PC_TREE *tree, const int num_planes) {
   free_mode_context(&tree->vertical[1], num_planes);
 }
 
+// This function will compute the number of pc_tree nodes to be allocated
+// or freed as per the super block size of BLOCK_128X128 or BLOCK_64X64
+static AOM_INLINE int get_pc_tree_nodes(const int is_sb_size_128,
+                                        int stat_generation_stage) {
+  const int tree_nodes_inc = is_sb_size_128 ? 1024 : 0;
+  const int tree_nodes =
+      stat_generation_stage ? 1 : (tree_nodes_inc + 256 + 64 + 16 + 4 + 1);
+  return tree_nodes;
+}
+
 // This function sets up a tree of contexts such that at each square
 // partition level. There are contexts for none, horizontal, vertical, and
 // split.  Along with a block_size value and a selected block_size which
@@ -138,9 +148,9 @@ static AOM_INLINE void free_tree_contexts(PC_TREE *tree, const int num_planes) {
 void av1_setup_pc_tree(AV1_COMP *const cpi, ThreadData *td) {
   AV1_COMMON *const cm = &cpi->common;
   int i, j, stat_generation_stage = is_stat_generation_stage(cpi);
-  const int tree_nodes_inc = 1024;
+  const int is_sb_size_128 = cm->seq_params.sb_size == BLOCK_128X128;
   const int tree_nodes =
-      stat_generation_stage ? 1 : (tree_nodes_inc + 256 + 64 + 16 + 4 + 1);
+      get_pc_tree_nodes(is_sb_size_128, stat_generation_stage);
   int pc_tree_index = 0;
   PC_TREE *this_pc;
   PC_TREE_SHARED_BUFFERS shared_bufs;
@@ -166,7 +176,7 @@ void av1_setup_pc_tree(AV1_COMP *const cpi, ThreadData *td) {
   }
 
   if (!stat_generation_stage) {
-    const int leaf_factor = 4;
+    const int leaf_factor = is_sb_size_128 ? 4 : 1;
     const int leaf_nodes = 256 * leaf_factor;
 
     // Sets up all the leaf nodes in the tree.
@@ -199,30 +209,20 @@ void av1_setup_pc_tree(AV1_COMP *const cpi, ThreadData *td) {
     tree->block_size = square[square_index];
   }
 
-  // Set up the root node for the largest superblock size
-  i = MAX_MIB_SIZE_LOG2 - MIN_MIB_SIZE_LOG2;
-  td->pc_root[i] = &td->pc_tree[tree_nodes - 1];
+  // Set up the root node for the applicable superblock size
+  td->pc_root = &td->pc_tree[tree_nodes - 1];
 #if CONFIG_INTERNAL_STATS
-  td->pc_root[i]->none.best_mode_index = THR_INVALID;
+  td->pc_root->none.best_mode_index = THR_INVALID;
 #endif  // CONFIG_INTERNAL_STATS
-  if (!stat_generation_stage) {
-    // Set up the root nodes for the rest of the possible superblock sizes
-    while (--i >= 0) {
-      td->pc_root[i] = td->pc_root[i + 1]->split[0];
-#if CONFIG_INTERNAL_STATS
-      td->pc_root[i]->none.best_mode_index = THR_INVALID;
-#endif  // CONFIG_INTERNAL_STATS
-    }
-  }
 }
 
 void av1_free_pc_tree(const AV1_COMP *const cpi, ThreadData *td,
-                      const int num_planes) {
+                      const int num_planes, BLOCK_SIZE sb_size) {
   int stat_generation_stage = is_stat_generation_stage(cpi);
   if (td->pc_tree != NULL) {
-    const int tree_nodes_inc = 1024;
+    const int is_sb_size_128 = sb_size == BLOCK_128X128;
     const int tree_nodes =
-        stat_generation_stage ? 1 : (tree_nodes_inc + 256 + 64 + 16 + 4 + 1);
+        get_pc_tree_nodes(is_sb_size_128, stat_generation_stage);
     for (int i = 0; i < tree_nodes; ++i) {
       free_tree_contexts(&td->pc_tree[i], num_planes);
     }

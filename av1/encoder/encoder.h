@@ -685,7 +685,7 @@ typedef struct ThreadData {
   RD_COUNTS rd_counts;
   FRAME_COUNTS *counts;
   PC_TREE *pc_tree;
-  PC_TREE *pc_root[MAX_MIB_SIZE_LOG2 - MIN_MIB_SIZE_LOG2 + 1];
+  PC_TREE *pc_root;
   tran_low_t *tree_coeff_buf[MAX_MB_PLANE];
   tran_low_t *tree_qcoeff_buf[MAX_MB_PLANE];
   tran_low_t *tree_dqcoeff_buf[MAX_MB_PLANE];

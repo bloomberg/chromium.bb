@@ -860,8 +860,7 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
   const SequenceHeader *const seq_params = &cm->seq_params;
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &x->e_mbd;
-  const PICK_MODE_CONTEXT *ctx =
-      &cpi->td.pc_root[MAX_MIB_SIZE_LOG2 - MIN_MIB_SIZE_LOG2]->none;
+  const PICK_MODE_CONTEXT *ctx = &cpi->td.pc_root->none;
   MV last_mv = kZeroMv;
   const int qindex = find_fp_qindex(seq_params->bit_depth);
   // First pass coding proceeds in raster scan order with unit size of 16x16.

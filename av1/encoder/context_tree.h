@@ -86,7 +86,7 @@ typedef struct PC_TREE {
 
 void av1_setup_pc_tree(struct AV1_COMP *const cpi, struct ThreadData *td);
 void av1_free_pc_tree(const struct AV1_COMP *const cpi, struct ThreadData *td,
-                      const int num_planes);
+                      const int num_planes, BLOCK_SIZE sb_size);
 void av1_copy_tree_context(PICK_MODE_CONTEXT *dst_ctx,
                            PICK_MODE_CONTEXT *src_ctx);
 

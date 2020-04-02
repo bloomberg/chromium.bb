@@ -873,7 +873,7 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
   aom_free(cpi->tplist[0][0]);
   cpi->tplist[0][0] = NULL;
 
-  av1_free_pc_tree(cpi, &cpi->td, num_planes);
+  av1_free_pc_tree(cpi, &cpi->td, num_planes, cm->seq_params.sb_size);
 
   aom_free(cpi->td.mb.palette_buffer);
   av1_release_compound_type_rd_buffers(&cpi->td.mb.comp_rd_buffer);
@@ -2925,7 +2925,7 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
     if (cm->width > cpi->initial_width || cm->height > cpi->initial_height ||
         seq_params->sb_size != sb_size) {
       av1_free_context_buffers(cm);
-      av1_free_pc_tree(cpi, &cpi->td, num_planes);
+      av1_free_pc_tree(cpi, &cpi->td, num_planes, (BLOCK_SIZE)sb_size);
       alloc_compressor_data(cpi);
       realloc_segmentation_maps(cpi);
       cpi->initial_width = cpi->initial_height = 0;
@@ -3616,7 +3616,8 @@ void av1_remove_compressor(AV1_COMP *cpi) {
       }
       aom_free(thread_data->td->mask_buf);
       aom_free(thread_data->td->counts);
-      av1_free_pc_tree(cpi, thread_data->td, num_planes);
+      av1_free_pc_tree(cpi, thread_data->td, num_planes,
+                       cm->seq_params.sb_size);
       aom_free(thread_data->td->mbmi_ext);
       aom_free(thread_data->td);
     }
@@ -4332,7 +4333,7 @@ int av1_set_size_literal(AV1_COMP *cpi, int width, int height) {
   if (cpi->initial_width && cpi->initial_height &&
       (cm->width > cpi->initial_width || cm->height > cpi->initial_height)) {
     av1_free_context_buffers(cm);
-    av1_free_pc_tree(cpi, &cpi->td, num_planes);
+    av1_free_pc_tree(cpi, &cpi->td, num_planes, cm->seq_params.sb_size);
     alloc_compressor_data(cpi);
     realloc_segmentation_maps(cpi);
     cpi->initial_width = cpi->initial_height = 0;

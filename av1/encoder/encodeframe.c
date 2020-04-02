@@ -4916,7 +4916,7 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
     x->color_sensitivity[1] = 0;
     x->content_state_sb = 0;
 
-    PC_TREE *const pc_root = td->pc_root[mib_size_log2 - MIN_MIB_SIZE_LOG2];
+    PC_TREE *const pc_root = td->pc_root;
     pc_root->index = 0;
 
     xd->cur_frame_force_integer_mv = cm->features.cur_frame_force_integer_mv;
