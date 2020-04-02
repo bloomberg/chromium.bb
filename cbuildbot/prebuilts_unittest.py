@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import sys
 
 import mock
 
@@ -17,6 +18,9 @@ from chromite.cbuildbot import prebuilts
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 DEFAULT_CHROME_BRANCH = '27'
 

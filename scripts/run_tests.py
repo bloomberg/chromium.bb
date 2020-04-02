@@ -84,8 +84,6 @@ SPECIAL_TESTS = {
     'lib/cros_test_lib_unittest': INSIDE,
     'lib/filetype_unittest': INSIDE,
     'lib/operation_unittest': INSIDE,
-    'lib/paygen/paygen_payload_lib_unittest': INSIDE,
-    'lib/paygen/signer_payloads_client_unittest': INSIDE,
     'lib/upgrade_table_unittest': INSIDE,
     'lib/vm_unittest': INSIDE,
     'scripts/cros_extract_deps_unittest': INSIDE,

@@ -46,6 +46,9 @@ from chromite.lib import ts_mon_config
 from chromite.lib.buildstore import BuildStore
 
 
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
 _DEFAULT_LOG_DIR = 'cbuildbot_logs'
 _BUILDBOT_LOG_FILE = 'cbuildbot.log'
 _DEFAULT_EXT_BUILDROOT = 'trybot'
