@@ -35,7 +35,6 @@ ChromeContentUtilityClient::ChromeContentUtilityClient()
 
 ChromeContentUtilityClient::~ChromeContentUtilityClient() = default;
 
-#if 0
 void ChromeContentUtilityClient::ExposeInterfacesToBrowser(
     mojo::BinderMap* binders) {
 #if defined(OS_WIN)
@@ -53,7 +52,6 @@ void ChromeContentUtilityClient::ExposeInterfacesToBrowser(
   if (!utility_process_running_elevated_)
     ExposeElevatedChromeUtilityInterfacesToBrowser(binders);
 }
-#endif
 
 bool ChromeContentUtilityClient::OnMessageReceived(
     const IPC::Message& message) {
@@ -73,7 +71,6 @@ void ChromeContentUtilityClient::RegisterNetworkBinders(
     std::move(g_network_binder_creation_callback.Get()).Run(registry);
 }
 
-#if 0
 mojo::ServiceFactory*
 ChromeContentUtilityClient::GetMainThreadServiceFactory() {
   if (utility_process_running_elevated_)
@@ -84,7 +81,6 @@ ChromeContentUtilityClient::GetMainThreadServiceFactory() {
 mojo::ServiceFactory* ChromeContentUtilityClient::GetIOThreadServiceFactory() {
   return ::GetIOThreadServiceFactory();
 }
-#endif
 
 // static
 void ChromeContentUtilityClient::SetNetworkBinderCreationCallback(
