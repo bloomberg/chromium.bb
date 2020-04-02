@@ -198,10 +198,13 @@ def parseArgs(argv):
   # Generate 32-bit binaries and libraries
   applyVariableToEnvironment('GN_DEFINES', 'target_cpu', '\\\"x86\\\"')
 
-  # Disable NativeClient, print preview, browser extensiion support
+  # Disable NativeClient, print preview, browser extensiion, paint preview
+  # and VR support
   applyVariableToEnvironment('GN_DEFINES', 'enable_nacl', 'false')
   applyVariableToEnvironment('GN_DEFINES', 'enable_print_preview', 'false')
   applyVariableToEnvironment('GN_DEFINES', 'enable_extensions', 'false')
+  applyVariableToEnvironment('GN_DEFINES', 'enable_paint_preview', 'false')
+  applyVariableToEnvironment('GN_DEFINES', 'enable_vr', 'false')
 
   # Disable safe browsing mode
   applyVariableToEnvironment('GN_DEFINES', 'safe_browsing_mode', '0')
