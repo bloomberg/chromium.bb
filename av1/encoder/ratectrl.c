@@ -86,7 +86,11 @@ static int rtc_minq_12[QINDEX_RANGE];
 
 static int gf_high = 2400;
 static int gf_low = 300;
+#ifdef STRICT_RC
+static int kf_high = 3200;
+#else
 static int kf_high = 5000;
+#endif
 static int kf_low = 400;
 
 // How many times less pixels there are to encode given the current scaling.

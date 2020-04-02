@@ -940,7 +940,6 @@ static void allocate_gf_group_bits(GF_GROUP *gf_group, RATE_CONTROL *const rc,
         calculate_boost_bits(rc->baseline_gf_interval - total_arfs -
                                  total_overlays - arf_depth_count[idx],
                              arf_depth_boost[idx], total_group_bits);
-
     total_group_bits -= arf_depth_bits[idx];
     total_arfs += arf_depth_count[idx];
   }
@@ -2023,7 +2022,8 @@ static int test_candidate_kf(TWO_PASS *twopass,
 #define FRAMES_TO_CHECK_DECAY 8
 #define KF_MIN_FRAME_BOOST 80.0
 #define KF_MAX_FRAME_BOOST 128.0
-#define MIN_KF_BOOST 600          // Minimum boost for non-static KF interval
+#define MIN_KF_BOOST 600  // Minimum boost for non-static KF interval
+#define MAX_KF_BOOST 3200
 #define MIN_STATIC_KF_BOOST 5400  // Minimum boost for static KF interval
 
 static int detect_app_forced_key(AV1_COMP *cpi) {
@@ -2347,6 +2347,9 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
     // Apply various clamps for min and max boost
     rc->kf_boost = AOMMAX(rc->kf_boost, (rc->frames_to_key * 3));
     rc->kf_boost = AOMMAX(rc->kf_boost, MIN_KF_BOOST);
+#ifdef STRICT_RC
+    rc->kf_boost = AOMMIN(rc->kf_boost, MAX_KF_BOOST);
+#endif
   }
 
   // Work out how many bits to allocate for the key frame itself.
