@@ -26,17 +26,12 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
   ~ChromeContentUtilityClient() override;
 
   // content::ContentUtilityClient:
-  #if 0
   void ExposeInterfacesToBrowser(mojo::BinderMap* binders) override;
-  #endif
-  
   bool OnMessageReceived(const IPC::Message& message) override;
   void RegisterNetworkBinders(
       service_manager::BinderRegistry* registry) override;
-  #if 0
   mojo::ServiceFactory* GetMainThreadServiceFactory() override;
   mojo::ServiceFactory* GetIOThreadServiceFactory() override;
-  #endif
 
   // See NetworkBinderProvider above.
   static void SetNetworkBinderCreationCallback(

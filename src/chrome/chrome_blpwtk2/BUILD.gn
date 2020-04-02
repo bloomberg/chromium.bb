@@ -37,8 +37,12 @@ static_library("chrome_blpwtk2") {
     "//chrome/common/chrome_content_client_constants.h",
     "//chrome/common/pref_names.cc",
     "//chrome/common/pref_names.h",
+    "//chrome/utility/browser_exposed_utility_interfaces.cc",
+    "//chrome/utility/browser_exposed_utility_interfaces.h",
     "//chrome/utility/chrome_content_utility_client.cc",
     "//chrome/utility/chrome_content_utility_client.h",
+    "//chrome/utility/services.cc",
+    "//chrome/utility/services.h",
 
     # required by //blpwtk2:blpwtk2 (for printing)
     "//chrome/browser/printing/pdf_to_emf_converter.cc",
@@ -141,14 +145,19 @@ static_library("chrome_blpwtk2") {
      "//ipc:param_traits",
      "//pdf:buildflags",
 
+     # required by //chrome/utility/services.cc
+     "//components/services/quarantine",
+     "//components/services/quarantine/public/mojom",
+
      # required for chrome services
      "//content/public/common:service_names",
 
      # required by many. this target generates the header files that define
-     # macros to check the enablement of specific extensions.  Many
-     # components in the chrome library use these macros to enable extension
+     # macros to check the enablement of specific features.  Many
+     # components in the chrome library use these macros to enable feature
      # specific code.
      "//extensions/buildflags",
+     "//components/paint_preview/buildflags",
   ]
 
   defines = [
