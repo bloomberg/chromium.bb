@@ -123,6 +123,7 @@ class GetAttrStage(generic_stages.BuilderStage):
     return cbuildbot_run.AttrTimeoutError(self.attr)
 
 
+@cros_test_lib.pytestmark_skip
 class BuildStagesResultsTest(cros_test_lib.TestCase):
   """Tests for stage results and reporting."""
 
