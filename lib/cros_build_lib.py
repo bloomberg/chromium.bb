@@ -718,11 +718,6 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
 
   if mute_output is None:
     mute_output = logging.getLogger().getEffectiveLevel() > debug_level
-  if mute_output or log_output:
-    if stdout is None:
-      stdout = True
-    if stderr is None:
-      stderr = True
 
   # Force the timeout to float; in the process, if it's not convertible,
   # a self-explanatory exception will be thrown.
@@ -757,6 +752,8 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
       popen_stdout = _get_tempfile()
   elif isinstance(stdout, int):
     popen_stdout = stdout
+  elif mute_output or log_output:
+    popen_stdout = _get_tempfile()
 
   log_stderr_to_file = False
   if hasattr(stderr, 'fileno'):
@@ -768,6 +765,8 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
       popen_stderr = _get_tempfile()
   elif isinstance(stderr, int):
     popen_stderr = stderr
+  elif mute_output or log_output:
+    popen_stderr = _get_tempfile()
 
   # If subprocesses have direct access to stdout or stderr, they can bypass
   # our buffers, so we need to flush to ensure that output is not interleaved.
@@ -935,6 +934,14 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
     if proc is not None:
       # Ensure the process is dead.
       _KillChildProcess(proc, int_timeout, kill_timeout, cmd, None, None, None)
+
+  # We might capture stdout/stderr for internal reasons (like logging), but we
+  # don't want to let it leak back out to the callers.  They only get output if
+  # they explicitly requested it.
+  if stdout is None:
+    cmd_result.stdout = None
+  if stderr is None:
+    cmd_result.stderr = None
 
   return cmd_result
 # pylint: enable=redefined-builtin

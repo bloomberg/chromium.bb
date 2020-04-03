@@ -449,8 +449,15 @@ class TestRunCommand(cros_test_lib.MockTestCase):
     if rc_kv is None:
       rc_kv = {}
 
+    stdout = None
+    stderr = None
+    if rc_kv.get('stdout') or rc_kv.get('capture_output'):
+      stdout = self.output
+    if rc_kv.get('stderr') or rc_kv.get('capture_output'):
+      stderr = self.error
+
     expected_result = cros_build_lib.CommandResult(
-        args=real_cmd, stdout=self.output, stderr=self.error,
+        args=real_cmd, stdout=stdout, stderr=stderr,
         returncode=self.proc_mock.returncode)
 
     arg_dict = dict()
@@ -479,8 +486,10 @@ class TestRunCommand(cros_test_lib.MockTestCase):
     # passing to _Popen is stored as bytes.
     if 'encoding' in rc_kv:
       encoding = rc_kv['encoding']
-      actual_result.stdout = actual_result.stdout.encode(encoding)
-      actual_result.stderr = actual_result.stderr.encode(encoding)
+      if actual_result.stdout is not None:
+        actual_result.stdout = actual_result.stdout.encode(encoding)
+      if actual_result.stderr is not None:
+        actual_result.stderr = actual_result.stderr.encode(encoding)
 
     self._AssertCrEqual(expected_result, actual_result)
 
