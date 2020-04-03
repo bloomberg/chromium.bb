@@ -712,9 +712,6 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
   stdin = None
   cmd_result = CommandResult()
 
-  if mute_output is None:
-    mute_output = logging.getLogger().getEffectiveLevel() > debug_level
-
   # Force the timeout to float; in the process, if it's not convertible,
   # a self-explanatory exception will be thrown.
   kill_timeout = float(kill_timeout)

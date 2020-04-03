@@ -174,7 +174,7 @@ class TestRunCommandNoMock(cros_test_lib.TestCase):
   def testDryRun(self):
     """Verify dryrun doesn't run the real command."""
     # Check exit & output when not captured.
-    result = cros_build_lib.run(['false'], dryrun=True, mute_output=False)
+    result = cros_build_lib.run(['false'], dryrun=True)
     self.assertEqual(0, result.returncode)
     self.assertEqual(None, result.stdout)
     self.assertEqual(None, result.stderr)
@@ -793,41 +793,11 @@ class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
     self.assertEqual('out\n', osutils.ReadFile(stdout))
     self.assertEqual('err\n', osutils.ReadFile(stderr))
 
-  def _CaptureRunCommand(self, command, mute_output):
-    """Capture a run() output with the specified |mute_output|.
-
-    Args:
-      command: command to send to run().
-      mute_output: run() |mute_output| parameter.
-
-    Returns:
-      A (stdout, stderr) pair of captured output.
-    """
-    with self.OutputCapturer() as output:
-      cros_build_lib.run(command, debug_level=logging.DEBUG,
-                         mute_output=mute_output)
-    return (output.GetStdout(), output.GetStderr())
-
-  @_ForceLoggingLevel
-  def testSubprocessMuteOutput(self):
-    """Test run |mute_output| parameter."""
-    command = ['sh', '-c', 'echo foo; echo bar >&2']
-    # Always mute: we shouldn't get any output.
-    self.assertEqual(self._CaptureRunCommand(command, mute_output=True),
-                     ('', ''))
-    # Mute based on |debug_level|: we should't get any output.
-    self.assertEqual(self._CaptureRunCommand(command, mute_output=None),
-                     ('', ''))
-    # Never mute: we should get 'foo\n' and 'bar\n'.
-    self.assertEqual(self._CaptureRunCommand(command, mute_output=False),
-                     ('foo\n', 'bar\n'))
-
   def testRunCommandAtNoticeLevel(self):
     """Ensure that run prints output when mute_output is False."""
     # Needed by cros_sdk and brillo/cros chroot.
     with self.OutputCapturer():
-      cros_build_lib.run(['echo', 'foo'], mute_output=False,
-                         check=False, print_cmd=False,
+      cros_build_lib.run(['echo', 'foo'], check=False, print_cmd=False,
                          debug_level=logging.NOTICE)
     self.AssertOutputContainsLine('foo')
 
