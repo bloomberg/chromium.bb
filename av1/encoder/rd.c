@@ -616,8 +616,8 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
       // TRANSLATION: 3 bits
       // ROTZOOM: 2 bits
       // AFFINE: 3 bits
-      cpi->gmtype_cost[i] = (1 + (i > 0 ? (i == ROTZOOM ? 1 : 2) : 0))
-                            << AV1_PROB_COST_SHIFT;
+      cpi->gm_info.type_cost[i] = (1 + (i > 0 ? (i == ROTZOOM ? 1 : 2) : 0))
+                                  << AV1_PROB_COST_SHIFT;
   }
 }
 

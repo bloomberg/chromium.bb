@@ -5453,7 +5453,7 @@ static INLINE void update_valid_ref_frames_for_gm(
     // Skip global motion estimation for invalid ref frames
     if (buf == NULL ||
         (ref_disabled && cpi->sf.hl_sf.recode_loop != DISALLOW_RECODE)) {
-      cpi->gmparams_cost[frame] = 0;
+      cpi->gm_info.params_cost[frame] = 0;
       continue;
     } else {
       ref_buf[frame] = &buf->buf;
@@ -5491,6 +5491,7 @@ static INLINE void compute_gm_for_valid_ref_frames(
     MotionModel *params_by_motion, uint8_t *segment_map,
     const int segment_map_w, const int segment_map_h) {
   AV1_COMMON *const cm = &cpi->common;
+  GlobalMotionInfo *const gm_info = &cpi->gm_info;
   const WarpedMotionParams *ref_params =
       cm->prev_frame ? &cm->prev_frame->global_motion[frame]
                      : &default_warp_params;
@@ -5499,11 +5500,11 @@ static INLINE void compute_gm_for_valid_ref_frames(
       cpi, ref_buf, frame, num_frm_corners, frm_corners, frm_buffer,
       params_by_motion, segment_map, segment_map_w, segment_map_h, ref_params);
 
-  cpi->gmparams_cost[frame] =
+  gm_info->params_cost[frame] =
       gm_get_params_cost(&cm->global_motion[frame], ref_params,
                          cm->features.allow_high_precision_mv) +
-      cpi->gmtype_cost[cm->global_motion[frame].wmtype] -
-      cpi->gmtype_cost[IDENTITY];
+      gm_info->type_cost[cm->global_motion[frame].wmtype] -
+      gm_info->type_cost[IDENTITY];
 }
 
 static int compare_distance(const void *a, const void *b) {
@@ -5606,6 +5607,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
   FeatureFlags *const features = &cm->features;
   MACROBLOCKD *const xd = &x->e_mbd;
   RD_COUNTS *const rdc = &cpi->td.rd_counts;
+  GlobalMotionInfo *const gm_info = &cpi->gm_info;
   int i;
 
   if (!cpi->sf.rt_sf.use_nonrd_pick_mode) {
@@ -5787,9 +5789,9 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
   start_timing(cpi, av1_compute_global_motion_time);
 #endif
   av1_zero(rdc->global_motion_used);
-  av1_zero(cpi->gmparams_cost);
+  av1_zero(gm_info->params_cost);
   if (cpi->common.current_frame.frame_type == INTER_FRAME && cpi->source &&
-      cpi->oxcf.enable_global_motion && !cpi->global_motion_search_done) {
+      cpi->oxcf.enable_global_motion && !gm_info->search_done) {
     YV12_BUFFER_CONFIG *ref_buf[REF_FRAMES];
     MotionModel params_by_motion[RANSAC_NUM_MOTIONS];
     for (int m = 0; m < RANSAC_NUM_MOTIONS; m++) {
@@ -5857,7 +5859,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
 
     aom_free(segment_map);
 
-    cpi->global_motion_search_done = 1;
+    gm_info->search_done = 1;
     for (int m = 0; m < RANSAC_NUM_MOTIONS; m++) {
       aom_free(params_by_motion[m].inliers);
     }
