@@ -2404,7 +2404,6 @@ static int64_t handle_inter_mode(
                     best_rd = RDCOST(x->rdmult, best_rd_stats.rate,
                                      best_rd_stats.dist);
                     if (best_rd < ref_best_rd) ref_best_rd = best_rd;
-                    skip = 1;
                     break;
                   }
                 }
