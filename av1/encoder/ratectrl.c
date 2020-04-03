@@ -2036,6 +2036,106 @@ static void set_reference_structure_one_pass_rt(AV1_COMP *cpi, int gf_update) {
 #define DEFAULT_KF_BOOST_RT 2300
 #define DEFAULT_GF_BOOST_RT 2000
 
+// Compute average source sad (temporal sad: between current source and
+// previous source) over a subset of superblocks. Use this is detect big changes
+// in content and allow rate control to react.
+static void av1_scene_detection_onepass(AV1_COMP *cpi) {
+  AV1_COMMON *const cm = &cpi->common;
+  RATE_CONTROL *const rc = &cpi->rc;
+  YV12_BUFFER_CONFIG const *unscaled_src = cpi->unscaled_source;
+  YV12_BUFFER_CONFIG const *unscaled_last_src = cpi->unscaled_last_source;
+  uint8_t *src_y;
+  int src_ystride;
+  int src_width;
+  int src_height;
+  uint8_t *last_src_y;
+  int last_src_ystride;
+  int last_src_width;
+  int last_src_height;
+  if (cpi->unscaled_source == NULL || cpi->unscaled_last_source == NULL) return;
+  src_y = unscaled_src->y_buffer;
+  src_ystride = unscaled_src->y_stride;
+  src_width = unscaled_src->y_width;
+  src_height = unscaled_src->y_height;
+  last_src_y = unscaled_last_src->y_buffer;
+  last_src_ystride = unscaled_last_src->y_stride;
+  last_src_width = unscaled_last_src->y_width;
+  last_src_height = unscaled_last_src->y_height;
+  rc->high_source_sad = 0;
+  if (src_width == last_src_width && src_height == last_src_height) {
+    const int num_mi_cols = cm->mi_params.mi_cols;
+    const int num_mi_rows = cm->mi_params.mi_rows;
+    int num_zero_temp_sad = 0;
+    uint32_t min_thresh = 10000;
+    if (cpi->oxcf.content != AOM_CONTENT_SCREEN) min_thresh = 65000;
+    const BLOCK_SIZE bsize = BLOCK_64X64;
+    int full_sampling = (cm->width * cm->height < 640 * 360) ? 1 : 0;
+    // Loop over sub-sample of frame, compute average sad over 64x64 blocks.
+    uint64_t avg_sad = 0;
+    uint64_t tmp_sad = 0;
+    int num_samples = 0;
+    const int thresh = 6;
+    // SAD is computed on 64x64 blocks
+    const int sb_size_by_mb = (cm->seq_params.sb_size == BLOCK_128X128)
+                                  ? (cm->seq_params.mib_size >> 1)
+                                  : cm->seq_params.mib_size;
+    const int sb_cols = (num_mi_cols + sb_size_by_mb - 1) / sb_size_by_mb;
+    const int sb_rows = (num_mi_rows + sb_size_by_mb - 1) / sb_size_by_mb;
+    uint64_t sum_sq_thresh = 10000;  // sum = sqrt(thresh / 64*64)) ~1.5
+    int num_low_var_high_sumdiff = 0;
+    int light_change = 0;
+    // Flag to check light change or not.
+    const int check_light_change = 0;
+    for (int sbi_row = 0; sbi_row < sb_rows; ++sbi_row) {
+      for (int sbi_col = 0; sbi_col < sb_cols; ++sbi_col) {
+        // Checker-board pattern, ignore boundary.
+        if (full_sampling ||
+            ((sbi_row > 0 && sbi_col > 0) &&
+             (sbi_row < sb_rows - 1 && sbi_col < sb_cols - 1) &&
+             ((sbi_row % 2 == 0 && sbi_col % 2 == 0) ||
+              (sbi_row % 2 != 0 && sbi_col % 2 != 0)))) {
+          tmp_sad = cpi->fn_ptr[bsize].sdf(src_y, src_ystride, last_src_y,
+                                           last_src_ystride);
+          if (check_light_change) {
+            unsigned int sse, variance;
+            variance = cpi->fn_ptr[bsize].vf(src_y, src_ystride, last_src_y,
+                                             last_src_ystride, &sse);
+            // Note: sse - variance = ((sum * sum) >> 12)
+            // Detect large lighting change.
+            if (variance < (sse >> 1) && (sse - variance) > sum_sq_thresh) {
+              num_low_var_high_sumdiff++;
+            }
+          }
+          avg_sad += tmp_sad;
+          num_samples++;
+          if (tmp_sad == 0) num_zero_temp_sad++;
+        }
+        src_y += 64;
+        last_src_y += 64;
+      }
+      src_y += (src_ystride << 6) - (sb_cols << 6);
+      last_src_y += (last_src_ystride << 6) - (sb_cols << 6);
+    }
+    if (check_light_change && num_samples > 0 &&
+        num_low_var_high_sumdiff > (num_samples >> 1))
+      light_change = 1;
+    if (num_samples > 0) avg_sad = avg_sad / num_samples;
+    // Set high_source_sad flag if we detect very high increase in avg_sad
+    // between current and previous frame value(s). Use minimum threshold
+    // for cases where there is small change from content that is completely
+    // static.
+    if (!light_change &&
+        avg_sad >
+            AOMMAX(min_thresh, (unsigned int)(rc->avg_source_sad * thresh)) &&
+        rc->frames_since_key > 1 + cpi->svc.number_spatial_layers &&
+        num_zero_temp_sad < 3 * (num_samples >> 2))
+      rc->high_source_sad = 1;
+    else
+      rc->high_source_sad = 0;
+    rc->avg_source_sad = (3 * rc->avg_source_sad + avg_sad) >> 2;
+  }
+}
+
 void av1_get_one_pass_rt_params(AV1_COMP *cpi,
                                 EncodeFrameParams *const frame_params,
                                 unsigned int frame_flags) {
@@ -2074,6 +2174,10 @@ void av1_get_one_pass_rt_params(AV1_COMP *cpi,
     frame_params->frame_type = INTER_FRAME;
     gf_group->update_type[gf_group->index] = LF_UPDATE;
   }
+
+  if (!cpi->use_svc && cm->show_frame && cpi->sf.rt_sf.check_scene_detection)
+    av1_scene_detection_onepass(cpi);
+
   // GF update based on frames_till_gf_update_due, also
   // force upddate on resize pending frame.
   if ((resize_pending || rc->frames_till_gf_update_due == 0) &&
@@ -2134,4 +2238,58 @@ void av1_get_one_pass_rt_params(AV1_COMP *cpi,
       cm->number_spatial_layers == 1 && cm->number_temporal_layers == 1)
     set_reference_structure_one_pass_rt(cpi, gf_update);
   cm->current_frame.frame_type = frame_params->frame_type;
+}
+
+// Test if the frame to be encoded will significantly overshoot the target
+// bitrate, and if so, set the QP, reset/adjust some rate control parameters,
+// and return 1.
+int av1_encodedframe_overshoot(AV1_COMP *cpi, int *q) {
+  AV1_COMMON *const cm = &cpi->common;
+  RATE_CONTROL *const rc = &cpi->rc;
+  SPEED_FEATURES *const sf = &cpi->sf;
+  int thresh_qp = 7 * (rc->worst_quality >> 3);
+  // Lower thresh_qp for video (more overshoot at lower Q) to be
+  // more conservative for video.
+  if (cpi->oxcf.content != AOM_CONTENT_SCREEN)
+    thresh_qp = 3 * (rc->worst_quality >> 2);
+  if (sf->rt_sf.overshoot_detection_cbr == FAST_DETECTION_MAXQ &&
+      cm->quant_params.base_qindex < thresh_qp) {
+    double rate_correction_factor =
+        cpi->rc.rate_correction_factors[INTER_NORMAL];
+    const int target_size = cpi->rc.avg_frame_bandwidth;
+    double new_correction_factor;
+    int target_bits_per_mb;
+    double q2;
+    int enumerator;
+    *q = (3 * cpi->rc.worst_quality + *q) >> 2;
+    // Adjust avg_frame_qindex, buffer_level, and rate correction factors, as
+    // these parameters will affect QP selection for subsequent frames. If they
+    // have settled down to a very different (low QP) state, then not adjusting
+    // them may cause next frame to select low QP and overshoot again.
+    cpi->rc.avg_frame_qindex[INTER_FRAME] = *q;
+    rc->buffer_level = rc->optimal_buffer_level;
+    rc->bits_off_target = rc->optimal_buffer_level;
+    // Reset rate under/over-shoot flags.
+    cpi->rc.rc_1_frame = 0;
+    cpi->rc.rc_2_frame = 0;
+    // Adjust rate correction factor.
+    target_bits_per_mb =
+        (int)(((uint64_t)target_size << BPER_MB_NORMBITS) / cm->mi_params.MBs);
+    // Rate correction factor based on target_bits_per_mb and qp (==max_QP).
+    // This comes from the inverse computation of vp9_rc_bits_per_mb().
+    q2 = av1_convert_qindex_to_q(*q, cm->seq_params.bit_depth);
+    enumerator = 1800000;  // Factor for inter frame.
+    enumerator += (int)(enumerator * q2) >> 12;
+    new_correction_factor = (double)target_bits_per_mb * q2 / enumerator;
+    if (new_correction_factor > rate_correction_factor) {
+      rate_correction_factor =
+          AOMMIN(2.0 * rate_correction_factor, new_correction_factor);
+      if (rate_correction_factor > MAX_BPB_FACTOR)
+        rate_correction_factor = MAX_BPB_FACTOR;
+      cpi->rc.rate_correction_factors[INTER_NORMAL] = rate_correction_factor;
+    }
+    return 1;
+  } else {
+    return 0;
+  }
 }

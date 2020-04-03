@@ -5536,6 +5536,19 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
       av1_setup_frame_contexts(cm);
     }
 
+    // Check if this high_source_sad (scene/slide change) frame should be
+    // encoded at high/max QP, and if so, set the q and adjust some rate
+    // control parameters.
+    if (cpi->sf.rt_sf.overshoot_detection_cbr == FAST_DETECTION_MAXQ &&
+        cpi->rc.high_source_sad) {
+      if (av1_encodedframe_overshoot(cpi, &q)) {
+        av1_set_quantizer(cpi, q);
+        av1_set_speed_features_qindex_dependent(cpi, cpi->oxcf.speed);
+        if (cpi->oxcf.deltaq_mode != NO_DELTA_Q) av1_init_quantizer(cpi);
+        av1_set_variance_partition_thresholds(cpi, q, 0);
+      }
+    }
+
     if (cpi->oxcf.aq_mode == VARIANCE_AQ) {
       av1_vaq_frame_setup(cpi);
     } else if (cpi->oxcf.aq_mode == COMPLEXITY_AQ) {

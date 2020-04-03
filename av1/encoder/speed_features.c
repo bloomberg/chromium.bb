@@ -663,6 +663,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
   sf->rt_sf.use_nonrd_filter_search = 1;
   sf->rt_sf.use_nonrd_pick_mode = 0;
   sf->rt_sf.use_real_time_ref_set = 0;
+  sf->rt_sf.check_scene_detection = 0;
   sf->tx_sf.adaptive_txb_search_level = 1;
   sf->tx_sf.intra_tx_size_search_init_depth_sqr = 1;
   sf->tx_sf.model_based_prune_tx_search_level = 1;
@@ -837,6 +838,12 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->rt_sf.use_comp_ref_nonrd = 0;
     sf->rt_sf.use_real_time_ref_set = 1;
     sf->rt_sf.use_simple_rd_model = 1;
+
+    if (cm->current_frame.frame_type != KEY_FRAME &&
+        cpi->oxcf.rc_mode == AOM_CBR) {
+      sf->rt_sf.overshoot_detection_cbr = FAST_DETECTION_MAXQ;
+      sf->rt_sf.check_scene_detection = 1;
+    }
   }
 
   if (speed >= 6) {
