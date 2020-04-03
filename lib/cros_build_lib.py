@@ -609,7 +609,7 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
         chroot_args=None, debug_level=logging.INFO,
         check=True, int_timeout=1, kill_timeout=1,
         log_output=False, capture_output=False,
-        quiet=False, mute_output=None, encoding=None, errors=None, dryrun=False,
+        quiet=False, encoding=None, errors=None, dryrun=False,
         **kwargs):
   """Runs a command.
 
@@ -660,8 +660,6 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
     log_output: Log the command and its output automatically.
     capture_output: Set |stdout| and |stderr| to True.
     quiet: Set |print_cmd| to False, and |capture_output| to True.
-    mute_output: Mute subprocess printing to parent stdout/stderr. Defaults to
-      None, which bases muting on |debug_level|.
     encoding: Encoding for stdin/stdout/stderr, otherwise bytes are used.  Most
       users want 'utf-8' here for string data.
     errors: How to handle errors when |encoding| is used.  Defaults to 'strict',
@@ -745,7 +743,7 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
       popen_stdout = _get_tempfile()
   elif isinstance(stdout, int):
     popen_stdout = stdout
-  elif mute_output or log_output:
+  elif log_output:
     popen_stdout = _get_tempfile()
 
   log_stderr_to_file = False
@@ -758,7 +756,7 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
       popen_stderr = _get_tempfile()
   elif isinstance(stderr, int):
     popen_stderr = stderr
-  elif mute_output or log_output:
+  elif log_output:
     popen_stderr = _get_tempfile()
 
   # If subprocesses have direct access to stdout or stderr, they can bypass
