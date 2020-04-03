@@ -393,7 +393,8 @@ class StaticFunctionsTest(cros_test_lib.MockTestCase):
         toolchain_url='toolchain_url',
         build_type='canary',
         unibuild=True,
-        suite_scheduling=False)
+        suite_scheduling=False,
+        channels=None)
 
   def testBuildStepToDict(self):
     """Test the working of BuildStepToDict."""

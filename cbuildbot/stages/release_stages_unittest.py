@@ -349,10 +349,13 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
     """Test that PaygenStage works when signing works."""
     with patch(release_stages.parallel, 'BackgroundTaskRunner') as background:
       queue = background().__enter__()
-
-      stage = self.ConstructStage(channels=['stable', 'beta'])
+      channels = ['stable', 'beta']
+      stage = self.ConstructStage(channels=channels)
 
       stage.PerformStage()
+
+      metadata_channels = self._run.attrs.metadata.GetValue('channels')
+      self.assertEqual(channels, metadata_channels)
 
       # Verify that we validate with the board name in release name space.
       self.assertEqual(self.validateMock.call_args_list,

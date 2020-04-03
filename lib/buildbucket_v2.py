@@ -64,7 +64,7 @@ def UpdateSelfCommonBuildProperties(
     platform_version=None, full_version=None, toolchain_url=None,
     build_type=None, unibuild=None, suite_scheduling=None,
     killed_child_builds=None, board=None, main_firmware_version=None,
-    ec_firmware_version=None, metadata_url=None):
+    ec_firmware_version=None, metadata_url=None, channels=None):
   """Update build.output.properties for the current build.
 
   Sends the property values to buildbucket via
@@ -88,6 +88,8 @@ def UpdateSelfCommonBuildProperties(
     main_firmware_version: (Optional) main firmware version of the build.
     ec_firmware_version: (Optional) ec_firmware version of the build.
     metadata_url: (Optional) google storage url to metadata.json of the build.
+    channels: (Optional) list of channels the build are configured for.
+        e.g. [beta,stable].
   """
   if critical is not None:
     critical = 1 if critical in [1, True] else 0
@@ -123,6 +125,8 @@ def UpdateSelfCommonBuildProperties(
                                          ec_firmware_version)
   if metadata_url is not None:
     UpdateSelfBuildPropertiesNonBlocking('metadata_url', metadata_url)
+  if channels is not None:
+    UpdateSelfBuildPropertiesNonBlocking('channels', channels)
 
 def UpdateBuildMetadata(metadata):
   """Update build.output.properties from a CBuildbotMetadata instance.
@@ -144,7 +148,8 @@ def UpdateBuildMetadata(metadata):
       build_type=d.get('build_type'),
       critical=d.get('important'),
       unibuild=d.get('unibuild', False),
-      suite_scheduling=d.get('suite_scheduling', False))
+      suite_scheduling=d.get('suite_scheduling', False),
+      channels=d.get('channels', None))
 
 def BuildStepToDict(step, build_values=None):
   """Extract information from a Buildbucket Step instance.

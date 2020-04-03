@@ -394,6 +394,9 @@ class PaygenStage(generic_stages.BoardSpecificBuilderStage):
     with parallel.BackgroundTaskRunner(self._RunPaygenInProcess) as per_channel:
       logging.info('Using channels: %s', self.channels)
 
+      # Set an metadata with the channels we've had configured.
+      self._run.attrs.metadata.ExtendKeyListWithList('channels', self.channels)
+
       # If we have an explicit list of channels, use it.
       for channel in self.channels:
         per_channel.put((channel, board, version, self._run.options.debug,
