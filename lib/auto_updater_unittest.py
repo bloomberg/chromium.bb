@@ -709,6 +709,7 @@ class ChromiumOSUpdaterRunErrorTest(ChromiumOSErrorTest):
       self.PatchObject(auto_updater.ChromiumOSUpdater,
                        'CheckRestoreStateful',
                        return_value=True)
+      self.PatchObject(auto_updater.ChromiumOSUpdater, 'SetupRootfsUpdate')
       self.PatchObject(auto_updater.ChromiumOSUpdater, 'RunUpdateRootfs')
       self.PatchObject(auto_updater.ChromiumOSUpdater, 'PreSetupStatefulUpdate')
       self.PatchObject(auto_updater.ChromiumOSUpdater, 'TransferStatefulUpdate')

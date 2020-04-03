@@ -617,7 +617,6 @@ class ChromiumOSUpdater(BaseUpdater):
     2. Copy files to remote device needed for rootfs update.
     3. Do root updating.
     """
-    self.SetupRootfsUpdate()
 
     # Any call to self._transfer_obj.TransferRootfsUpdate() must be preceeded by
     # a conditional call to self._FixPayloadPropertiesFile() as this handles the
@@ -708,6 +707,13 @@ class ChromiumOSUpdater(BaseUpdater):
 
   def RunUpdate(self):
     """Update the device with image of specific version."""
+
+    # SetupRootfsUpdate() may reboot the device and therefore should be called
+    # before any payloads are transferred to the device and only if rootfs
+    # update is required.
+    if self._do_rootfs_update:
+      self.SetupRootfsUpdate()
+
     self._transfer_obj.TransferUpdateUtilsPackage()
 
     restore_stateful = self.CheckRestoreStateful()
