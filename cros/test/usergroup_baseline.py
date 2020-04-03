@@ -169,7 +169,7 @@ GROUP_BASELINE = dict((e.group, e) for e in (
     GroupEntry(group='cfm-peripherals', gid=20103,
                users={'cfm-monitor', 'cfm-firmware-updaters'}),
     GroupEntry(group='ippusb', gid=20100, users={'ippusb', 'lp', 'lpadmin',
-                                                 'cups'}),
+                                                 'cups', 'saned'}),
     GroupEntry(group='tun', gid=413, users={'crosvm', 'shill', 'wpan'}),
     GroupEntry(group='gpio', gid=414, users={'modem'}),
     GroupEntry(group='suzy-q', gid=415, users={'chronos', 'rma_fw_keeper'}),
