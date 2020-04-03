@@ -2456,14 +2456,8 @@ static AOM_INLINE void try_tx_block_no_split(
   MB_MODE_INFO *const mbmi = xd->mi[0];
   struct macroblock_plane *const p = &x->plane[0];
   const int bw = mi_size_wide[plane_bsize];
-
-  no_split->rd = INT64_MAX;
-  no_split->txb_entropy_ctx = 0;
-  no_split->tx_type = TX_TYPES;
-
   const ENTROPY_CONTEXT *const pta = ta + blk_col;
   const ENTROPY_CONTEXT *const ptl = tl + blk_row;
-
   const TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
   TXB_CTX txb_ctx;
   get_txb_ctx(plane_bsize, tx_size, 0, pta, ptl, &txb_ctx);
@@ -2477,24 +2471,22 @@ static AOM_INLINE void try_tx_block_no_split(
              rd_info_node != NULL ? rd_info_node->rd_info_array : NULL);
   assert(rd_stats->rate < INT_MAX);
 
-  if ((RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist) >=
-           RDCOST(x->rdmult, zero_blk_rate, rd_stats->sse) ||
-       rd_stats->skip == 1) &&
-      !xd->lossless[mbmi->segment_id]) {
+  const int pick_skip = !xd->lossless[mbmi->segment_id] &&
+                        (rd_stats->skip == 1 ||
+                         RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist) >=
+                             RDCOST(x->rdmult, zero_blk_rate, rd_stats->sse));
+  if (pick_skip) {
 #if CONFIG_RD_DEBUG
     av1_update_txb_coeff_cost(rd_stats, 0, tx_size, blk_row, blk_col,
                               zero_blk_rate - rd_stats->rate);
 #endif  // CONFIG_RD_DEBUG
     rd_stats->rate = zero_blk_rate;
     rd_stats->dist = rd_stats->sse;
-    rd_stats->skip = 1;
-    set_blk_skip(x, 0, blk_row * bw + blk_col, 1);
     p->eobs[block] = 0;
     update_txk_array(xd, blk_row, blk_col, tx_size, DCT_DCT);
-  } else {
-    set_blk_skip(x, 0, blk_row * bw + blk_col, 0);
-    rd_stats->skip = 0;
   }
+  rd_stats->skip = pick_skip;
+  set_blk_skip(x, 0, blk_row * bw + blk_col, pick_skip);
 
   if (tx_size > TX_4X4 && depth < MAX_VARTX_DEPTH)
     rd_stats->rate += x->txfm_partition_cost[txfm_partition_ctx][0];
@@ -2524,7 +2516,7 @@ static AOM_INLINE void try_tx_block_split(
       (tx_size_high_unit[tx_size] / bsh) * (tx_size_wide_unit[tx_size] / bsw);
   assert(nblks > 0);
   int blk_idx = 0;
-  int64_t tmp_rd = 0;
+  int64_t current_rd = 0;
   *split_rd = INT64_MAX;
   split_rd_stats->rate = x->txfm_partition_cost[txfm_partition_ctx][1];
 
@@ -2540,20 +2532,23 @@ static AOM_INLINE void try_tx_block_split(
       select_tx_block(
           cpi, x, offsetr, offsetc, block, sub_txs, depth + 1, plane_bsize, ta,
           tl, tx_above, tx_left, &this_rd_stats, no_split_rd / nblks,
-          ref_best_rd - tmp_rd, &this_cost_valid, ftxs_mode,
+          ref_best_rd - current_rd, &this_cost_valid, ftxs_mode,
           (rd_info_node != NULL) ? rd_info_node->children[blk_idx] : NULL);
       if (!this_cost_valid) return;
       av1_merge_rd_stats(split_rd_stats, &this_rd_stats);
-      tmp_rd = RDCOST(x->rdmult, split_rd_stats->rate, split_rd_stats->dist);
-      if (no_split_rd < tmp_rd) return;
+      current_rd =
+          RDCOST(x->rdmult, split_rd_stats->rate, split_rd_stats->dist);
+      if (no_split_rd < current_rd) return;
       block += sub_step;
     }
   }
 
-  *split_rd = tmp_rd;
+  *split_rd = current_rd;
 }
 
-// Search for the best tx partition/type for a given luma block.
+// Search for the best transform partition(recursive)/type for a given
+// inter-predicted luma block. The obtained transform selection will be saved
+// in xd->mi[0], the corresponding RD stats will be saved in rd_stats.
 static AOM_INLINE void select_tx_block(
     const AV1_COMP *cpi, MACROBLOCK *x, int blk_row, int blk_col, int block,
     TX_SIZE tx_size, int depth, BLOCK_SIZE plane_bsize, ENTROPY_CONTEXT *ta,
@@ -2581,32 +2576,29 @@ static AOM_INLINE void select_tx_block(
   int try_split = tx_size > TX_4X4 && depth < MAX_VARTX_DEPTH;
   TxCandidateInfo no_split = { INT64_MAX, 0, TX_TYPES };
 
-  // TX no split
+  // Try using current block as a single transform block without split.
   if (try_no_split) {
     try_tx_block_no_split(cpi, x, blk_row, blk_col, block, tx_size, depth,
                           plane_bsize, ta, tl, ctx, rd_stats, ref_best_rd,
                           ftxs_mode, rd_info_node, &no_split);
 
-    if (cpi->sf.tx_sf.adaptive_txb_search_level &&
-        (no_split.rd -
-         (no_split.rd >> (1 + cpi->sf.tx_sf.adaptive_txb_search_level))) >
-            ref_best_rd) {
-      *is_cost_valid = 0;
-      return;
+    // Speed features for early termination.
+    const int search_level = cpi->sf.tx_sf.adaptive_txb_search_level;
+    if (search_level) {
+      if ((no_split.rd - (no_split.rd >> (1 + search_level))) > ref_best_rd) {
+        *is_cost_valid = 0;
+        return;
+      }
+      if (no_split.rd - (no_split.rd >> (2 + search_level)) > prev_level_rd) {
+        try_split = 0;
+      }
     }
-
     if (cpi->sf.tx_sf.txb_split_cap) {
       if (p->eobs[block] == 0) try_split = 0;
     }
-
-    if (cpi->sf.tx_sf.adaptive_txb_search_level &&
-        (no_split.rd -
-         (no_split.rd >> (2 + cpi->sf.tx_sf.adaptive_txb_search_level))) >
-            prev_level_rd) {
-      try_split = 0;
-    }
   }
 
+  // ML based speed feature to skip searching for split transform blocks.
   if (x->e_mbd.bd == 8 && try_split &&
       !(ref_best_rd == INT64_MAX && no_split.rd == INT64_MAX)) {
     const int threshold = cpi->sf.tx_sf.tx_type_search.ml_tx_split_thresh;
@@ -2617,10 +2609,10 @@ static AOM_INLINE void select_tx_block(
     }
   }
 
-  // TX split
   int64_t split_rd = INT64_MAX;
   RD_STATS split_rd_stats;
   av1_init_rd_stats(&split_rd_stats);
+  // Try splitting current block into smaller transform blocks.
   if (try_split) {
     try_tx_block_split(cpi, x, blk_row, blk_col, block, tx_size, depth,
                        plane_bsize, ta, tl, tx_above, tx_left, ctx, no_split.rd,
@@ -2631,19 +2623,18 @@ static AOM_INLINE void select_tx_block(
   if (no_split.rd < split_rd) {
     ENTROPY_CONTEXT *pta = ta + blk_col;
     ENTROPY_CONTEXT *ptl = tl + blk_row;
-    const TX_SIZE tx_size_selected = tx_size;
     p->txb_entropy_ctx[block] = no_split.txb_entropy_ctx;
-    av1_set_txb_context(x, 0, block, tx_size_selected, pta, ptl);
+    av1_set_txb_context(x, 0, block, tx_size, pta, ptl);
     txfm_partition_update(tx_above + blk_col, tx_left + blk_row, tx_size,
                           tx_size);
     for (int idy = 0; idy < tx_size_high_unit[tx_size]; ++idy) {
       for (int idx = 0; idx < tx_size_wide_unit[tx_size]; ++idx) {
         const int index =
             av1_get_txb_size_index(plane_bsize, blk_row + idy, blk_col + idx);
-        mbmi->inter_tx_size[index] = tx_size_selected;
+        mbmi->inter_tx_size[index] = tx_size;
       }
     }
-    mbmi->tx_size = tx_size_selected;
+    mbmi->tx_size = tx_size;
     update_txk_array(xd, blk_row, blk_col, tx_size, no_split.tx_type);
     const int bw = mi_size_wide[plane_bsize];
     set_blk_skip(x, 0, blk_row * bw + blk_col, rd_stats->skip);
