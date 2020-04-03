@@ -996,7 +996,8 @@ static FRAME_DIFF tf_do_filtering(
                                        block_size, mb_row, mb_col, &ref_mv,
                                        subblock_mvs, subblock_mses);
           // Do not pass down the reference motion vector if error is too large.
-          if (block_mse > (3 << (mbd->bd - 8))) {
+          const int thresh = AOMMIN(frame_height, frame_width) >= 720 ? 12 : 3;
+          if (block_mse > (thresh << (mbd->bd - 8))) {
             ref_mv = kZeroMv;
           }
         }
