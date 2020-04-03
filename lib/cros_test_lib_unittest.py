@@ -253,8 +253,7 @@ class OutputTestCaseTest(cros_test_lib.OutputTestCase,
   def testRunCommandCapture(self):
     """Check capturing run() subprocess output."""
     with self.OutputCapturer():
-      cros_build_lib.run(['sh', '-c', 'echo foo; echo bar >&2'],
-                         mute_output=False)
+      cros_build_lib.run(['sh', '-c', 'echo foo; echo bar >&2'])
     self.AssertOutputContainsLine('foo')
     self.AssertOutputContainsLine('bar', check_stdout=False, check_stderr=True)
 

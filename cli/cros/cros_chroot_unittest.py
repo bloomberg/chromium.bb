@@ -55,7 +55,7 @@ class ChrootTest(cros_test_lib.MockTestCase):
     self.cmd_mock.inst.Run()
 
     # Ensure we exec'd bash.
-    self.cmd_mock.rc_mock.assertCommandContains(['bash'], mute_output=False)
+    self.cmd_mock.rc_mock.assertCommandContains(['bash'])
 
   def testExplicitCmdNoArgs(self):
     """Tests a non-interactive command as a single argument."""

@@ -247,7 +247,7 @@ def EnterChroot(chroot_path, cache_dir, chrome_root, chrome_root_mount,
 
   # ThinLTO opens lots of files at the same time.
   resource.setrlimit(resource.RLIMIT_NOFILE, (32768, 32768))
-  ret = cros_build_lib.dbg_run(cmd, check=False, mute_output=False)
+  ret = cros_build_lib.dbg_run(cmd, check=False)
   # If we were in interactive mode, ignore the exit code; it'll be whatever
   # they last ran w/in the chroot and won't matter to us one way or another.
   # Note this does allow chroot entrance to fail and be ignored during

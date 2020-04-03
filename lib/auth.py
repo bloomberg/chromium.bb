@@ -100,7 +100,6 @@ def Login(service_account_json=None):
   result = cros_build_lib.run(
       cmd,
       print_cmd=True,
-      mute_output=False,
       check=False)
 
   if result.returncode:

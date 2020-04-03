@@ -167,7 +167,6 @@ Quoting can be tricky; the rules are the same as with ssh:
         self.command,
         connect_settings=self._ConnectSettings(),
         check=False,
-        mute_output=False,
         stderr=True,
         capture_output=False).returncode
 

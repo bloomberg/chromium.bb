@@ -191,7 +191,7 @@ def RunUnittests(sysroot, packages, extra_env=None, verbose=False,
 
   command += list(packages)
 
-  cros_build_lib.sudo_run(command, extra_env=env, mute_output=False)
+  cros_build_lib.sudo_run(command, extra_env=env)
 
 
 @contextlib.contextmanager

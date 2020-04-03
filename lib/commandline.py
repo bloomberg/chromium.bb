@@ -931,8 +931,7 @@ def _RestartInChroot(cmd, chroot_args, extra_env):
   """
   return cros_build_lib.run(cmd, check=False, enter_chroot=True,
                             chroot_args=chroot_args, extra_env=extra_env,
-                            cwd=constants.SOURCE_ROOT,
-                            mute_output=False).returncode
+                            cwd=constants.SOURCE_ROOT).returncode
 
 
 def RunInsideChroot(command=None, chroot_args=None):
