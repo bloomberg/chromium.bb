@@ -13,8 +13,7 @@ namespace openscreen {
 namespace {
 
 static const char* g_standard_schemes[] = {
-    kHttpsScheme, kHttpScheme, kFileScheme,       kFtpScheme,
-    kWssScheme,   kWsScheme,   kFileSystemScheme,
+    kHttpsScheme, kHttpScheme, kFileScheme, kFtpScheme, kWssScheme, kWsScheme,
 };
 
 }  // namespace
