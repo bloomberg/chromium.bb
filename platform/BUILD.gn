@@ -170,8 +170,20 @@ source_set("test") {
     "test/fake_udp_socket.h",
     "test/mock_tls_connection.h",
     "test/mock_udp_socket.h",
+    "test/paths.h",
+    "test/paths_internal.h",
     "test/trace_logging_helpers.h",
   ]
+
+  if (is_posix) {
+    sources += [ "test/paths_posix.cc" ]
+  }
+  if (is_linux) {
+    sources += [ "test/paths_internal_linux.cc" ]
+  }
+  if (is_mac) {
+    sources += [ "test/paths_internal_mac.cc" ]
+  }
 
   deps = [
     ":platform",

@@ -11,6 +11,7 @@ source_set("unittests") {
   ]
 
   deps = [
+    "../../platform:test",
     "../../testing/util",
     "../../third_party/googletest:gmock",
     "../../third_party/googletest:gtest",
@@ -52,6 +53,7 @@ if (is_posix && !build_with_chromium) {
     ]
 
     deps = [
+      "../../platform:test",
       "../../third_party/boringssl",
       "../../util",
       "../common:test_helpers",

@@ -140,6 +140,7 @@ source_set("unittests") {
     ":public",
     ":test_helpers",
     "../../platform",
+    "../../platform:test",
     "../../testing/util",
     "../../third_party/boringssl",
     "../../third_party/googletest:gmock",
@@ -150,7 +151,7 @@ source_set("unittests") {
   ]
 
   data = [
-    "../../test/data/cast/common/certificate",
+    "../../test/data/cast/common/certificate/",
   ]
 }
 

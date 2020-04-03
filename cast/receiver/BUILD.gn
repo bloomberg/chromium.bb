@@ -53,6 +53,7 @@ source_set("unittests") {
   deps = [
     ":channel",
     ":test_helpers",
+    "../../platform:test",
     "../../testing/util",
     "../../third_party/googletest:gmock",
     "../../third_party/googletest:gtest",
@@ -61,6 +62,6 @@ source_set("unittests") {
   ]
 
   data = [
-    "../../test/data/cast/receiver/channel",
+    "../../test/data/cast/receiver/channel/",
   ]
 }

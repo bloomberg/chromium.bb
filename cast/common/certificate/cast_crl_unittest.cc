@@ -9,6 +9,7 @@
 #include "cast/common/certificate/proto/test_suite.pb.h"
 #include "cast/common/certificate/testing/test_helpers.h"
 #include "gtest/gtest.h"
+#include "platform/test/paths.h"
 #include "testing/util/read_file.h"
 #include "util/logging.h"
 
@@ -89,16 +90,19 @@ bool TestVerifyRevocation(Error::Code expected_result,
   return expected_result == result.code();
 }
 
-#define TEST_DATA_PREFIX OPENSCREEN_TEST_DATA_DIR "cast/common/certificate/"
+const std::string& GetSpecificTestDataPath() {
+  static std::string data_path = GetTestDataPath() + "cast/common/certificate/";
+  return data_path;
+}
 
 bool RunTest(const DeviceCertTest& test_case) {
   std::unique_ptr<TrustStore> crl_trust_store;
   std::unique_ptr<TrustStore> cast_trust_store;
   if (test_case.use_test_trust_anchors()) {
     crl_trust_store = testing::CreateTrustStoreFromPemFile(
-        TEST_DATA_PREFIX "certificates/cast_crl_test_root_ca.pem");
+        GetSpecificTestDataPath() + "certificates/cast_crl_test_root_ca.pem");
     cast_trust_store = testing::CreateTrustStoreFromPemFile(
-        TEST_DATA_PREFIX "certificates/cast_test_root_ca.pem");
+        GetSpecificTestDataPath() + "certificates/cast_test_root_ca.pem");
 
     EXPECT_FALSE(crl_trust_store->certs.empty());
     EXPECT_FALSE(cast_trust_store->certs.empty());
@@ -190,7 +194,7 @@ void RunTestSuite(const std::string& test_suite_file_name) {
 }
 
 TEST(CastCertificateTest, TestSuite1) {
-  RunTestSuite(TEST_DATA_PREFIX "testsuite/testsuite1.pb");
+  RunTestSuite(GetSpecificTestDataPath() + "testsuite/testsuite1.pb");
 }
 
 }  // namespace

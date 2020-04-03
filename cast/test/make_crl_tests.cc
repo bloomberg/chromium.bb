@@ -8,12 +8,11 @@
 #include "cast/common/certificate/cast_crl.h"
 #include "cast/common/certificate/testing/test_helpers.h"
 #include "cast/common/certificate/types.h"
+#include "platform/test/paths.h"
 #include "util/crypto/certificate_utils.h"
 #include "util/crypto/digest_sign.h"
 #include "util/crypto/sha2.h"
 #include "util/logging.h"
-
-#define TEST_DATA_PREFIX OPENSCREEN_TEST_DATA_DIR "cast/receiver/channel/"
 
 namespace openscreen {
 namespace cast {
@@ -68,7 +67,7 @@ TbsCrl MakeTbsCrl(uint64_t not_before,
 
 // Pack into a CrlBundle and sign with |crl_inter_key|.  |crl_inter_der| must be
 // directly signed by a Cast CRL root CA (possibly distinct from Cast root CA).
-void PackCrlIntoFile(const char* filename,
+void PackCrlIntoFile(const std::string& filename,
                      const TbsCrl& tbs_crl,
                      const std::string& crl_inter_der,
                      EVP_PKEY* crl_inter_key) {
@@ -87,24 +86,25 @@ void PackCrlIntoFile(const char* filename,
 
   std::string output;
   crl_bundle.SerializeToString(&output);
-  int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+  int fd = open(filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
   OSP_DCHECK_GE(fd, 0);
   OSP_DCHECK_EQ(write(fd, output.data(), output.size()), (int)output.size());
   close(fd);
 }
 
 int CastMain() {
+  const std::string data_path = GetTestDataPath() + "cast/receiver/channel/";
   bssl::UniquePtr<EVP_PKEY> inter_key =
-      testing::ReadKeyFromPemFile(TEST_DATA_PREFIX "inter_key.pem");
+      testing::ReadKeyFromPemFile(data_path + "inter_key.pem");
   bssl::UniquePtr<EVP_PKEY> crl_inter_key =
-      testing::ReadKeyFromPemFile(TEST_DATA_PREFIX "crl_inter_key.pem");
+      testing::ReadKeyFromPemFile(data_path + "crl_inter_key.pem");
   OSP_DCHECK(inter_key);
   OSP_DCHECK(crl_inter_key);
 
   std::vector<std::string> chain_der =
-      testing::ReadCertificatesFromPemFile(TEST_DATA_PREFIX "device_chain.pem");
+      testing::ReadCertificatesFromPemFile(data_path + "device_chain.pem");
   std::vector<std::string> crl_inter_der =
-      testing::ReadCertificatesFromPemFile(TEST_DATA_PREFIX "crl_inter.pem");
+      testing::ReadCertificatesFromPemFile(data_path + "crl_inter.pem");
   OSP_DCHECK_EQ(chain_der.size(), 3u);
   OSP_DCHECK_EQ(crl_inter_der.size(), 1u);
 
@@ -140,7 +140,7 @@ int CastMain() {
   std::chrono::seconds not_after = DateTimeToSeconds(july2020);
   TbsCrl tbs_crl = MakeTbsCrl(not_before.count(), not_after.count(),
                               device_cert.get(), inter_cert.get());
-  PackCrlIntoFile(TEST_DATA_PREFIX "good_crl.pb", tbs_crl, crl_inter_der[0],
+  PackCrlIntoFile(data_path + "good_crl.pb", tbs_crl, crl_inter_der[0],
                   crl_inter_key.get());
 
   // NOTE: CRL used outside its valid time range.
@@ -152,7 +152,7 @@ int CastMain() {
     std::chrono::seconds not_after = DateTimeToSeconds(august2019);
     TbsCrl tbs_crl = MakeTbsCrl(not_before.count(), not_after.count(),
                                 device_cert.get(), inter_cert.get());
-    PackCrlIntoFile(TEST_DATA_PREFIX "invalid_time_crl.pb", tbs_crl,
+    PackCrlIntoFile(data_path + "invalid_time_crl.pb", tbs_crl,
                     crl_inter_der[0], crl_inter_key.get());
   }
 
@@ -161,7 +161,7 @@ int CastMain() {
     TbsCrl tbs_crl = MakeTbsCrl(not_before.count(), not_after.count(),
                                 device_cert.get(), inter_cert.get());
     AddRevokedPublicKeyHash(&tbs_crl, inter_cert.get());
-    PackCrlIntoFile(TEST_DATA_PREFIX "issuer_revoked_crl.pb", tbs_crl,
+    PackCrlIntoFile(data_path + "issuer_revoked_crl.pb", tbs_crl,
                     crl_inter_der[0], crl_inter_key.get());
   }
 
@@ -170,7 +170,7 @@ int CastMain() {
     TbsCrl tbs_crl = MakeTbsCrl(not_before.count(), not_after.count(),
                                 device_cert.get(), inter_cert.get());
     AddRevokedPublicKeyHash(&tbs_crl, device_cert.get());
-    PackCrlIntoFile(TEST_DATA_PREFIX "device_revoked_crl.pb", tbs_crl,
+    PackCrlIntoFile(data_path + "device_revoked_crl.pb", tbs_crl,
                     crl_inter_der[0], crl_inter_key.get());
   }
 
@@ -185,7 +185,7 @@ int CastMain() {
     OSP_DCHECK_GE(serial, 10);
     OSP_DCHECK_LE(serial, UINT64_MAX - 20);
     AddSerialNumberRange(&tbs_crl, root_cert.get(), serial - 10, serial + 20);
-    PackCrlIntoFile(TEST_DATA_PREFIX "issuer_serial_revoked_crl.pb", tbs_crl,
+    PackCrlIntoFile(data_path + "issuer_serial_revoked_crl.pb", tbs_crl,
                     crl_inter_der[0], crl_inter_key.get());
   }
 
@@ -200,7 +200,7 @@ int CastMain() {
     OSP_DCHECK_GE(serial, 10);
     OSP_DCHECK_LE(serial, UINT64_MAX - 20);
     AddSerialNumberRange(&tbs_crl, inter_cert.get(), serial - 10, serial + 20);
-    PackCrlIntoFile(TEST_DATA_PREFIX "device_serial_revoked_crl.pb", tbs_crl,
+    PackCrlIntoFile(data_path + "device_serial_revoked_crl.pb", tbs_crl,
                     crl_inter_der[0], crl_inter_key.get());
   }
 
@@ -208,15 +208,15 @@ int CastMain() {
   {
     TbsCrl tbs_crl = MakeTbsCrl(not_before.count(), not_after.count(),
                                 device_cert.get(), inter_cert.get());
-    PackCrlIntoFile(TEST_DATA_PREFIX "bad_signer_cert_crl.pb", tbs_crl,
-                    inter_der, inter_key.get());
+    PackCrlIntoFile(data_path + "bad_signer_cert_crl.pb", tbs_crl, inter_der,
+                    inter_key.get());
   }
 
   // NOTE: Mismatched key for signature in Crl (just looks like bad signature).
   {
     TbsCrl tbs_crl = MakeTbsCrl(not_before.count(), not_after.count(),
                                 device_cert.get(), inter_cert.get());
-    PackCrlIntoFile(TEST_DATA_PREFIX "bad_signature_crl.pb", tbs_crl,
+    PackCrlIntoFile(data_path + "bad_signature_crl.pb", tbs_crl,
                     crl_inter_der[0], inter_key.get());
   }
 
