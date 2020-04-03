@@ -10816,9 +10816,19 @@ void EmbedderHeapTracer::ResetHandleInNonTracingGC(
   UNREACHABLE();
 }
 
-void ConvertableToTraceFormatShim::AppendAsTraceFormat(void* v) const {
-  std::string* out = (std::string *)v;
-  out->append(GetToBeAppendedTraceFormat());
+int ConvertableToTraceFormatShim::AppendAsTraceFormat(char* out, int maxLen) const {
+  const char* trace = GetToBeAppendedTraceFormat();
+  int len = strlen(trace);
+  if (out) {
+    if (len && maxLen > 1) {
+      len = len > maxLen-1 ? len = maxLen-1 : len;
+      strncpy(out, trace, len);
+      out[len] = 0;
+    } else {
+      len = 0;
+    }
+  }
+  return len;
 }
 
 namespace internal {
