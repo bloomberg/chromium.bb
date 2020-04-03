@@ -23,9 +23,8 @@ class MetricsTest(cros_test_lib.TestCase):
     # We should start in a clean, unmeasured state.
     self.assertFalse(os.environ.get(metrics.UTILS_METRICS_LOG_ENVVAR))
 
-    # We mock the concept of time.
-    with mock.patch('chromite.utils.metrics.time.time') as mock_time:
-      mock_time.side_effect = [128.0, 256.0, 512.3]
+    with mock.patch('chromite.utils.metrics.current_milli_time') as mock_time:
+      mock_time.side_effect = [128000, 256000, 512300]
 
       events = []
       # Create a fake usage site of the metrics.
