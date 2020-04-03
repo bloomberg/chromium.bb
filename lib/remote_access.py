@@ -13,6 +13,7 @@ import re
 import shutil
 import socket
 import stat
+import subprocess
 import tempfile
 import time
 
@@ -253,6 +254,27 @@ def RemoveKnownHost(host, known_hosts_path=KNOWN_HOSTS_PATH):
     shutil.copy2(temp_file, known_hosts_path)
 
 
+class PortForwardSpec(object):
+  """Represent the information required to define an SSH tunnel."""
+
+  def __init__(self, local_port, remote_host='localhost', remote_port=None,
+               local_host='localhost'):
+    if remote_port is None:
+      remote_port = local_port
+    self.local_port = NormalizePort(local_port)
+    self.remote_port = NormalizePort(remote_port)
+    self.local_host = local_host
+    self.remote_host = remote_host
+
+  @property
+  def command_line_spec(self):
+    """Output the port forwarding spec in the way understood by the `ssh` command."""
+    if not self.remote_host:
+      return '%d:%s:%d' % (self.remote_port, self.local_host, self.local_port)
+    return '%s:%d:%s:%d' % (self.remote_host, self.remote_port, self.local_host,
+                            self.local_port)
+
+
 class RemoteAccess(object):
   """Provides access to a remote test machine."""
 
@@ -285,6 +307,11 @@ class RemoteAccess(object):
     self.interactive = interactive
     shutil.copyfile(private_key_src, self.private_key)
     os.chmod(self.private_key, stat.S_IRUSR)
+
+  @staticmethod
+  def _mockable_popen(*args, **kwargs):
+    """This wraps subprocess.Popen so it can be mocked in unit tests."""
+    return subprocess.Popen(*args, **kwargs)
 
   @property
   def target_ssh_url(self):
@@ -386,6 +413,38 @@ class RemoteAccess(object):
     finally:
       # Restore the previous user if we temporarily changed it earlier.
       self.username = prev_user
+
+  def CreateTunnel(self, to_local=None, to_remote=None, connect_settings=None):
+    """Establishes a SSH tunnel to the remote device as a background process.
+
+    Args:
+      to_local: A list of PortForwardSpec objects to forward from the local
+          machine to the remote machine.
+      to_remote: A list of PortForwardSpec to forward from the remote machine
+          to the local machine.
+      connect_settings: The SSH connect settings to use.
+
+    Returns:
+      A Popen object. Note that it represents an already started background
+      process. Calling poll() on the return value can be used to check that
+      the tunnel is still running. To close the tunnel call terminate().
+    """
+
+    ssh_cmd = self._GetSSHCmd(connect_settings=connect_settings)
+    if to_local is not None:
+      ssh_cmd.extend(
+          token for spec in to_local for token in ('-L',
+                                                   spec.command_line_spec))
+    if to_remote is not None:
+      ssh_cmd.extend(
+          token for spec in to_remote for token in ('-R',
+                                                    spec.command_line_spec))
+    ssh_cmd.append('-N')
+    ssh_cmd.append(self.target_ssh_url)
+
+    logging.log(self.debug_level, '%s', cros_build_lib.CmdToStr(ssh_cmd))
+
+    return RemoteAccess._mockable_popen(ssh_cmd)
 
   def _GetBootId(self, rebooting=False):
     """Obtains unique boot session identifier.

@@ -93,6 +93,16 @@ class TestCompileSSHConnectSettings(cros_test_lib.TestCase):
         remote_access.CompileSSHConnectSettings(Protocol=None))
 
 
+class CreateTunnelPopenMock(partial_mock.PartialCmdMock):
+  """Mocks the subprocess.Popen function where it is used in RemoteAccess."""
+  TARGET = 'chromite.lib.remote_access.RemoteAccess'
+  ATTRS = ('_mockable_popen',)
+  DEFAULT_ATTR = '_mockable_popen'
+
+  def _mockable_popen(self, inst, *args, **kwargs):
+    return inst, args, kwargs
+
+
 class RemoteShMock(partial_mock.PartialCmdMock):
   """Mocks the RemoteSh function."""
   TARGET = 'chromite.lib.remote_access.RemoteAccess'
@@ -128,6 +138,50 @@ class RemoteDeviceMock(partial_mock.PartialMock):
 
   def Pingable(self, _):
     return True
+
+
+class CreateTunnelTest(cros_test_lib.MockTempDirTestCase):
+  """Base class with _mockable_popen mocked out for testing RemoteAccess.CreateTunnel()."""
+
+  def setUp(self):
+    self.popen_mock = self.StartPatcher(CreateTunnelPopenMock())
+    self.host = remote_access.RemoteAccess('foon', self.tempdir)
+
+  def testDefault(self):
+    """Test default behavior."""
+    plain_result = self.host.CreateTunnel()[0]
+    self.assertRaises(ValueError, plain_result.index, '-R')
+    self.assertRaises(ValueError, plain_result.index, '-L')
+
+  def testLocal(self):
+    """Test behavior of to_local parameter."""
+    for spec, expected_output in (
+        (remote_access.PortForwardSpec(local_port=3240),
+         'localhost:3240:localhost:3240',),
+        (remote_access.PortForwardSpec(local_host='foo', local_port=3240,
+                                       remote_host='', remote_port=12345),
+         '12345:foo:3240',),
+        ):
+      result = self.host.CreateTunnel(to_local=[spec])[0]
+      self.assertEqual(result[result.index('-L') + 1], expected_output)
+
+  def testRemote(self):
+    """Test behavior of to_remote parameter."""
+    for spec, expected_output in (
+        (remote_access.PortForwardSpec(local_port=3240),
+         'localhost:3240:localhost:3240',),
+        (remote_access.PortForwardSpec(local_host='foo', local_port=3240,
+                                       remote_host='', remote_port=12345),
+         '12345:foo:3240',),
+        ):
+      result = self.host.CreateTunnel(to_remote=[spec])[0]
+      self.assertEqual(result[result.index('-R') + 1], expected_output)
+
+  def testInvalid(self):
+    """Test behavior of invalid parameters."""
+    for kwargs in ({'to_local': ''}, {'to_local': ['']}, {'to_remote': ''},
+                   {'to_remote': ['']}):
+      self.assertRaises(AttributeError, self.host.CreateTunnel, [], kwargs)
 
 
 class RemoteAccessTest(cros_test_lib.MockTempDirTestCase):
