@@ -13,7 +13,6 @@ from chromite.cbuildbot.builders import generic_builders
 from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import parallel
-from chromite.lib import cidb
 from chromite.lib import fake_cidb
 from chromite.lib import results_lib
 
@@ -28,7 +27,6 @@ class BuilderTest(cros_test_lib.MockTestCase):
     fake_db = fake_cidb.FakeCIDBConnection()
     build_id = fake_db.InsertBuild(
         'test_build', 1, 'test_build', 'hostname')
-    cidb.CIDBConnectionFactory.SetupMockCidb(mock_cidb=fake_db)
     parallel_ex = parallel.UnexpectedException('run parallel exception')
     self.PatchObject(parallel, 'RunParallelSteps', side_effect=parallel_ex)
 
