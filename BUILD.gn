@@ -1,0 +1,27 @@
+# Copyright 2020 The ANGLE Project Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+#
+# Custom GN integration for VulkanMemoryAllocator.
+
+# This could be set via build_overrides if necessary
+vulkan_memory_allocator_vulkan_headers_dir = "../vulkan-headers/src"
+
+config("vulkan_memory_allocator_config") {
+  include_dirs = [ "src" ]
+}
+
+source_set("vulkan_memory_allocator") {
+  sources = [
+    # vk_mem_alloc.cpp allows the functions to be compiled into an object file
+    # and the consumers of vulkan_memory_allocator to use the prototypes.
+    "src/vk_mem_alloc.cpp",
+    "src/vk_mem_alloc.h",
+  ]
+
+  deps = [ "$vulkan_memory_allocator_vulkan_headers_dir:vulkan_headers" ]
+
+  defines = [ "VMA_IMPLEMENTATION" ]
+
+  public_configs = [ ":vulkan_memory_allocator_config" ]
+}
