@@ -586,6 +586,12 @@ static BLOCK_SIZE select_sb_size(const AV1_COMP *const cpi) {
 
   assert(cpi->oxcf.superblock_size == AOM_SUPERBLOCK_SIZE_DYNAMIC);
 
+  if (cpi->svc.number_spatial_layers > 1) {
+    // Use the configured size (top resolution) for spatial layers.
+    return AOMMIN(cpi->oxcf.width, cpi->oxcf.height) > 480 ? BLOCK_128X128
+                                                           : BLOCK_64X64;
+  }
+
   // TODO(any): Possibly could improve this with a heuristic.
   // When superres / resize is on, 'cm->width / height' can change between
   // calls, so we don't apply this heuristic there.
