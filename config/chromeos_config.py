@@ -3347,16 +3347,15 @@ def BranchScheduleConfig():
   # (<branch>, [<android PFQs>], <chrome PFQ>, [<orderfiles>], [<Chrome AFDOs>])
 
   RELEASES = [
-      # Uncomment this and update branch name when R83 is branched
-      # ('release-R82-12974.B',
-      #  ['grunt-android-pi-pre-flight-branch'],
-      #  'chell-chrome-no-afdo-uprev-pre-flight-branch',
-      #  ['orderfile-generate-toolchain',
-      #   'orderfile-verify-toolchain'],
-      #  ['benchmark-afdo-generate',
-      #   'chrome-silvermont-release-afdo-verify',
-      #   'chrome-airmont-release-afdo-verify',
-      #   'chrome-broadwell-release-afdo-verify']),
+      ('release-R83-13020.B',
+       ['grunt-android-pi-pre-flight-branch'],
+       'chell-chrome-no-afdo-uprev-pre-flight-branch',
+       ['orderfile-generate-toolchain',
+        'orderfile-verify-toolchain'],
+       ['benchmark-afdo-generate',
+        'chrome-silvermont-release-afdo-verify',
+        'chrome-airmont-release-afdo-verify',
+        'chrome-broadwell-release-afdo-verify']),
 
       ('release-R81-12871.B',
        ['grunt-android-pi-pre-flight-branch'],
@@ -3381,15 +3380,13 @@ def BranchScheduleConfig():
   ]
 
   RELEASE_SCHEDULES = [
-      # Uncomment this when R83 is branched
-      # '0 6 * * *',
+      '0 6 * * *',
       '0 5 * * *',
       '0 7 * * 1,3',
   ]
 
   PFQ_SCHEDULE = [
-      # Uncomment this when R83 is branched
-      # '0 3,7,11,15,19,23 * * *',
+      '0 3,7,11,15,19,23 * * *',
       '0 2,6,10,14,18,22 * * *',
       '0 2,6,10,14,18,22 * * *',
       '0 3,7,11,15,19,23 * * *',
