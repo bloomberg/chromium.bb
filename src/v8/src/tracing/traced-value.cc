@@ -110,9 +110,12 @@ void TracedValue::SetString(const char* name, const char* value) {
 void TracedValue::SetValue(const char* name, TracedValue* value) {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeDict);
   WriteName(name);
-  std::string tmp;
-  value->AppendAsTraceFormat((void*)&tmp);
-  data_ += tmp;
+  int len = value->AppendAsTraceFormat(nullptr, 0);
+  if (len) {
+    std::unique_ptr<char[]> buf(new char[len+1]);
+    value->AppendAsTraceFormat(buf.get(), len+1);
+    data_.append(buf.get(), len);
+  }
 }
 
 void TracedValue::BeginDictionary(const char* name) {
@@ -201,11 +204,20 @@ void TracedValue::WriteName(const char* name) {
   data_ += "\":";
 }
 
-void TracedValue::AppendAsTraceFormat(void* v) const {
-  std::string* out = (std::string *)v;
-  *out += '{';
-  *out += data_;
-  *out += '}';
+int TracedValue::AppendAsTraceFormat(char* out, int maxLen) const {
+  int len = 2 + strlen(data_.c_str());
+  if (out) {
+    if (len >= 2 && maxLen > 2) {
+      len = len > maxLen-1 ? len = maxLen : len;
+      out[0] = '{';
+      strncpy(out+1, data_.c_str(), len-2);
+      out[len-2] = '}';
+      out[len-1] = 0;
+    } else {
+      len = 0;
+    }
+  }
+  return len;
 }
 
 }  // namespace tracing
