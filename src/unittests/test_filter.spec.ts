@@ -2,13 +2,13 @@ export const description = `
 Unit tests for test_filter .matches() methods.
 `;
 
-import { TestGroup } from '../common/framework/index.js';
 import { FilterByGroup } from '../common/framework/test_filter/filter_by_group.js';
 import {
   FilterByParamsExact,
   FilterByParamsMatch,
   FilterByTestMatch,
 } from '../common/framework/test_filter/filter_one_file.js';
+import { TestGroup } from '../common/framework/test_group.js';
 
 import { UnitTest } from './unit_test.js';
 

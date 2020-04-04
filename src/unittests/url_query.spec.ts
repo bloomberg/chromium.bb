@@ -2,7 +2,7 @@ export const description = `
 Unit tests for URL queries.
 `;
 
-import { TestGroup } from '../common/framework/index.js';
+import { TestGroup } from '../common/framework/test_group.js';
 import { makeQueryString } from '../common/framework/url_query.js';
 
 import { UnitTest } from './unit_test.js';

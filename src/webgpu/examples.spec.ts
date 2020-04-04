@@ -4,7 +4,7 @@ Examples of writing CTS tests with various features.
 Start here when looking for examples of basic framework usage.
 `;
 
-import { TestGroup } from '../common/framework/index.js';
+import { TestGroup } from '../common/framework/test_group.js';
 
 import { GPUTest } from './gpu_test.js';
 

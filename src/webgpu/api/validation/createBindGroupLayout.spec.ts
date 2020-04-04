@@ -2,8 +2,10 @@ export const description = `
 createBindGroupLayout validation tests.
 `;
 
-import { C, TestGroup, poptions } from '../../../common/framework/index.js';
-import { ParamSpec } from '../../../common/framework/params/index.js';
+import * as C from '../../../common/constants.js';
+import { poptions } from '../../../common/framework/params.js';
+import { ParamSpec } from '../../../common/framework/params_utils.js';
+import { TestGroup } from '../../../common/framework/test_group.js';
 import {
   kBindingTypeInfo,
   kBindingTypes,

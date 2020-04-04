@@ -9,9 +9,9 @@ import * as path from 'path';
 
 const fg = require('fast-glob');
 
-import { assert } from '../framework/index.js';
 import { TestSuiteListingEntry } from '../framework/listing.js';
 import { TestSpec } from '../framework/loader.js';
+import { assert } from '../framework/util/util.js';
 
 const specSuffix = '.spec.ts';
 

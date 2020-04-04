@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-// Crawl the src/suites/ directory to generate out/suites/*/index.js containing
+// Crawl a suite directory (e.g. src/webgpu/) to generate a listing.js containing
 // the listing of test files in the suite.
 
 require('../src/common/tools/setup-ts-in-node.js');

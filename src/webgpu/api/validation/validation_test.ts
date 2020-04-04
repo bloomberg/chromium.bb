@@ -1,4 +1,4 @@
-import { unreachable } from '../../../common/framework/index.js';
+import { unreachable } from '../../../common/framework/util/util.js';
 import { GPUTest } from '../../gpu_test.js';
 
 export enum BindingResourceType {

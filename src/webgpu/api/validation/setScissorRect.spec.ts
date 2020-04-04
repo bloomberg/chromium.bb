@@ -2,7 +2,7 @@ export const description = `
 setScissorRect validation tests.
 `;
 
-import { TestGroup } from '../../../common/framework/index.js';
+import { TestGroup } from '../../../common/framework/test_group.js';
 
 import { ValidationTest } from './validation_test.js';
 

@@ -2,7 +2,7 @@ export const description = `
 copy{Buffer,Texture}To{Buffer,Texture} tests.
 `;
 
-import { TestGroup } from '../../../../common/framework/index.js';
+import { TestGroup } from '../../../../common/framework/test_group.js';
 import { GPUTest } from '../../../gpu_test.js';
 
 export const g = new TestGroup(GPUTest);

@@ -2,7 +2,8 @@ export const description = `
 Tests for getStackTrace.
 `;
 
-import { TestGroup, getStackTrace } from '../common/framework/index.js';
+import { TestGroup } from '../common/framework/test_group.js';
+import { getStackTrace } from '../common/framework/util/stack.js';
 
 import { UnitTest } from './unit_test.js';
 

@@ -59,7 +59,7 @@ test files can be discovered by the web runner (since it does not have filesyste
 
 ### Listing File
 
-**Example:** `out/webgpu/index.js`
+**Example:** `out/webgpu/listing.js`
 
 ## Test Spec
 

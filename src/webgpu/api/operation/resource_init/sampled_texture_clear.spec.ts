@@ -1,7 +1,7 @@
 export const description = `
 computePass test that sampled texture is cleared`;
 
-import { TestGroup } from '../../../../common/framework/index.js';
+import { TestGroup } from '../../../../common/framework/test_group.js';
 import GLSL from '../../../../common/tools/glsl.macro.js';
 import { GPUTest } from '../../../gpu_test.js';
 

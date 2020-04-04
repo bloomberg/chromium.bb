@@ -1,4 +1,4 @@
-import { unreachable } from '../framework/util/index.js';
+import { unreachable } from '../framework/util/util.js';
 
 type ShaderStage = import('@webgpu/glslang').ShaderStage;
 

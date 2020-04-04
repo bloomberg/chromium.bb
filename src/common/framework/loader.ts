@@ -1,5 +1,6 @@
 import { TestSuiteListing } from './listing.js';
-import { TestFilterResult, loadFilter } from './test_filter/index.js';
+import { loadFilter } from './test_filter/load_filter.js';
+import { TestFilterResult } from './test_filter/test_filter_result.js';
 import { RunCaseIterable } from './test_group.js';
 
 // One of the following:
@@ -31,7 +32,7 @@ export interface TestFileLoader {
 
 class DefaultTestFileLoader implements TestFileLoader {
   async listing(suite: string): Promise<TestSuiteListing> {
-    return (await import(`../../${suite}/index.js`)).listing;
+    return (await import(`../../${suite}/listing.js`)).listing;
   }
 
   import(path: string): Promise<TestSpec> {

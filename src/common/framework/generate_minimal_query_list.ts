@@ -1,6 +1,7 @@
 import { TestSpecOrTestOrCaseID } from './id.js';
 import { Logger } from './logger.js';
-import { TestFilterResult, makeFilter } from './test_filter/index.js';
+import { makeFilter } from './test_filter/load_filter.js';
+import { TestFilterResult } from './test_filter/test_filter_result.js';
 import { FilterResultTreeNode, treeFromFilterResults } from './tree.js';
 
 interface QuerySplitterTreeNode {

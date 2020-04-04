@@ -1,4 +1,4 @@
-import { C } from '../common/framework/index.js';
+import * as C from '../common/constants.js';
 
 // Textures
 

@@ -3,13 +3,14 @@ Tests for queries/filtering, loading, and running.
 `;
 
 import { generateMinimalQueryList } from '../common/framework/generate_minimal_query_list.js';
-import { RunCase, TestGroup, paramsEquals } from '../common/framework/index.js';
 import { TestSuiteListing, TestSuiteListingEntry } from '../common/framework/listing.js';
 import { TestFileLoader, TestLoader, TestSpecOrReadme } from '../common/framework/loader.js';
 import { Logger } from '../common/framework/logger.js';
-import { TestFilterResult } from '../common/framework/test_filter/index.js';
+import { paramsEquals } from '../common/framework/params_utils.js';
+import { TestFilterResult } from '../common/framework/test_filter/test_filter_result.js';
+import { RunCase, TestGroup } from '../common/framework/test_group.js';
 import { makeQueryString } from '../common/framework/url_query.js';
-import { assert, objectEquals } from '../common/framework/util/index.js';
+import { assert, objectEquals } from '../common/framework/util/util.js';
 
 import { UnitTest } from './unit_test.js';
 

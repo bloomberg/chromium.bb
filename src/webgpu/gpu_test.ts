@@ -1,5 +1,6 @@
+import { Fixture } from '../common/framework/fixture.js';
 import { getGPU } from '../common/framework/gpu/implementation.js';
-import { Fixture, assert, unreachable } from '../common/framework/index.js';
+import { assert, unreachable } from '../common/framework/util/util.js';
 
 type glslang = typeof import('@webgpu/glslang/dist/web-devel/glslang');
 type Glslang = import('@webgpu/glslang/dist/web-devel/glslang').Glslang;

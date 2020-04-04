@@ -1,7 +1,8 @@
 export const description = ``;
 
 import { attemptGarbageCollection } from '../../../common/framework/collect_garbage.js';
-import { TestGroup, raceWithRejectOnTimeout } from '../../../common/framework/index.js';
+import { TestGroup } from '../../../common/framework/test_group.js';
+import { raceWithRejectOnTimeout } from '../../../common/framework/util/util.js';
 import { GPUTest } from '../../gpu_test.js';
 
 export const g = new TestGroup(GPUTest);

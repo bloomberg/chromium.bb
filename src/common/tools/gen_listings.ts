@@ -27,7 +27,7 @@ if (!fs.existsSync(myself)) {
   for (const suite of process.argv.slice(2)) {
     const listing = await crawl(suite);
 
-    const outFile = path.normalize(`out/${suite}/index.js`);
+    const outFile = path.normalize(`out/${suite}/listing.js`);
     fs.writeFileSync(
       outFile,
       `\

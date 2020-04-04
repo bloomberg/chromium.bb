@@ -1,12 +1,12 @@
 import { allowedTestNameCharacters } from '../allowed_characters.js';
 import { TestFileLoader } from '../loader.js';
-import { ParamSpec } from '../params/index.js';
-import { assert, unreachable } from '../util/index.js';
+import { ParamSpec } from '../params_utils.js';
+import { assert, unreachable } from '../util/util.js';
 
 import { FilterByGroup } from './filter_by_group.js';
 import { FilterByParamsExact, FilterByParamsMatch, FilterByTestMatch } from './filter_one_file.js';
-import { TestFilterResult } from './index.js';
 import { TestFilter } from './internal.js';
+import { TestFilterResult } from './test_filter_result.js';
 
 // Each filter is of one of the forms below (urlencoded).
 export function makeFilter(filter: string): TestFilter {

@@ -1,6 +1,6 @@
 export const description = ``;
 
-import { TestGroup } from '../../../../common/framework/index.js';
+import { TestGroup } from '../../../../common/framework/test_group.js';
 import { GPUTest } from '../../../gpu_test.js';
 
 class F extends GPUTest {

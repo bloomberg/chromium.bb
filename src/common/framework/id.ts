@@ -1,4 +1,4 @@
-import { ParamSpec } from './params/index.js';
+import { ParamSpec } from './params_utils.js';
 
 // Identifies a test spec file.
 export interface TestSpecID {

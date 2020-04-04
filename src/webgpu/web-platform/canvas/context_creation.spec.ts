@@ -1,6 +1,7 @@
 export const description = ``;
 
-import { Fixture, TestGroup } from '../../../common/framework/index.js';
+import { Fixture } from '../../../common/framework/fixture.js';
+import { TestGroup } from '../../../common/framework/test_group.js';
 
 export const g = new TestGroup(Fixture);
 

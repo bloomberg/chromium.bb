@@ -1,8 +1,8 @@
-// Implements the standalone test runner (see also: index.html).
+// Implements the standalone test runner (see also: /standalone/index.html).
 
-import { RunCase } from '../framework/index.js';
 import { TestLoader } from '../framework/loader.js';
 import { LiveTestCaseResult, Logger } from '../framework/logger.js';
+import { RunCase } from '../framework/test_group.js';
 import { FilterResultTreeNode, treeFromFilterResults } from '../framework/tree.js';
 import { encodeSelectively } from '../framework/url_query.js';
 

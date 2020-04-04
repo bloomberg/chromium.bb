@@ -2,7 +2,8 @@ export const description = `
 createTexture validation tests.
 `;
 
-import { TestGroup, poptions } from '../../../common/framework/index.js';
+import { poptions } from '../../../common/framework/params.js';
+import { TestGroup } from '../../../common/framework/test_group.js';
 import { kTextureFormatInfo, kTextureFormats } from '../../capability_info.js';
 
 import { ValidationTest } from './validation_test.js';

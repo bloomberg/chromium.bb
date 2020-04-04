@@ -2,7 +2,8 @@ export const description = `
 setVertexBuffer validation tests.
 `;
 
-import { TestGroup, range } from '../../../common/framework/index.js';
+import { TestGroup } from '../../../common/framework/test_group.js';
+import { range } from '../../../common/framework/util/util.js';
 
 import { ValidationTest } from './validation_test.js';
 

@@ -1,7 +1,5 @@
 import { timeout } from './timeout.js';
 
-export * from './stack.js';
-
 export function assert(condition: boolean, msg?: string): asserts condition {
   if (!condition) {
     throw new Error(msg);

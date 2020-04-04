@@ -2,7 +2,10 @@ export const description = `
 Unit tests for TestGroup.
 `;
 
-import { Fixture, TestGroup, assert, poptions } from '../common/framework/index.js';
+import { Fixture } from '../common/framework/fixture.js';
+import { poptions } from '../common/framework/params.js';
+import { TestGroup } from '../common/framework/test_group.js';
+import { assert } from '../common/framework/util/util.js';
 
 import { TestGroupTest } from './test_group_test.js';
 import { UnitTest } from './unit_test.js';

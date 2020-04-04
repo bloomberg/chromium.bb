@@ -1,6 +1,6 @@
 import { TestCaseRecorder } from './logger.js';
-import { ParamSpec } from './params/index.js';
-import { assert } from './util/index.js';
+import { ParamSpec } from './params_utils.js';
+import { assert } from './util/util.js';
 
 export class SkipTestCase extends Error {}
 

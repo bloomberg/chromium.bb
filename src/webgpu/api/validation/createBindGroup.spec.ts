@@ -2,7 +2,10 @@ export const description = `
 createBindGroup validation tests.
 `;
 
-import { C, TestGroup, pcombine, poptions, unreachable } from '../../../common/framework/index.js';
+import * as C from '../../../common/constants.js';
+import { pcombine, poptions } from '../../../common/framework/params.js';
+import { TestGroup } from '../../../common/framework/test_group.js';
+import { unreachable } from '../../../common/framework/util/util.js';
 import { kBindingTypes } from '../../capability_info.js';
 
 import { BindingResourceType, ValidationTest, resourceBindingMatches } from './validation_test.js';

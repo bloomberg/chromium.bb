@@ -2,7 +2,8 @@ export const description = `
 vertexState validation tests.
 `;
 
-import { C, TestGroup } from '../../../common/framework/index.js';
+import * as C from '../../../common/constants.js';
+import { TestGroup } from '../../../common/framework/test_group.js';
 
 import { ValidationTest } from './validation_test.js';
 

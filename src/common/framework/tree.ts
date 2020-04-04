@@ -1,6 +1,6 @@
 import { Logger } from './logger.js';
-import { stringifyPublicParams } from './params/index.js';
-import { TestFilterResult } from './test_filter/index.js';
+import { stringifyPublicParams } from './params_utils.js';
+import { TestFilterResult } from './test_filter/test_filter_result.js';
 import { RunCase } from './test_group.js';
 
 export interface FilterResultTreeNode {

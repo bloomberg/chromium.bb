@@ -1,8 +1,9 @@
 import { SkipTestCase } from './fixture.js';
 import { TestSpecID } from './id.js';
-import { ParamSpec, extractPublicParams } from './params/index.js';
+import { ParamSpec, extractPublicParams } from './params_utils.js';
 import { makeQueryString } from './url_query.js';
-import { assert, getStackTrace, now } from './util/index.js';
+import { getStackTrace } from './util/stack.js';
+import { assert, now } from './util/util.js';
 import { version } from './version.js';
 
 type Status = 'running' | 'pass' | 'skip' | 'warn' | 'fail';

@@ -1,6 +1,6 @@
-import { assert } from '../../framework/index.js';
 import { TestLoader } from '../../framework/loader.js';
 import { Logger } from '../../framework/logger.js';
+import { assert } from '../../framework/util/util.js';
 
 // tslint:disable-next-line: no-any
 declare var self: any; // should be DedicatedWorkerGlobalScope

@@ -2,7 +2,8 @@ export const description = `
 createRenderPipeline validation tests.
 `;
 
-import { TestGroup, poptions } from '../../../common/framework/index.js';
+import { poptions } from '../../../common/framework/params.js';
+import { TestGroup } from '../../../common/framework/test_group.js';
 import GLSL from '../../../common/tools/glsl.macro.js';
 import { kTextureFormatInfo, kTextureFormats } from '../../capability_info.js';
 
