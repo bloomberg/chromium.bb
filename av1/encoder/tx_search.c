@@ -2562,7 +2562,10 @@ static AOM_INLINE void try_tx_block_split(
       av1_merge_rd_stats(split_rd_stats, &this_rd_stats);
       split_rd_stats->rdcost =
           RDCOST(x->rdmult, split_rd_stats->rate, split_rd_stats->dist);
-      if (no_split_rd < split_rd_stats->rdcost) return;
+      if (split_rd_stats->rdcost > ref_best_rd) {
+        split_rd_stats->rdcost = INT64_MAX;
+        return;
+      }
       block += sub_step;
     }
   }
