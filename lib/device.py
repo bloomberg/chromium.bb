@@ -39,8 +39,9 @@ class Device(object):
     Args:
       opts: command line options.
     """
-    self.device = opts.device
-    self.ssh_port = None
+    self.device = opts.device.hostname if opts.device else None
+    self.ssh_port = opts.device.port if opts.device else None
+    self.should_start_vm = not self.device
     self.board = opts.board
 
     self.use_sudo = False
@@ -109,20 +110,10 @@ class Device(object):
     return remote_access.CompileSSHConnectSettings(
         ServerAliveInterval=15, ServerAliveCountMax=8)
 
-  @property
-  def is_vm(self):
-    """Returns true if we're a VM."""
-    return self._IsVM(self.device)
-
-  @staticmethod
-  def _IsVM(device):
-    """VM if |device| is specified and it's not localhost."""
-    return not device or device == remote_access.LOCALHOST
-
   @staticmethod
   def Create(opts):
     """Create either a Device or VM based on |opts.device|."""
-    if Device._IsVM(opts.device):
+    if not opts.device:
       from chromite.lib import vm
 
       return vm.VM(opts)
@@ -139,7 +130,11 @@ class Device(object):
       List of parsed opts.
     """
     parser = commandline.ArgumentParser(description=__doc__)
-    parser.add_argument('--device', help='Hostname or Device IP.')
+    parser.add_argument(
+        '-d', '--device',
+        type=commandline.DeviceParser(commandline.DEVICE_SCHEME_SSH),
+        help='Hostname or device IP in format hostname[:port]. If not '
+             'specified, a VM will be launched for the duration of the test.')
     sdk_board_env = os.environ.get(cros_chrome_sdk.SDKFetcher.SDK_BOARD_ENV)
     parser.add_argument('--board', default=sdk_board_env, help='Board to use.')
     parser.add_argument('--private-key', help='Path to ssh private key.')

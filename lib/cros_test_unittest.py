@@ -44,7 +44,6 @@ class CrOSTesterBase(cros_test_lib.RunCommandTempDirTestCase):
     version_str = ('QEMU emulator version 2.6.0, Copyright (c) '
                    '2003-2008 Fabrice Bellard')
     self.rc.AddCmdResult(partial_mock.In('--version'), output=version_str)
-    self.ssh_port = self._tester._device.ssh_port
 
   def TempFilePath(self, file_path):
     """Creates a temporary file path lasting for the duration of a test."""
@@ -252,6 +251,7 @@ class CrOSTesterAutotest(CrOSTesterBase):
     self._tester.results_dir = 'test_results'
     self._tester._device.private_key = '.ssh/testing_rsa'
     self._tester._device.log_level = 'debug'
+    self._tester._device.should_start_vm = False
     self._tester._device.ssh_port = None
     self._tester._device.device = '100.90.29.199'
     self._tester.test_that_args = ['--test_that-args',
@@ -337,6 +337,7 @@ class CrOSTesterTast(CrOSTesterBase):
     self._tester.tast = ['ui.ChromeLogin']
     self._tester.test_timeout = 100
     self._tester._device.log_level = 'debug'
+    self._tester._device.should_start_vm = False
     self._tester._device.ssh_port = None
     self._tester._device.device = '100.90.29.199'
     self._tester.results_dir = '/tmp/results'
