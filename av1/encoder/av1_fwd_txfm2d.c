@@ -22,14 +22,14 @@
 
 static INLINE TxfmFunc fwd_txfm_type_to_func(TXFM_TYPE txfm_type) {
   switch (txfm_type) {
-    case TXFM_TYPE_DCT4: return av1_fdct4_new;
-    case TXFM_TYPE_DCT8: return av1_fdct8_new;
-    case TXFM_TYPE_DCT16: return av1_fdct16_new;
-    case TXFM_TYPE_DCT32: return av1_fdct32_new;
-    case TXFM_TYPE_DCT64: return av1_fdct64_new;
-    case TXFM_TYPE_ADST4: return av1_fadst4_new;
-    case TXFM_TYPE_ADST8: return av1_fadst8_new;
-    case TXFM_TYPE_ADST16: return av1_fadst16_new;
+    case TXFM_TYPE_DCT4: return av1_fdct4;
+    case TXFM_TYPE_DCT8: return av1_fdct8;
+    case TXFM_TYPE_DCT16: return av1_fdct16;
+    case TXFM_TYPE_DCT32: return av1_fdct32;
+    case TXFM_TYPE_DCT64: return av1_fdct64;
+    case TXFM_TYPE_ADST4: return av1_fadst4;
+    case TXFM_TYPE_ADST8: return av1_fadst8;
+    case TXFM_TYPE_ADST16: return av1_fadst16;
     case TXFM_TYPE_IDENTITY4: return av1_fidentity4_c;
     case TXFM_TYPE_IDENTITY8: return av1_fidentity8_c;
     case TXFM_TYPE_IDENTITY16: return av1_fidentity16_c;

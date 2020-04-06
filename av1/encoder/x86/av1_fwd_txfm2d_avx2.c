@@ -113,8 +113,8 @@ static INLINE void fdct16x16_new_avx2(const __m256i *input, __m256i *output,
   output[15] = x1[15];
 }
 
-static INLINE void fdct16x32_new_avx2(const __m256i *input, __m256i *output,
-                                      int8_t cos_bit) {
+static INLINE void fdct16x32_avx2(const __m256i *input, __m256i *output,
+                                  int8_t cos_bit) {
   const int32_t *cospi = cospi_arr(cos_bit);
   const __m256i _r = _mm256_set1_epi32(1 << (cos_bit - 1));
 
@@ -711,8 +711,8 @@ static INLINE void fdct16x64_new_avx2(const __m256i *input, __m256i *output,
   output[63] = x1[63];
 }
 
-static INLINE void fdct32_new_avx2(const __m256i *input, __m256i *output,
-                                   int8_t cos_bit) {
+static INLINE void fdct32_avx2(const __m256i *input, __m256i *output,
+                               int8_t cos_bit) {
   __m256i x1[32];
   const int32_t *cospi = cospi_arr(cos_bit);
   const __m256i _r = _mm256_set1_epi32(1 << (cos_bit - 1));
@@ -1422,8 +1422,8 @@ static INLINE void fidentity16x16_new_avx2(const __m256i *input,
   }
 }
 
-static INLINE void fidentity16x32_new_avx2(const __m256i *input,
-                                           __m256i *output, int8_t cos_bit) {
+static INLINE void fidentity16x32_avx2(const __m256i *input, __m256i *output,
+                                       int8_t cos_bit) {
   (void)cos_bit;
   for (int i = 0; i < 32; ++i) {
     output[i] = _mm256_slli_epi16(input[i], 2);
@@ -1499,41 +1499,41 @@ typedef void (*transform_1d_avx2)(const __m256i *input, __m256i *output,
                                   int8_t cos_bit);
 
 static const transform_1d_avx2 col_txfm16x32_arr[TX_TYPES] = {
-  fdct16x32_new_avx2,       // DCT_DCT
-  NULL,                     // ADST_DCT
-  NULL,                     // DCT_ADST
-  NULL,                     // ADST_ADST
-  NULL,                     // FLIPADST_DCT
-  NULL,                     // DCT_FLIPADST
-  NULL,                     // FLIPADST_FLIPADST
-  NULL,                     // ADST_FLIPADST
-  NULL,                     // FLIPADST_ADST
-  fidentity16x32_new_avx2,  // IDTX
-  fdct16x32_new_avx2,       // V_DCT
-  fidentity16x32_new_avx2,  // H_DCT
-  NULL,                     // V_ADST
-  NULL,                     // H_ADST
-  NULL,                     // V_FLIPADST
-  NULL                      // H_FLIPADST
+  fdct16x32_avx2,       // DCT_DCT
+  NULL,                 // ADST_DCT
+  NULL,                 // DCT_ADST
+  NULL,                 // ADST_ADST
+  NULL,                 // FLIPADST_DCT
+  NULL,                 // DCT_FLIPADST
+  NULL,                 // FLIPADST_FLIPADST
+  NULL,                 // ADST_FLIPADST
+  NULL,                 // FLIPADST_ADST
+  fidentity16x32_avx2,  // IDTX
+  fdct16x32_avx2,       // V_DCT
+  fidentity16x32_avx2,  // H_DCT
+  NULL,                 // V_ADST
+  NULL,                 // H_ADST
+  NULL,                 // V_FLIPADST
+  NULL                  // H_FLIPADST
 };
 
 static const transform_1d_avx2 row_txfm16x32_arr[TX_TYPES] = {
-  fdct16x32_new_avx2,       // DCT_DCT
-  NULL,                     // ADST_DCT
-  NULL,                     // DCT_ADST
-  NULL,                     // ADST_ADST
-  NULL,                     // FLIPADST_DCT
-  NULL,                     // DCT_FLIPADST
-  NULL,                     // FLIPADST_FLIPADST
-  NULL,                     // ADST_FLIPADST
-  NULL,                     // FLIPADST_ADST
-  fidentity16x32_new_avx2,  // IDTX
-  fidentity16x32_new_avx2,  // V_DCT
-  fdct16x32_new_avx2,       // H_DCT
-  NULL,                     // V_ADST
-  NULL,                     // H_ADST
-  NULL,                     // V_FLIPADST
-  NULL                      // H_FLIPADST
+  fdct16x32_avx2,       // DCT_DCT
+  NULL,                 // ADST_DCT
+  NULL,                 // DCT_ADST
+  NULL,                 // ADST_ADST
+  NULL,                 // FLIPADST_DCT
+  NULL,                 // DCT_FLIPADST
+  NULL,                 // FLIPADST_FLIPADST
+  NULL,                 // ADST_FLIPADST
+  NULL,                 // FLIPADST_ADST
+  fidentity16x32_avx2,  // IDTX
+  fidentity16x32_avx2,  // V_DCT
+  fdct16x32_avx2,       // H_DCT
+  NULL,                 // V_ADST
+  NULL,                 // H_ADST
+  NULL,                 // V_FLIPADST
+  NULL                  // H_FLIPADST
 };
 
 static const transform_1d_avx2 col_txfm16x16_arr[TX_TYPES] = {
@@ -1891,8 +1891,8 @@ static void lowbd_fwd_txfm2d_32x64_avx2(const int16_t *input, int32_t *output,
       bufA[j] = _mm256_cvtepi16_epi32(buf[j * 2]);
       bufB[j] = _mm256_cvtepi16_epi32(buf[j * 2 + 1]);
     }
-    fdct32_new_avx2(bufA, bufA, cos_bit_row);
-    fdct32_new_avx2(bufB, bufB, cos_bit_row);
+    fdct32_avx2(bufA, bufA, cos_bit_row);
+    fdct32_avx2(bufB, bufB, cos_bit_row);
     av1_round_shift_rect_array_32_avx2(bufA, bufA, 32, -shift[2], NewSqrt2);
     av1_round_shift_rect_array_32_avx2(bufB, bufB, 32, -shift[2], NewSqrt2);
 

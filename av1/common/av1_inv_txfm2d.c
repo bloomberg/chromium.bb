@@ -113,14 +113,14 @@ void av1_highbd_iwht4x4_1_add_c(const tran_low_t *in, uint8_t *dest8,
 
 static INLINE TxfmFunc inv_txfm_type_to_func(TXFM_TYPE txfm_type) {
   switch (txfm_type) {
-    case TXFM_TYPE_DCT4: return av1_idct4_new;
-    case TXFM_TYPE_DCT8: return av1_idct8_new;
-    case TXFM_TYPE_DCT16: return av1_idct16_new;
-    case TXFM_TYPE_DCT32: return av1_idct32_new;
-    case TXFM_TYPE_DCT64: return av1_idct64_new;
-    case TXFM_TYPE_ADST4: return av1_iadst4_new;
-    case TXFM_TYPE_ADST8: return av1_iadst8_new;
-    case TXFM_TYPE_ADST16: return av1_iadst16_new;
+    case TXFM_TYPE_DCT4: return av1_idct4;
+    case TXFM_TYPE_DCT8: return av1_idct8;
+    case TXFM_TYPE_DCT16: return av1_idct16;
+    case TXFM_TYPE_DCT32: return av1_idct32;
+    case TXFM_TYPE_DCT64: return av1_idct64;
+    case TXFM_TYPE_ADST4: return av1_iadst4;
+    case TXFM_TYPE_ADST8: return av1_iadst8;
+    case TXFM_TYPE_ADST16: return av1_iadst16;
     case TXFM_TYPE_IDENTITY4: return av1_iidentity4_c;
     case TXFM_TYPE_IDENTITY8: return av1_iidentity8_c;
     case TXFM_TYPE_IDENTITY16: return av1_iidentity16_c;

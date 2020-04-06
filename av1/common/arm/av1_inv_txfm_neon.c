@@ -48,11 +48,11 @@ static const ITX_TYPE_1D hitx_1d_tab[TX_TYPES] = {
 
 // 1D functions
 static const transform_1d_neon lowbd_txfm_all_1d_arr[TX_SIZES][ITX_TYPES_1D] = {
-  { av1_idct4_new, av1_iadst4_new, av1_iidentity4_c },
-  { av1_idct8_new, av1_iadst8_new, av1_iidentity8_c },
-  { av1_idct16_new, av1_iadst16_new, av1_iidentity16_c },
-  { av1_idct32_new, NULL, NULL },
-  { av1_idct64_new, NULL, NULL },
+  { av1_idct4, av1_iadst4, av1_iidentity4_c },
+  { av1_idct8, av1_iadst8, av1_iidentity8_c },
+  { av1_idct16, av1_iadst16, av1_iidentity16_c },
+  { av1_idct32, NULL, NULL },
+  { av1_idct64, NULL, NULL },
 };
 
 static INLINE void lowbd_add_flip_buffer_8xn_neon(int16x8_t *in,
@@ -258,8 +258,8 @@ static INLINE int16x4_t set_s16x4_neon(const int16_t c0, const int16_t c1,
   return val;
 }
 
-static INLINE void iadst8_new_neon(int16x8_t *const in, int16x8_t *out,
-                                   int8_t cos_bit, int bit) {
+static INLINE void iadst8_neon(int16x8_t *const in, int16x8_t *out,
+                               int8_t cos_bit, int bit) {
   (void)bit;
   const int32_t *cospi = cospi_arr(cos_bit);
 
@@ -332,8 +332,8 @@ static INLINE void iadst8_new_neon(int16x8_t *const in, int16x8_t *out,
   out[7] = vqnegq_s16(x[1]);
 }
 
-static INLINE void iadst8_low1_new_neon(int16x8_t *const in, int16x8_t *out,
-                                        int8_t cos_bit, int bit) {
+static INLINE void iadst8_low1_neon(int16x8_t *const in, int16x8_t *out,
+                                    int8_t cos_bit, int bit) {
   (void)bit;
   const int32_t *cospi = cospi_arr(cos_bit);
   const int16x4_t c2 = set_s16x4_neon((int16_t)cospi[32], (int16_t)cospi[32],
@@ -385,8 +385,8 @@ static INLINE void iadst8_low1_new_neon(int16x8_t *const in, int16x8_t *out,
   out[7] = vqnegq_s16(x[1]);
 }
 
-static INLINE void idct8_new_neon(int16x8_t *in, int16x8_t *out, int8_t cos_bit,
-                                  int bit) {
+static INLINE void idct8_neon(int16x8_t *in, int16x8_t *out, int8_t cos_bit,
+                              int bit) {
   (void)bit;
   const int32_t *cospi = cospi_arr(cos_bit);
   int16x8_t step1[8], step2[8];
@@ -425,8 +425,8 @@ static INLINE void idct8_new_neon(int16x8_t *in, int16x8_t *out, int8_t cos_bit,
   out[7] = vqsubq_s16(step1[0], step2[7]);
 }
 
-static INLINE void idct8_low1_new_neon(int16x8_t *in, int16x8_t *out,
-                                       int8_t cos_bit, int bit) {
+static INLINE void idct8_low1_neon(int16x8_t *in, int16x8_t *out,
+                                   int8_t cos_bit, int bit) {
   (void)bit;
   const int32_t *cospi = cospi_arr(cos_bit);
   int16x8_t step1;
@@ -518,8 +518,8 @@ static INLINE void round_shift_for_rect(int16x8_t *input, int16x8_t *output,
   }
 }
 
-static INLINE void idct16_low1_new_neon(int16x8_t *in, int16x8_t *out,
-                                        int8_t cos_bit, int bit) {
+static INLINE void idct16_low1_neon(int16x8_t *in, int16x8_t *out,
+                                    int8_t cos_bit, int bit) {
   (void)bit;
   const int32_t *cospi = cospi_arr(cos_bit);
   int16x8_t step1;
@@ -552,8 +552,8 @@ static INLINE void idct16_low1_new_neon(int16x8_t *in, int16x8_t *out,
   out[15] = step1;
 }
 
-static INLINE void idct16_new_neon(int16x8_t *in, int16x8_t *out,
-                                   int8_t cos_bit, int bit) {
+static INLINE void idct16_neon(int16x8_t *in, int16x8_t *out, int8_t cos_bit,
+                               int bit) {
   (void)bit;
   const int32_t *cospi = cospi_arr(cos_bit);
   int16x8_t step1[16], step2[16];
@@ -675,8 +675,8 @@ static INLINE void idct16_new_neon(int16x8_t *in, int16x8_t *out,
   out[15] = vqsubq_s16(step2[0], step2[15]);
 }
 
-static INLINE void idct16_low8_new_neon(int16x8_t *in, int16x8_t *out,
-                                        int8_t cos_bit, int bit) {
+static INLINE void idct16_low8_neon(int16x8_t *in, int16x8_t *out,
+                                    int8_t cos_bit, int bit) {
   (void)bit;
   const int32_t *cospi = cospi_arr(cos_bit);
   int16x8_t step1[16], step2[16];
@@ -786,8 +786,8 @@ static INLINE void idct16_low8_new_neon(int16x8_t *in, int16x8_t *out,
   out[15] = vqsubq_s16(step2[0], step2[15]);
 }
 
-static INLINE void iadst16_new_neon(int16x8_t *const in, int16x8_t *out,
-                                    int8_t cos_bit, int bit) {
+static INLINE void iadst16_neon(int16x8_t *const in, int16x8_t *out,
+                                int8_t cos_bit, int bit) {
   (void)bit;
   const int32_t *cospi = cospi_arr(cos_bit);
 
@@ -944,8 +944,8 @@ static INLINE void iadst16_new_neon(int16x8_t *const in, int16x8_t *out,
   out[15] = vqnegq_s16(x[1]);
 }
 
-static INLINE void iadst16_low1_new_neon(int16x8_t *const in, int16x8_t *out,
-                                         int8_t cos_bit, int bit) {
+static INLINE void iadst16_low1_neon(int16x8_t *const in, int16x8_t *out,
+                                     int8_t cos_bit, int bit) {
   (void)bit;
   const int32_t *cospi = cospi_arr(cos_bit);
   const int16x4_t c0 = set_s16x4_neon((int16_t)cospi[8], (int16_t)cospi[56],
@@ -1036,8 +1036,8 @@ static INLINE void iadst16_low1_new_neon(int16x8_t *const in, int16x8_t *out,
   out[15] = vqnegq_s16(x[1]);
 }
 
-static INLINE void iadst16_low8_new_neon(int16x8_t *const in, int16x8_t *out,
-                                         int8_t cos_bit, int bit) {
+static INLINE void iadst16_low8_neon(int16x8_t *const in, int16x8_t *out,
+                                     int8_t cos_bit, int bit) {
   (void)bit;
   const int32_t *cospi = cospi_arr(cos_bit);
 
@@ -1179,8 +1179,8 @@ static INLINE void iadst16_low8_new_neon(int16x8_t *const in, int16x8_t *out,
   out[15] = vqnegq_s16(x[1]);
 }
 
-static INLINE void idct32_new_neon(int16x8_t *in, int16x8_t *out,
-                                   int8_t cos_bit, int bit) {
+static INLINE void idct32_neon(int16x8_t *in, int16x8_t *out, int8_t cos_bit,
+                               int bit) {
   (void)bit;
   const int32_t *cospi = cospi_arr(cos_bit);
   int16x8_t step1[32], step2[32];
@@ -1464,8 +1464,8 @@ static INLINE void idct32_new_neon(int16x8_t *in, int16x8_t *out,
   out[31] = vqsubq_s16(step2[0], step2[31]);
 }
 
-static INLINE void idct32_low1_new_neon(int16x8_t *in, int16x8_t *out,
-                                        int8_t cos_bit, int bit) {
+static INLINE void idct32_low1_neon(int16x8_t *in, int16x8_t *out,
+                                    int8_t cos_bit, int bit) {
   (void)bit;
   const int32_t *cospi = cospi_arr(cos_bit);
   int16x8_t step1;
@@ -1521,8 +1521,8 @@ static INLINE void idct32_low1_new_neon(int16x8_t *in, int16x8_t *out,
   out[31] = step1;
 }
 
-static INLINE void idct32_low8_new_neon(int16x8_t *in, int16x8_t *out,
-                                        int8_t cos_bit, int bit) {
+static INLINE void idct32_low8_neon(int16x8_t *in, int16x8_t *out,
+                                    int8_t cos_bit, int bit) {
   (void)bit;
   const int32_t *cospi = cospi_arr(cos_bit);
   int16x8_t step1[32], step2[32];
@@ -1768,8 +1768,8 @@ static INLINE void idct32_low8_new_neon(int16x8_t *in, int16x8_t *out,
   out[31] = vqsubq_s16(step2[0], step2[31]);
 }
 
-static INLINE void idct32_low16_new_neon(int16x8_t *in, int16x8_t *out,
-                                         int8_t cos_bit, int bit) {
+static INLINE void idct32_low16_neon(int16x8_t *in, int16x8_t *out,
+                                     int8_t cos_bit, int bit) {
   (void)bit;
   const int32_t *cospi = cospi_arr(cos_bit);
   int16x8_t step1[32], step2[32];
@@ -2165,8 +2165,8 @@ static INLINE void idct64_stage10_neon(int16x8_t *step1, int16x8_t *step2,
   step2[63] = step1[63];
 }
 
-static INLINE void idct64_low32_new_neon(int16x8_t *in, int16x8_t *out,
-                                         int8_t cos_bit, int bit) {
+static INLINE void idct64_low32_neon(int16x8_t *in, int16x8_t *out,
+                                     int8_t cos_bit, int bit) {
   (void)bit;
   const int32_t *cospi = cospi_arr(cos_bit);
   int16x8_t step2[64], step1[64];
@@ -2646,8 +2646,8 @@ static INLINE void idct64_low32_new_neon(int16x8_t *in, int16x8_t *out,
   out[63] = vqsubq_s16(step2[0], step2[63]);
 }
 
-static INLINE void idct64_low1_new_neon(int16x8_t *input, int16x8_t *out,
-                                        int8_t cos_bit, int bit) {
+static INLINE void idct64_low1_neon(int16x8_t *input, int16x8_t *out,
+                                    int8_t cos_bit, int bit) {
   (void)bit;
   const int32_t *cospi = cospi_arr(cos_bit);
   int16x8_t step1;
@@ -2736,8 +2736,8 @@ static INLINE void idct64_low1_new_neon(int16x8_t *input, int16x8_t *out,
   out[63] = step1;
 }
 
-static INLINE void idct64_low8_new_neon(int16x8_t *in, int16x8_t *out,
-                                        int8_t cos_bit, int bit) {
+static INLINE void idct64_low8_neon(int16x8_t *in, int16x8_t *out,
+                                    int8_t cos_bit, int bit) {
   (void)bit;
   const int32_t *cospi = cospi_arr(cos_bit);
   int16x8_t step2[64], step1[64];
@@ -3114,8 +3114,8 @@ static INLINE void idct64_low8_new_neon(int16x8_t *in, int16x8_t *out,
   out[63] = vqsubq_s16(step2[0], step2[63]);
 }
 
-static INLINE void idct64_low16_new_neon(int16x8_t *in, int16x8_t *out,
-                                         int8_t cos_bit, int bit) {
+static INLINE void idct64_low16_neon(int16x8_t *in, int16x8_t *out,
+                                     int8_t cos_bit, int bit) {
   (void)bit;
   const int32_t *cospi = cospi_arr(cos_bit);
   int16x8_t step2[64], step1[64];
@@ -3574,21 +3574,19 @@ static const transform_neon
           { NULL, NULL, NULL, NULL },
           { NULL, NULL, NULL, NULL },
       },
-      { { idct8_low1_new_neon, idct8_new_neon, NULL, NULL },
-        { iadst8_low1_new_neon, iadst8_new_neon, NULL, NULL },
+      { { idct8_low1_neon, idct8_neon, NULL, NULL },
+        { iadst8_low1_neon, iadst8_neon, NULL, NULL },
         { NULL, NULL, NULL, NULL } },
       {
-          { idct16_low1_new_neon, idct16_low8_new_neon, idct16_new_neon, NULL },
-          { iadst16_low1_new_neon, iadst16_low8_new_neon, iadst16_new_neon,
-            NULL },
+          { idct16_low1_neon, idct16_low8_neon, idct16_neon, NULL },
+          { iadst16_low1_neon, iadst16_low8_neon, iadst16_neon, NULL },
           { NULL, NULL, NULL, NULL },
       },
-      { { idct32_low1_new_neon, idct32_low8_new_neon, idct32_low16_new_neon,
-          idct32_new_neon },
+      { { idct32_low1_neon, idct32_low8_neon, idct32_low16_neon, idct32_neon },
         { NULL, NULL, NULL, NULL },
         { NULL, NULL, NULL, NULL } },
-      { { idct64_low1_new_neon, idct64_low8_new_neon, idct64_low16_new_neon,
-          idct64_low32_new_neon },
+      { { idct64_low1_neon, idct64_low8_neon, idct64_low16_neon,
+          idct64_low32_neon },
         { NULL, NULL, NULL, NULL },
         { NULL, NULL, NULL, NULL } }
     };

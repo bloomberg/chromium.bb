@@ -26,19 +26,15 @@ const int txfm_type_num = 2;
 const int txfm_size_ls[] = { 4, 8, 16, 32, 64 };
 
 const TxfmFunc fwd_txfm_func_ls[][txfm_type_num] = {
-  { av1_fdct4_new, av1_fadst4_new },
-  { av1_fdct8_new, av1_fadst8_new },
-  { av1_fdct16_new, av1_fadst16_new },
-  { av1_fdct32_new, NULL },
-  { av1_fdct64_new, NULL },
+  { av1_fdct4, av1_fadst4 },   { av1_fdct8, av1_fadst8 },
+  { av1_fdct16, av1_fadst16 }, { av1_fdct32, NULL },
+  { av1_fdct64, NULL },
 };
 
 const TxfmFunc inv_txfm_func_ls[][txfm_type_num] = {
-  { av1_idct4_new, av1_iadst4_new },
-  { av1_idct8_new, av1_iadst8_new },
-  { av1_idct16_new, av1_iadst16_new },
-  { av1_idct32_new, NULL },
-  { av1_idct64_new, NULL },
+  { av1_idct4, av1_iadst4 },   { av1_idct8, av1_iadst8 },
+  { av1_idct16, av1_iadst16 }, { av1_idct32, NULL },
+  { av1_idct64, NULL },
 };
 
 // the maximum stage number of fwd/inv 1d dct/adst txfm is 12

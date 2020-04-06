@@ -61,8 +61,7 @@ static INLINE void idct16_stage7_avx2(__m256i *output, __m256i *x1) {
   btf_16_adds_subs_out_avx2(&output[7], &output[8], x1[7], x1[8]);
 }
 
-static void idct16_new_avx2(const __m256i *input, __m256i *output,
-                            int8_t cos_bit) {
+static void idct16_avx2(const __m256i *input, __m256i *output, int8_t cos_bit) {
   (void)(cos_bit);
   const int32_t *cospi = cospi_arr(INV_COS_BIT);
   const __m256i _r = _mm256_set1_epi32(1 << (INV_COS_BIT - 1));
@@ -133,8 +132,8 @@ static void idct16_new_avx2(const __m256i *input, __m256i *output,
   idct16_stage7_avx2(output, x1);
 }
 
-static void idct16_low8_new_avx2(const __m256i *input, __m256i *output,
-                                 int8_t cos_bit) {
+static void idct16_low8_avx2(const __m256i *input, __m256i *output,
+                             int8_t cos_bit) {
   (void)(cos_bit);
   const int32_t *cospi = cospi_arr(INV_COS_BIT);
   const __m256i _r = _mm256_set1_epi32(1 << (INV_COS_BIT - 1));
@@ -181,8 +180,8 @@ static void idct16_low8_new_avx2(const __m256i *input, __m256i *output,
   idct16_stage7_avx2(output, x1);
 }
 
-static void idct16_low1_new_avx2(const __m256i *input, __m256i *output,
-                                 int8_t cos_bit) {
+static void idct16_low1_avx2(const __m256i *input, __m256i *output,
+                             int8_t cos_bit) {
   (void)(cos_bit);
   const int32_t *cospi = cospi_arr(INV_COS_BIT);
 
@@ -303,8 +302,8 @@ static INLINE void iadst16_stage9_avx2(__m256i *output, __m256i *x1) {
   output[15] = _mm256_subs_epi16(__zero, x1[1]);
 }
 
-static void iadst16_new_avx2(const __m256i *input, __m256i *output,
-                             int8_t cos_bit) {
+static void iadst16_avx2(const __m256i *input, __m256i *output,
+                         int8_t cos_bit) {
   (void)(cos_bit);
   const int32_t *cospi = cospi_arr(INV_COS_BIT);
 
@@ -365,8 +364,8 @@ static void iadst16_new_avx2(const __m256i *input, __m256i *output,
   iadst16_stage9_avx2(output, x1);
 }
 
-static void iadst16_low8_new_avx2(const __m256i *input, __m256i *output,
-                                  int8_t cos_bit) {
+static void iadst16_low8_avx2(const __m256i *input, __m256i *output,
+                              int8_t cos_bit) {
   (void)(cos_bit);
   const int32_t *cospi = cospi_arr(INV_COS_BIT);
   const __m256i _r = _mm256_set1_epi32(1 << (INV_COS_BIT - 1));
@@ -401,8 +400,8 @@ static void iadst16_low8_new_avx2(const __m256i *input, __m256i *output,
   iadst16_stage9_avx2(output, x1);
 }
 
-static void iadst16_low1_new_avx2(const __m256i *input, __m256i *output,
-                                  int8_t cos_bit) {
+static void iadst16_low1_avx2(const __m256i *input, __m256i *output,
+                              int8_t cos_bit) {
   (void)(cos_bit);
   const int32_t *cospi = cospi_arr(INV_COS_BIT);
   const __m256i _r = _mm256_set1_epi32(1 << (INV_COS_BIT - 1));
@@ -568,8 +567,8 @@ static INLINE void idct32_stage9_avx2(__m256i *output, __m256i *x) {
   btf_16_adds_subs_out_avx2(&output[15], &output[16], x[15], x[16]);
 }
 
-static void idct32_low1_new_avx2(const __m256i *input, __m256i *output,
-                                 int8_t cos_bit) {
+static void idct32_low1_avx2(const __m256i *input, __m256i *output,
+                             int8_t cos_bit) {
   (void)cos_bit;
   const int32_t *cospi = cospi_arr(INV_COS_BIT);
 
@@ -621,8 +620,8 @@ static void idct32_low1_new_avx2(const __m256i *input, __m256i *output,
   output[16] = x[0];
 }
 
-static void idct32_low8_new_avx2(const __m256i *input, __m256i *output,
-                                 int8_t cos_bit) {
+static void idct32_low8_avx2(const __m256i *input, __m256i *output,
+                             int8_t cos_bit) {
   (void)cos_bit;
   const int32_t *cospi = cospi_arr(INV_COS_BIT);
   const __m256i _r = _mm256_set1_epi32(1 << (INV_COS_BIT - 1));
@@ -679,8 +678,8 @@ static void idct32_low8_new_avx2(const __m256i *input, __m256i *output,
   idct32_stage9_avx2(output, x);
 }
 
-static void idct32_low16_new_avx2(const __m256i *input, __m256i *output,
-                                  int8_t cos_bit) {
+static void idct32_low16_avx2(const __m256i *input, __m256i *output,
+                              int8_t cos_bit) {
   (void)cos_bit;
   const int32_t *cospi = cospi_arr(INV_COS_BIT);
   const __m256i _r = _mm256_set1_epi32(1 << (INV_COS_BIT - 1));
@@ -746,8 +745,7 @@ static void idct32_low16_new_avx2(const __m256i *input, __m256i *output,
   idct32_stage9_avx2(output, x);
 }
 
-static void idct32_new_avx2(const __m256i *input, __m256i *output,
-                            int8_t cos_bit) {
+static void idct32_avx2(const __m256i *input, __m256i *output, int8_t cos_bit) {
   (void)(cos_bit);
   const int32_t *cospi = cospi_arr(INV_COS_BIT);
   const __m256i _r = _mm256_set1_epi32(1 << (INV_COS_BIT - 1));
@@ -1104,8 +1102,8 @@ static INLINE void idct64_stage11_avx2(__m256i *output, __m256i *x) {
   btf_16_adds_subs_out_avx2(&output[31], &output[32], x[31], x[32]);
 }
 
-static void idct64_low1_new_avx2(const __m256i *input, __m256i *output,
-                                 int8_t cos_bit) {
+static void idct64_low1_avx2(const __m256i *input, __m256i *output,
+                             int8_t cos_bit) {
   (void)cos_bit;
   const int32_t *cospi = cospi_arr(INV_COS_BIT);
 
@@ -1191,8 +1189,8 @@ static void idct64_low1_new_avx2(const __m256i *input, __m256i *output,
   output[32] = x[0];
 }
 
-static void idct64_low8_new_avx2(const __m256i *input, __m256i *output,
-                                 int8_t cos_bit) {
+static void idct64_low8_avx2(const __m256i *input, __m256i *output,
+                             int8_t cos_bit) {
   (void)cos_bit;
   const int32_t *cospi = cospi_arr(INV_COS_BIT);
   const __m256i _r = _mm256_set1_epi32(1 << (INV_COS_BIT - 1));
@@ -1312,8 +1310,8 @@ static void idct64_low8_new_avx2(const __m256i *input, __m256i *output,
   idct64_stage11_avx2(output, x);
 }
 
-static void idct64_low16_new_avx2(const __m256i *input, __m256i *output,
-                                  int8_t cos_bit) {
+static void idct64_low16_avx2(const __m256i *input, __m256i *output,
+                              int8_t cos_bit) {
   (void)cos_bit;
   const int32_t *cospi = cospi_arr(INV_COS_BIT);
   const __m256i _r = _mm256_set1_epi32(1 << (INV_COS_BIT - 1));
@@ -1428,8 +1426,8 @@ static void idct64_low16_new_avx2(const __m256i *input, __m256i *output,
   idct64_stage11_avx2(output, x);
 }
 
-static void idct64_low32_new_avx2(const __m256i *input, __m256i *output,
-                                  int8_t cos_bit) {
+static void idct64_low32_avx2(const __m256i *input, __m256i *output,
+                              int8_t cos_bit) {
   (void)cos_bit;
   const int32_t *cospi = cospi_arr(INV_COS_BIT);
   const __m256i _r = _mm256_set1_epi32(1 << (INV_COS_BIT - 1));
@@ -1592,17 +1590,15 @@ static const transform_1d_avx2
         { NULL, NULL, NULL, NULL },
         { NULL, NULL, NULL, NULL } },
       {
-          { idct16_low1_new_avx2, idct16_low8_new_avx2, idct16_new_avx2, NULL },
-          { iadst16_low1_new_avx2, iadst16_low8_new_avx2, iadst16_new_avx2,
-            NULL },
+          { idct16_low1_avx2, idct16_low8_avx2, idct16_avx2, NULL },
+          { iadst16_low1_avx2, iadst16_low8_avx2, iadst16_avx2, NULL },
           { NULL, NULL, NULL, NULL },
       },
-      { { idct32_low1_new_avx2, idct32_low8_new_avx2, idct32_low16_new_avx2,
-          idct32_new_avx2 },
+      { { idct32_low1_avx2, idct32_low8_avx2, idct32_low16_avx2, idct32_avx2 },
         { NULL, NULL, NULL, NULL },
         { NULL, NULL, NULL, NULL } },
-      { { idct64_low1_new_avx2, idct64_low8_new_avx2, idct64_low16_new_avx2,
-          idct64_low32_new_avx2 },
+      { { idct64_low1_avx2, idct64_low8_avx2, idct64_low16_avx2,
+          idct64_low32_avx2 },
         { NULL, NULL, NULL, NULL },
         { NULL, NULL, NULL, NULL } }
     };
