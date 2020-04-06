@@ -111,7 +111,7 @@ class EbuildParamsTest(cros_test_lib.TempDirTestCase):
     params.StoreDlcParameters(install_root_dir=sysroot,
                               sudo=False)
 
-    params2 = build_dlc.EbuildParams.LoadEbuilParams(sysroot, _ID, _PACKAGE)
+    params2 = build_dlc.EbuildParams.LoadEbuildParams(sysroot, _ID, _PACKAGE)
     self.assertEqual(params.fs_type, params2.fs_type)
     self.assertEqual(params.pre_allocated_blocks, params2.pre_allocated_blocks)
     self.assertEqual(params.version, params2.version)

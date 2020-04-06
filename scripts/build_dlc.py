@@ -131,7 +131,7 @@ class EbuildParams(object):
                         EBUILD_PARAMETERS)
 
   @classmethod
-  def LoadEbuilParams(cls, sysroot, dlc_id, dlc_package):
+  def LoadEbuildParams(cls, sysroot, dlc_id, dlc_package):
     """Read the stored ebuild parameters file and return a class instance.
 
     Args:
@@ -533,7 +533,7 @@ def InstallDlcImages(sysroot, dlc_id=None, install_root_dir=None, preload=False,
                     if os.path.isdir(os.path.join(dlc_id_path, direct))]
     for d_package in dlc_packages:
       logging.info('Building image: DLC %s', d_id)
-      params = EbuildParams.LoadEbuilParams(sysroot=sysroot, dlc_id=d_id,
+      params = EbuildParams.LoadEbuildParams(sysroot=sysroot, dlc_id=d_id,
                                             dlc_package=d_package)
       # Because portage sandboxes every ebuild package during build_packages
       # phase, we cannot delete the old image during that phase, but we can use
