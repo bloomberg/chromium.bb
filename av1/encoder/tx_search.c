@@ -3000,75 +3000,72 @@ static AOM_INLINE void tx_block_yrd(
   }
 }
 
+// search for tx type with tx sizes already decided for a inter-predicted luma
+// partition block. It's used only when some speed features are enabled.
 // Return value 0: early termination triggered, no valid rd cost available;
 //              1: rd cost values are valid.
 static int inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
                            RD_STATS *rd_stats, BLOCK_SIZE bsize,
                            int64_t ref_best_rd, FAST_TX_SEARCH_MODE ftxs_mode) {
-  MACROBLOCKD *const xd = &x->e_mbd;
-  int is_cost_valid = 1;
-  int64_t this_rd = 0;
-
-  if (ref_best_rd < 0) is_cost_valid = 0;
+  if (ref_best_rd < 0) {
+    av1_invalid_rd_stats(rd_stats);
+    return 0;
+  }
 
   av1_init_rd_stats(rd_stats);
 
-  if (is_cost_valid) {
-    const struct macroblockd_plane *const pd = &xd->plane[0];
-    const BLOCK_SIZE plane_bsize =
-        get_plane_block_size(bsize, pd->subsampling_x, pd->subsampling_y);
-    const int mi_width = mi_size_wide[plane_bsize];
-    const int mi_height = mi_size_high[plane_bsize];
-    const TX_SIZE max_tx_size = get_vartx_max_txsize(xd, plane_bsize, 0);
-    const int bh = tx_size_high_unit[max_tx_size];
-    const int bw = tx_size_wide_unit[max_tx_size];
-    const int init_depth = get_search_init_depth(
-        mi_width, mi_height, 1, &cpi->sf, x->tx_size_search_method);
-    int idx, idy;
-    int block = 0;
-    int step = tx_size_wide_unit[max_tx_size] * tx_size_high_unit[max_tx_size];
-    ENTROPY_CONTEXT ctxa[MAX_MIB_SIZE];
-    ENTROPY_CONTEXT ctxl[MAX_MIB_SIZE];
-    TXFM_CONTEXT tx_above[MAX_MIB_SIZE];
-    TXFM_CONTEXT tx_left[MAX_MIB_SIZE];
-    RD_STATS pn_rd_stats;
+  MACROBLOCKD *const xd = &x->e_mbd;
+  const struct macroblockd_plane *const pd = &xd->plane[0];
+  const int mi_width = mi_size_wide[bsize];
+  const int mi_height = mi_size_high[bsize];
+  const TX_SIZE max_tx_size = get_vartx_max_txsize(xd, bsize, 0);
+  const int bh = tx_size_high_unit[max_tx_size];
+  const int bw = tx_size_wide_unit[max_tx_size];
+  const int step = bw * bh;
+  const int init_depth = get_search_init_depth(mi_width, mi_height, 1, &cpi->sf,
+                                               x->tx_size_search_method);
+  ENTROPY_CONTEXT ctxa[MAX_MIB_SIZE];
+  ENTROPY_CONTEXT ctxl[MAX_MIB_SIZE];
+  TXFM_CONTEXT tx_above[MAX_MIB_SIZE];
+  TXFM_CONTEXT tx_left[MAX_MIB_SIZE];
+  av1_get_entropy_contexts(bsize, pd, ctxa, ctxl);
+  memcpy(tx_above, xd->above_txfm_context, sizeof(TXFM_CONTEXT) * mi_width);
+  memcpy(tx_left, xd->left_txfm_context, sizeof(TXFM_CONTEXT) * mi_height);
 
-    av1_get_entropy_contexts(bsize, pd, ctxa, ctxl);
-    memcpy(tx_above, xd->above_txfm_context, sizeof(TXFM_CONTEXT) * mi_width);
-    memcpy(tx_left, xd->left_txfm_context, sizeof(TXFM_CONTEXT) * mi_height);
-
-    for (idy = 0; idy < mi_height; idy += bh) {
-      for (idx = 0; idx < mi_width; idx += bw) {
-        av1_init_rd_stats(&pn_rd_stats);
-        tx_block_yrd(cpi, x, idy, idx, block, max_tx_size, plane_bsize,
-                     init_depth, ctxa, ctxl, tx_above, tx_left,
-                     ref_best_rd - this_rd, &pn_rd_stats, ftxs_mode);
-        if (pn_rd_stats.rate == INT_MAX) {
-          av1_invalid_rd_stats(rd_stats);
-          return 0;
-        }
-        av1_merge_rd_stats(rd_stats, &pn_rd_stats);
-        this_rd +=
-            AOMMIN(RDCOST(x->rdmult, pn_rd_stats.rate, pn_rd_stats.dist),
-                   RDCOST(x->rdmult, pn_rd_stats.zero_rate, pn_rd_stats.sse));
-        block += step;
+  int64_t this_rd = 0;
+  for (int idy = 0, block = 0; idy < mi_height; idy += bh) {
+    for (int idx = 0; idx < mi_width; idx += bw) {
+      RD_STATS pn_rd_stats;
+      av1_init_rd_stats(&pn_rd_stats);
+      tx_block_yrd(cpi, x, idy, idx, block, max_tx_size, bsize, init_depth,
+                   ctxa, ctxl, tx_above, tx_left, ref_best_rd - this_rd,
+                   &pn_rd_stats, ftxs_mode);
+      if (pn_rd_stats.rate == INT_MAX) {
+        av1_invalid_rd_stats(rd_stats);
+        return 0;
       }
+      av1_merge_rd_stats(rd_stats, &pn_rd_stats);
+      this_rd +=
+          AOMMIN(RDCOST(x->rdmult, pn_rd_stats.rate, pn_rd_stats.dist),
+                 RDCOST(x->rdmult, pn_rd_stats.zero_rate, pn_rd_stats.sse));
+      block += step;
     }
   }
 
   const int skip_ctx = av1_get_skip_context(xd);
-  const int s0 = x->skip_cost[skip_ctx][0];
-  const int s1 = x->skip_cost[skip_ctx][1];
-  int64_t skip_rd = RDCOST(x->rdmult, s1, rd_stats->sse);
-  this_rd = RDCOST(x->rdmult, rd_stats->rate + s0, rd_stats->dist);
+  const int no_skip_flag_rate = x->skip_cost[skip_ctx][0];
+  const int skip_flag_rate = x->skip_cost[skip_ctx][1];
+  const int64_t skip_rd = RDCOST(x->rdmult, skip_flag_rate, rd_stats->sse);
+  this_rd =
+      RDCOST(x->rdmult, rd_stats->rate + no_skip_flag_rate, rd_stats->dist);
   if (skip_rd < this_rd) {
     this_rd = skip_rd;
     rd_stats->rate = 0;
     rd_stats->dist = rd_stats->sse;
     rd_stats->skip = 1;
   }
-  if (this_rd > ref_best_rd) is_cost_valid = 0;
 
+  const int is_cost_valid = this_rd > ref_best_rd;
   if (!is_cost_valid) {
     // reset cost value
     av1_invalid_rd_stats(rd_stats);
