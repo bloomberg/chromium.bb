@@ -736,7 +736,9 @@ class UploadTestArtifactsStage(generic_stages.BoardSpecificBuilderStage,
             os.path.join(self._build_root, 'chroot', 'build',
                          self._current_board, constants.AUTOTEST_BUILD_PATH,
                          '..'))
-        logging.info('Running commands.BuildAutotestTarballsForHWTest')
+        logging.debug(
+            'Running BuildAutotestTarballsForHWTest root %s cwd %s target %s',
+            self._build_root, cwd, tempdir)
         for tarball in commands.BuildAutotestTarballsForHWTest(
             self._build_root, cwd, tempdir):
           queue.put([tarball])

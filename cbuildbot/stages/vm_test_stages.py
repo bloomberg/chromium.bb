@@ -614,6 +614,9 @@ class MoblabVMTestStage(generic_stages.BoardSpecificBuilderStage,
       cwd = os.path.abspath(
           os.path.join(self._build_root, 'chroot', 'build', self._current_board,
                        constants.AUTOTEST_BUILD_PATH, '..'))
+      logging.debug(
+          'Running BuildAutotestTarballsForHWTest root %s cwd %s target %s',
+          self._build_root, cwd, payloads_dir)
       commands.BuildAutotestTarballsForHWTest(self._build_root, cwd,
                                               payloads_dir)
     return os.path.join(_MOBLAB_STATIC_MOUNT_PATH, _MOBLAB_PAYLOAD_CACHE_DIR)

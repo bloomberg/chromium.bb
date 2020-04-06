@@ -115,6 +115,8 @@ def BundleAutotestFiles(chroot, sysroot, output_directory):
   assert sysroot.Exists(chroot=chroot)
   assert output_directory
 
+  logging.debug('Inside artifacts_service BundleAutotestFiles (%s %s %s)',
+                chroot.path, sysroot.path, output_directory)
   # archive_basedir is the base directory where the archive commands are run.
   # We want the folder containing the board's autotest folder.
   archive_basedir = chroot.full_path(sysroot.path,
