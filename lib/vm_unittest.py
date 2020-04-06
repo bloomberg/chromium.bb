@@ -245,13 +245,16 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
     initial_img_path = self._vm.image_path
     self._vm.Start()
 
+    # The command that creates the Qcow2 image.
     self.assertCommandContains([
         self._vm.qemu_img_path, 'create', '-f', 'qcow2', '-o',
         'backing_file=%s' % initial_img_path, os.path.join(self._vm.vm_dir,
                                                            'qcow2.img')])
-    self.assertEqual(self._vm.image_path,
-                     os.path.join(self._vm.vm_dir, 'qcow2.img'))
-    self.assertEqual(self._vm.image_format, 'qcow2')
+    # The command that launches a VM with the new Qcow2 image.
+    self.assertCommandContains([
+        '-drive', 'if=none,id=hd,file=%s,cache=unsafe,format=qcow2'
+        % os.path.join(self._vm.vm_dir, 'qcow2.img')
+    ])
 
   @mock.patch('os.path.isfile', return_value=False)
   @mock.patch('chromite.lib.osutils.Which', return_value=None)

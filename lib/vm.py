@@ -225,6 +225,9 @@ class VM(device.Device):
     """Creates a qcow2-formatted image in the temporary VM dir.
 
     This image will get removed on VM shutdown.
+
+    Returns:
+      Tuple of (path to qcow2 image, format of qcow2 image)
     """
     cow_image_path = os.path.join(self.vm_dir, 'qcow2.img')
     qemu_img_args = [
@@ -235,8 +238,7 @@ class VM(device.Device):
     ]
     cros_build_lib.run(qemu_img_args, dryrun=self.dryrun)
     logging.info('qcow2 image created at %s.', cow_image_path)
-    self.image_path = cow_image_path
-    self.image_format = 'qcow2'
+    return cow_image_path, 'qcow2'
 
   def _RmVMDir(self):
     """Cleanup vm_dir."""
@@ -388,8 +390,13 @@ class VM(device.Device):
     if self.stop:
       self.Stop()
 
-  def _GetQemuArgs(self):
-    """Returns the args to qemu used to launch the VM."""
+  def _GetQemuArgs(self, image_path, image_format):
+    """Returns the args to qemu used to launch the VM.
+
+    Args:
+      image_path: Path to QEMU image.
+      image_format: Format of the image.
+    """
     # Append 'check' to warn if the requested CPU is not fully supported.
     if 'check' not in self.qemu_cpu.split(','):
       self.qemu_cpu += ',check'
@@ -422,7 +429,7 @@ class VM(device.Device):
         '-device', 'virtio-rng',
         '-device', 'scsi-hd,drive=hd',
         '-drive', 'if=none,id=hd,file=%s,cache=unsafe,format=%s'
-        % (self.image_path, self.image_format),
+        % (image_path, image_format),
     ]
     # netdev args, including hostfwds.
     netdev_args = ('user,id=eth0,net=10.0.2.0/27,hostfwd=tcp:%s:%d-:%d'
@@ -440,7 +447,6 @@ class VM(device.Device):
       qemu_args += ['-enable-kvm']
     if not self.display:
       qemu_args += ['-display', 'none']
-    logging.info('Pid file: %s', self.pidfile)
 
     return qemu_args
 
@@ -452,7 +458,7 @@ class VM(device.Device):
     """
     self._SetQemuPath()
     self._SetVMImagePath()
-    qemu_args = self._GetQemuArgs()
+    logging.info('Pid file: %s', self.pidfile)
 
     for attempt in range(0, retries + 1):
       self.Stop()
@@ -460,8 +466,11 @@ class VM(device.Device):
       logging.debug('Start VM, attempt #%d', attempt)
 
       self._CreateVMDir()
+      image_path = self.image_path
+      image_format = self.image_format
       if self.copy_on_write:
-        self._CreateQcow2Image()
+        image_path, image_format = self._CreateQcow2Image()
+      qemu_args = self._GetQemuArgs(image_path, image_format)
       # Make sure we can read these files later on by creating them as
       # ourselves.
       osutils.Touch(self.kvm_serial)
