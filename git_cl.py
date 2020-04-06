@@ -4750,22 +4750,25 @@ def _RunClangFormatDiff(opts, clang_diff_files, top_dir, upstream_commit):
       if opts.diff:
         sys.stdout.write(stdout)
   else:
-    env = os.environ.copy()
-    env['PATH'] = str(os.path.dirname(clang_format_tool))
     try:
       script = clang_format.FindClangFormatScriptInChromiumTree(
           'clang-format-diff.py')
     except clang_format.NotFoundError as e:
       DieWithError(e)
 
-    cmd = [sys.executable, script, '-p0']
+    cmd = ['vpython', script, '-p0']
     if not opts.dry_run and not opts.diff:
       cmd.append('-i')
 
     diff_cmd = BuildGitDiffCmd('-U0', upstream_commit, clang_diff_files)
     diff_output = RunGit(diff_cmd).encode('utf-8')
 
-    stdout = RunCommand(cmd, stdin=diff_output, cwd=top_dir, env=env)
+    env = os.environ.copy()
+    env['PATH'] = (
+        str(os.path.dirname(clang_format_tool)) + os.pathsep + env['PATH'])
+    stdout = RunCommand(
+        cmd, stdin=diff_output, cwd=top_dir, env=env,
+        shell=bool(sys.platform.startswith('win32')))
     if opts.diff:
       sys.stdout.write(stdout)
     if opts.dry_run and len(stdout) > 0:
@@ -4967,7 +4970,7 @@ def CMDformat(parser, args):
       cmd.append('--dry-run')
     for gn_diff_file in gn_diff_files:
       gn_ret = subprocess2.call(cmd + [gn_diff_file],
-                                shell=sys.platform == 'win32',
+                                shell=bool(sys.platform.startswith('win')),
                                 cwd=top_dir)
       if opts.dry_run and gn_ret == 2:
         return_value = 2  # Not formatted.
