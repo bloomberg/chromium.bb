@@ -184,7 +184,7 @@ class VM(device.Device):
     self.image_format = opts.image_format
 
     self.device = remote_access.LOCALHOST
-    self.ssh_port = opts.ssh_port
+    self.ssh_port = self.ssh_port or opts.ssh_port or VM.SSH_PORT
 
     self.start = opts.start
     self.stop = opts.stop
@@ -690,7 +690,7 @@ class VM(device.Device):
     parser.add_argument('--no-display', dest='display',
                         action='store_false', default=True,
                         help='Do not display video output.')
-    parser.add_argument('--ssh-port', type=int, default=VM.SSH_PORT,
+    parser.add_argument('--ssh-port', type=int,
                         help='ssh port to communicate with VM.')
     parser.add_argument('--chroot-path', type='path',
                         default=os.path.join(constants.SOURCE_ROOT,

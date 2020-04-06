@@ -88,7 +88,7 @@ class CrOSTest(object):
 
   def Run(self):
     """Start a VM, build/deploy, run tests, stop the VM."""
-    if self._device.is_vm:
+    if self._device.should_start_vm:
       self._StartVM()
     else:
       self._device.WaitForBoot()
@@ -108,7 +108,7 @@ class CrOSTest(object):
     If --start-vm is specified, we launch a new VM, otherwise we use an
     existing VM.
     """
-    if not self._device.is_vm:
+    if not self._device.should_start_vm:
       return
 
     if not self._device.IsRunning():
@@ -309,7 +309,11 @@ class CrOSTest(object):
 
     if self.test_timeout > 0:
       cmd += ['-timeout=%d' % self.test_timeout]
-    if self._device.is_vm:
+    # This flag is needed when running Tast tests on VMs. Note that this check
+    # is only true if we're handling VM start-up/tear-down ourselves for the
+    # duration of the test. If the caller has already launched a VM themselves
+    # and has pointed the '--device' arg at it, this check will be false.
+    if self._device.should_start_vm:
       cmd += ['-extrauseflags=tast_vm']
     if self.results_dir:
       results_dir = self.results_dir
@@ -371,7 +375,7 @@ class CrOSTest(object):
     Args:
       result: A cros_build_lib.CommandResult object from a test run.
     """
-    if not self._device.is_vm or not self.save_snapshot_on_failure:
+    if not self._device.should_start_vm or not self.save_snapshot_on_failure:
       return
     if not result.returncode:
       return
@@ -552,6 +556,9 @@ def ParseCommandLine(argv):
                            'results-dest-dir.')
 
   opts = parser.parse_args(argv)
+
+  if opts.device and opts.device.port and opts.ssh_port:
+    parser.error('Must not specify SSH port via both --ssh-port and --device.')
 
   if opts.chrome_test:
     if not opts.args:
