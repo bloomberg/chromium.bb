@@ -7,7 +7,7 @@
 
 #include "absl/strings/string_view.h"
 #include "discovery/dnssd/impl/conversion_layer.h"
-#include "discovery/dnssd/public/dns_sd_instance_record.h"
+#include "discovery/dnssd/public/dns_sd_instance.h"
 #include "discovery/dnssd/public/dns_sd_publisher.h"
 #include "discovery/mdns/mdns_domain_confirmed_provider.h"
 #include "discovery/mdns/public/mdns_service.h"
@@ -15,6 +15,7 @@
 namespace openscreen {
 namespace discovery {
 
+class NetworkInterfaceConfig;
 class ReportingClient;
 
 class PublisherImpl : public DnsSdPublisher,
@@ -22,33 +23,35 @@ class PublisherImpl : public DnsSdPublisher,
  public:
   PublisherImpl(MdnsService* publisher,
                 ReportingClient* reporting_client,
-                TaskRunner* task_runner);
+                TaskRunner* task_runner,
+                const NetworkInterfaceConfig* network_config);
   ~PublisherImpl() override;
 
   // DnsSdPublisher overrides.
-  Error Register(const DnsSdInstanceRecord& record, Client* client) override;
-  Error UpdateRegistration(const DnsSdInstanceRecord& record) override;
+  Error Register(const DnsSdInstance& instance, Client* client) override;
+  Error UpdateRegistration(const DnsSdInstance& instance) override;
   ErrorOr<int> DeregisterAll(const std::string& service) override;
 
  private:
-  Error UpdatePublishedRegistration(const DnsSdInstanceRecord& record);
+  Error UpdatePublishedRegistration(const DnsSdInstance& instance);
 
   // MdnsDomainConfirmedProvider overrides.
   void OnDomainFound(const DomainName& requested_name,
                      const DomainName& confirmed_name) override;
 
-  // The set of records which will be published once the mDNS Probe phase
+  // The set of instances which will be published once the mDNS Probe phase
   // completes.
-  std::map<DnsSdInstanceRecord, Client* const> pending_records_;
+  std::map<DnsSdInstance, Client* const> pending_instances_;
 
-  // Maps from the requested record to the record which was published after
+  // Maps from the requested instance to the endpoint which was published after
   // the mDNS Probe phase was completed. The only difference between these
-  // records should be the instance name.
-  std::map<DnsSdInstanceRecord, DnsSdInstanceRecord> published_records_;
+  // instances should be the instance name.
+  std::map<DnsSdInstance, DnsSdInstanceEndpoint> published_instances_;
 
   MdnsService* const mdns_publisher_;
   ReportingClient* const reporting_client_;
   TaskRunner* const task_runner_;
+  const NetworkInterfaceConfig* const network_config_;
 
   friend class PublisherTesting;
 };

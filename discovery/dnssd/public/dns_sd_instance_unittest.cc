@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "discovery/dnssd/public/dns_sd_instance_record.h"
+#include "discovery/dnssd/public/dns_sd_instance.h"
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -10,7 +10,7 @@
 namespace openscreen {
 namespace discovery {
 
-TEST(DnsSdInstanceRecordTests, InstanceLength) {
+TEST(DnsSdInstanceTests, InstanceLength) {
   EXPECT_TRUE(IsInstanceValid("instance"));
   EXPECT_TRUE(IsInstanceValid("name"));
   EXPECT_TRUE(IsInstanceValid(""));
@@ -21,7 +21,7 @@ TEST(DnsSdInstanceRecordTests, InstanceLength) {
       "Something64CharsLongabcdefghijklmnopqrstuvwxyz1234567890ABCDEFGH"));
 }
 
-TEST(DnsSdInstanceRecordTests, InstanceCharacters) {
+TEST(DnsSdInstanceTests, InstanceCharacters) {
   EXPECT_TRUE(IsInstanceValid("IncludingSpecialCharacters.+ =*&<<+`~\\/"));
   EXPECT_TRUE(IsInstanceValid(".+ =*&<<+`~\\/ "));
 
@@ -36,7 +36,7 @@ TEST(DnsSdInstanceRecordTests, InstanceCharacters) {
   }
 }
 
-TEST(DnsSdInstanceRecordTests, InstanceUTF8) {
+TEST(DnsSdInstanceTests, InstanceUTF8) {
   std::vector<uint8_t> char_sets[] = {
       {0x80},
       {0xC0},
@@ -60,7 +60,7 @@ TEST(DnsSdInstanceRecordTests, InstanceUTF8) {
   }
 }
 
-TEST(DnsSdInstanceRecordTests, ServiceLength) {
+TEST(DnsSdInstanceTests, ServiceLength) {
   // Too short.
   EXPECT_TRUE(IsServiceValid("_a._udp"));
   EXPECT_FALSE(IsServiceValid("_._udp"));
@@ -70,7 +70,7 @@ TEST(DnsSdInstanceRecordTests, ServiceLength) {
   EXPECT_FALSE(IsServiceValid("_abcdefghijklmnop._udp"));
 }
 
-TEST(DnsSdInstanceRecordTests, ServiceNonProtocolNameFormatting) {
+TEST(DnsSdInstanceTests, ServiceNonProtocolNameFormatting) {
   EXPECT_TRUE(IsServiceValid("_abcd._udp"));
 
   // Unexprected protocol string,
@@ -90,7 +90,7 @@ TEST(DnsSdInstanceRecordTests, ServiceNonProtocolNameFormatting) {
   EXPECT_FALSE(IsServiceValid("a_abcd._tcp_udp"));
 }
 
-TEST(DnsSdInstanceRecordTests, ServiceProtocolNameFormatting) {
+TEST(DnsSdInstanceTests, ServiceProtocolNameFormatting) {
   EXPECT_TRUE(IsServiceValid("_abcd._udp"));
 
   // Disallowed Characters
@@ -114,7 +114,7 @@ TEST(DnsSdInstanceRecordTests, ServiceProtocolNameFormatting) {
   EXPECT_FALSE(IsServiceValid("_a--b._udp"));
 }
 
-TEST(DnsSdInstanceRecordTests, DomainDotPositions) {
+TEST(DnsSdInstanceTests, DomainDotPositions) {
   EXPECT_TRUE(IsDomainValid("192.168.0.0"));
   EXPECT_TRUE(IsDomainValid("...."));
   EXPECT_TRUE(IsDomainValid(
@@ -126,7 +126,7 @@ TEST(DnsSdInstanceRecordTests, DomainDotPositions) {
       "Something63CharsLongabcdefghijklmnopqrstuvwxyz1234567890ABCDEFG"));
 }
 
-TEST(DnsSdInstanceRecordTests, DomainCharacters) {
+TEST(DnsSdInstanceTests, DomainCharacters) {
   EXPECT_TRUE(IsDomainValid("IncludingSpecialCharacters.+ =*&<<+`~\\/"));
   EXPECT_TRUE(IsDomainValid(".+ =*&<<+`~\\/ "));
 
@@ -140,7 +140,7 @@ TEST(DnsSdInstanceRecordTests, DomainCharacters) {
   }
 }
 
-TEST(DnsSdInstanceRecordTests, DomainUTF8) {
+TEST(DnsSdInstanceTests, DomainUTF8) {
   std::vector<uint8_t> char_sets[] = {
       {0x80},
       {0xC0},

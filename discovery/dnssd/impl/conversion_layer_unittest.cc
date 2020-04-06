@@ -96,15 +96,15 @@ TEST(DnsSdConversionLayerTest, GetPtrQueryInfoTest) {
 // GetDnsRecords tests.
 TEST(DnsSdConversionLayerTest, GetDnsRecordsPtr) {
   DnsSdTxtRecord txt;
-  DnsSdInstanceRecord instance_record(
+  DnsSdInstanceEndpoint instance_endpoint(
       FakeDnsRecordFactory::kInstanceName, FakeDnsRecordFactory::kServiceName,
-      FakeDnsRecordFactory::kDomainName,
+      FakeDnsRecordFactory::kDomainName, txt,
       IPEndpoint{IPAddress(FakeDnsRecordFactory::kV4AddressOctets),
                  FakeDnsRecordFactory::kPortNum},
       IPEndpoint{IPAddress(FakeDnsRecordFactory::kV6AddressHextets),
                  FakeDnsRecordFactory::kPortNum},
-      txt);
-  std::vector<MdnsRecord> records = GetDnsRecords(instance_record);
+      0);
+  std::vector<MdnsRecord> records = GetDnsRecords(instance_endpoint);
   auto it = std::find_if(records.begin(), records.end(),
                          [](const MdnsRecord& record) {
                            return record.dns_type() == DnsType::kPTR;
@@ -133,15 +133,15 @@ TEST(DnsSdConversionLayerTest, GetDnsRecordsPtr) {
 
 TEST(DnsSdConversionLayerTest, GetDnsRecordsSrv) {
   DnsSdTxtRecord txt;
-  DnsSdInstanceRecord instance_record(
+  DnsSdInstanceEndpoint instance_endpoint(
       FakeDnsRecordFactory::kInstanceName, FakeDnsRecordFactory::kServiceName,
-      FakeDnsRecordFactory::kDomainName,
+      FakeDnsRecordFactory::kDomainName, txt,
       IPEndpoint{IPAddress(FakeDnsRecordFactory::kV4AddressOctets),
                  FakeDnsRecordFactory::kPortNum},
       IPEndpoint{IPAddress(FakeDnsRecordFactory::kV6AddressHextets),
                  FakeDnsRecordFactory::kPortNum},
-      txt);
-  std::vector<MdnsRecord> records = GetDnsRecords(instance_record);
+      0);
+  std::vector<MdnsRecord> records = GetDnsRecords(instance_endpoint);
   auto it = std::find_if(records.begin(), records.end(),
                          [](const MdnsRecord& record) {
                            return record.dns_type() == DnsType::kSRV;
@@ -166,15 +166,15 @@ TEST(DnsSdConversionLayerTest, GetDnsRecordsSrv) {
 
 TEST(DnsSdConversionLayerTest, GetDnsRecordsAPresent) {
   DnsSdTxtRecord txt;
-  DnsSdInstanceRecord instance_record(
+  DnsSdInstanceEndpoint instance_endpoint(
       FakeDnsRecordFactory::kInstanceName, FakeDnsRecordFactory::kServiceName,
-      FakeDnsRecordFactory::kDomainName,
+      FakeDnsRecordFactory::kDomainName, txt,
       IPEndpoint{IPAddress(FakeDnsRecordFactory::kV4AddressOctets),
                  FakeDnsRecordFactory::kPortNum},
       IPEndpoint{IPAddress(FakeDnsRecordFactory::kV6AddressHextets),
                  FakeDnsRecordFactory::kPortNum},
-      txt);
-  std::vector<MdnsRecord> records = GetDnsRecords(instance_record);
+      0);
+  std::vector<MdnsRecord> records = GetDnsRecords(instance_endpoint);
   auto it = std::find_if(records.begin(), records.end(),
                          [](const MdnsRecord& record) {
                            return record.dns_type() == DnsType::kA;
@@ -198,13 +198,13 @@ TEST(DnsSdConversionLayerTest, GetDnsRecordsAPresent) {
 
 TEST(DnsSdConversionLayerTest, GetDnsRecordsANotPresent) {
   DnsSdTxtRecord txt;
-  DnsSdInstanceRecord instance_record(
+  DnsSdInstanceEndpoint instance_endpoint(
       FakeDnsRecordFactory::kInstanceName, FakeDnsRecordFactory::kServiceName,
-      FakeDnsRecordFactory::kDomainName,
+      FakeDnsRecordFactory::kDomainName, txt,
       IPEndpoint{IPAddress(FakeDnsRecordFactory::kV6AddressHextets),
                  FakeDnsRecordFactory::kPortNum},
-      txt);
-  std::vector<MdnsRecord> records = GetDnsRecords(instance_record);
+      0);
+  std::vector<MdnsRecord> records = GetDnsRecords(instance_endpoint);
   auto it = std::find_if(records.begin(), records.end(),
                          [](const MdnsRecord& record) {
                            return record.dns_type() == DnsType::kA;
@@ -214,15 +214,15 @@ TEST(DnsSdConversionLayerTest, GetDnsRecordsANotPresent) {
 
 TEST(DnsSdConversionLayerTest, GetDnsRecordsAAAAPresent) {
   DnsSdTxtRecord txt;
-  DnsSdInstanceRecord instance_record(
+  DnsSdInstanceEndpoint instance_endpoint(
       FakeDnsRecordFactory::kInstanceName, FakeDnsRecordFactory::kServiceName,
-      FakeDnsRecordFactory::kDomainName,
+      FakeDnsRecordFactory::kDomainName, txt,
       IPEndpoint{IPAddress(FakeDnsRecordFactory::kV4AddressOctets),
                  FakeDnsRecordFactory::kPortNum},
       IPEndpoint{IPAddress(FakeDnsRecordFactory::kV6AddressHextets),
                  FakeDnsRecordFactory::kPortNum},
-      txt);
-  std::vector<MdnsRecord> records = GetDnsRecords(instance_record);
+      0);
+  std::vector<MdnsRecord> records = GetDnsRecords(instance_endpoint);
   auto it = std::find_if(records.begin(), records.end(),
                          [](const MdnsRecord& record) {
                            return record.dns_type() == DnsType::kAAAA;
@@ -246,13 +246,13 @@ TEST(DnsSdConversionLayerTest, GetDnsRecordsAAAAPresent) {
 
 TEST(DnsSdConversionLayerTest, GetDnsRecordsAAAANotPresent) {
   DnsSdTxtRecord txt;
-  DnsSdInstanceRecord instance_record(
+  DnsSdInstanceEndpoint instance_endpoint(
       FakeDnsRecordFactory::kInstanceName, FakeDnsRecordFactory::kServiceName,
-      FakeDnsRecordFactory::kDomainName,
+      FakeDnsRecordFactory::kDomainName, txt,
       IPEndpoint{IPAddress(FakeDnsRecordFactory::kV4AddressOctets),
                  FakeDnsRecordFactory::kPortNum},
-      txt);
-  std::vector<MdnsRecord> records = GetDnsRecords(instance_record);
+      0);
+  std::vector<MdnsRecord> records = GetDnsRecords(instance_endpoint);
   auto it = std::find_if(records.begin(), records.end(),
                          [](const MdnsRecord& record) {
                            return record.dns_type() == DnsType::kAAAA;
@@ -265,15 +265,15 @@ TEST(DnsSdConversionLayerTest, GetDnsRecordsTxt) {
   std::vector<uint8_t> value{'v', 'a', 'l', 'u', 'e'};
   txt.SetValue("name", value);
   txt.SetFlag("boolean", true);
-  DnsSdInstanceRecord instance_record(
+  DnsSdInstanceEndpoint instance_endpoint(
       FakeDnsRecordFactory::kInstanceName, FakeDnsRecordFactory::kServiceName,
-      FakeDnsRecordFactory::kDomainName,
+      FakeDnsRecordFactory::kDomainName, txt,
       IPEndpoint{IPAddress(FakeDnsRecordFactory::kV4AddressOctets),
                  FakeDnsRecordFactory::kPortNum},
       IPEndpoint{IPAddress(FakeDnsRecordFactory::kV6AddressHextets),
                  FakeDnsRecordFactory::kPortNum},
-      txt);
-  std::vector<MdnsRecord> records = GetDnsRecords(instance_record);
+      0);
+  std::vector<MdnsRecord> records = GetDnsRecords(instance_endpoint);
   auto it = std::find_if(records.begin(), records.end(),
                          [](const MdnsRecord& record) {
                            return record.dns_type() == DnsType::kTXT;

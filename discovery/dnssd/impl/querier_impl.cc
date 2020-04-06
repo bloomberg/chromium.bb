@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "discovery/dnssd/impl/network_interface_config.h"
 #include "platform/api/task_runner.h"
 #include "util/logging.h"
 
@@ -18,10 +19,15 @@ static constexpr char kLocalDomain[] = "local";
 
 }  // namespace
 
-QuerierImpl::QuerierImpl(MdnsService* mdns_querier, TaskRunner* task_runner)
-    : mdns_querier_(mdns_querier), task_runner_(task_runner) {
+QuerierImpl::QuerierImpl(MdnsService* mdns_querier,
+                         TaskRunner* task_runner,
+                         const NetworkInterfaceConfig* network_config)
+    : mdns_querier_(mdns_querier),
+      task_runner_(task_runner),
+      network_config_(network_config) {
   OSP_DCHECK(mdns_querier_);
   OSP_DCHECK(task_runner_);
+  OSP_DCHECK(network_config_);
 }
 
 QuerierImpl::~QuerierImpl() = default;
@@ -41,9 +47,9 @@ void QuerierImpl::StartQuery(const std::string& service, Callback* callback) {
 
     for (auto& kvp : received_records_) {
       if (kvp.first == key) {
-        ErrorOr<DnsSdInstanceRecord> record = kvp.second.CreateRecord();
-        if (record.is_value()) {
-          callback->OnInstanceCreated(record.value());
+        ErrorOr<DnsSdInstanceEndpoint> endpoint = kvp.second.CreateEndpoint();
+        if (endpoint.is_value()) {
+          callback->OnEndpointCreated(endpoint.value());
         }
       }
     }
@@ -147,19 +153,22 @@ Error QuerierImpl::HandleNonPtrRecordChange(const MdnsRecord& record,
   }
   const std::vector<Callback*>& callbacks = callback_map_[key];
 
-  // Get the current InstanceRecord data associated with the received record.
+  // Get the current InstanceEndpoint data associated with the received record.
   const InstanceKey id(record);
-  ErrorOr<DnsSdInstanceRecord> old_instance_record = Error::Code::kItemNotFound;
+  ErrorOr<DnsSdInstanceEndpoint> old_instance_endpoint =
+      Error::Code::kItemNotFound;
   auto it = received_records_.find(id);
   if (it == received_records_.end()) {
-    it = received_records_.emplace(id, DnsData(id)).first;
+    it = received_records_
+             .emplace(id, DnsData(id, network_config_->network_interface()))
+             .first;
   } else {
-    old_instance_record = it->second.CreateRecord();
+    old_instance_endpoint = it->second.CreateEndpoint();
   }
   DnsData* data = &it->second;
 
   // Apply the changes specified by the received event to the stored
-  // InstanceRecord.
+  // InstanceEndpoint.
   Error apply_result = data->ApplyDataRecordChange(record, event);
   if (!apply_result.ok()) {
     OSP_LOG_ERROR << "Received erroneous record change. Error: "
@@ -168,33 +177,34 @@ Error QuerierImpl::HandleNonPtrRecordChange(const MdnsRecord& record,
   }
 
   // Send an update to the user, based on how the new and old records compare.
-  ErrorOr<DnsSdInstanceRecord> new_instance_record = data->CreateRecord();
-  NotifyCallbacks(callbacks, old_instance_record, new_instance_record);
+  ErrorOr<DnsSdInstanceEndpoint> new_instance_endpoint = data->CreateEndpoint();
+  NotifyCallbacks(callbacks, old_instance_endpoint, new_instance_endpoint);
 
   return Error::None();
 }
 
 void QuerierImpl::NotifyCallbacks(
     const std::vector<Callback*>& callbacks,
-    const ErrorOr<DnsSdInstanceRecord>& old_record,
-    const ErrorOr<DnsSdInstanceRecord>& new_record) {
-  if (old_record.is_value() && new_record.is_value()) {
+    const ErrorOr<DnsSdInstanceEndpoint>& old_endpoint,
+    const ErrorOr<DnsSdInstanceEndpoint>& new_endpoint) {
+  if (old_endpoint.is_value() && new_endpoint.is_value()) {
     for (Callback* callback : callbacks) {
-      callback->OnInstanceUpdated(new_record.value());
+      callback->OnEndpointUpdated(new_endpoint.value());
     }
-  } else if (old_record.is_value() && !new_record.is_value()) {
+  } else if (old_endpoint.is_value() && !new_endpoint.is_value()) {
     for (Callback* callback : callbacks) {
-      callback->OnInstanceDeleted(old_record.value());
+      callback->OnEndpointDeleted(old_endpoint.value());
     }
-  } else if (!old_record.is_value() && new_record.is_value()) {
+  } else if (!old_endpoint.is_value() && new_endpoint.is_value()) {
     for (Callback* callback : callbacks) {
-      callback->OnInstanceCreated(new_record.value());
+      callback->OnEndpointCreated(new_endpoint.value());
     }
   }
 }
 
 void QuerierImpl::StartDnsQuery(InstanceKey key) {
-  auto pair = received_records_.emplace(key, DnsData(key));
+  auto pair = received_records_.emplace(
+      key, DnsData(key, network_config_->network_interface()));
   if (!pair.second) {
     // This means that a query is already ongoing.
     return;
@@ -213,13 +223,13 @@ void QuerierImpl::StopDnsQuery(InstanceKey key, bool should_inform_callbacks) {
 
   // If the instance has enough associated data that an instance was provided to
   // the higher layer, call the deleted callback for all associated callbacks.
-  ErrorOr<DnsSdInstanceRecord> instance_record =
-      record_it->second.CreateRecord();
-  if (should_inform_callbacks && instance_record.is_value()) {
+  ErrorOr<DnsSdInstanceEndpoint> instance_endpoint =
+      record_it->second.CreateEndpoint();
+  if (should_inform_callbacks && instance_endpoint.is_value()) {
     const auto it = callback_map_.find(key);
     if (it != callback_map_.end()) {
       for (Callback* callback : it->second) {
-        callback->OnInstanceDeleted(instance_record.value());
+        callback->OnEndpointDeleted(instance_endpoint.value());
       }
     }
   }

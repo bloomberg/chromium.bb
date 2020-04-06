@@ -6,40 +6,21 @@
 #define DISCOVERY_PUBLIC_DNS_SD_SERVICE_WATCHER_H_
 
 #include <memory>
+#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
-#include "discovery/dnssd/public/dns_sd_instance_record.h"
+#include "discovery/dnssd/public/dns_sd_instance.h"
 #include "discovery/dnssd/public/dns_sd_querier.h"
 #include "discovery/dnssd/public/dns_sd_service.h"
 #include "platform/base/error.h"
+#include "util/hashing.h"
 #include "util/logging.h"
 
 namespace openscreen {
 namespace discovery {
-namespace {
-
-// NOTE: Must be inlined to avoid compilation failure for unused function when
-// DLOGs are disabled.
-template <typename T>
-inline std::string GetInstanceNames(
-    const std::unordered_map<std::string, T>& map) {
-  std::string s;
-  auto it = map.begin();
-  if (it == map.end()) {
-    return s;
-  }
-
-  s += it->first;
-  while (++it != map.end()) {
-    s += ", " + it->first;
-  }
-  return s;
-}
-
-}  // namespace
 
 // This class represents a top-level discovery API which sits on top of DNS-SD.
 // T is the service-specific type which stores information regarding a specific
@@ -67,7 +48,7 @@ class DnsSdServiceWatcher : public DnsSdQuerier::Callback {
   // instance (received from another mDNS endpoint) to a T type to be returned
   // to the caller.
   using ServiceConverter =
-      std::function<ErrorOr<T>(const DnsSdInstanceRecord&)>;
+      std::function<ErrorOr<T>(const DnsSdInstanceEndpoint&)>;
 
   DnsSdServiceWatcher(DnsSdService* service,
                       std::string service_name,
@@ -138,8 +119,7 @@ class DnsSdServiceWatcher : public DnsSdQuerier::Callback {
     }
 
     OSP_DVLOG << "Currently " << records_.size()
-              << " known service instances: [" << GetInstanceNames(records_)
-              << "]";
+              << " known service instances: [" << GetInstanceNames() << "]";
 
     return refs;
   }
@@ -147,25 +127,28 @@ class DnsSdServiceWatcher : public DnsSdQuerier::Callback {
  private:
   friend class TestServiceWatcher;
 
+  using EndpointKey = std::pair<std::string, NetworkInterfaceIndex>;
+
   // DnsSdQuerier::Callback overrides.
-  void OnInstanceCreated(const DnsSdInstanceRecord& new_record) override {
+  void OnEndpointCreated(const DnsSdInstanceEndpoint& new_endpoint) override {
     // NOTE: existence is not checked because records may be overwritten after
     // querier_->ReinitializeQueries() is called.
-    ErrorOr<T> record = conversion_(new_record);
+    ErrorOr<T> record = conversion_(new_endpoint);
     if (record.is_error()) {
       OSP_LOG << "Conversion of received record failed with error: "
               << record.error();
       return;
     }
-    records_[new_record.instance_id()] =
+    records_[GetKey(new_endpoint)] =
         std::make_unique<T>(std::move(record.value()));
     callback_(GetServices());
   }
 
-  void OnInstanceUpdated(const DnsSdInstanceRecord& modified_record) override {
-    auto it = records_.find(modified_record.instance_id());
+  void OnEndpointUpdated(
+      const DnsSdInstanceEndpoint& modified_endpoint) override {
+    auto it = records_.find(GetKey(modified_endpoint));
     if (it != records_.end()) {
-      ErrorOr<T> record = conversion_(modified_record);
+      ErrorOr<T> record = conversion_(modified_endpoint);
       if (record.is_error()) {
         OSP_LOG << "Conversion of received record failed with error: "
                 << record.error();
@@ -177,17 +160,35 @@ class DnsSdServiceWatcher : public DnsSdQuerier::Callback {
       callback_(GetServices());
     } else {
       OSP_LOG << "Received modified record for non-existent DNS-SD Instance "
-              << modified_record.instance_id();
+              << modified_endpoint.instance_id();
     }
   }
 
-  void OnInstanceDeleted(const DnsSdInstanceRecord& old_record) override {
-    if (records_.erase(old_record.instance_id())) {
+  void OnEndpointDeleted(const DnsSdInstanceEndpoint& old_endpoint) override {
+    if (records_.erase(GetKey(old_endpoint))) {
       callback_(GetServices());
     } else {
       OSP_LOG << "Received deletion of record for non-existent DNS-SD Instance "
-              << old_record.instance_id();
+              << old_endpoint.instance_id();
     }
+  }
+
+  EndpointKey GetKey(const DnsSdInstanceEndpoint& endpoint) const {
+    return std::make_pair(endpoint.instance_id(), endpoint.network_interface());
+  }
+
+  std::string GetInstanceNames() const {
+    auto it = records_.begin();
+    if (it == records_.end()) {
+      return "";
+    }
+
+    std::stringstream ss;
+    ss << it->first.first << "/" << it->first.second;
+    while (++it != records_.end()) {
+      ss << ", " << it->first.first << "/" << it->first.second;
+    }
+    return ss.str();
   }
 
   // Set of all instance ids found so far, mapped to the T type that it
@@ -195,7 +196,7 @@ class DnsSdServiceWatcher : public DnsSdQuerier::Callback {
   // from GetServices() and the ServicesUpdatedCallback can persist even once
   // this map is resized. NOTE: Unordered map is used because this set is in
   // many cases expected to be large.
-  std::unordered_map<std::string, std::unique_ptr<T>> records_;
+  std::unordered_map<EndpointKey, std::unique_ptr<T>, PairHash> records_;
 
   // Represents whether discovery is currently running or not.
   bool is_running_ = false;

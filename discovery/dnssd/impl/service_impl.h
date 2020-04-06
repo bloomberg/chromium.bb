@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "discovery/dnssd/impl/network_interface_config.h"
 #include "discovery/dnssd/impl/publisher_impl.h"
 #include "discovery/dnssd/impl/querier_impl.h"
 #include "discovery/dnssd/public/dns_sd_service.h"
@@ -38,6 +39,8 @@ class ServiceImpl final : public DnsSdService {
 
   std::unique_ptr<QuerierImpl> querier_;
   std::unique_ptr<PublisherImpl> publisher_;
+
+  const NetworkInterfaceConfig network_config_;
 };
 
 }  // namespace discovery

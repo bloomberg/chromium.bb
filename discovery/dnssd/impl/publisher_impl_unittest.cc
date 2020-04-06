@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "discovery/common/testing/mock_reporting_client.h"
+#include "discovery/dnssd/testing/fake_network_interface_config.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "platform/test/fake_clock.h"
@@ -23,8 +24,8 @@ using testing::StrictMock;
 
 class MockClient : public DnsSdPublisher::Client {
  public:
-  MOCK_METHOD2(OnInstanceClaimed,
-               void(const DnsSdInstanceRecord&, const DnsSdInstanceRecord&));
+  MOCK_METHOD2(OnEndpointClaimed,
+               void(const DnsSdInstance&, const DnsSdInstanceEndpoint&));
 };
 
 class MockMdnsService : public MdnsService {
@@ -58,7 +59,10 @@ class PublisherImplTest : public testing::Test {
   PublisherImplTest()
       : clock_(Clock::now()),
         task_runner_(&clock_),
-        publisher_(&mock_service_, &reporting_client_, &task_runner_) {}
+        publisher_(&mock_service_,
+                   &reporting_client_,
+                   &task_runner_,
+                   &network_config_) {}
 
   MockMdnsService* mdns_service() { return &mock_service_; }
   TaskRunner* task_runner() { return &task_runner_; }
@@ -71,7 +75,8 @@ class PublisherImplTest : public testing::Test {
         .OnDomainFound(domain, domain2);
   }
 
- private:
+ protected:
+  FakeNetworkInterfaceConfig network_config_;
   FakeClock clock_;
   FakeTaskRunner task_runner_;
   StrictMock<MockMdnsService> mock_service_;
@@ -81,16 +86,15 @@ class PublisherImplTest : public testing::Test {
 
 TEST_F(PublisherImplTest, TestRegistrationAndDegrestration) {
   IPAddress address = IPAddress(192, 168, 0, 0);
+  network_config_.set_address_v4(address);
   const DomainName domain{"instance", "_service", "_udp", "domain"};
   const DomainName domain2{"instance2", "_service", "_udp", "domain"};
-  const DnsSdInstanceRecord record("instance", "_service._udp", "domain",
-                                   {address, 80}, {});
-  const DnsSdInstanceRecord record2("instance2", "_service._udp", "domain",
-                                    {address, 80}, {});
+  const DnsSdInstance instance("instance", "_service._udp", "domain", {}, 80);
+  const DnsSdInstance instance2("instance2", "_service._udp", "domain", {}, 80);
   MockClient client;
 
   EXPECT_CALL(*mdns_service(), StartProbe(publisher(), domain, _)).Times(1);
-  publisher()->Register(record, &client);
+  publisher()->Register(instance, &client);
   testing::Mock::VerifyAndClearExpectations(mdns_service());
 
   int seen = 0;
@@ -116,7 +120,11 @@ TEST_F(PublisherImplTest, TestRegistrationAndDegrestration) {
         }
         return Error::None();
       });
-  EXPECT_CALL(client, OnInstanceClaimed(record, record2));
+  EXPECT_CALL(client, OnEndpointClaimed(instance, _))
+      .WillOnce([instance2](const DnsSdInstance& requested,
+                            const DnsSdInstanceEndpoint& claimed) {
+        EXPECT_EQ(instance2, claimed);
+      });
   CallOnDomainFound(domain, domain2);
   EXPECT_EQ(seen, 2);
   testing::Mock::VerifyAndClearExpectations(mdns_service());
@@ -147,27 +155,30 @@ TEST_F(PublisherImplTest, TestRegistrationAndDegrestration) {
 
 TEST_F(PublisherImplTest, TestUpdate) {
   IPAddress address = IPAddress(192, 168, 0, 0);
+  network_config_.set_address_v4(address);
   DomainName domain{"instance", "_service", "_udp", "domain"};
   DnsSdTxtRecord txt;
   txt.SetFlag("id", true);
-  DnsSdInstanceRecord record("instance", "_service._udp", "domain",
-                             {address, 80}, std::move(txt));
+  DnsSdInstance instance("instance", "_service._udp", "domain", std::move(txt),
+                         80);
   MockClient client;
 
-  // Update a non-existent record
-  EXPECT_FALSE(publisher()->UpdateRegistration(record).ok());
+  // Update a non-existent instance
+  EXPECT_FALSE(publisher()->UpdateRegistration(instance).ok());
 
-  // Update a record during the probing phase
+  // Update an instance during the probing phase
   EXPECT_CALL(*mdns_service(), StartProbe(publisher(), domain, _)).Times(1);
-  EXPECT_EQ(publisher()->Register(record, &client), Error::None());
+  EXPECT_EQ(publisher()->Register(instance, &client), Error::None());
   testing::Mock::VerifyAndClearExpectations(mdns_service());
 
   IPAddress address2 = IPAddress(1, 2, 3, 4, 5, 6, 7, 8);
+  network_config_.set_address_v4(IPAddress{});
+  network_config_.set_address_v6(address2);
   DnsSdTxtRecord txt2;
   txt2.SetFlag("id2", true);
-  DnsSdInstanceRecord record2("instance", "_service._udp", "domain",
-                              {address2, 80}, std::move(txt2));
-  EXPECT_EQ(publisher()->UpdateRegistration(record2), Error::None());
+  DnsSdInstance instance2("instance", "_service._udp", "domain",
+                          std::move(txt2), 80);
+  EXPECT_EQ(publisher()->UpdateRegistration(instance2), Error::None());
 
   bool seen_v6 = false;
   EXPECT_CALL(*mdns_service(), RegisterRecord(_))
@@ -179,13 +190,19 @@ TEST_F(PublisherImplTest, TestUpdate) {
         }
         return Error::None();
       });
-  EXPECT_CALL(client, OnInstanceClaimed(record2, record2));
+  EXPECT_CALL(client, OnEndpointClaimed(instance2, _))
+      .WillOnce([instance2](const DnsSdInstance& requested,
+                            const DnsSdInstanceEndpoint& claimed) {
+        EXPECT_EQ(instance2, claimed);
+      });
   CallOnDomainFound(domain, domain);
   EXPECT_TRUE(seen_v6);
   testing::Mock::VerifyAndClearExpectations(mdns_service());
   testing::Mock::VerifyAndClearExpectations(&client);
 
-  // Update a record once it has been published.
+  // Update an instance once it has been published.
+  network_config_.set_address_v4(address);
+  network_config_.set_address_v6(IPAddress{});
   EXPECT_CALL(*mdns_service(), RegisterRecord(_))
       .WillOnce([](const MdnsRecord& record) -> Error {
         EXPECT_EQ(record.dns_type(), DnsType::kA);
@@ -203,7 +220,7 @@ TEST_F(PublisherImplTest, TestUpdate) {
             EXPECT_EQ(record2.dns_type(), DnsType::kTXT);
             return Error::None();
           });
-  EXPECT_EQ(publisher()->UpdateRegistration(record), Error::None());
+  EXPECT_EQ(publisher()->UpdateRegistration(instance), Error::None());
   testing::Mock::VerifyAndClearExpectations(mdns_service());
 }
 

@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "discovery/dnssd/public/dns_sd_instance_record.h"
+#include "discovery/dnssd/public/dns_sd_instance.h"
 #include "discovery/dnssd/public/dns_sd_publisher.h"
 #include "discovery/dnssd/public/dns_sd_service.h"
 #include "platform/base/error.h"
@@ -31,7 +31,7 @@ class DnsSdServicePublisher : public DnsSdPublisher::Client {
  public:
   // This function type is responsible for converting from a T type to a
   // DNS service instance (to publish to the network).
-  using ServiceInstanceConverter = std::function<DnsSdInstanceRecord(const T&)>;
+  using ServiceInstanceConverter = std::function<DnsSdInstance(const T&)>;
 
   DnsSdServicePublisher(DnsSdService* service,
                         std::string service_name,
@@ -44,22 +44,22 @@ class DnsSdServicePublisher : public DnsSdPublisher::Client {
 
   ~DnsSdServicePublisher() = default;
 
-  Error Register(const T& instance) {
-    if (!instance.IsValid()) {
+  Error Register(const T& service) {
+    if (!service.IsValid()) {
       return Error::Code::kParameterInvalid;
     }
 
-    DnsSdInstanceRecord record = conversion_(instance);
-    return publisher_->Register(record, this);
+    DnsSdInstance instance = conversion_(service);
+    return publisher_->Register(instance, this);
   }
 
-  Error UpdateRegistration(const T& instance) {
-    if (!instance.IsValid()) {
+  Error UpdateRegistration(const T& service) {
+    if (!service.IsValid()) {
       return Error::Code::kParameterInvalid;
     }
 
-    DnsSdInstanceRecord record = conversion_(instance);
-    return publisher_->UpdateRegistration(record);
+    DnsSdInstance instance = conversion_(service);
+    return publisher_->UpdateRegistration(instance);
   }
 
   ErrorOr<int> DeregisterAll() {
@@ -71,12 +71,13 @@ class DnsSdServicePublisher : public DnsSdPublisher::Client {
   //
   // Embedders who care about the instance id with which the service was
   // published may override this method.
-  void OnInstanceClaimed(const DnsSdInstanceRecord& requested_record,
-                         const DnsSdInstanceRecord& claimed_record) {
-    OSP_DVLOG << "Instance ID '" << claimed_record.instance_id()
+  void OnEndpointClaimed(
+      const DnsSdInstance& requested_instance,
+      const DnsSdInstanceEndpoint& claimed_endpoint) override {
+    OSP_DVLOG << "Instance ID '" << claimed_endpoint.instance_id()
               << "' claimed for requested ID '"
-              << requested_record.instance_id() << "'";
-    OnInstanceClaimed(requested_record.instance_id());
+              << requested_instance.instance_id() << "'";
+    OnInstanceClaimed(requested_instance.instance_id());
   }
 
   virtual void OnInstanceClaimed(const std::string& requested_instance_id) {}

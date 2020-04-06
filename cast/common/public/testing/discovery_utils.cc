@@ -6,7 +6,6 @@
 
 #include <sstream>
 
-#include "discovery/dnssd/public/dns_sd_instance_record.h"
 #include "util/stringprintf.h"
 
 namespace openscreen {

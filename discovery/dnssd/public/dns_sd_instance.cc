@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "discovery/dnssd/public/dns_sd_instance_record.h"
+#include "discovery/dnssd/public/dns_sd_instance.h"
 
 #include <cctype>
 
@@ -47,67 +47,22 @@ bool HasControlCharacters(const std::string& string) {
 
 }  // namespace
 
-DnsSdInstanceRecord::DnsSdInstanceRecord(std::string instance_id,
-                                         std::string service_id,
-                                         std::string domain_id,
-                                         IPEndpoint endpoint,
-                                         DnsSdTxtRecord txt)
-    : DnsSdInstanceRecord(std::move(instance_id),
-                          std::move(service_id),
-                          std::move(domain_id),
-                          std::move(txt)) {
-  OSP_DCHECK(endpoint);
-  if (endpoint.address.IsV4()) {
-    address_v4_ = std::move(endpoint);
-  } else if (endpoint.address.IsV6()) {
-    address_v6_ = std::move(endpoint);
-  } else {
-    OSP_NOTREACHED();
-  }
-}
-
-DnsSdInstanceRecord::DnsSdInstanceRecord(std::string instance_id,
-                                         std::string service_id,
-                                         std::string domain_id,
-                                         IPEndpoint ipv4_endpoint,
-                                         IPEndpoint ipv6_endpoint,
-                                         DnsSdTxtRecord txt)
-    : DnsSdInstanceRecord(std::move(instance_id),
-                          std::move(service_id),
-                          std::move(domain_id),
-                          std::move(txt)) {
-  OSP_CHECK(ipv4_endpoint);
-  OSP_CHECK(ipv6_endpoint);
-  OSP_CHECK(ipv4_endpoint.address.IsV4());
-  OSP_CHECK(ipv6_endpoint.address.IsV6());
-
-  address_v4_ = std::move(ipv4_endpoint);
-  address_v6_ = std::move(ipv6_endpoint);
-}
-
-DnsSdInstanceRecord::DnsSdInstanceRecord(std::string instance_id,
-                                         std::string service_id,
-                                         std::string domain_id,
-                                         DnsSdTxtRecord txt)
+DnsSdInstance::DnsSdInstance(std::string instance_id,
+                             std::string service_id,
+                             std::string domain_id,
+                             DnsSdTxtRecord txt,
+                             uint16_t port)
     : instance_id_(std::move(instance_id)),
       service_id_(std::move(service_id)),
       domain_id_(std::move(domain_id)),
-      txt_(std::move(txt)) {
+      txt_(std::move(txt)),
+      port_(port) {
   OSP_DCHECK(IsInstanceValid(instance_id_));
   OSP_DCHECK(IsServiceValid(service_id_));
   OSP_DCHECK(IsDomainValid(domain_id_));
 }
 
-uint16_t DnsSdInstanceRecord::port() const {
-  if (address_v4_) {
-    return address_v4_.port;
-  } else if (address_v6_) {
-    return address_v6_.port;
-  } else {
-    OSP_NOTREACHED();
-    return 0;
-  }
-}
+DnsSdInstance::~DnsSdInstance() = default;
 
 // static
 bool IsInstanceValid(const std::string& instance) {
@@ -188,7 +143,11 @@ bool IsDomainValid(const std::string& domain) {
   return !HasControlCharacters(domain) && IsValidUtf8(domain);
 }
 
-bool operator<(const DnsSdInstanceRecord& lhs, const DnsSdInstanceRecord& rhs) {
+bool operator<(const DnsSdInstance& lhs, const DnsSdInstance& rhs) {
+  if (lhs.port_ != rhs.port_) {
+    return lhs.port_ < rhs.port_;
+  }
+
   int comp = lhs.instance_id_.compare(rhs.instance_id_);
   if (comp != 0) {
     return comp < 0;
@@ -202,14 +161,6 @@ bool operator<(const DnsSdInstanceRecord& lhs, const DnsSdInstanceRecord& rhs) {
   comp = lhs.domain_id_.compare(rhs.domain_id_);
   if (comp != 0) {
     return comp < 0;
-  }
-
-  if (lhs.address_v4_ != rhs.address_v4_) {
-    return lhs.address_v4_ < rhs.address_v4_;
-  }
-
-  if (lhs.address_v6_ != rhs.address_v6_) {
-    return lhs.address_v6_ < rhs.address_v6_;
   }
 
   return lhs.txt_ < rhs.txt_;

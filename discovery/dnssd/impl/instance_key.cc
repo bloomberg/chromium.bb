@@ -8,7 +8,7 @@
 #include "absl/strings/str_split.h"
 #include "discovery/dnssd/impl/conversion_layer.h"
 #include "discovery/dnssd/impl/service_key.h"
-#include "discovery/dnssd/public/dns_sd_instance_record.h"
+#include "discovery/dnssd/public/dns_sd_instance.h"
 #include "discovery/mdns/mdns_records.h"
 #include "discovery/mdns/public/mdns_constants.h"
 
@@ -23,10 +23,10 @@ InstanceKey::InstanceKey(const DomainName& domain)
   OSP_DCHECK(IsInstanceValid(instance_id_));
 }
 
-InstanceKey::InstanceKey(const DnsSdInstanceRecord& record)
-    : InstanceKey(record.instance_id(),
-                  record.service_id(),
-                  record.domain_id()) {}
+InstanceKey::InstanceKey(const DnsSdInstance& instance)
+    : InstanceKey(instance.instance_id(),
+                  instance.service_id(),
+                  instance.domain_id()) {}
 
 InstanceKey::InstanceKey(absl::string_view instance,
                          absl::string_view service,

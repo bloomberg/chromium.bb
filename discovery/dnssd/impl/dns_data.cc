@@ -56,9 +56,11 @@ inline Error ProcessRecord(absl::optional<T>* stored,
 
 }  // namespace
 
-DnsData::DnsData(const InstanceKey& instance_id) : instance_id_(instance_id) {}
+DnsData::DnsData(const InstanceKey& instance_id,
+                 NetworkInterfaceIndex network_interface)
+    : instance_id_(instance_id), network_interface_(network_interface) {}
 
-ErrorOr<DnsSdInstanceRecord> DnsData::CreateRecord() {
+ErrorOr<DnsSdInstanceEndpoint> DnsData::CreateEndpoint() {
   if (!srv_.has_value() || !txt_.has_value() ||
       (!a_.has_value() && !aaaa_.has_value())) {
     return Error::Code::kOperationInvalid;
@@ -70,21 +72,21 @@ ErrorOr<DnsSdInstanceRecord> DnsData::CreateRecord() {
   }
 
   if (a_.has_value() && aaaa_.has_value()) {
-    return DnsSdInstanceRecord(
+    return DnsSdInstanceEndpoint(
         instance_id_.instance_id(), instance_id_.service_id(),
-        instance_id_.domain_id(),
+        instance_id_.domain_id(), std::move(txt_or_error.value()),
         {a_.value().ipv4_address(), srv_.value().port()},
         {aaaa_.value().ipv6_address(), srv_.value().port()},
-        std::move(txt_or_error.value()));
+        network_interface_);
   } else {
     IPEndpoint ep =
         a_.has_value()
             ? IPEndpoint{a_.value().ipv4_address(), srv_.value().port()}
             : IPEndpoint{aaaa_.value().ipv6_address(), srv_.value().port()};
-    return DnsSdInstanceRecord(instance_id_.instance_id(),
-                               instance_id_.service_id(),
-                               instance_id_.domain_id(), std::move(ep),
-                               std::move(txt_or_error.value()));
+    return DnsSdInstanceEndpoint(
+        instance_id_.instance_id(), instance_id_.service_id(),
+        instance_id_.domain_id(), std::move(txt_or_error.value()),
+        std::move(ep), network_interface_);
   }
 }
 

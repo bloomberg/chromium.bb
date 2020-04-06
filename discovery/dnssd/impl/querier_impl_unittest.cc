@@ -11,6 +11,7 @@
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
 #include "absl/types/optional.h"
+#include "discovery/dnssd/testing/fake_network_interface_config.h"
 #include "discovery/mdns/mdns_records.h"
 #include "discovery/mdns/testing/mdns_test_util.h"
 #include "gmock/gmock.h"
@@ -25,9 +26,9 @@ namespace {
 
 class MockCallback : public DnsSdQuerier::Callback {
  public:
-  MOCK_METHOD1(OnInstanceCreated, void(const DnsSdInstanceRecord&));
-  MOCK_METHOD1(OnInstanceUpdated, void(const DnsSdInstanceRecord&));
-  MOCK_METHOD1(OnInstanceDeleted, void(const DnsSdInstanceRecord&));
+  MOCK_METHOD1(OnEndpointCreated, void(const DnsSdInstanceEndpoint&));
+  MOCK_METHOD1(OnEndpointUpdated, void(const DnsSdInstanceEndpoint&));
+  MOCK_METHOD1(OnEndpointDeleted, void(const DnsSdInstanceEndpoint&));
 };
 
 class MockMdnsService : public MdnsService {
@@ -118,7 +119,7 @@ class DnsDataAccessor {
   absl::optional<ARecordRdata>* a() { return &data_->a_; }
   absl::optional<AAAARecordRdata>* aaaa() { return &data_->aaaa_; }
 
-  bool CanCreateInstance() { return data_->CreateRecord().is_value(); }
+  bool CanCreateEndpoint() { return data_->CreateEndpoint().is_value(); }
 
  private:
   DnsData* data_;
@@ -127,7 +128,7 @@ class DnsDataAccessor {
 class QuerierImplTesting : public QuerierImpl {
  public:
   QuerierImplTesting()
-      : QuerierImpl(&mock_service_, &task_runner_),
+      : QuerierImpl(&mock_service_, &task_runner_, &network_config_),
         clock_(Clock::now()),
         task_runner_(&clock_) {}
 
@@ -137,7 +138,10 @@ class QuerierImplTesting : public QuerierImpl {
                                 const std::string& service,
                                 const std::string& domain) {
     InstanceKey key{instance, service, domain};
-    auto it = received_records_.emplace(key, DnsData(key)).first;
+    auto it =
+        received_records_
+            .emplace(key, DnsData(key, network_config_.network_interface()))
+            .first;
     return DnsDataAccessor(&it->second);
   }
 
@@ -155,6 +159,7 @@ class QuerierImplTesting : public QuerierImpl {
  private:
   FakeClock clock_;
   FakeTaskRunner task_runner_;
+  FakeNetworkInterfaceConfig network_config_;
   StrictMock<MockMdnsService> mock_service_;
 };
 
@@ -207,7 +212,7 @@ TEST_F(DnsSdQuerierImplTest, TestStartDuplicateQueryFiresCallbacksWhenAble) {
   dns_data.set_a(CreateARecord());
   dns_data.set_aaaa(CreateAAAARecord());
 
-  EXPECT_CALL(callback2, OnInstanceCreated(_)).Times(1);
+  EXPECT_CALL(callback2, OnEndpointCreated(_)).Times(1);
   querier.StartQuery(service, &callback2);
 }
 
@@ -261,9 +266,9 @@ TEST_F(DnsSdQuerierImplTest, CallbackCalledWhenPtrDeleted) {
   dns_data.set_txt(MakeTxtRecord({}));
   dns_data.set_a(CreateARecord());
   dns_data.set_aaaa(CreateAAAARecord());
-  ASSERT_TRUE(dns_data.CanCreateInstance());
+  ASSERT_TRUE(dns_data.CanCreateEndpoint());
 
-  EXPECT_CALL(callback, OnInstanceDeleted(_)).Times(1);
+  EXPECT_CALL(callback, OnEndpointDeleted(_)).Times(1);
   EXPECT_CALL(*querier.service(),
               StopQuery(_, DnsType::kANY, DnsClass::kANY, _))
       .Times(1);
@@ -295,11 +300,11 @@ TEST_F(DnsSdQuerierImplTest, BothNewAndOldValidRecords) {
   MdnsRecord a_record(kDomainName, DnsType::kA, DnsClass::kIN,
                       RecordType::kUnique, std::chrono::seconds(0), a_rdata);
 
-  EXPECT_CALL(callback, OnInstanceUpdated(_)).Times(1);
+  EXPECT_CALL(callback, OnEndpointUpdated(_)).Times(1);
   querier.OnRecordChanged(a_record, RecordChangedEvent::kCreated);
   testing::Mock::VerifyAndClearExpectations(&callback);
 
-  EXPECT_CALL(callback, OnInstanceUpdated(_)).Times(1);
+  EXPECT_CALL(callback, OnEndpointUpdated(_)).Times(1);
   querier.OnRecordChanged(a_record, RecordChangedEvent::kUpdated);
   testing::Mock::VerifyAndClearExpectations(&callback);
 
@@ -308,11 +313,11 @@ TEST_F(DnsSdQuerierImplTest, BothNewAndOldValidRecords) {
                          RecordType::kUnique, std::chrono::seconds(0),
                          aaaa_rdata);
 
-  EXPECT_CALL(callback, OnInstanceUpdated(_)).Times(1);
+  EXPECT_CALL(callback, OnEndpointUpdated(_)).Times(1);
   querier.OnRecordChanged(aaaa_record, RecordChangedEvent::kUpdated);
   testing::Mock::VerifyAndClearExpectations(&callback);
 
-  EXPECT_CALL(callback, OnInstanceUpdated(_)).Times(1);
+  EXPECT_CALL(callback, OnEndpointUpdated(_)).Times(1);
   querier.OnRecordChanged(a_record, RecordChangedEvent::kExpired);
   testing::Mock::VerifyAndClearExpectations(&callback);
 }
@@ -327,7 +332,7 @@ TEST_F(DnsSdQuerierImplTest, OnlyNewRecordValid) {
   MdnsRecord a_record(std::move(kDomainName), DnsType::kA, DnsClass::kIN,
                       RecordType::kUnique, std::chrono::seconds(0), a_rdata);
 
-  EXPECT_CALL(callback, OnInstanceCreated(_)).Times(1);
+  EXPECT_CALL(callback, OnEndpointCreated(_)).Times(1);
   querier.OnRecordChanged(a_record, RecordChangedEvent::kCreated);
 }
 
@@ -342,7 +347,7 @@ TEST_F(DnsSdQuerierImplTest, OnlyOldRecordValid) {
   MdnsRecord a_record(std::move(kDomainName), DnsType::kA, DnsClass::kIN,
                       RecordType::kUnique, std::chrono::seconds(0), a_rdata);
 
-  EXPECT_CALL(callback, OnInstanceDeleted(_)).Times(1);
+  EXPECT_CALL(callback, OnEndpointDeleted(_)).Times(1);
   querier.OnRecordChanged(a_record, RecordChangedEvent::kExpired);
 }
 
@@ -357,7 +362,7 @@ TEST_F(DnsSdQuerierImplTest, HardRefresh) {
   DnsDataAccessor dns_data2 = querier.CreateDnsData(instance, service2, domain);
   dns_data2.set_srv(CreateSrvRecord());
 
-  EXPECT_CALL(callback, OnInstanceCreated(_)).Times(1);
+  EXPECT_CALL(callback, OnEndpointCreated(_)).Times(1);
   querier.StartQuery(service, &callback);
   EXPECT_TRUE(querier.IsQueryRunning(service));
 

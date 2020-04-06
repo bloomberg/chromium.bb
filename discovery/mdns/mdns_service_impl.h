@@ -5,6 +5,7 @@
 #ifndef DISCOVERY_MDNS_MDNS_SERVICE_IMPL_H_
 #define DISCOVERY_MDNS_MDNS_SERVICE_IMPL_H_
 
+#include "discovery/common/config.h"
 #include "discovery/mdns/mdns_domain_confirmed_provider.h"
 #include "discovery/mdns/mdns_probe_manager.h"
 #include "discovery/mdns/mdns_publisher.h"
@@ -26,7 +27,6 @@ class TaskRunner;
 
 namespace discovery {
 
-struct Config;
 class NetworkConfig;
 class ReportingClient;
 
@@ -39,7 +39,7 @@ class MdnsServiceImpl : public MdnsService, public UdpSocket::Client {
                   ReportingClient* reporting_client,
                   const Config& config,
                   NetworkInterfaceIndex network_interface,
-                  SupportedNetworkAddressFamily supported_address_types);
+                  Config::NetworkInfo::AddressFamilies supported_address_types);
   ~MdnsServiceImpl() override;
 
   // MdnsService Overrides.
