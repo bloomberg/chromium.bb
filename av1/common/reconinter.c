@@ -1050,8 +1050,9 @@ void av1_setup_build_prediction_by_above_pred(
   }
 
   xd->mb_to_left_edge = 8 * MI_SIZE * (-above_mi_col);
-  xd->mb_to_right_edge = ctxt->mb_to_far_edge +
-                         (xd->n4_w - rel_mi_col - above_mi_width) * MI_SIZE * 8;
+  xd->mb_to_right_edge =
+      ctxt->mb_to_far_edge +
+      (xd->width - rel_mi_col - above_mi_width) * MI_SIZE * 8;
 }
 
 void av1_setup_build_prediction_by_left_pred(MACROBLOCKD *xd, int rel_mi_row,
@@ -1091,7 +1092,7 @@ void av1_setup_build_prediction_by_left_pred(MACROBLOCKD *xd, int rel_mi_row,
   xd->mb_to_top_edge = GET_MV_SUBPEL(MI_SIZE * (-left_mi_row));
   xd->mb_to_bottom_edge =
       ctxt->mb_to_far_edge +
-      GET_MV_SUBPEL((xd->n4_h - rel_mi_row - left_mi_height) * MI_SIZE);
+      GET_MV_SUBPEL((xd->height - rel_mi_row - left_mi_height) * MI_SIZE);
 }
 
 static AOM_INLINE void combine_interintra(

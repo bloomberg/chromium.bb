@@ -1324,9 +1324,9 @@ static int64_t motion_mode_rd(
             best_rd_stats_y = simple_states->rd_stats_y;
             best_rd_stats_uv = simple_states->rd_stats_uv;
             memcpy(best_blk_skip, simple_states->blk_skip,
-                   sizeof(x->blk_skip[0]) * xd->n4_h * xd->n4_w);
+                   sizeof(x->blk_skip[0]) * xd->height * xd->width);
             av1_copy_array(best_tx_type_map, simple_states->tx_type_map,
-                           xd->n4_h * xd->n4_w);
+                           xd->height * xd->width);
             best_xskip = simple_states->skip;
             best_disable_skip = simple_states->disable_skip;
             best_mbmi = *mbmi;
@@ -1574,9 +1574,9 @@ static int64_t motion_mode_rd(
         simple_states->rd_stats_y = *rd_stats_y;
         simple_states->rd_stats_uv = *rd_stats_uv;
         memcpy(simple_states->blk_skip, x->blk_skip,
-               sizeof(x->blk_skip[0]) * xd->n4_h * xd->n4_w);
+               sizeof(x->blk_skip[0]) * xd->height * xd->width);
         av1_copy_array(simple_states->tx_type_map, xd->tx_type_map,
-                       xd->n4_h * xd->n4_w);
+                       xd->height * xd->width);
         simple_states->skip = mbmi->skip;
         simple_states->disable_skip = *disable_skip;
       }
@@ -1589,8 +1589,8 @@ static int64_t motion_mode_rd(
       best_rate_mv = tmp_rate_mv;
       if (num_planes > 1) best_rd_stats_uv = *rd_stats_uv;
       memcpy(best_blk_skip, x->blk_skip,
-             sizeof(x->blk_skip[0]) * xd->n4_h * xd->n4_w);
-      av1_copy_array(best_tx_type_map, xd->tx_type_map, xd->n4_h * xd->n4_w);
+             sizeof(x->blk_skip[0]) * xd->height * xd->width);
+      av1_copy_array(best_tx_type_map, xd->tx_type_map, xd->height * xd->width);
       best_xskip = mbmi->skip;
       best_disable_skip = *disable_skip;
       // TODO(anyone): evaluate the quality and speed trade-off of the early
@@ -1610,8 +1610,8 @@ static int64_t motion_mode_rd(
   *rd_stats_y = best_rd_stats_y;
   if (num_planes > 1) *rd_stats_uv = best_rd_stats_uv;
   memcpy(x->blk_skip, best_blk_skip,
-         sizeof(x->blk_skip[0]) * xd->n4_h * xd->n4_w);
-  av1_copy_array(xd->tx_type_map, best_tx_type_map, xd->n4_h * xd->n4_w);
+         sizeof(x->blk_skip[0]) * xd->height * xd->width);
+  av1_copy_array(xd->tx_type_map, best_tx_type_map, xd->height * xd->width);
   x->force_skip = best_xskip;
   *disable_skip = best_disable_skip;
 
@@ -2068,7 +2068,7 @@ static AOM_INLINE int find_ref_match_in_above_nbs(const int total_mi_cols,
   // prev_row_mi points into the mi array, starting at the beginning of the
   // previous row.
   MB_MODE_INFO **prev_row_mi = xd->mi - mi_col - 1 * xd->mi_stride;
-  const int end_col = AOMMIN(mi_col + xd->n4_w, total_mi_cols);
+  const int end_col = AOMMIN(mi_col + xd->width, total_mi_cols);
   uint8_t mi_step;
   for (int above_mi_col = mi_col; above_mi_col < end_col;
        above_mi_col += mi_step) {
@@ -2090,7 +2090,7 @@ static AOM_INLINE int find_ref_match_in_left_nbs(const int total_mi_rows,
   // prev_col_mi points into the mi array, starting at the top of the
   // previous column
   MB_MODE_INFO **prev_col_mi = xd->mi - 1 - mi_row * xd->mi_stride;
-  const int end_row = AOMMIN(mi_row + xd->n4_h, total_mi_rows);
+  const int end_row = AOMMIN(mi_row + xd->height, total_mi_rows);
   uint8_t mi_step;
   for (int left_mi_row = mi_row; left_mi_row < end_row;
        left_mi_row += mi_step) {
@@ -2593,8 +2593,9 @@ static int64_t handle_inter_mode(
         best_disable_skip = *disable_skip;
         best_xskip = x->force_skip;
         memcpy(best_blk_skip, x->blk_skip,
-               sizeof(best_blk_skip[0]) * xd->n4_h * xd->n4_w);
-        av1_copy_array(best_tx_type_map, xd->tx_type_map, xd->n4_h * xd->n4_w);
+               sizeof(best_blk_skip[0]) * xd->height * xd->width);
+        av1_copy_array(best_tx_type_map, xd->tx_type_map,
+                       xd->height * xd->width);
         motion_mode_cand->rate_mv = rate_mv;
         motion_mode_cand->rate2_nocoeff = rate2_nocoeff;
       }
@@ -2619,8 +2620,8 @@ static int64_t handle_inter_mode(
   assert(IMPLIES(mbmi->comp_group_idx == 1,
                  mbmi->interinter_comp.type != COMPOUND_AVERAGE));
   memcpy(x->blk_skip, best_blk_skip,
-         sizeof(best_blk_skip[0]) * xd->n4_h * xd->n4_w);
-  av1_copy_array(xd->tx_type_map, best_tx_type_map, xd->n4_h * xd->n4_w);
+         sizeof(best_blk_skip[0]) * xd->height * xd->width);
+  av1_copy_array(xd->tx_type_map, best_tx_type_map, xd->height * xd->width);
 
   rd_stats->rdcost = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
 
@@ -2791,14 +2792,14 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
       best_mbmi = *mbmi;
       best_rdstats = rd_stats_yuv;
       memcpy(best_blk_skip, x->blk_skip,
-             sizeof(x->blk_skip[0]) * xd->n4_h * xd->n4_w);
-      av1_copy_array(best_tx_type_map, xd->tx_type_map, xd->n4_h * xd->n4_w);
+             sizeof(x->blk_skip[0]) * xd->height * xd->width);
+      av1_copy_array(best_tx_type_map, xd->tx_type_map, xd->height * xd->width);
     }
   }
   *mbmi = best_mbmi;
   *rd_stats = best_rdstats;
   memcpy(x->blk_skip, best_blk_skip,
-         sizeof(x->blk_skip[0]) * xd->n4_h * xd->n4_w);
+         sizeof(x->blk_skip[0]) * xd->height * xd->width);
   av1_copy_array(xd->tx_type_map, best_tx_type_map, ctx->num_4x4_blk);
 #if CONFIG_RD_DEBUG
   mbmi->rd_stats = *rd_stats;
@@ -3006,7 +3007,7 @@ static AOM_INLINE void rd_pick_skip_mode(
     memset(search_state->best_mbmode.inter_tx_size,
            search_state->best_mbmode.tx_size,
            sizeof(search_state->best_mbmode.inter_tx_size));
-    set_txfm_ctxs(search_state->best_mbmode.tx_size, xd->n4_w, xd->n4_h,
+    set_txfm_ctxs(search_state->best_mbmode.tx_size, xd->width, xd->height,
                   search_state->best_mbmode.skip && is_inter_block(mbmi), xd);
 
     // Set up color-related variables for skip mode.
@@ -3143,7 +3144,7 @@ static AOM_INLINE void refine_winner_mode_tx(
           av1_super_block_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
           memset(mbmi->inter_tx_size, mbmi->tx_size,
                  sizeof(mbmi->inter_tx_size));
-          for (int i = 0; i < xd->n4_h * xd->n4_w; ++i)
+          for (int i = 0; i < xd->height * xd->width; ++i)
             set_blk_skip(x, 0, i, rd_stats_y.skip);
         }
       } else {
@@ -5126,7 +5127,7 @@ static INLINE void calc_target_weighted_pred_above(
   struct calc_target_weighted_pred_ctxt *ctxt =
       (struct calc_target_weighted_pred_ctxt *)fun_ctxt;
 
-  const int bw = xd->n4_w << MI_SIZE_LOG2;
+  const int bw = xd->width << MI_SIZE_LOG2;
   const uint8_t *const mask1d = av1_get_obmc_mask(ctxt->overlap);
 
   int32_t *wsrc = ctxt->x->wsrc_buf + (rel_mi_col * MI_SIZE);
@@ -5174,7 +5175,7 @@ static INLINE void calc_target_weighted_pred_left(
   struct calc_target_weighted_pred_ctxt *ctxt =
       (struct calc_target_weighted_pred_ctxt *)fun_ctxt;
 
-  const int bw = xd->n4_w << MI_SIZE_LOG2;
+  const int bw = xd->width << MI_SIZE_LOG2;
   const uint8_t *const mask1d = av1_get_obmc_mask(ctxt->overlap);
 
   int32_t *wsrc = ctxt->x->wsrc_buf + (rel_mi_row * MI_SIZE * bw);
@@ -5256,8 +5257,8 @@ static AOM_INLINE void calc_target_weighted_pred(
     const uint8_t *above, int above_stride, const uint8_t *left,
     int left_stride) {
   const BLOCK_SIZE bsize = xd->mi[0]->sb_type;
-  const int bw = xd->n4_w << MI_SIZE_LOG2;
-  const int bh = xd->n4_h << MI_SIZE_LOG2;
+  const int bw = xd->width << MI_SIZE_LOG2;
+  const int bh = xd->height << MI_SIZE_LOG2;
   int32_t *mask_buf = x->mask_buf;
   int32_t *wsrc_buf = x->wsrc_buf;
 

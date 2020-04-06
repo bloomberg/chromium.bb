@@ -898,13 +898,13 @@ static AOM_INLINE void dec_build_prediction_by_above_preds(
   // Adjust mb_to_bottom_edge to have the correct value for the OBMC
   // prediction block. This is half the height of the original block,
   // except for 128-wide blocks, where we only use a height of 32.
-  int this_height = xd->n4_h * MI_SIZE;
-  int pred_height = AOMMIN(this_height / 2, 32);
+  const int this_height = xd->height * MI_SIZE;
+  const int pred_height = AOMMIN(this_height / 2, 32);
   xd->mb_to_bottom_edge += GET_MV_SUBPEL(this_height - pred_height);
   struct build_prediction_ctxt ctxt = { cm,         tmp_buf,
                                         tmp_width,  tmp_height,
                                         tmp_stride, xd->mb_to_right_edge };
-  BLOCK_SIZE bsize = xd->mi[0]->sb_type;
+  const BLOCK_SIZE bsize = xd->mi[0]->sb_type;
   foreach_overlappable_nb_above(cm, xd,
                                 max_neighbor_obmc[mi_size_wide_log2[bsize]],
                                 dec_build_prediction_by_above_pred, &ctxt);
@@ -952,14 +952,14 @@ static AOM_INLINE void dec_build_prediction_by_left_preds(
   // Adjust mb_to_right_edge to have the correct value for the OBMC
   // prediction block. This is half the width of the original block,
   // except for 128-wide blocks, where we only use a width of 32.
-  int this_width = xd->n4_w * MI_SIZE;
-  int pred_width = AOMMIN(this_width / 2, 32);
+  const int this_width = xd->width * MI_SIZE;
+  const int pred_width = AOMMIN(this_width / 2, 32);
   xd->mb_to_right_edge += GET_MV_SUBPEL(this_width - pred_width);
 
   struct build_prediction_ctxt ctxt = { cm,         tmp_buf,
                                         tmp_width,  tmp_height,
                                         tmp_stride, xd->mb_to_bottom_edge };
-  BLOCK_SIZE bsize = xd->mi[0]->sb_type;
+  const BLOCK_SIZE bsize = xd->mi[0]->sb_type;
   foreach_overlappable_nb_left(cm, xd,
                                max_neighbor_obmc[mi_size_high_log2[bsize]],
                                dec_build_prediction_by_left_pred, &ctxt);
@@ -1376,7 +1376,7 @@ static AOM_INLINE void parse_decode_block(AV1Decoder *const pbi,
         read_tx_size(xd, cm->features.tx_mode, inter_block_tx, !mbmi->skip, r);
     if (inter_block_tx)
       memset(mbmi->inter_tx_size, mbmi->tx_size, sizeof(mbmi->inter_tx_size));
-    set_txfm_ctxs(mbmi->tx_size, xd->n4_w, xd->n4_h,
+    set_txfm_ctxs(mbmi->tx_size, xd->width, xd->height,
                   mbmi->skip && is_inter_block(mbmi), xd);
 #if CONFIG_LPF_MASK
     const int w = mi_size_wide[bsize];

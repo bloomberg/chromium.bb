@@ -478,57 +478,125 @@ struct scale_factors;
 // Most/all of the pointers are mere pointers to actual arrays are allocated
 // elsewhere. This is mostly for coding convenience.
 typedef struct macroblockd {
+  // Row and column position of current macroblock in mi units.
+  int mi_row;
+  int mi_col;
+  // Same as cm->mi_params.mi_stride, copied here for convenience.
+  int mi_stride;
+
+  // True if current block transmits chroma information.
+  // More detail:
+  // Smallest supported block size for both luma and chroma plane is 4x4. Hence,
+  // in case of subsampled chroma plane (YUV 4:2:0 or YUV 4:2:2), multiple luma
+  // blocks smaller than 8x8 maybe combined into one chroma block.
+  // For example, for YUV 4:2:0, let's say an 8x8 area is split into four 4x4
+  // luma blocks. Then, a single chroma block of size 4x4 will cover the area of
+  // these four luma blocks. This is implemented in bitstream as follows:
+  // - There are four MB_MODE_INFO structs for the four luma blocks.
+  // - First 3 MB_MODE_INFO have is_chroma_ref = false, and so do not transmit
+  // any information for chroma planes.
+  // - Last block will have is_chroma_ref = true and transmits chroma
+  // information for the 4x4 chroma block that covers whole 8x8 area covered by
+  // four luma blocks.
+  // Similar logic applies for chroma blocks that cover 2 or 3 luma blocks.
+  bool is_chroma_ref;
+
   struct macroblockd_plane plane[MAX_MB_PLANE];
 
   TileInfo tile;
 
-  int mi_stride;
-
+  // Appropriate offset inside cm->mi_params.mi_grid_base based on current
+  // mi_row and mi_col.
   MB_MODE_INFO **mi;
+
+  // True if 4x4 block above the current block is available.
+  bool up_available;
+  // True if 4x4 block to the left of the current block is available.
+  bool left_available;
+  // True if the above chrome reference block is available.
+  bool chroma_up_available;
+  // True if the left chrome reference block is available.
+  bool chroma_left_available;
+
+  // MB_MODE_INFO for 4x4 block to the left of the current block, if
+  // left_available == true; otherwise NULL.
   MB_MODE_INFO *left_mbmi;
+  // MB_MODE_INFO for 4x4 block above the current block, if
+  // up_available == true; otherwise NULL.
   MB_MODE_INFO *above_mbmi;
+  // Above chroma reference block if is_chroma_ref == true for the current block
+  // and chroma_up_available == true; otherwise NULL.
+  // See also: the special case logic when current chroma block covers more than
+  // one luma blocks in set_mi_row_col().
   MB_MODE_INFO *chroma_left_mbmi;
+  // Left chroma reference block if is_chroma_ref == true for the current block
+  // and chroma_left_available == true; otherwise NULL.
+  // See also: the special case logic when current chroma block covers more than
+  // one luma blocks in set_mi_row_col().
   MB_MODE_INFO *chroma_above_mbmi;
 
+  // Appropriate offset based on current 'mi_row' and 'mi_col', inside
+  // 'tx_type_map' in one of 'CommonModeInfoParams', 'PICK_MODE_CONTEXT' or
+  // 'MACROBLOCK' structs.
   uint8_t *tx_type_map;
+  // Stride for 'tx_type_map'. Note that this may / may not be same as
+  // 'mi_stride', depending on which actual array 'tx_type_map' points to.
   int tx_type_map_stride;
 
-  int up_available;
-  int left_available;
-  int chroma_up_available;
-  int chroma_left_available;
-
-  /* Distance of MB away from frame edges in subpixels (1/8th pixel)  */
+  // Distance of this macroblock from frame edges in 1/8th pixel units.
   int mb_to_left_edge;
   int mb_to_right_edge;
   int mb_to_top_edge;
   int mb_to_bottom_edge;
 
-  int mi_row;
-  int mi_col;
-  int is_chroma_ref;
-
-  /* pointers to reference frame scale factors */
+  // Scale factors for reference frames of the current block.
+  // These are pointers into 'cm->ref_scale_factors'.
   const struct scale_factors *block_ref_scale_factors[2];
 
-  /* pointer to current frame */
   const YV12_BUFFER_CONFIG *cur_buf;
 
+  // Entropy contexts for the above blocks.
+  // above_entropy_context[i][j] corresponds to above entropy context for ith
+  // plane and jth mi column of this *frame*, wrt current 'mi_row'.
+  // These are pointers into 'cm->above_contexts.entropy'.
   ENTROPY_CONTEXT *above_entropy_context[MAX_MB_PLANE];
+  // Entropy contexts for the left blocks.
+  // left_entropy_context[i][j] corresponds to left entropy context for ith
+  // plane and jth mi row of this *superblock*, wrt current 'mi_col'.
+  // Note: These contain actual data, NOT pointers.
   ENTROPY_CONTEXT left_entropy_context[MAX_MB_PLANE][MAX_MIB_SIZE];
 
+  // Partition contexts for the above blocks.
+  // above_partition_context[i] corresponds to above partition context for ith
+  // mi column of this *frame*, wrt current 'mi_row'.
+  // These are pointers into 'cm->above_contexts.partition'.
   PARTITION_CONTEXT *above_partition_context;
+  // Partition contexts for the left blocks.
+  // left_partition_context[i] corresponds to left partition context for ith
+  // mi row of this *superblock*, wrt current 'mi_col'.
+  // Note: These contain actual data, NOT pointers.
   PARTITION_CONTEXT left_partition_context[MAX_MIB_SIZE];
 
+  // Transform contexts for the above blocks.
+  // TODO(urvang): Indexed two different ways from cm->above_contexts.txfm in
+  // code currently. Need to make it consistent / document why.
   TXFM_CONTEXT *above_txfm_context;
+  // Transform contexts for the left blocks.
   TXFM_CONTEXT *left_txfm_context;
+  // TODO(urvang): 'left_txfm_context' points to 'left_txfm_context_buffer'.
+  // Can we remove this indirection?
   TXFM_CONTEXT left_txfm_context_buffer[MAX_MIB_SIZE];
 
+  // Default values for the two restoration filters for each plane.
+  // These values are used as reference values when writing the bitstream. That
+  // is, we transmit the delta between the actual values in
+  // cm->rst_info[plane].unit_info[unit_idx] and these reference values.
   WienerInfo wiener_info[MAX_MB_PLANE];
   SgrprojInfo sgrproj_info[MAX_MB_PLANE];
 
-  // block dimension in the unit of mode_info.
-  uint8_t n4_w, n4_h;
+  // Block dimensions in MB_MODE_INFO units.
+  uint8_t width;
+  uint8_t height;
 
   uint8_t ref_mv_count[MODE_CTX_REF_FRAMES];
   CANDIDATE_MV ref_mv_stack[MODE_CTX_REF_FRAMES][MAX_REF_MV_STACK_SIZE];
@@ -540,15 +608,18 @@ typedef struct macroblockd {
   uint8_t neighbors_ref_counts[REF_FRAMES];
 
   FRAME_CONTEXT *tile_ctx;
-  /* Bit depth: 8, 10, 12 */
+  // Bit depth: copied from cm->seq_params.bit_depth for convenience.
   int bd;
 
   int qindex[MAX_SEGMENTS];
   int lossless[MAX_SEGMENTS];
+  // TODO(urvang): Move to decoder.
   int corrupted;
+  // Same as cm->features.cur_frame_force_integer_mv.
   int cur_frame_force_integer_mv;
-  // same with that in AV1_COMMON
+  // Pointer to cm->error.
   struct aom_internal_error_info *error_info;
+  // Same as cm->global_motion.
   const WarpedMotionParams *global_motion;
   int delta_qindex;
   int current_qindex;

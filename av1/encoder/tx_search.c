@@ -3497,7 +3497,7 @@ int av1_txfm_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
   } else {
     av1_super_block_yrd(cpi, x, rd_stats_y, bsize, rd_thresh);
     memset(mbmi->inter_tx_size, mbmi->tx_size, sizeof(mbmi->inter_tx_size));
-    for (int i = 0; i < xd->n4_h * xd->n4_w; ++i)
+    for (int i = 0; i < xd->height * xd->width; ++i)
       set_blk_skip(x, 0, i, rd_stats_y->skip);
   }
 

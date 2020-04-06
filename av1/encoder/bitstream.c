@@ -1528,10 +1528,11 @@ static AOM_INLINE void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
       }
     } else {
       write_selected_tx_size(xd, w);
-      set_txfm_ctxs(mbmi->tx_size, xd->n4_w, xd->n4_h, 0, xd);
+      set_txfm_ctxs(mbmi->tx_size, xd->width, xd->height, 0, xd);
     }
   } else {
-    set_txfm_ctxs(mbmi->tx_size, xd->n4_w, xd->n4_h, skip && is_inter_tx, xd);
+    set_txfm_ctxs(mbmi->tx_size, xd->width, xd->height, skip && is_inter_tx,
+                  xd);
   }
 
   if (!mbmi->skip) {
