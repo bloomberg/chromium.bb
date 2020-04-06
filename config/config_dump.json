@@ -2296,7 +2296,6 @@
         "boards": [
             "asurada"
         ],
-        "chrome_sdk_build_chrome": false,
         "hw_tests": [],
         "hw_tests_disabled_bug": "https://b/150746591",
         "hw_tests_override": [],
@@ -2309,7 +2308,6 @@
         "boards": [
             "asurada"
         ],
-        "chrome_sdk_build_chrome": false,
         "debug": true,
         "display_label": "tryjob",
         "hw_tests": [],
