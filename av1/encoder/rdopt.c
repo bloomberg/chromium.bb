@@ -4029,6 +4029,42 @@ static int compound_skip_by_single_states(
   return 0;
 }
 
+// Check if ref frames of current block matches with given block.
+static INLINE void match_ref_frame(const MB_MODE_INFO *const mbmi,
+                                   const MV_REFERENCE_FRAME *ref_frames,
+                                   int *const is_ref_match) {
+  if (is_inter_block(mbmi)) {
+    is_ref_match[0] |= ref_frames[0] == mbmi->ref_frame[0];
+    is_ref_match[1] |= ref_frames[1] == mbmi->ref_frame[0];
+    if (has_second_ref(mbmi)) {
+      is_ref_match[0] |= ref_frames[0] == mbmi->ref_frame[1];
+      is_ref_match[1] |= ref_frames[1] == mbmi->ref_frame[1];
+    }
+  }
+}
+
+// Prune compound mode using ref frames of neighbor blocks.
+static INLINE int compound_skip_using_neighbor_refs(
+    MACROBLOCKD *const xd, const PREDICTION_MODE this_mode,
+    const MV_REFERENCE_FRAME *ref_frames) {
+  // Exclude non-extended compound modes from pruning
+  if (this_mode == NEAREST_NEARESTMV || this_mode == NEAR_NEARMV ||
+      this_mode == NEW_NEWMV || this_mode == GLOBAL_GLOBALMV)
+    return 0;
+
+  int is_ref_match[2] = { 0 };  // 0 - match for forward refs
+                                // 1 - match for backward refs
+  // Check if ref frames of this block matches with left neighbor.
+  if (xd->left_available)
+    match_ref_frame(xd->left_mbmi, ref_frames, is_ref_match);
+
+  // Check if ref frames of this block matches with above neighbor.
+  if (xd->up_available)
+    match_ref_frame(xd->above_mbmi, ref_frames, is_ref_match);
+
+  return !(is_ref_match[0] && is_ref_match[1]);
+}
+
 static int compare_int64(const void *a, const void *b) {
   int64_t a64 = *((int64_t *)a);
   int64_t b64 = *((int64_t *)b);
@@ -4277,6 +4313,11 @@ static int skip_inter_mode(AV1_COMP *cpi, MACROBLOCK *x, const BLOCK_SIZE bsize,
       !in_single_ref_cutoff(ref_frame_rd, ref_frame, second_ref_frame)) {
     return 1;
   }
+
+  if (sf->inter_sf.prune_compound_using_neighbors && comp_pred) {
+    if (compound_skip_using_neighbor_refs(xd, this_mode, ref_frames)) return 1;
+  }
+
   return 0;
 }
 

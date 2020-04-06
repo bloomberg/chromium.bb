@@ -514,6 +514,7 @@ static void set_good_speed_features_framesize_independent(
         (boosted || allow_screen_content_tools) ? 0 : 3;
 
     sf->inter_sf.prune_inter_modes_based_on_tpl = boosted ? 0 : 2;
+    sf->inter_sf.prune_compound_using_neighbors = 1;
     sf->inter_sf.disable_smooth_interintra = 1;
 
     sf->interp_sf.cb_pred_filter_search = 1;
@@ -970,6 +971,7 @@ static AOM_INLINE void init_inter_sf(INTER_MODE_SPEED_FEATURES *inter_sf) {
   inter_sf->prune_single_motion_modes_by_simple_trans = 0;
   inter_sf->inter_mode_rd_model_estimation = 0;
   inter_sf->prune_compound_using_single_ref = 0;
+  inter_sf->prune_compound_using_neighbors = 0;
   inter_sf->disable_onesided_comp = 0;
   inter_sf->prune_mode_search_simple_translation = 0;
   inter_sf->prune_comp_type_by_comp_avg = 0;

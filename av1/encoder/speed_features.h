@@ -575,6 +575,10 @@ typedef struct INTER_MODE_SPEED_FEATURES {
   // the single reference modes, it is one of the two best performers.
   int prune_compound_using_single_ref;
 
+  // Skip extended compound mode using ref frames of above and left neighbor
+  // blocks.
+  int prune_compound_using_neighbors;
+
   // Based on previous ref_mv_idx search result, prune the following search.
   int prune_ref_mv_idx_search;
 
