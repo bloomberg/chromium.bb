@@ -3136,7 +3136,7 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf, BufferPool *const pool,
   av1_zero(aggregate_fc);
 #endif  // CONFIG_ENTROPY_STATS
 
-  cpi->first_time_stamp_ever = INT64_MAX;
+  cpi->time_stamps.first_ever = INT64_MAX;
 
 #ifdef OUTPUT_YUV_SKINMAP
   yuv_skinmap_file = fopen("skinmap.yuv", "ab");
@@ -3517,7 +3517,7 @@ void av1_remove_compressor(AV1_COMP *cpi) {
       char results[512] = { 0 };
       FILE *f = fopen("opsnr.stt", "a");
       double time_encoded =
-          (cpi->last_end_time_stamp_seen - cpi->first_time_stamp_ever) /
+          (cpi->time_stamps.prev_end_seen - cpi->time_stamps.first_ever) /
           10000000.000;
       double total_encode_time =
           (cpi->time_receive_data + cpi->time_compress_data) / 1000.000;

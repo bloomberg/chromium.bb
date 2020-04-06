@@ -308,8 +308,8 @@ static int get_order_offset(const GF_GROUP *const gf_group,
   return AOMMIN((MAX_GF_INTERVAL - 1), arf_offset);
 }
 
-static void adjust_frame_rate(AV1_COMP *cpi,
-                              const struct lookahead_entry *source) {
+static void adjust_frame_rate(AV1_COMP *cpi, int64_t ts_start, int64_t ts_end) {
+  TimeStamps *time_stamps = &cpi->time_stamps;
   int64_t this_duration;
   int step = 0;
 
@@ -322,14 +322,14 @@ static void adjust_frame_rate(AV1_COMP *cpi,
     return;
   }
 
-  if (source->ts_start == cpi->first_time_stamp_ever) {
-    this_duration = source->ts_end - source->ts_start;
+  if (ts_start == time_stamps->first_ever) {
+    this_duration = ts_end - ts_start;
     step = 1;
   } else {
     int64_t last_duration =
-        cpi->last_end_time_stamp_seen - cpi->last_time_stamp_seen;
+        time_stamps->prev_end_seen - time_stamps->prev_start_seen;
 
-    this_duration = source->ts_end - cpi->last_end_time_stamp_seen;
+    this_duration = ts_end - time_stamps->prev_end_seen;
 
     // do a step update if the duration changes by 10%
     if (last_duration)
@@ -343,8 +343,8 @@ static void adjust_frame_rate(AV1_COMP *cpi,
       // Average this frame's rate into the last second's average
       // frame rate. If we haven't seen 1 second yet, then average
       // over the whole interval seen.
-      const double interval = AOMMIN(
-          (double)(source->ts_end - cpi->first_time_stamp_ever), 10000000.0);
+      const double interval =
+          AOMMIN((double)(ts_end - time_stamps->first_ever), 10000000.0);
       double avg_duration = 10000000.0 / cpi->framerate;
       avg_duration *= (interval - avg_duration + this_duration);
       avg_duration /= interval;
@@ -352,8 +352,8 @@ static void adjust_frame_rate(AV1_COMP *cpi,
       av1_new_framerate(cpi, 10000000.0 / avg_duration);
     }
   }
-  cpi->last_time_stamp_seen = source->ts_start;
-  cpi->last_end_time_stamp_seen = source->ts_end;
+  time_stamps->prev_start_seen = ts_start;
+  time_stamps->prev_end_seen = ts_end;
 }
 
 // If this is an alt-ref, returns the offset of the source frame used
@@ -1116,9 +1116,9 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
 
   *time_stamp = source->ts_start;
   *time_end = source->ts_end;
-  if (source->ts_start < cpi->first_time_stamp_ever) {
-    cpi->first_time_stamp_ever = source->ts_start;
-    cpi->last_end_time_stamp_seen = source->ts_start;
+  if (source->ts_start < cpi->time_stamps.first_ever) {
+    cpi->time_stamps.first_ever = source->ts_start;
+    cpi->time_stamps.prev_end_seen = source->ts_start;
   }
 
   av1_apply_encoding_flags(cpi, source->flags);
@@ -1126,7 +1126,8 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
     *frame_flags = (source->flags & AOM_EFLAG_FORCE_KF) ? FRAMEFLAGS_KEY : 0;
 
   // Shown frames and arf-overlay frames need frame-rate considering
-  if (frame_params.show_frame) adjust_frame_rate(cpi, source);
+  if (frame_params.show_frame)
+    adjust_frame_rate(cpi, source->ts_start, source->ts_end);
 
   if (!frame_params.show_existing_frame) {
     if (cpi->film_grain_table) {

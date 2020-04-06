@@ -1073,7 +1073,7 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
   aom_clear_system_state();
   const double compression_ratio = av1_get_compression_ratio(cm, size);
   const double total_time_encoded =
-      (cpi->last_end_time_stamp_seen - cpi->first_time_stamp_ever) /
+      (cpi->time_stamps.prev_end_seen - cpi->time_stamps.first_ever) /
       (double)TICKS_PER_SEC;
 
   const int temporal_layer_id = cm->temporal_layer_id;
