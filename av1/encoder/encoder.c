@@ -5410,16 +5410,16 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
     }
   }
 
-  if (cpi->sf.tx_sf.tx_type_search.prune_tx_type_using_stats &&
-      cm->current_frame.frame_type == KEY_FRAME) {
-    av1_copy(cpi->tx_type_probs, default_tx_type_probs);
-
+  if (cpi->sf.tx_sf.tx_type_search.prune_tx_type_using_stats) {
     const int thr[2][2] = { { 15, 10 }, { 17, 10 } };
     for (int f = 0; f < FRAME_UPDATE_TYPES; f++) {
       int kf_arf_update = (f == KF_UPDATE || f == ARF_UPDATE);
       cpi->tx_type_probs_thresh[f] =
           thr[cpi->sf.tx_sf.tx_type_search.prune_tx_type_using_stats - 1]
              [kf_arf_update];
+    }
+    if (cm->current_frame.frame_type == KEY_FRAME) {
+      av1_copy(cpi->tx_type_probs, default_tx_type_probs);
     }
   }
 
