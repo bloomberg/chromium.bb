@@ -13,9 +13,6 @@
 #include "av1/common/av1_inv_txfm1d.h"
 #include "av1/common/av1_txfm.h"
 
-// TODO(angiebird): Make 1-d txfm functions static
-//
-
 void av1_idct4_new(const int32_t *input, int32_t *output, int8_t cos_bit,
                    const int8_t *stage_range) {
   assert(output != input);
