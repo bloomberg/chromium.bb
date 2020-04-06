@@ -231,7 +231,6 @@
 
 == qt_android_pfq ==
   master-qt-android-pfq
-    eve-arcnext-qt-android-pfq
 
 == release ==
   master-lakitu-release
@@ -825,8 +824,6 @@
   eve-arcnext-full-tryjob
   eve-arcnext-llvm-next-toolchain-tryjob
   eve-arcnext-llvm-toolchain-tryjob
-  eve-arcnext-payloads-tryjob
-  eve-arcnext-qt-android-pfq-tryjob
   eve-arcnext-release-tryjob
   eve-arcnext-unittest-stress
   eve-arcvm-mesa-virgl-next-full-tryjob
@@ -1430,7 +1427,6 @@
     kevin-pi-android-pfq-tryjob
     reef-pi-android-pfq-tryjob
   master-qt-android-pfq-tryjob
-    eve-arcnext-qt-android-pfq-tryjob
   master-release-tryjob
     amd64-generic-cheets-release-tryjob
     arkham-release-tryjob

@@ -1359,12 +1359,8 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       schedule='with 150m interval',
   )
 
-  _qt_hwtest_boards = frozenset([
-      'eve-arcnext',
-  ])
-  _qt_hwtest_skylab_boards = frozenset([
-      'eve-arcnext',
-  ])
+  _qt_hwtest_boards = frozenset([])
+  _qt_hwtest_skylab_boards = frozenset([])
   _qt_no_hwtest_boards = frozenset([])
   _qt_no_hwtest_experimental_boards = frozenset([])
   _qt_vmtest_boards = frozenset([])
