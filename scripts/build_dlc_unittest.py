@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+import json
 import os
 
 import mock
@@ -24,6 +25,7 @@ _VERSION = '1.0'
 _ID = 'id'
 _PACKAGE = 'package'
 _NAME = 'name'
+_DESCRIPTION = 'description'
 _META_DIR = 'opt/google/dlc/'
 _IMAGE_DIR = 'build/rootfs/dlc/'
 
@@ -71,52 +73,68 @@ class EbuildParamsTest(cros_test_lib.TempDirTestCase):
         os.path.join(install_root_dir, build_dlc.DLC_BUILD_DIR, _ID, _PACKAGE,
                      build_dlc.EBUILD_PARAMETERS))
 
+  def CheckParams(self,
+                  ebuild_params,
+                  dlc_id=_ID,
+                  dlc_package=_PACKAGE,
+                  fs_type=_FS_TYPE_SQUASHFS,
+                  name=_NAME,
+                  description=_DESCRIPTION,
+                  pre_allocated_blocks=_PRE_ALLOCATED_BLOCKS,
+                  version=_VERSION,
+                  preload=False):
+    """Tests EbuildParams JSON values"""
+    self.assertDictEqual(ebuild_params,
+                         {'dlc_id': dlc_id,
+                          'dlc_package': dlc_package,
+                          'fs_type': fs_type,
+                          'pre_allocated_blocks': pre_allocated_blocks,
+                          'version': version,
+                          'name': name,
+                          'description': description,
+                          'preload': preload})
+
+  def GenerateParams(self,
+                     install_root_dir,
+                     dlc_id=_ID,
+                     dlc_package=_PACKAGE,
+                     fs_type=_FS_TYPE_SQUASHFS,
+                     name=_NAME,
+                     description=_DESCRIPTION,
+                     pre_allocated_blocks=_PRE_ALLOCATED_BLOCKS,
+                     version=_VERSION,
+                     preload=False):
+    """Creates and Stores DLC params at install_root_dir"""
+    params = build_dlc.EbuildParams(
+        dlc_id=dlc_id,
+        dlc_package=dlc_package,
+        fs_type=fs_type,
+        name=name,
+        description=description,
+        pre_allocated_blocks=pre_allocated_blocks,
+        version=version,
+        preload=preload)
+    return params.StoreDlcParameters(
+        install_root_dir=install_root_dir, sudo=False)
+
   def testStoreDlcParameters(self):
     """Tests EbuildParams.StoreDlcParameters"""
     sysroot = os.path.join(self.tempdir, 'build_root')
-    params = build_dlc.EbuildParams(dlc_id=_ID,
-                                    dlc_package=_PACKAGE,
-                                    fs_type=_FS_TYPE_SQUASHFS,
-                                    name=_NAME,
-                                    pre_allocated_blocks=_PRE_ALLOCATED_BLOCKS,
-                                    version=_VERSION,
-                                    preload=False)
-    params.StoreDlcParameters(install_root_dir=sysroot,
-                              sudo=False)
+    self.GenerateParams(sysroot)
+    ebuild_params_path = os.path.join(sysroot, build_dlc.DLC_BUILD_DIR, _ID,
+                                      _PACKAGE, build_dlc.EBUILD_PARAMETERS)
+    self.assertExists(ebuild_params_path)
 
-    ebuild_params = os.path.join(sysroot, build_dlc.DLC_BUILD_DIR, _ID,
-                                 _PACKAGE, build_dlc.EBUILD_PARAMETERS)
-    self.assertExists(ebuild_params)
-
-    def JsonVal(key):
-      return build_dlc.GetValueInJsonFile(ebuild_params, key)
-
-    self.assertEqual(JsonVal('fs_type'), _FS_TYPE_SQUASHFS)
-    self.assertEqual(JsonVal('pre_allocated_blocks'), _PRE_ALLOCATED_BLOCKS)
-    self.assertEqual(JsonVal('version'), _VERSION)
-    self.assertEqual(JsonVal('name'), _NAME)
-    self.assertEqual(JsonVal('preload'), False)
+    with open(ebuild_params_path, 'rb') as f:
+      self.CheckParams(json.load(f))
 
   def testLoadDlcParameters(self):
     """Tests EbuildParams.LoadDlcParameters"""
     sysroot = os.path.join(self.tempdir, 'build_root')
-
-    params = build_dlc.EbuildParams(dlc_id=_ID,
-                                    dlc_package=_PACKAGE,
-                                    fs_type=_FS_TYPE_SQUASHFS,
-                                    name=_NAME,
-                                    pre_allocated_blocks=_PRE_ALLOCATED_BLOCKS,
-                                    version=_VERSION,
-                                    preload=False)
-    params.StoreDlcParameters(install_root_dir=sysroot,
-                              sudo=False)
-
-    params2 = build_dlc.EbuildParams.LoadEbuildParams(sysroot, _ID, _PACKAGE)
-    self.assertEqual(params.fs_type, params2.fs_type)
-    self.assertEqual(params.pre_allocated_blocks, params2.pre_allocated_blocks)
-    self.assertEqual(params.version, params2.version)
-    self.assertEqual(params.name, params2.name)
-    self.assertEqual(params.preload, params2.preload)
+    self.GenerateParams(sysroot)
+    ebuild_params_class = build_dlc.EbuildParams.LoadEbuildParams(
+        sysroot, _ID, _PACKAGE)
+    self.CheckParams(ebuild_params_class.__dict__)
 
 
 class DlcGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):
@@ -138,13 +156,15 @@ class DlcGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):
     ue_conf = os.path.join(sysroot, 'etc', 'update_engine.conf')
     osutils.WriteFile(ue_conf, 'foo-content', makedirs=True)
 
-    params = build_dlc.EbuildParams(dlc_id=_ID,
-                                    dlc_package=_PACKAGE,
-                                    fs_type=fs_type,
-                                    name=_NAME,
-                                    pre_allocated_blocks=_PRE_ALLOCATED_BLOCKS,
-                                    version=_VERSION,
-                                    preload=False)
+    params = build_dlc.EbuildParams(
+        dlc_id=_ID,
+        dlc_package=_PACKAGE,
+        fs_type=fs_type,
+        name=_NAME,
+        description=_DESCRIPTION,
+        pre_allocated_blocks=_PRE_ALLOCATED_BLOCKS,
+        version=_VERSION,
+        preload=False)
     return build_dlc.DlcGenerator(
         ebuild_params=params,
         src_dir=src_dir,
@@ -233,6 +253,7 @@ class DlcGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):
             'size': str(blocks * _BLOCK_SIZE),
             'table-sha256-hash': 'deadbeef',
             'name': _NAME,
+            'description': _DESCRIPTION,
             'image-sha256-hash': '01234567',
             'image-type': 'dlc',
             'version': _VERSION,

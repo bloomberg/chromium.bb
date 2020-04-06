@@ -85,17 +85,19 @@ class EbuildParams(object):
     pre_allocated_blocks: (int) number of blocks pre-allocated on device.
     version: (str) DLC version.
     name: (str) DLC name.
+    description: (str) DLC description.
     preload: (bool) allow for preloading DLC.
   """
 
   def __init__(self, dlc_id, dlc_package, fs_type, pre_allocated_blocks,
-               version, name, preload):
+               version, name, description, preload):
     self.dlc_id = dlc_id
     self.dlc_package = dlc_package
     self.fs_type = fs_type
     self.pre_allocated_blocks = pre_allocated_blocks
     self.version = version
     self.name = name
+    self.description = description
     self.preload = preload
 
   def StoreDlcParameters(self, install_root_dir, sudo):
@@ -146,7 +148,7 @@ class EbuildParams(object):
     if not os.path.exists(path):
       return None
 
-    with open(path) as fp:
+    with open(path, 'rb') as fp:
       return cls(**json.load(fp))
 
   def __str__(self):
@@ -210,12 +212,12 @@ class DlcGenerator(object):
 
   def CopyTempContentsToBuildDir(self):
     """Copy the temp files to the build directory using sudo."""
-    logging.info('Copy files from temporary directory (%s) to build directory '
-                 '(%s).', self.temp_root.tempdir.rstrip('/') + '/.',
-                 self.install_root_dir)
-    cros_build_lib.sudo_run(['cp', '-dR',
-                             self.temp_root.tempdir.rstrip('/') + '/.',
-                             self.install_root_dir])
+    src = self.temp_root.tempdir.rstrip('/') + '/.'
+    dst = self.install_root_dir
+    logging.info(
+        'Copy files from temporary directory (%s) to build directory (%s).',
+        src, dst)
+    cros_build_lib.sudo_run(['cp', '-dR', src, dst])
 
   def SquashOwnerships(self, path):
     """Squash the owernships & permissions for files.
@@ -390,6 +392,7 @@ class DlcGenerator(object):
         'is-removable': True,
         'manifest-version': self._MANIFEST_VERSION,
         'name': self.ebuild_params.name,
+        'description': self.ebuild_params.description,
         'pre-allocated-size':
             str(self.ebuild_params.pre_allocated_blocks * self._BLOCK_SIZE),
         'size': str(blocks * self._BLOCK_SIZE),
@@ -534,7 +537,7 @@ def InstallDlcImages(sysroot, dlc_id=None, install_root_dir=None, preload=False,
     for d_package in dlc_packages:
       logging.info('Building image: DLC %s', d_id)
       params = EbuildParams.LoadEbuildParams(sysroot=sysroot, dlc_id=d_id,
-                                            dlc_package=d_package)
+                                             dlc_package=d_package)
       # Because portage sandboxes every ebuild package during build_packages
       # phase, we cannot delete the old image during that phase, but we can use
       # the existence of the file |EBUILD_PARAMETERS| to know if the image
@@ -646,6 +649,9 @@ def GetParser():
   one_dlc.add_argument(
       '--name', metavar='NAME', help='A human-readable name for the DLC.')
   one_dlc.add_argument(
+      '--description',
+      help='The description for the DLC.')
+  one_dlc.add_argument(
       '--fs-type',
       metavar='FS_TYPE',
       default=_SQUASHFS_TYPE,
@@ -717,7 +723,6 @@ def ValidateArguments(parser, opts, req_flags, invalid_flags):
                    '%s should be passed in the build_packages phase, not in '
                    'the build_image phase.' % invalid_flags)
 
-
   if opts.fs_type == _EXT4_TYPE:
     parser.error('ext4 unsupported for DLC, see https://crbug.com/890060')
 
@@ -735,7 +740,7 @@ def main(argv):
   per_dlc_invalid_args = []
   if opts.build_package:
     per_dlc_req_args += ['pre_allocated_blocks', 'version', 'name',
-                         'package', 'install_root_dir']
+                         'description', 'package', 'install_root_dir']
     per_dlc_invalid_args += ['src_dir', 'sysroot']
   else:
     per_dlc_req_args += ['sysroot']
@@ -746,13 +751,15 @@ def main(argv):
 
   if opts.build_package:
     logging.info('Building package: DLC %s', opts.id)
-    params = EbuildParams(dlc_id=opts.id,
-                          dlc_package=opts.package,
-                          fs_type=opts.fs_type,
-                          name=opts.name,
-                          pre_allocated_blocks=opts.pre_allocated_blocks,
-                          version=opts.version,
-                          preload=opts.preload)
+    params = EbuildParams(
+        dlc_id=opts.id,
+        dlc_package=opts.package,
+        fs_type=opts.fs_type,
+        name=opts.name,
+        description=opts.description,
+        pre_allocated_blocks=opts.pre_allocated_blocks,
+        version=opts.version,
+        preload=opts.preload)
     params.StoreDlcParameters(install_root_dir=opts.install_root_dir, sudo=True)
 
   else:
