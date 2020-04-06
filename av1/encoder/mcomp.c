@@ -48,10 +48,7 @@ static INLINE void init_ms_buffers(MSBuffers *ms_buffers, const MACROBLOCK *x) {
   ms_buffers->ref = &x->e_mbd.plane[0].pre[0];
   ms_buffers->src = &x->plane[0].src;
 
-  ms_buffers->second_pred = NULL;
-  ms_buffers->mask = NULL;
-  ms_buffers->mask_stride = 0;
-  ms_buffers->inv_mask = 0;
+  set_ms_compound_refs(ms_buffers, NULL, NULL, 0, 0);
 
   ms_buffers->wsrc = x->wsrc_buf;
   ms_buffers->obmc_mask = x->mask_buf;
@@ -116,10 +113,7 @@ void av1_make_default_subpel_ms_params(SUBPEL_MOTION_SEARCH_PARAMS *ms_params,
   // Ref and src buffers
   MSBuffers *ms_buffers = &ms_params->var_params.ms_buffers;
   init_ms_buffers(ms_buffers, x);
-  ms_buffers->second_pred = second_pred;
-  ms_buffers->mask = mask;
-  ms_buffers->mask_stride = mask_stride;
-  ms_buffers->inv_mask = invert_mask;
+  set_ms_compound_refs(ms_buffers, second_pred, mask, mask_stride, invert_mask);
 }
 
 static INLINE int get_offset_from_fullmv(const FULLPEL_MV *mv, int stride) {
@@ -1341,13 +1335,8 @@ static int full_pixel_exhaustive(const FULLPEL_MV start_mv,
 
 // This function is called when we do joint motion search in comp_inter_inter
 // mode, or when searching for one component of an ext-inter compound mode.
-int av1_refining_search_8p_c(MACROBLOCK *x, int error_per_bit, int search_range,
-                             const aom_variance_fn_ptr_t *fn_ptr,
-                             const uint8_t *mask, int mask_stride,
-                             int invert_mask, const MV *ref_mv,
-                             const uint8_t *second_pred,
-                             const struct buf_2d *src,
-                             const struct buf_2d *pre) {
+int av1_refining_search_8p_c(const FULLPEL_MOTION_SEARCH_PARAMS *ms_params,
+                             const FULLPEL_MV start_mv, FULLPEL_MV *best_mv) {
   static const search_neighbors neighbors[8] = {
     { { -1, 0 }, -1 * SEARCH_GRID_STRIDE_8P + 0 },
     { { 0, -1 }, 0 * SEARCH_GRID_STRIDE_8P - 1 },
@@ -1358,41 +1347,32 @@ int av1_refining_search_8p_c(MACROBLOCK *x, int error_per_bit, int search_range,
     { { -1, 1 }, -1 * SEARCH_GRID_STRIDE_8P + 1 },
     { { 1, 1 }, 1 * SEARCH_GRID_STRIDE_8P + 1 }
   };
-  const struct buf_2d *const what = src;
-  const struct buf_2d *const in_what = pre;
-  const FULLPEL_MV full_ref_mv = get_fullmv_from_mv(ref_mv);
-  FULLPEL_MV *best_mv = &x->best_mv.as_fullmv;
-  unsigned int best_sad = INT_MAX;
-  int i, j;
+
   uint8_t do_refine_search_grid[SEARCH_GRID_STRIDE_8P *
                                 SEARCH_GRID_STRIDE_8P] = { 0 };
   int grid_center = SEARCH_GRID_CENTER_8P;
   int grid_coord = grid_center;
 
-  clamp_fullmv(best_mv, &x->mv_limits);
-  if (mask) {
-    best_sad =
-        fn_ptr->msdf(what->buf, what->stride,
-                     get_buf_from_fullmv(in_what, best_mv), in_what->stride,
-                     second_pred, mask, mask_stride, invert_mask) +
-        mvsad_err_cost(best_mv, &full_ref_mv, x->nmv_vec_cost,
-                       CONVERT_TO_CONST_MVCOST(x->mv_cost_stack), error_per_bit,
-                       x->mv_cost_type);
-  } else {
-    best_sad = fn_ptr->sdaf(what->buf, what->stride,
-                            get_buf_from_fullmv(in_what, best_mv),
-                            in_what->stride, second_pred) +
-               mvsad_err_cost(best_mv, &full_ref_mv, x->nmv_vec_cost,
-                              CONVERT_TO_CONST_MVCOST(x->mv_cost_stack),
-                              error_per_bit, x->mv_cost_type);
-  }
+  const MV_COST_PARAMS *mv_cost_params = &ms_params->mv_cost_params;
+  const FullMvLimits *mv_limits = &ms_params->mv_limits;
+  const MSBuffers *ms_buffers = &ms_params->ms_buffers;
+  const struct buf_2d *src = ms_buffers->src;
+  const struct buf_2d *ref = ms_buffers->ref;
+  const int ref_stride = ref->stride;
+
+  *best_mv = start_mv;
+  clamp_fullmv(best_mv, mv_limits);
+
+  unsigned int best_sad = get_mvpred_compound_sad(
+      ms_params, src, get_buf_from_fullmv(ref, best_mv), ref_stride);
+  best_sad += mvsad_err_cost_(best_mv, mv_cost_params);
 
   do_refine_search_grid[grid_coord] = 1;
 
-  for (i = 0; i < search_range; ++i) {
+  for (int i = 0; i < SEARCH_RANGE_8P; ++i) {
     int best_site = -1;
 
-    for (j = 0; j < 8; ++j) {
+    for (int j = 0; j < 8; ++j) {
       grid_coord = grid_center + neighbors[j].coord_offset;
       if (do_refine_search_grid[grid_coord] == 1) {
         continue;
@@ -1401,21 +1381,12 @@ int av1_refining_search_8p_c(MACROBLOCK *x, int error_per_bit, int search_range,
                               best_mv->col + neighbors[j].coord.col };
 
       do_refine_search_grid[grid_coord] = 1;
-      if (av1_is_fullmv_in_range(&x->mv_limits, mv)) {
+      if (av1_is_fullmv_in_range(mv_limits, mv)) {
         unsigned int sad;
-        if (mask) {
-          sad = fn_ptr->msdf(what->buf, what->stride,
-                             get_buf_from_fullmv(in_what, &mv), in_what->stride,
-                             second_pred, mask, mask_stride, invert_mask);
-        } else {
-          sad = fn_ptr->sdaf(what->buf, what->stride,
-                             get_buf_from_fullmv(in_what, &mv), in_what->stride,
-                             second_pred);
-        }
+        sad = get_mvpred_compound_sad(
+            ms_params, src, get_buf_from_fullmv(ref, &mv), ref_stride);
         if (sad < best_sad) {
-          sad += mvsad_err_cost(&mv, &full_ref_mv, x->nmv_vec_cost,
-                                CONVERT_TO_CONST_MVCOST(x->mv_cost_stack),
-                                error_per_bit, x->mv_cost_type);
+          sad += mvsad_err_cost_(&mv, mv_cost_params);
 
           if (sad < best_sad) {
             best_sad = sad;
@@ -3369,41 +3340,52 @@ int av1_get_mvpred_var(const MACROBLOCK *x, const FULLPEL_MV *best_mv,
                            x->errorperbit, mv_cost_type);
 }
 
-int av1_get_mvpred_av_var(const MACROBLOCK *x, const FULLPEL_MV *best_mv,
-                          const MV *ref_mv, const uint8_t *second_pred,
-                          const aom_variance_fn_ptr_t *vfp,
-                          const struct buf_2d *src, const struct buf_2d *pre) {
+static INLINE int get_mvpred_av_var(const MV_COST_PARAMS *mv_cost_params,
+                                    const FULLPEL_MV best_mv,
+                                    const uint8_t *second_pred,
+                                    const aom_variance_fn_ptr_t *vfp,
+                                    const struct buf_2d *src,
+                                    const struct buf_2d *pre) {
   const struct buf_2d *const what = src;
   const struct buf_2d *const in_what = pre;
-  const MV mv = get_mv_from_fullmv(best_mv);
-  const MV_COST_TYPE mv_cost_type = x->mv_cost_type;
+  const MV mv = get_mv_from_fullmv(&best_mv);
   unsigned int unused;
 
-  return vfp->svaf(get_buf_from_fullmv(in_what, best_mv), in_what->stride, 0, 0,
-                   what->buf, what->stride, &unused, second_pred) +
-         mv_err_cost(&mv, ref_mv, x->nmv_vec_cost,
-                     CONVERT_TO_CONST_MVCOST(x->mv_cost_stack), x->errorperbit,
-                     mv_cost_type);
+  return vfp->svaf(get_buf_from_fullmv(in_what, &best_mv), in_what->stride, 0,
+                   0, what->buf, what->stride, &unused, second_pred) +
+         mv_err_cost_(&mv, mv_cost_params);
 }
 
-int av1_get_mvpred_mask_var(const MACROBLOCK *x, const FULLPEL_MV *best_mv,
-                            const MV *ref_mv, const uint8_t *second_pred,
-                            const uint8_t *mask, int mask_stride,
-                            int invert_mask, const aom_variance_fn_ptr_t *vfp,
-                            const struct buf_2d *src,
-                            const struct buf_2d *pre) {
+static INLINE int get_mvpred_mask_var(
+    const MV_COST_PARAMS *mv_cost_params, const FULLPEL_MV best_mv,
+    const uint8_t *second_pred, const uint8_t *mask, int mask_stride,
+    int invert_mask, const aom_variance_fn_ptr_t *vfp, const struct buf_2d *src,
+    const struct buf_2d *pre) {
   const struct buf_2d *const what = src;
   const struct buf_2d *const in_what = pre;
-  const MV mv = get_mv_from_fullmv(best_mv);
-  const MV_COST_TYPE mv_cost_type = x->mv_cost_type;
+  const MV mv = get_mv_from_fullmv(&best_mv);
   unsigned int unused;
 
   return vfp->msvf(what->buf, what->stride, 0, 0,
-                   get_buf_from_fullmv(in_what, best_mv), in_what->stride,
+                   get_buf_from_fullmv(in_what, &best_mv), in_what->stride,
                    second_pred, mask, mask_stride, invert_mask, &unused) +
-         mv_err_cost(&mv, ref_mv, x->nmv_vec_cost,
-                     CONVERT_TO_CONST_MVCOST(x->mv_cost_stack), x->errorperbit,
-                     mv_cost_type);
+         mv_err_cost_(&mv, mv_cost_params);
+}
+
+int av1_get_mvpred_compound_var(const MV_COST_PARAMS *mv_cost_params,
+                                const FULLPEL_MV best_mv,
+                                const uint8_t *second_pred, const uint8_t *mask,
+                                int mask_stride, int invert_mask,
+                                const aom_variance_fn_ptr_t *vfp,
+                                const struct buf_2d *src,
+                                const struct buf_2d *pre) {
+  if (mask) {
+    return get_mvpred_mask_var(mv_cost_params, best_mv, second_pred, mask,
+                               mask_stride, invert_mask, vfp, src, pre);
+  } else {
+    return get_mvpred_av_var(mv_cost_params, best_mv, second_pred, vfp, src,
+                             pre);
+  }
 }
 
 unsigned int av1_compute_motion_cost(const AV1_COMP *cpi, MACROBLOCK *const x,

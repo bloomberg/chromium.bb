@@ -394,14 +394,11 @@ void av1_joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   uint8_t *second_pred = get_buf_by_bd(xd, second_pred16);
   int_mv *best_int_mv = &x->best_mv;
 
-  const int search_range = SEARCH_RANGE_8P;
-  const int sadpb = x->sadperbit;
   // Allow joint search multiple times iteratively for each reference frame
   // and break out of the search loop if it couldn't find a better mv.
   for (ite = 0; ite < 4; ite++) {
     struct buf_2d ref_yv12[2];
     int bestsme = INT_MAX;
-    FullMvLimits tmp_mv_limits = x->mv_limits;
     int id = ite % 2;  // Even iterations search in the first reference frame,
                        // odd iterations search in the second. The predictor
                        // found for the 'other' reference frame is factored in.
@@ -461,28 +458,27 @@ void av1_joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
 
     // Do full-pixel compound motion search on the current reference frame.
     if (id) xd->plane[plane].pre[0] = ref_yv12[id];
-    av1_set_mv_search_range(&x->mv_limits, &ref_mv[id].as_mv);
+
+    // Make motion search params
+    FULLPEL_MOTION_SEARCH_PARAMS full_ms_params;
+    av1_make_default_fullpel_ms_params(&full_ms_params, cpi, x, bsize,
+                                       &ref_mv[id].as_mv, NULL);
+    set_ms_compound_refs(&full_ms_params.ms_buffers, second_pred, mask,
+                         mask_stride, id);
 
     // Use the mv result from the single mode as mv predictor.
-    best_int_mv->as_fullmv = get_fullmv_from_mv(&cur_mv[id].as_mv);
+    const FULLPEL_MV start_fullmv = get_fullmv_from_mv(&cur_mv[id].as_mv);
 
     // Small-range full-pixel motion search.
-    bestsme = av1_refining_search_8p_c(
-        x, sadpb, search_range, &cpi->fn_ptr[bsize], mask, mask_stride, id,
-        &ref_mv[id].as_mv, second_pred, &x->plane[0].src, &ref_yv12[id]);
-    if (bestsme < INT_MAX) {
-      if (mask)
-        bestsme = av1_get_mvpred_mask_var(x, &best_int_mv->as_fullmv,
-                                          &ref_mv[id].as_mv, second_pred, mask,
-                                          mask_stride, id, &cpi->fn_ptr[bsize],
-                                          &x->plane[0].src, &ref_yv12[id]);
-      else
-        bestsme = av1_get_mvpred_av_var(
-            x, &best_int_mv->as_fullmv, &ref_mv[id].as_mv, second_pred,
-            &cpi->fn_ptr[bsize], &x->plane[0].src, &ref_yv12[id]);
-    }
+    bestsme = av1_refining_search_8p_c(&full_ms_params, start_fullmv,
+                                       &best_int_mv->as_fullmv);
 
-    x->mv_limits = tmp_mv_limits;
+    if (bestsme < INT_MAX) {
+      bestsme = av1_get_mvpred_compound_var(
+          &full_ms_params.mv_cost_params, best_int_mv->as_fullmv, second_pred,
+          mask, mask_stride, id, &cpi->fn_ptr[bsize], &x->plane[0].src,
+          &ref_yv12[id]);
+    }
 
     // Restore the pointer to the first (possibly scaled) prediction buffer.
     if (id) xd->plane[plane].pre[0] = ref_yv12[0];
@@ -583,35 +579,28 @@ void av1_compound_single_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   }
 
   int bestsme = INT_MAX;
-  int sadpb = x->sadperbit;
   int_mv *best_int_mv = &x->best_mv;
-  int search_range = SEARCH_RANGE_8P;
 
-  FullMvLimits tmp_mv_limits = x->mv_limits;
-
-  // Do compound motion search on the current reference frame.
-  av1_set_mv_search_range(&x->mv_limits, &ref_mv.as_mv);
+  // Make motion search params
+  FULLPEL_MOTION_SEARCH_PARAMS full_ms_params;
+  av1_make_default_fullpel_ms_params(&full_ms_params, cpi, x, bsize,
+                                     &ref_mv.as_mv, NULL);
+  set_ms_compound_refs(&full_ms_params.ms_buffers, second_pred, mask,
+                       mask_stride, ref_idx);
 
   // Use the mv result from the single mode as mv predictor.
-  best_int_mv->as_fullmv = get_fullmv_from_mv(this_mv);
+  const FULLPEL_MV start_fullmv = get_fullmv_from_mv(this_mv);
 
   // Small-range full-pixel motion search.
-  bestsme = av1_refining_search_8p_c(
-      x, sadpb, search_range, &cpi->fn_ptr[bsize], mask, mask_stride, ref_idx,
-      &ref_mv.as_mv, second_pred, &x->plane[0].src, &ref_yv12);
-  if (bestsme < INT_MAX) {
-    if (mask)
-      bestsme = av1_get_mvpred_mask_var(
-          x, &best_int_mv->as_fullmv, &ref_mv.as_mv, second_pred, mask,
-          mask_stride, ref_idx, &cpi->fn_ptr[bsize], &x->plane[0].src,
-          &ref_yv12);
-    else
-      bestsme = av1_get_mvpred_av_var(x, &best_int_mv->as_fullmv, &ref_mv.as_mv,
-                                      second_pred, &cpi->fn_ptr[bsize],
-                                      &x->plane[0].src, &ref_yv12);
-  }
+  bestsme = av1_refining_search_8p_c(&full_ms_params, start_fullmv,
+                                     &best_int_mv->as_fullmv);
 
-  x->mv_limits = tmp_mv_limits;
+  if (bestsme < INT_MAX) {
+    bestsme = av1_get_mvpred_compound_var(
+        &full_ms_params.mv_cost_params, best_int_mv->as_fullmv, second_pred,
+        mask, mask_stride, ref_idx, &cpi->fn_ptr[bsize], &x->plane[0].src,
+        &ref_yv12);
+  }
 
   if (scaled_ref_frame) {
     // Swap back the original buffers for subpel motion search.
