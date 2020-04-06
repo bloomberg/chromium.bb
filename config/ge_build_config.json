@@ -830,6 +830,18 @@
       ]
     },
     {
+      "name": "kukui-arc-r",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "",
+          "arch": "ARM_INTERNAL"
+        }
+      ]
+    },
+    {
       "name": "kumo",
       "configs": [
         {
