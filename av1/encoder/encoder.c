@@ -640,8 +640,7 @@ static void setup_frame(AV1_COMP *cpi) {
   cpi->vaq_refresh = 0;
 }
 
-static void enc_set_mb_mi(CommonModeInfoParams *mi_params, int width,
-                          int height) {
+static void set_mb_mi(CommonModeInfoParams *mi_params, int width, int height) {
   // Ensure that the decoded width and height are both multiples of
   // 8 luma pixels (note: this may only be a multiple of 4 chroma pixels if
   // subsampling is used).
@@ -658,9 +657,6 @@ static void enc_set_mb_mi(CommonModeInfoParams *mi_params, int width,
   mi_params->mb_rows = (mi_params->mi_rows + 2) >> 2;
   mi_params->MBs = mi_params->mb_rows * mi_params->mb_cols;
 
-  const int is_4k_or_larger = AOMMIN(width, height) >= 2160;
-
-  mi_params->mi_alloc_bsize = is_4k_or_larger ? BLOCK_8X8 : BLOCK_4X4;
   const int mi_alloc_size_1d = mi_size_wide[mi_params->mi_alloc_bsize];
   mi_params->mi_alloc_stride =
       (mi_params->mi_stride + mi_alloc_size_1d - 1) / mi_alloc_size_1d;
@@ -671,6 +667,21 @@ static void enc_set_mb_mi(CommonModeInfoParams *mi_params, int width,
 #if CONFIG_LPF_MASK
   av1_alloc_loop_filter_mask(mi_params);
 #endif
+}
+
+static void enc_set_mb_mi(CommonModeInfoParams *mi_params, int width,
+                          int height) {
+  const int is_4k_or_larger = AOMMIN(width, height) >= 2160;
+  mi_params->mi_alloc_bsize = is_4k_or_larger ? BLOCK_8X8 : BLOCK_4X4;
+
+  set_mb_mi(mi_params, width, height);
+}
+
+static void stat_stage_set_mb_mi(CommonModeInfoParams *mi_params, int width,
+                                 int height) {
+  mi_params->mi_alloc_bsize = BLOCK_16X16;
+
+  set_mb_mi(mi_params, width, height);
 }
 
 static void enc_setup_mi(CommonModeInfoParams *mi_params) {
@@ -3037,11 +3048,15 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf, BufferPool *const pool,
   }
 
   cm->error.setjmp = 1;
+  cpi->lap_enabled = num_lap_buffers > 0;
+  cpi->compressor_stage = stage;
 
   CommonModeInfoParams *const mi_params = &cm->mi_params;
   mi_params->free_mi = enc_free_mi;
   mi_params->setup_mi = enc_setup_mi;
-  mi_params->set_mb_mi = enc_set_mb_mi;
+  mi_params->set_mb_mi = (oxcf->pass == 1 || cpi->compressor_stage == LAP_STAGE)
+                             ? stat_stage_set_mb_mi
+                             : enc_set_mb_mi;
 
   mi_params->mi_alloc_bsize = BLOCK_4X4;
 
@@ -3055,8 +3070,6 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf, BufferPool *const pool,
 
   cpi->common.buffer_pool = pool;
 
-  cpi->lap_enabled = num_lap_buffers > 0;
-  cpi->compressor_stage = stage;
   init_config(cpi, oxcf);
   if (cpi->compressor_stage == LAP_STAGE) {
     cpi->oxcf.lag_in_frames = lap_lag_in_frames;
