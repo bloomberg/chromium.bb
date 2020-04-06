@@ -1225,12 +1225,13 @@ static void update_frame_size(AV1_COMP *cpi) {
   set_tile_info(cpi);
 }
 
-static void init_buffer_indices(AV1_COMP *cpi) {
+static void init_buffer_indices(ForceIntegerMVInfo *const force_intpel_info,
+                                int *const remapped_ref_idx) {
   int fb_idx;
   for (fb_idx = 0; fb_idx < REF_FRAMES; ++fb_idx)
-    cpi->common.remapped_ref_idx[fb_idx] = fb_idx;
-  cpi->rate_index = 0;
-  cpi->rate_size = 0;
+    remapped_ref_idx[fb_idx] = fb_idx;
+  force_intpel_info->rate_index = 0;
+  force_intpel_info->rate_size = 0;
 }
 
 static INLINE int does_level_match(int width, int height, double fps,
@@ -1485,7 +1486,7 @@ static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
   cpi->resize_pending_width = 0;
   cpi->resize_pending_height = 0;
 
-  init_buffer_indices(cpi);
+  init_buffer_indices(&cpi->force_intpel_info, cm->remapped_ref_idx);
 }
 
 static void set_rc_buffer_sizes(RATE_CONTROL *rc,
@@ -6023,8 +6024,9 @@ static void dump_filtered_recon_frames(AV1_COMP *cpi) {
 }
 #endif  // DUMP_RECON_FRAMES
 
-static int is_integer_mv(AV1_COMP *cpi, const YV12_BUFFER_CONFIG *cur_picture,
-                         const YV12_BUFFER_CONFIG *last_picture) {
+static int is_integer_mv(const YV12_BUFFER_CONFIG *cur_picture,
+                         const YV12_BUFFER_CONFIG *last_picture,
+                         ForceIntegerMVInfo *const force_intpel_info) {
   aom_clear_system_state();
   // check use hash ME
   int k;
@@ -6095,11 +6097,13 @@ static int is_integer_mv(AV1_COMP *cpi, const YV12_BUFFER_CONFIG *cur_picture,
   assert(T > 0);
   double cs_rate = ((double)(C + S)) / ((double)(T));
 
-  cpi->cs_rate_array[cpi->rate_index] = cs_rate;
+  force_intpel_info->cs_rate_array[force_intpel_info->rate_index] = cs_rate;
 
-  cpi->rate_index = (cpi->rate_index + 1) % max_history_size;
-  cpi->rate_size++;
-  cpi->rate_size = AOMMIN(cpi->rate_size, max_history_size);
+  force_intpel_info->rate_index =
+      (force_intpel_info->rate_index + 1) % max_history_size;
+  force_intpel_info->rate_size++;
+  force_intpel_info->rate_size =
+      AOMMIN(force_intpel_info->rate_size, max_history_size);
 
   if (cs_rate < threshold_current) {
     return 0;
@@ -6111,10 +6115,10 @@ static int is_integer_mv(AV1_COMP *cpi, const YV12_BUFFER_CONFIG *cur_picture,
 
   double cs_average = 0.0;
 
-  for (k = 0; k < cpi->rate_size; k++) {
-    cs_average += cpi->cs_rate_array[k];
+  for (k = 0; k < force_intpel_info->rate_size; k++) {
+    cs_average += force_intpel_info->cs_rate_array[k];
   }
-  cs_average /= cpi->rate_size;
+  cs_average /= force_intpel_info->rate_size;
 
   if (cs_average < threshold_average) {
     return 0;
@@ -6288,8 +6292,8 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
     if (cpi->common.seq_params.force_integer_mv == 2) {
       // Adaptive mode: see what previous frame encoded did
       if (cpi->unscaled_last_source != NULL) {
-        features->cur_frame_force_integer_mv =
-            is_integer_mv(cpi, cpi->source, cpi->unscaled_last_source);
+        features->cur_frame_force_integer_mv = is_integer_mv(
+            cpi->source, cpi->unscaled_last_source, &cpi->force_intpel_info);
       } else {
         cpi->common.features.cur_frame_force_integer_mv = 0;
       }

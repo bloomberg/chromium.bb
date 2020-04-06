@@ -715,6 +715,16 @@ typedef struct ActiveMap {
   unsigned char *map;
 } ActiveMap;
 
+typedef struct {
+  // cs_rate_array[i] is the fraction of blocks in a frame which either match
+  // with the collocated block or are smooth, where i is the rate_index.
+  double cs_rate_array[32];
+  // rate_index is used to index cs_rate_array.
+  int rate_index;
+  // rate_size is the total number of entries populated in cs_rate_array.
+  int rate_size;
+} ForceIntegerMVInfo;
+
 #if CONFIG_INTERNAL_STATS
 // types of stats
 enum {
@@ -888,9 +898,8 @@ typedef struct AV1_COMP {
   // For a still frame, this flag is set to 1 to skip partition search.
   int partition_search_skippable_frame;
 
-  double cs_rate_array[32];
-  int rate_size;
-  int rate_index;
+  // Variables related to forcing integer mv decisions for the current frame.
+  ForceIntegerMVInfo force_intpel_info;
 
   unsigned int row_mt;
   RefCntBuffer *scaled_ref_buf[INTER_REFS_PER_FRAME];
