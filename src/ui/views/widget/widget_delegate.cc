@@ -176,6 +176,22 @@ bool WidgetDelegate::WidgetHasHitTestMask() const {
   return false;
 }
 
+bool WidgetDelegate::OnNCHitTest(int* result, const gfx::Point& point) {
+  return false;
+}
+
+bool WidgetDelegate::OnNCDragBegin(int hit_test_code) {
+  return false;
+}
+
+bool WidgetDelegate::OnPreHandleMessage(unsigned window,
+                                        unsigned message,
+                                        unsigned w_param,
+                                        long l_param,
+                                        long *result) {
+  return false;
+}
+
 void WidgetDelegate::GetWidgetHitTestMask(SkPath* mask) const {
   DCHECK(mask);
 }
