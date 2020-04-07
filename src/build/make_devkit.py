@@ -149,7 +149,6 @@ def copyBin(destDir, version, configs, includeMap):
     'blpwtk2_subprocess' + productAppend + '.exe',
     'content_shell.exe',
     'd8.exe',
-    'natives_blob' + productAppend + '.bin',
     'snapshot_blob' + productAppend + '.bin',
     'v8_context_snapshot' + productAppend + '.bin',
     'blpwtk2' + productAppend + '.dll',
