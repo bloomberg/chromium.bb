@@ -20372,6 +20372,21 @@
         "hw_tests_override": null,
         "luci_builder": "Try"
     },
+    "kukui-arc-r-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "kukui-arc-r"
+        ]
+    },
+    "kukui-arc-r-payloads-tryjob": {
+        "_template": "payloads",
+        "boards": [
+            "kukui-arc-r"
+        ],
+        "debug": true,
+        "hw_tests_override": null,
+        "luci_builder": "Try"
+    },
     "kukui-arc-r-release": {
         "_template": "release",
         "boards": [
@@ -20432,7 +20447,14 @@
             "kukui-arc-r"
         ],
         "hw_tests_override": null,
-        "luci_builder": "Try"
+        "internal": true,
+        "luci_builder": "Try",
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
     },
     "kukui-factory-kukui-12587.B-factorybranch": {
         "_template": "factorybranch",

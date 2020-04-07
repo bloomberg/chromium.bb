@@ -1315,6 +1315,7 @@
   kukui-arc-r-full-tryjob
   kukui-arc-r-llvm-next-toolchain-tryjob
   kukui-arc-r-llvm-toolchain-tryjob
+  kukui-arc-r-payloads-tryjob
   kukui-arc-r-release-tryjob
   kukui-arc-r-unittest-stress
   kukui-factory-kukui-12587.B-factorybranch-tryjob
