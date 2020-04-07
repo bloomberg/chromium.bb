@@ -1424,7 +1424,7 @@ class Changelist(object):
         # Remove the dependencies flag from args so that we do not end up in a
         # loop.
         orig_args.remove('--dependencies')
-        ret = upload_branch_deps(self, orig_args)
+        ret = upload_branch_deps(self, orig_args, options.force)
     return ret
 
   def SetCQState(self, new_state):
@@ -3202,7 +3202,7 @@ def get_cl_statuses(changes, fine_grained, max_processes=None):
     yield (cl, 'error')
 
 
-def upload_branch_deps(cl, args):
+def upload_branch_deps(cl, args, force=False):
   """Uploads CLs of local branches that are dependents of the current branch.
 
   If the local branch dependency tree looks like:
@@ -3266,8 +3266,9 @@ def upload_branch_deps(cl, args):
     print('There are no dependent local branches for %s' % root_branch)
     return 0
 
-  confirm_or_exit('This command will checkout all dependent branches and run '
-                  '"git cl upload".', action='continue')
+  if not force:
+    confirm_or_exit('This command will checkout all dependent branches and run '
+                    '"git cl upload".', action='continue')
 
   # Record all dependents that failed to upload.
   failures = {}
