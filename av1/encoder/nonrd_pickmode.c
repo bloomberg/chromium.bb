@@ -124,7 +124,7 @@ static int combined_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
   const int num_planes = av1_num_planes(cm);
   MB_MODE_INFO *mi = xd->mi[0];
   struct buf_2d backup_yv12[MAX_MB_PLANE] = { { 0, 0, 0, 0, 0 } };
-  int step_param = cpi->mv_step_param;
+  int step_param = cpi->mv_search_params.mv_step_param;
   FULLPEL_MV start_mv;
   const int ref = mi->ref_frame[0];
   const MV ref_mv = av1_get_ref_mv(x, mi->ref_mv_idx).as_mv;
@@ -153,7 +153,8 @@ static int combined_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
   else
     center_mv = tmp_mv->as_mv;
 
-  const search_site_config *src_search_sites = &cpi->ss_cfg[SS_CFG_SRC];
+  const search_site_config *src_search_sites =
+      &cpi->mv_search_params.ss_cfg[SS_CFG_SRC];
   FULLPEL_MOTION_SEARCH_PARAMS full_ms_params;
   av1_make_default_fullpel_ms_params(&full_ms_params, cpi, x, bsize, &center_mv,
                                      src_search_sites);
@@ -182,9 +183,9 @@ static int combined_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
                                       cost_list, second_pred, mask, mask_stride,
                                       invert_mask);
     MV subpel_start_mv = get_mv_from_fullmv(&x->best_mv.as_fullmv);
-    cpi->find_fractional_mv_step(xd, cm, &ms_params, subpel_start_mv,
-                                 &x->best_mv.as_mv, &dis, &x->pred_sse[ref],
-                                 NULL);
+    cpi->mv_search_params.find_fractional_mv_step(
+        xd, cm, &ms_params, subpel_start_mv, &x->best_mv.as_mv, &dis,
+        &x->pred_sse[ref], NULL);
 
     *tmp_mv = x->best_mv;
     *rate_mv = av1_mv_bit_cost(&tmp_mv->as_mv, &ref_mv, x->nmv_vec_cost,
@@ -244,9 +245,9 @@ static int search_new_mv(AV1_COMP *cpi, MACROBLOCK *x,
                                       cost_list, second_pred, mask, mask_stride,
                                       invert_mask);
     MV start_mv = get_mv_from_fullmv(&x->best_mv.as_fullmv);
-    cpi->find_fractional_mv_step(xd, cm, &ms_params, start_mv,
-                                 &x->best_mv.as_mv, &dis,
-                                 &x->pred_sse[ref_frame], NULL);
+    cpi->mv_search_params.find_fractional_mv_step(
+        xd, cm, &ms_params, start_mv, &x->best_mv.as_mv, &dis,
+        &x->pred_sse[ref_frame], NULL);
     frame_mv[NEWMV][ref_frame].as_int = x->best_mv.as_int;
   } else if (!combined_motion_search(cpi, x, bsize, mi_row, mi_col,
                                      &frame_mv[NEWMV][ref_frame], rate_mv,

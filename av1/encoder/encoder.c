@@ -3952,26 +3952,27 @@ static void release_scaled_references(AV1_COMP *cpi) {
 
 static void set_mv_search_params(AV1_COMP *cpi) {
   const AV1_COMMON *const cm = &cpi->common;
+  MotionVectorSearchParams *const mv_search_params = &cpi->mv_search_params;
   const int max_mv_def = AOMMAX(cm->width, cm->height);
 
   // Default based on max resolution.
-  cpi->mv_step_param = av1_init_search_range(max_mv_def);
+  mv_search_params->mv_step_param = av1_init_search_range(max_mv_def);
 
   if (cpi->sf.mv_sf.auto_mv_step_size) {
     if (frame_is_intra_only(cm)) {
       // Initialize max_mv_magnitude for use in the first INTER frame
       // after a key/intra-only frame.
-      cpi->max_mv_magnitude = max_mv_def;
+      mv_search_params->max_mv_magnitude = max_mv_def;
     } else {
       // Use cpi->max_mv_magnitude == -1 to exclude first pass case.
-      if (cm->show_frame && cpi->max_mv_magnitude != -1) {
+      if (cm->show_frame && mv_search_params->max_mv_magnitude != -1) {
         // Allow mv_steps to correspond to twice the max mv magnitude found
         // in the previous frame, capped by the default max_mv_magnitude based
         // on resolution.
-        cpi->mv_step_param = av1_init_search_range(
-            AOMMIN(max_mv_def, 2 * cpi->max_mv_magnitude));
+        mv_search_params->mv_step_param = av1_init_search_range(
+            AOMMIN(max_mv_def, 2 * mv_search_params->max_mv_magnitude));
       }
-      cpi->max_mv_magnitude = -1;
+      mv_search_params->max_mv_magnitude = -1;
     }
   }
 }
@@ -4225,6 +4226,7 @@ static void set_size_dependent_vars(AV1_COMP *cpi, int *q, int *bottom_index,
 
 static void init_motion_estimation(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
+  MotionVectorSearchParams *const mv_search_params = &cpi->mv_search_params;
   const int y_stride = cpi->scaled_source.y_stride;
   const int y_stride_src =
       ((cpi->oxcf.width != cm->width || cpi->oxcf.height != cm->height) ||
@@ -4235,23 +4237,27 @@ static void init_motion_estimation(AV1_COMP *cpi) {
                                            : cpi->scaled_source.y_stride;
 
   // Update if ss_cfg is uninitialized or the current frame has a new stride
-  const int should_update = !cpi->ss_cfg[SS_CFG_SRC].stride ||
-                            !cpi->ss_cfg[SS_CFG_LOOKAHEAD].stride ||
-                            (y_stride != cpi->ss_cfg[SS_CFG_SRC].stride);
+  const int should_update =
+      !mv_search_params->ss_cfg[SS_CFG_SRC].stride ||
+      !mv_search_params->ss_cfg[SS_CFG_LOOKAHEAD].stride ||
+      (y_stride != mv_search_params->ss_cfg[SS_CFG_SRC].stride);
 
   if (!should_update) {
     return;
   }
 
   if (cpi->sf.mv_sf.search_method == DIAMOND) {
-    av1_init_dsmotion_compensation(&cpi->ss_cfg[SS_CFG_SRC], y_stride);
-    av1_init_dsmotion_compensation(&cpi->ss_cfg[SS_CFG_LOOKAHEAD],
+    av1_init_dsmotion_compensation(&mv_search_params->ss_cfg[SS_CFG_SRC],
+                                   y_stride);
+    av1_init_dsmotion_compensation(&mv_search_params->ss_cfg[SS_CFG_LOOKAHEAD],
                                    y_stride_src);
   } else {
-    av1_init3smotion_compensation(&cpi->ss_cfg[SS_CFG_SRC], y_stride);
-    av1_init3smotion_compensation(&cpi->ss_cfg[SS_CFG_LOOKAHEAD], y_stride_src);
+    av1_init3smotion_compensation(&mv_search_params->ss_cfg[SS_CFG_SRC],
+                                  y_stride);
+    av1_init3smotion_compensation(&mv_search_params->ss_cfg[SS_CFG_LOOKAHEAD],
+                                  y_stride_src);
   }
-  av1_init_motion_fpf(&cpi->ss_cfg[SS_CFG_FPF], fpf_y_stride);
+  av1_init_motion_fpf(&mv_search_params->ss_cfg[SS_CFG_FPF], fpf_y_stride);
 }
 
 #define COUPLED_CHROMA_FROM_LUMA_RESTORATION 0

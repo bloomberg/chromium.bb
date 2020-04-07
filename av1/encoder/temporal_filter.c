@@ -89,7 +89,8 @@ static int tf_motion_search(AV1_COMP *cpi,
   FULLPEL_MOTION_SEARCH_PARAMS full_ms_params;
   SUBPEL_MOTION_SEARCH_PARAMS ms_params;
 
-  const search_site_config ss_cfg = cpi->ss_cfg[SS_CFG_LOOKAHEAD];
+  const search_site_config ss_cfg =
+      cpi->mv_search_params.ss_cfg[SS_CFG_LOOKAHEAD];
   const SEARCH_METHODS full_search_method = NSTEP;
   const int step_param = av1_init_search_range(
       AOMMAX(frame_to_filter->y_crop_width, frame_to_filter->y_crop_height));
@@ -150,9 +151,9 @@ static int tf_motion_search(AV1_COMP *cpi,
     ms_params.forced_stop = EIGHTH_PEL;
     ms_params.var_params.subpel_search_type = subpel_search_type;
     MV subpel_start_mv = get_mv_from_fullmv(&mb->best_mv.as_fullmv);
-    error = cpi->find_fractional_mv_step(&mb->e_mbd, &cpi->common, &ms_params,
-                                         subpel_start_mv, &mb->best_mv.as_mv,
-                                         &distortion, &sse, NULL);
+    error = cpi->mv_search_params.find_fractional_mv_step(
+        &mb->e_mbd, &cpi->common, &ms_params, subpel_start_mv,
+        &mb->best_mv.as_mv, &distortion, &sse, NULL);
     block_mse = DIVIDE_AND_ROUND(error, mb_pels);
     mb->e_mbd.mi[0]->mv[0] = mb->best_mv;
     *ref_mv = mb->best_mv.as_mv;
@@ -188,7 +189,7 @@ static int tf_motion_search(AV1_COMP *cpi,
         ms_params.forced_stop = EIGHTH_PEL;
         ms_params.var_params.subpel_search_type = subpel_search_type;
         subpel_start_mv = get_mv_from_fullmv(&mb->best_mv.as_fullmv);
-        error = cpi->find_fractional_mv_step(
+        error = cpi->mv_search_params.find_fractional_mv_step(
             &mb->e_mbd, &cpi->common, &ms_params, subpel_start_mv,
             &mb->best_mv.as_mv, &distortion, &sse, NULL);
         subblock_mses[subblock_idx] = DIVIDE_AND_ROUND(error, subblock_pels);

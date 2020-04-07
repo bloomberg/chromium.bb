@@ -142,8 +142,9 @@ static uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
   step_param = tpl_sf->reduce_first_step_size;
   step_param = AOMMIN(step_param, MAX_MVSEARCH_STEPS - 2);
 
-  search_site_config *ss_cfg = &cpi->ss_cfg[SS_CFG_SRC];
-  if (ss_cfg->stride != stride_ref) ss_cfg = &cpi->ss_cfg[SS_CFG_LOOKAHEAD];
+  search_site_config *ss_cfg = &cpi->mv_search_params.ss_cfg[SS_CFG_SRC];
+  if (ss_cfg->stride != stride_ref)
+    ss_cfg = &cpi->mv_search_params.ss_cfg[SS_CFG_LOOKAHEAD];
 
   assert(ss_cfg->stride == stride_ref);
 
@@ -167,9 +168,9 @@ static uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
   ms_params.var_params.subpel_search_type = USE_2_TAPS;
   ms_params.mv_cost_params.mv_cost_type = MV_COST_NONE;
   MV subpel_start_mv = get_mv_from_fullmv(&x->best_mv.as_fullmv);
-  bestsme =
-      cpi->find_fractional_mv_step(xd, cm, &ms_params, subpel_start_mv,
-                                   &x->best_mv.as_mv, &distortion, &sse, NULL);
+  bestsme = cpi->mv_search_params.find_fractional_mv_step(
+      xd, cm, &ms_params, subpel_start_mv, &x->best_mv.as_mv, &distortion, &sse,
+      NULL);
 
   return bestsme;
 }

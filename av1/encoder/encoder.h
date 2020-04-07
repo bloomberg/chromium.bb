@@ -834,6 +834,30 @@ typedef struct {
 } GlobalMotionInfo;
 
 typedef struct {
+  // Largest MV component used in a frame.
+  // The value from the previous frame is used to set the full pixel search
+  // range for the current frame.
+  int max_mv_magnitude;
+  // Parameter indicating initial search window to be used in full-pixel search.
+  // Range [0, MAX_MVSEARCH_STEPS-2]. Lower value indicates larger window.
+  int mv_step_param;
+  // Pointer to sub-pixel search function.
+  // In encoder: av1_find_best_sub_pixel_tree
+  //             av1_find_best_sub_pixel_tree_pruned
+  //             av1_find_best_sub_pixel_tree_pruned_more
+  //             av1_find_best_sub_pixel_tree_pruned_evenmore
+  // In MV unit test: av1_return_max_sub_pixel_mv
+  //                  av1_return_min_sub_pixel_mv
+  fractional_mv_step_fp *find_fractional_mv_step;
+  // Search site configuration for full-pel MV search.
+  // ss_cfg[SS_CFG_SRC]: Used in tpl, rd/non-rd inter mode loop, simple motion
+  // search.
+  // ss_cfg[SS_CFG_LOOKAHEAD]: Used in intraBC, temporal filter
+  // ss_cfg[SS_CFG_FPF]: Used during first pass and lookahead
+  search_site_config ss_cfg[SS_CFG_TOTAL];
+} MotionVectorSearchParams;
+
+typedef struct {
   int arf_stack[FRAME_BUFFERS];
   int arf_stack_size;
   int lst_stack[FRAME_BUFFERS];
@@ -980,8 +1004,8 @@ typedef struct AV1_COMP {
   // sf contains fine-grained config set internally based on speed
   SPEED_FEATURES sf;
 
-  int max_mv_magnitude;
-  int mv_step_param;
+  // Parameters for motion vector search process.
+  MotionVectorSearchParams mv_search_params;
 
   int all_one_sided_refs;
 
@@ -990,7 +1014,6 @@ typedef struct AV1_COMP {
   CYCLIC_REFRESH *cyclic_refresh;
   ActiveMap active_map;
 
-  fractional_mv_step_fp *find_fractional_mv_step;
   aom_variance_fn_ptr_t fn_ptr[BLOCK_SIZES_ALL];
 
 #if CONFIG_INTERNAL_STATS
@@ -1063,12 +1086,6 @@ typedef struct AV1_COMP {
   // one frame and are reset after use.
   int resize_pending_width;
   int resize_pending_height;
-
-  // ss_cfg[SS_CFG_LOOKAHEAD] : used in following cases
-  //                           -> temporal filtering
-  //                           -> intrabc
-  // ss_cfg[SS_CFG_SRC] : used everywhere except above mentioned cases
-  search_site_config ss_cfg[SS_CFG_TOTAL];
 
   TileDataEnc *tile_data;
   int allocated_tiles;  // Keep track of memory allocated for tiles.

@@ -1114,9 +1114,9 @@ void av1_set_speed_features_framesize_dependent(AV1_COMP *cpi, int speed) {
 
   // This is only used in motion vector unit test.
   if (cpi->oxcf.motion_vector_unit_test == 1)
-    cpi->find_fractional_mv_step = av1_return_max_sub_pixel_mv;
+    cpi->mv_search_params.find_fractional_mv_step = av1_return_max_sub_pixel_mv;
   else if (cpi->oxcf.motion_vector_unit_test == 2)
-    cpi->find_fractional_mv_step = av1_return_min_sub_pixel_mv;
+    cpi->mv_search_params.find_fractional_mv_step = av1_return_min_sub_pixel_mv;
 
   MACROBLOCK *const x = &cpi->td.mb;
   AV1_COMMON *const cm = &cpi->common;
@@ -1193,14 +1193,18 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   // No recode or trellis for 1 pass.
   if (oxcf->pass == 0) sf->hl_sf.recode_loop = DISALLOW_RECODE;
 
+  MotionVectorSearchParams *const mv_search_params = &cpi->mv_search_params;
   if (sf->mv_sf.subpel_search_method == SUBPEL_TREE) {
-    cpi->find_fractional_mv_step = av1_find_best_sub_pixel_tree;
+    mv_search_params->find_fractional_mv_step = av1_find_best_sub_pixel_tree;
   } else if (sf->mv_sf.subpel_search_method == SUBPEL_TREE_PRUNED) {
-    cpi->find_fractional_mv_step = av1_find_best_sub_pixel_tree_pruned;
+    mv_search_params->find_fractional_mv_step =
+        av1_find_best_sub_pixel_tree_pruned;
   } else if (sf->mv_sf.subpel_search_method == SUBPEL_TREE_PRUNED_MORE) {
-    cpi->find_fractional_mv_step = av1_find_best_sub_pixel_tree_pruned_more;
+    mv_search_params->find_fractional_mv_step =
+        av1_find_best_sub_pixel_tree_pruned_more;
   } else if (sf->mv_sf.subpel_search_method == SUBPEL_TREE_PRUNED_EVENMORE) {
-    cpi->find_fractional_mv_step = av1_find_best_sub_pixel_tree_pruned_evenmore;
+    mv_search_params->find_fractional_mv_step =
+        av1_find_best_sub_pixel_tree_pruned_evenmore;
   }
 
   x->min_partition_size = AOMMAX(sf->part_sf.default_min_partition_size,
@@ -1212,9 +1216,9 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
 
   // This is only used in motion vector unit test.
   if (cpi->oxcf.motion_vector_unit_test == 1)
-    cpi->find_fractional_mv_step = av1_return_max_sub_pixel_mv;
+    mv_search_params->find_fractional_mv_step = av1_return_max_sub_pixel_mv;
   else if (cpi->oxcf.motion_vector_unit_test == 2)
-    cpi->find_fractional_mv_step = av1_return_min_sub_pixel_mv;
+    mv_search_params->find_fractional_mv_step = av1_return_min_sub_pixel_mv;
 
   // assert ensures that tx_domain_dist_level is accessed correctly
   assert(cpi->sf.rd_sf.tx_domain_dist_thres_level >= 0 &&

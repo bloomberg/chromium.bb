@@ -2694,7 +2694,7 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
 
   FULLPEL_MOTION_SEARCH_PARAMS fullms_params;
   const search_site_config *lookahead_search_sites =
-      &cpi->ss_cfg[SS_CFG_LOOKAHEAD];
+      &cpi->mv_search_params.ss_cfg[SS_CFG_LOOKAHEAD];
   av1_make_default_fullpel_ms_params(&fullms_params, cpi, x, bsize,
                                      &dv_ref.as_mv, lookahead_search_sites);
   fullms_params.is_intra_mode = 1;
@@ -2740,7 +2740,7 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
       continue;
     }
 
-    const int step_param = cpi->mv_step_param;
+    const int step_param = cpi->mv_search_params.mv_step_param;
     const FULLPEL_MV start_mv = get_fullmv_from_mv(&dv_ref.as_mv);
     int cost_list[5];
 

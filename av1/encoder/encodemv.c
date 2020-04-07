@@ -193,7 +193,8 @@ void av1_encode_mv(AV1_COMP *cpi, aom_writer *w, const MV *mv, const MV *ref,
   // motion vector component used.
   if (cpi->sf.mv_sf.auto_mv_step_size) {
     int maxv = AOMMAX(abs(mv->row), abs(mv->col)) >> 3;
-    cpi->max_mv_magnitude = AOMMAX(maxv, cpi->max_mv_magnitude);
+    cpi->mv_search_params.max_mv_magnitude =
+        AOMMAX(maxv, cpi->mv_search_params.max_mv_magnitude);
   }
 }
 
