@@ -48,6 +48,7 @@
 
 
 // patch section: printing
+#include <printing/backend/print_backend.h>
 
 
 // patch section: renderer ui
@@ -510,6 +511,10 @@ void ProcessHostImpl::setPacUrl(const std::string& url) {
 
 
 // patch section: printing
+void ProcessHostImpl::setDefaultPrinter(const std::string& name)
+{
+    d_impl->context().setDefaultPrinter(StringRef(name));
+}
 
 
 // patch section: diagnostics
