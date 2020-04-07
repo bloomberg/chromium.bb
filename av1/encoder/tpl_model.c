@@ -156,14 +156,9 @@ static uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
                         cond_cost_list(cpi, cost_list), &x->best_mv.as_fullmv,
                         NULL);
 
-  const uint8_t *second_pred = NULL;
-  const uint8_t *mask = NULL;
-  const int mask_stride = 0;
-  const int invert_mask = 0;
   SUBPEL_MOTION_SEARCH_PARAMS ms_params;
   av1_make_default_subpel_ms_params(&ms_params, cpi, x, bsize, &center_mv,
-                                    cost_list, second_pred, mask, mask_stride,
-                                    invert_mask);
+                                    cost_list);
   ms_params.forced_stop = EIGHTH_PEL;
   ms_params.var_params.subpel_search_type = USE_2_TAPS;
   ms_params.mv_cost_params.mv_cost_type = MV_COST_NONE;

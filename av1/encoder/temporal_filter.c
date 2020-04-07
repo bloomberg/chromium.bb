@@ -82,10 +82,6 @@ static int tf_motion_search(AV1_COMP *cpi,
   const MV_COST_TYPE ori_mv_cost_type = mb->mv_cost_type;
 
   // Parameters used for motion search.
-  const uint8_t *second_pred = NULL;
-  const uint8_t *mask = NULL;
-  const int mask_stride = 0;
-  const int invert_mask = 0;
   FULLPEL_MOTION_SEARCH_PARAMS full_ms_params;
   SUBPEL_MOTION_SEARCH_PARAMS ms_params;
 
@@ -146,8 +142,7 @@ static int tf_motion_search(AV1_COMP *cpi,
     mb->e_mbd.mi[0]->mv[0] = mb->best_mv;
   } else {  // Do fractional search on the entire block and all sub-blocks.
     av1_make_default_subpel_ms_params(&ms_params, cpi, mb, block_size,
-                                      &baseline_mv, cost_list, second_pred,
-                                      mask, mask_stride, invert_mask);
+                                      &baseline_mv, cost_list);
     ms_params.forced_stop = EIGHTH_PEL;
     ms_params.var_params.subpel_search_type = subpel_search_type;
     MV subpel_start_mv = get_mv_from_fullmv(&mb->best_mv.as_fullmv);
@@ -184,8 +179,7 @@ static int tf_motion_search(AV1_COMP *cpi,
         // don't need regularization for subpel search
         mb->mv_cost_type = MV_COST_NONE;
         av1_make_default_subpel_ms_params(&ms_params, cpi, mb, subblock_size,
-                                          &baseline_mv, cost_list, second_pred,
-                                          mask, mask_stride, invert_mask);
+                                          &baseline_mv, cost_list);
         ms_params.forced_stop = EIGHTH_PEL;
         ms_params.var_params.subpel_search_type = subpel_search_type;
         subpel_start_mv = get_mv_from_fullmv(&mb->best_mv.as_fullmv);

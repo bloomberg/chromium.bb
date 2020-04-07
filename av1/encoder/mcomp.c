@@ -48,7 +48,7 @@ static INLINE void init_ms_buffers(MSBuffers *ms_buffers, const MACROBLOCK *x) {
   ms_buffers->ref = &x->e_mbd.plane[0].pre[0];
   ms_buffers->src = &x->plane[0].src;
 
-  set_ms_compound_refs(ms_buffers, NULL, NULL, 0, 0);
+  av1_set_ms_compound_refs(ms_buffers, NULL, NULL, 0, 0);
 
   ms_buffers->wsrc = x->wsrc_buf;
   ms_buffers->obmc_mask = x->mask_buf;
@@ -87,10 +87,7 @@ void av1_make_default_fullpel_ms_params(
 void av1_make_default_subpel_ms_params(SUBPEL_MOTION_SEARCH_PARAMS *ms_params,
                                        const struct AV1_COMP *cpi,
                                        const MACROBLOCK *x, BLOCK_SIZE bsize,
-                                       const MV *ref_mv, const int *cost_list,
-                                       const uint8_t *second_pred,
-                                       const uint8_t *mask, int mask_stride,
-                                       int invert_mask) {
+                                       const MV *ref_mv, const int *cost_list) {
   const AV1_COMMON *cm = &cpi->common;
   // High level params
   ms_params->allow_hp = cm->features.allow_high_precision_mv;
@@ -113,7 +110,6 @@ void av1_make_default_subpel_ms_params(SUBPEL_MOTION_SEARCH_PARAMS *ms_params,
   // Ref and src buffers
   MSBuffers *ms_buffers = &ms_params->var_params.ms_buffers;
   init_ms_buffers(ms_buffers, x);
-  set_ms_compound_refs(ms_buffers, second_pred, mask, mask_stride, invert_mask);
 }
 
 static INLINE int get_offset_from_fullmv(const FULLPEL_MV *mv, int stride) {

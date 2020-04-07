@@ -1382,8 +1382,8 @@ static int64_t motion_mode_rd(
 
           const int_mv ref_mv = av1_get_ref_mv(x, 0);
           SUBPEL_MOTION_SEARCH_PARAMS ms_params;
-          av1_make_default_subpel_ms_params(
-              &ms_params, cpi, x, bsize, &ref_mv.as_mv, NULL, NULL, NULL, 0, 0);
+          av1_make_default_subpel_ms_params(&ms_params, cpi, x, bsize,
+                                            &ref_mv.as_mv, NULL);
 
           // Refine MV in a small range.
           av1_refine_warped_mv(xd, cm, &ms_params, bsize, pts0, pts_inref0,
