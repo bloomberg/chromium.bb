@@ -1440,7 +1440,7 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       constants.VMRVC_ANDROID_PFQ_MASTER,
       site_config.templates.vmrvc_android_pfq,
       site_config.templates.master_android_pfq_mixin,
-      schedule='with 1440m interval',
+      schedule='with 60m interval',
   )
 
   _vmrvc_no_hwtest_boards = frozenset([])

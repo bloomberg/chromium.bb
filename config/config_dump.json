@@ -24141,7 +24141,7 @@
         "boards": [],
         "master": true,
         "push_overlays": "both",
-        "schedule": "with 1440m interval",
+        "schedule": "with 60m interval",
         "slave_configs": [
             "eve-arc-r-vmrvc-android-pfq",
             "hatch-arc-r-vmrvc-android-pfq"
