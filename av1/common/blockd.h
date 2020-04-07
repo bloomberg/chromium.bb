@@ -644,7 +644,20 @@ typedef struct macroblockd {
   // SEG_LVL_ALT_LF_U   = 3;
   // SEG_LVL_ALT_LF_V   = 4;
   int8_t delta_lf[FRAME_LF_COUNT];
-  int cdef_preset[4];
+  // cdef_transmitted[i] is true if CDEF strength for ith CDEF unit in the
+  // current superblock has already been read from (decoder) / written to
+  // (encoder) the bitstream; and false otherwise.
+  // More detail:
+  // (1) CDEF strength is transmitted only once per CDEF unit, in the 1st
+  // non-skip coding block. So, we need this array to keep track of whether CDEF
+  // strengths for the given CDEF units have been transmitted yet or not.
+  // (2) Superblock size can be either 128x128 or 64x64, but CDEF unit size is
+  // fixed to be 64x64. So, there may be 4 CDEF units within a superblock (if
+  // superblock size is 128x128). Hence the array size is 4.
+  // (3) In the current implementation, CDEF strength for this CDEF unit is
+  // stored in the MB_MODE_INFO of the 1st block in this CDEF unit (inside
+  // cm->mi_params.mi_grid_base).
+  bool cdef_transmitted[4];
 
   DECLARE_ALIGNED(16, uint8_t, seg_mask[2 * MAX_SB_SQUARE]);
   uint8_t *mc_buf[2];

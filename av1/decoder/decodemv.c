@@ -37,32 +37,48 @@ static PREDICTION_MODE read_intra_mode(aom_reader *r, aom_cdf_prob *cdf) {
 }
 
 static void read_cdef(AV1_COMMON *cm, aom_reader *r, MACROBLOCKD *const xd) {
-  MB_MODE_INFO *const mbmi = xd->mi[0];
+  const int skip = xd->mi[0]->skip;
   if (cm->features.coded_lossless) return;
   if (cm->features.allow_intrabc) {
     assert(cm->cdef_info.cdef_bits == 0);
     return;
   }
 
-  const int mi_row = xd->mi_row;
-  const int mi_col = xd->mi_col;
-  if (!(mi_col & (cm->seq_params.mib_size - 1)) &&
-      !(mi_row & (cm->seq_params.mib_size - 1))) {  // Top left?
-    xd->cdef_preset[0] = xd->cdef_preset[1] = xd->cdef_preset[2] =
-        xd->cdef_preset[3] = -1;
+  // At the start of a superblock, mark that we haven't yet read CDEF strengths
+  // for any of the CDEF units contained in this superblock.
+  const int sb_mask = (cm->seq_params.mib_size - 1);
+  const int mi_row_in_sb = (xd->mi_row & sb_mask);
+  const int mi_col_in_sb = (xd->mi_col & sb_mask);
+  if (mi_row_in_sb == 0 && mi_col_in_sb == 0) {
+    xd->cdef_transmitted[0] = xd->cdef_transmitted[1] =
+        xd->cdef_transmitted[2] = xd->cdef_transmitted[3] = false;
   }
-  // Read CDEF param at the first non-skip coding block
-  const int mask = (1 << (6 - MI_SIZE_LOG2));
-  const int m = ~(mask - 1);
-  const int index = cm->seq_params.sb_size == BLOCK_128X128
-                        ? !!(mi_col & mask) + 2 * !!(mi_row & mask)
+
+  // CDEF unit size is 64x64 irrespective of the superblock size.
+  const int cdef_size = 1 << (6 - MI_SIZE_LOG2);
+
+  // Find index of this CDEF unit in this superblock.
+  const int index_mask = cdef_size;
+  const int cdef_unit_row_in_sb = ((xd->mi_row & index_mask) != 0);
+  const int cdef_unit_col_in_sb = ((xd->mi_col & index_mask) != 0);
+  const int index = (cm->seq_params.sb_size == BLOCK_128X128)
+                        ? cdef_unit_col_in_sb + 2 * cdef_unit_row_in_sb
                         : 0;
-  cm->mi_params
-      .mi_grid_base[(mi_row & m) * cm->mi_params.mi_stride + (mi_col & m)]
-      ->cdef_strength = xd->cdef_preset[index] =
-      xd->cdef_preset[index] == -1 && !mbmi->skip
-          ? aom_read_literal(r, cm->cdef_info.cdef_bits, ACCT_STR)
-          : xd->cdef_preset[index];
+
+  // Read CDEF strength from the first non-skip coding block in this CDEF unit.
+  if (!xd->cdef_transmitted[index] && !skip) {
+    // CDEF strength for this CDEF unit needs to be read into the MB_MODE_INFO
+    // of the 1st block in this CDEF unit.
+    const int first_block_mask = ~(cdef_size - 1);
+    CommonModeInfoParams *const mi_params = &cm->mi_params;
+    const int grid_idx =
+        get_mi_grid_idx(mi_params, xd->mi_row & first_block_mask,
+                        xd->mi_col & first_block_mask);
+    MB_MODE_INFO *const mbmi = mi_params->mi_grid_base[grid_idx];
+    mbmi->cdef_strength =
+        aom_read_literal(r, cm->cdef_info.cdef_bits, ACCT_STR);
+    xd->cdef_transmitted[index] = true;
+  }
 }
 
 static int read_delta_qindex(AV1_COMMON *cm, const MACROBLOCKD *xd,
