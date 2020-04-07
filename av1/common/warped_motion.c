@@ -1057,9 +1057,9 @@ static int find_affine_int(int np, const int *pts1, const int *pts2,
   return 0;
 }
 
-int av1_find_projection(int np, int *pts1, int *pts2, BLOCK_SIZE bsize, int mvy,
-                        int mvx, WarpedMotionParams *wm_params, int mi_row,
-                        int mi_col) {
+int av1_find_projection(int np, const int *pts1, const int *pts2,
+                        BLOCK_SIZE bsize, int mvy, int mvx,
+                        WarpedMotionParams *wm_params, int mi_row, int mi_col) {
   assert(wm_params->wmtype == AFFINE);
 
   if (find_affine_int(np, pts1, pts2, bsize, mvy, mvx, wm_params, mi_row,

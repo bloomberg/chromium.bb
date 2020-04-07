@@ -85,10 +85,6 @@ int av1_get_mvpred_compound_var(const MV_COST_PARAMS *ms_params,
                                 const struct buf_2d *src,
                                 const struct buf_2d *pre);
 
-unsigned int av1_compute_motion_cost(const struct AV1_COMP *cpi,
-                                     MACROBLOCK *const x, BLOCK_SIZE bsize,
-                                     const MV *this_mv);
-
 // =============================================================================
 //  Motion Search
 // =============================================================================
@@ -294,10 +290,10 @@ extern fractional_mv_step_fp av1_return_max_sub_pixel_mv;
 extern fractional_mv_step_fp av1_return_min_sub_pixel_mv;
 extern fractional_mv_step_fp av1_find_best_obmc_sub_pixel_tree_up;
 
-unsigned int av1_refine_warped_mv(const struct AV1_COMP *cpi,
-                                  MACROBLOCK *const x, BLOCK_SIZE bsize,
-                                  int *pts0, int *pts_inref0,
-                                  int total_samples);
+unsigned int av1_refine_warped_mv(MACROBLOCKD *xd, const AV1_COMMON *const cm,
+                                  const SUBPEL_MOTION_SEARCH_PARAMS *ms_params,
+                                  BLOCK_SIZE bsize, const int *pts0,
+                                  const int *pts_inref0, int total_samples);
 
 static INLINE void av1_set_fractional_mv(int_mv *fractional_best_mv) {
   for (int z = 0; z < 3; z++) {

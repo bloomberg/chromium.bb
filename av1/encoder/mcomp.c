@@ -2881,60 +2881,81 @@ int av1_return_min_sub_pixel_mv(MACROBLOCKD *xd, const AV1_COMMON *const cm,
   return besterr;
 }
 
+// Computes the cost of the current predictor by going through the whole
+// av1_enc_build_inter_predictor pipeline. This is mainly used by warped mv
+// during motion_mode_rd. We are going through the whole
+// av1_enc_build_inter_predictor because we might have changed the interpolation
+// filter, etc before motion_mode_rd is called.
+static INLINE unsigned int compute_motion_cost(
+    MACROBLOCKD *xd, const AV1_COMMON *const cm,
+    const SUBPEL_MOTION_SEARCH_PARAMS *ms_params, BLOCK_SIZE bsize,
+    const MV *this_mv) {
+  unsigned int mse;
+  unsigned int sse;
+  const int mi_row = xd->mi_row;
+  const int mi_col = xd->mi_col;
+
+  av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, NULL, bsize,
+                                AOM_PLANE_Y, AOM_PLANE_Y);
+
+  const SUBPEL_SEARCH_VAR_PARAMS *var_params = &ms_params->var_params;
+  const MSBuffers *ms_buffers = &var_params->ms_buffers;
+
+  const uint8_t *const src = ms_buffers->src->buf;
+  const int src_stride = ms_buffers->src->stride;
+  const uint8_t *const dst = xd->plane[0].dst.buf;
+  const int dst_stride = xd->plane[0].dst.stride;
+  const aom_variance_fn_ptr_t *vfp = ms_params->var_params.vfp;
+
+  mse = vfp->vf(dst, dst_stride, src, src_stride, &sse);
+  mse += mv_err_cost_(this_mv, &ms_params->mv_cost_params);
+  return mse;
+}
+
 // Refines MV in a small range
-unsigned int av1_refine_warped_mv(const AV1_COMP *cpi, MACROBLOCK *const x,
-                                  BLOCK_SIZE bsize, int *pts0, int *pts_inref0,
-                                  int total_samples) {
-  const AV1_COMMON *const cm = &cpi->common;
-  MACROBLOCKD *xd = &x->e_mbd;
+unsigned int av1_refine_warped_mv(MACROBLOCKD *xd, const AV1_COMMON *const cm,
+                                  const SUBPEL_MOTION_SEARCH_PARAMS *ms_params,
+                                  BLOCK_SIZE bsize, const int *pts0,
+                                  const int *pts_inref0, int total_samples) {
   MB_MODE_INFO *mbmi = xd->mi[0];
-  const MV neighbors[8] = { { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 },
-                            { 0, -2 }, { 2, 0 }, { 0, 2 }, { -2, 0 } };
-  const int_mv ref_mv = av1_get_ref_mv(x, 0);
-  int16_t br = mbmi->mv[0].as_mv.row;
-  int16_t bc = mbmi->mv[0].as_mv.col;
-  int16_t *tr = &mbmi->mv[0].as_mv.row;
-  int16_t *tc = &mbmi->mv[0].as_mv.col;
+  static const MV neighbors[8] = { { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 },
+                                   { 0, -2 }, { 2, 0 }, { 0, 2 }, { -2, 0 } };
+  MV *best_mv = &mbmi->mv[0].as_mv;
+
   WarpedMotionParams best_wm_params = mbmi->wm_params;
   int best_num_proj_ref = mbmi->num_proj_ref;
   unsigned int bestmse;
-  SubpelMvLimits mv_limits;
+  const SubpelMvLimits *mv_limits = &ms_params->mv_limits;
 
-  const int start = cm->features.allow_high_precision_mv ? 0 : 4;
-  int ite;
-
-  av1_set_subpel_mv_search_range(&mv_limits, &x->mv_limits, &ref_mv.as_mv);
+  const int start = ms_params->allow_hp ? 0 : 4;
 
   // Calculate the center position's error
-  assert(av1_is_subpelmv_in_range(&mv_limits, mbmi->mv[0].as_mv));
-  bestmse = av1_compute_motion_cost(cpi, x, bsize, &mbmi->mv[0].as_mv);
+  assert(av1_is_subpelmv_in_range(mv_limits, *best_mv));
+  bestmse = compute_motion_cost(xd, cm, ms_params, bsize, best_mv);
 
   // MV search
+  int pts[SAMPLES_ARRAY_SIZE], pts_inref[SAMPLES_ARRAY_SIZE];
   const int mi_row = xd->mi_row;
   const int mi_col = xd->mi_col;
-  for (ite = 0; ite < 2; ++ite) {
+  for (int ite = 0; ite < 2; ++ite) {
     int best_idx = -1;
-    int idx;
 
-    for (idx = start; idx < start + 4; ++idx) {
+    for (int idx = start; idx < start + 4; ++idx) {
       unsigned int thismse;
 
-      *tr = br + neighbors[idx].row;
-      *tc = bc + neighbors[idx].col;
-
-      MV this_mv = { *tr, *tc };
-      if (av1_is_subpelmv_in_range(&mv_limits, this_mv)) {
-        int pts[SAMPLES_ARRAY_SIZE], pts_inref[SAMPLES_ARRAY_SIZE];
-
+      MV this_mv = { best_mv->row + neighbors[idx].row,
+                     best_mv->col + neighbors[idx].col };
+      if (av1_is_subpelmv_in_range(mv_limits, this_mv)) {
         memcpy(pts, pts0, total_samples * 2 * sizeof(*pts0));
         memcpy(pts_inref, pts_inref0, total_samples * 2 * sizeof(*pts_inref0));
         if (total_samples > 1)
           mbmi->num_proj_ref =
               av1_selectSamples(&this_mv, pts, pts_inref, total_samples, bsize);
 
-        if (!av1_find_projection(mbmi->num_proj_ref, pts, pts_inref, bsize, *tr,
-                                 *tc, &mbmi->wm_params, mi_row, mi_col)) {
-          thismse = av1_compute_motion_cost(cpi, x, bsize, &this_mv);
+        if (!av1_find_projection(mbmi->num_proj_ref, pts, pts_inref, bsize,
+                                 this_mv.row, this_mv.col, &mbmi->wm_params,
+                                 mi_row, mi_col)) {
+          thismse = compute_motion_cost(xd, cm, ms_params, bsize, &this_mv);
 
           if (thismse < bestmse) {
             best_idx = idx;
@@ -2949,13 +2970,11 @@ unsigned int av1_refine_warped_mv(const AV1_COMP *cpi, MACROBLOCK *const x,
     if (best_idx == -1) break;
 
     if (best_idx >= 0) {
-      br += neighbors[best_idx].row;
-      bc += neighbors[best_idx].col;
+      best_mv->row += neighbors[best_idx].row;
+      best_mv->col += neighbors[best_idx].col;
     }
   }
 
-  *tr = br;
-  *tc = bc;
   mbmi->wm_params = best_wm_params;
   mbmi->num_proj_ref = best_num_proj_ref;
   return bestmse;
@@ -3386,29 +3405,4 @@ int av1_get_mvpred_compound_var(const MV_COST_PARAMS *mv_cost_params,
     return get_mvpred_av_var(mv_cost_params, best_mv, second_pred, vfp, src,
                              pre);
   }
-}
-
-unsigned int av1_compute_motion_cost(const AV1_COMP *cpi, MACROBLOCK *const x,
-                                     BLOCK_SIZE bsize, const MV *this_mv) {
-  const AV1_COMMON *const cm = &cpi->common;
-  MACROBLOCKD *xd = &x->e_mbd;
-  const uint8_t *const src = x->plane[0].src.buf;
-  const int src_stride = x->plane[0].src.stride;
-  uint8_t *const dst = xd->plane[0].dst.buf;
-  const int dst_stride = xd->plane[0].dst.stride;
-  const aom_variance_fn_ptr_t *vfp = &cpi->fn_ptr[bsize];
-  const int_mv ref_mv = av1_get_ref_mv(x, 0);
-  unsigned int mse;
-  unsigned int sse;
-  const int mi_row = xd->mi_row;
-  const int mi_col = xd->mi_col;
-  const MV_COST_TYPE mv_cost_type = x->mv_cost_type;
-
-  av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, NULL, bsize,
-                                AOM_PLANE_Y, AOM_PLANE_Y);
-  mse = vfp->vf(dst, dst_stride, src, src_stride, &sse);
-  mse += mv_err_cost(this_mv, &ref_mv.as_mv, x->nmv_vec_cost,
-                     CONVERT_TO_CONST_MVCOST(x->mv_cost_stack), x->errorperbit,
-                     mv_cost_type);
-  return mse;
 }

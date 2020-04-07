@@ -1380,12 +1380,17 @@ static int64_t motion_mode_rd(
             if (wmtype < ROTZOOM) continue;
           }
 
+          const int_mv ref_mv = av1_get_ref_mv(x, 0);
+          SUBPEL_MOTION_SEARCH_PARAMS ms_params;
+          av1_make_default_subpel_ms_params(
+              &ms_params, cpi, x, bsize, &ref_mv.as_mv, NULL, NULL, NULL, 0, 0);
+
           // Refine MV in a small range.
-          av1_refine_warped_mv(cpi, x, bsize, pts0, pts_inref0, total_samples);
+          av1_refine_warped_mv(xd, cm, &ms_params, bsize, pts0, pts_inref0,
+                               total_samples);
 
           // Keep the refined MV and WM parameters.
           if (mv0.as_int != mbmi->mv[0].as_int) {
-            const int_mv ref_mv = av1_get_ref_mv(x, 0);
             tmp_rate_mv = av1_mv_bit_cost(&mbmi->mv[0].as_mv, &ref_mv.as_mv,
                                           x->nmv_vec_cost, x->mv_cost_stack,
                                           MV_COST_WEIGHT);
