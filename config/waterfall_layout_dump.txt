@@ -313,6 +313,7 @@
     hana-kernelnext-release
     hana-release
     hatch-arc-r-release
+    hatch-blueznext-release
     hatch-diskswap-release
     hatch-kernelnext-release
     hatch-kvm-release
@@ -1205,6 +1206,11 @@
   hatch-arc-r-release-tryjob
   hatch-arc-r-unittest-stress
   hatch-arc-r-vmrvc-android-pfq-tryjob
+  hatch-blueznext-full-tryjob
+  hatch-blueznext-llvm-next-toolchain-tryjob
+  hatch-blueznext-llvm-toolchain-tryjob
+  hatch-blueznext-release-tryjob
+  hatch-blueznext-unittest-stress
   hatch-diskswap-full-tryjob
   hatch-diskswap-llvm-next-toolchain-tryjob
   hatch-diskswap-llvm-toolchain-tryjob
@@ -1506,6 +1512,7 @@
     hana-kernelnext-release-tryjob
     hana-release-tryjob
     hatch-arc-r-release-tryjob
+    hatch-blueznext-release-tryjob
     hatch-diskswap-release-tryjob
     hatch-kernelnext-release-tryjob
     hatch-kvm-release-tryjob
