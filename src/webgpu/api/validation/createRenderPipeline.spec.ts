@@ -4,6 +4,7 @@ createRenderPipeline validation tests.
 
 import { poptions } from '../../../common/framework/params.js';
 import { TestGroup } from '../../../common/framework/test_group.js';
+import { initGLSL } from '../../../common/glslang.js';
 import GLSL from '../../../common/tools/glsl.macro.js';
 import { kTextureFormatInfo, kTextureFormats } from '../../capability_info.js';
 
@@ -12,7 +13,7 @@ import { ValidationTest } from './validation_test.js';
 class F extends ValidationTest {
   async init(): Promise<void> {
     await super.init();
-    await this.initGLSL();
+    await initGLSL();
   }
 
   getDescriptor(

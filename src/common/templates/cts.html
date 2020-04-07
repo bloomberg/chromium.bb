@@ -45,4 +45,10 @@
 </style>
 
 <textarea id=results></textarea>
-<script type=module src=/webgpu/common/runtime/wpt.js></script>
+<script type=module>
+  import { setGlslangPath } from '/webgpu/common/glslang_path.js';
+  // To override the glslang.js path:
+  //   setGlslangPath('/path/to/glslang.js);
+
+  import '/webgpu/common/runtime/wpt.js';
+</script>

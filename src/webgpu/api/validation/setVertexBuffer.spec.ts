@@ -4,13 +4,14 @@ setVertexBuffer validation tests.
 
 import { TestGroup } from '../../../common/framework/test_group.js';
 import { range } from '../../../common/framework/util/util.js';
+import { initGLSL } from '../../../common/glslang.js';
 
 import { ValidationTest } from './validation_test.js';
 
 class F extends ValidationTest {
   async init(): Promise<void> {
     await super.init();
-    await this.initGLSL();
+    await initGLSL();
   }
 
   getVertexBuffer(): GPUBuffer {
