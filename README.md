@@ -45,15 +45,15 @@ npx grunt test
 To test in a browser under the standalone harness, run `grunt serve`, then
 open:
 
-- http://localhost:8080/ (defaults to ?runnow=0&worker=0&debug=0&q=webgpu:)
-- http://localhost:8080/?runnow=1&q=unittests:
-- http://localhost:8080/?runnow=1&q=unittests:basic:&q=unittests:params:
+- http://localhost:8080/standalone/ (defaults to ?runnow=0&worker=0&debug=0&q=webgpu:)
+- http://localhost:8080/standalone/?runnow=1&q=unittests:
+- http://localhost:8080/standalone/?runnow=1&q=unittests:basic:&q=unittests:params:
 
 ### Debug
 
 To see debug logs in a browser, use the `debug=1` query string:
 
-- http://localhost:8080/?q=webgpu:validation&debug=1
+- http://localhost:8080/standalone/?q=webgpu:validation&debug=1
 
 ### Making Changes
 
