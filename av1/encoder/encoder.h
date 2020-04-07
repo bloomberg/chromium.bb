@@ -858,6 +858,47 @@ typedef struct {
 } MotionVectorSearchParams;
 
 typedef struct {
+  // Threshold of transform domain distortion
+  // Index 0: Default mode evaluation, Winner mode processing is not applicable
+  // (Eg : IntraBc).
+  // Index 1: Mode evaluation.
+  // Index 2: Winner mode evaluation.
+  // Index 1 and 2 are applicable when enable_winner_mode_for_use_tx_domain_dist
+  // speed feature is ON
+  unsigned int tx_domain_dist_threshold[MODE_EVAL_TYPES];
+
+  // Factor to control R-D optimization of coeffs based on block
+  // mse.
+  // Index 0: Default mode evaluation, Winner mode processing is not applicable
+  // (Eg : IntraBc). Index 1: Mode evaluation.
+  // Index 2: Winner mode evaluation
+  // Index 1 and 2 are applicable when enable_winner_mode_for_coeff_opt speed
+  // feature is ON
+  unsigned int coeff_opt_dist_threshold[MODE_EVAL_TYPES];
+
+  // Transform size to be used in transform search
+  // Index 0: Default mode evaluation, Winner mode processing is not applicable
+  // (Eg : IntraBc).
+  // Index 1: Mode evaluation. Index 2: Winner mode evaluation
+  // Index 1 and 2 are applicable when enable_winner_mode_for_tx_size_srch speed
+  // feature is ON
+  TX_SIZE_SEARCH_METHOD tx_size_search_methods[MODE_EVAL_TYPES];
+
+  // Transform domain distortion levels
+  // Index 0: Default mode evaluation, Winner mode processing is not applicable
+  // (Eg : IntraBc).
+  // Index 1: Mode evaluation. Index 2: Winner mode evaluation
+  // Index 1 and 2 are applicable when enable_winner_mode_for_use_tx_domain_dist
+  // speed feature is ON
+  unsigned int use_transform_domain_distortion[MODE_EVAL_TYPES];
+
+  // Predict transform skip levels to be used for default, mode and winner mode
+  // evaluation. Index 0: Default mode evaluation, Winner mode processing is not
+  // applicable. Index 1: Mode evaluation, Index 2: Winner mode evaluation
+  unsigned int predict_skip_level[MODE_EVAL_TYPES];
+} WinnerModeParams;
+
+typedef struct {
   int arf_stack[FRAME_BUFFERS];
   int arf_stack_size;
   int lst_stack[FRAME_BUFFERS];
@@ -986,6 +1027,9 @@ typedef struct AV1_COMP {
 
   // Parameters related to global motion search.
   GlobalMotionInfo gm_info;
+
+  // Parameters related to winner mode processing.
+  WinnerModeParams winner_mode_params;
 
   int64_t last_time_stamp_seen;
   int64_t last_end_time_stamp_seen;
@@ -1131,45 +1175,6 @@ typedef struct AV1_COMP {
 
   // Mark which ref frames can be skipped for encoding current frame druing RDO.
   int prune_ref_frame_mask;
-
-  // Threshold of transform domain distortion
-  // Index 0: Default mode evaluation, Winner mode processing is not applicable
-  // (Eg : IntraBc).
-  // Index 1: Mode evaluation.
-  // Index 2: Winner mode evaluation.
-  // Index 1 and 2 are applicable when enable_winner_mode_for_use_tx_domain_dist
-  // speed feature is ON
-  unsigned int tx_domain_dist_threshold[MODE_EVAL_TYPES];
-
-  // Factor to control R-D optimization of coeffs based on block
-  // mse.
-  // Index 0: Default mode evaluation, Winner mode processing is not applicable
-  // (Eg : IntraBc). Index 1: Mode evaluation.
-  // Index 2: Winner mode evaluation
-  // Index 1 and 2 are applicable when enable_winner_mode_for_coeff_opt speed
-  // feature is ON
-  unsigned int coeff_opt_dist_threshold[MODE_EVAL_TYPES];
-
-  // Transform size to be used in transform search
-  // Index 0: Default mode evaluation, Winner mode processing is not applicable
-  // (Eg : IntraBc).
-  // Index 1: Mode evaluation. Index 2: Winner mode evaluation
-  // Index 1 and 2 are applicable when enable_winner_mode_for_tx_size_srch speed
-  // feature is ON
-  TX_SIZE_SEARCH_METHOD tx_size_search_methods[MODE_EVAL_TYPES];
-
-  // Transform domain distortion levels
-  // Index 0: Default mode evaluation, Winner mode processing is not applicable
-  // (Eg : IntraBc).
-  // Index 1: Mode evaluation. Index 2: Winner mode evaluation
-  // Index 1 and 2 are applicable when enable_winner_mode_for_use_tx_domain_dist
-  // speed feature is ON
-  unsigned int use_transform_domain_distortion[MODE_EVAL_TYPES];
-
-  // Predict transform skip levels to be used for default, mode and winner mode
-  // evaluation. Index 0: Default mode evaluation, Winner mode processing is not
-  // applicable. Index 1: Mode evaluation, Index 2: Winner mode evaluation
-  unsigned int predict_skip_level[MODE_EVAL_TYPES];
 
   AV1LfSync lf_row_sync;
   AV1LrSync lr_row_sync;

@@ -5915,9 +5915,9 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
           ? WINNER_MODE_EVAL
           : DEFAULT_EVAL;
   const TX_SIZE_SEARCH_METHOD tx_search_type =
-      cpi->tx_size_search_methods[eval_type];
+      cpi->winner_mode_params.tx_size_search_methods[eval_type];
   assert(cpi->oxcf.enable_tx64 || tx_search_type != USE_LARGESTALL);
-  features->tx_mode = select_tx_mode(cpi, tx_search_type);
+  features->tx_mode = select_tx_mode(cm, tx_search_type);
 
   if (cpi->sf.tx_sf.tx_type_search.prune_tx_type_using_stats) {
     const FRAME_UPDATE_TYPE update_type = get_frame_update_type(&cpi->gf_group);
@@ -6288,7 +6288,8 @@ static AOM_INLINE void encode_superblock(const AV1_COMP *const cpi,
 
   // Initialize tx_mode and tx_size_search_method
   set_tx_size_search_method(
-      cpi, x, cpi->sf.winner_mode_sf.enable_winner_mode_for_tx_size_srch, 1);
+      cm, &cpi->winner_mode_params, x,
+      cpi->sf.winner_mode_sf.enable_winner_mode_for_tx_size_srch, 1);
 
   const int mi_row = xd->mi_row;
   const int mi_col = xd->mi_col;

@@ -1132,6 +1132,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   AV1_COMMON *const cm = &cpi->common;
   SPEED_FEATURES *const sf = &cpi->sf;
   MACROBLOCK *const x = &cpi->td.mb;
+  WinnerModeParams *const winner_mode_params = &cpi->winner_mode_params;
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   int i;
 
@@ -1223,37 +1224,37 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   // assert ensures that tx_domain_dist_level is accessed correctly
   assert(cpi->sf.rd_sf.tx_domain_dist_thres_level >= 0 &&
          cpi->sf.rd_sf.tx_domain_dist_thres_level < 3);
-  memcpy(cpi->tx_domain_dist_threshold,
+  memcpy(winner_mode_params->tx_domain_dist_threshold,
          tx_domain_dist_thresholds[cpi->sf.rd_sf.tx_domain_dist_thres_level],
-         sizeof(cpi->tx_domain_dist_threshold));
+         sizeof(winner_mode_params->tx_domain_dist_threshold));
 
   assert(cpi->sf.rd_sf.tx_domain_dist_level >= 0 &&
          cpi->sf.rd_sf.tx_domain_dist_level < 3);
-  memcpy(cpi->use_transform_domain_distortion,
+  memcpy(winner_mode_params->use_transform_domain_distortion,
          tx_domain_dist_types[cpi->sf.rd_sf.tx_domain_dist_level],
-         sizeof(cpi->use_transform_domain_distortion));
+         sizeof(winner_mode_params->use_transform_domain_distortion));
 
   // assert ensures that coeff_opt_dist_thresholds is accessed correctly
   assert(cpi->sf.rd_sf.perform_coeff_opt >= 0 &&
          cpi->sf.rd_sf.perform_coeff_opt < 6);
-  memcpy(cpi->coeff_opt_dist_threshold,
+  memcpy(winner_mode_params->coeff_opt_dist_threshold,
          coeff_opt_dist_thresholds[cpi->sf.rd_sf.perform_coeff_opt],
-         sizeof(cpi->coeff_opt_dist_threshold));
+         sizeof(winner_mode_params->coeff_opt_dist_threshold));
 
   // assert ensures that predict_skip_levels is accessed correctly
   assert(cpi->sf.tx_sf.tx_type_search.use_skip_flag_prediction >= 0 &&
          cpi->sf.tx_sf.tx_type_search.use_skip_flag_prediction < 3);
-  memcpy(cpi->predict_skip_level,
+  memcpy(winner_mode_params->predict_skip_level,
          predict_skip_levels[cpi->sf.tx_sf.tx_type_search
                                  .use_skip_flag_prediction],
-         sizeof(cpi->predict_skip_level));
+         sizeof(winner_mode_params->predict_skip_level));
 
   // assert ensures that tx_size_search_level is accessed correctly
   assert(cpi->sf.winner_mode_sf.tx_size_search_level >= 0 &&
          cpi->sf.winner_mode_sf.tx_size_search_level < 3);
-  memcpy(cpi->tx_size_search_methods,
+  memcpy(winner_mode_params->tx_size_search_methods,
          tx_size_search_methods[cpi->sf.winner_mode_sf.tx_size_search_level],
-         sizeof(cpi->tx_size_search_methods));
+         sizeof(winner_mode_params->tx_size_search_methods));
 
   if (cpi->oxcf.row_mt == 1 && (cpi->oxcf.max_threads > 1)) {
     if (sf->inter_sf.inter_mode_rd_model_estimation == 1) {
@@ -1267,14 +1268,15 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
 void av1_set_speed_features_qindex_dependent(AV1_COMP *cpi, int speed) {
   AV1_COMMON *const cm = &cpi->common;
   SPEED_FEATURES *const sf = &cpi->sf;
+  WinnerModeParams *const winner_mode_params = &cpi->winner_mode_params;
   const int boosted = frame_is_boosted(cpi);
   const int is_720p_or_larger = AOMMIN(cm->width, cm->height) >= 720;
   if (is_720p_or_larger && cpi->oxcf.mode == GOOD && speed == 0) {
     if (cm->quant_params.base_qindex <= 80) {
       sf->rd_sf.perform_coeff_opt = 2;
-      memcpy(cpi->coeff_opt_dist_threshold,
+      memcpy(winner_mode_params->coeff_opt_dist_threshold,
              coeff_opt_dist_thresholds[sf->rd_sf.perform_coeff_opt],
-             sizeof(cpi->coeff_opt_dist_threshold));
+             sizeof(winner_mode_params->coeff_opt_dist_threshold));
       sf->part_sf.simple_motion_search_split =
           cm->features.allow_screen_content_tools ? 1 : 2;
       sf->tx_sf.inter_tx_size_search_init_depth_rect = 1;
