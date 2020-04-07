@@ -338,8 +338,9 @@ static int simple_motion_search_get_best_ref(
     if (cpi->ref_frame_flags & av1_ref_frame_flag_list[ref]) {
       const FULLPEL_MV *start_mvs = pc_tree->start_mvs;
       unsigned int curr_sse = 0, curr_var = 0;
-      av1_simple_motion_search(cpi, x, mi_row, mi_col, bsize, ref,
-                               start_mvs[ref], num_planes, use_subpixel);
+      int_mv best_mv =
+          av1_simple_motion_search(cpi, x, mi_row, mi_col, bsize, ref,
+                                   start_mvs[ref], num_planes, use_subpixel);
       curr_var = cpi->fn_ptr[bsize].vf(
           x->plane[0].src.buf, x->plane[0].src.stride, xd->plane[0].dst.buf,
           xd->plane[0].dst.stride, &curr_sse);
@@ -350,8 +351,8 @@ static int simple_motion_search_get_best_ref(
       }
 
       if (save_mv) {
-        pc_tree->start_mvs[ref].row = x->best_mv.as_mv.row / 8;
-        pc_tree->start_mvs[ref].col = x->best_mv.as_mv.col / 8;
+        pc_tree->start_mvs[ref].row = best_mv.as_mv.row / 8;
+        pc_tree->start_mvs[ref].col = best_mv.as_mv.col / 8;
 
         if (bsize >= BLOCK_8X8) {
           for (int r_idx = 0; r_idx < 4; r_idx++) {
@@ -661,13 +662,12 @@ void av1_get_max_min_partition_features(AV1_COMP *const cpi, MACROBLOCK *x,
       unsigned int sse = 0;
       unsigned int var = 0;
       const FULLPEL_MV start_mv = kZeroFullMv;
-
-      av1_simple_motion_sse_var(cpi, x, this_mi_row, this_mi_col, mb_size,
-                                start_mv, 0, &sse, &var);
+      int_mv best_mv = av1_simple_motion_sse_var(
+          cpi, x, this_mi_row, this_mi_col, mb_size, start_mv, 0, &sse, &var);
 
       aom_clear_system_state();
-      const float mv_row = (float)(x->best_mv.as_mv.row / 8);
-      const float mv_col = (float)(x->best_mv.as_mv.col / 8);
+      const float mv_row = (float)(best_mv.as_mv.row / 8);
+      const float mv_col = (float)(best_mv.as_mv.col / 8);
       const float log_sse = logf(1.0f + (float)sse);
       const float abs_mv_row = fabsf(mv_row);
       const float abs_mv_col = fabsf(mv_col);

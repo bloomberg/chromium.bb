@@ -395,12 +395,6 @@ struct macroblock {
   // Used to store sub partition's choices.
   MV pred_mv[REF_FRAMES];
 
-  // Store the best motion vector during motion search
-  int_mv best_mv;
-
-  // Store the fractional best motion vector during sub/Qpel-pixel motion search
-  int_mv fractional_best_mv[3];
-
   // Ref frames that are selected by square partition blocks within a super-
   // block, in MI resolution. They can be used to prune ref frames for
   // rectangular blocks.

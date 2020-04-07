@@ -31,7 +31,8 @@ typedef struct {
 
 void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
                               BLOCK_SIZE bsize, int ref_idx, int *rate_mv,
-                              int search_range, inter_mode_info *mode_info);
+                              int search_range, inter_mode_info *mode_info,
+                              int_mv *best_mv);
 
 void av1_joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
                              BLOCK_SIZE bsize, int_mv *cur_mv,
@@ -57,16 +58,16 @@ void av1_compound_single_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
 // Performs a motion search in SIMPLE_TRANSLATION mode using reference frame
 // ref. Note that this sets the offset of mbmi, so we will need to reset it
 // after calling this function.
-void av1_simple_motion_search(struct AV1_COMP *const cpi, MACROBLOCK *x,
-                              int mi_row, int mi_col, BLOCK_SIZE bsize, int ref,
-                              FULLPEL_MV start_mv, int num_planes,
-                              int use_subpixel);
+int_mv av1_simple_motion_search(struct AV1_COMP *const cpi, MACROBLOCK *x,
+                                int mi_row, int mi_col, BLOCK_SIZE bsize,
+                                int ref, FULLPEL_MV start_mv, int num_planes,
+                                int use_subpixel);
 
 // Performs a simple motion search to calculate the sse and var of the residue
-void av1_simple_motion_sse_var(struct AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
-                               int mi_col, BLOCK_SIZE bsize,
-                               const FULLPEL_MV start_mv, int use_subpixel,
-                               unsigned int *sse, unsigned int *var);
+int_mv av1_simple_motion_sse_var(struct AV1_COMP *cpi, MACROBLOCK *x,
+                                 int mi_row, int mi_col, BLOCK_SIZE bsize,
+                                 const FULLPEL_MV start_mv, int use_subpixel,
+                                 unsigned int *sse, unsigned int *var);
 
 #ifdef __cplusplus
 }  // extern "C"

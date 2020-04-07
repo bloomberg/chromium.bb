@@ -24,6 +24,10 @@ extern "C" {
 #define GET_MV_RAWPEL(x) (((x) + 3 + ((x) >= 0)) >> 3)
 #define GET_MV_SUBPEL(x) ((x)*8)
 
+#define MARK_MV_INVALID(mv)                \
+  do {                                     \
+    ((int_mv *)(mv))->as_int = INVALID_MV; \
+  } while (0);
 #define CHECK_MV_EQUAL(x, y) (((x).row == (y).row) && ((x).col == (y).col))
 
 // The motion vector in units of full pixel

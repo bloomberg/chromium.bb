@@ -1163,15 +1163,15 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
       }
     }
 
+    int_mv best_mv;
     av1_single_motion_search(cpi, x, bsize, ref_idx, rate_mv, search_range,
-                             mode_info);
-    if (x->best_mv.as_int == INVALID_MV) return INT64_MAX;
+                             mode_info, &best_mv);
+    if (best_mv.as_int == INVALID_MV) return INT64_MAX;
 
-    args->single_newmv[ref_mv_idx][refs[0]] = x->best_mv;
+    args->single_newmv[ref_mv_idx][refs[0]] = best_mv;
     args->single_newmv_rate[ref_mv_idx][refs[0]] = *rate_mv;
     args->single_newmv_valid[ref_mv_idx][refs[0]] = 1;
-
-    cur_mv[0].as_int = x->best_mv.as_int;
+    cur_mv[0].as_int = best_mv.as_int;
   }
 
   return 0;
@@ -1339,8 +1339,8 @@ static int64_t motion_mode_rd(
       const uint32_t cur_mv = mbmi->mv[0].as_int;
       assert(!is_comp_pred);
       if (have_newmv_in_inter_mode(this_mode)) {
-        av1_single_motion_search(cpi, x, bsize, 0, &tmp_rate_mv, INT_MAX, NULL);
-        mbmi->mv[0].as_int = x->best_mv.as_int;
+        av1_single_motion_search(cpi, x, bsize, 0, &tmp_rate_mv, INT_MAX, NULL,
+                                 &mbmi->mv[0]);
         tmp_rate2 = rate2_nocoeff - rate_mv0 + tmp_rate_mv;
       }
       if ((mbmi->mv[0].as_int != cur_mv) || eval_motion_mode) {
@@ -2747,16 +2747,15 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
 
     const int step_param = cpi->mv_search_params.mv_step_param;
     const FULLPEL_MV start_mv = get_fullmv_from_mv(&dv_ref.as_mv);
-    int cost_list[5];
+    int_mv best_mv;
 
     int bestsme = av1_full_pixel_search(start_mv, &fullms_params, step_param,
-                                        cond_cost_list(cpi, cost_list),
-                                        &x->best_mv.as_fullmv, NULL);
+                                        NULL, &best_mv.as_fullmv, NULL);
     av1_intrabc_hash_search(cpi, x, bsize, &dv_ref.as_mv, &bestsme,
-                            &x->best_mv.as_fullmv);
+                            &best_mv.as_fullmv);
 
     if (bestsme == INT_MAX) continue;
-    const MV dv = get_mv_from_fullmv(&x->best_mv.as_fullmv);
+    const MV dv = get_mv_from_fullmv(&best_mv.as_fullmv);
     if (!av1_is_fullmv_in_range(&fullms_params.mv_limits,
                                 get_fullmv_from_mv(&dv)))
       continue;

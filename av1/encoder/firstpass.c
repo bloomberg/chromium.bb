@@ -230,7 +230,6 @@ static AOM_INLINE void first_pass_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
   const int new_mv_mode_penalty = NEW_MV_MODE_PENALTY;
   const int sr = get_search_range(cpi);
   const int step_param = 3 + sr;
-  int cost_list[5];
 
   const search_site_config *first_pass_search_sites =
       &cpi->mv_search_params.ss_cfg[SS_CFG_FPF];
@@ -239,17 +238,18 @@ static AOM_INLINE void first_pass_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
                                      first_pass_search_sites);
   ms_params.search_method = NSTEP;
 
-  tmp_err = av1_full_pixel_search(start_mv, &ms_params, step_param, cost_list,
-                                  &x->best_mv.as_fullmv, NULL);
+  FULLPEL_MV this_best_mv;
+  tmp_err = av1_full_pixel_search(start_mv, &ms_params, step_param, NULL,
+                                  &this_best_mv, NULL);
 
   if (tmp_err < INT_MAX) {
-    tmp_err = av1_get_mvpred_sse(x, &x->best_mv.as_fullmv, ref_mv, &v_fn_ptr) +
+    tmp_err = av1_get_mvpred_sse(x, &this_best_mv, ref_mv, &v_fn_ptr) +
               new_mv_mode_penalty;
   }
 
   if (tmp_err < *best_motion_err) {
     *best_motion_err = tmp_err;
-    *best_mv = x->best_mv.as_fullmv;
+    *best_mv = this_best_mv;
   }
 }
 

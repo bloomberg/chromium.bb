@@ -160,10 +160,9 @@ static int combined_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
                                      src_search_sites);
 
   av1_full_pixel_search(start_mv, &full_ms_params, step_param,
-                        cond_cost_list(cpi, cost_list), &x->best_mv.as_fullmv,
+                        cond_cost_list(cpi, cost_list), &tmp_mv->as_fullmv,
                         NULL);
 
-  *tmp_mv = x->best_mv;
   // calculate the bit cost on motion vector
   MV mvp_full = get_mv_from_fullmv(&tmp_mv->as_fullmv);
 
@@ -177,12 +176,11 @@ static int combined_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
     SUBPEL_MOTION_SEARCH_PARAMS ms_params;
     av1_make_default_subpel_ms_params(&ms_params, cpi, x, bsize, &ref_mv,
                                       cost_list);
-    MV subpel_start_mv = get_mv_from_fullmv(&x->best_mv.as_fullmv);
+    MV subpel_start_mv = get_mv_from_fullmv(&tmp_mv->as_fullmv);
     cpi->mv_search_params.find_fractional_mv_step(
-        xd, cm, &ms_params, subpel_start_mv, &x->best_mv.as_mv, &dis,
+        xd, cm, &ms_params, subpel_start_mv, &tmp_mv->as_mv, &dis,
         &x->pred_sse[ref], NULL);
 
-    *tmp_mv = x->best_mv;
     *rate_mv = av1_mv_bit_cost(&tmp_mv->as_mv, &ref_mv, x->nmv_vec_cost,
                                x->mv_cost_stack, MV_COST_WEIGHT);
   }
@@ -220,9 +218,9 @@ static int search_new_mv(AV1_COMP *cpi, MACROBLOCK *x,
     if (tmp_sad + (num_pels_log2_lookup[bsize] << 4) > best_pred_sad) return -1;
 
     frame_mv[NEWMV][ref_frame].as_int = mi->mv[0].as_int;
-    x->best_mv.as_int = mi->mv[0].as_int;
-    x->best_mv.as_mv.row >>= 3;
-    x->best_mv.as_mv.col >>= 3;
+    int_mv best_mv = mi->mv[0];
+    best_mv.as_mv.row >>= 3;
+    best_mv.as_mv.col >>= 3;
     MV ref_mv = av1_get_ref_mv(x, 0).as_mv;
 
     *rate_mv =
@@ -234,11 +232,11 @@ static int search_new_mv(AV1_COMP *cpi, MACROBLOCK *x,
     SUBPEL_MOTION_SEARCH_PARAMS ms_params;
     av1_make_default_subpel_ms_params(&ms_params, cpi, x, bsize, &ref_mv,
                                       cost_list);
-    MV start_mv = get_mv_from_fullmv(&x->best_mv.as_fullmv);
+    MV start_mv = get_mv_from_fullmv(&best_mv.as_fullmv);
     cpi->mv_search_params.find_fractional_mv_step(
-        xd, cm, &ms_params, start_mv, &x->best_mv.as_mv, &dis,
+        xd, cm, &ms_params, start_mv, &best_mv.as_mv, &dis,
         &x->pred_sse[ref_frame], NULL);
-    frame_mv[NEWMV][ref_frame].as_int = x->best_mv.as_int;
+    frame_mv[NEWMV][ref_frame].as_int = best_mv.as_int;
   } else if (!combined_motion_search(cpi, x, bsize, mi_row, mi_col,
                                      &frame_mv[NEWMV][ref_frame], rate_mv,
                                      best_rdc->rdcost, 0)) {

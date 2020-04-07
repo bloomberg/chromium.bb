@@ -1408,13 +1408,16 @@ int av1_full_pixel_search(const FULLPEL_MV start_mv,
                           const int step_param, int *cost_list,
                           FULLPEL_MV *best_mv, FULLPEL_MV *second_best_mv) {
   const BLOCK_SIZE bsize = ms_params->bsize;
-
   const SEARCH_METHODS search_method = ms_params->search_method;
 
   const int is_intra_mode = ms_params->is_intra_mode;
   int run_mesh_search = ms_params->run_mesh_search;
 
   int var = 0;
+  MARK_MV_INVALID(best_mv);
+  if (second_best_mv) {
+    MARK_MV_INVALID(second_best_mv);
+  }
 
   assert(ms_params->ms_buffers.second_pred == NULL &&
          ms_params->ms_buffers.mask == NULL &&

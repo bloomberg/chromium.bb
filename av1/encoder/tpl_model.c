@@ -122,7 +122,7 @@ static uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
                                   uint8_t *cur_frame_buf,
                                   uint8_t *ref_frame_buf, int stride,
                                   int stride_ref, BLOCK_SIZE bsize,
-                                  MV center_mv) {
+                                  MV center_mv, int_mv *best_mv) {
   AV1_COMMON *cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   TPL_SPEED_FEATURES *tpl_sf = &cpi->sf.tpl_sf;
@@ -153,7 +153,7 @@ static uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
                                      ss_cfg);
 
   av1_full_pixel_search(start_mv, &full_ms_params, step_param,
-                        cond_cost_list(cpi, cost_list), &x->best_mv.as_fullmv,
+                        cond_cost_list(cpi, cost_list), &best_mv->as_fullmv,
                         NULL);
 
   SUBPEL_MOTION_SEARCH_PARAMS ms_params;
@@ -162,9 +162,9 @@ static uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
   ms_params.forced_stop = EIGHTH_PEL;
   ms_params.var_params.subpel_search_type = USE_2_TAPS;
   ms_params.mv_cost_params.mv_cost_type = MV_COST_NONE;
-  MV subpel_start_mv = get_mv_from_fullmv(&x->best_mv.as_fullmv);
+  MV subpel_start_mv = get_mv_from_fullmv(&best_mv->as_fullmv);
   bestsme = cpi->mv_search_params.find_fractional_mv_step(
-      xd, cm, &ms_params, subpel_start_mv, &x->best_mv.as_mv, &distortion, &sse,
+      xd, cm, &ms_params, subpel_start_mv, &best_mv->as_mv, &distortion, &sse,
       NULL);
 
   return bestsme;
@@ -347,19 +347,18 @@ static AOM_INLINE void mode_estimation(
     }
 
     for (int idx = 0; idx < refmv_count; ++idx) {
+      int_mv this_mv;
       uint32_t thissme =
           motion_estimation(cpi, x, src_mb_buffer, ref_mb, src_stride,
-                            ref_stride, bsize, center_mvs[idx].as_mv);
+                            ref_stride, bsize, center_mvs[idx].as_mv, &this_mv);
 
       if (thissme < bestsme) {
         bestsme = thissme;
-        best_rfidx_mv.as_int = x->best_mv.as_int;
+        best_rfidx_mv = this_mv;
       }
     }
 
-    x->best_mv.as_int = best_rfidx_mv.as_int;
-
-    tpl_stats->mv[rf_idx].as_int = x->best_mv.as_int;
+    tpl_stats->mv[rf_idx].as_int = best_rfidx_mv.as_int;
 
     struct buf_2d ref_buf = { NULL, ref_frame_ptr->y_buffer,
                               ref_frame_ptr->y_width, ref_frame_ptr->y_height,
@@ -370,7 +369,7 @@ static AOM_INLINE void mode_estimation(
                           sf, &ref_buf, kernel);
     inter_pred_params.conv_params = get_conv_params(0, 0, xd->bd);
 
-    av1_build_inter_predictor(predictor, bw, &x->best_mv.as_mv,
+    av1_build_inter_predictor(predictor, bw, &best_rfidx_mv.as_mv,
                               &inter_pred_params);
 
     inter_cost = tpl_get_satd_cost(x, src_diff, bw, src_mb_buffer, src_stride,
@@ -383,7 +382,7 @@ static AOM_INLINE void mode_estimation(
       best_rf_idx = rf_idx;
 
       best_inter_cost = inter_cost;
-      best_mv.as_int = x->best_mv.as_int;
+      best_mv.as_int = best_rfidx_mv.as_int;
       if (best_inter_cost < best_intra_cost) {
         best_mode = NEWMV;
         xd->mi[0]->ref_frame[0] = best_rf_idx + LAST_FRAME;
