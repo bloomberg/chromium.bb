@@ -88,14 +88,14 @@ def copyIncludeFiles(destDir, doMakeStaticCRT, doMakeDynamicCRT):
     copyIncludeFilesFrom(
         os.path.join(destDir, 'include', 'blpwtk2'),
         [os.path.join(srcDir, 'blpwtk2', 'public'),
-         os.path.join(srcDir, 'out', 'static_debug', 'gen', 'blpwtk2',
+         os.path.join(srcDir, 'out', 'static_release', 'gen', 'blpwtk2',
                       'blpwtk2', 'public')])
 
   if doMakeDynamicCRT:
     copyIncludeFilesFrom(
         os.path.join(destDir, 'include', 'blpwtk2'),
         [os.path.join(srcDir, 'blpwtk2', 'public'),
-         os.path.join(srcDir, 'out', 'static_debug_md', 'gen', 'blpwtk2',
+         os.path.join(srcDir, 'out', 'static_release_md', 'gen', 'blpwtk2',
                       'blpwtk2', 'public')])
 
   copyIncludeFilesFrom(
@@ -240,7 +240,6 @@ def main(args):
   doTag = False
   doPushTag = True
   doGenerateMap = True
-  doMakeDebug = True
   doMakeRelease = True
   doMakeStaticCRT = True
   doMakeDynamicCRT = True
@@ -259,8 +258,6 @@ def main(args):
       doPushTag = False
     elif args[i] == '--nomap':
       doGenerateMap = False
-    elif args[i] == '--nodebug':
-      doMakeDebug = False
     elif args[i] == '--norelease':
       doMakeRelease = False
     elif args[i] == '--nostaticcrt':
@@ -317,29 +314,6 @@ def main(args):
   if rc != 0:
     return rc
 
-  if doMakeDebug:
-    if doMakeStaticCRT:
-      print("Building Debug with static CRT...")
-      sys.stdout.flush()
-      rc = bbutil.shellExecNoPipe('python build/blpwtk2.py static debug static_crt --bb_version')
-      if rc != 0:
-        return rc
-
-      rc = bbutil.shellExecNoPipe('ninja.exe -C out/static_debug blpwtk2_all')
-      if rc != 0:
-        return rc
-
-    if doMakeDynamicCRT:
-      print("Building Debug with dynamic CRT...")
-      sys.stdout.flush()
-      rc = bbutil.shellExecNoPipe('python build/blpwtk2.py static debug dynamic_crt --bb_version')
-      if rc != 0:
-        return rc
-
-      rc = bbutil.shellExecNoPipe('ninja.exe -C out/static_debug_md blpwtk2_all')
-      if rc != 0:
-        return rc
-
   if doMakeRelease:
     applyVariableToEnvironment('GN_DEFINES', 'is_official_build', 'true')
 
@@ -375,19 +349,6 @@ def main(args):
   os.mkdir(os.path.join(destDir, 'lib'))
 
   configs = []
-
-  if doMakeDebug:
-    if doMakeStaticCRT:
-      os.mkdir(os.path.join(destDir, 'bin', 'debug'))
-      os.mkdir(os.path.join(destDir, 'lib', 'debug'))
-      os.mkdir(os.path.join(destDir, 'bin', 'debug', swiftFolderName))
-      configs.append('debug')
-
-    if doMakeDynamicCRT:
-      os.mkdir(os.path.join(destDir, 'bin', 'debug_md'))
-      os.mkdir(os.path.join(destDir, 'lib', 'debug_md'))
-      os.mkdir(os.path.join(destDir, 'bin', 'debug_md', swiftFolderName))
-      configs.append('debug_md')
 
   if doMakeRelease:
     if doMakeStaticCRT:
