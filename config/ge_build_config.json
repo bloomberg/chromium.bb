@@ -830,18 +830,6 @@
       ]
     },
     {
-      "name": "kukui-arc-r",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": false,
-          "board_group": "",
-          "arch": "ARM_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "kumo",
       "configs": [
         {
@@ -3243,6 +3231,39 @@
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
           "board_id": 364,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "name": "kukui-arc-r",
+      "reference_board_name": "kukui-arc-r",
+      "arch": "ARM_INTERNAL",
+      "builder": "RELEASE",
+      "experimental": true,
+      "models": [
+        {
+          "board_name": "kukui-arc-r",
+          "name": "kodama",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 442,
+          "is_active": true
+        },
+        {
+          "board_name": "kukui-arc-r",
+          "name": "krane",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 442,
+          "is_active": true
+        },
+        {
+          "board_name": "kukui-arc-r",
+          "name": "kukui",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 442,
           "is_active": true
         }
       ]
