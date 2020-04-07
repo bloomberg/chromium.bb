@@ -2829,6 +2829,7 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   update_film_grain_parameters(cpi, oxcf);
 
   cpi->oxcf = *oxcf;
+  cpi->superres_mode = oxcf->superres_mode;  // default
   x->e_mbd.bd = (int)seq_params->bit_depth;
   x->e_mbd.global_motion = cm->global_motion;
 
@@ -4533,6 +4534,7 @@ static uint8_t get_superres_denom_for_qindex(const AV1_COMP *cpi, int qindex,
   */
 #if CONFIG_SUPERRES_IN_RECODE
   if (superres_in_recode_allowed(cpi)) {
+    assert(cpi->superres_mode != SUPERRES_NONE);
     // Force superres to be tried in the recode loop, as full-res is also going
     // to be tried anyway.
     denom = AOMMAX(denom, SCALE_NUMERATOR + 1);
@@ -4558,8 +4560,14 @@ static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
                  cpi->common.seq_params.enable_superres));
   assert(IMPLIES(!cpi->common.seq_params.enable_superres,
                  oxcf->superres_mode == SUPERRES_NONE));
+  // Make sure that superres mode for current encoding is consistent with user
+  // provided superres mode.
+  assert(IMPLIES(oxcf->superres_mode != SUPERRES_AUTO,
+                 cpi->superres_mode == oxcf->superres_mode));
 
-  switch (oxcf->superres_mode) {
+  // Note: we must look at the current superres_mode to be tried in 'cpi' here,
+  // not the user given mode in 'oxcf'.
+  switch (cpi->superres_mode) {
     case SUPERRES_NONE: new_denom = SCALE_NUMERATOR; break;
     case SUPERRES_FIXED:
       if (cpi->common.current_frame.frame_type == KEY_FRAME)
@@ -4713,7 +4721,7 @@ static size_params_type calculate_next_size_params(AV1_COMP *cpi) {
                               resize_denom);
   }
   rsz.superres_denom = calculate_next_superres_scale(cpi);
-  if (!validate_size_scales(oxcf->resize_mode, oxcf->superres_mode, oxcf->width,
+  if (!validate_size_scales(oxcf->resize_mode, cpi->superres_mode, oxcf->width,
                             oxcf->height, &rsz))
     assert(0 && "Invalid scale parameters");
   return rsz;
@@ -5303,7 +5311,7 @@ static void determine_sc_tools_with_encoding(AV1_COMP *cpi, const int q_orig) {
   const int is_screen_content_type_orig_decision = cpi->is_screen_content_type;
   // Turn off the encoding trial for forward key frame and superres.
   if (cpi->sf.rt_sf.use_nonrd_pick_mode || cpi->oxcf.fwd_kf_enabled ||
-      cpi->oxcf.superres_mode != SUPERRES_NONE || cpi->oxcf.mode == REALTIME ||
+      cpi->superres_mode != SUPERRES_NONE || cpi->oxcf.mode == REALTIME ||
       is_screen_content_type_orig_decision || !is_key_frame) {
     return;
   }
@@ -5396,10 +5404,11 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
   av1_setup_frame_size(cpi);
 
 #if CONFIG_SUPERRES_IN_RECODE
-  if (superres_in_recode_allowed(cpi) &&
+  if (superres_in_recode_allowed(cpi) && cpi->superres_mode != SUPERRES_NONE &&
       cm->superres_scale_denominator == SCALE_NUMERATOR) {
-    // Superres won't be picked, so no need to try, as we will go through
-    // another recode loop for full-resolution after this anyway.
+    // Superres mode in currently enabled, but the denominator selected will
+    // disable superres. So no need to continue, as we will go through another
+    // recode loop for full-resolution after this anyway.
     return -1;
   }
 #endif  // CONFIG_SUPERRES_IN_RECODE
@@ -5827,7 +5836,6 @@ static int encode_with_and_without_superres(AV1_COMP *cpi, size_t *size,
                                             uint8_t *dest,
                                             int *largest_tile_id) {
   const AV1_COMMON *const cm = &cpi->common;
-  AV1EncoderConfig *const oxcf = &cpi->oxcf;
   assert(cm->seq_params.enable_superres);
   assert(superres_in_recode_allowed(cpi));
   aom_codec_err_t err = AOM_CODEC_OK;
@@ -5835,6 +5843,7 @@ static int encode_with_and_without_superres(AV1_COMP *cpi, size_t *size,
 
   // Encode with superres.
 #if SUPERRES_RECODE_ALL_RATIOS
+  AV1EncoderConfig *const oxcf = &cpi->oxcf;
   int64_t superres_sses[SCALE_NUMERATOR];
   int64_t superres_rates[SCALE_NUMERATOR];
   int superres_largest_tile_ids[SCALE_NUMERATOR];
@@ -5878,10 +5887,11 @@ static int encode_with_and_without_superres(AV1_COMP *cpi, size_t *size,
   int64_t sse2 = INT64_MAX;
   int64_t rate2 = INT64_MAX;
   int largest_tile_id2;
-  oxcf->superres_mode = SUPERRES_NONE;  // To force full-res.
+  cpi->superres_mode = SUPERRES_NONE;  // To force full-res.
   err = encode_with_recode_loop_and_filter(cpi, size, dest, &sse2, &rate2,
                                            &largest_tile_id2);
-  oxcf->superres_mode = SUPERRES_AUTO;  // Reset.
+  cpi->superres_mode = cpi->oxcf.superres_mode;  // Reset.
+  assert(cpi->oxcf.superres_mode == SUPERRES_AUTO);
   if (err != AOM_CODEC_OK) return err;
 
   // Note: Both use common rdmult based on base qindex of fullres.

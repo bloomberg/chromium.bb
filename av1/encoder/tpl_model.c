@@ -984,7 +984,7 @@ int av1_tpl_setup_stats(AV1_COMP *cpi, int gop_eval,
   EncodeFrameParams this_frame_params = *frame_params;
   TplParams *const tpl_data = &cpi->tpl_data;
 
-  if (cpi->oxcf.superres_mode != SUPERRES_NONE) return 0;
+  if (cpi->superres_mode != SUPERRES_NONE) return 0;
 
   cm->current_frame.frame_type = frame_params->frame_type;
   for (int gf_index = gf_group->index; gf_index < gf_group->size; ++gf_index) {
@@ -1087,7 +1087,7 @@ void av1_tpl_rdmult_setup(AV1_COMP *cpi) {
   const TplDepFrame *const tpl_frame = &tpl_data->tpl_frame[tpl_idx];
 
   if (!tpl_frame->is_valid) return;
-  if (cpi->oxcf.superres_mode != SUPERRES_NONE) return;
+  if (cpi->superres_mode != SUPERRES_NONE) return;
 
   const TplDepStats *const tpl_stats = tpl_frame->tpl_stats_ptr;
   const int tpl_stride = tpl_frame->stride;
@@ -1142,7 +1142,7 @@ void av1_tpl_rdmult_setup_sb(AV1_COMP *cpi, MACROBLOCK *const x,
   if (tpl_frame->is_valid == 0) return;
   if (!is_frame_tpl_eligible(cpi)) return;
   if (tpl_idx >= MAX_LAG_BUFFERS) return;
-  if (cpi->oxcf.superres_mode != SUPERRES_NONE) return;
+  if (cpi->superres_mode != SUPERRES_NONE) return;
   if (cpi->oxcf.aq_mode != NO_AQ) return;
 
   const int bsize_base = BLOCK_16X16;

@@ -1247,6 +1247,11 @@ typedef struct AV1_COMP {
   int max_qmlevel;
   int use_quant_b_adapt;
   int num_tg;
+
+  // Super-resolution mode currently being used by the encoder.
+  // This may / may not be same as user-supplied mode in oxcf->superres_mode
+  // (when we are recoding to try multiple options for example).
+  SUPERRES_MODE superres_mode;
 } AV1_COMP;
 
 typedef struct {

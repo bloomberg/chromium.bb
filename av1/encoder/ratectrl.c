@@ -865,15 +865,15 @@ static int gf_group_pyramid_level(const GF_GROUP *gf_group, int gf_index) {
 
 static int get_active_cq_level(const RATE_CONTROL *rc,
                                const AV1EncoderConfig *const oxcf,
-                               int intra_only, int superres_denom) {
+                               int intra_only, SUPERRES_MODE superres_mode,
+                               int superres_denom) {
   static const double cq_adjust_threshold = 0.1;
   int active_cq_level = oxcf->cq_level;
   (void)intra_only;
   if (oxcf->rc_mode == AOM_CQ || oxcf->rc_mode == AOM_Q) {
     // printf("Superres %d %d %d = %d\n", superres_denom, intra_only,
     //        rc->frames_to_key, !(intra_only && rc->frames_to_key <= 1));
-    if ((oxcf->superres_mode == SUPERRES_QTHRESH ||
-         oxcf->superres_mode == SUPERRES_AUTO) &&
+    if ((superres_mode == SUPERRES_QTHRESH || superres_mode == SUPERRES_AUTO) &&
         superres_denom != SCALE_NUMERATOR) {
       int mult = SUPERRES_QADJ_PER_DENOM_KEYFRAME_SOLO;
       if (intra_only && rc->frames_to_key <= 1) {
@@ -941,8 +941,9 @@ static int rc_pick_q_and_bounds_one_pass_vbr(const AV1_COMP *cpi, int width,
   const RATE_CONTROL *const rc = &cpi->rc;
   const CurrentFrame *const current_frame = &cm->current_frame;
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
-  const int cq_level = get_active_cq_level(rc, oxcf, frame_is_intra_only(cm),
-                                           cm->superres_scale_denominator);
+  const int cq_level =
+      get_active_cq_level(rc, oxcf, frame_is_intra_only(cm), cpi->superres_mode,
+                          cm->superres_scale_denominator);
   const int bit_depth = cm->seq_params.bit_depth;
 
   if (oxcf->use_fixed_qp_offsets) {
@@ -1216,8 +1217,8 @@ static void get_intra_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
     // Tweak active_best_quality for AOM_Q mode when superres is on, as this
     // will be used directly as 'q' later.
     if (oxcf->rc_mode == AOM_Q &&
-        (oxcf->superres_mode == SUPERRES_QTHRESH ||
-         oxcf->superres_mode == SUPERRES_AUTO) &&
+        (cpi->superres_mode == SUPERRES_QTHRESH ||
+         cpi->superres_mode == SUPERRES_AUTO) &&
         cm->superres_scale_denominator != SCALE_NUMERATOR) {
       active_best_quality =
           AOMMAX(active_best_quality -
@@ -1394,8 +1395,9 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
   const RATE_CONTROL *const rc = &cpi->rc;
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   const GF_GROUP *gf_group = &cpi->gf_group;
-  const int cq_level = get_active_cq_level(rc, oxcf, frame_is_intra_only(cm),
-                                           cm->superres_scale_denominator);
+  const int cq_level =
+      get_active_cq_level(rc, oxcf, frame_is_intra_only(cm), cpi->superres_mode,
+                          cm->superres_scale_denominator);
   const int bit_depth = cm->seq_params.bit_depth;
 
   if (oxcf->use_fixed_qp_offsets) {

@@ -295,7 +295,7 @@ static int get_hier_tpl_rdmult(const AV1_COMP *const cpi, MACROBLOCK *const x,
   if (tpl_frame->is_valid == 0) return deltaq_rdmult;
   if (!is_frame_tpl_eligible((AV1_COMP *)cpi)) return deltaq_rdmult;
   if (tpl_idx >= MAX_LAG_BUFFERS) return deltaq_rdmult;
-  if (cpi->oxcf.superres_mode != SUPERRES_NONE) return deltaq_rdmult;
+  if (cpi->superres_mode != SUPERRES_NONE) return deltaq_rdmult;
   if (cpi->oxcf.aq_mode != NO_AQ) return deltaq_rdmult;
 
   const int bsize_base = BLOCK_16X16;
@@ -3970,7 +3970,7 @@ static int get_tpl_stats_b(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
                            int mi_col, int64_t *intra_cost_b,
                            int64_t *inter_cost_b, int *stride) {
   if (!cpi->oxcf.enable_tpl_model) return 0;
-  if (cpi->oxcf.superres_mode != SUPERRES_NONE) return 0;
+  if (cpi->superres_mode != SUPERRES_NONE) return 0;
   if (cpi->common.current_frame.frame_type == KEY_FRAME) return 0;
   const FRAME_UPDATE_TYPE update_type = get_frame_update_type(&cpi->gf_group);
   if (update_type == INTNL_OVERLAY_UPDATE || update_type == OVERLAY_UPDATE)
@@ -4567,7 +4567,7 @@ static void init_ref_frame_space(AV1_COMP *cpi, ThreadData *td, int mi_row,
   if (tpl_frame->is_valid == 0) return;
   if (!is_frame_tpl_eligible(cpi)) return;
   if (frame_idx >= MAX_LAG_BUFFERS) return;
-  if (cpi->oxcf.superres_mode != SUPERRES_NONE) return;
+  if (cpi->superres_mode != SUPERRES_NONE) return;
   if (cpi->oxcf.aq_mode != NO_AQ) return;
 
   const int is_overlay = cpi->gf_group.update_type[frame_idx] == OVERLAY_UPDATE;
