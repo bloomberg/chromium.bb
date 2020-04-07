@@ -1,4 +1,14 @@
 {
+    "jessie_arm": {
+        "Sha1Sum": "5565736d389d834938b238bf6391a7facef1c26f",
+        "SysrootDir": "debian_jessie_arm-sysroot",
+        "Tarball": "debian_jessie_arm_sysroot.tar.xz"
+    },
+    "jessie_arm64": {
+        "Sha1Sum": "6281c416ea24fdb4d1e5c411feb7cc88eb87aecd",
+        "SysrootDir": "debian_jessie_arm64-sysroot",
+        "Tarball": "debian_jessie_arm64_sysroot.tar.xz"
+    },
     "sid_arm": {
         "Sha1Sum": "07ef353ec66ca510a9b24a927db823e44435c764",
         "SysrootDir": "debian_sid_arm-sysroot",
@@ -9,5 +19,4 @@
         "SysrootDir": "debian_sid_arm64-sysroot",
         "Tarball": "debian_sid_arm64_sysroot.tar.xz"
     }
-
 }

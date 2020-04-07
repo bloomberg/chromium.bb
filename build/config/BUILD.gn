@@ -226,8 +226,6 @@ config("default_coverage") {
 
 config("sysroot_runtime_libraries") {
   if (sysroot != "") {
-    # As other sysroot CPU targets get added, they should be checked here.
-    assert(current_cpu == "arm" || current_cpu == "arm64")
     assert(is_clang)
     sysroot_path = rebase_path(sysroot, root_build_dir)
     flags = [ "--sysroot=" + sysroot_path ]
@@ -235,6 +233,7 @@ config("sysroot_runtime_libraries") {
                        [
                          "--print-hash",
                          "$current_cpu",
+                         "$sysroot_platform",
                        ],
                        "trim string",
                        [ "//build/scripts/sysroots.json" ])

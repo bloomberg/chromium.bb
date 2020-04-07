@@ -44,13 +44,7 @@ URL_PREFIX = 'https://storage.googleapis.com'
 URL_PATH = 'openscreen-sysroots'
 
 VALID_ARCHS = ('arm', 'arm64')
-
-ARCH_TRANSLATIONS = {
-    'x64': 'amd64',
-    'x86': 'i386',
-}
-
-DEFAULT_TARGET_PLATFORM = 'sid'
+VALID_PLATFORMS = ('jessie', 'sid')
 
 
 class Error(Exception):
@@ -140,8 +134,11 @@ def parse_args(args):
     p = argparse.ArgumentParser()
     p.add_argument(
         'arch',
-        nargs=1,
         help='Sysroot architecture: %s' % ', '.join(VALID_ARCHS))
+    p.add_argument(
+        'platform',
+        help='Sysroot platform: %s' % ', '.join(VALID_PLATFORMS)
+    )
     p.add_argument(
         '--print-hash', action="store_true",
         help='Print the hash of the sysroot for the specified arch.')
@@ -155,12 +152,10 @@ def main(args):
         return 1
 
     parsed_args = parse_args(args)
-    arch = ARCH_TRANSLATIONS.get(parsed_args.arch[0], parsed_args.arch[0])
-
     if parsed_args.print_hash:
-        print(GetSysrootDict(DEFAULT_TARGET_PLATFORM, arch)['Sha1Sum'])
+        print(GetSysrootDict(parsed_args.platform, parsed_args.arch)['Sha1Sum'])
 
-    InstallSysroot(DEFAULT_TARGET_PLATFORM, arch)
+    InstallSysroot(parsed_args.platform, parsed_args.arch)
     return 0
 
 
