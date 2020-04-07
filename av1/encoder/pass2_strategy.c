@@ -55,7 +55,7 @@ static double calculate_modified_err(const FRAME_INFO *frame_info,
                                      const TWO_PASS *twopass,
                                      const AV1EncoderConfig *oxcf,
                                      const FIRSTPASS_STATS *this_frame) {
-  const FIRSTPASS_STATS *const stats = twopass->total_stats;
+  const FIRSTPASS_STATS *const stats = twopass->stats_buf_ctx->total_stats;
   if (stats == NULL) {
     return 0;
   }
@@ -2410,20 +2410,31 @@ static void process_first_pass_stats(AV1_COMP *cpi,
   TWO_PASS *const twopass = &cpi->twopass;
 
   if (cpi->oxcf.rc_mode != AOM_Q && current_frame->frame_number == 0 &&
-      cpi->twopass.total_stats && cpi->twopass.total_left_stats) {
-    const int frames_left =
-        (int)(twopass->total_stats->count - current_frame->frame_number);
+      cpi->twopass.stats_buf_ctx->total_stats &&
+      cpi->twopass.stats_buf_ctx->total_left_stats) {
+    if (cpi->lap_enabled) {
+      /*
+       * Accumulate total_stats using available limited number of stats,
+       * and assign it to total_left_stats.
+       */
+      *cpi->twopass.stats_buf_ctx->total_left_stats =
+          *cpi->twopass.stats_buf_ctx->total_stats;
+    }
+    const int frames_left = (int)(twopass->stats_buf_ctx->total_stats->count -
+                                  current_frame->frame_number);
 
     // Special case code for first frame.
     const int section_target_bandwidth =
         (int)(twopass->bits_left / frames_left);
-    const double section_length = twopass->total_left_stats->count;
+    const double section_length =
+        twopass->stats_buf_ctx->total_left_stats->count;
     const double section_error =
-        twopass->total_left_stats->coded_error / section_length;
+        twopass->stats_buf_ctx->total_left_stats->coded_error / section_length;
     const double section_intra_skip =
-        twopass->total_left_stats->intra_skip_pct / section_length;
+        twopass->stats_buf_ctx->total_left_stats->intra_skip_pct /
+        section_length;
     const double section_inactive_zone =
-        (twopass->total_left_stats->inactive_zone_rows * 2) /
+        (twopass->stats_buf_ctx->total_left_stats->inactive_zone_rows * 2) /
         ((double)cm->mi_params.mb_rows * section_length);
     const int tmp_q = get_twopass_worst_quality(
         cpi, section_error, section_intra_skip + section_inactive_zone,
@@ -2458,8 +2469,8 @@ static void process_first_pass_stats(AV1_COMP *cpi,
   }
 
   // Update the total stats remaining structure.
-  if (twopass->total_left_stats)
-    subtract_stats(twopass->total_left_stats, this_frame);
+  if (twopass->stats_buf_ctx->total_left_stats)
+    subtract_stats(twopass->stats_buf_ctx->total_left_stats, this_frame);
 
   // Set the frame content type flag.
   if (this_frame->intra_skip_pct >= FC_ANIMATION_THRESH)
@@ -2661,17 +2672,12 @@ void av1_init_second_pass(AV1_COMP *cpi) {
   double frame_rate;
   FIRSTPASS_STATS *stats;
 
-  twopass->total_stats = aom_calloc(1, sizeof(FIRSTPASS_STATS));
-  twopass->total_left_stats = aom_calloc(1, sizeof(FIRSTPASS_STATS));
-  av1_twopass_zero_stats(twopass->total_stats);
-  av1_twopass_zero_stats(twopass->total_left_stats);
-
   if (!twopass->stats_buf_ctx->stats_in_end) return;
 
-  stats = twopass->total_stats;
+  stats = twopass->stats_buf_ctx->total_stats;
 
   *stats = *twopass->stats_buf_ctx->stats_in_end;
-  *twopass->total_left_stats = *stats;
+  *twopass->stats_buf_ctx->total_left_stats = *stats;
 
   frame_rate = 10000000.0 * stats->count / stats->duration;
   // Each frame can have a different duration, as the frame rate in the source
@@ -2725,9 +2731,6 @@ void av1_init_second_pass(AV1_COMP *cpi) {
 
 void av1_init_single_pass_lap(AV1_COMP *cpi) {
   TWO_PASS *const twopass = &cpi->twopass;
-
-  twopass->total_stats = NULL;
-  twopass->total_left_stats = NULL;
 
   if (!twopass->stats_buf_ctx->stats_in_end) return;
 

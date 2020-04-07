@@ -1818,9 +1818,10 @@ static aom_codec_err_t ctrl_enable_sb_multipass_unit_test(
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
-static aom_codec_err_t create_frame_stats_buffer(
-    FIRSTPASS_STATS **frame_stats_buffer, STATS_BUFFER_CTX *stats_buf_context,
-    int num_lap_buffers) {
+#if !CONFIG_REALTIME_ONLY
+static aom_codec_err_t create_stats_buffer(FIRSTPASS_STATS **frame_stats_buffer,
+                                           STATS_BUFFER_CTX *stats_buf_context,
+                                           int num_lap_buffers) {
   aom_codec_err_t res = AOM_CODEC_OK;
 
   int size = get_stats_buf_size(num_lap_buffers, MAX_LAG_BUFFERS);
@@ -1832,8 +1833,16 @@ static aom_codec_err_t create_frame_stats_buffer(
   stats_buf_context->stats_in_end = stats_buf_context->stats_in_start;
   stats_buf_context->stats_in_buf_end =
       stats_buf_context->stats_in_start + size;
+
+  stats_buf_context->total_left_stats = aom_calloc(1, sizeof(FIRSTPASS_STATS));
+  if (stats_buf_context->total_left_stats == NULL) return AOM_CODEC_MEM_ERROR;
+  av1_twopass_zero_stats(stats_buf_context->total_left_stats);
+  stats_buf_context->total_stats = aom_calloc(1, sizeof(FIRSTPASS_STATS));
+  if (stats_buf_context->total_stats == NULL) return AOM_CODEC_MEM_ERROR;
+  av1_twopass_zero_stats(stats_buf_context->total_stats);
   return res;
 }
+#endif
 
 static aom_codec_err_t create_context_and_bufferpool(
     AV1_COMP **p_cpi, BufferPool **p_buffer_pool, AV1EncoderConfig *oxcf,
@@ -1911,10 +1920,11 @@ static aom_codec_err_t encoder_init(aom_codec_ctx_t *ctx,
       priv->oxcf.use_highbitdepth =
           (ctx->init_flags & AOM_CODEC_USE_HIGHBITDEPTH) ? 1 : 0;
 
-      res =
-          create_frame_stats_buffer(&priv->frame_stats_buffer,
-                                    &priv->stats_buf_context, *num_lap_buffers);
+#if !CONFIG_REALTIME_ONLY
+      res = create_stats_buffer(&priv->frame_stats_buffer,
+                                &priv->stats_buf_context, *num_lap_buffers);
       if (res != AOM_CODEC_OK) return AOM_CODEC_MEM_ERROR;
+#endif
 
       res = create_context_and_bufferpool(
           &priv->cpi, &priv->buffer_pool, &priv->oxcf, &priv->pkt_list.head,
@@ -1935,9 +1945,6 @@ static aom_codec_err_t encoder_init(aom_codec_ctx_t *ctx,
   return res;
 }
 
-static void destroy_frame_stats_buffer(FIRSTPASS_STATS *frame_stats_buffer) {
-  aom_free(frame_stats_buffer);
-}
 static void destroy_context_and_bufferpool(AV1_COMP *cpi,
                                            BufferPool *buffer_pool) {
   av1_remove_compressor(cpi);
@@ -1945,6 +1952,13 @@ static void destroy_context_and_bufferpool(AV1_COMP *cpi,
   if (buffer_pool) pthread_mutex_destroy(&buffer_pool->pool_mutex);
 #endif
   aom_free(buffer_pool);
+}
+
+static void destroy_stats_buffer(STATS_BUFFER_CTX *stats_buf_context,
+                                 FIRSTPASS_STATS *frame_stats_buffer) {
+  aom_free(stats_buf_context->total_left_stats);
+  aom_free(stats_buf_context->total_stats);
+  aom_free(frame_stats_buffer);
 }
 
 static aom_codec_err_t encoder_destroy(aom_codec_alg_priv_t *ctx) {
@@ -1957,7 +1971,7 @@ static aom_codec_err_t encoder_destroy(aom_codec_alg_priv_t *ctx) {
     ctx->cpi_lap->lookahead = NULL;
     destroy_context_and_bufferpool(ctx->cpi_lap, ctx->buffer_pool_lap);
   }
-  destroy_frame_stats_buffer(ctx->frame_stats_buffer);
+  destroy_stats_buffer(&ctx->stats_buf_context, ctx->frame_stats_buffer);
   aom_free(ctx);
   return AOM_CODEC_OK;
 }

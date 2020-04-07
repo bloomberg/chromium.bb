@@ -2748,7 +2748,7 @@ static void config_target_level(AV1_COMP *const cpi, AV1_LEVEL target_level,
   oxcf->target_bandwidth = AOMMIN(oxcf->target_bandwidth, max_bitrate);
   // Also need to update cpi->twopass.bits_left.
   TWO_PASS *const twopass = &cpi->twopass;
-  FIRSTPASS_STATS *stats = twopass->total_stats;
+  FIRSTPASS_STATS *stats = twopass->stats_buf_ctx->total_stats;
   if (stats != NULL)
     cpi->twopass.bits_left =
         (int64_t)(stats->duration * cpi->oxcf.target_bandwidth / 10000000.0);
@@ -3156,9 +3156,7 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf, BufferPool *const pool,
   cpi->twopass.stats_in = cpi->twopass.stats_buf_ctx->stats_in_start;
 
 #if !CONFIG_REALTIME_ONLY
-  if (is_stat_generation_stage(cpi)) {
-    av1_init_first_pass(cpi);
-  } else if (is_stat_consumption_stage(cpi)) {
+  if (is_stat_consumption_stage(cpi)) {
     const size_t packet_sz = sizeof(FIRSTPASS_STATS);
     const int packets = (int)(oxcf->two_pass_stats_in.sz / packet_sz);
 
@@ -3667,9 +3665,6 @@ void av1_remove_compressor(AV1_COMP *cpi) {
   if (cpi->sf.use_hash_based_trellis) hbt_destroy();
 #endif  // CONFIG_HTB_TRELLIS
   av1_free_ref_frame_buffers(cm->buffer_pool);
-
-  aom_free(cpi->twopass.total_stats);
-  aom_free(cpi->twopass.total_left_stats);
 
   aom_free(cpi);
 
