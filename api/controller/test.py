@@ -129,7 +129,7 @@ def BuildTargetUnitTest(input_proto, output_proto, _config):
 @validate.validation_complete
 def ChromiteUnitTest(_input_proto, _output_proto, _config):
   """Run the chromite unit tests."""
-  cmd = [os.path.join(constants.CHROMITE_DIR, 'scripts', 'run_tests')]
+  cmd = [os.path.join(constants.CHROMITE_DIR, 'scripts', 'run_tests'), '--py2']
   result = cros_build_lib.run(cmd, check=False)
   if result.returncode == 0:
     return controller.RETURN_CODE_SUCCESS
