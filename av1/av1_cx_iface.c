@@ -2399,7 +2399,7 @@ static aom_codec_err_t ctrl_use_reference(aom_codec_alg_priv_t *ctx,
                                           va_list args) {
   const int reference_flag = va_arg(args, int);
 
-  av1_use_as_reference(ctx->cpi, reference_flag);
+  av1_use_as_reference(&ctx->cpi->ext_flags.ref_frame_flags, reference_flag);
   return AOM_CODEC_OK;
 }
 

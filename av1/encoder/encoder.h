@@ -958,6 +958,43 @@ typedef struct {
 } WinnerModeParams;
 
 typedef struct {
+  // Bit mask to disable certain reference frame types.
+  int ref_frame_flags;
+
+  // Flags to determine which reference buffers are refreshed by this frame.
+  // When set, the encoder will update the particular reference frame buffer
+  // with the contents of the current frame.
+  bool refresh_last_frame;
+  bool refresh_golden_frame;
+  bool refresh_bwd_ref_frame;
+  bool refresh_alt2_ref_frame;
+  bool refresh_alt_ref_frame;
+
+  // Flag to indicate that updation of refresh frame flags from external
+  // interface is pending.
+  bool refresh_frame_flags_pending;
+
+  // Flag to enable the updation of frame contexts at the end of a frame decode.
+  bool refresh_frame_context;
+
+  // Flag to indicate that updation of refresh_frame_context from external
+  // interface is pending.
+  bool refresh_frame_context_pending;
+
+  // Flag to enable temporal MV prediction.
+  bool use_ref_frame_mvs;
+
+  // Flag to code the frame as error-resilient.
+  bool use_error_resilient;
+
+  // Flag to code the frame as s-frame.
+  bool use_s_frame;
+
+  // Flag to set the frame's primary_ref_frame to PRIMARY_REF_NONE.
+  bool use_primary_ref_none;
+} ExternalFlags;
+
+typedef struct {
   int arf_stack[FRAME_BUFFERS];
   int arf_stack_size;
   int lst_stack[FRAME_BUFFERS];
@@ -1071,19 +1108,8 @@ typedef struct AV1_COMP {
   // frame of the same type as the current frame).
   int fb_of_context_type[REF_FRAMES];
 
-  int ext_refresh_frame_flags_pending;
-  int ext_refresh_last_frame;
-  int ext_refresh_golden_frame;
-  int ext_refresh_bwd_ref_frame;
-  int ext_refresh_alt2_ref_frame;
-  int ext_refresh_alt_ref_frame;
-
-  int ext_refresh_frame_context_pending;
-  int ext_refresh_frame_context;
-  int ext_use_ref_frame_mvs;
-  int ext_use_error_resilient;
-  int ext_use_s_frame;
-  int ext_use_primary_ref_none;
+  // Flags signalled by the external interface at frame level.
+  ExternalFlags ext_flags;
 
   YV12_BUFFER_CONFIG last_frame_uf;
   YV12_BUFFER_CONFIG trial_frame_rst;
@@ -1110,7 +1136,6 @@ typedef struct AV1_COMP {
   struct aom_codec_pkt_list *output_pkt_list;
 
   int ref_frame_flags;
-  int ext_ref_frame_flags;
 
   // speed is passed as a per-frame parameter into the encoder
   int speed;
@@ -1396,7 +1421,7 @@ aom_codec_err_t av1_copy_new_frame_enc(AV1_COMMON *cm,
                                        YV12_BUFFER_CONFIG *new_frame,
                                        YV12_BUFFER_CONFIG *sd);
 
-int av1_use_as_reference(AV1_COMP *cpi, int ref_frame_flags);
+int av1_use_as_reference(int *ext_ref_frame_flags, int ref_frame_flags);
 
 int av1_copy_reference_enc(AV1_COMP *cpi, int idx, YV12_BUFFER_CONFIG *sd);
 
@@ -1406,7 +1431,8 @@ int av1_set_size_literal(AV1_COMP *cpi, int width, int height);
 
 void av1_set_frame_size(AV1_COMP *cpi, int width, int height);
 
-int av1_update_entropy(AV1_COMP *cpi, int update);
+int av1_update_entropy(bool *ext_refresh_frame_context,
+                       bool *ext_refresh_frame_context_pending, bool update);
 
 int av1_set_active_map(AV1_COMP *cpi, unsigned char *map, int rows, int cols);
 
@@ -1731,22 +1757,23 @@ static const MV_REFERENCE_FRAME
       ALTREF2_FRAME, LAST2_FRAME,  LAST3_FRAME,
     };
 
-static INLINE int get_ref_frame_flags(const AV1_COMP *const cpi,
-                                      const YV12_BUFFER_CONFIG **ref_frames) {
-  // cpi->ext_ref_frame_flags allows certain reference types to be disabled
-  // by the external interface.  These are set by av1_apply_encoding_flags().
-  // Start with what the external interface allows, then suppress any reference
-  // types which we have found to be duplicates.
-  int flags = cpi->ext_ref_frame_flags;
+static INLINE int get_ref_frame_flags(const SPEED_FEATURES *const sf,
+                                      const YV12_BUFFER_CONFIG **ref_frames,
+                                      const int ext_ref_frame_flags) {
+  // cpi->ext_flags.ref_frame_flags allows certain reference types to be
+  // disabled by the external interface.  These are set by
+  // av1_apply_encoding_flags(). Start with what the external interface allows,
+  // then suppress any reference types which we have found to be duplicates.
+  int flags = ext_ref_frame_flags;
 
   for (int i = 1; i < INTER_REFS_PER_FRAME; ++i) {
     const YV12_BUFFER_CONFIG *const this_ref = ref_frames[i];
     // If this_ref has appeared before, mark the corresponding ref frame as
     // invalid. For nonrd mode, only disable GOLDEN_FRAME if it's the same
     // as LAST_FRAME or ALTREF_FRAME (if ALTREF is being used in nonrd).
-    int index = (cpi->sf.rt_sf.use_nonrd_pick_mode &&
+    int index = (sf->rt_sf.use_nonrd_pick_mode &&
                  ref_frame_priority_order[i] == GOLDEN_FRAME)
-                    ? (1 + cpi->sf.rt_sf.use_nonrd_altref_frame)
+                    ? (1 + sf->rt_sf.use_nonrd_altref_frame)
                     : i;
     for (int j = 0; j < index; ++j) {
       if (this_ref == ref_frames[j]) {

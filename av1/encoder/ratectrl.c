@@ -1957,6 +1957,8 @@ int av1_calc_iframe_target_size_one_pass_cbr(const AV1_COMP *cpi) {
 
 static void set_reference_structure_one_pass_rt(AV1_COMP *cpi, int gf_update) {
   AV1_COMMON *const cm = &cpi->common;
+  ExternalFlags *const ext_flags = &cpi->ext_flags;
+  SVC *const svc = &cpi->svc;
   // Specify the reference prediction structure, for 1 layer nonrd mode.
   // Current structue is to use 3 references (LAST, GOLDEN, ALTREF),
   // where ALT_REF always behind current by lag_alt frames, and GOLDEN is
@@ -1968,18 +1970,18 @@ static void set_reference_structure_one_pass_rt(AV1_COMP *cpi, int gf_update) {
   int last_idx_refresh = 0;
   int gld_idx = 0;
   int alt_ref_idx = 0;
-  cpi->ext_refresh_frame_flags_pending = 1;
-  cpi->svc.external_ref_frame_config = 1;
-  cpi->ext_ref_frame_flags = 0;
-  cpi->ext_refresh_last_frame = 1;
-  cpi->ext_refresh_golden_frame = 0;
-  cpi->ext_refresh_alt_ref_frame = 0;
-  for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) cpi->svc.ref_idx[i] = 7;
-  for (int i = 0; i < REF_FRAMES; ++i) cpi->svc.refresh[i] = 0;
+  ext_flags->refresh_frame_flags_pending = 1;
+  svc->external_ref_frame_config = 1;
+  ext_flags->ref_frame_flags = 0;
+  ext_flags->refresh_last_frame = 1;
+  ext_flags->refresh_golden_frame = 0;
+  ext_flags->refresh_alt_ref_frame = 0;
+  for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) svc->ref_idx[i] = 7;
+  for (int i = 0; i < REF_FRAMES; ++i) svc->refresh[i] = 0;
   // Always reference LAST, GOLDEN, ALTREF
-  cpi->ext_ref_frame_flags ^= AOM_LAST_FLAG;
-  cpi->ext_ref_frame_flags ^= AOM_GOLD_FLAG;
-  cpi->ext_ref_frame_flags ^= AOM_ALT_FLAG;
+  ext_flags->ref_frame_flags ^= AOM_LAST_FLAG;
+  ext_flags->ref_frame_flags ^= AOM_GOLD_FLAG;
+  ext_flags->ref_frame_flags ^= AOM_ALT_FLAG;
   const int sh = 7 - gld_fixed_slot;
   // Moving index slot for last: 0 - (sh - 1).
   if (cm->current_frame.frame_number > 1)
@@ -1997,16 +1999,16 @@ static void set_reference_structure_one_pass_rt(AV1_COMP *cpi, int gf_update) {
   // Moving index for alt_ref, lag behind LAST by lag_alt frames.
   if (cm->current_frame.frame_number > lag_alt)
     alt_ref_idx = ((cm->current_frame.frame_number - lag_alt) % sh);
-  cpi->svc.ref_idx[0] = last_idx;          // LAST
-  cpi->svc.ref_idx[1] = last_idx_refresh;  // LAST2 (for refresh of last).
-  cpi->svc.ref_idx[3] = gld_idx;           // GOLDEN
-  cpi->svc.ref_idx[6] = alt_ref_idx;       // ALT_REF
+  svc->ref_idx[0] = last_idx;          // LAST
+  svc->ref_idx[1] = last_idx_refresh;  // LAST2 (for refresh of last).
+  svc->ref_idx[3] = gld_idx;           // GOLDEN
+  svc->ref_idx[6] = alt_ref_idx;       // ALT_REF
   // Refresh this slot, which will become LAST on next frame.
-  cpi->svc.refresh[last_idx_refresh] = 1;
+  svc->refresh[last_idx_refresh] = 1;
   // Update GOLDEN on period for fixed slot case.
   if (gld_fixed_slot && gf_update) {
-    cpi->ext_refresh_golden_frame = 1;
-    cpi->svc.refresh[gld_idx] = 1;
+    ext_flags->refresh_golden_frame = 1;
+    svc->refresh[gld_idx] = 1;
   }
 }
 
