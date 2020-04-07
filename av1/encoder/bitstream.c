@@ -1311,12 +1311,15 @@ static int rd_token_stats_mismatch(RD_STATS *rd_stats, TOKEN_STATS *token_stats,
 #endif
 
 #if ENC_MISMATCH_DEBUG
-static AOM_INLINE void enc_dump_logs(AV1_COMP *cpi, int mi_row, int mi_col) {
-  AV1_COMMON *const cm = &cpi->common;
+static AOM_INLINE void enc_dump_logs(
+    const AV1_COMMON *const cm,
+    const MBMIExtFrameBufferInfo *const mbmi_ext_info, int mi_row, int mi_col) {
   const MB_MODE_INFO *const mbmi = *(
       cm->mi_params.mi_grid_base + (mi_row * cm->mi_params.mi_stride + mi_col));
-  const MB_MODE_INFO_EXT_FRAME *const mbmi_ext_frame_base =
-      cpi->mbmi_ext_frame_base + get_mi_ext_idx(&cm->mi_params, mi_row, mi_col);
+  const MB_MODE_INFO_EXT_FRAME *const mbmi_ext_frame =
+      mbmi_ext_info->frame_base + get_mi_ext_idx(mi_row, mi_col,
+                                                 cm->mi_params.mi_alloc_bsize,
+                                                 mbmi_ext_info->stride);
   if (is_inter_block(mbmi)) {
 #define FRAME_TO_CHECK 11
     if (cm->current_frame.frame_number == FRAME_TO_CHECK &&
@@ -1378,7 +1381,7 @@ static AOM_INLINE void write_mbmi_b(AV1_COMP *cpi, aom_writer *w) {
     set_ref_ptrs(cm, xd, m->ref_frame[0], m->ref_frame[1]);
 
 #if ENC_MISMATCH_DEBUG
-    enc_dump_logs(cpi, xd->mi_row, xd->mi_col);
+    enc_dump_logs(cm, &cpi->mbmi_ext_info, xd->mi_row, xd->mi_col);
 #endif  // ENC_MISMATCH_DEBUG
 
     pack_inter_mode_mvs(cpi, w);
@@ -1485,7 +1488,9 @@ static AOM_INLINE void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
   const int grid_idx = mi_row * mi_params->mi_stride + mi_col;
   xd->mi = mi_params->mi_grid_base + grid_idx;
   cpi->td.mb.mbmi_ext_frame =
-      cpi->mbmi_ext_frame_base + get_mi_ext_idx(cpi, mi_row, mi_col);
+      cpi->mbmi_ext_info.frame_base +
+      get_mi_ext_idx(mi_row, mi_col, cm->mi_params.mi_alloc_bsize,
+                     cpi->mbmi_ext_info.stride);
   xd->tx_type_map = mi_params->tx_type_map + grid_idx;
   xd->tx_type_map_stride = mi_params->mi_stride;
 

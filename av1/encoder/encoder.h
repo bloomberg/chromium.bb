@@ -746,6 +746,17 @@ typedef struct {
   YV12_BUFFER_CONFIG buf;
 } EncRefCntBuffer;
 
+typedef struct {
+  // Buffer to store mode information at mi_alloc_bsize (4x4 or 8x8) level for
+  // use in bitstream preparation. frame_base[mi_row * stride + mi_col] stores
+  // the mode information of block (mi_row,mi_col).
+  MB_MODE_INFO_EXT_FRAME *frame_base;
+  // Size of frame_base buffer.
+  int alloc_size;
+  // Stride of frame_base buffer.
+  int stride;
+} MBMIExtFrameBufferInfo;
+
 #if CONFIG_COLLECT_PARTITION_STATS == 2
 typedef struct PartitionStats {
   int partition_decisions[6][EXT_PARTITION_TYPES];
@@ -961,9 +972,10 @@ typedef struct AV1_COMP {
   QUANTS quants;
   ThreadData td;
   FRAME_COUNTS counts;
-  MB_MODE_INFO_EXT_FRAME *mbmi_ext_frame_base;
-  int mbmi_ext_alloc_size;
-  int mbmi_ext_stride;
+
+  // Holds buffer storing mode information at 4x4/8x8 level.
+  MBMIExtFrameBufferInfo mbmi_ext_info;
+
   CB_COEFF_BUFFER *coeff_buffer_base;
   Dequants dequants;
   AV1_COMMON common;
@@ -1608,26 +1620,27 @@ static INLINE int encode_show_existing_frame(const AV1_COMMON *cm) {
                                      cm->current_frame.frame_type == KEY_FRAME);
 }
 
-// Get index into the 'cpi->mbmi_ext_frame_base' array for the given 'mi_row'
-// and 'mi_col'.
-static INLINE int get_mi_ext_idx(const AV1_COMP *const cpi, int mi_row,
-                                 int mi_col) {
-  const BLOCK_SIZE mi_ext_bsize = cpi->common.mi_params.mi_alloc_bsize;
-  const int mi_ext_size_1d = mi_size_wide[mi_ext_bsize];
+// Get index into the 'cpi->mbmi_ext_info.frame_base' array for the given
+// 'mi_row' and 'mi_col'.
+static INLINE int get_mi_ext_idx(const int mi_row, const int mi_col,
+                                 const BLOCK_SIZE mi_alloc_bsize,
+                                 const int mbmi_ext_stride) {
+  const int mi_ext_size_1d = mi_size_wide[mi_alloc_bsize];
   const int mi_ext_row = mi_row / mi_ext_size_1d;
   const int mi_ext_col = mi_col / mi_ext_size_1d;
-  return mi_ext_row * cpi->mbmi_ext_stride + mi_ext_col;
+  return mi_ext_row * mbmi_ext_stride + mi_ext_col;
 }
 
 // Lighter version of set_offsets that only sets the mode info
 // pointers.
-static INLINE void set_mode_info_offsets(const AV1_COMP *const cpi,
-                                         MACROBLOCK *const x,
-                                         MACROBLOCKD *const xd, int mi_row,
-                                         int mi_col) {
-  set_mi_offsets(&cpi->common.mi_params, xd, mi_row, mi_col);
-  const int ext_idx = get_mi_ext_idx(cpi, mi_row, mi_col);
-  x->mbmi_ext_frame = cpi->mbmi_ext_frame_base + ext_idx;
+static INLINE void set_mode_info_offsets(
+    const CommonModeInfoParams *const mi_params,
+    const MBMIExtFrameBufferInfo *const mbmi_ext_info, MACROBLOCK *const x,
+    MACROBLOCKD *const xd, int mi_row, int mi_col) {
+  set_mi_offsets(mi_params, xd, mi_row, mi_col);
+  const int ext_idx = get_mi_ext_idx(mi_row, mi_col, mi_params->mi_alloc_bsize,
+                                     mbmi_ext_info->stride);
+  x->mbmi_ext_frame = mbmi_ext_info->frame_base + ext_idx;
 }
 
 // Check to see if the given partition size is allowed for a specified number

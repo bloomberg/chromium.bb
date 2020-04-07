@@ -128,7 +128,8 @@ static AOM_INLINE void set_block_size(AV1_COMP *const cpi, MACROBLOCK *const x,
                                       int mi_col, BLOCK_SIZE bsize) {
   if (cpi->common.mi_params.mi_cols > mi_col &&
       cpi->common.mi_params.mi_rows > mi_row) {
-    set_mode_info_offsets(cpi, x, xd, mi_row, mi_col);
+    set_mode_info_offsets(&cpi->common.mi_params, &cpi->mbmi_ext_info, x, xd,
+                          mi_row, mi_col);
     xd->mi[0]->sb_type = bsize;
   }
 }

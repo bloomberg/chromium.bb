@@ -904,8 +904,9 @@ static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
     av1_init_mi_buffers(&cm->mi_params);
     setup_mi(cpi, frame_input->source);
     av1_init_macroblockd(cm, xd, NULL);
-    memset(cpi->mbmi_ext_frame_base, 0,
-           cpi->mbmi_ext_alloc_size * sizeof(*cpi->mbmi_ext_frame_base));
+    memset(
+        cpi->mbmi_ext_info.frame_base, 0,
+        cpi->mbmi_ext_info.alloc_size * sizeof(*cpi->mbmi_ext_info.frame_base));
 
     av1_set_speed_features_framesize_independent(cpi, oxcf->speed);
     av1_set_speed_features_framesize_dependent(cpi, oxcf->speed);

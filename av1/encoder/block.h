@@ -107,7 +107,7 @@ typedef struct {
   uint8_t ref_mv_count[MODE_CTX_REF_FRAMES];
 } MB_MODE_INFO_EXT;
 
-// Structure to store winner reference mode information at frame level. This
+// Structure to store best mode information at frame level. This
 // frame level information will be used during bitstream preparation stage.
 typedef struct {
   CANDIDATE_MV ref_mv_stack[USABLE_REF_MV_STACK_SIZE];

@@ -715,16 +715,16 @@ void av1_initialize_enc(void) {
   av1_init_wedge_masks();
 }
 
-static void dealloc_context_buffers_ext(AV1_COMP *cpi) {
-  if (cpi->mbmi_ext_frame_base) {
-    aom_free(cpi->mbmi_ext_frame_base);
-    cpi->mbmi_ext_frame_base = NULL;
-    cpi->mbmi_ext_alloc_size = 0;
+static void dealloc_context_buffers_ext(MBMIExtFrameBufferInfo *mbmi_ext_info) {
+  if (mbmi_ext_info->frame_base) {
+    aom_free(mbmi_ext_info->frame_base);
+    mbmi_ext_info->frame_base = NULL;
+    mbmi_ext_info->alloc_size = 0;
   }
 }
 
-static void alloc_context_buffers_ext(AV1_COMP *cpi) {
-  AV1_COMMON *cm = &cpi->common;
+static void alloc_context_buffers_ext(AV1_COMMON *cm,
+                                      MBMIExtFrameBufferInfo *mbmi_ext_info) {
   const CommonModeInfoParams *const mi_params = &cm->mi_params;
 
   const int mi_alloc_size_1d = mi_size_wide[mi_params->mi_alloc_bsize];
@@ -734,16 +734,16 @@ static void alloc_context_buffers_ext(AV1_COMP *cpi) {
       (mi_params->mi_cols + mi_alloc_size_1d - 1) / mi_alloc_size_1d;
   const int new_ext_mi_size = mi_alloc_rows * mi_alloc_cols;
 
-  if (new_ext_mi_size > cpi->mbmi_ext_alloc_size) {
-    dealloc_context_buffers_ext(cpi);
+  if (new_ext_mi_size > mbmi_ext_info->alloc_size) {
+    dealloc_context_buffers_ext(mbmi_ext_info);
     CHECK_MEM_ERROR(
-        cm, cpi->mbmi_ext_frame_base,
-        aom_calloc(new_ext_mi_size, sizeof(*cpi->mbmi_ext_frame_base)));
-    cpi->mbmi_ext_alloc_size = new_ext_mi_size;
+        cm, mbmi_ext_info->frame_base,
+        aom_calloc(new_ext_mi_size, sizeof(*mbmi_ext_info->frame_base)));
+    mbmi_ext_info->alloc_size = new_ext_mi_size;
   }
   // The stride needs to be updated regardless of whether new allocation
   // happened or not.
-  cpi->mbmi_ext_stride = mi_alloc_cols;
+  mbmi_ext_info->stride = mi_alloc_cols;
 }
 
 static void reset_film_grain_chroma_params(aom_film_grain_t *pars) {
@@ -806,7 +806,7 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
 
-  dealloc_context_buffers_ext(cpi);
+  dealloc_context_buffers_ext(&cpi->mbmi_ext_info);
 
   aom_free(cpi->tile_data);
   cpi->tile_data = NULL;
@@ -1124,7 +1124,7 @@ static void alloc_compressor_data(AV1_COMP *cpi) {
   if (!is_stat_generation_stage(cpi)) {
     av1_alloc_txb_buf(cpi);
 
-    alloc_context_buffers_ext(cpi);
+    alloc_context_buffers_ext(cm, &cpi->mbmi_ext_info);
   }
 
   aom_free(cpi->tile_tok[0][0]);
@@ -1232,7 +1232,8 @@ static void update_frame_size(AV1_COMP *cpi) {
 
   av1_init_macroblockd(cm, xd, NULL);
 
-  if (!is_stat_generation_stage(cpi)) alloc_context_buffers_ext(cpi);
+  if (!is_stat_generation_stage(cpi))
+    alloc_context_buffers_ext(cm, &cpi->mbmi_ext_info);
   set_tile_info(cpi);
 }
 

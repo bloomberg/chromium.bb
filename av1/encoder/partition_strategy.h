@@ -146,7 +146,8 @@ static INLINE void set_offsets_for_motion_search(const AV1_COMP *const cpi,
   const int mi_width = mi_size_wide[bsize];
   const int mi_height = mi_size_high[bsize];
 
-  set_mode_info_offsets(cpi, x, xd, mi_row, mi_col);
+  set_mode_info_offsets(&cpi->common.mi_params, &cpi->mbmi_ext_info, x, xd,
+                        mi_row, mi_col);
 
   // Set up destination pointers.
   av1_setup_dst_planes(xd->plane, bsize, &cm->cur_frame->buf, mi_row, mi_col, 0,

@@ -394,7 +394,8 @@ static AOM_INLINE void set_offsets_without_segment_id(
   const int mi_width = mi_size_wide[bsize];
   const int mi_height = mi_size_high[bsize];
 
-  set_mode_info_offsets(cpi, x, xd, mi_row, mi_col);
+  set_mode_info_offsets(&cpi->common.mi_params, &cpi->mbmi_ext_info, x, xd,
+                        mi_row, mi_col);
 
   set_entropy_context(xd, mi_row, mi_col, num_planes);
   xd->above_txfm_context = cm->above_contexts.txfm[tile->tile_row] + mi_col;
@@ -1678,10 +1679,10 @@ static AOM_INLINE void encode_b(const AV1_COMP *const cpi,
     }
   }
   // TODO(Ravi/Remya): Move this copy function to a better logical place
-  // This function will copy the winner reference mode information from block
-  // level (x->mbmi_ext) to frame level (cpi->mbmi_ext_frame_base). This frame
-  // level buffer (cpi->mbmi_ext_frame_base) will be used during bitstream
-  // preparation.
+  // This function will copy the best mode information from block
+  // level (x->mbmi_ext) to frame level (cpi->mbmi_ext_info.frame_base). This
+  // frame level buffer (cpi->mbmi_ext_info.frame_base) will be used during
+  // bitstream preparation.
   av1_copy_mbmi_ext_to_mbmi_ext_frame(x->mbmi_ext_frame, x->mbmi_ext,
                                       av1_ref_frame_type(xd->mi[0]->ref_frame));
   x->rdmult = origin_mult;
