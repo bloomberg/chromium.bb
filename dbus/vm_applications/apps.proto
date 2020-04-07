@@ -58,7 +58,7 @@ message App {
 
 message ApplicationList {
   enum VmType {
-    CROS_VM = 0;
+    TERMINA = 0;
     PLUGIN_VM = 1;
   }
 
