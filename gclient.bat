@@ -17,8 +17,12 @@ set PATH=%PATH%;%~dp0
 
 :: Defer control.
 IF "%GCLIENT_PY3%" == "1" (
-  :: TODO(1003139): Use vpython3 once vpython3 works on Windows.
-  call python3 "%~dp0gclient.py" %*
+  :: Explicitly run on Python 3
+  call vpython3 "%~dp0gclient.py" %*
+) ELSE IF "%GCLIENT_PY3%" == "0" (
+  :: Explicitly run on Python 2
+  call vpython "%~dp0gclient.py" %*
 ) ELSE (
-  call python "%~dp0gclient.py" %*
+  :: Run on Python 2, allows default to be flipped.
+  call vpython "%~dp0gclient.py" %*
 )
