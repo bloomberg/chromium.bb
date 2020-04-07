@@ -118,6 +118,8 @@ const char kCryptohomeTpmAttestationGetKeyPayload[] =
     "TpmAttestationGetKeyPayload";
 const char kCryptohomeTpmAttestationSetKeyPayload[] =
     "TpmAttestationSetKeyPayload";
+const char kCryptohomeTpmAttestationDeleteKey[] =
+    "TpmAttestationDeleteKey";
 const char kCryptohomeTpmAttestationDeleteKeys[] =
     "TpmAttestationDeleteKeys";
 const char kCryptohomeTpmAttestationGetEnrollmentId[] =

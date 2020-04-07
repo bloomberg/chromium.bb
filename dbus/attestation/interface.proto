@@ -418,13 +418,29 @@ message SetKeyPayloadReply {
   optional AttestationStatus status = 1;
 }
 
-// Delete all keys where the key name has the given |key_prefix|.
+// Delete keys either by key label prefix or by exact key label.
 message DeleteKeysRequest {
-  // The key name prefix.
-  optional string key_prefix = 1;
+  enum MatchBehavior {
+    // Match type not specified. Behavior defaults to |MATCH_TYPE_PREFIX|.
+    MATCH_BEHAVIOR_UNSPECIFIED = 0;
+
+    // Will delete all keys that start with |key_label_match|.
+    // If no such key exists, the operation still succeeds.
+    MATCH_BEHAVIOR_PREFIX = 1;
+
+    // Will delete the key which has a key_label exactly matching
+    // |key_label_match|.
+    // If no such key exists, the operation still succeeds.
+    MATCH_BEHAVIOR_EXACT = 2;
+  }
+  // The key label prefix or the exact key label (depends on |match_behavior|).
+  optional string key_label_match = 1;
   // The canonical username of the active user profile. Leave blank
   // if not associated with the current user.
   optional string username = 2;
+  // The matching behavior - see comments on the enum values. If omitted,
+  // defaults to MATCH_BEHAVIOR_PREFIX for backwards compatibility.
+  optional MatchBehavior match_behavior = 3;
 }
 
 message DeleteKeysReply {
