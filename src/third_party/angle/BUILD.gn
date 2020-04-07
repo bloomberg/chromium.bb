@@ -833,7 +833,8 @@ config("angle_static") {
 
 set_defaults("angle_libGLESv2") {
   sources = []
-  output_name = "blpcr_glesv2${optional_bb_suffix}"
+  output_name = "blpcr_glesv2"
+  optional_bb_suffix = "${optional_bb_suffix}"
 }
 
 template("angle_libGLESv2") {
@@ -844,7 +845,7 @@ template("angle_libGLESv2") {
       sources += [ "src/libGLESv2/${invoker.output_name}_autogen.def" ]
     }
 
-    output_name = "${invoker.output_name}${angle_libs_suffix}"
+    output_name = "${invoker.output_name}${invoker.optional_bb_suffix}${angle_libs_suffix}"
 
     configs += [
       ":angle_gl_visibility_config",
