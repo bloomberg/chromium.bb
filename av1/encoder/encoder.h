@@ -1002,7 +1002,9 @@ typedef struct {
 } TimeStamps;
 
 typedef struct AV1_COMP {
-  QUANTS quants;
+  // Quantization and dequantization parameters for internal quantizer setup
+  // in the encoder.
+  EncQuantDequantParams enc_quant_dequant_params;
   ThreadData td;
   FRAME_COUNTS counts;
 
@@ -1010,7 +1012,6 @@ typedef struct AV1_COMP {
   MBMIExtFrameBufferInfo mbmi_ext_info;
 
   CB_COEFF_BUFFER *coeff_buffer_base;
-  Dequants dequants;
   AV1_COMMON common;
   AV1EncoderConfig oxcf;
   struct lookahead_ctx *lookahead;
@@ -1294,9 +1295,6 @@ typedef struct AV1_COMP {
   // Frame type of the last frame. May be used in some heuristics for speeding
   // up the encoding.
   FRAME_TYPE last_frame_type;
-  int min_qmlevel;
-  int max_qmlevel;
-  int use_quant_b_adapt;
   int num_tg;
 
   // Super-resolution mode currently being used by the encoder.

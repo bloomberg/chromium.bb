@@ -383,7 +383,7 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
       quant_idx =
           USE_B_QUANT_NO_TRELLIS ? AV1_XFORM_QUANT_B : AV1_XFORM_QUANT_FP;
     av1_setup_xform(cm, x, tx_size, tx_type, &txfm_param);
-    av1_setup_quant(tx_size, use_trellis, quant_idx, cpi->use_quant_b_adapt,
+    av1_setup_quant(tx_size, use_trellis, quant_idx, cpi->oxcf.quant_b_adapt,
                     &quant_param);
     av1_setup_qmatrix(&cm->quant_params, xd, plane, tx_size, tx_type,
                       &quant_param);
@@ -574,7 +574,7 @@ static void encode_block_pass1(int plane, int block, int blk_row, int blk_col,
   QUANT_PARAM quant_param;
 
   av1_setup_xform(cm, x, tx_size, DCT_DCT, &txfm_param);
-  av1_setup_quant(tx_size, 0, AV1_XFORM_QUANT_B, cpi->use_quant_b_adapt,
+  av1_setup_quant(tx_size, 0, AV1_XFORM_QUANT_B, cpi->oxcf.quant_b_adapt,
                   &quant_param);
   av1_setup_qmatrix(&cm->quant_params, xd, plane, tx_size, DCT_DCT,
                     &quant_param);
@@ -716,7 +716,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
           USE_B_QUANT_NO_TRELLIS ? AV1_XFORM_QUANT_B : AV1_XFORM_QUANT_FP;
 
     av1_setup_xform(cm, x, tx_size, tx_type, &txfm_param);
-    av1_setup_quant(tx_size, use_trellis, quant_idx, cpi->use_quant_b_adapt,
+    av1_setup_quant(tx_size, use_trellis, quant_idx, cpi->oxcf.quant_b_adapt,
                     &quant_param);
     av1_setup_qmatrix(&cm->quant_params, xd, plane, tx_size, tx_type,
                       &quant_param);

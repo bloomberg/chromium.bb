@@ -3470,7 +3470,8 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf, BufferPool *const pool,
    * called later when needed. This will avoid unnecessary calls of
    * av1_init_quantizer() for every frame.
    */
-  av1_init_quantizer(cpi);
+  av1_init_quantizer(&cpi->enc_quant_dequant_params, &cm->quant_params,
+                     cm->seq_params.bit_depth);
   av1_qm_init(&cm->quant_params, av1_num_planes(cm));
 
   av1_loop_filter_init(cm);
@@ -5361,15 +5362,19 @@ static void determine_sc_tools_with_encoding(AV1_COMP *cpi, const int q_orig) {
         cpi->oxcf.tuning == AOM_TUNE_VMAF_WITHOUT_PREPROCESSING ||
         cpi->oxcf.tuning == AOM_TUNE_VMAF_MAX_GAIN) {
       av1_set_quantizer(
-          cpi, av1_get_vmaf_base_qindex(cpi, q_for_screen_content_quick_run));
+          cm, cpi->oxcf.qm_minlevel, cpi->oxcf.qm_maxlevel,
+          av1_get_vmaf_base_qindex(cpi, q_for_screen_content_quick_run));
     } else {
 #endif
-      av1_set_quantizer(cpi, q_for_screen_content_quick_run);
+      av1_set_quantizer(cm, cpi->oxcf.qm_minlevel, cpi->oxcf.qm_maxlevel,
+                        q_for_screen_content_quick_run);
 #if CONFIG_TUNE_VMAF
     }
 #endif
     av1_set_speed_features_qindex_dependent(cpi, cpi->oxcf.speed);
-    if (cpi->oxcf.deltaq_mode != NO_DELTA_Q) av1_init_quantizer(cpi);
+    if (cpi->oxcf.deltaq_mode != NO_DELTA_Q)
+      av1_init_quantizer(&cpi->enc_quant_dequant_params, &cm->quant_params,
+                         cm->seq_params.bit_depth);
 
     av1_set_variance_partition_thresholds(cpi, q_for_screen_content_quick_run,
                                           0);
@@ -5504,16 +5509,19 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
     if (cpi->oxcf.tuning == AOM_TUNE_VMAF_WITH_PREPROCESSING ||
         cpi->oxcf.tuning == AOM_TUNE_VMAF_WITHOUT_PREPROCESSING ||
         cpi->oxcf.tuning == AOM_TUNE_VMAF_MAX_GAIN) {
-      av1_set_quantizer(cpi, av1_get_vmaf_base_qindex(cpi, q));
+      av1_set_quantizer(cm, cpi->oxcf.qm_minlevel, cpi->oxcf.qm_maxlevel,
+                        av1_get_vmaf_base_qindex(cpi, q));
     } else {
 #endif
-      av1_set_quantizer(cpi, q);
+      av1_set_quantizer(cm, cpi->oxcf.qm_minlevel, cpi->oxcf.qm_maxlevel, q);
 #if CONFIG_TUNE_VMAF
     }
 #endif
     av1_set_speed_features_qindex_dependent(cpi, cpi->oxcf.speed);
 
-    if (cpi->oxcf.deltaq_mode != NO_DELTA_Q) av1_init_quantizer(cpi);
+    if (cpi->oxcf.deltaq_mode != NO_DELTA_Q)
+      av1_init_quantizer(&cpi->enc_quant_dequant_params, &cm->quant_params,
+                         cm->seq_params.bit_depth);
 
     av1_set_variance_partition_thresholds(cpi, q, 0);
 
@@ -6815,10 +6823,6 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   if (cpi->use_svc && cm->number_spatial_layers > 1) {
     av1_one_pass_cbr_svc_start_layer(cpi);
   }
-
-  // Indicates whether or not to use an adaptive quantize b rather than
-  // the traditional version
-  cpi->use_quant_b_adapt = cpi->oxcf.quant_b_adapt;
 
   cm->showable_frame = 0;
   *size = 0;

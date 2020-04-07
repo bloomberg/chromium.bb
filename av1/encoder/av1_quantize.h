@@ -84,6 +84,13 @@ typedef struct {
                   v_dequant_QTX[QINDEX_RANGE][8]);  // 8: SIMD width
 } Dequants;
 
+typedef struct {
+  // Quantization parameters for internal quantizer setup.
+  QUANTS quants;
+  // Dequantization parameters for internal quantizer setup.
+  Dequants dequants;
+} EncQuantDequantParams;
+
 struct AV1_COMP;
 struct AV1Common;
 
@@ -97,9 +104,12 @@ void av1_build_quantizer(aom_bit_depth_t bit_depth, int y_dc_delta_q,
                          int v_ac_delta_q, QUANTS *const quants,
                          Dequants *const deq);
 
-void av1_init_quantizer(struct AV1_COMP *cpi);
+void av1_init_quantizer(EncQuantDequantParams *const enc_quant_dequant_params,
+                        const CommonQuantParams *quant_params,
+                        aom_bit_depth_t bit_depth);
 
-void av1_set_quantizer(struct AV1_COMP *cpi, int q);
+void av1_set_quantizer(struct AV1Common *const cm, int min_qmlevel,
+                       int max_qmlevel, int q);
 
 int av1_quantizer_to_qindex(int quantizer);
 
