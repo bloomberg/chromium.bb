@@ -51,13 +51,13 @@ int64_t av1_txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
                      TX_SIZE tx_size, FAST_TX_SEARCH_MODE ftxs_mode,
                      int skip_trellis);
 
-void av1_pick_tx_size_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
-                               RD_STATS *rd_stats, BLOCK_SIZE bsize,
-                               int64_t ref_best_rd);
+void av1_pick_recursive_tx_size_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
+                                         RD_STATS *rd_stats, BLOCK_SIZE bsize,
+                                         int64_t ref_best_rd);
 
-void av1_super_block_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
-                         RD_STATS *rd_stats, BLOCK_SIZE bs,
-                         int64_t ref_best_rd);
+void av1_pick_uniform_tx_size_type_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
+                                       RD_STATS *rd_stats, BLOCK_SIZE bs,
+                                       int64_t ref_best_rd);
 
 int av1_super_block_uvrd(const AV1_COMP *const cpi, MACROBLOCK *x,
                          RD_STATS *rd_stats, BLOCK_SIZE bsize,

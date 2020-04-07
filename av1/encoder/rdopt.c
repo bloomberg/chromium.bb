@@ -3138,17 +3138,20 @@ static AOM_INLINE void refine_winner_mode_tx(
         av1_subtract_plane(x, bsize, 0);
         if (x->tx_mode_search_type == TX_MODE_SELECT &&
             !xd->lossless[mbmi->segment_id]) {
-          av1_pick_tx_size_type_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
+          av1_pick_recursive_tx_size_type_yrd(cpi, x, &rd_stats_y, bsize,
+                                              INT64_MAX);
           assert(rd_stats_y.rate != INT_MAX);
         } else {
-          av1_super_block_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
+          av1_pick_uniform_tx_size_type_yrd(cpi, x, &rd_stats_y, bsize,
+                                            INT64_MAX);
           memset(mbmi->inter_tx_size, mbmi->tx_size,
                  sizeof(mbmi->inter_tx_size));
           for (int i = 0; i < xd->height * xd->width; ++i)
             set_blk_skip(x, 0, i, rd_stats_y.skip);
         }
       } else {
-        av1_super_block_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
+        av1_pick_uniform_tx_size_type_yrd(cpi, x, &rd_stats_y, bsize,
+                                          INT64_MAX);
       }
 
       if (num_planes > 1) {

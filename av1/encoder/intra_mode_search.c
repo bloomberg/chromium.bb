@@ -274,7 +274,8 @@ static int64_t calc_rd_given_intra_angle(
       return INT64_MAX;
     }
   }
-  av1_super_block_yrd(cpi, x, &tokenonly_rd_stats, bsize, best_rd_in);
+  av1_pick_uniform_tx_size_type_yrd(cpi, x, &tokenonly_rd_stats, bsize,
+                                    best_rd_in);
   if (tokenonly_rd_stats.rate == INT_MAX) return INT64_MAX;
 
   int this_rate =
@@ -433,7 +434,8 @@ static int rd_pick_filter_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
     if (model_intra_yrd_and_prune(cpi, x, bsize, mode_cost, best_model_rd)) {
       continue;
     }
-    av1_super_block_yrd(cpi, x, &tokenonly_rd_stats, bsize, *best_rd);
+    av1_pick_uniform_tx_size_type_yrd(cpi, x, &tokenonly_rd_stats, bsize,
+                                      *best_rd);
     if (tokenonly_rd_stats.rate == INT_MAX) continue;
     const int this_rate =
         tokenonly_rd_stats.rate +
@@ -601,7 +603,8 @@ static AOM_INLINE void palette_rd_y(
   }
 
   RD_STATS tokenonly_rd_stats;
-  av1_super_block_yrd(cpi, x, &tokenonly_rd_stats, bsize, *best_rd);
+  av1_pick_uniform_tx_size_type_yrd(cpi, x, &tokenonly_rd_stats, bsize,
+                                    *best_rd);
   if (tokenonly_rd_stats.rate == INT_MAX) return;
   int this_rate = tokenonly_rd_stats.rate + palette_mode_cost;
   int64_t this_rd = RDCOST(x->rdmult, this_rate, tokenonly_rd_stats.dist);
@@ -1622,12 +1625,12 @@ static AOM_INLINE int intra_block_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
   RD_STATS rd_stats;
   // In order to improve txfm search avoid rd based breakouts during winner
   // mode evaluation. Hence passing ref_best_rd as a maximum value
-  av1_super_block_yrd(cpi, x, &rd_stats, bsize, INT64_MAX);
+  av1_pick_uniform_tx_size_type_yrd(cpi, x, &rd_stats, bsize, INT64_MAX);
   if (rd_stats.rate == INT_MAX) return 0;
   int this_rate_tokenonly = rd_stats.rate;
   if (!xd->lossless[mbmi->segment_id] && block_signals_txsize(mbmi->sb_type)) {
-    // av1_super_block_yrd above includes the cost of the tx_size in the
-    // tokenonly rate, but for intra blocks, tx_size is always coded
+    // av1_pick_uniform_tx_size_type_yrd above includes the cost of the tx_size
+    // in the tokenonly rate, but for intra blocks, tx_size is always coded
     // (prediction granularity), so we account for it in the full rate,
     // not the tokenonly rate.
     this_rate_tokenonly -= tx_size_cost(x, bsize, mbmi->tx_size);
@@ -1768,7 +1771,7 @@ int64_t av1_handle_intra_mode(IntraModeSearchState *intra_search_state,
   } else {
     av1_init_rd_stats(rd_stats_y);
     mbmi->angle_delta[PLANE_TYPE_Y] = 0;
-    av1_super_block_yrd(cpi, x, rd_stats_y, bsize, best_rd);
+    av1_pick_uniform_tx_size_type_yrd(cpi, x, rd_stats_y, bsize, best_rd);
   }
 
   // Pick filter intra modes.
@@ -1798,7 +1801,8 @@ int64_t av1_handle_intra_mode(IntraModeSearchState *intra_search_state,
       for (FILTER_INTRA_MODE fi_mode = FILTER_DC_PRED;
            fi_mode < FILTER_INTRA_MODES; ++fi_mode) {
         mbmi->filter_intra_mode_info.filter_intra_mode = fi_mode;
-        av1_super_block_yrd(cpi, x, &rd_stats_y_fi, bsize, best_rd);
+        av1_pick_uniform_tx_size_type_yrd(cpi, x, &rd_stats_y_fi, bsize,
+                                          best_rd);
         if (rd_stats_y_fi.rate == INT_MAX) continue;
         const int this_rate_tmp =
             rd_stats_y_fi.rate +
@@ -1890,8 +1894,8 @@ int64_t av1_handle_intra_mode(IntraModeSearchState *intra_search_state,
 
   rd_stats->rate = rd_stats_y->rate + mode_cost_y;
   if (!xd->lossless[mbmi->segment_id] && block_signals_txsize(bsize)) {
-    // av1_super_block_yrd above includes the cost of the tx_size in the
-    // tokenonly rate, but for intra blocks, tx_size is always coded
+    // av1_pick_uniform_tx_size_type_yrd above includes the cost of the tx_size
+    // in the tokenonly rate, but for intra blocks, tx_size is always coded
     // (prediction granularity), so we account for it in the full rate,
     // not the tokenonly rate.
     rd_stats_y->rate -= tx_size_cost(x, bsize, mbmi->tx_size);
@@ -2009,7 +2013,7 @@ int64_t av1_rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
                               bmode_costs[mbmi->mode], best_rd, &best_model_rd,
                               1);
     } else {
-      av1_super_block_yrd(cpi, x, &this_rd_stats, bsize, best_rd);
+      av1_pick_uniform_tx_size_type_yrd(cpi, x, &this_rd_stats, bsize, best_rd);
     }
     this_rate_tokenonly = this_rd_stats.rate;
     this_distortion = this_rd_stats.dist;
@@ -2019,9 +2023,9 @@ int64_t av1_rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 
     if (!xd->lossless[mbmi->segment_id] &&
         block_signals_txsize(mbmi->sb_type)) {
-      // av1_super_block_yrd above includes the cost of the tx_size in the
-      // tokenonly rate, but for intra blocks, tx_size is always coded
-      // (prediction granularity), so we account for it in the full rate,
+      // av1_pick_uniform_tx_size_type_yrd above includes the cost of the
+      // tx_size in the tokenonly rate, but for intra blocks, tx_size is always
+      // coded (prediction granularity), so we account for it in the full rate,
       // not the tokenonly rate.
       this_rate_tokenonly -= tx_size_cost(x, bsize, mbmi->tx_size);
     }

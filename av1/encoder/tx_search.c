@@ -3090,9 +3090,9 @@ static int inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
 }
 
 // Search for the best transform size and type for current inter-predicted
-// luma block. The obtained transform selection will be saved in xd->mi[0],
-// the corresponding RD stats will be saved in rd_stats. The returned value is
-// the corresponding RD cost.
+// luma block with recursive transform block partitioning. The obtained
+// transform selection will be saved in xd->mi[0], the corresponding RD stats
+// will be saved in rd_stats. The returned value is the corresponding RD cost.
 static int64_t select_tx_size_and_type(const AV1_COMP *cpi, MACROBLOCK *x,
                                        RD_STATS *rd_stats, BLOCK_SIZE bsize,
                                        int64_t ref_best_rd,
@@ -3209,12 +3209,13 @@ static AOM_INLINE int model_based_tx_search_prune(const AV1_COMP *cpi,
   return ((model_rd * factor) >> 3) > ref_best_rd;
 }
 
-// Search for best transform size and type for luma inter blocks. The best
-// transform size and type, if found, will be saved in the MB_MODE_INFO
+// Search for best transform size and type for luma inter blocks. The transform
+// block partitioning can be recursive resulting in non-uniform transform sizes.
+// The best transform size and type, if found, will be saved in the MB_MODE_INFO
 // structure, and the corresponding RD stats will be saved in rd_stats.
-void av1_pick_tx_size_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
-                               RD_STATS *rd_stats, BLOCK_SIZE bsize,
-                               int64_t ref_best_rd) {
+void av1_pick_recursive_tx_size_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
+                                         RD_STATS *rd_stats, BLOCK_SIZE bsize,
+                                         int64_t ref_best_rd) {
   MACROBLOCKD *const xd = &x->e_mbd;
   assert(is_inter_block(xd->mi[0]));
 
@@ -3297,55 +3298,64 @@ void av1_pick_tx_size_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   }
 }
 
-void av1_super_block_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
-                         RD_STATS *rd_stats, BLOCK_SIZE bs,
-                         int64_t ref_best_rd) {
-  MACROBLOCKD *xd = &x->e_mbd;
+// Search for the best transform size and type for current coding block, with
+// the assumption that all the transform blocks have a uniform size (VP9 style).
+// The selected transform size and type will be saved in the MB_MODE_INFO
+// structure; the corresponding RD stats will be saved in rd_stats.
+// This function may be used for both intra and inter predicted blocks.
+void av1_pick_uniform_tx_size_type_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
+                                       RD_STATS *rd_stats, BLOCK_SIZE bs,
+                                       int64_t ref_best_rd) {
+  MACROBLOCKD *const xd = &x->e_mbd;
+  MB_MODE_INFO *const mbmi = xd->mi[0];
+  assert(bs == mbmi->sb_type);
+  const int is_inter = is_inter_block(mbmi);
+  const int mi_row = xd->mi_row;
+  const int mi_col = xd->mi_col;
+
   av1_init_rd_stats(rd_stats);
-  int is_inter = is_inter_block(xd->mi[0]);
-  assert(bs == xd->mi[0]->sb_type);
 
-  const int mi_row = -xd->mb_to_top_edge >> (3 + MI_SIZE_LOG2);
-  const int mi_col = -xd->mb_to_left_edge >> (3 + MI_SIZE_LOG2);
-
+  // Hashing based speed feature for inter blocks. If the hash of the residue
+  // block is found in the table, use previously saved search results and
+  // terminate early.
   uint32_t hash = 0;
-  int32_t match_index = -1;
   MB_RD_RECORD *mb_rd_record = NULL;
-  const int within_border = mi_row >= xd->tile.mi_row_start &&
-                            (mi_row + mi_size_high[bs] < xd->tile.mi_row_end) &&
-                            mi_col >= xd->tile.mi_col_start &&
-                            (mi_col + mi_size_wide[bs] < xd->tile.mi_col_end);
-  const int is_mb_rd_hash_enabled =
-      (within_border && cpi->sf.rd_sf.use_mb_rd_hash && is_inter);
-  const int n4 = bsize_to_num_blk(bs);
-  if (is_mb_rd_hash_enabled) {
-    hash = get_block_residue_hash(x, bs);
-    mb_rd_record = &x->mb_rd_record;
-    match_index = find_mb_rd_info(mb_rd_record, ref_best_rd, hash);
-    if (match_index != -1) {
-      MB_RD_INFO *tx_rd_info = &mb_rd_record->tx_rd_info[match_index];
-      fetch_tx_rd_info(n4, tx_rd_info, rd_stats, x);
-      return;
+  const int num_blks = bsize_to_num_blk(bs);
+  if (is_inter && cpi->sf.rd_sf.use_mb_rd_hash) {
+    const int within_border =
+        mi_row >= xd->tile.mi_row_start &&
+        (mi_row + mi_size_high[bs] < xd->tile.mi_row_end) &&
+        mi_col >= xd->tile.mi_col_start &&
+        (mi_col + mi_size_wide[bs] < xd->tile.mi_col_end);
+    if (within_border) {
+      hash = get_block_residue_hash(x, bs);
+      mb_rd_record = &x->mb_rd_record;
+      const int match_index = find_mb_rd_info(mb_rd_record, ref_best_rd, hash);
+      if (match_index != -1) {
+        MB_RD_INFO *tx_rd_info = &mb_rd_record->tx_rd_info[match_index];
+        fetch_tx_rd_info(num_blks, tx_rd_info, rd_stats, x);
+        return;
+      }
     }
   }
 
   // If we predict that skip is the optimal RD decision - set the respective
   // context and terminate early.
   int64_t dist;
-
-  if (x->predict_skip_level && is_inter &&
-      (!xd->lossless[xd->mi[0]->segment_id]) &&
+  if (x->predict_skip_level && is_inter && !xd->lossless[mbmi->segment_id] &&
       predict_skip_flag(x, bs, &dist,
                         cpi->common.features.reduced_tx_set_used)) {
     // Populate rdstats as per skip decision
     set_skip_flag(x, rd_stats, bs, dist);
     // Save the RD search results into tx_rd_record.
-    if (is_mb_rd_hash_enabled)
-      save_tx_rd_info(n4, hash, x, rd_stats, mb_rd_record);
+    if (mb_rd_record) {
+      save_tx_rd_info(num_blks, hash, x, rd_stats, mb_rd_record);
+    }
     return;
   }
 
-  if (xd->lossless[xd->mi[0]->segment_id]) {
+  if (xd->lossless[mbmi->segment_id]) {
+    // Lossless mode can only pick the smallest (4x4) transform size.
     choose_smallest_tx_size(cpi, x, rd_stats, ref_best_rd, bs);
   } else if (x->tx_size_search_method == USE_LARGESTALL) {
     choose_largest_tx_size(cpi, x, rd_stats, ref_best_rd, bs);
@@ -3353,10 +3363,9 @@ void av1_super_block_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
     choose_tx_size_type_from_rd(cpi, x, rd_stats, ref_best_rd, bs);
   }
 
-  // Save the RD search results into tx_rd_record.
-  if (is_mb_rd_hash_enabled) {
-    assert(mb_rd_record != NULL);
-    save_tx_rd_info(n4, hash, x, rd_stats, mb_rd_record);
+  // Save the RD search results into tx_rd_record for possible reuse in future.
+  if (mb_rd_record) {
+    save_tx_rd_info(num_blks, hash, x, rd_stats, mb_rd_record);
   }
 }
 
@@ -3472,7 +3481,8 @@ void av1_txfm_rd_in_plane(MACROBLOCK *x, const AV1_COMP *cpi,
 // This function combines y and uv planes' transform search processes together
 // for inter-predicted blocks (including IntraBC), when the prediction is
 // already generated. It first does subtraction to obtain the prediction error.
-// Then it calls av1_pick_tx_size_type_yrd/av1_super_block_yrd and
+// Then it calls
+// av1_pick_recursive_tx_size_type_yrd/av1_pick_uniform_tx_size_type_yrd and
 // av1_super_block_uvrd sequentially and handles the early terminations
 // happening in those functions. At the end, it computes the
 // rd_stats/_y/_uv accordingly.
@@ -3506,12 +3516,12 @@ int av1_txfm_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
   av1_subtract_plane(x, bsize, 0);
   if (x->tx_mode_search_type == TX_MODE_SELECT &&
       !xd->lossless[mbmi->segment_id]) {
-    av1_pick_tx_size_type_yrd(cpi, x, rd_stats_y, bsize, rd_thresh);
+    av1_pick_recursive_tx_size_type_yrd(cpi, x, rd_stats_y, bsize, rd_thresh);
 #if CONFIG_COLLECT_RD_STATS == 2
     PrintPredictionUnitStats(cpi, tile_data, x, rd_stats_y, bsize);
 #endif  // CONFIG_COLLECT_RD_STATS == 2
   } else {
-    av1_super_block_yrd(cpi, x, rd_stats_y, bsize, rd_thresh);
+    av1_pick_uniform_tx_size_type_yrd(cpi, x, rd_stats_y, bsize, rd_thresh);
     memset(mbmi->inter_tx_size, mbmi->tx_size, sizeof(mbmi->inter_tx_size));
     for (int i = 0; i < xd->height * xd->width; ++i)
       set_blk_skip(x, 0, i, rd_stats_y->skip);
