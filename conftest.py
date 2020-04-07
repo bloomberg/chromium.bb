@@ -12,12 +12,12 @@ https://docs.pytest.org/en/latest/fixture.html#conftest-py-sharing-fixture-funct
 
 from __future__ import print_function
 
-import pytest # pylint: disable=import-error
+import pytest  # pylint: disable=import-error
 
 from chromite.lib import cidb
 
 
-@pytest.fixture(scope='session', autouse=True)
+@pytest.fixture(scope='class', autouse=True)
 def mock_cidb_connection():
   """Ensure that the CIDB connection factory is initialized as a mock.
 
@@ -28,4 +28,6 @@ def mock_cidb_connection():
   initializing this mock and multiple tests are flaky if this mock connection
   is not initialized before any tests are run.
   """
+  # pylint: disable=protected-access
+  cidb.CIDBConnectionFactory._ClearCIDBSetup()
   cidb.CIDBConnectionFactory.SetupMockCidb()

@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 from chromite.lib import builder_status_lib
+from chromite.lib import cidb
 from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import fake_cidb
@@ -43,6 +44,7 @@ class BuilderStatusLibTests(cros_test_lib.MockTestCase):
     """Test GetSlavesAbortedBySelfDestructedMaster with aborted slaves."""
     db = fake_cidb.FakeCIDBConnection()
     buildstore = FakeBuildStore(db)
+    cidb.CIDBConnectionFactory.SetupMockCidb(db)
     master_build_id = db.InsertBuild(
         'master', 1, 'master', 'bot_hostname',
         buildbucket_id=1234)
