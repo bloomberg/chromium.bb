@@ -5,21 +5,31 @@
 # Custom GN integration for VulkanMemoryAllocator.
 
 # This could be set via build_overrides if necessary
-vulkan_memory_allocator_vulkan_headers_dir = "../vulkan-headers/src"
+vulkan_memory_allocator_vulkan_dep = "../../src/third_party/volk"
 
 config("vulkan_memory_allocator_config") {
   include_dirs = [ "src" ]
+  if (is_clang) {
+    cflags_cc = [
+      "-Wno-implicit-fallthrough",
+      "-Wno-unused-variable",
+    ]
+  }
+  if (is_win && !is_clang) {
+    cflags_cc = [
+      "/wd4189",  # local variable is initialized but not referenced
+    ]
+  }
 }
 
 source_set("vulkan_memory_allocator") {
   sources = [
     # vk_mem_alloc.cpp allows the functions to be compiled into an object file
     # and the consumers of vulkan_memory_allocator to use the prototypes.
-    "src/vk_mem_alloc.cpp",
     "src/vk_mem_alloc.h",
   ]
 
-  deps = [ "$vulkan_memory_allocator_vulkan_headers_dir:vulkan_headers" ]
+  public_deps = [ "$vulkan_memory_allocator_vulkan_dep" ]
 
   defines = [ "VMA_IMPLEMENTATION" ]
 
