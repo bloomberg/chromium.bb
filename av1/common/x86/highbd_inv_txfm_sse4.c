@@ -3576,7 +3576,6 @@ static void idct64x64_low8_sse4_1(__m128i *in, __m128i *out, int bit,
     u[6] = u[1];
     u[5] = u[2];
     u[4] = u[3];
-    u[9] = u[9];
 
     idct64_stage8_sse4_1(u, &cospim32, &cospi32, &cospim16, &cospi48, &cospi16,
                          &cospim48, &clamp_lo, &clamp_hi, &rnding, bit);

@@ -3273,7 +3273,6 @@ static void idct64_low8_avx2(__m256i *in, __m256i *out, int bit, int do_cols,
     u[6] = u[1];
     u[5] = u[2];
     u[4] = u[3];
-    u[9] = u[9];
 
     idct64_stage8_avx2(u, &cospim32, &cospi32, &cospim16, &cospi48, &cospi16,
                        &cospim48, &clamp_lo, &clamp_hi, &rnding, bit);
