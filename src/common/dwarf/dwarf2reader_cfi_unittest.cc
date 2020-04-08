@@ -99,23 +99,23 @@ void WriteELFFrameSection(const char *filename, const char *section_name,
 
 class MockCallFrameInfoHandler: public CallFrameInfo::Handler {
  public:
-  MOCK_METHOD6(Entry, bool(size_t offset, uint64 address, uint64 length,
-                           uint8 version, const string &augmentation,
+  MOCK_METHOD6(Entry, bool(size_t offset, uint64_t address, uint64_t length,
+                           uint8_t version, const string &augmentation,
                            unsigned return_address));
-  MOCK_METHOD2(UndefinedRule, bool(uint64 address, int reg));
-  MOCK_METHOD2(SameValueRule, bool(uint64 address, int reg));
-  MOCK_METHOD4(OffsetRule, bool(uint64 address, int reg, int base_register,
+  MOCK_METHOD2(UndefinedRule, bool(uint64_t address, int reg));
+  MOCK_METHOD2(SameValueRule, bool(uint64_t address, int reg));
+  MOCK_METHOD4(OffsetRule, bool(uint64_t address, int reg, int base_register,
                                 long offset));
-  MOCK_METHOD4(ValOffsetRule, bool(uint64 address, int reg, int base_register,
+  MOCK_METHOD4(ValOffsetRule, bool(uint64_t address, int reg, int base_register,
                                    long offset));
-  MOCK_METHOD3(RegisterRule, bool(uint64 address, int reg, int base_register));
-  MOCK_METHOD3(ExpressionRule, bool(uint64 address, int reg,
+  MOCK_METHOD3(RegisterRule, bool(uint64_t address, int reg, int base_register));
+  MOCK_METHOD3(ExpressionRule, bool(uint64_t address, int reg,
                                     const string &expression));
-  MOCK_METHOD3(ValExpressionRule, bool(uint64 address, int reg,
+  MOCK_METHOD3(ValExpressionRule, bool(uint64_t address, int reg,
                                        const string &expression));
   MOCK_METHOD0(End, bool());
-  MOCK_METHOD2(PersonalityRoutine, bool(uint64 address, bool indirect));
-  MOCK_METHOD2(LanguageSpecificDataArea, bool(uint64 address, bool indirect));
+  MOCK_METHOD2(PersonalityRoutine, bool(uint64_t address, bool indirect));
+  MOCK_METHOD2(LanguageSpecificDataArea, bool(uint64_t address, bool indirect));
   MOCK_METHOD0(SignalHandler, bool());
 };
 
@@ -806,13 +806,13 @@ struct CFIInsnFixture: public CFIFixture {
 
   Label cie_label;
   Sequence s;
-  uint64 code_factor;
+  uint64_t code_factor;
   int data_factor;
   unsigned return_register;
   unsigned version;
   unsigned cfa_base_register;
   int cfa_offset;
-  uint64 fde_start, fde_size;
+  uint64_t fde_start, fde_size;
 };
 
 class CFIInsn: public CFIInsnFixture, public Test { };
@@ -1448,7 +1448,7 @@ TEST_F(CFIInsn, DW_CFA_remember_and_restore_state) {
       .D8(dwarf2reader::DW_CFA_restore_state)
       .FinishEntry();
 
-  uint64 addr = fde_start;
+  uint64_t addr = fde_start;
 
   // Expect the incoming rules to be reported.
   EXPECT_CALL(handler, OffsetRule(addr, 2, kCFARegister, 0x9806 * data_factor))

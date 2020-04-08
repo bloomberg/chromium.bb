@@ -137,19 +137,19 @@ class DwarfCFIToModule: public CallFrameInfo::Handler {
   }
   virtual ~DwarfCFIToModule() { delete entry_; }
 
-  virtual bool Entry(size_t offset, uint64 address, uint64 length,
-                     uint8 version, const string &augmentation,
+  virtual bool Entry(size_t offset, uint64_t address, uint64_t length,
+                     uint8_t version, const string &augmentation,
                      unsigned return_address);
-  virtual bool UndefinedRule(uint64 address, int reg);
-  virtual bool SameValueRule(uint64 address, int reg);
-  virtual bool OffsetRule(uint64 address, int reg,
+  virtual bool UndefinedRule(uint64_t address, int reg);
+  virtual bool SameValueRule(uint64_t address, int reg);
+  virtual bool OffsetRule(uint64_t address, int reg,
                           int base_register, long offset);
-  virtual bool ValOffsetRule(uint64 address, int reg,
+  virtual bool ValOffsetRule(uint64_t address, int reg,
                              int base_register, long offset);
-  virtual bool RegisterRule(uint64 address, int reg, int base_register);
-  virtual bool ExpressionRule(uint64 address, int reg,
+  virtual bool RegisterRule(uint64_t address, int reg, int base_register);
+  virtual bool ExpressionRule(uint64_t address, int reg,
                               const string &expression);
-  virtual bool ValExpressionRule(uint64 address, int reg,
+  virtual bool ValExpressionRule(uint64_t address, int reg,
                                  const string &expression);
   virtual bool End();
 

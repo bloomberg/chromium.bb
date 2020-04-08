@@ -73,36 +73,37 @@ using testing::_;
 
 class MockDwarf2Handler: public Dwarf2Handler {
  public:
-  MOCK_METHOD5(StartCompilationUnit, bool(uint64 offset, uint8 address_size,
-                                          uint8 offset_size, uint64 cu_length,
-                                          uint8 dwarf_version));
-  MOCK_METHOD2(StartDIE, bool(uint64 offset, enum DwarfTag tag));
-  MOCK_METHOD4(ProcessAttributeUnsigned, void(uint64 offset,
+  MOCK_METHOD5(StartCompilationUnit, bool(uint64_t offset, uint8_t address_size,
+                                          uint8_t offset_size,
+                                          uint64_t cu_length,
+                                          uint8_t dwarf_version));
+  MOCK_METHOD2(StartDIE, bool(uint64_t offset, enum DwarfTag tag));
+  MOCK_METHOD4(ProcessAttributeUnsigned, void(uint64_t offset,
                                               DwarfAttribute attr,
                                               enum DwarfForm form,
-                                              uint64 data));
-  MOCK_METHOD4(ProcessAttributeSigned, void(uint64 offset,
+                                              uint64_t data));
+  MOCK_METHOD4(ProcessAttributeSigned, void(uint64_t offset,
                                             enum DwarfAttribute attr,
                                             enum DwarfForm form,
                                             int64 data));
-  MOCK_METHOD4(ProcessAttributeReference, void(uint64 offset,
+  MOCK_METHOD4(ProcessAttributeReference, void(uint64_t offset,
                                                enum DwarfAttribute attr,
                                                enum DwarfForm form,
-                                               uint64 data));
-  MOCK_METHOD5(ProcessAttributeBuffer, void(uint64 offset,
+                                               uint64_t data));
+  MOCK_METHOD5(ProcessAttributeBuffer, void(uint64_t offset,
                                             enum DwarfAttribute attr,
                                             enum DwarfForm form,
                                             const uint8_t *data,
-                                            uint64 len));
-  MOCK_METHOD4(ProcessAttributeString, void(uint64 offset,
+                                            uint64_t len));
+  MOCK_METHOD4(ProcessAttributeString, void(uint64_t offset,
                                             enum DwarfAttribute attr,
                                             enum DwarfForm form,
                                             const string& data));
-  MOCK_METHOD4(ProcessAttributeSignature, void(uint64 offset,
+  MOCK_METHOD4(ProcessAttributeSignature, void(uint64_t offset,
                                                DwarfAttribute attr,
                                                enum DwarfForm form,
-                                               uint64 signature));
-  MOCK_METHOD1(EndDIE, void(uint64 offset));
+                                               uint64_t signature));
+  MOCK_METHOD1(EndDIE, void(uint64_t offset));
 };
 
 struct DIEFixture {
@@ -256,7 +257,7 @@ struct DwarfFormsFixture: public DIEFixture {
   // containing one childless DIE of the given tag, in the sequence s. Stop
   // just before the expectations.
   void ExpectBeginCompilationUnit(const DwarfHeaderParams &params,
-                                  DwarfTag tag, uint64 offset=0) {
+                                  DwarfTag tag, uint64_t offset=0) {
     EXPECT_CALL(handler,
                 StartCompilationUnit(offset, params.address_size,
                                      params.format_size, _,
@@ -274,7 +275,8 @@ struct DwarfFormsFixture: public DIEFixture {
         .WillOnce(Return());
   }
 
-  void ParseCompilationUnit(const DwarfHeaderParams &params, uint64 offset=0) {
+  void ParseCompilationUnit(const DwarfHeaderParams &params,
+                            uint64_t offset=0) {
     ByteReader byte_reader(params.endianness == kLittleEndian ?
                            ENDIANNESS_LITTLE : ENDIANNESS_BIG);
     CompilationUnit parser("", MakeSectionMap(), offset, &byte_reader, &handler);

@@ -446,8 +446,8 @@ class ElfReaderImpl {
   /*
   void GetSymbolPositions(SymbolMap *symbols,
                           typename ElfArch::Word section_type,
-                          uint64 mem_offset,
-                          uint64 file_offset) {
+                          uint64_t mem_offset,
+                          uint64_t file_offset) {
     // This map is used to filter out "nested" functions.
     // See comment below.
     AddrToSymMap addr_to_sym_map;
@@ -472,20 +472,20 @@ class ElfReaderImpl {
 
         // Adjust for difference between where we expected to mmap
         // this section, and where it was actually mmapped.
-        const int64 expected_base = hdr.sh_addr - hdr.sh_offset;
-        const int64 real_base = mem_offset - file_offset;
-        const int64 adjust = real_base - expected_base;
+        const int64_t expected_base = hdr.sh_addr - hdr.sh_offset;
+        const int64_t real_base = mem_offset - file_offset;
+        const int64_t adjust = real_base - expected_base;
 
-        uint64 start = sym->st_value + adjust;
+        uint64_t start = sym->st_value + adjust;
 
         // Adjust function symbols for PowerPC64 by dereferencing and adjusting
         // the function descriptor to get the function address.
         if (header_.e_machine == EM_PPC64 && ElfArch::Type(sym) == STT_FUNC) {
-          const uint64 opd_addr =
+          const uint64_t opd_addr =
               AdjustPPC64FunctionDescriptorSymbolValue(sym->st_value);
           // Only adjust the returned value if the function address was found.
           if (opd_addr != sym->st_value) {
-            const int64 adjust_function_symbols =
+            const int64_t adjust_function_symbols =
                 real_base - base_for_text_;
             start = opd_addr + adjust_function_symbols;
           }
@@ -530,8 +530,8 @@ class ElfReaderImpl {
                        curr->first, curr->second->st_size);
     typename AddrToSymMap::iterator prev = curr++;
     for (; curr != addr_to_sym_map.end(); ++curr) {
-      const uint64 prev_addr = prev->first;
-      const uint64 curr_addr = curr->first;
+      const uint64_t prev_addr = prev->first;
+      const uint64_t curr_addr = curr->first;
       const typename ElfArch::Sym *const prev_sym = prev->second;
       const typename ElfArch::Sym *const curr_sym = curr->second;
       if (prev_addr + prev_sym->st_size <= curr_addr ||
@@ -777,7 +777,7 @@ class ElfReaderImpl {
   // segments are present. This is the address an ELF image was linked
   // (by static linker) to be loaded at. Usually (but not always) 0 for
   // shared libraries and position-independent executables.
-  uint64 VaddrOfFirstLoadSegment() const {
+  uint64_t VaddrOfFirstLoadSegment() const {
     // Relocatable objects (of type ET_REL) do not have LOAD segments.
     if (header_.e_type == ET_REL) {
       return 0;
@@ -816,7 +816,7 @@ class ElfReaderImpl {
   }
 
  private:
-  typedef vector<pair<uint64, const typename ElfArch::Sym *> > AddrToSymMap;
+  typedef vector<pair<uint64_t, const typename ElfArch::Sym *> > AddrToSymMap;
 
   static bool AddrToSymSorter(const typename AddrToSymMap::value_type& lhs,
                               const typename AddrToSymMap::value_type& rhs) {
@@ -935,12 +935,12 @@ class ElfReaderImpl {
 
   // Given the "value" of a function descriptor return the address of the
   // function (i.e. the dereferenced value). Otherwise return "value".
-  uint64 AdjustPPC64FunctionDescriptorSymbolValue(uint64 value) {
+  uint64_t AdjustPPC64FunctionDescriptorSymbolValue(uint64_t value) {
     if (opd_section_ != NULL &&
         opd_info_.addr <= value &&
         value < opd_info_.addr + opd_info_.size) {
-      uint64 offset = value - opd_info_.addr;
-      return (*reinterpret_cast<const uint64*>(opd_section_ + offset));
+      uint64_t offset = value - opd_info_.addr;
+      return (*reinterpret_cast<const uint64_t*>(opd_section_ + offset));
     }
     return value;
   }
@@ -1001,7 +1001,7 @@ class ElfReaderImpl {
   // .opd section and are dereferenced to find the function address.
   ElfReader::SectionInfo opd_info_;
   const char *opd_section_;  // Must be checked for NULL before use.
-  int64 base_for_text_;
+  int64_t base_for_text_;
 
   // Read PLT-related sections for the current architecture.
   bool plts_supported_;
@@ -1014,7 +1014,7 @@ class ElfReaderImpl {
 
   // Maps a dynamic symbol index to a PLT offset.
   // The vector entry index is the dynamic symbol index.
-  std::vector<uint64> symbols_plt_offsets_;
+  std::vector<uint64_t> symbols_plt_offsets_;
 
   // Container for PLT function name strings. These strings are passed by
   // reference to SymbolSink::AddSymbol() so they need to be stored somewhere.
@@ -1087,8 +1087,8 @@ bool ElfReader::IsElf64File() const {
 
 /*
 void ElfReader::AddSymbols(SymbolMap *symbols,
-                           uint64 mem_offset, uint64 file_offset,
-                           uint64 length) {
+                           uint64_t mem_offset, uint64_t file_offset,
+                           uint64_t length) {
   if (fd_ < 0)
     return;
   // TODO(chatham): Actually use the information about file offset and
@@ -1138,7 +1138,7 @@ void ElfReader::VisitSymbols(ElfReader::SymbolSink *sink,
   }
 }
 
-uint64 ElfReader::VaddrOfFirstLoadSegment() {
+uint64_t ElfReader::VaddrOfFirstLoadSegment() {
   if (IsElf32File()) {
     return GetImpl32()->VaddrOfFirstLoadSegment();
   } else if (IsElf64File()) {
@@ -1159,7 +1159,7 @@ const char *ElfReader::GetSectionName(int shndx) {
   }
 }
 
-uint64 ElfReader::GetNumSections() {
+uint64_t ElfReader::GetNumSections() {
   if (IsElf32File()) {
     return GetImpl32()->GetNumSections();
   } else if (IsElf64File()) {

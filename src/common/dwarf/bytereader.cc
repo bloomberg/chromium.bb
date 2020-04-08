@@ -43,7 +43,7 @@ ByteReader::ByteReader(enum Endianness endian)
 
 ByteReader::~ByteReader() { }
 
-void ByteReader::SetOffsetSize(uint8 size) {
+void ByteReader::SetOffsetSize(uint8_t size) {
   offset_size_ = size;
   assert(size == 4 || size == 8);
   if (size == 4) {
@@ -53,7 +53,7 @@ void ByteReader::SetOffsetSize(uint8 size) {
   }
 }
 
-void ByteReader::SetAddressSize(uint8 size) {
+void ByteReader::SetAddressSize(uint8_t size) {
   address_size_ = size;
   assert(size == 4 || size == 8);
   if (size == 4) {
@@ -63,8 +63,8 @@ void ByteReader::SetAddressSize(uint8 size) {
   }
 }
 
-uint64 ByteReader::ReadInitialLength(const uint8_t *start, size_t* len) {
-  const uint64 initial_length = ReadFourBytes(start);
+uint64_t ByteReader::ReadInitialLength(const uint8_t *start, size_t* len) {
+  const uint64_t initial_length = ReadFourBytes(start);
   start += 4;
 
   // In DWARF2/3, if the initial length is all 1 bits, then the offset
@@ -101,7 +101,7 @@ bool ByteReader::UsableEncoding(DwarfPointerEncoding encoding) const {
   }
 }
 
-uint64 ByteReader::ReadEncodedPointer(const uint8_t *buffer,
+uint64_t ByteReader::ReadEncodedPointer(const uint8_t *buffer,
                                       DwarfPointerEncoding encoding,
                                       size_t *len) const {
   // UsableEncoding doesn't approve of DW_EH_PE_omit, so we shouldn't
@@ -124,11 +124,11 @@ uint64 ByteReader::ReadEncodedPointer(const uint8_t *buffer,
 
     // First, find the offset to START from the closest prior aligned
     // address.
-    uint64 skew = section_base_ & (AddressSize() - 1);
+    uint64_t skew = section_base_ & (AddressSize() - 1);
     // Now find the offset from that aligned address to buffer.
-    uint64 offset = skew + (buffer - buffer_base_);
+    uint64_t offset = skew + (buffer - buffer_base_);
     // Round up to the next boundary.
-    uint64 aligned = (offset + AddressSize() - 1) & -AddressSize();
+    uint64_t aligned = (offset + AddressSize() - 1) & -AddressSize();
     // Convert back to a pointer.
     const uint8_t *aligned_buffer = buffer_base_ + (aligned - skew);
     // Finally, store the length and actually fetch the pointer.
@@ -138,7 +138,7 @@ uint64 ByteReader::ReadEncodedPointer(const uint8_t *buffer,
 
   // Extract the value first, ignoring whether it's a pointer or an
   // offset relative to some base.
-  uint64 offset;
+  uint64_t offset;
   switch (encoding & 0x0f) {
     case DW_EH_PE_absptr:
       // DW_EH_PE_absptr is weird, as it is used as a meaningful value for
@@ -202,7 +202,7 @@ uint64 ByteReader::ReadEncodedPointer(const uint8_t *buffer,
   }
 
   // Find the appropriate base address.
-  uint64 base;
+  uint64_t base;
   switch (encoding & 0x70) {
     case DW_EH_PE_absptr:
       base = 0;
@@ -232,13 +232,13 @@ uint64 ByteReader::ReadEncodedPointer(const uint8_t *buffer,
       abort();
   }
 
-  uint64 pointer = base + offset;
+  uint64_t pointer = base + offset;
 
   // Remove inappropriate upper bits.
   if (AddressSize() == 4)
     pointer = pointer & 0xffffffff;
   else
-    assert(AddressSize() == sizeof(uint64));
+    assert(AddressSize() == sizeof(uint64_t));
 
   return pointer;
 }

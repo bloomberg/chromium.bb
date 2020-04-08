@@ -232,11 +232,11 @@ bool LoadStabs(const typename ElfClass::Ehdr* elf_header,
 // owned by a function) with the results.
 class DumperRangesHandler : public DwarfCUToModule::RangesHandler {
  public:
-  DumperRangesHandler(const uint8_t *buffer, uint64 size,
+  DumperRangesHandler(const uint8_t *buffer, uint64_t size,
                       dwarf2reader::ByteReader* reader)
       : buffer_(buffer), size_(size), reader_(reader) { }
 
-  bool ReadRanges(uint64 offset, Module::Address base_address,
+  bool ReadRanges(uint64_t offset, Module::Address base_address,
                   vector<Module::Range>* ranges) {
     DwarfRangeListHandler handler(base_address, ranges);
     dwarf2reader::RangeListReader rangelist_reader(buffer_, size_, reader_,
@@ -247,7 +247,7 @@ class DumperRangesHandler : public DwarfCUToModule::RangesHandler {
 
  private:
   const uint8_t *buffer_;
-  uint64 size_;
+  uint64_t size_;
   dwarf2reader::ByteReader* reader_;
 };
 
@@ -262,7 +262,7 @@ class DumperLineToModule: public DwarfCUToModule::LineToModuleHandler {
   void StartCompilationUnit(const string& compilation_dir) {
     compilation_dir_ = compilation_dir;
   }
-  void ReadProgram(const uint8_t *program, uint64 length,
+  void ReadProgram(const uint8_t *program, uint64_t length,
                    Module* module, std::vector<Module::Line>* lines) {
     DwarfLineToModule handler(module, compilation_dir_, lines);
     dwarf2reader::LineInfo parser(program, length, byte_reader_, &handler);
@@ -310,7 +310,7 @@ bool LoadDwarf(const string& dwarf_filename,
   dwarf2reader::SectionMap::const_iterator ranges_entry =
       file_context.section_map().find(".debug_ranges");
   if (ranges_entry != file_context.section_map().end()) {
-    const std::pair<const uint8_t *, uint64>& ranges_section =
+    const std::pair<const uint8_t *, uint64_t>& ranges_section =
       ranges_entry->second;
     ranges_handler.reset(
       new DumperRangesHandler(ranges_section.first, ranges_section.second,
@@ -322,13 +322,13 @@ bool LoadDwarf(const string& dwarf_filename,
   dwarf2reader::SectionMap::const_iterator debug_info_entry =
       file_context.section_map().find(".debug_info");
   assert(debug_info_entry != file_context.section_map().end());
-  const std::pair<const uint8_t *, uint64>& debug_info_section =
+  const std::pair<const uint8_t *, uint64_t>& debug_info_section =
       debug_info_entry->second;
   // This should never have been called if the file doesn't have a
   // .debug_info section.
   assert(debug_info_section.first);
-  uint64 debug_info_length = debug_info_section.second;
-  for (uint64 offset = 0; offset < debug_info_length;) {
+  uint64_t debug_info_length = debug_info_section.second;
+  for (uint64_t offset = 0; offset < debug_info_length;) {
     // Make a handler for the root DIE that populates MODULE with the
     // data that was found.
     DwarfCUToModule::WarningReporter reporter(dwarf_filename, offset);

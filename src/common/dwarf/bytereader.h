@@ -62,22 +62,22 @@ class ByteReader {
 
   // Read a single byte from BUFFER and return it as an unsigned 8 bit
   // number.
-  uint8 ReadOneByte(const uint8_t *buffer) const;
+  uint8_t ReadOneByte(const uint8_t *buffer) const;
 
   // Read two bytes from BUFFER and return them as an unsigned 16 bit
   // number, using this ByteReader's endianness.
-  uint16 ReadTwoBytes(const uint8_t *buffer) const;
+  uint16_t ReadTwoBytes(const uint8_t *buffer) const;
 
   // Read four bytes from BUFFER and return them as an unsigned 32 bit
   // number, using this ByteReader's endianness. This function returns
-  // a uint64 so that it is compatible with ReadAddress and
+  // a uint64_t so that it is compatible with ReadAddress and
   // ReadOffset. The number it returns will never be outside the range
   // of an unsigned 32 bit integer.
-  uint64 ReadFourBytes(const uint8_t *buffer) const;
+  uint64_t ReadFourBytes(const uint8_t *buffer) const;
 
   // Read eight bytes from BUFFER and return them as an unsigned 64
   // bit number, using this ByteReader's endianness.
-  uint64 ReadEightBytes(const uint8_t *buffer) const;
+  uint64_t ReadEightBytes(const uint8_t *buffer) const;
 
   // Read an unsigned LEB128 (Little Endian Base 128) number from
   // BUFFER and return it as an unsigned 64 bit integer. Set LEN to
@@ -96,7 +96,7 @@ class ByteReader {
   // In other words, we break VALUE into groups of seven bits, put
   // them in little-endian order, and then write them as eight-bit
   // bytes with the high bit on all but the last.
-  uint64 ReadUnsignedLEB128(const uint8_t *buffer, size_t *len) const;
+  uint64_t ReadUnsignedLEB128(const uint8_t *buffer, size_t *len) const;
 
   // Read a signed LEB128 number from BUFFER and return it as an
   // signed 64 bit integer. Set LEN to the number of bytes read.
@@ -115,7 +115,7 @@ class ByteReader {
   // In other words, we break VALUE into groups of seven bits, put
   // them in little-endian order, and then write them as eight-bit
   // bytes with the high bit on all but the last.
-  int64 ReadSignedLEB128(const uint8_t *buffer, size_t *len) const;
+  int64_t ReadSignedLEB128(const uint8_t *buffer, size_t *len) const;
 
   // Indicate that addresses on this architecture are SIZE bytes long. SIZE
   // must be either 4 or 8. (DWARF allows addresses to be any number of
@@ -129,16 +129,16 @@ class ByteReader {
   // frame information doesn't indicate its address size (a shortcoming of
   // the spec); you must supply the appropriate size based on the
   // architecture of the target machine.
-  void SetAddressSize(uint8 size);
+  void SetAddressSize(uint8_t size);
 
   // Return the current address size, in bytes. This is either 4,
   // indicating 32-bit addresses, or 8, indicating 64-bit addresses.
-  uint8 AddressSize() const { return address_size_; }
+  uint8_t AddressSize() const { return address_size_; }
 
   // Read an address from BUFFER and return it as an unsigned 64 bit
   // integer, respecting this ByteReader's endianness and address size. You
   // must call SetAddressSize before calling this function.
-  uint64 ReadAddress(const uint8_t *buffer) const;
+  uint64_t ReadAddress(const uint8_t *buffer) const;
 
   // DWARF actually defines two slightly different formats: 32-bit DWARF
   // and 64-bit DWARF. This is *not* related to the size of registers or
@@ -175,26 +175,26 @@ class ByteReader {
   // - The 32-bit value 0xffffffff, followed by a 64-bit byte count,
   //   indicating that the data whose length is being measured uses
   //   the 64-bit DWARF format.
-  uint64 ReadInitialLength(const uint8_t *start, size_t *len);
+  uint64_t ReadInitialLength(const uint8_t *start, size_t *len);
 
   // Read an offset from BUFFER and return it as an unsigned 64 bit
   // integer, respecting the ByteReader's endianness. In 32-bit DWARF, the
   // offset is 4 bytes long; in 64-bit DWARF, the offset is eight bytes
   // long. You must call ReadInitialLength or SetOffsetSize before calling
   // this function; see the comments above for details.
-  uint64 ReadOffset(const uint8_t *buffer) const;
+  uint64_t ReadOffset(const uint8_t *buffer) const;
 
   // Return the current offset size, in bytes.
   // A return value of 4 indicates that we are reading 32-bit DWARF.
   // A return value of 8 indicates that we are reading 64-bit DWARF.
-  uint8 OffsetSize() const { return offset_size_; }
+  uint8_t OffsetSize() const { return offset_size_; }
 
   // Indicate that section offsets and lengths are SIZE bytes long. SIZE
   // must be either 4 (meaning 32-bit DWARF) or 8 (meaning 64-bit DWARF).
   // Usually, you should not call this function yourself; instead, let a
   // call to ReadInitialLength establish the data's offset size
   // automatically.
-  void SetOffsetSize(uint8 size);
+  void SetOffsetSize(uint8_t size);
 
   // The Linux C++ ABI uses a variant of DWARF call frame information
   // for exception handling. This data is included in the program's
@@ -237,24 +237,24 @@ class ByteReader {
   // is BUFFER_BASE. This allows us to find the address that a given
   // byte in our buffer would have when loaded into the program the
   // data describes. We need this to resolve DW_EH_PE_pcrel pointers.
-  void SetCFIDataBase(uint64 section_base, const uint8_t *buffer_base);
+  void SetCFIDataBase(uint64_t section_base, const uint8_t *buffer_base);
 
   // Indicate that the base address of the program's ".text" section
   // is TEXT_BASE. We need this to resolve DW_EH_PE_textrel pointers.
-  void SetTextBase(uint64 text_base);
+  void SetTextBase(uint64_t text_base);
 
   // Indicate that the base address for DW_EH_PE_datarel pointers is
   // DATA_BASE. The proper value depends on the ABI; it is usually the
   // address of the global offset table, held in a designated register in
   // position-independent code. You will need to look at the startup code
   // for the target system to be sure. I tried; my eyes bled.
-  void SetDataBase(uint64 data_base);
+  void SetDataBase(uint64_t data_base);
 
   // Indicate that the base address for the FDE we are processing is
   // FUNCTION_BASE. This is the start address of DW_EH_PE_funcrel
   // pointers. (This encoding does not seem to be used by the GNU
   // toolchain.)
-  void SetFunctionBase(uint64 function_base);
+  void SetFunctionBase(uint64_t function_base);
 
   // Indicate that we are no longer processing any FDE, so any use of
   // a DW_EH_PE_funcrel encoding is an error.
@@ -276,7 +276,7 @@ class ByteReader {
   // base address this reader hasn't been given, so you should check
   // with ValidEncoding and UsableEncoding first if you would rather
   // die in a more helpful way.
-  uint64 ReadEncodedPointer(const uint8_t *buffer,
+  uint64_t ReadEncodedPointer(const uint8_t *buffer,
                             DwarfPointerEncoding encoding,
                             size_t *len) const;
 
@@ -284,7 +284,7 @@ class ByteReader {
  private:
 
   // Function pointer type for our address and offset readers.
-  typedef uint64 (ByteReader::*AddressReader)(const uint8_t *) const;
+  typedef uint64_t (ByteReader::*AddressReader)(const uint8_t *) const;
 
   // Read an offset from BUFFER and return it as an unsigned 64 bit
   // integer.  DWARF2/3 define offsets as either 4 or 8 bytes,
@@ -300,13 +300,13 @@ class ByteReader {
   AddressReader address_reader_;
 
   Endianness endian_;
-  uint8 address_size_;
-  uint8 offset_size_;
+  uint8_t address_size_;
+  uint8_t offset_size_;
 
   // Base addresses for Linux C++ exception handling data's encoded pointers.
   bool have_section_base_, have_text_base_, have_data_base_;
   bool have_function_base_;
-  uint64 section_base_, text_base_, data_base_, function_base_;
+  uint64_t section_base_, text_base_, data_base_, function_base_;
   const uint8_t *buffer_base_;
 };
 
