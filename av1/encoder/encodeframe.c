@@ -5294,11 +5294,12 @@ static INLINE int skip_gm_frame(AV1_COMMON *const cm, int ref_frame) {
   return 0;
 }
 
-static AOM_INLINE void set_default_interp_skip_flags(AV1_COMP *cpi) {
-  const int num_planes = av1_num_planes(&cpi->common);
-  cpi->default_interp_skip_flags = (num_planes == 1)
-                                       ? INTERP_SKIP_LUMA_EVAL_CHROMA
-                                       : INTERP_SKIP_LUMA_SKIP_CHROMA;
+static AOM_INLINE void set_default_interp_skip_flags(
+    const AV1_COMMON *cm, InterpSearchFlags *interp_search_flags) {
+  const int num_planes = av1_num_planes(cm);
+  interp_search_flags->default_interp_skip_flags =
+      (num_planes == 1) ? INTERP_SKIP_LUMA_EVAL_CHROMA
+                        : INTERP_SKIP_LUMA_SKIP_CHROMA;
 }
 
 // TODO(Remya): Can include erroradv_prod_tr[] for threshold calculation
@@ -5766,7 +5767,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
   av1_initialize_me_consts(cpi, x, quant_params->base_qindex);
 
   init_encode_frame_mb_context(cpi);
-  set_default_interp_skip_flags(cpi);
+  set_default_interp_skip_flags(cm, &cpi->interp_search_flags);
   if (cm->prev_frame && cm->prev_frame->seg.enabled)
     cm->last_frame_seg_map = cm->prev_frame->seg_map;
   else

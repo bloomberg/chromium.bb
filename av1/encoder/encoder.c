@@ -5399,7 +5399,8 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
   set_size_independent_vars(cpi);
   if (is_stat_consumption_stage_twopass(cpi) &&
       cpi->sf.interp_sf.adaptive_interp_filter_search)
-    cpi->interp_filter_search_mask = setup_interp_filter_search_mask(cpi);
+    cpi->interp_search_flags.interp_filter_search_mask =
+        setup_interp_filter_search_mask(cpi);
   cpi->source->buf_8bit_valid = 0;
 
   av1_setup_frame_size(cpi);

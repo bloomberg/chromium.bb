@@ -845,6 +845,14 @@ typedef struct {
 } GlobalMotionInfo;
 
 typedef struct {
+  // Stores the default value of skip flag depending on chroma format
+  // Set as 1 for monochrome and 3 for other color formats
+  int default_interp_skip_flags;
+  // Filter mask to allow certain interp_filter type.
+  uint16_t interp_filter_search_mask;
+} InterpSearchFlags;
+
+typedef struct {
   // Largest MV component used in a frame.
   // The value from the previous frame is used to set the full pixel search
   // range for the current frame.
@@ -1204,11 +1212,9 @@ typedef struct AV1_COMP {
 #if CONFIG_DENOISE
   struct aom_denoise_and_model_t *denoise_and_model;
 #endif
-  // Stores the default value of skip flag depending on chroma format
-  // Set as 1 for monochrome and 3 for other color formats
-  int default_interp_skip_flags;
-  // Filter mask to allow certain interp_filter type.
-  uint16_t interp_filter_search_mask;
+
+  // Flags related to interpolation filter search.
+  InterpSearchFlags interp_search_flags;
 
   MultiThreadHandle multi_thread_ctxt;
   void (*row_mt_sync_read_ptr)(AV1RowMTSync *const, int, int);
