@@ -2299,7 +2299,6 @@
         "hw_tests": [],
         "hw_tests_disabled_bug": "https://b/150746591",
         "hw_tests_override": [],
-        "important": false,
         "vm_tests": [],
         "vm_tests_override": null
     },
