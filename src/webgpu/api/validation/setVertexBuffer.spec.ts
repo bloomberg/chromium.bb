@@ -45,7 +45,7 @@ class F extends ValidationTest {
   }
 
   getVertexStage(bufferCount: number): GPUProgrammableStageDescriptor {
-    const code = `
+    const glsl = `
       #version 450
       ${range(bufferCount, i => `\nlayout(location = ${i}) in vec3 a_position${i};`).join('')}
       void main() {
@@ -53,13 +53,13 @@ class F extends ValidationTest {
        }
     `;
     return {
-      module: this.makeShaderModuleFromGLSL('vertex', code),
+      module: this.makeShaderModule('vertex', { glsl }),
       entryPoint: 'main',
     };
   }
 
   getFragmentStage(): GPUProgrammableStageDescriptor {
-    const code = `
+    const glsl = `
       #version 450
       layout(location = 0) out vec4 fragColor;
       void main() {
@@ -67,7 +67,7 @@ class F extends ValidationTest {
       }
     `;
     return {
-      module: this.makeShaderModuleFromGLSL('fragment', code),
+      module: this.makeShaderModule('fragment', { glsl }),
       entryPoint: 'main',
     };
   }

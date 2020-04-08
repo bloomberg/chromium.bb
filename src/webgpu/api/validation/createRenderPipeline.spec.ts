@@ -5,7 +5,6 @@ createRenderPipeline validation tests.
 import { poptions } from '../../../common/framework/params.js';
 import { TestGroup } from '../../../common/framework/test_group.js';
 import { initGLSL } from '../../../common/glslang.js';
-import GLSL from '../../../common/tools/glsl.macro.js';
 import { kTextureFormatInfo, kTextureFormats } from '../../capability_info.js';
 
 import { ValidationTest } from './validation_test.js';
@@ -47,15 +46,13 @@ class F extends ValidationTest {
 
   getVertexStage(): GPUProgrammableStageDescriptor {
     return {
-      module: this.createShaderModule({
-        code: GLSL(
-          'vertex',
-          `#version 450
-            void main() {
-              gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
-            }
-          `
-        ),
+      module: this.makeShaderModule('vertex', {
+        glsl: `
+          #version 450
+          void main() {
+            gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
+          }
+        `,
       }),
       entryPoint: 'main',
     };
@@ -71,7 +68,7 @@ class F extends ValidationTest {
       fragColorType = 'vec4';
     }
 
-    const code = `
+    const glsl = `
       #version 450
       layout(location = 0) out ${fragColorType} fragColor;
       void main() {
@@ -80,7 +77,7 @@ class F extends ValidationTest {
     `;
 
     return {
-      module: this.makeShaderModuleFromGLSL('fragment', code),
+      module: this.makeShaderModule('fragment', { glsl }),
       entryPoint: 'main',
     };
   }

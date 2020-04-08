@@ -22,6 +22,14 @@ const VERTEX_SHADER_CODE_WITH_NO_INPUT = `
   }
 `;
 
+const FRAGMENT_SHADER_CODE = `
+  #version 450
+  layout(location = 0) out vec4 fragColor;
+  void main() {
+    fragColor = vec4(0.0, 1.0, 0.0, 1.0);
+  }
+`;
+
 function clone<T extends GPUVertexStateDescriptor>(descriptor: T): T {
   return JSON.parse(JSON.stringify(descriptor));
 }
@@ -37,39 +45,20 @@ class F extends ValidationTest {
     vertexShaderCode: string
   ): GPURenderPipelineDescriptor {
     const descriptor: GPURenderPipelineDescriptor = {
-      vertexStage: this.getVertexStage(vertexShaderCode),
-      fragmentStage: this.getFragmentStage(),
-      layout: this.getPipelineLayout(),
+      vertexStage: {
+        module: this.makeShaderModule('vertex', { glsl: vertexShaderCode }),
+        entryPoint: 'main',
+      },
+      fragmentStage: {
+        module: this.makeShaderModule('fragment', { glsl: FRAGMENT_SHADER_CODE }),
+        entryPoint: 'main',
+      },
+      layout: this.device.createPipelineLayout({ bindGroupLayouts: [] }),
       primitiveTopology: 'triangle-list',
       colorStates: [{ format: 'rgba8unorm' }],
       vertexState,
     };
     return descriptor;
-  }
-
-  getVertexStage(code: string): GPUProgrammableStageDescriptor {
-    return {
-      module: this.makeShaderModuleFromGLSL('vertex', code),
-      entryPoint: 'main',
-    };
-  }
-
-  getFragmentStage(): GPUProgrammableStageDescriptor {
-    const code = `
-      #version 450
-      layout(location = 0) out vec4 fragColor;
-      void main() {
-        fragColor = vec4(0.0, 1.0, 0.0, 1.0);
-      }
-    `;
-    return {
-      module: this.makeShaderModuleFromGLSL('fragment', code),
-      entryPoint: 'main',
-    };
-  }
-
-  getPipelineLayout(): GPUPipelineLayout {
-    return this.device.createPipelineLayout({ bindGroupLayouts: [] });
   }
 }
 

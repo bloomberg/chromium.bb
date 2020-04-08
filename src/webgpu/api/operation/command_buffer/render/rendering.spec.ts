@@ -1,7 +1,6 @@
 export const description = ``;
 
 import { TestGroup } from '../../../../../common/framework/test_group.js';
-import GLSL from '../../../../../common/tools/glsl.macro.js';
 import { GPUTest } from '../../../../gpu_test.js';
 
 export const g = new TestGroup(GPUTest);
@@ -19,29 +18,25 @@ g.test('fullscreen quad', async t => {
   });
   const colorAttachmentView = colorAttachment.createView();
 
-  const vertexModule = t.createShaderModule({
-    code: GLSL(
-      'vertex',
-      `#version 310 es
-        void main() {
-          const vec2 pos[3] = vec2[3](
-              vec2(-1.f, -3.f), vec2(3.f, 1.f), vec2(-1.f, 1.f));
-          gl_Position = vec4(pos[gl_VertexIndex], 0.f, 1.f);
-        }
-      `
-    ),
+  const vertexModule = t.makeShaderModule('vertex', {
+    glsl: `
+      #version 310 es
+      void main() {
+        const vec2 pos[3] = vec2[3](
+            vec2(-1.f, -3.f), vec2(3.f, 1.f), vec2(-1.f, 1.f));
+        gl_Position = vec4(pos[gl_VertexIndex], 0.f, 1.f);
+      }
+    `,
   });
-  const fragmentModule = t.createShaderModule({
-    code: GLSL(
-      'fragment',
-      `#version 310 es
-        precision mediump float;
-        layout(location = 0) out vec4 fragColor;
-        void main() {
-          fragColor = vec4(0.0, 1.0, 0.0, 1.0);
-        }
-      `
-    ),
+  const fragmentModule = t.makeShaderModule('fragment', {
+    glsl: `
+      #version 310 es
+      precision mediump float;
+      layout(location = 0) out vec4 fragColor;
+      void main() {
+        fragColor = vec4(0.0, 1.0, 0.0, 1.0);
+      }
+    `,
   });
   const pl = t.device.createPipelineLayout({ bindGroupLayouts: [] });
   const pipeline = t.device.createRenderPipeline({

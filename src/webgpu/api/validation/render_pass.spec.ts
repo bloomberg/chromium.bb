@@ -3,7 +3,6 @@ render pass validation tests.
 `;
 
 import { TestGroup } from '../../../common/framework/test_group.js';
-import GLSL from '../../../common/tools/glsl.macro.js';
 
 import { ValidationTest } from './validation_test.js';
 
@@ -16,10 +15,8 @@ class F extends ValidationTest {
   }
 
   createRenderPipeline(pipelineLayout: GPUPipelineLayout): GPURenderPipeline {
-    const vertexModule = this.createShaderModule({
-      code: GLSL(
-        'vertex',
-        `#version 450
+    const vertexModule = this.makeShaderModule('vertex', {
+      glsl: `#version 450
           layout (set = 0, binding = 0) uniform vertexUniformBuffer {
               mat2 transform;
           };
@@ -27,22 +24,19 @@ class F extends ValidationTest {
               const vec2 pos[3] = vec2[3](vec2(-1.f, -1.f), vec2(1.f, -1.f), vec2(-1.f, 1.f));
               gl_Position = vec4(transform * pos[gl_VertexIndex], 0.f, 1.f);
           }
-        `
-      ),
+        `,
     });
 
-    const fragmentModule = this.createShaderModule({
-      code: GLSL(
-        'fragment',
-        `#version 450
-          layout (set = 1, binding = 0) uniform fragmentUniformBuffer {
-            vec4 color;
-          };
-          layout(location = 0) out vec4 fragColor;
-          void main() {
-          }
-        `
-      ),
+    const fragmentModule = this.makeShaderModule('fragment', {
+      glsl: `
+        #version 450
+        layout (set = 1, binding = 0) uniform fragmentUniformBuffer {
+          vec4 color;
+        };
+        layout(location = 0) out vec4 fragColor;
+        void main() {
+        }
+      `,
     });
 
     const pipeline = this.device.createRenderPipeline({

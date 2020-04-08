@@ -2,7 +2,6 @@ export const description = `
 renderPass store op test that drawn quad is either stored or cleared based on storeop`;
 
 import { TestGroup } from '../../../../../common/framework/test_group.js';
-import GLSL from '../../../../../common/tools/glsl.macro.js';
 import { GPUTest } from '../../../../gpu_test.js';
 
 export const g = new TestGroup(GPUTest);
@@ -15,10 +14,9 @@ g.test('storeOp controls whether 1x1 drawn quad is stored', async t => {
   });
 
   // create render pipeline
-  const vertexModule = t.createShaderModule({
-    code: GLSL(
-      'vertex',
-      `#version 450
+  const vertexModule = t.makeShaderModule('vertex', {
+    glsl: `
+      #version 450
       const vec2 pos[3] = vec2[3](
                               vec2( 1.0f, -1.0f),
                               vec2( 1.0f,  1.0f),
@@ -27,18 +25,17 @@ g.test('storeOp controls whether 1x1 drawn quad is stored', async t => {
 
       void main() {
           gl_Position = vec4(pos[gl_VertexIndex], 0.0, 1.0);
-      }`
-    ),
+      }
+    `,
   });
-  const fragmentModule = t.createShaderModule({
-    code: GLSL(
-      'fragment',
-      `#version 450
+  const fragmentModule = t.makeShaderModule('fragment', {
+    glsl: `
+      #version 450
       layout(location = 0) out vec4 fragColor;
       void main() {
           fragColor = vec4(1.0, 0.0, 0.0, 1.0);
-      }`
-    ),
+      }
+    `,
   });
   const renderPipeline = t.device.createRenderPipeline({
     vertexStage: { module: vertexModule, entryPoint: 'main' },

@@ -1,5 +1,4 @@
-import { SkipTestCase } from './framework/fixture.js';
-import { assert } from './framework/util/util.js';
+import { assert, unreachable } from './framework/util/util.js';
 import { getGlslangPath } from './glslang_path.js';
 
 type glslang = typeof import('@webgpu/glslang/dist/web-devel/glslang');
@@ -12,9 +11,7 @@ let glslangInstance: Glslang | undefined;
 
 export async function initGLSL(): Promise<void> {
   if (glslangAttempted) {
-    if (!glslangInstance) {
-      throw new SkipTestCase('glslang is not available');
-    }
+    assert(glslangInstance !== undefined, 'glslang is not available');
   } else {
     glslangAttempted = true;
     const glslangPath = getGlslangPath() || '../glslang.js';
@@ -22,7 +19,7 @@ export async function initGLSL(): Promise<void> {
     try {
       glslangModule = ((await import(glslangPath)) as glslang).default;
     } catch (ex) {
-      throw new SkipTestCase('glslang is not available');
+      unreachable('glslang is not available');
     }
 
     const glslang = await glslangModule();

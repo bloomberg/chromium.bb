@@ -46,7 +46,6 @@ const devicePool = new DevicePool();
 export class GPUTest extends Fixture {
   private objects: { device: GPUDevice; queue: GPUQueue } | undefined = undefined;
   initialized = false;
-  private supportsSPIRV = true;
 
   get device(): GPUDevice {
     assert(this.objects !== undefined);
@@ -64,11 +63,6 @@ export class GPUTest extends Fixture {
     const device = await devicePool.acquire();
     const queue = device.defaultQueue;
     this.objects = { device, queue };
-
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-    if (isSafari) {
-      this.supportsSPIRV = false;
-    }
 
     try {
       await device.popErrorScope();
@@ -104,16 +98,14 @@ export class GPUTest extends Fixture {
     }
   }
 
-  createShaderModule(desc: GPUShaderModuleDescriptor): GPUShaderModule {
-    if (!this.supportsSPIRV) {
-      this.skip('SPIR-V not available in this browser');
+  makeShaderModule(stage: ShaderStage, code: { glsl: string } | { wgsl: string }): GPUShaderModule {
+    // If both are provided, always choose WGSL. (Can change this if needed.)
+    if ('wgsl' in code) {
+      return this.device.createShaderModule({ code: code.wgsl });
+    } else {
+      const spirv = compileGLSL(code.glsl, stage, false);
+      return this.device.createShaderModule({ code: spirv });
     }
-    return this.device.createShaderModule(desc);
-  }
-
-  makeShaderModuleFromGLSL(stage: ShaderStage, glsl: string): GPUShaderModule {
-    const code = compileGLSL(glsl, stage, false);
-    return this.device.createShaderModule({ code });
   }
 
   createCopyForMapRead(src: GPUBuffer, size: number): GPUBuffer {

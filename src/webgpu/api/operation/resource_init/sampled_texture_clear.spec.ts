@@ -2,7 +2,6 @@ export const description = `
 computePass test that sampled texture is cleared`;
 
 import { TestGroup } from '../../../../common/framework/test_group.js';
-import GLSL from '../../../../common/tools/glsl.macro.js';
 import { GPUTest } from '../../../gpu_test.js';
 
 export const g = new TestGroup(GPUTest);
@@ -30,10 +29,9 @@ g.test('compute pass test that sampled texture is cleared', async t => {
   });
 
   // create compute pipeline
-  const computeModule = t.device.createShaderModule({
-    code: GLSL(
-      'compute',
-      `#version 450
+  const computeModule = t.makeShaderModule('compute', {
+    glsl: `
+      #version 450
       layout(binding = 0) uniform texture2D sampleTex;
       layout(std430, binding = 1) buffer BufferTex {
          vec4 result;
@@ -42,8 +40,8 @@ g.test('compute pass test that sampled texture is cleared', async t => {
       void main() {
          bufferTex.result =
                texelFetch(sampler2D(sampleTex, sampler0), ivec2(0,0), 0);
-      }`
-    ),
+      }
+    `,
   });
   const pipelineLayout = t.device.createPipelineLayout({ bindGroupLayouts: [bindGroupLayout] });
   const computePipeline = t.device.createComputePipeline({
