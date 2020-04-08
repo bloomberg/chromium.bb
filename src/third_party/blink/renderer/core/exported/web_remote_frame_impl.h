@@ -106,7 +106,7 @@ class CORE_EXPORT WebRemoteFrameImpl final
   WebRect GetCompositingRect() override;
   void RenderFallbackContent() const override;
   v8::Isolate* ScriptIsolate() const override;
-
+  void DrawInCanvas(const WebRect&, const WebString&, cc::PaintCanvas*) override;
   void InitializeCoreFrame(Page&,
                            FrameOwner*,
                            const AtomicString& name,
