@@ -1300,7 +1300,7 @@ static int64_t motion_mode_rd(
     }
 
     const FRAME_UPDATE_TYPE update_type = get_frame_update_type(&cpi->gf_group);
-    const int prune_obmc = cpi->obmc_probs[update_type][bsize] <
+    const int prune_obmc = cpi->frame_probs.obmc_probs[update_type][bsize] <
                            cpi->sf.inter_sf.prune_obmc_prob_thresh;
     if ((cpi->oxcf.enable_obmc == 0 || cpi->sf.inter_sf.disable_obmc ||
          cpi->sf.rt_sf.use_nonrd_pick_mode || prune_obmc) &&
@@ -3505,7 +3505,7 @@ static AOM_INLINE void set_params_rd_pick_inter_mode(
 
   av1_count_overlappable_neighbors(cm, xd);
   const FRAME_UPDATE_TYPE update_type = get_frame_update_type(&cpi->gf_group);
-  const int prune_obmc = cpi->obmc_probs[update_type][bsize] <
+  const int prune_obmc = cpi->frame_probs.obmc_probs[update_type][bsize] <
                          cpi->sf.inter_sf.prune_obmc_prob_thresh;
   if (cpi->oxcf.enable_obmc && !cpi->sf.inter_sf.disable_obmc && !prune_obmc) {
     if (check_num_overlappable_neighbors(mbmi) &&

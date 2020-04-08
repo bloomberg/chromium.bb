@@ -5436,39 +5436,27 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
     }
   }
 
-  if (cpi->sf.tx_sf.tx_type_search.prune_tx_type_using_stats) {
-    const int thr[2][2] = { { 15, 10 }, { 17, 10 } };
-    for (int f = 0; f < FRAME_UPDATE_TYPES; f++) {
-      int kf_arf_update = (f == KF_UPDATE || f == ARF_UPDATE);
-      cpi->tx_type_probs_thresh[f] =
-          thr[cpi->sf.tx_sf.tx_type_search.prune_tx_type_using_stats - 1]
-             [kf_arf_update];
+  if (cm->current_frame.frame_type == KEY_FRAME) {
+    FrameProbInfo *const frame_probs = &cpi->frame_probs;
+
+    if (cpi->sf.tx_sf.tx_type_search.prune_tx_type_using_stats) {
+      av1_copy(frame_probs->tx_type_probs, default_tx_type_probs);
     }
-    if (cm->current_frame.frame_type == KEY_FRAME) {
-      av1_copy(cpi->tx_type_probs, default_tx_type_probs);
+
+    if (!cpi->sf.inter_sf.disable_obmc &&
+        cpi->sf.inter_sf.prune_obmc_prob_thresh > 0) {
+      av1_copy(frame_probs->obmc_probs, default_obmc_probs);
     }
-  }
 
-  if (!cpi->sf.inter_sf.disable_obmc &&
-      cpi->sf.inter_sf.prune_obmc_prob_thresh > 0 &&
-      cm->current_frame.frame_type == KEY_FRAME) {
-    av1_copy(cpi->obmc_probs, default_obmc_probs);
-  }
-  if (cpi->sf.inter_sf.prune_warped_prob_thresh > 0 &&
-      cm->current_frame.frame_type == KEY_FRAME) {
-    av1_copy(cpi->warped_probs, default_warped_probs);
-  }
+    if (cpi->sf.inter_sf.prune_warped_prob_thresh > 0) {
+      av1_copy(frame_probs->warped_probs, default_warped_probs);
+    }
 
-  if (cpi->sf.interp_sf.adaptive_interp_filter_search == 2 &&
-      cm->current_frame.frame_type == KEY_FRAME) {
-    av1_copy(cpi->switchable_interp_probs, default_switchable_interp_probs);
-
-    const int thr[7] = { 0, 8, 8, 8, 8, 0, 8 };
-    for (int f = 0; f < FRAME_UPDATE_TYPES; f++) {
-      cpi->switchable_interp_thresh[f] = thr[f];
+    if (cpi->sf.interp_sf.adaptive_interp_filter_search == 2) {
+      av1_copy(frame_probs->switchable_interp_probs,
+               default_switchable_interp_probs);
     }
   }
-
 #if !CONFIG_REALTIME_ONLY
   // Determine whether to use screen content tools using two fast encoding.
   determine_sc_tools_with_encoding(cpi, q);

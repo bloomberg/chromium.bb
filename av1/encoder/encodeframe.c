@@ -5617,6 +5617,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
   MACROBLOCKD *const xd = &x->e_mbd;
   RD_COUNTS *const rdc = &cpi->td.rd_counts;
   GlobalMotionInfo *const gm_info = &cpi->gm_info;
+  FrameProbInfo *const frame_probs = &cpi->frame_probs;
   int i;
 
   if (!cpi->sf.rt_sf.use_nonrd_pick_mode) {
@@ -5649,7 +5650,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
   if (features->allow_warped_motion &&
       cpi->sf.inter_sf.prune_warped_prob_thresh > 0) {
     const FRAME_UPDATE_TYPE update_type = get_frame_update_type(&cpi->gf_group);
-    if (cpi->warped_probs[update_type] <
+    if (frame_probs->warped_probs[update_type] <
         cpi->sf.inter_sf.prune_warped_prob_thresh)
       features->allow_warped_motion = 0;
   }
@@ -5943,10 +5944,11 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
         const int new_prob =
             sum ? 1024 * cpi->td.rd_counts.tx_type_used[i][j] / sum
                 : (j ? 0 : 1024);
-        int prob = (cpi->tx_type_probs[update_type][i][j] + new_prob) >> 1;
+        int prob =
+            (frame_probs->tx_type_probs[update_type][i][j] + new_prob) >> 1;
         left -= prob;
         if (j == 0) prob += left;
-        cpi->tx_type_probs[update_type][i][j] = prob;
+        frame_probs->tx_type_probs[update_type][i][j] = prob;
       }
     }
   }
@@ -5961,8 +5963,8 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
 
       const int new_prob =
           sum ? 128 * cpi->td.rd_counts.obmc_used[i][1] / sum : 0;
-      cpi->obmc_probs[update_type][i] =
-          (cpi->obmc_probs[update_type][i] + new_prob) >> 1;
+      frame_probs->obmc_probs[update_type][i] =
+          (frame_probs->obmc_probs[update_type][i] + new_prob) >> 1;
     }
   }
 
@@ -5972,8 +5974,8 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
     int sum = 0;
     for (i = 0; i < 2; i++) sum += cpi->td.rd_counts.warped_used[i];
     const int new_prob = sum ? 128 * cpi->td.rd_counts.warped_used[1] / sum : 0;
-    cpi->warped_probs[update_type] =
-        (cpi->warped_probs[update_type] + new_prob) >> 1;
+    frame_probs->warped_probs[update_type] =
+        (frame_probs->warped_probs[update_type] + new_prob) >> 1;
   }
 
   if (cm->current_frame.frame_type != KEY_FRAME &&
@@ -5994,11 +5996,12 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
         const int new_prob =
             sum ? 1536 * cpi->td.counts->switchable_interp[i][j] / sum
                 : (j ? 0 : 1536);
-        int prob =
-            (cpi->switchable_interp_probs[update_type][i][j] + new_prob) >> 1;
+        int prob = (frame_probs->switchable_interp_probs[update_type][i][j] +
+                    new_prob) >>
+                   1;
         left -= prob;
         if (j == 0) prob += left;
-        cpi->switchable_interp_probs[update_type][i][j] = prob;
+        frame_probs->switchable_interp_probs[update_type][i][j] = prob;
       }
     }
   }

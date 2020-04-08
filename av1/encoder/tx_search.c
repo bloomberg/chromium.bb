@@ -1968,11 +1968,16 @@ get_tx_mask(const AV1_COMP *cpi, MACROBLOCK *x, int plane, int block,
     allowed_tx_mask = ext_tx_used_flag;
     int num_allowed = 0;
     const FRAME_UPDATE_TYPE update_type = get_frame_update_type(&cpi->gf_group);
-    const int *tx_type_probs = cpi->tx_type_probs[update_type][tx_size];
+    const int *tx_type_probs =
+        cpi->frame_probs.tx_type_probs[update_type][tx_size];
     int i;
 
     if (cpi->sf.tx_sf.tx_type_search.prune_tx_type_using_stats) {
-      const int thresh = cpi->tx_type_probs_thresh[update_type];
+      static const int thresh_arr[2][7] = { { 10, 15, 15, 10, 15, 15, 15 },
+                                            { 10, 17, 17, 10, 17, 17, 17 } };
+      const int thresh =
+          thresh_arr[cpi->sf.tx_sf.tx_type_search.prune_tx_type_using_stats - 1]
+                    [update_type];
       uint16_t prune = 0;
       int max_prob = -1;
       int max_idx = 0;

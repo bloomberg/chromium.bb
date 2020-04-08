@@ -454,6 +454,31 @@ static INLINE int is_lossless_requested(const AV1EncoderConfig *cfg) {
   return cfg->best_allowed_q == 0 && cfg->worst_allowed_q == 0;
 }
 
+typedef struct {
+  // obmc_probs[i][j] is the probability of OBMC being the best motion mode for
+  // jth block size and ith frame update type, averaged over past frames. If
+  // obmc_probs[i][j] < thresh, then OBMC search is pruned.
+  int obmc_probs[FRAME_UPDATE_TYPES][BLOCK_SIZES_ALL];
+
+  // warped_probs[i] is the probability of warped motion being the best motion
+  // mode for ith frame update type, averaged over past frames. If
+  // warped_probs[i] < thresh, then warped motion search is pruned.
+  int warped_probs[FRAME_UPDATE_TYPES];
+
+  // tx_type_probs[i][j][k] is the probability of kth tx_type being the best
+  // for jth transform size and ith frame update type, averaged over past
+  // frames. If tx_type_probs[i][j][k] < thresh, then transform search for that
+  // type is pruned.
+  int tx_type_probs[FRAME_UPDATE_TYPES][TX_SIZES_ALL][TX_TYPES];
+
+  // switchable_interp_probs[i][j][k] is the probability of kth interpolation
+  // filter being the best for jth filter context and ith frame update type,
+  // averaged over past frames. If switchable_interp_probs[i][j][k] < thresh,
+  // then interpolation filter search is pruned for that case.
+  int switchable_interp_probs[FRAME_UPDATE_TYPES][SWITCHABLE_FILTER_CONTEXTS]
+                             [SWITCHABLE_FILTERS];
+} FrameProbInfo;
+
 typedef struct FRAME_COUNTS {
 // Note: This structure should only contain 'unsigned int' fields, or
 // aggregates built solely from 'unsigned int' fields/elements
@@ -1180,13 +1205,8 @@ typedef struct AV1_COMP {
   int64_t vbp_thresholds[5];
   int64_t vbp_threshold_minmax;
 
-  int obmc_probs[FRAME_UPDATE_TYPES][BLOCK_SIZES_ALL];
-  int warped_probs[FRAME_UPDATE_TYPES];
-  int tx_type_probs[FRAME_UPDATE_TYPES][TX_SIZES_ALL][TX_TYPES];
-  int tx_type_probs_thresh[FRAME_UPDATE_TYPES];
-  int switchable_interp_probs[FRAME_UPDATE_TYPES][SWITCHABLE_FILTER_CONTEXTS]
-                             [SWITCHABLE_FILTERS];
-  int switchable_interp_thresh[FRAME_UPDATE_TYPES];
+  // Probabilities for pruning of various AV1 tools.
+  FrameProbInfo frame_probs;
 
   // Multi-threading
   int num_workers;
