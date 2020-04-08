@@ -5301,8 +5301,6 @@ static void set_encoding_params_for_screen_content(AV1_COMP *cpi,
 // This function modifies "cm->features.allow_screen_content_tools",
 // "cm->features.allow_intrabc" and "cpi->is_screen_content_type".
 static void determine_sc_tools_with_encoding(AV1_COMP *cpi, const int q_orig) {
-  if (!is_stat_consumption_stage_twopass(cpi)) return;
-
   AV1_COMMON *const cm = &cpi->common;
   // Variables to help determine if we should allow screen content tools.
   int projected_size_pass[3] = { 0 };
