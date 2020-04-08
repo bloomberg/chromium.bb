@@ -659,8 +659,7 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
       invoked process to shutdown from a SIGTERM before we SIGKILL it.
     log_output: Log the command and its output automatically.
     capture_output: Set |stdout| and |stderr| to True.
-    quiet: Set |print_cmd| to False, |stdout| to True, and |stderr| to
-      subprocess.STDOUT.
+    quiet: Set |print_cmd| to False, and |capture_output| to True.
     mute_output: Mute subprocess printing to parent stdout/stderr. Defaults to
       None, which bases muting on |debug_level|.
     encoding: Encoding for stdin/stdout/stderr, otherwise bytes are used.  Most
@@ -689,6 +688,10 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
       stdout_file_mode = 'a+b'
   assert not kwargs, 'Unknown arguments to run: %s' % (list(kwargs),)
 
+  if quiet:
+    print_cmd = False
+    capture_output = True
+
   if capture_output:
     # TODO(vapier): Enable this once we migrate all the legacy arguments above.
     # if stdout is not None or stderr is not None:
@@ -699,13 +702,6 @@ def run(cmd, print_cmd=True, stdout=None, stderr=None,
       stdout = True
     if stderr is None:
       stderr = True
-
-  if quiet:
-    debug_level = logging.DEBUG
-    if stdout is None:
-      stdout = subprocess.PIPE
-    if stderr is None:
-      stderr = subprocess.STDOUT
 
   if encoding is not None and errors is None:
     errors = 'strict'
