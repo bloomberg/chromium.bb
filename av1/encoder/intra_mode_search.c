@@ -1127,7 +1127,7 @@ static AOM_INLINE void rd_pick_palette_intra_sbuv(
         }
       }
 
-      av1_super_block_uvrd(cpi, x, &tokenonly_rd_stats, bsize, *best_rd);
+      av1_txfm_uvrd(cpi, x, &tokenonly_rd_stats, bsize, *best_rd);
       if (tokenonly_rd_stats.rate == INT_MAX) continue;
       this_rate = tokenonly_rd_stats.rate +
                   intra_mode_info_cost_uv(cpi, x, mbmi, bsize, dc_mode_cost);
@@ -1240,7 +1240,7 @@ static int64_t pick_intra_angle_routine_sbuv(
   int64_t this_rd;
   RD_STATS tokenonly_rd_stats;
 
-  if (!av1_super_block_uvrd(cpi, x, &tokenonly_rd_stats, bsize, best_rd_in))
+  if (!av1_txfm_uvrd(cpi, x, &tokenonly_rd_stats, bsize, best_rd_in))
     return INT64_MAX;
   this_rate = tokenonly_rd_stats.rate +
               intra_mode_info_cost_uv(cpi, x, mbmi, bsize, rate_overhead);
@@ -1479,7 +1479,7 @@ int64_t av1_rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
                                     &this_rate, &tokenonly_rd_stats))
         continue;
     } else {
-      if (!av1_super_block_uvrd(cpi, x, &tokenonly_rd_stats, bsize, best_rd)) {
+      if (!av1_txfm_uvrd(cpi, x, &tokenonly_rd_stats, bsize, best_rd)) {
         continue;
       }
     }

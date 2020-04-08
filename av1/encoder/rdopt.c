@@ -3160,7 +3160,7 @@ static AOM_INLINE void refine_winner_mode_tx(
       }
 
       if (num_planes > 1) {
-        av1_super_block_uvrd(cpi, x, &rd_stats_uv, bsize, INT64_MAX);
+        av1_txfm_uvrd(cpi, x, &rd_stats_uv, bsize, INT64_MAX);
       } else {
         av1_init_rd_stats(&rd_stats_uv);
       }

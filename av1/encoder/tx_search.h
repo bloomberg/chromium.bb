@@ -46,10 +46,10 @@ static AOM_INLINE int tx_size_cost(const MACROBLOCK *const x, BLOCK_SIZE bsize,
   return x->tx_size_cost[tx_size_cat][tx_size_ctx][depth];
 }
 
-int64_t av1_txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
-                     RD_STATS *rd_stats, int64_t ref_best_rd, BLOCK_SIZE bs,
-                     TX_SIZE tx_size, FAST_TX_SEARCH_MODE ftxs_mode,
-                     int skip_trellis);
+int64_t av1_uniform_txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
+                             RD_STATS *rd_stats, int64_t ref_best_rd,
+                             BLOCK_SIZE bs, TX_SIZE tx_size,
+                             FAST_TX_SEARCH_MODE ftxs_mode, int skip_trellis);
 
 void av1_pick_recursive_tx_size_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
                                          RD_STATS *rd_stats, BLOCK_SIZE bsize,
@@ -59,14 +59,13 @@ void av1_pick_uniform_tx_size_type_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
                                        RD_STATS *rd_stats, BLOCK_SIZE bs,
                                        int64_t ref_best_rd);
 
-int av1_super_block_uvrd(const AV1_COMP *const cpi, MACROBLOCK *x,
-                         RD_STATS *rd_stats, BLOCK_SIZE bsize,
-                         int64_t ref_best_rd);
+int av1_txfm_uvrd(const AV1_COMP *const cpi, MACROBLOCK *x, RD_STATS *rd_stats,
+                  BLOCK_SIZE bsize, int64_t ref_best_rd);
 
 void av1_txfm_rd_in_plane(MACROBLOCK *x, const AV1_COMP *cpi,
                           RD_STATS *rd_stats, int64_t ref_best_rd,
                           int64_t this_rd, int plane, BLOCK_SIZE plane_bsize,
-                          TX_SIZE tx_size, int use_fast_coef_casting,
+                          TX_SIZE tx_size, int use_fast_coef_costing,
                           FAST_TX_SEARCH_MODE ftxs_mode, int skip_trellis);
 
 int av1_txfm_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
