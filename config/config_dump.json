@@ -350,7 +350,7 @@
                 "virtual/target-fuzzers"
             ],
             "profile": "fuzzer",
-            "sync_chrome": false,
+            "sync_chrome": true,
             "usepkg_build_packages": false
         },
         "incremental": {
