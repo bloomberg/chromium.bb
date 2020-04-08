@@ -2,12 +2,6 @@ import { Fixture } from '../common/framework/fixture.js';
 import { getGPU } from '../common/framework/gpu/implementation.js';
 import { assert, unreachable } from '../common/framework/util/util.js';
 
-type glslang = typeof import('@webgpu/glslang/dist/web-devel/glslang');
-type Glslang = import('@webgpu/glslang/dist/web-devel/glslang').Glslang;
-type ShaderStage = import('@webgpu/glslang/dist/web-devel/glslang').ShaderStage;
-
-let glslangInstance: Glslang | undefined;
-
 class DevicePool {
   device: GPUDevice | undefined = undefined;
   state: 'free' | 'acquired' | 'uninitialized' | 'failed' = 'uninitialized';
@@ -49,7 +43,6 @@ const devicePool = new DevicePool();
 export class GPUTest extends Fixture {
   private objects: { device: GPUDevice; queue: GPUQueue } | undefined = undefined;
   initialized = false;
-  private supportsSPIRV = true;
 
   get device(): GPUDevice {
     assert(this.objects !== undefined);
@@ -67,11 +60,6 @@ export class GPUTest extends Fixture {
     const device = await devicePool.acquire();
     const queue = device.defaultQueue;
     this.objects = { device, queue };
-
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-    if (isSafari) {
-      this.supportsSPIRV = false;
-    }
 
     try {
       await device.popErrorScope();
@@ -105,41 +93,6 @@ export class GPUTest extends Fixture {
     if (this.objects) {
       devicePool.release(this.objects.device);
     }
-  }
-
-  async initGLSL(): Promise<void> {
-    if (!glslangInstance) {
-      const glslangPath = '../common/glslang.js';
-      let glslangModule: () => Promise<Glslang>;
-      try {
-        glslangModule = ((await import(glslangPath)) as glslang).default;
-      } catch (ex) {
-        this.skip('glslang is not available');
-      }
-      await new Promise(resolve => {
-        glslangModule().then((glslang: Glslang) => {
-          glslangInstance = glslang;
-          resolve();
-        });
-      });
-    }
-  }
-
-  createShaderModule(desc: GPUShaderModuleDescriptor): GPUShaderModule {
-    if (!this.supportsSPIRV) {
-      this.skip('SPIR-V not available');
-    }
-    return this.device.createShaderModule(desc);
-  }
-
-  makeShaderModuleFromGLSL(stage: ShaderStage, glsl: string): GPUShaderModule {
-    assert(
-      glslangInstance !== undefined,
-      'GLSL compiler is not instantiated. Run `await t.initGLSL()` first'
-    );
-
-    const code = glslangInstance.compileGLSL(glsl, stage, false);
-    return this.device.createShaderModule({ code });
   }
 
   createCopyForMapRead(src: GPUBuffer, size: number): GPUBuffer {
