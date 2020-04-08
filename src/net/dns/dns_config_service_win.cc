@@ -669,7 +669,10 @@ class DnsConfigServiceWin::ConfigReader : public SerialWorker {
     if (success_) {
       service_->OnConfigRead(dns_config_);
     } else {
-      LOG(WARNING) << "Failed to read DnsConfig.";
+      ++retry_count_;
+      if(retry_count_ == retry_count_for_logging_) {
+        LOG(INFO) << "Failed to read DnsConfig.";
+      }
       // Try again in a while in case DnsConfigWatcher missed the signal.
       base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE, base::BindOnce(&ConfigReader::WorkNow, this),
@@ -681,6 +684,8 @@ class DnsConfigServiceWin::ConfigReader : public SerialWorker {
   // Written in DoWork(), read in OnWorkFinished(). No locking required.
   DnsConfig dns_config_;
   bool success_;
+  std::size_t retry_count_{0};
+  static constexpr std::size_t retry_count_for_logging_{10};
 };
 
 // Reads hosts from HOSTS file and fills in localhost and local computer name if
