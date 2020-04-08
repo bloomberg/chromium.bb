@@ -3991,8 +3991,8 @@ static void set_mv_search_params(AV1_COMP *cpi) {
   }
 }
 
-void av1_set_screen_content_options(const AV1_COMP *const cpi,
-                                    FeatureFlags *const features) {
+void av1_set_screen_content_options(const AV1_COMP *cpi,
+                                    FeatureFlags *features) {
   const AV1_COMMON *const cm = &cpi->common;
 
   if (cm->seq_params.force_screen_content_tools != 2) {
