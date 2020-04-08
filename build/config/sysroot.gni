@@ -18,7 +18,7 @@ declare_args() {
 }
 
 if (use_sysroot) {
-  assert(sysroot_platform == "sid" || sysroot_platform == "jessie")
+  assert(sysroot_platform == "sid" || sysroot_platform == "stretch")
   assert(current_cpu == "arm" || current_cpu == "arm64")
 
   # By default build against a sysroot image downloaded from Cloud Storage

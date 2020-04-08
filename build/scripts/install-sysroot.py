@@ -44,7 +44,7 @@ URL_PREFIX = 'https://storage.googleapis.com'
 URL_PATH = 'openscreen-sysroots'
 
 VALID_ARCHS = ('arm', 'arm64')
-VALID_PLATFORMS = ('jessie', 'sid')
+VALID_PLATFORMS = ('stretch', 'sid')
 
 
 class Error(Exception):
