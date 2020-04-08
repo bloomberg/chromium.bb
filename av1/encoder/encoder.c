@@ -5832,6 +5832,10 @@ static void restore_all_coding_context(AV1_COMP *cpi) {
   if (!frame_is_intra_only(&cpi->common)) release_scaled_references(cpi);
 }
 
+static void release_copy_buffer(CODING_CONTEXT *cc) {
+  aom_free_frame_buffer(&cc->copy_buffer);
+}
+
 static int encode_with_and_without_superres(AV1_COMP *cpi, size_t *size,
                                             uint8_t *dest,
                                             int *largest_tile_id) {
@@ -5953,6 +5957,8 @@ static int encode_with_and_without_superres(AV1_COMP *cpi, size_t *size,
   } else {
     *largest_tile_id = largest_tile_id2;
   }
+
+  release_copy_buffer(&cpi->coding_context);
 
   return err;
 }
