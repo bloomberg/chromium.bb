@@ -279,17 +279,25 @@ g.test('buffer offset and size for bind groups match', async t => {
   { offset: 0, size: 512, _success: true }, // offset 0 is valid
   { offset: 256, size: 256, _success: true }, // offset 256 (aligned) is valid
 
-  // unaligned buffer offset is invalid
+  // Touching the end of the buffer
+  { offset: 0, size: 1024, _success: true },
+  { offset: 0, size: undefined, _success: true },
+  { offset: 256 * 3, size: 256, _success: true },
+  { offset: 256 * 3, size: undefined, _success: true },
+
+  // Zero-sized bindings
+  { offset: 0, size: 0, _success: true },
+  { offset: 256, size: 0, _success: true },
+  { offset: 1024, size: 0, _success: true },
+  { offset: 1024, size: undefined, _success: true },
+
+  // Unaligned buffer offset is invalid
   { offset: 1, size: 256, _success: false },
   { offset: 1, size: undefined, _success: false },
   { offset: 128, size: 256, _success: false },
   { offset: 255, size: 256, _success: false },
 
-  { offset: 0, size: 256, _success: true }, // touching the start of the buffer works
-  { offset: 256 * 3, size: 256, _success: true }, // touching the end of the buffer works
-  { offset: 1024, size: 0, _success: true }, // touching the end of the buffer works
-  { offset: 0, size: 1024, _success: true }, // touching the full buffer works
-  { offset: 0, size: undefined, _success: true }, // touching the full buffer works
+  // Out-of-bounds
   { offset: 256 * 5, size: 0, _success: false }, // offset is OOB
   { offset: 0, size: 256 * 5, _success: false }, // size is OOB
   { offset: 1024, size: 1, _success: false }, // offset+size is OOB
