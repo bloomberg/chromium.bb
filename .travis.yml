@@ -11,6 +11,15 @@ deploy:
   on:
     branch: master
 
+deploy:
+  repo: gpuweb-cts-glsl/gpuweb-cts-glsl.github.io
+  target_branch: master
+  provider: pages
+  skip_cleanup: true
+  github_token: $GITHUB_TOKEN
+  on:
+    branch: glsl-dependent
+
 before_deploy:
   - sed -i '/out\//d' .gitignore
   - sed -i '/out-wpt\//d' .gitignore
