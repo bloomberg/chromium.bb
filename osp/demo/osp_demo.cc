@@ -381,7 +381,7 @@ void RunControllerPollLoop(Controller* controller) {
 
   pollfd stdin_pollfd{STDIN_FILENO, POLLIN};
   while (true) {
-    write(STDOUT_FILENO, "$ ", 2);
+    OSP_CHECK_EQ(write(STDOUT_FILENO, "$ ", 2), 2);
 
     CommandWaitResult command_result = WaitForCommand(&stdin_pollfd);
     if (command_result.done) {
@@ -480,7 +480,7 @@ void RunReceiverPollLoop(pollfd& file_descriptor,
                          DemoReceiverDelegate& delegate) {
   pollfd stdin_pollfd{STDIN_FILENO, POLLIN};
   while (true) {
-    write(STDOUT_FILENO, "$ ", 2);
+    OSP_CHECK_EQ(write(STDOUT_FILENO, "$ ", 2), 2);
 
     CommandWaitResult command_result = WaitForCommand(&stdin_pollfd);
     if (command_result.done) {

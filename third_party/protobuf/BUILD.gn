@@ -19,20 +19,27 @@ config("protobuf_warnings") {
   cflags_cc = [
     "-Wno-sign-compare",
     "-Wno-deprecated-declarations",
-    "-Wno-unneeded-internal-declaration",
-    "-Wno-unused-private-field",
   ]
 
   if (is_clang) {
     cflags_cc += [
       "-Wno-exit-time-destructors",
       "-Wno-extra-semi",
+      "-Wno-unneeded-internal-declaration",
+      "-Wno-unused-private-field",
     ]
 
     if (is_mac) {
       # Necessary only because bots have an old version of clang.
       cflags_cc += [ "-Wno-unknown-warning-option" ]
     }
+  }
+
+  if (is_gcc) {
+    cflags_cc += [
+      "-Wno-stringop-overflow",
+      "-Wno-array-bounds",
+    ]
   }
 }
 
