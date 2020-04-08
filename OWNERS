@@ -11,6 +11,7 @@ per-file ninja*=thakis@chromium.org
 per-file ninja*=scottmg@chromium.org
 
 per-file autoninja*=brucedawson@chromium.org
+per-file post_build_ninja_summary.py=brucedawson@chromium.org
 
 per-file ninjalog*=tikuta@chromium.org
 
