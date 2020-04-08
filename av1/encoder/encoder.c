@@ -5408,7 +5408,7 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
 #if CONFIG_SUPERRES_IN_RECODE
   if (superres_in_recode_allowed(cpi) && cpi->superres_mode != SUPERRES_NONE &&
       cm->superres_scale_denominator == SCALE_NUMERATOR) {
-    // Superres mode in currently enabled, but the denominator selected will
+    // Superres mode is currently enabled, but the denominator selected will
     // disable superres. So no need to continue, as we will go through another
     // recode loop for full-resolution after this anyway.
     return -1;
