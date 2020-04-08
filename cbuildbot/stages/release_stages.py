@@ -395,7 +395,8 @@ class PaygenStage(generic_stages.BoardSpecificBuilderStage):
       logging.info('Using channels: %s', self.channels)
 
       # Set an metadata with the channels we've had configured.
-      self._run.attrs.metadata.ExtendKeyListWithList('channels', self.channels)
+      self._run.attrs.metadata.UpdateWithDict({'channels':
+                                               ','.join(self.channels)})
 
       # If we have an explicit list of channels, use it.
       for channel in self.channels:

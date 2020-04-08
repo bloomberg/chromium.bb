@@ -355,7 +355,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
       stage.PerformStage()
 
       metadata_channels = self._run.attrs.metadata.GetValue('channels')
-      self.assertEqual(channels, metadata_channels)
+      self.assertEqual(','.join(channels), metadata_channels)
 
       # Verify that we validate with the board name in release name space.
       self.assertEqual(self.validateMock.call_args_list,
