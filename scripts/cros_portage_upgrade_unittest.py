@@ -16,6 +16,7 @@ import tempfile
 import unittest
 
 import mock
+import pytest  # pylint: disable=import-error
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -23,6 +24,7 @@ from chromite.lib import cros_test_lib
 from chromite.lib import depgraph
 from chromite.lib import osutils
 from chromite.lib import portage_util
+from chromite.lib import terminal
 from chromite.lib import upgrade_table as utable
 from chromite.scripts import cros_portage_upgrade as cpu
 
@@ -121,11 +123,11 @@ EBUILDS = {
         ),
     },
     'virtual/libusb-1': {
-        'EAPI':'2', 'SLOT': '1',
+        'EAPI': '2', 'SLOT': '1',
         'RDEPEND': '>=dev-libs/libusb-1.0.4:1',
     },
     'dev-libs/libusb-0.1.13': {},
-    'dev-libs/libusb-1.0.5': {'SLOT':'1'},
+    'dev-libs/libusb-1.0.5': {'SLOT': '1'},
     'dev-libs/libusb-compat-1': {},
     'sys-freebsd/freebsd-lib-8': {'IUSE': '+usb'},
 
@@ -385,7 +387,7 @@ class ManifestLine(object):
     return not self == other
 
 
-class PInfoTest(cros_test_lib.OutputTestCase):
+class PInfoTest(cros_test_lib.TestCase):
   """Tests for the PInfo class."""
 
   def testInit(self):
@@ -429,8 +431,7 @@ class PInfoTest(cros_test_lib.OutputTestCase):
     self.assertTrue(pinfo1 != pinfo4)
 
 
-class CpuTestBase(cros_test_lib.MockTempDirTestCase,
-                  cros_test_lib.OutputTestCase):
+class CpuTestBase(cros_test_lib.MockTempDirTestCase):
   """Base class for all test classes in this file."""
 
   def setUp(self):
@@ -618,8 +619,7 @@ class CopyUpstreamTest(CpuTestBase):
     mocked_upgrader._GetBoardCmd.return_value = 'equery'
 
     # Verify.
-    with self.OutputCapturer():
-      return cpu.Upgrader._IdentifyNeededEclass(mocked_upgrader, cpv)
+    return cpu.Upgrader._IdentifyNeededEclass(mocked_upgrader, cpv)
 
   @unittest.skip('playground setup needs more work')
   def testIdentifyNeededEclassMissing(self):
@@ -659,12 +659,11 @@ class CopyUpstreamTest(CpuTestBase):
 
     # Verify.
     result = None
-    with self.OutputCapturer():
-      if upstream_content is None:
-        self.assertRaises(RuntimeError, cpu.Upgrader._CopyUpstreamEclass,
-                          mocked_upgrader, eclass_name)
-      else:
-        result = cpu.Upgrader._CopyUpstreamEclass(mocked_upgrader, eclass_name)
+    if upstream_content is None:
+      self.assertRaises(RuntimeError, cpu.Upgrader._CopyUpstreamEclass,
+                        mocked_upgrader, eclass_name)
+    else:
+      result = cpu.Upgrader._CopyUpstreamEclass(mocked_upgrader, eclass_name)
 
     if upstream_content and local_content != upstream_content:
       mocked_upgrader._RunGit.assert_called_once_with(
@@ -756,13 +755,11 @@ class CopyUpstreamTest(CpuTestBase):
 
     # Verify.
     result = None
-    with self.OutputCapturer():
-      if error:
-        self.assertRaises(error, cpu.Upgrader._CopyUpstreamPackage,
-                          mocked_upgrader, upstream_cpv)
-      else:
-        result = cpu.Upgrader._CopyUpstreamPackage(mocked_upgrader,
-                                                   upstream_cpv)
+    if error:
+      self.assertRaises(error, cpu.Upgrader._CopyUpstreamPackage,
+                        mocked_upgrader, upstream_cpv)
+    else:
+      result = cpu.Upgrader._CopyUpstreamPackage(mocked_upgrader, upstream_cpv)
 
     if success:
       self.assertEqual(result, upstream_cpv)
@@ -1698,22 +1695,19 @@ class RunBoardTest(CpuTestBase):
   def testRunCompletedSpecified(self):
     cmdargs = ['--upstream=/some/dir']
     mocked_upgrader = self._MockUpgrader(cmdargs=cmdargs, _curr_board=None)
-    with self.OutputCapturer():
-      cpu.Upgrader.RunCompleted(mocked_upgrader)
+    cpu.Upgrader.RunCompleted(mocked_upgrader)
 
   def testRunCompletedRemoveCache(self):
     # TODO: Create cache and check it's cleaned up.
     cmdargs = ['--no-upstream-cache']
     mocked_upgrader = self._MockUpgrader(cmdargs=cmdargs, _curr_board=None)
-    with self.OutputCapturer():
-      cpu.Upgrader.RunCompleted(mocked_upgrader)
+    cpu.Upgrader.RunCompleted(mocked_upgrader)
 
   def testRunCompletedKeepCache(self):
     # TODO: Create cache and check it's left behind.
     cmdargs = []
     mocked_upgrader = self._MockUpgrader(cmdargs=cmdargs, _curr_board=None)
-    with self.OutputCapturer():
-      cpu.Upgrader.RunCompleted(mocked_upgrader)
+    cpu.Upgrader.RunCompleted(mocked_upgrader)
 
   def testPrepareToRunUpstreamRepoExists(self):
     osutils.Touch(os.path.join(self.upstream_tmp_repo, '.git', 'shallow'),
@@ -1724,8 +1718,7 @@ class RunBoardTest(CpuTestBase):
                                          _curr_board=None)
 
     # Verify.
-    with self.OutputCapturer():
-      cpu.Upgrader.PrepareToRun(mocked_upgrader)
+    cpu.Upgrader.PrepareToRun(mocked_upgrader)
 
     mocked_upgrader._RunGit.assert_has_calls([
         mock.call(self.upstream_tmp_repo,
@@ -1745,8 +1738,7 @@ class RunBoardTest(CpuTestBase):
                                          _curr_board=None)
 
     # Verify.
-    with self.OutputCapturer():
-      cpu.Upgrader.PrepareToRun(mocked_upgrader)
+    cpu.Upgrader.PrepareToRun(mocked_upgrader)
 
     self.assertExists(self.upstream_tmp_repo + '-README')
     mocked_upgrader._RunGit.assert_called_once_with(
@@ -1784,8 +1776,7 @@ class RunBoardTest(CpuTestBase):
         mocked_upgrader._FinalizeUpstreamPInfolist.return_value = []
 
     # Verify.
-    with self.OutputCapturer():
-      cpu.Upgrader.RunBoard(mocked_upgrader, board)
+    cpu.Upgrader.RunBoard(mocked_upgrader, board)
 
     mocked_upgrader._ResolveAndVerifyArgs.assert_called_once_with(
         targetlist, upgrade_mode)
@@ -1831,10 +1822,8 @@ class RunBoardTest(CpuTestBase):
     mocked_upgrader._ResolveAndVerifyArgs.return_value = pinfolist
 
     # Verify.
-    with self.OutputCapturer():
-      self.assertRaises(RuntimeError,
-                        cpu.Upgrader.RunBoard,
-                        mocked_upgrader, board)
+    self.assertRaises(RuntimeError, cpu.Upgrader.RunBoard, mocked_upgrader,
+                      board)
 
     mocked_upgrader._ResolveAndVerifyArgs.assert_called_once_with(
         targetlist, upgrade_mode)
@@ -1851,12 +1840,11 @@ class GiveEmergeResultsTest(CpuTestBase):
     mocked_upgrader._AreEmergeable.return_value = (ok, None, None)
 
     # Verify.
-    with self.OutputCapturer():
-      if error:
-        self.assertRaises(error, cpu.Upgrader._GiveEmergeResults,
-                          mocked_upgrader, pinfolist)
-      else:
-        cpu.Upgrader._GiveEmergeResults(mocked_upgrader, pinfolist)
+    if error:
+      self.assertRaises(error, cpu.Upgrader._GiveEmergeResults, mocked_upgrader,
+                        pinfolist)
+    else:
+      cpu.Upgrader._GiveEmergeResults(mocked_upgrader, pinfolist)
 
   def testGiveEmergeResultsUnmaskedOK(self):
     pinfolist = [cpu.PInfo(upgraded_cpv='abc/def-4', upgraded_unmasked=True),
@@ -1878,12 +1866,11 @@ class GiveEmergeResultsTest(CpuTestBase):
     mocked_upgrader._AreEmergeable.return_value = emergeable_tuple
 
     # Verify.
-    with self.OutputCapturer():
-      if error:
-        self.assertRaises(error, cpu.Upgrader._GiveEmergeResults,
-                          mocked_upgrader, pinfolist)
-      else:
-        cpu.Upgrader._GiveEmergeResults(mocked_upgrader, pinfolist)
+    if error:
+      self.assertRaises(error, cpu.Upgrader._GiveEmergeResults, mocked_upgrader,
+                        pinfolist)
+    else:
+      cpu.Upgrader._GiveEmergeResults(mocked_upgrader, pinfolist)
 
     if not ok:
       self.assertEqual(sorted(mocked_upgrader._GiveMaskedError.call_args_list),
@@ -2024,8 +2011,7 @@ class UpgradePackagesTest(CpuTestBase):
     self._TestUpgradePackages(pinfolist, False)
 
 
-class CategoriesRoundtripTest(cros_test_lib.MockTempDirTestCase,
-                              cros_test_lib.OutputTestCase):
+class CategoriesRoundtripTest(cros_test_lib.MockTempDirTestCase):
   """Tests for full "round trip" runs."""
 
   def _TestCategoriesRoundtrip(self, categories):
@@ -2119,8 +2105,7 @@ class UpgradePackageTest(CpuTestBase):
                                      encoding='utf-8'))
 
     # Verify.
-    with self.OutputCapturer():
-      result = cpu.Upgrader._UpgradePackage(mocked_upgrader, pinfo)
+    result = cpu.Upgrader._UpgradePackage(mocked_upgrader, pinfo)
 
     run_mock.assert_has_calls(run_calls)
     mocked_upgrader._RunGit.assert_has_calls(git_calls)
@@ -2407,8 +2392,7 @@ class CommitTest(CpuTestBase):
     mocked_upgrader = self._MockUpgrader()
 
     # Verify.
-    with self.OutputCapturer():
-      return cpu.Upgrader._ExtractUpgradedPkgs(mocked_upgrader, upgrade_lines)
+    return cpu.Upgrader._ExtractUpgradedPkgs(mocked_upgrader, upgrade_lines)
 
   def testExtractUpgradedPkgs(self):
     upgrade_lines = [
@@ -2444,9 +2428,7 @@ class CommitTest(CpuTestBase):
     mocked_upgrader._CreateCommitMessage.side_effect = CreateCommit
 
     # Verify.
-    with self.OutputCapturer():
-      cpu.Upgrader._AmendCommitMessage(mocked_upgrader,
-                                       new_upgrade_lines)
+    cpu.Upgrader._AmendCommitMessage(mocked_upgrader, new_upgrade_lines)
 
   def testOldAndNew(self):
     new_upgrade_lines = [
@@ -2530,8 +2512,7 @@ class CommitTest(CpuTestBase):
     mocked_upgrader._ExtractUpgradedPkgs.side_effect = Extract
 
     # Verify.
-    with self.OutputCapturer():
-      result = cpu.Upgrader._CreateCommitMessage(mocked_upgrader, upgrade_lines)
+    result = cpu.Upgrader._CreateCommitMessage(mocked_upgrader, upgrade_lines)
 
     self.assertTrue(': upgraded package' in result or
                     'Upgraded the following' in result)
@@ -2701,9 +2682,8 @@ class ResolveAndVerifyArgsTest(CpuTestBase):
                                          _curr_board=None)
 
     # Verify.
-    with self.OutputCapturer():
-      result = cpu.Upgrader._ResolveAndVerifyArgs(mocked_upgrader, args,
-                                                  upgrade_mode=upgrade_mode)
+    result = cpu.Upgrader._ResolveAndVerifyArgs(
+        mocked_upgrader, args, upgrade_mode=upgrade_mode)
 
     self.assertEqual(result, [cpu.PInfo(user_arg='world',
                                         package='world',
@@ -2758,17 +2738,15 @@ class ResolveAndVerifyArgsTest(CpuTestBase):
 
     # Verify.
     result = None
-    with self.OutputCapturer():
-      if error:
-        exc = self.AssertRaisesAndReturn(error,
-                                         cpu.Upgrader._ResolveAndVerifyArgs,
-                                         mocked_upgrader, args, upgrade_mode)
+    if error:
+      with pytest.raises(error) as exc:
+        cpu.Upgrader._ResolveAndVerifyArgs(mocked_upgrader, args, upgrade_mode)
         if error_checker:
-          check = error_checker(exc)
+          check = error_checker(exc.value)
           self.assertTrue(check[0], msg=check[1])
-      else:
-        result = cpu.Upgrader._ResolveAndVerifyArgs(mocked_upgrader, args,
-                                                    upgrade_mode)
+    else:
+      result = cpu.Upgrader._ResolveAndVerifyArgs(mocked_upgrader, args,
+                                                  upgrade_mode)
 
     mocked_upgrader._FindCurrentCPV.assert_has_calls(calls_FindCurrentCPV)
     mocked_upgrader._FindUpstreamCPV.assert_has_calls(calls_FindUpstreamCPV)
@@ -2880,8 +2858,7 @@ class StabilizeEbuildTest(CpuTestBase):
     mocked_upgrader = self._MockUpgrader(cmdargs=[], _curr_arch=arch)
 
     # This is the verification phase.
-    with self.OutputCapturer():
-      cpu.Upgrader._StabilizeEbuild(mocked_upgrader, ebuild_path)
+    cpu.Upgrader._StabilizeEbuild(mocked_upgrader, ebuild_path)
 
   def _AssertEqualsExcludingComments(self, lines1, lines2):
     lines1 = [ln for ln in lines1 if not ln.startswith('#')]
@@ -3087,6 +3064,7 @@ class GetPreOrderDepGraphTest(CpuTestBase):
     return self._TestGetPreOrderDepGraph('chromeos-base/libcros')
 
 
+@pytest.mark.usefixtures('legacy_capture_output')
 class MainTest(CpuTestBase):
   """Test argument handling at the main method level."""
 
@@ -3108,66 +3086,73 @@ class MainTest(CpuTestBase):
                             msg='expected call to main() to exit with '
                             'failure code, but exited with code 0 instead.')
 
+  def AssertOutputEndsInError(self):
+    """Assert stderr of the current test ends in error line."""
+
+    ERROR_MSG_RE = re.compile(
+        r'^\033\[1;%dm(.+?)(?:\033\[0m)+$' % (30 + terminal.Color.RED,),
+        re.DOTALL)
+
+    res = self.capfd.readouterr()
+    last_line = res.out.splitlines()[-1]
+
+    assert ERROR_MSG_RE.search(last_line)
+
   def testHelp(self):
     """Test that --help is functioning"""
 
-    with self.OutputCapturer() as output:
-      # Running with --help should exit with code==0.
-      try:
-        cpu.main(['--help'])
-      except SystemExit as e:
-        self.assertEqual(e.args[0], 0)
+    # Running with --help should exit with code==0.
+    try:
+      cpu.main(['--help'])
+    except SystemExit as e:
+      self.assertEqual(e.args[0], 0)
 
     # Verify that a message beginning with "Usage: " was printed.
-    stdout = output.GetStdout()
-    self.assertTrue(stdout.startswith('usage: '))
+
+    stdout = self.capfd.readouterr().out
+    assert stdout.startswith('usage: ')
 
   def testMissingBoard(self):
     """Test that running without --board exits with an error."""
-    with self.OutputCapturer():
-      # Running without --board should exit with code!=0.
-      try:
-        cpu.main([])
-      except SystemExit as e:
-        self.assertNotEqual(e.args[0], 0)
+    # Running without --board should exit with code!=0.
+    try:
+      cpu.main([])
+    except SystemExit as e:
+      self.assertNotEqual(e.args[0], 0)
 
     # Verify that an error message was printed.
     self.AssertOutputEndsInError()
 
   def testBoardWithoutPackage(self):
     """Test that running without a package argument exits with an error."""
-    with self.OutputCapturer():
-      # Running without a package should exit with code!=0.
-      self._AssertCPUMain(['--board=any-board'], expect_zero=False)
+    # Running without a package should exit with code!=0.
+    self._AssertCPUMain(['--board=any-board'], expect_zero=False)
 
     # Verify that an error message was printed.
     self.AssertOutputEndsInError()
 
   def testHostWithoutPackage(self):
     """Test that running without a package argument exits with an error."""
-    with self.OutputCapturer():
-      # Running without a package should exit with code!=0.
-      self._AssertCPUMain(['--host'], expect_zero=False)
+    # Running without a package should exit with code!=0.
+    self._AssertCPUMain(['--host'], expect_zero=False)
 
     # Verify that an error message was printed.
     self.AssertOutputEndsInError()
 
   def testUpgradeAndUpgradeDeep(self):
     """Running with --upgrade and --upgrade-deep exits with an error."""
-    with self.OutputCapturer():
-      # Expect exit with code!=0.
-      self._AssertCPUMain(['--host', '--upgrade', '--upgrade-deep',
-                           'any-package'], expect_zero=False)
+    # Expect exit with code!=0.
+    self._AssertCPUMain(
+        ['--host', '--upgrade', '--upgrade-deep', 'any-package'],
+        expect_zero=False)
 
     # Verify that an error message was printed.
     self.AssertOutputEndsInError()
 
   def testForceWithoutUpgrade(self):
     """Running with --force requires --upgrade or --upgrade-deep."""
-    with self.OutputCapturer():
-      # Expect exit with code!=0.
-      self._AssertCPUMain(['--host', '--force', 'any-package'],
-                          expect_zero=False)
+    # Expect exit with code!=0.
+    self._AssertCPUMain(['--host', '--force', 'any-package'], expect_zero=False)
 
     # Verify that an error message was printed.
     self.AssertOutputEndsInError()
@@ -3181,9 +3166,9 @@ class MainTest(CpuTestBase):
     self.PatchObject(cpu.Upgrader, 'RunCompleted')
     self.PatchObject(cpu.Upgrader, 'WriteTableFiles')
 
-    with self.OutputCapturer():
-      self._AssertCPUMain(['--board=any-board', '--to-csv=/dev/null',
-                           'any-package'], expect_zero=True)
+    self._AssertCPUMain(
+        ['--board=any-board', '--to-csv=/dev/null', 'any-package'],
+        expect_zero=True)
 
   def testFlowStatusReportOneBoardNotSetUp(self):
     """Test main flow for basic one-board status report."""
@@ -3191,9 +3176,9 @@ class MainTest(CpuTestBase):
     self.PatchObject(cpu, '_BoardIsSetUp', return_value=False)
 
     # Running with a package not set up should exit with code!=0.
-    with self.OutputCapturer():
-      self._AssertCPUMain(['--board=any-board', '--to-csv=/dev/null',
-                           'any-package'], expect_zero=False)
+    self._AssertCPUMain(
+        ['--board=any-board', '--to-csv=/dev/null', 'any-package'],
+        expect_zero=False)
 
     # Verify that an error message was printed.
     self.AssertOutputEndsInError()
@@ -3207,9 +3192,8 @@ class MainTest(CpuTestBase):
     self.PatchObject(cpu.Upgrader, 'RunCompleted')
     self.PatchObject(cpu.Upgrader, 'WriteTableFiles')
 
-    with self.OutputCapturer():
-      self._AssertCPUMain(['--board=board1:board2', 'any-package'],
-                          expect_zero=True)
+    self._AssertCPUMain(['--board=board1:board2', 'any-package'],
+                        expect_zero=True)
 
   def testFlowUpgradeOneBoard(self):
     """Test main flow for basic one-board upgrade."""
@@ -3221,9 +3205,8 @@ class MainTest(CpuTestBase):
     self.PatchObject(cpu.Upgrader, 'RunCompleted')
     self.PatchObject(cpu.Upgrader, 'WriteTableFiles')
 
-    with self.OutputCapturer():
-      self._AssertCPUMain(['--upgrade', '--board=any-board', 'any-package'],
-                          expect_zero=True)
+    self._AssertCPUMain(['--upgrade', '--board=any-board', 'any-package'],
+                        expect_zero=True)
 
   def testFlowUpgradeTwoBoards(self):
     """Test main flow for two-board upgrade."""
@@ -3235,10 +3218,13 @@ class MainTest(CpuTestBase):
     self.PatchObject(cpu.Upgrader, 'RunCompleted')
     self.PatchObject(cpu.Upgrader, 'WriteTableFiles')
 
-    with self.OutputCapturer():
-      self._AssertCPUMain(['--upgrade', '--board=board1:board2',
-                           '--to-csv=/dev/null', 'any-package'],
-                          expect_zero=True)
+    self._AssertCPUMain([
+        '--upgrade',
+        '--board=board1:board2',
+        '--to-csv=/dev/null',
+        'any-package',
+    ],
+                        expect_zero=True)
 
   def testFlowUpgradeTwoBoardsAndHost(self):
     """Test main flow for two-board and host upgrade."""
@@ -3250,7 +3236,11 @@ class MainTest(CpuTestBase):
     self.PatchObject(cpu.Upgrader, 'RunCompleted')
     self.PatchObject(cpu.Upgrader, 'WriteTableFiles')
 
-    with self.OutputCapturer():
-      self._AssertCPUMain(['--upgrade', '--host', '--board=board1:host:board2',
-                           '--to-csv=/dev/null', 'any-package'],
-                          expect_zero=True)
+    self._AssertCPUMain([
+        '--upgrade',
+        '--host',
+        '--board=board1:host:board2',
+        '--to-csv=/dev/null',
+        'any-package',
+    ],
+                        expect_zero=True)

@@ -47,3 +47,21 @@ def assert_no_zombies():
   if children:
     pytest.fail('Test has %s active child processes after tearDown: %s' %
                 (len(children), children))
+
+
+@pytest.fixture
+def legacy_capture_output(request, capfd):
+  """Adds the `capfd` fixture to TestCase-style test classes.
+
+  This fixture should only be used on cros_test_lib.TestCase test classes, since
+  it doesn't yield anything and just attaches the built-in pytest `capfd`
+  fixture to the requesting class. Tests written as standalone functions should
+  use pytest's built-in `capfd` fixture instead of this. See the documentation
+  for more information on how to use the `capfd` fixture that this provides:
+  https://docs.pytest.org/en/latest/reference.html#capfd
+
+  See the following documentation for an explanation of why fixtures have to be
+  provided to TestCase classes in this manner:
+  https://docs.pytest.org/en/latest/unittest.html#mixing-pytest-fixtures-into-unittest-testcase-subclasses-using-marks
+  """
+  request.cls.capfd = capfd
