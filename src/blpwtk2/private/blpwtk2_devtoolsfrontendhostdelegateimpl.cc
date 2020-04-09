@@ -22,6 +22,10 @@
 
 #include <blpwtk2_devtoolsfrontendhostdelegateimpl.h>
 
+#include <blpwtk2_urlrequestcontextgetterimpl.h>
+
+#include <base/files/file_path.h>
+#include <base/files/file_util.h>
 #include <base/json/json_reader.h>
 #include <base/json/json_writer.h>
 #include <base/json/string_escape.h>
@@ -129,6 +133,15 @@ DevToolsFrontendHostDelegateImpl::~DevToolsFrontendHostDelegateImpl()
 {
     for (const auto& pair : d_pendingRequests)
         delete pair.first;
+    
+    // Delete the temporary directory that we created in the constructor.
+    // allow IO during deletion of temporary directory
+    if (d_requestContextGetter.get()) {
+        base::ThreadRestrictions::ScopedAllowIO allowIO;
+        DCHECK(base::PathExists(d_requestContextGetter->path()));
+        base::DeleteFile(d_requestContextGetter->path(), true);
+        d_requestContextGetter = nullptr;
+    }
 }
 
 void DevToolsFrontendHostDelegateImpl::inspectElementAt(const POINT& point)
@@ -229,9 +242,12 @@ void DevToolsFrontendHostDelegateImpl::HandleMessageFromDevToolsFrontend(
             net::URLFetcher::Create(0, gurl, net::URLFetcher::GET, this, MISSING_TRAFFIC_ANNOTATION).release();
         d_pendingRequests[fetcher] = request_id;
 
-        // content::BrowserContext* browser_context = web_contents()->GetBrowserContext();
-        // fetcher->SetRequestContext(
-        //     content::BrowserContext::GetDefaultStoragePartition(browser_context)->GetURLRequestContext());
+        base::FilePath path;
+        base::ThreadRestrictions::ScopedAllowIO allowIO;
+        base::CreateNewTempDirectory(L"blpwtk2_", &path);
+        d_requestContextGetter =
+            new blpwtk2::URLRequestContextGetterImpl(path, false, false);
+        fetcher->SetRequestContext(d_requestContextGetter.get());
 
         fetcher->SetExtraRequestHeaders(headers);
         fetcher->SaveResponseWithWriter(std::unique_ptr<net::URLFetcherResponseWriter>(
