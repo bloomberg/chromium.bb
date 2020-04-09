@@ -380,6 +380,7 @@ ANDROID_RVC_BUILD_TARGETS = {
 # TODO(b/147612469): add -user builds once they are available
 ANDROID_VMRVC_BUILD_TARGETS = {
     # For XkbToKcmConverter, see the comment in ANDROID_PI_BUILD_TARGETS.
+    'ARM_USERDEBUG': ('linux-bertha_arm-userdebug', r'\.zip$'),
     'ARM64_USERDEBUG': ('linux-bertha_arm64-userdebug',
                         r'(\.zip|/XkbToKcmConverter)$'),
     'X86_USERDEBUG': ('linux-bertha_x86-userdebug',
