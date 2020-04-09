@@ -642,6 +642,9 @@ void av1_apply_temporal_filter_yuv_c(
 //   num_planes: Number of planes in the frame.
 //   noise_levels: Pointer to the noise levels of the to-filter frame, estimated
 //                 with each plane (in Y, U, V order).
+//   use_subblock: Whether to use 4 sub-blocks to replace the original block.
+//   block_mse: Motion search error (MSE) for the entire block.
+//   subblock_mses: Pointer to the search errors (MSE) for 4 sub-blocks.
 //   pred: Pointer to the well-built predictors.
 //   accum: Pointer to the pixel-wise accumulator for filtering.
 //   count: Pointer to the pixel-wise counter fot filtering.
@@ -651,7 +654,8 @@ void av1_apply_temporal_filter_yuv_c(
 void av1_apply_temporal_filter_planewise_c(
     const YV12_BUFFER_CONFIG *frame_to_filter, const MACROBLOCKD *mbd,
     const BLOCK_SIZE block_size, const int mb_row, const int mb_col,
-    const int num_planes, const double *noise_levels, const uint8_t *pred,
+    const int num_planes, const double *noise_levels, const int use_subblock,
+    const int block_mse, const int *subblock_mses, const uint8_t *pred,
     uint32_t *accum, uint16_t *count) {
   assert(num_planes >= 1 && num_planes <= MAX_MB_PLANE);
 
@@ -733,18 +737,25 @@ void av1_apply_temporal_filter_planewise_c(
           }
         }
 
+        // Scale down the difference for high bit depth input.
+        if (mbd->bd > 8) sum_square_diff >>= (mbd->bd - 8) * (mbd->bd - 8);
+        const double window_error = (double)(sum_square_diff) / num_ref_pixels;
+        const int subblock_idx = (i >= h / 2) * 2 + (j >= w / 2);
+        const double block_error =
+            (double)(use_subblock ? subblock_mses[subblock_idx] : block_mse);
+
         // Control factor for non-local mean approach.
         const double r =
             (double)decay_control * (0.7 + log(noise_levels[plane] + 1.0));
 
-        const int idx = plane_offset + pred_idx;  // Index with plane shift.
-        const int pred_value = is_high_bitdepth ? pred16[idx] : pred[idx];
-        // Scale down the difference for high bit depth input.
-        if (mbd->bd > 8) sum_square_diff >>= (mbd->bd - 8) * (mbd->bd - 8);
-        const double scaled_diff = AOMMAX(
-            -(double)(sum_square_diff / num_ref_pixels) / (2 * r * r), -15.0);
+        // Compute filter weight.
+        const double scaled_diff =
+            AOMMAX(-(window_error + block_error / 10) / (2 * r * r), -15.0);
         const int adjusted_weight =
             (int)(exp(scaled_diff) * TF_PLANEWISE_FILTER_WEIGHT_SCALE);
+
+        const int idx = plane_offset + pred_idx;  // Index with plane shift.
+        const int pred_value = is_high_bitdepth ? pred16[idx] : pred[idx];
         accum[idx] += adjusted_weight * pred_value;
         count[idx] += adjusted_weight;
 
@@ -779,6 +790,8 @@ void av1_apply_temporal_filter_planewise_c(
 //   noise_levels: Pointer to the noise levels of the to-filter frame, estimated
 //                 with each plane (in Y, U, V order). (Used in plane-wise
 //                 strategy)
+//   block_mse: Motion search error (MSE) for the entire block.
+//   subblock_mses: Pointer to the search errors (MSE) for 4 sub-blocks.
 //   pred: Pointer to the well-built predictors.
 //   accum: Pointer to the pixel-wise accumulator for filtering.
 //   count: Pointer to the pixel-wise counter fot filtering.
@@ -790,20 +803,22 @@ void av1_apply_temporal_filter_others(
     const BLOCK_SIZE block_size, const int mb_row, const int mb_col,
     const int num_planes, const int use_planewise_strategy, const int strength,
     const int use_subblock, const int *subblock_filter_weights,
-    const double *noise_levels, const uint8_t *pred, uint32_t *accum,
-    uint16_t *count) {
+    const double *noise_levels, const int block_mse, const int *subblock_mses,
+    const uint8_t *pred, uint32_t *accum, uint16_t *count) {
   assert(num_planes >= 1 && num_planes <= MAX_MB_PLANE);
 
   if (use_planewise_strategy) {  // Commonly used for high-resolution video.
     // TODO(any): avx2 and sse2 version should also support high bit-depth.
     if (is_frame_high_bitdepth(frame_to_filter)) {
-      av1_apply_temporal_filter_planewise_c(frame_to_filter, mbd, block_size,
-                                            mb_row, mb_col, num_planes,
-                                            noise_levels, pred, accum, count);
+      av1_apply_temporal_filter_planewise_c(
+          frame_to_filter, mbd, block_size, mb_row, mb_col, num_planes,
+          noise_levels, use_subblock, block_mse, subblock_mses, pred, accum,
+          count);
     } else {
       av1_apply_temporal_filter_planewise(frame_to_filter, mbd, block_size,
                                           mb_row, mb_col, num_planes,
-                                          noise_levels, pred, accum, count);
+                                          noise_levels, use_subblock, block_mse,
+                                          subblock_mses, pred, accum, count);
     }
   } else {  // Commonly used for low-resolution video.
     if (subblock_filter_weights[0] == 0 && subblock_filter_weights[1] == 0 &&
@@ -1014,7 +1029,8 @@ static FRAME_DIFF tf_do_filtering(
           av1_apply_temporal_filter_others(
               frame_to_filter, mbd, block_size, mb_row, mb_col, num_planes,
               use_planewise_strategy, strength, use_subblock,
-              subblock_filter_weights, noise_levels, pred, accum, count);
+              subblock_filter_weights, noise_levels, block_mse, subblock_mses,
+              pred, accum, count);
         }
       }
 

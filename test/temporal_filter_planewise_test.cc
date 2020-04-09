@@ -40,7 +40,8 @@ namespace {
 typedef void (*TemporalFilterPlanewiseFunc)(
     const YV12_BUFFER_CONFIG *ref_frame, const MACROBLOCKD *mbd,
     const BLOCK_SIZE block_size, const int mb_row, const int mb_col,
-    const int num_planes, const double *noise_level, const uint8_t *pred,
+    const int num_planes, const double *noise_level, const int use_subblock,
+    const int block_mse, const int *subblock_mses, const uint8_t *pred,
     uint32_t *accum, uint16_t *count);
 typedef libaom_test::FuncParam<TemporalFilterPlanewiseFunc>
     TemporalFilterPlanewiseFuncParam;
@@ -124,6 +125,9 @@ void TemporalFilterPlanewiseTest::RunTest(int isRandom, int width, int height,
 
     assert(width == 32 && height == 32);
     const BLOCK_SIZE block_size = BLOCK_32X32;
+    const int use_subblock = 0;
+    const int block_mse = 0;
+    const int subblock_mses[4] = { 0, 0, 0, 0 };
     const int mb_row = 0;
     const int mb_col = 0;
     const int num_planes = 1;
@@ -143,15 +147,18 @@ void TemporalFilterPlanewiseTest::RunTest(int isRandom, int width, int height,
     mbd->bd = 8;
 
     params_.ref_func(ref_frame, mbd, block_size, mb_row, mb_col, num_planes,
-                     sigma, src2_, accumulator_ref, count_ref);
+                     sigma, use_subblock, block_mse, subblock_mses, src2_,
+                     accumulator_ref, count_ref);
     params_.tst_func(ref_frame, mbd, block_size, mb_row, mb_col, num_planes,
-                     sigma, src2_, accumulator_mod, count_mod);
+                     sigma, use_subblock, block_mse, subblock_mses, src2_,
+                     accumulator_mod, count_mod);
 
     if (run_times > 1) {
       aom_usec_timer_start(&ref_timer);
       for (int j = 0; j < run_times; j++) {
         params_.ref_func(ref_frame, mbd, block_size, mb_row, mb_col, num_planes,
-                         sigma, src2_, accumulator_ref, count_ref);
+                         sigma, use_subblock, block_mse, subblock_mses, src2_,
+                         accumulator_ref, count_ref);
       }
       aom_usec_timer_mark(&ref_timer);
       const int elapsed_time_c =
@@ -160,7 +167,8 @@ void TemporalFilterPlanewiseTest::RunTest(int isRandom, int width, int height,
       aom_usec_timer_start(&test_timer);
       for (int j = 0; j < run_times; j++) {
         params_.tst_func(ref_frame, mbd, block_size, mb_row, mb_col, num_planes,
-                         sigma, src2_, accumulator_mod, count_mod);
+                         sigma, use_subblock, block_mse, subblock_mses, src2_,
+                         accumulator_mod, count_mod);
       }
       aom_usec_timer_mark(&test_timer);
       const int elapsed_time_simd =
