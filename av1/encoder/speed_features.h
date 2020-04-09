@@ -577,6 +577,9 @@ typedef struct INTER_MODE_SPEED_FEATURES {
 
   // Skip extended compound mode using ref frames of above and left neighbor
   // blocks.
+  // 0 : no pruning
+  // 1 : prune extended compound mode (less aggressiveness)
+  // 2 : prune extended compound mode (high aggressiveness)
   int prune_compound_using_neighbors;
 
   // Based on previous ref_mv_idx search result, prune the following search.

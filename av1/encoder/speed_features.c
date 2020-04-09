@@ -407,6 +407,7 @@ static void set_good_speed_features_framesize_independent(
     sf->inter_sf.fast_interintra_wedge_search = 1;
     sf->inter_sf.fast_wedge_sign_estimate = 1;
     sf->inter_sf.prune_comp_search_by_single_result = boosted ? 4 : 1;
+    sf->inter_sf.prune_compound_using_neighbors = 1;
     sf->inter_sf.prune_comp_type_by_comp_avg = 2;
     sf->inter_sf.prune_warp_using_wmtype = 1;
     sf->inter_sf.selective_ref_frame = 3;
@@ -514,7 +515,7 @@ static void set_good_speed_features_framesize_independent(
         (boosted || allow_screen_content_tools) ? 0 : 3;
 
     sf->inter_sf.prune_inter_modes_based_on_tpl = boosted ? 0 : 2;
-    sf->inter_sf.prune_compound_using_neighbors = 1;
+    sf->inter_sf.prune_compound_using_neighbors = 2;
     sf->inter_sf.disable_smooth_interintra = 1;
 
     sf->interp_sf.cb_pred_filter_search = 1;
