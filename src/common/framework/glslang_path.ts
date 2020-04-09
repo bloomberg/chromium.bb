@@ -1,4 +1,4 @@
-import { assert } from './framework/util/util.js';
+import { assert } from './util/util.js';
 
 let glslangPath: string | undefined;
 

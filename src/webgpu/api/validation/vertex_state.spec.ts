@@ -4,7 +4,6 @@ vertexState validation tests.
 
 import * as C from '../../../common/constants.js';
 import { TestGroup } from '../../../common/framework/test_group.js';
-import { initGLSL } from '../../../common/glslang.js';
 
 import { ValidationTest } from './validation_test.js';
 
@@ -35,11 +34,6 @@ function clone<T extends GPUVertexStateDescriptor>(descriptor: T): T {
 }
 
 class F extends ValidationTest {
-  async init(): Promise<void> {
-    await super.init();
-    await initGLSL();
-  }
-
   getDescriptor(
     vertexState: GPUVertexStateDescriptor,
     vertexShaderCode: string

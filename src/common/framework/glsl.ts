@@ -1,5 +1,5 @@
-import { assert, unreachable } from './framework/util/util.js';
 import { getGlslangPath } from './glslang_path.js';
+import { assert, unreachable } from './util/util.js';
 
 type glslang = typeof import('@webgpu/glslang/dist/web-devel/glslang');
 type Glslang = import('@webgpu/glslang/dist/web-devel/glslang').Glslang;
@@ -37,5 +37,5 @@ export function compileGLSL(
     glslangInstance !== undefined,
     'GLSL compiler is not instantiated. Run `await initGLSL()` first'
   );
-  return glslangInstance.compileGLSL(glsl, shaderType, genDebug, spirvVersion);
+  return glslangInstance.compileGLSL(glsl.trimLeft(), shaderType, genDebug, spirvVersion);
 }
