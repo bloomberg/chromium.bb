@@ -2038,9 +2038,9 @@ get_tx_mask(const AV1_COMP *cpi, MACROBLOCK *x, int plane, int block,
 }
 
 #if CONFIG_RD_DEBUG
-static INLINE void av1_update_txb_coeff_cost(RD_STATS *rd_stats, int plane,
-                                             TX_SIZE tx_size, int blk_row,
-                                             int blk_col, int txb_coeff_cost) {
+static INLINE void update_txb_coeff_cost(RD_STATS *rd_stats, int plane,
+                                         TX_SIZE tx_size, int blk_row,
+                                         int blk_col, int txb_coeff_cost) {
   (void)blk_row;
   (void)blk_col;
   (void)tx_size;
@@ -2498,8 +2498,8 @@ static AOM_INLINE void try_tx_block_no_split(
                              RDCOST(x->rdmult, zero_blk_rate, rd_stats->sse));
   if (pick_skip) {
 #if CONFIG_RD_DEBUG
-    av1_update_txb_coeff_cost(rd_stats, 0, tx_size, blk_row, blk_col,
-                              zero_blk_rate - rd_stats->rate);
+    update_txb_coeff_cost(rd_stats, 0, tx_size, blk_row, blk_col,
+                          zero_blk_rate - rd_stats->rate);
 #endif  // CONFIG_RD_DEBUG
     rd_stats->rate = zero_blk_rate;
     rd_stats->dist = rd_stats->sse;
@@ -2838,8 +2838,8 @@ static AOM_INLINE void block_rd_txfm(int plane, int block, int blk_row,
   }
 
 #if CONFIG_RD_DEBUG
-  av1_update_txb_coeff_cost(&this_rd_stats, plane, tx_size, blk_row, blk_col,
-                            this_rd_stats.rate);
+  update_txb_coeff_cost(&this_rd_stats, plane, tx_size, blk_row, blk_col,
+                        this_rd_stats.rate);
 #endif  // CONFIG_RD_DEBUG
   av1_set_txb_context(x, plane, block, tx_size, a, l);
 
