@@ -189,6 +189,7 @@ class ProfileImpl : public Profile {
 
 
     // patch section: web cache
+    void clearWebCache() override;
 
 
 
