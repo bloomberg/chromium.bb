@@ -98,12 +98,12 @@ _TAST_SSP_SUBDIR = 'tast'
 # Tast files and directories to include in AUTOTEST_SERVER_PACKAGE relative to
 # the build root. Public so it can be used by commands_unittest.py.
 TAST_SSP_FILES = [
-    'chroot/usr/bin/tast',  # Main Tast executable.
+    'chroot/etc/tast/vars',  # Secret variables tast interprets.
     'chroot/usr/bin/remote_test_runner',  # Runs remote tests.
+    'chroot/usr/bin/tast',  # Main Tast executable.
     'chroot/usr/libexec/tast/bundles',  # Dir containing test bundles.
     'chroot/usr/share/tast/data',  # Dir containing test data.
     'src/platform/tast/tools/run_tast.sh',  # Helper script to run SSP tast.
-    'src/platform/tast-tests-private/vars',  # Secret variables tast interprets.
 ]
 
 # =========================== Command Helpers =================================
