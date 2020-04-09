@@ -311,7 +311,14 @@ class DeviceParser(object):
     elif value.strip().lower() == 'ssh://:vm:':
       value = 'ssh://localhost:9222'
     parsed = urllib.parse.urlparse(value)
-    if not parsed.scheme:
+
+    # crbug.com/1069325: Starting in python 3.7 urllib has different parsing
+    # results. 127.0.0.1:9999 parses as scheme='127.0.0.1' path='9999'
+    # instead of scheme='' path='127.0.0.1:9999'. We want that parsed as ssh.
+    # Check for '.' or 'localhost' in the scheme to catch the most common cases
+    # for this result.
+    if (not parsed.scheme or '.' in parsed.scheme or
+        parsed.scheme == 'localhost'):
       # Default to a file scheme for absolute paths, SSH scheme otherwise.
       if value and value[0] == '/':
         scheme = DEVICE_SCHEME_FILE

@@ -198,11 +198,22 @@ class DeviceParseTest(cros_test_lib.OutputTestCase):
     """Verify that SSH scheme-only device specification fails."""
     self._CheckDeviceParseFails('ssh://')
 
+  def testInvalidSshScheme(self):
+    """Verify that invalid ssh specification fails."""
+    self._CheckDeviceParseFails('sssssh://localhost:22')
+
   def testSshHostname(self):
     """Test SSH hostname-only device specification."""
     self._CheckDeviceParse('192.168.1.200',
                            scheme=commandline.DEVICE_SCHEME_SSH,
                            hostname='192.168.1.200')
+
+  def testSshHostnamePort(self):
+    """Test SSH hostname and port device specification."""
+    self._CheckDeviceParse('192.168.1.200:9999',
+                           scheme=commandline.DEVICE_SCHEME_SSH,
+                           hostname='192.168.1.200',
+                           port=9999)
 
   def testSshUsernameHostname(self):
     """Test SSH username and hostname device specification."""
