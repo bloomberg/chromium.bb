@@ -152,6 +152,7 @@ class DiscoveryE2ETest : public testing::Test {
  protected:
   ServiceInfo GetInfo(int id) {
     ServiceInfo hosted_service;
+    hosted_service.port = 1234;
     hosted_service.unique_id = "id" + std::to_string(id);
     hosted_service.model_name = "openscreen-Model" + std::to_string(id);
     hosted_service.friendly_name = "Demo" + std::to_string(id);
