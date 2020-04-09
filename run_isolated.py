@@ -528,7 +528,7 @@ def _fetch_and_map_with_go(isolated_hash, storage, outdir, go_cache_dir,
       prefix=u'fetch-and-map-result-', suffix=u'.json')
   os.close(result_json_handle)
   try:
-    proc = subprocess42.Popen([
+    cmd = [
         isolated_client,
         'download',
         '-isolate-server',
@@ -553,18 +553,36 @@ def _fetch_and_map_with_go(isolated_hash, storage, outdir, go_cache_dir,
         outdir,
         '-fetch-and-map-result-json',
         result_json_path,
-    ])
+    ]
+    proc = subprocess42.Popen(cmd)
+    cmd_str = ' '.join(cmd)
 
-    while True:
+    exceeded_max_timeout = True
+    check_period_sec = 30
+    max_checks = 100
+    # max timeout = max_checks * check_period_sec = 50 minutes
+    for i in range(max_checks):
       # This is to prevent I/O timeout error during isolated setup.
       try:
-        retcode = proc.wait(30)
+        retcode = proc.wait(check_period_sec)
         if retcode != 0:
-          raise ValueError("retcode of isolated command is not 0: %s" % retcode)
+          raise ValueError("retcode is not 0: %s (cmd=%s)" % (retcode, cmd_str))
+        exceeded_max_timeout = False
         break
       except subprocess42.TimeoutExpired:
-        print('still running isolated')
-        continue
+        print('still running isolated (after %d seconds)' % (
+            (i + 1) * check_period_sec))
+
+    if exceeded_max_timeout:
+      proc.terminate()
+      try:
+        proc.wait(check_period_sec)
+      except subprocess42.TimeoutExpired:
+        proc.kill()
+        proc.wait()
+      # Raise unconditionally, because |proc| was forcefully terminated.
+      raise ValueError("timedout after %d seconds (cmd=%s)",
+                       (check_period_sec * max_checks, cmd_str))
 
     with open(result_json_path) as json_file:
       result_json = json.load(json_file)
