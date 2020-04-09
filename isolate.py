@@ -1169,9 +1169,9 @@ def add_variable_option(parser):
       dest='config_variables',
       metavar='FOO BAR',
       help='Config variables are used to determine which conditions should be '
-           'matched when loading a .isolate file, default: %default. '
-            'All 3 kinds of variables are persistent accross calls, they are '
-            'saved inside <.isolated>.state')
+      'matched when loading a .isolate file, default: %default. '
+      'All 3 kinds of variables are persistent across calls, they are '
+      'saved inside <.isolated>.state')
   parser.add_option(
       '--path-variable',
       action='callback',

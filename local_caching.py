@@ -554,12 +554,12 @@ class DiskContentAddressedCache(ContentAddressedCache):
         # verify only if the mtime is grather than the timestamp in state.json
         # to avoid take too long time.
         if self._get_mtime(digest) <= timestamp:
-            continue
+          continue
         logging.warning('Item has been modified. item: %s', digest)
         if self._is_valid_hash(digest):
-            # Update timestamp in state.json
-            self._lru.touch(digest)
-            continue
+          # Update timestamp in state.json
+          self._lru.touch(digest)
+          continue
         # remove corrupted file from LRU and file system
         self._lru.pop(digest)
         self._delete_file(digest, UNKNOWN_FILE_SIZE)
@@ -741,7 +741,7 @@ class DiskContentAddressedCache(ContentAddressedCache):
     return os.path.join(self.cache_dir, digest)
 
   def _remove_lru_file(self, allow_protected):
-    """Removes the lastest recently used file and returns its size.
+    """Removes the latest recently used file and returns its size.
 
     Updates self._free_disk.
     """
@@ -812,8 +812,8 @@ class DiskContentAddressedCache(ContentAddressedCache):
   def _is_valid_hash(self, digest):
     """Verify digest with supported hash algos."""
     for _, algo in isolated_format.SUPPORTED_ALGOS.items():
-        if digest == isolated_format.hash_file(self._path(digest), algo):
-            return True
+      if digest == isolated_format.hash_file(self._path(digest), algo):
+        return True
     return False
 
 
