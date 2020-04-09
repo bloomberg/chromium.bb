@@ -234,7 +234,7 @@ class PrepareForBuildTest(cros_test_lib.MockTempDirTestCase,
     self.prep.assert_called_once_with(
         'UnverifiedChromeLlvmOrderfile', None, '', '', {}, {})
 
-  def testPassesAdditionalArgs(self):
+  def testPassesProfileInfo(self):
     request = toolchain_pb2.PrepareForToolchainBuildRequest(
         artifact_types=[
             BuilderConfig.Artifacts.UNVERIFIED_CHROME_LLVM_ORDERFILE],
@@ -248,7 +248,7 @@ class PrepareForBuildTest(cros_test_lib.MockTempDirTestCase,
                     BuilderConfig.Artifacts.UNVERIFIED_CHROME_LLVM_ORDERFILE,
                 input_artifact_gs_locations=['path3']),
         ],
-        additional_args=common_pb2.PrepareForBuildAdditionalArgs(
+        profile_info=common_pb2.ArtifactProfileInfo(
             chrome_cwp_profile='CWPVERSION'),
     )
     toolchain.PrepareForBuild(request, self.response, self.api_config)
@@ -258,6 +258,33 @@ class PrepareForBuildTest(cros_test_lib.MockTempDirTestCase,
                 'gs://path1', 'gs://path2', 'gs://path3'],
         },
         {'chrome_cwp_profile': 'CWPVERSION'})
+
+  def testPassesProfileInfoAfdoRelease(self):
+    request = toolchain_pb2.PrepareForToolchainBuildRequest(
+        artifact_types=[
+            BuilderConfig.Artifacts.UNVERIFIED_CHROME_LLVM_ORDERFILE],
+        chroot=None, sysroot=None, input_artifacts=[
+            BuilderConfig.Artifacts.InputArtifactInfo(
+                input_artifact_type=\
+                    BuilderConfig.Artifacts.UNVERIFIED_CHROME_LLVM_ORDERFILE,
+                input_artifact_gs_locations=['path1', 'path2']),
+            BuilderConfig.Artifacts.InputArtifactInfo(
+                input_artifact_type=\
+                    BuilderConfig.Artifacts.UNVERIFIED_CHROME_LLVM_ORDERFILE,
+                input_artifact_gs_locations=['path3']),
+        ],
+        profile_info=common_pb2.ArtifactProfileInfo(
+            afdo_release=common_pb2.AfdoRelease(
+                chrome_cwp_profile='CWPVERSION',
+                image_build_id=1234)),
+    )
+    toolchain.PrepareForBuild(request, self.response, self.api_config)
+    self.prep.assert_called_once_with(
+        'UnverifiedChromeLlvmOrderfile', None, '', '', {
+            'UnverifiedChromeLlvmOrderfile': [
+                'gs://path1', 'gs://path2', 'gs://path3'],
+        },
+        {'chrome_cwp_profile': 'CWPVERSION', 'image_build_id': 1234})
 
   def testHandlesDuplicateInputArtifacts(self):
     request = toolchain_pb2.PrepareForToolchainBuildRequest(

@@ -1036,7 +1036,7 @@ class _CommonPrepareBundle(object):
                sysroot_path=None,
                build_target=None,
                input_artifacts=None,
-               additional_args=None):
+               profile_info=None):
     self._gs_context = None
     self.artifact_name = artifact_name
     self.chroot = chroot
@@ -1044,7 +1044,7 @@ class _CommonPrepareBundle(object):
     self.build_target = build_target
     # Turn the input artifacts list into a dictionary.
     self.input_artifacts = input_artifacts or []
-    self.additional_args = additional_args or {}
+    self.profile_info = profile_info or {}
     self._ebuild_info = {}
 
   @property
@@ -1409,10 +1409,10 @@ class PrepareForBuildHandler(_CommonPrepareBundle):
   """Methods for updating ebuilds for toolchain artifacts."""
 
   def __init__(self, artifact_name, chroot, sysroot_path, build_target,
-               input_artifacts, additional_args):
+               input_artifacts, profile_info):
     super(PrepareForBuildHandler,
           self).__init__(artifact_name, chroot, sysroot_path, build_target,
-                         input_artifacts, additional_args)
+                         input_artifacts, profile_info)
     self._prepare_func = getattr(self, '_Prepare' + artifact_name)
 
   def Prepare(self):
@@ -1581,7 +1581,7 @@ class PrepareForBuildHandler(_CommonPrepareBundle):
 
   def _PrepareVerifiedKernelCwpAfdoFile(self):
     """Prepare to verify the kernel CWP AFDO artifact."""
-    kernel_version = self.additional_args.get('kernel_version')
+    kernel_version = self.profile_info.get('kernel_version')
     if not kernel_version:
       raise PrepareForBuildHandlerError(
           'Could not find kernel version to verify.')
@@ -1647,7 +1647,7 @@ class PrepareForBuildHandler(_CommonPrepareBundle):
 
     See also "chrome_afdo" code elsewhere in this file.
     """
-    profile = self.additional_args.get('chrome_cwp_profile')
+    profile = self.profile_info.get('chrome_cwp_profile')
     if not profile:
       raise PrepareForBuildHandlerError('Could not find profile name.')
     bench_locs = self.input_artifacts.get('UnverifiedChromeBenchmarkAfdoFile',
@@ -1836,13 +1836,9 @@ class BundleArtifactHandler(_CommonPrepareBundle):
   """Methods for updating ebuilds for toolchain artifacts."""
 
   def __init__(self, artifact_name, chroot, sysroot_path, build_target,
-               output_dir, additional_args):
+               output_dir, profile_info):
     super(BundleArtifactHandler, self).__init__(
-        artifact_name,
-        chroot,
-        sysroot_path,
-        build_target,
-        additional_args=additional_args)
+        artifact_name, chroot, sysroot_path, build_target, profile_info)
     self._bundle_func = getattr(self, '_Bundle' + artifact_name)
     self.output_dir = output_dir
 
@@ -2037,7 +2033,7 @@ class BundleArtifactHandler(_CommonPrepareBundle):
 
   def _BundleVerifiedKernelCwpAfdoFile(self):
     """Bundle the verified kernel CWP AFDO file."""
-    kernel_version = self.additional_args.get('kernel_version')
+    kernel_version = self.profile_info.get('kernel_version')
     if not kernel_version:
       raise BundleArtifactsHandlerError('kernel_version not provided.')
     kernel_version = kernel_version.replace('.', '_')
@@ -2073,7 +2069,7 @@ class BundleArtifactHandler(_CommonPrepareBundle):
 
 
 def PrepareForBuild(artifact_name, chroot, sysroot_path, build_target,
-                    input_artifacts, additional_args):
+                    input_artifacts, profile_info):
   """Prepare for building artifacts.
 
   This code is called OUTSIDE the chroot, before it is set up.
@@ -2084,7 +2080,7 @@ def PrepareForBuild(artifact_name, chroot, sysroot_path, build_target,
     sysroot_path: path to sysroot, relative to chroot path, or None.
     build_target: name of build target, or None.
     input_artifacts: List(InputArtifactInfo) of available artifact locations.
-    additional_args: dict(key: value)  See PrepareForBuildAdditionalArgs.
+    profile_info: dict(key=value)  See ArtifactProfileInfo.
 
   Returns:
     PrepareForBuildReturn
@@ -2092,11 +2088,11 @@ def PrepareForBuild(artifact_name, chroot, sysroot_path, build_target,
 
   return PrepareForBuildHandler(artifact_name, chroot, sysroot_path,
                                 build_target, input_artifacts,
-                                additional_args).Prepare()
+                                profile_info).Prepare()
 
 
 def BundleArtifacts(name, chroot, sysroot_path, build_target, output_dir,
-                    additional_args):
+                    profile_info):
   """Prepare for building artifacts.
 
   This code is called OUTSIDE the chroot, after it is set up.
@@ -2108,18 +2104,13 @@ def BundleArtifacts(name, chroot, sysroot_path, build_target, output_dir,
     chrome_root: path to chrome root.
     build_target: name of build target
     output_dir: path in which to place the artifacts.
-    additional_args: dict(key: value)  See PrepareForBuildAdditionalArgs.
+    profile_info: dict(key=value)  See ArtifactProfileInfo.
 
   Returns:
     list of artifacts, relative to output_dir.
   """
-  return BundleArtifactHandler(
-      name,
-      chroot,
-      sysroot_path,
-      build_target,
-      output_dir,
-      additional_args=additional_args).Bundle()
+  return BundleArtifactHandler(name, chroot, sysroot_path, build_target,
+                               output_dir, profile_info).Bundle()
 
 
 # ###########################################################################

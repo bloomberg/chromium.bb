@@ -72,6 +72,29 @@ _TOOLCHAIN_ARTIFACT_HANDLERS = {
 }
 
 
+def _GetProfileInfoDict(profile_info):
+  """Convert profile_info to a dict.
+
+  Args:
+    profile_info (ArtifactProfileInfo): The artifact profile_info.
+
+  Returns:
+    A dictionary containing profile info.
+  """
+  ret = {}
+  which = profile_info.WhichOneof('artifact_profile_info')
+  if which:
+    value = getattr(profile_info, which)
+    # If it is a message, then use the contents of the message.  This works as
+    # long as simple types do not have a 'DESCRIPTOR' attribute. (And protobuf
+    # messages do.)
+    if getattr(value, 'DESCRIPTOR', None):
+      ret.update({k.name: v for k, v in value.ListFields()})
+    else:
+      ret[which] = value
+  return ret
+
+
 # TODO(crbug/1031213): When @faux is expanded to have more than success/failure,
 # this should be changed.
 @faux.all_empty
@@ -94,8 +117,8 @@ def PrepareForBuild(input_proto, output_proto, _config):
       input_artifacts ({(str) name:[str gs_locations]}): locations for possible
           input artifacts.  The handler is expected to know which keys it should
           be using, and ignore any keys that it does not understand.
-      additional_args ({(str) name: (str) value}) Dictionary of additional
-          arguments.
+      profile_info ({(str) name: (str) value}) Dictionary containing profile
+          information.
 
   They locate and modify any ebuilds and/or source required for the artifact
   being created, then return a value from toolchain_util.PrepareForBuildReturn.
@@ -119,13 +142,7 @@ def PrepareForBuild(input_proto, output_proto, _config):
       input_artifacts[item.name].extend(
           ['gs://%s' % str(x) for x in art.input_artifact_gs_locations])
 
-  # Pass along any additional args.
-  additional_args = {}
-  which = input_proto.additional_args.WhichOneof('prepare_for_build_args')
-  if which:
-    # All of the additional arguments we understand are strings, so we can
-    # copy whichever argument we got without processing it.
-    additional_args[which] = getattr(input_proto.additional_args, which)
+  profile_info = _GetProfileInfoDict(input_proto.profile_info)
 
   results = set()
   sysroot_path = input_proto.sysroot.path
@@ -136,7 +153,7 @@ def PrepareForBuild(input_proto, output_proto, _config):
     if handler.prepare:
       results.add(handler.prepare(
           handler.name, chroot, sysroot_path, build_target, input_artifacts,
-          additional_args))
+          profile_info))
 
   # Translate the returns from the handlers we called.
   #   If any NEEDED => NEEDED
@@ -173,6 +190,8 @@ def BundleArtifacts(input_proto, output_proto, _config):
       build_target_name (str): name of the build target (e.g., atlas)
       output_dir (str): absolute path where artifacts are being bundled.
         (e.g., /b/s/w/ir/k/recipe_cleanup/artifactssptfMU)
+      profile_info ({(str) name: (str) value}) Dictionary containing profile
+          information.
 
   Note: the actual upload to GS is done by CI, not here.
 
@@ -183,13 +202,7 @@ def BundleArtifacts(input_proto, output_proto, _config):
   """
   chroot = controller_util.ParseChroot(input_proto.chroot)
 
-  # Pass along any additional args.
-  additional_args = {}
-  which = input_proto.additional_args.WhichOneof('prepare_for_build_args')
-  if which:
-    # All of the additional arguments we understand are strings, so we can
-    # copy whichever argument we got without processing it.
-    additional_args[which] = getattr(input_proto.additional_args, which)
+  profile_info = _GetProfileInfoDict(input_proto.profile_info)
 
   for artifact_type in input_proto.artifact_types:
     if artifact_type not in _TOOLCHAIN_ARTIFACT_HANDLERS:
@@ -200,7 +213,7 @@ def BundleArtifacts(input_proto, output_proto, _config):
       artifacts = handler.bundle(
           handler.name, chroot, input_proto.sysroot.path,
           input_proto.sysroot.build_target.name, input_proto.output_dir,
-          additional_args)
+          profile_info)
       if artifacts:
         art_info = output_proto.artifacts_info.add()
         art_info.artifact_type = artifact_type
