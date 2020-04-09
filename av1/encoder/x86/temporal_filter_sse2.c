@@ -106,9 +106,9 @@ static void apply_temporal_filter_planewise(
     const uint8_t *frame1, const unsigned int stride, const uint8_t *frame2,
     const unsigned int stride2, const int block_width, const int block_height,
     const double sigma, const int decay_control, const int use_subblock,
-    const int block_mse, const int *subblock_mses, unsigned int *accumulator,
-    uint16_t *count, uint16_t *luma_sq_error, uint16_t *chroma_sq_error,
-    int plane, int ss_x_shift, int ss_y_shift) {
+    const int block_mse, const int *subblock_mses, const int q_factor,
+    unsigned int *accumulator, uint16_t *count, uint16_t *luma_sq_error,
+    uint16_t *chroma_sq_error, int plane, int ss_x_shift, int ss_y_shift) {
   assert(TF_PLANEWISE_FILTER_WINDOW_LENGTH == 5);
   assert(((block_width == 32) && (block_height == 32)) ||
          ((block_width == 16) && (block_height == 16)));
@@ -116,6 +116,7 @@ static void apply_temporal_filter_planewise(
 
   uint32_t acc_5x5_sse[BH][BW];
   const double h = decay_control * (0.7 + log(sigma + 1.0));
+  const double q = AOMMIN((double)(q_factor * q_factor) / 256.0, 1);
   uint16_t *frame_sse =
       (plane == PLANE_TYPE_Y) ? luma_sq_error : chroma_sq_error;
 
@@ -204,7 +205,7 @@ static void apply_temporal_filter_planewise(
           (double)(use_subblock ? subblock_mses[subblock_idx] : block_mse);
 
       const double scaled_diff =
-          AOMMAX(-(window_error + block_error / 10) / (2 * h * h), -15.0);
+          AOMMAX(-(window_error + block_error / 10) / (2 * h * h * q), -15.0);
       const int adjusted_weight =
           (int)(exp(scaled_diff) * TF_PLANEWISE_FILTER_WEIGHT_SCALE);
 
@@ -218,8 +219,8 @@ void av1_apply_temporal_filter_planewise_sse2(
     const YV12_BUFFER_CONFIG *ref_frame, const MACROBLOCKD *mbd,
     const BLOCK_SIZE block_size, const int mb_row, const int mb_col,
     const int num_planes, const double *noise_levels, const int use_subblock,
-    const int block_mse, const int *subblock_mses, const uint8_t *pred,
-    uint32_t *accum, uint16_t *count) {
+    const int block_mse, const int *subblock_mses, const int q_factor,
+    const uint8_t *pred, uint32_t *accum, uint16_t *count) {
   const int is_high_bitdepth = ref_frame->flags & YV12_FLAG_HIGHBITDEPTH;
   if (is_high_bitdepth) {
     assert(0 && "Only support low bit-depth with sse2!");
@@ -253,8 +254,9 @@ void av1_apply_temporal_filter_planewise_sse2(
     apply_temporal_filter_planewise(
         ref, frame_stride, pred + mb_pels * plane, plane_w, plane_w, plane_h,
         noise_levels[plane], decay_control, use_subblock, block_mse,
-        subblock_mses, accum + mb_pels * plane, count + mb_pels * plane,
-        luma_sq_error, chroma_sq_error, plane, ss_x_shift, ss_y_shift);
+        subblock_mses, q_factor, accum + mb_pels * plane,
+        count + mb_pels * plane, luma_sq_error, chroma_sq_error, plane,
+        ss_x_shift, ss_y_shift);
   }
   if (chroma_sq_error != NULL) aom_free(chroma_sq_error);
 }

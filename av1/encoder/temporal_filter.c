@@ -645,6 +645,8 @@ void av1_apply_temporal_filter_yuv_c(
 //   use_subblock: Whether to use 4 sub-blocks to replace the original block.
 //   block_mse: Motion search error (MSE) for the entire block.
 //   subblock_mses: Pointer to the search errors (MSE) for 4 sub-blocks.
+//   q_factor: Quantization factor. This is actually the `q` defined in libaom,
+//             which is converted from `qindex`.
 //   pred: Pointer to the well-built predictors.
 //   accum: Pointer to the pixel-wise accumulator for filtering.
 //   count: Pointer to the pixel-wise counter fot filtering.
@@ -655,8 +657,8 @@ void av1_apply_temporal_filter_planewise_c(
     const YV12_BUFFER_CONFIG *frame_to_filter, const MACROBLOCKD *mbd,
     const BLOCK_SIZE block_size, const int mb_row, const int mb_col,
     const int num_planes, const double *noise_levels, const int use_subblock,
-    const int block_mse, const int *subblock_mses, const uint8_t *pred,
-    uint32_t *accum, uint16_t *count) {
+    const int block_mse, const int *subblock_mses, const int q_factor,
+    const uint8_t *pred, uint32_t *accum, uint16_t *count) {
   assert(num_planes >= 1 && num_planes <= MAX_MB_PLANE);
 
   // Block information.
@@ -747,10 +749,11 @@ void av1_apply_temporal_filter_planewise_c(
         // Control factor for non-local mean approach.
         const double r =
             (double)decay_control * (0.7 + log(noise_levels[plane] + 1.0));
+        const double q = AOMMIN((double)(q_factor * q_factor) / 256.0, 1);
 
         // Compute filter weight.
         const double scaled_diff =
-            AOMMAX(-(window_error + block_error / 10) / (2 * r * r), -15.0);
+            AOMMAX(-(window_error + block_error / 10) / (2 * r * r * q), -15.0);
         const int adjusted_weight =
             (int)(exp(scaled_diff) * TF_PLANEWISE_FILTER_WEIGHT_SCALE);
 
@@ -792,6 +795,7 @@ void av1_apply_temporal_filter_planewise_c(
 //                 strategy)
 //   block_mse: Motion search error (MSE) for the entire block.
 //   subblock_mses: Pointer to the search errors (MSE) for 4 sub-blocks.
+//   q_factor: Quantization factor.
 //   pred: Pointer to the well-built predictors.
 //   accum: Pointer to the pixel-wise accumulator for filtering.
 //   count: Pointer to the pixel-wise counter fot filtering.
@@ -804,7 +808,7 @@ void av1_apply_temporal_filter_others(
     const int num_planes, const int use_planewise_strategy, const int strength,
     const int use_subblock, const int *subblock_filter_weights,
     const double *noise_levels, const int block_mse, const int *subblock_mses,
-    const uint8_t *pred, uint32_t *accum, uint16_t *count) {
+    const int q_factor, const uint8_t *pred, uint32_t *accum, uint16_t *count) {
   assert(num_planes >= 1 && num_planes <= MAX_MB_PLANE);
 
   if (use_planewise_strategy) {  // Commonly used for high-resolution video.
@@ -812,13 +816,13 @@ void av1_apply_temporal_filter_others(
     if (is_frame_high_bitdepth(frame_to_filter)) {
       av1_apply_temporal_filter_planewise_c(
           frame_to_filter, mbd, block_size, mb_row, mb_col, num_planes,
-          noise_levels, use_subblock, block_mse, subblock_mses, pred, accum,
-          count);
+          noise_levels, use_subblock, block_mse, subblock_mses, q_factor, pred,
+          accum, count);
     } else {
-      av1_apply_temporal_filter_planewise(frame_to_filter, mbd, block_size,
-                                          mb_row, mb_col, num_planes,
-                                          noise_levels, use_subblock, block_mse,
-                                          subblock_mses, pred, accum, count);
+      av1_apply_temporal_filter_planewise(
+          frame_to_filter, mbd, block_size, mb_row, mb_col, num_planes,
+          noise_levels, use_subblock, block_mse, subblock_mses, q_factor, pred,
+          accum, count);
     }
   } else {  // Commonly used for low-resolution video.
     if (subblock_filter_weights[0] == 0 && subblock_filter_weights[1] == 0 &&
@@ -1026,11 +1030,17 @@ static FRAME_DIFF tf_do_filtering(
                                          subblock_filter_weights[0], pred,
                                          accum, count);
         } else {  // Other reference frames.
+          const FRAME_TYPE frame_type =
+              (cpi->common.current_frame.frame_number > 1) ? INTER_FRAME
+                                                           : KEY_FRAME;
+          const int q_factor =
+              (int)av1_convert_qindex_to_q(cpi->rc.avg_frame_qindex[frame_type],
+                                           cpi->common.seq_params.bit_depth);
           av1_apply_temporal_filter_others(
               frame_to_filter, mbd, block_size, mb_row, mb_col, num_planes,
               use_planewise_strategy, strength, use_subblock,
               subblock_filter_weights, noise_levels, block_mse, subblock_mses,
-              pred, accum, count);
+              q_factor, pred, accum, count);
         }
       }
 
