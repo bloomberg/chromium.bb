@@ -696,7 +696,7 @@ def upload_then_delete(storage, out_dir, leak_temp_dir):
     with tools.Profiler('ArchiveOutput'):
       try:
         results, f_cold, f_hot = isolateserver.archive_files_to_storage(
-            storage, [out_dir], None)
+            storage, [out_dir], None, verify_push=True)
         outputs_ref = {
           'isolated': results.values()[0],
           'isolatedserver': storage.server_ref.url,

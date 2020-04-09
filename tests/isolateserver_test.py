@@ -16,6 +16,7 @@ import tempfile
 import unittest
 import zlib
 
+import parameterized
 import six
 
 # Mutates sys.path.
@@ -834,6 +835,7 @@ class IsolateServerStorageApiTest(TestCase):
       storage.contains([])
 
 
+@parameterized.parameterized_class(('verify_push',), [(True,), (False,)])
 class IsolateServerStorageSmokeTest(unittest.TestCase):
   """Tests public API of Storage class using file system as a store."""
   # These tests fail when running with other tests
@@ -863,7 +865,7 @@ class IsolateServerStorageSmokeTest(unittest.TestCase):
     ]
 
     # Do it.
-    uploaded = storage.upload_items(items)
+    uploaded = storage.upload_items(items, self.verify_push)
     self.assertEqual(set(items), set(uploaded))
 
     # Now ensure upload_items skips existing items.
@@ -892,7 +894,7 @@ class IsolateServerStorageSmokeTest(unittest.TestCase):
         isolateserver.BufferItem('item %d' % i, storage.server_ref.hash_algo)
         for i in range(10)
     ]
-    uploaded = storage.upload_items(items)
+    uploaded = storage.upload_items(items, self.verify_push)
     self.assertEqual(set(items), set(uploaded))
 
     # Fetch them all back into local memory cache.
@@ -1243,7 +1245,7 @@ def get_storage(server_ref):
       return server_ref
 
     @staticmethod
-    def upload_items(items):
+    def upload_items(items, _verify_push):
       # Always returns the last item as not present.
       return [list(items)[-1]]
   return StorageFake()

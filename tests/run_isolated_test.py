@@ -103,7 +103,7 @@ class StorageFake(object):
     sink([self._files[digest]])
     channel.send_result(digest)
 
-  def upload_items(self, items_to_upload):
+  def upload_items(self, items_to_upload, _verify_push):
     # Return all except the first one.
     return list(items_to_upload)[1:]
 
