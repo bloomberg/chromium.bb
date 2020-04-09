@@ -1500,66 +1500,67 @@ int av1_full_pixel_search(const FULLPEL_MV start_mv,
   return var;
 }
 
-void av1_intrabc_hash_search(const AV1_COMP *cpi, MACROBLOCK *x,
-                             BLOCK_SIZE bsize, const MV *ref_mv, int *bestsme,
-                             FULLPEL_MV *best_mv) {
-  if (!av1_use_hash_me(cpi)) return;
+int av1_intrabc_hash_search(const AV1_COMP *cpi, const MACROBLOCKD *xd,
+                            const FULLPEL_MOTION_SEARCH_PARAMS *ms_params,
+                            IntraBCHashInfo *intrabc_hash_info,
+                            FULLPEL_MV *best_mv) {
+  if (!av1_use_hash_me(cpi)) return INT_MAX;
 
-  const aom_variance_fn_ptr_t *fn_ptr = &cpi->fn_ptr[bsize];
-  const int block_height = block_size_high[bsize];
+  const BLOCK_SIZE bsize = ms_params->bsize;
   const int block_width = block_size_wide[bsize];
-  const int mi_row = x->e_mbd.mi_row;
-  const int mi_col = x->e_mbd.mi_col;
+  const int block_height = block_size_high[bsize];
+
+  if (block_width != block_height) return INT_MAX;
+
+  const FullMvLimits *mv_limits = &ms_params->mv_limits;
+  const MSBuffers *ms_buffer = &ms_params->ms_buffers;
+
+  const uint8_t *src = ms_buffer->src->buf;
+  const int src_stride = ms_buffer->src->stride;
+
+  const int mi_row = xd->mi_row;
+  const int mi_col = xd->mi_col;
   const int x_pos = mi_col * MI_SIZE;
   const int y_pos = mi_row * MI_SIZE;
 
-  if (block_height == block_width) {
-    uint8_t *what = x->plane[0].src.buf;
-    const int what_stride = x->plane[0].src.stride;
-    uint32_t hash_value1, hash_value2;
-    FULLPEL_MV best_hash_mv;
-    int best_hash_cost = INT_MAX;
+  uint32_t hash_value1, hash_value2;
+  int best_hash_cost = INT_MAX;
 
-    // for the hashMap
-    hash_table *ref_frame_hash = &x->intrabc_hash_table;
+  // for the hashMap
+  hash_table *ref_frame_hash = &intrabc_hash_info->intrabc_hash_table;
 
-    av1_get_block_hash_value(what, what_stride, block_width, &hash_value1,
-                             &hash_value2, is_cur_buf_hbd(&x->e_mbd), x);
+  av1_get_block_hash_value(intrabc_hash_info, src, src_stride, block_width,
+                           &hash_value1, &hash_value2, is_cur_buf_hbd(xd));
 
-    const int count = av1_hash_table_count(ref_frame_hash, hash_value1);
-    // for intra, at lest one matching can be found, itself.
-    if (count <= 1) {
-      return;
-    }
+  const int count = av1_hash_table_count(ref_frame_hash, hash_value1);
+  if (count <= 1) {
+    return INT_MAX;
+  }
 
-    Iterator iterator =
-        av1_hash_get_first_iterator(ref_frame_hash, hash_value1);
-    for (int i = 0; i < count; i++, aom_iterator_increment(&iterator)) {
-      block_hash ref_block_hash = *(block_hash *)(aom_iterator_get(&iterator));
-      if (hash_value2 == ref_block_hash.hash_value2) {
-        // Make sure the prediction is from valid area.
-        const MV dv = { GET_MV_SUBPEL(ref_block_hash.y - y_pos),
-                        GET_MV_SUBPEL(ref_block_hash.x - x_pos) };
-        if (!av1_is_dv_valid(dv, &cpi->common, &x->e_mbd, mi_row, mi_col, bsize,
-                             cpi->common.seq_params.mib_size_log2))
-          continue;
+  Iterator iterator = av1_hash_get_first_iterator(ref_frame_hash, hash_value1);
+  for (int i = 0; i < count; i++, aom_iterator_increment(&iterator)) {
+    block_hash ref_block_hash = *(block_hash *)(aom_iterator_get(&iterator));
+    if (hash_value2 == ref_block_hash.hash_value2) {
+      // Make sure the prediction is from valid area.
+      const MV dv = { GET_MV_SUBPEL(ref_block_hash.y - y_pos),
+                      GET_MV_SUBPEL(ref_block_hash.x - x_pos) };
+      if (!av1_is_dv_valid(dv, &cpi->common, xd, mi_row, mi_col, bsize,
+                           cpi->common.seq_params.mib_size_log2))
+        continue;
 
-        FULLPEL_MV hash_mv;
-        hash_mv.col = ref_block_hash.x - x_pos;
-        hash_mv.row = ref_block_hash.y - y_pos;
-        if (!av1_is_fullmv_in_range(&x->mv_limits, hash_mv)) continue;
-        const int refCost = av1_get_mvpred_var(x, &hash_mv, ref_mv, fn_ptr);
-        if (refCost < best_hash_cost) {
-          best_hash_cost = refCost;
-          best_hash_mv = hash_mv;
-        }
+      FULLPEL_MV hash_mv;
+      hash_mv.col = ref_block_hash.x - x_pos;
+      hash_mv.row = ref_block_hash.y - y_pos;
+      if (!av1_is_fullmv_in_range(mv_limits, hash_mv)) continue;
+      const int refCost = get_mvpred_var_cost(ms_params, &hash_mv);
+      if (refCost < best_hash_cost) {
+        best_hash_cost = refCost;
+        *best_mv = hash_mv;
       }
     }
-    if (best_hash_cost < *bestsme) {
-      *best_mv = best_hash_mv;
-      *bestsme = best_hash_cost;
-    }
   }
+
+  return best_hash_cost;
 }
 
 static int vector_match(int16_t *ref, int16_t *src, int bwl) {
@@ -3337,23 +3338,6 @@ int av1_get_mvpred_sse(const MACROBLOCK *x, const FULLPEL_MV *best_mv,
   (void)var;
 
   return sse + mv_err_cost(&mv, ref_mv, x->nmv_vec_cost,
-                           CONVERT_TO_CONST_MVCOST(x->mv_cost_stack),
-                           x->errorperbit, mv_cost_type);
-}
-
-int av1_get_mvpred_var(const MACROBLOCK *x, const FULLPEL_MV *best_mv,
-                       const MV *ref_mv, const aom_variance_fn_ptr_t *vfp) {
-  const MACROBLOCKD *const xd = &x->e_mbd;
-  const struct buf_2d *const what = &x->plane[0].src;
-  const struct buf_2d *const in_what = &xd->plane[0].pre[0];
-  const MV mv = get_mv_from_fullmv(best_mv);
-  const MV_COST_TYPE mv_cost_type = x->mv_cost_type;
-  unsigned int sse, var;
-
-  var = vfp->vf(what->buf, what->stride, get_buf_from_fullmv(in_what, best_mv),
-                in_what->stride, &sse);
-
-  return var + mv_err_cost(&mv, ref_mv, x->nmv_vec_cost,
                            CONVERT_TO_CONST_MVCOST(x->mv_cost_stack),
                            x->errorperbit, mv_cost_type);
 }

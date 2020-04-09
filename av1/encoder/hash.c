@@ -61,8 +61,8 @@ void av1_crc_calculator_init(CRC_CALCULATOR *p_crc_calculator, uint32_t bits,
   crc_calculator_init_table(p_crc_calculator);
 }
 
-uint32_t av1_get_crc_value(void *crc_calculator, uint8_t *p, int length) {
-  CRC_CALCULATOR *p_crc_calculator = (CRC_CALCULATOR *)crc_calculator;
+uint32_t av1_get_crc_value(CRC_CALCULATOR *p_crc_calculator, uint8_t *p,
+                           int length) {
   crc_calculator_reset(p_crc_calculator);
   crc_calculator_process_data(p_crc_calculator, p, length);
   return crc_calculator_get_crc(p_crc_calculator);

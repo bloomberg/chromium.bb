@@ -75,8 +75,6 @@ int av1_mv_bit_cost(const MV *mv, const MV *ref_mv, const int *mvjcost,
 
 int av1_get_mvpred_sse(const MACROBLOCK *x, const FULLPEL_MV *best_mv,
                        const MV *ref_mv, const aom_variance_fn_ptr_t *vfp);
-int av1_get_mvpred_var(const MACROBLOCK *x, const FULLPEL_MV *best_mv,
-                       const MV *ref_mv, const aom_variance_fn_ptr_t *vfp);
 int av1_get_mvpred_compound_var(const MV_COST_PARAMS *ms_params,
                                 const FULLPEL_MV best_mv,
                                 const uint8_t *second_pred, const uint8_t *mask,
@@ -220,9 +218,10 @@ int av1_full_pixel_search(const FULLPEL_MV start_mv,
                           const int step_param, int *cost_list,
                           FULLPEL_MV *best_mv, FULLPEL_MV *second_best_mv);
 
-void av1_intrabc_hash_search(const struct AV1_COMP *cpi, MACROBLOCK *x,
-                             BLOCK_SIZE bsize, const MV *ref_mv, int *bestsme,
-                             FULLPEL_MV *best_mv);
+int av1_intrabc_hash_search(const struct AV1_COMP *cpi, const MACROBLOCKD *xd,
+                            const FULLPEL_MOTION_SEARCH_PARAMS *ms_params,
+                            IntraBCHashInfo *intrabc_hash_info,
+                            FULLPEL_MV *best_mv);
 
 int av1_obmc_full_pixel_search(const FULLPEL_MV start_mv,
                                const FULLPEL_MOTION_SEARCH_PARAMS *ms_params,

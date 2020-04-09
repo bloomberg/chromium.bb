@@ -307,16 +307,8 @@ struct macroblock {
 
   struct inter_modes_info *inter_modes_info;
 
-  // buffer for hash value calculation of a block
-  // used only in av1_get_block_hash_value()
-  // [first hash/second hash]
-  // [two buffers used ping-pong]
-  uint32_t *hash_value_buffer[2][2];
-  hash_table intrabc_hash_table;
-
-  CRC_CALCULATOR crc_calculator1;
-  CRC_CALCULATOR crc_calculator2;
-  int g_crc_initialized;
+  // Contains the hash table, hash function, and buffer used for intrabc
+  IntraBCHashInfo intrabc_hash_info;
 
   // These define limits to motion vector components to prevent them
   // from extending outside the UMV borders

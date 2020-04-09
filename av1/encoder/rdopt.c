@@ -2747,12 +2747,17 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
 
     const int step_param = cpi->mv_search_params.mv_step_param;
     const FULLPEL_MV start_mv = get_fullmv_from_mv(&dv_ref.as_mv);
-    int_mv best_mv;
+    IntraBCHashInfo *intrabc_hash_info = &x->intrabc_hash_info;
+    int_mv best_mv, best_hash_mv;
 
     int bestsme = av1_full_pixel_search(start_mv, &fullms_params, step_param,
                                         NULL, &best_mv.as_fullmv, NULL);
-    av1_intrabc_hash_search(cpi, x, bsize, &dv_ref.as_mv, &bestsme,
-                            &best_mv.as_fullmv);
+    const int hashsme = av1_intrabc_hash_search(
+        cpi, xd, &fullms_params, intrabc_hash_info, &best_hash_mv.as_fullmv);
+    if (hashsme < bestsme) {
+      best_mv = best_hash_mv;
+      bestsme = hashsme;
+    }
 
     if (bestsme == INT_MAX) continue;
     const MV dv = get_mv_from_fullmv(&best_mv.as_fullmv);

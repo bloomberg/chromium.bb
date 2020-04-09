@@ -849,8 +849,8 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
 
   for (int i = 0; i < 2; i++)
     for (int j = 0; j < 2; j++) {
-      aom_free(cpi->td.mb.hash_value_buffer[i][j]);
-      cpi->td.mb.hash_value_buffer[i][j] = NULL;
+      aom_free(cpi->td.mb.intrabc_hash_info.hash_value_buffer[i][j]);
+      cpi->td.mb.intrabc_hash_info.hash_value_buffer[i][j] = NULL;
     }
   aom_free(cpi->td.mb.mask_buf);
   cpi->td.mb.mask_buf = NULL;
@@ -3199,11 +3199,12 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf, BufferPool *const pool,
   for (int x = 0; x < 2; x++)
     for (int y = 0; y < 2; y++)
       CHECK_MEM_ERROR(
-          cm, cpi->td.mb.hash_value_buffer[x][y],
-          (uint32_t *)aom_malloc(AOM_BUFFER_SIZE_FOR_BLOCK_HASH *
-                                 sizeof(*cpi->td.mb.hash_value_buffer[0][0])));
+          cm, cpi->td.mb.intrabc_hash_info.hash_value_buffer[x][y],
+          (uint32_t *)aom_malloc(
+              AOM_BUFFER_SIZE_FOR_BLOCK_HASH *
+              sizeof(*cpi->td.mb.intrabc_hash_info.hash_value_buffer[0][0])));
 
-  cpi->td.mb.g_crc_initialized = 0;
+  cpi->td.mb.intrabc_hash_info.g_crc_initialized = 0;
 
   CHECK_MEM_ERROR(cm, cpi->td.mb.mask_buf,
                   (int32_t *)aom_memalign(

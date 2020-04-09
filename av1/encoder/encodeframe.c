@@ -5629,6 +5629,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
   RD_COUNTS *const rdc = &cpi->td.rd_counts;
   GlobalMotionInfo *const gm_info = &cpi->gm_info;
   FrameProbInfo *const frame_probs = &cpi->frame_probs;
+  IntraBCHashInfo *const intrabc_hash_info = &x->intrabc_hash_info;
   int i;
 
   if (!cpi->sf.rt_sf.use_nonrd_pick_mode) {
@@ -5690,11 +5691,11 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
       }
     }
 
-    av1_hash_table_init(&x->intrabc_hash_table, x);
-    av1_hash_table_create(&x->intrabc_hash_table);
+    av1_hash_table_init(intrabc_hash_info);
+    av1_hash_table_create(&intrabc_hash_info->intrabc_hash_table);
     hash_table_created = 1;
-    av1_generate_block_2x2_hash_value(cpi->source, block_hash_values[0],
-                                      is_block_same[0], &cpi->td.mb);
+    av1_generate_block_2x2_hash_value(intrabc_hash_info, cpi->source,
+                                      block_hash_values[0], is_block_same[0]);
     // Hash data generated for screen contents is used for intraBC ME
     const int min_alloc_size = block_size_wide[mi_params->mi_alloc_bsize];
     const int max_sb_size =
@@ -5703,12 +5704,12 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
     for (int size = 4; size <= max_sb_size; size *= 2, src_idx = !src_idx) {
       const int dst_idx = !src_idx;
       av1_generate_block_hash_value(
-          cpi->source, size, block_hash_values[src_idx],
+          intrabc_hash_info, cpi->source, size, block_hash_values[src_idx],
           block_hash_values[dst_idx], is_block_same[src_idx],
-          is_block_same[dst_idx], &cpi->td.mb);
+          is_block_same[dst_idx]);
       if (size >= min_alloc_size) {
         av1_add_to_hash_map_by_row_with_precal_data(
-            &x->intrabc_hash_table, block_hash_values[dst_idx],
+            &intrabc_hash_info->intrabc_hash_table, block_hash_values[dst_idx],
             is_block_same[dst_idx][2], pic_width, pic_height, size);
       }
     }
@@ -6022,7 +6023,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
   if ((!is_stat_generation_stage(cpi) && av1_use_hash_me(cpi) &&
        !cpi->sf.rt_sf.use_nonrd_pick_mode) ||
       hash_table_created) {
-    av1_hash_table_destroy(&x->intrabc_hash_table);
+    av1_hash_table_destroy(&intrabc_hash_info->intrabc_hash_table);
   }
 }
 
