@@ -38,6 +38,7 @@ namespace content {
 
 namespace blpwtk2 {
 
+class URLRequestContextGetterImpl;
 
 // TODO: document this
 class DevToolsFrontendHostDelegateImpl
@@ -80,6 +81,7 @@ class DevToolsFrontendHostDelegateImpl
   private:
     content::WebContents* d_inspectedContents;
     scoped_refptr<content::DevToolsAgentHost> d_agentHost;
+    scoped_refptr<URLRequestContextGetterImpl> d_requestContextGetter;
     std::unique_ptr<content::DevToolsFrontendHost> d_frontendHost;
     using PendingRequestsMap = std::map<const net::URLFetcher*, int>;
     PendingRequestsMap d_pendingRequests;
