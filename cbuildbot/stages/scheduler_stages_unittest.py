@@ -17,11 +17,8 @@ from chromite.lib import buildbucket_lib
 from chromite.lib import cidb
 from chromite.lib import config_lib
 from chromite.lib import constants
-from chromite.lib import cros_test_lib
 from chromite.lib import fake_cidb
 from chromite.lib.buildstore import FakeBuildStore
-
-pytestmark = cros_test_lib.pytestmark_passes_when_run_alone
 
 
 class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
@@ -178,7 +175,7 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
 
   def testPostSlaveBuildToBuildbucket(self):
     """Test PostSlaveBuildToBuildbucket on builds with a single board."""
-    content = {'build':{'id':'bb_id_1', 'created_ts':1}}
+    content = {'build': {'id': 'bb_id_1', 'created_ts': 1}}
     self.PatchObject(buildbucket_lib.BuildbucketClient, 'PutBuildRequest',
                      return_value=content)
     slave_config = config_lib.BuildConfig(

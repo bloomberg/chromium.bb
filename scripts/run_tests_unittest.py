@@ -41,7 +41,6 @@ class TestsExceptionsTest(cros_test_lib.TestCase):
 class RunTestsTest(cros_test_lib.MockTestCase):
   """Tests for the RunTests() func"""
 
-  @cros_test_lib.pytestmark_passes_when_run_alone
   def testDryrun(self):
     """Verify dryrun doesn't do anything crazy."""
     self.PatchObject(run_tests, 'RunTest', side_effect=Exception('do not run'))

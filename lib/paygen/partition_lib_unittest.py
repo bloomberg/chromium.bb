@@ -88,7 +88,6 @@ Block count: %d
                      side_effect=cros_build_lib.RunCommandError('error'))
     self.assertFalse(partition_lib.IsSquashfsImage(image))
 
-  @cros_test_lib.pytestmark_passes_when_run_alone
   def testIsExt4Image(self):
     """Tests we correctly identify an Ext4 image."""
     # Tests correct arguments are passed and Ext4 image is correctly identified.

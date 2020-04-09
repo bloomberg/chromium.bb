@@ -24,8 +24,6 @@ from chromite.lib import osutils
 from chromite.lib import parallel_unittest
 from chromite.lib.buildstore import FakeBuildStore
 
-pytestmark = cros_test_lib.pytestmark_passes_when_run_alone
-
 
 # pylint: disable=too-many-ancestors
 

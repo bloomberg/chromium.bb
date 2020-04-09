@@ -28,8 +28,6 @@ from chromite.lib import toolchain
 from chromite.lib.buildstore import FakeBuildStore
 from chromite.scripts import upload_prebuilts
 
-pytestmark = cros_test_lib.pytestmark_passes_when_run_alone
-
 
 class SDKBuildToolchainsStageTest(generic_stages_unittest.AbstractStageTestCase,
                                   cbuildbot_unittest.SimpleBuilderTestCase):

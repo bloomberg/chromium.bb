@@ -53,7 +53,6 @@ try:
   pytestmark_mock_error = pytest.mark.mock_error
   pytestmark_network_test = pytest.mark.network_test
   pytestmark_output_test = pytest.mark.output_test
-  pytestmark_passes_when_run_alone = pytest.mark.passes_when_run_alone
   pytestmark_redirected_stdin_error = pytest.mark.redirected_stdin_error
   pytestmark_requires_portage = pytest.mark.requires_portage
   pytestmark_sigterm = pytest.mark.sigterm
@@ -71,7 +70,6 @@ except (ImportError, AttributeError):
   pytestmark_mock_error = null_decorator
   pytestmark_network_test = null_decorator
   pytestmark_output_test = null_decorator
-  pytestmark_passes_when_run_alone = null_decorator
   pytestmark_redirected_stdin_error = null_decorator
   pytestmark_requires_portage = null_decorator
   pytestmark_sigterm = null_decorator
