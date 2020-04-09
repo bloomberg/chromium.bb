@@ -121,7 +121,7 @@ discovery::Config GetConfigSettings() {
 
   // Get the loopback interface to run on.
   absl::optional<InterfaceInfo> loopback = GetLoopbackInterfaceForTesting();
-  OSP_DCHECK(loopback.has_value());
+  OSP_CHECK(loopback.has_value());
   discovery::Config::NetworkInfo::AddressFamilies address_families =
       discovery::Config::NetworkInfo::kUseIpV4 |
       discovery::Config::NetworkInfo::kUseIpV6;
@@ -175,7 +175,7 @@ class DiscoveryE2ETest : public testing::Test {
       }
       std::this_thread::sleep_for(kWaitLoopSleepTime);
     }
-    OSP_DCHECK(done);
+    OSP_CHECK(done);
   }
 
   void StartDiscovery() {
@@ -192,8 +192,8 @@ class DiscoveryE2ETest : public testing::Test {
     for (ServiceInfo& record : record_set) {
       task_runner_->PostTask([this, r = std::move(record)]() {
         auto error = publisher_->UpdateRegistration(r);
-        OSP_DCHECK(error.ok()) << "\tFailed to update service instance '"
-                               << r.friendly_name << "': " << error << "!";
+        OSP_CHECK(error.ok()) << "\tFailed to update service instance '"
+                              << r.friendly_name << "': " << error << "!";
       });
     }
   }
@@ -207,8 +207,8 @@ class DiscoveryE2ETest : public testing::Test {
     for (ServiceInfo& record : record_set) {
       task_runner_->PostTask([this, r = std::move(record)]() {
         auto error = publisher_->Register(r);
-        OSP_DCHECK(error.ok()) << "\tFailed to publish service instance '"
-                               << r.friendly_name << "': " << error << "!";
+        OSP_CHECK(error.ok()) << "\tFailed to publish service instance '"
+                              << r.friendly_name << "': " << error << "!";
       });
     }
   }
@@ -223,7 +223,7 @@ class DiscoveryE2ETest : public testing::Test {
       waiting_on = atomic_bools.size();
       for (std::atomic_bool* atomic : atomic_bools) {
         if (*atomic) {
-          OSP_DCHECK(should_be_seen) << "Found service instance!";
+          OSP_CHECK(should_be_seen) << "Found service instance!";
           waiting_on--;
         }
       }
@@ -235,7 +235,7 @@ class DiscoveryE2ETest : public testing::Test {
       }
       return;
     }
-    OSP_DCHECK(!should_be_seen)
+    OSP_CHECK(!should_be_seen)
         << "Could not find " << waiting_on << " service instances!";
   }
 
@@ -299,7 +299,7 @@ class DiscoveryE2ETest : public testing::Test {
                                 bool expect_to_be_present) {
     if (!receiver_->IsServiceFound(service_info)) {
       if (attempts++ > kMaxCheckLoopIterations) {
-        OSP_DCHECK(!expect_to_be_present)
+        OSP_CHECK(!expect_to_be_present)
             << "Service " << service_info.friendly_name << " discovery failed.";
         return;
       }

@@ -49,7 +49,7 @@ class SenderSocketsClient final
   void OnConnected(SenderSocketFactory* factory,
                    const IPEndpoint& endpoint,
                    std::unique_ptr<CastSocket> socket) {
-    OSP_DCHECK(!socket_);
+    OSP_CHECK(!socket_);
     OSP_LOG_INFO << "\tSender connected to endpoint: " << endpoint;
     socket_ = socket.get();
     router_->TakeSocket(this, std::move(socket));
@@ -87,7 +87,7 @@ class ReceiverSocketsClient final
   void OnConnected(ReceiverSocketFactory* factory,
                    const IPEndpoint& endpoint,
                    std::unique_ptr<CastSocket> socket) override {
-    OSP_DCHECK(!socket_);
+    OSP_CHECK(!socket_);
     OSP_LOG_INFO << "\tReceiver got connection from endpoint: " << endpoint;
     endpoint_ = endpoint;
     socket_ = socket.get();
@@ -255,17 +255,17 @@ class CastSocketE2ETest : public ::testing::Test {
  protected:
   IPAddress GetLoopbackV4Address() {
     absl::optional<InterfaceInfo> loopback = GetLoopbackInterfaceForTesting();
-    OSP_DCHECK(loopback);
+    OSP_CHECK(loopback);
     auto address = loopback->GetIpAddressV4();
-    OSP_DCHECK(address);
+    OSP_CHECK(address);
     return address;
   }
 
   IPAddress GetLoopbackV6Address() {
     absl::optional<InterfaceInfo> loopback = GetLoopbackInterfaceForTesting();
-    OSP_DCHECK(loopback);
+    OSP_CHECK(loopback);
     auto address = loopback->GetIpAddressV6();
-    OSP_DCHECK(address);
+    OSP_CHECK(address);
     return address;
   }
 
