@@ -1336,9 +1336,7 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   _mst_hwtest_skylab_boards = frozenset([])
   _mst_no_hwtest_boards = frozenset([])
   _mst_no_hwtest_experimental_boards = frozenset([])
-  _mst_vmtest_boards = frozenset([
-      'betty-arcmaster',
-  ])
+  _mst_vmtest_boards = frozenset([])
 
   # Android VM MST master
   vmmst_master_config = site_config.Add(
@@ -2675,11 +2673,6 @@ def ApplyCustomOverrides(site_config):
           'hw_tests': [],
           'hw_tests_override': [],
           'hw_tests_disabled_bug': 'https://crbug.com/1000717',
-      },
-      'betty-arcmaster-release': {
-          'hw_tests': [],
-          'hw_tests_override': [],
-          'hw_tests_disabled_bug': 'https://crbug.com/998427',
       },
 
       'betty-pi-arc-release': {

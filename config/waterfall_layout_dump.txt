@@ -217,7 +217,6 @@
 
 == mst_android_pfq ==
   master-mst-android-pfq
-    betty-arcmaster-mst-android-pfq
 
 == pi_android_pfq ==
   master-pi-android-pfq
@@ -574,7 +573,6 @@
   betty-arcmaster-full-tryjob
   betty-arcmaster-llvm-next-toolchain-tryjob
   betty-arcmaster-llvm-toolchain-tryjob
-  betty-arcmaster-mst-android-pfq-tryjob
   betty-arcmaster-release-tryjob
   betty-arcmaster-unittest-stress
   betty-arcnext-full-tryjob
@@ -1424,7 +1422,6 @@
     lakitu-incremental-tryjob
   master-lakitu-release-tryjob
   master-mst-android-pfq-tryjob
-    betty-arcmaster-mst-android-pfq-tryjob
   master-pi-android-pfq-tryjob
     betty-pi-arc-pi-android-pfq-tryjob
     caroline-pi-android-pfq-tryjob
