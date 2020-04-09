@@ -26,6 +26,8 @@ tools.force_local_third_party()
 from scandir import scandir
 import six
 
+import isolated_format
+
 # The file size to be used when we don't know the correct file size,
 # generally used for .isolated files.
 UNKNOWN_FILE_SIZE = None
@@ -545,19 +547,24 @@ class DiskContentAddressedCache(ContentAddressedCache):
           self._lru.pop(filename)
         self._save()
 
-    # What remains to be done is to hash every single item to
-    # detect corruption, then save to ensure state.json is up to date.
-    # Sadly, on a 50GiB cache with 100MiB/s I/O, this is still over 8 minutes.
-    # TODO(maruel): Let's revisit once directory metadata is stored in
-    # state.json so only the files that had been mapped since the last cleanup()
-    # call are manually verified.
-    #
-    #with self._lock:
-    #  for digest in self._lru:
-    #    if not isolated_format.is_valid_hash(
-    #        self._path(digest), self.hash_algo):
-    #      self.evict(digest)
-    #      logging.info('Deleted corrupted item: %s', digest)
+    # Verify hash of every single item to detect corruption. the corrupted
+    # files will be evicted.
+    with self._lock:
+      for digest, (_, timestamp) in self._lru._items.items():
+        # verify only if the mtime is grather than the timestamp in state.json
+        # to avoid take too long time.
+        if self._get_mtime(digest) <= timestamp:
+            continue
+        logging.warning('Item has been modified. item: %s', digest)
+        if self._is_valid_hash(digest):
+            # Update timestamp in state.json
+            self._lru.touch(digest)
+            continue
+        # remove corrupted file from LRU and file system
+        self._lru.pop(digest)
+        self._delete_file(digest, UNKNOWN_FILE_SIZE)
+        logging.error('Deleted corrupted item: %s', digest)
+      self._save()
 
   # ContentAddressedCache interface implementation.
 
@@ -797,6 +804,17 @@ class DiskContentAddressedCache(ContentAddressedCache):
     except OSError as e:
       if e.errno != errno.ENOENT:
         logging.error('Error attempting to delete a file %s:\n%s' % (digest, e))
+
+  def _get_mtime(self, digest):
+    """Get mtime of cache file."""
+    return  os.path.getmtime(self._path(digest))
+
+  def _is_valid_hash(self, digest):
+    """Verify digest with supported hash algos."""
+    for _, algo in isolated_format.SUPPORTED_ALGOS.items():
+        if digest == isolated_format.hash_file(self._path(digest), algo):
+            return True
+    return False
 
 
 class NamedCache(Cache):

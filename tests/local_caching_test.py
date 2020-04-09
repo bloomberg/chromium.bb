@@ -356,6 +356,57 @@ class DiskContentAddressedCacheTest(TestCase, ContentAddressedCacheTestMixin):
     cache.cleanup()
     self.assertEqual([cache.STATE_FILE], fs.listdir(cache.cache_dir))
 
+  def test_cleanup_disk_evict_corrupted_files(self):
+    self._free_disk = 1003
+    cache = self.get_cache(_get_policies(min_free_space=1000))
+
+    # add a corrupted item
+    h_a = self._algo('a').hexdigest()
+    cache.write(h_a, 'A')
+    h_b = self._algo('b').hexdigest()
+    cache.write(h_b, 'b')
+
+    mtime_a = self._now
+    mtime_b = self._now
+    def _get_mtime(h):
+        if h == h_a:
+            return mtime_a
+        if h == h_b:
+            return mtime_b
+
+    self.mock(cache, '_get_mtime', _get_mtime)
+
+    self.assertEqual(
+        [(h_a, (1, mtime_a)), (h_b, (1, mtime_b))],
+        cache._lru._items.items())
+    self.assertItemsEqual(
+        ([h_a, h_b, cache.STATE_FILE]),
+        (fs.listdir(cache.cache_dir))
+    )
+
+    # if the mtime is same with the timestamp in state.json,
+    # the varification won't run.
+    cache.cleanup()
+    self.assertItemsEqual(
+        ([h_a, h_b, cache.STATE_FILE]),
+        (fs.listdir(cache.cache_dir))
+    )
+
+    # if the mtime is after the timestamp in the state.json
+    # the varification will run and removed the corrupted file.
+    mtime_a += 1
+    mtime_b += 1
+    self.mock(cache._lru, 'time_fn', lambda: mtime_b)
+    cache.cleanup()
+    self.assertItemsEqual(
+        ([h_b, cache.STATE_FILE]),
+        (fs.listdir(cache.cache_dir))
+    )
+    self.assertItemsEqual(
+        [(h_b, (1, mtime_b))],
+        cache._lru._items.items()
+    )
+
   def test_policies_active_trimming(self):
     # Start with a larger cache, add many object.
     # Reload the cache with smaller policies, the cache should be trimmed on
