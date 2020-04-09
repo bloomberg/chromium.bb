@@ -10,4 +10,9 @@ bool WindowDelegate::RequiresDoubleTapGestureEvents() const {
   return false;
 }
 
+bool WindowDelegate::ShouldTryFocusOnMouseDown() const {
+  return true;
+}
+
 }  // namespace aura
+
