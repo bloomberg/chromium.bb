@@ -569,9 +569,9 @@ void av1_set_variance_partition_thresholds(AV1_COMP *cpi, int q,
   if (sf->part_sf.partition_search_type != VAR_BASED_PARTITION) {
     return;
   } else {
-    set_vbp_thresholds(cpi, cpi->vbp_thresholds, q, content_state);
+    set_vbp_thresholds(cpi, cpi->vbp_info.thresholds, q, content_state);
     // The threshold below is not changed locally.
-    cpi->vbp_threshold_minmax = 15 + (q >> 3);
+    cpi->vbp_info.threshold_minmax = 15 + (q >> 3);
   }
 }
 
@@ -607,6 +607,7 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
                                       int mi_col) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
+  const int64_t *const vbp_thresholds = cpi->vbp_info.thresholds;
 
   int i, j, k, m;
   VP128x128 *vt;
@@ -648,9 +649,9 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
 
   vt->split = td->vt64x64;
 
-  int64_t thresholds[5] = { cpi->vbp_thresholds[0], cpi->vbp_thresholds[1],
-                            cpi->vbp_thresholds[2], cpi->vbp_thresholds[3],
-                            cpi->vbp_thresholds[4] };
+  int64_t thresholds[5] = { vbp_thresholds[0], vbp_thresholds[1],
+                            vbp_thresholds[2], vbp_thresholds[3],
+                            vbp_thresholds[4] };
 
   const int low_res = (cm->width <= 352 && cm->height <= 288);
   int variance4x4downsample[64];
@@ -827,7 +828,7 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
                                             xd->cur_buf->flags,
 #endif
                                             pixels_wide, pixels_high);
-            int thresh_minmax = (int)cpi->vbp_threshold_minmax;
+            int thresh_minmax = (int)cpi->vbp_info.threshold_minmax;
             if (minmax > thresh_minmax) {
               force_split[split_index] = 1;
               force_split[5 + m2 + i] = 1;
