@@ -2447,9 +2447,9 @@ static aom_codec_err_t ctrl_set_scale_mode(aom_codec_alg_priv_t *ctx,
   aom_scaling_mode_t *const mode = va_arg(args, aom_scaling_mode_t *);
 
   if (mode) {
-    const int res =
-        av1_set_internal_size(ctx->cpi, (AOM_SCALING)mode->h_scaling_mode,
-                              (AOM_SCALING)mode->v_scaling_mode);
+    const int res = av1_set_internal_size(
+        &ctx->cpi->oxcf, &ctx->cpi->resize_pending_params,
+        (AOM_SCALING)mode->h_scaling_mode, (AOM_SCALING)mode->v_scaling_mode);
     return (res == 0) ? AOM_CODEC_OK : AOM_CODEC_INVALID_PARAM;
   } else {
     return AOM_CODEC_INVALID_PARAM;

@@ -917,6 +917,14 @@ typedef struct {
 } MotionVectorSearchParams;
 
 typedef struct {
+  // When resize is triggered externally, the desired dimensions are stored in
+  // this struct until used in the next frame to be coded. These values are
+  // effective only for one frame and are reset after they are used.
+  int width;
+  int height;
+} ResizePendingParams;
+
+typedef struct {
   // Threshold of transform domain distortion
   // Index 0: Default mode evaluation, Winner mode processing is not applicable
   // (Eg : IntraBc).
@@ -1217,13 +1225,8 @@ typedef struct AV1_COMP {
                     // normalize the firstpass stats. This will differ from the
                     // number of MBs in the current frame when the frame is
                     // scaled.
-
-  // When resize is triggered through external control, the desired width/height
-  // are stored here until use in the next frame coded. They are effective only
-  // for
-  // one frame and are reset after use.
-  int resize_pending_width;
-  int resize_pending_height;
+  // Resize related parameters
+  ResizePendingParams resize_pending_params;
 
   TileDataEnc *tile_data;
   int allocated_tiles;  // Keep track of memory allocated for tiles.
@@ -1438,8 +1441,9 @@ int av1_set_active_map(AV1_COMP *cpi, unsigned char *map, int rows, int cols);
 
 int av1_get_active_map(AV1_COMP *cpi, unsigned char *map, int rows, int cols);
 
-int av1_set_internal_size(AV1_COMP *cpi, AOM_SCALING horiz_mode,
-                          AOM_SCALING vert_mode);
+int av1_set_internal_size(AV1EncoderConfig *const oxcf,
+                          ResizePendingParams *resize_pending_params,
+                          AOM_SCALING horiz_mode, AOM_SCALING vert_mode);
 
 int av1_get_quantizer(struct AV1_COMP *cpi);
 

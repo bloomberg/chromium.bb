@@ -1400,6 +1400,7 @@ static void init_seq_coding_tools(SequenceHeader *seq, AV1_COMMON *cm,
 static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
   AV1_COMMON *const cm = &cpi->common;
   SequenceHeader *const seq_params = &cm->seq_params;
+  ResizePendingParams *resize_pending_params = &cpi->resize_pending_params;
 
   cpi->oxcf = *oxcf;
   cpi->framerate = oxcf->init_framerate;
@@ -1495,8 +1496,8 @@ static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
   cpi->ref_frame_flags = 0;
 
   // Reset resize pending flags
-  cpi->resize_pending_width = 0;
-  cpi->resize_pending_height = 0;
+  resize_pending_params->width = 0;
+  resize_pending_params->height = 0;
 
   init_buffer_indices(&cpi->force_intpel_info, cm->remapped_ref_idx);
 }
@@ -4703,6 +4704,7 @@ static int validate_size_scales(RESIZE_MODE resize_mode,
 // Calculates resize and superres params for next frame
 static size_params_type calculate_next_size_params(AV1_COMP *cpi) {
   const AV1EncoderConfig *oxcf = &cpi->oxcf;
+  ResizePendingParams *resize_pending_params = &cpi->resize_pending_params;
   size_params_type rsz = { oxcf->width, oxcf->height, SCALE_NUMERATOR };
   int resize_denom = SCALE_NUMERATOR;
   if (has_no_stats_stage(cpi) && cpi->use_svc &&
@@ -4712,14 +4714,14 @@ static size_params_type calculate_next_size_params(AV1_COMP *cpi) {
     return rsz;
   }
   if (is_stat_generation_stage(cpi)) return rsz;
-  if (cpi->resize_pending_width && cpi->resize_pending_height) {
-    rsz.resize_width = cpi->resize_pending_width;
-    rsz.resize_height = cpi->resize_pending_height;
-    cpi->resize_pending_width = cpi->resize_pending_height = 0;
+  if (resize_pending_params->width && resize_pending_params->height) {
+    rsz.resize_width = resize_pending_params->width;
+    rsz.resize_height = resize_pending_params->height;
+    resize_pending_params->width = resize_pending_params->height = 0;
   } else {
     resize_denom = calculate_next_resize_scale(cpi);
-    rsz.resize_width = cpi->oxcf.width;
-    rsz.resize_height = cpi->oxcf.height;
+    rsz.resize_width = oxcf->width;
+    rsz.resize_height = oxcf->height;
     av1_calculate_scaled_size(&rsz.resize_width, &rsz.resize_height,
                               resize_denom);
   }
@@ -6948,8 +6950,9 @@ aom_codec_err_t av1_copy_new_frame_enc(AV1_COMMON *cm,
   return cm->error.error_code;
 }
 
-int av1_set_internal_size(AV1_COMP *cpi, AOM_SCALING horiz_mode,
-                          AOM_SCALING vert_mode) {
+int av1_set_internal_size(AV1EncoderConfig *const oxcf,
+                          ResizePendingParams *resize_pending_params,
+                          AOM_SCALING horiz_mode, AOM_SCALING vert_mode) {
   int hr = 0, hs = 0, vr = 0, vs = 0;
 
   if (horiz_mode > ONETWO || vert_mode > ONETWO) return -1;
@@ -6958,8 +6961,8 @@ int av1_set_internal_size(AV1_COMP *cpi, AOM_SCALING horiz_mode,
   Scale2Ratio(vert_mode, &vr, &vs);
 
   // always go to the next whole number
-  cpi->resize_pending_width = (hs - 1 + cpi->oxcf.width * hr) / hs;
-  cpi->resize_pending_height = (vs - 1 + cpi->oxcf.height * vr) / vs;
+  resize_pending_params->width = (hs - 1 + oxcf->width * hr) / hs;
+  resize_pending_params->height = (vs - 1 + oxcf->height * vr) / vs;
 
   return 0;
 }
