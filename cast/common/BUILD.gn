@@ -80,9 +80,11 @@ if (!build_with_chromium) {
   source_set("discovery_e2e_test") {
     testonly = true
 
-    sources = [
-      "discovery/e2e_test/tests.cc",
-    ]
+    if (!is_mac) {
+      sources = [
+        "discovery/e2e_test/tests.cc",
+      ]
+    }
 
     deps = [
       ":public",
