@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='chromiumos',
   syntax='proto3',
   serialized_options=_b('Z4go.chromium.org/chromiumos/infra/proto/go/chromiumos'),
-  serialized_pb=_b('\n\x17\x63hromiumos/common.proto\x12\nchromiumos\"\x1b\n\x0b\x42uildTarget\x12\x0c\n\x04name\x18\x01 \x01(\t\"\xca\x01\n\x06\x43hroot\x12\x0c\n\x04path\x18\x01 \x01(\t\x12\x11\n\tcache_dir\x18\x02 \x01(\t\x12)\n\x03\x65nv\x18\x03 \x01(\x0b\x32\x1c.chromiumos.Chroot.ChrootEnv\x12\x12\n\nchrome_dir\x18\x04 \x01(\t\x1aZ\n\tChrootEnv\x12&\n\tuse_flags\x18\x01 \x03(\x0b\x32\x13.chromiumos.UseFlag\x12%\n\x08\x66\x65\x61tures\x18\x02 \x03(\x0b\x32\x13.chromiumos.FeatureJ\x04\x08\x05\x10\x06\"\x1a\n\x07\x46\x65\x61ture\x12\x0f\n\x07\x66\x65\x61ture\x18\x01 \x01(\t\"\xbd\x02\n\nGomaConfig\x12\x10\n\x08goma_dir\x18\x01 \x01(\t\x12\x18\n\x10goma_client_json\x18\x02 \x01(\t\x12\x19\n\x11\x63hromeos_goma_dir\x18\x03 \x01(\t\x12:\n\rgoma_approach\x18\x04 \x01(\x0e\x32#.chromiumos.GomaConfig.GomaApproach\x12&\n\x07log_dir\x18\x05 \x01(\x0b\x32\x15.chromiumos.SyncedDir\x12\x12\n\nstats_file\x18\x06 \x01(\t\x12\x15\n\rcounterz_file\x18\x07 \x01(\t\"Y\n\x0cGomaApproach\x12\x1d\n\x19GOMA_APPROACH_UNSPECIFIED\x10\x00\x12\x0b\n\x07\x44\x45\x46\x41ULT\x10\x01\x12\x0c\n\x08RBE_PROD\x10\x02\x12\x0f\n\x0bRBE_STAGING\x10\x03\"M\n\rGomaArtifacts\x12\x12\n\nstats_file\x18\x01 \x01(\t\x12\x15\n\rcounterz_file\x18\x02 \x01(\t\x12\x11\n\tlog_files\x18\x03 \x03(\t\"F\n\x0bPackageInfo\x12\x14\n\x0cpackage_name\x18\x01 \x01(\t\x12\x10\n\x08\x63\x61tegory\x18\x02 \x01(\t\x12\x0f\n\x07version\x18\x03 \x01(\t\"w\n\x04Path\x12\x0c\n\x04path\x18\x01 \x01(\t\x12+\n\x08location\x18\x02 \x01(\x0e\x32\x19.chromiumos.Path.Location\"4\n\x08Location\x12\x0f\n\x0bNO_LOCATION\x10\x00\x12\n\n\x06INSIDE\x10\x01\x12\x0b\n\x07OUTSIDE\x10\x02\",\n\nResultPath\x12\x1e\n\x04path\x18\x01 \x01(\x0b\x32\x10.chromiumos.Path\"\x18\n\tSyncedDir\x12\x0b\n\x03\x64ir\x18\x01 \x01(\t\"O\n\x0cGerritChange\x12\x0c\n\x04host\x18\x01 \x01(\t\x12\x0f\n\x07project\x18\x02 \x01(\t\x12\x0e\n\x06\x63hange\x18\x03 \x01(\x03\x12\x10\n\x08patchset\x18\x04 \x01(\x03\"Y\n\rGitilesCommit\x12\x0c\n\x04host\x18\x01 \x01(\t\x12\x0f\n\x07project\x18\x02 \x01(\t\x12\n\n\x02id\x18\x03 \x01(\t\x12\x0b\n\x03ref\x18\x04 \x01(\t\x12\x10\n\x08position\x18\x05 \x01(\r\"\x17\n\x07UseFlag\x12\x0c\n\x04\x66lag\x18\x01 \x01(\t\"&\n\nProtoBytes\x12\x18\n\x10serialized_proto\x18\x01 \x01(\x0c\"\xb1\x01\n\x17PrepareForBuildResponse\x12K\n\x0f\x62uild_relevance\x18\x01 \x01(\x0e\x32\x32.chromiumos.PrepareForBuildResponse.BuildRelevance\"I\n\x0e\x42uildRelevance\x12\x0f\n\x0bUNSPECIFIED\x10\x00\x12\n\n\x06NEEDED\x10\x01\x12\x0b\n\x07UNKNOWN\x10\x02\x12\r\n\tPOINTLESS\x10\x03\"q\n\x1dPrepareForBuildAdditionalArgs\x12\x1c\n\x12\x63hrome_cwp_profile\x18\x01 \x01(\tH\x00\x12\x18\n\x0ekernel_version\x18\x02 \x01(\tH\x00\x42\x18\n\x16prepare_for_build_args\"A\n\x0b\x41\x66\x64oRelease\x12\x1a\n\x12\x63hrome_cwp_profile\x18\x01 \x01(\t\x12\x16\n\x0eimage_build_id\x18\x02 \x01(\x03\"\x96\x01\n\x13\x41rtifactProfileInfo\x12\x1c\n\x12\x63hrome_cwp_profile\x18\x01 \x01(\tH\x00\x12\x18\n\x0ekernel_version\x18\x02 \x01(\tH\x00\x12.\n\x0b\x61\x66\x64o_relase\x18\x03 \x01(\x0b\x32\x17.chromiumos.AfdoReleaseH\x00\x42\x17\n\x15\x61rtifact_profile_info*\xbe\x01\n\tImageType\x12\x18\n\x14IMAGE_TYPE_UNDEFINED\x10\x00\x12\x08\n\x04\x42\x41SE\x10\x01\x12\x07\n\x03\x44\x45V\x10\x02\x12\x08\n\x04TEST\x10\x03\x12\x0b\n\x07\x42\x41SE_VM\x10\x04\x12\x0b\n\x07TEST_VM\x10\x05\x12\x0c\n\x08RECOVERY\x10\x06\x12\x0b\n\x07\x46\x41\x43TORY\x10\x07\x12\x0c\n\x08\x46IRMWARE\x10\x08\x12\x11\n\rCR50_FIRMWARE\x10\t\x12\x11\n\rBASE_GUEST_VM\x10\n\x12\x11\n\rTEST_GUEST_VM\x10\x0b*m\n\x07\x43hannel\x12\x17\n\x13\x43HANNEL_UNSPECIFIED\x10\x00\x12\x12\n\x0e\x43HANNEL_STABLE\x10\x01\x12\x10\n\x0c\x43HANNEL_BETA\x10\x02\x12\x0f\n\x0b\x43HANNEL_DEV\x10\x03\x12\x12\n\x0e\x43HANNEL_CANARY\x10\x04*f\n\x10\x41\x46\x44OArtifactType\x12\r\n\tNONE_TYPE\x10\x00\x12\r\n\tORDERFILE\x10\x01\x12\x12\n\x0e\x42\x45NCHMARK_AFDO\x10\x02\x12\x0f\n\x0bKERNEL_AFDO\x10\x03\x12\x0f\n\x0b\x43HROME_AFDO\x10\x04\x42\x36Z4go.chromium.org/chromiumos/infra/proto/go/chromiumosb\x06proto3')
+  serialized_pb=_b('\n\x17\x63hromiumos/common.proto\x12\nchromiumos\"\x1b\n\x0b\x42uildTarget\x12\x0c\n\x04name\x18\x01 \x01(\t\"\xca\x01\n\x06\x43hroot\x12\x0c\n\x04path\x18\x01 \x01(\t\x12\x11\n\tcache_dir\x18\x02 \x01(\t\x12)\n\x03\x65nv\x18\x03 \x01(\x0b\x32\x1c.chromiumos.Chroot.ChrootEnv\x12\x12\n\nchrome_dir\x18\x04 \x01(\t\x1aZ\n\tChrootEnv\x12&\n\tuse_flags\x18\x01 \x03(\x0b\x32\x13.chromiumos.UseFlag\x12%\n\x08\x66\x65\x61tures\x18\x02 \x03(\x0b\x32\x13.chromiumos.FeatureJ\x04\x08\x05\x10\x06\"\x1a\n\x07\x46\x65\x61ture\x12\x0f\n\x07\x66\x65\x61ture\x18\x01 \x01(\t\"\xbd\x02\n\nGomaConfig\x12\x10\n\x08goma_dir\x18\x01 \x01(\t\x12\x18\n\x10goma_client_json\x18\x02 \x01(\t\x12\x19\n\x11\x63hromeos_goma_dir\x18\x03 \x01(\t\x12:\n\rgoma_approach\x18\x04 \x01(\x0e\x32#.chromiumos.GomaConfig.GomaApproach\x12&\n\x07log_dir\x18\x05 \x01(\x0b\x32\x15.chromiumos.SyncedDir\x12\x12\n\nstats_file\x18\x06 \x01(\t\x12\x15\n\rcounterz_file\x18\x07 \x01(\t\"Y\n\x0cGomaApproach\x12\x1d\n\x19GOMA_APPROACH_UNSPECIFIED\x10\x00\x12\x0b\n\x07\x44\x45\x46\x41ULT\x10\x01\x12\x0c\n\x08RBE_PROD\x10\x02\x12\x0f\n\x0bRBE_STAGING\x10\x03\"M\n\rGomaArtifacts\x12\x12\n\nstats_file\x18\x01 \x01(\t\x12\x15\n\rcounterz_file\x18\x02 \x01(\t\x12\x11\n\tlog_files\x18\x03 \x03(\t\"F\n\x0bPackageInfo\x12\x14\n\x0cpackage_name\x18\x01 \x01(\t\x12\x10\n\x08\x63\x61tegory\x18\x02 \x01(\t\x12\x0f\n\x07version\x18\x03 \x01(\t\"w\n\x04Path\x12\x0c\n\x04path\x18\x01 \x01(\t\x12+\n\x08location\x18\x02 \x01(\x0e\x32\x19.chromiumos.Path.Location\"4\n\x08Location\x12\x0f\n\x0bNO_LOCATION\x10\x00\x12\n\n\x06INSIDE\x10\x01\x12\x0b\n\x07OUTSIDE\x10\x02\",\n\nResultPath\x12\x1e\n\x04path\x18\x01 \x01(\x0b\x32\x10.chromiumos.Path\"\x18\n\tSyncedDir\x12\x0b\n\x03\x64ir\x18\x01 \x01(\t\"O\n\x0cGerritChange\x12\x0c\n\x04host\x18\x01 \x01(\t\x12\x0f\n\x07project\x18\x02 \x01(\t\x12\x0e\n\x06\x63hange\x18\x03 \x01(\x03\x12\x10\n\x08patchset\x18\x04 \x01(\x03\"Y\n\rGitilesCommit\x12\x0c\n\x04host\x18\x01 \x01(\t\x12\x0f\n\x07project\x18\x02 \x01(\t\x12\n\n\x02id\x18\x03 \x01(\t\x12\x0b\n\x03ref\x18\x04 \x01(\t\x12\x10\n\x08position\x18\x05 \x01(\r\"\x17\n\x07UseFlag\x12\x0c\n\x04\x66lag\x18\x01 \x01(\t\"&\n\nProtoBytes\x12\x18\n\x10serialized_proto\x18\x01 \x01(\x0c\"\xb1\x01\n\x17PrepareForBuildResponse\x12K\n\x0f\x62uild_relevance\x18\x01 \x01(\x0e\x32\x32.chromiumos.PrepareForBuildResponse.BuildRelevance\"I\n\x0e\x42uildRelevance\x12\x0f\n\x0bUNSPECIFIED\x10\x00\x12\n\n\x06NEEDED\x10\x01\x12\x0b\n\x07UNKNOWN\x10\x02\x12\r\n\tPOINTLESS\x10\x03\"q\n\x1dPrepareForBuildAdditionalArgs\x12\x1c\n\x12\x63hrome_cwp_profile\x18\x01 \x01(\tH\x00\x12\x18\n\x0ekernel_version\x18\x02 \x01(\tH\x00\x42\x18\n\x16prepare_for_build_args\"A\n\x0b\x41\x66\x64oRelease\x12\x1a\n\x12\x63hrome_cwp_profile\x18\x01 \x01(\t\x12\x16\n\x0eimage_build_id\x18\x02 \x01(\x03\"\x97\x01\n\x13\x41rtifactProfileInfo\x12\x1c\n\x12\x63hrome_cwp_profile\x18\x01 \x01(\tH\x00\x12\x18\n\x0ekernel_version\x18\x02 \x01(\tH\x00\x12/\n\x0c\x61\x66\x64o_release\x18\x03 \x01(\x0b\x32\x17.chromiumos.AfdoReleaseH\x00\x42\x17\n\x15\x61rtifact_profile_info*\xbe\x01\n\tImageType\x12\x18\n\x14IMAGE_TYPE_UNDEFINED\x10\x00\x12\x08\n\x04\x42\x41SE\x10\x01\x12\x07\n\x03\x44\x45V\x10\x02\x12\x08\n\x04TEST\x10\x03\x12\x0b\n\x07\x42\x41SE_VM\x10\x04\x12\x0b\n\x07TEST_VM\x10\x05\x12\x0c\n\x08RECOVERY\x10\x06\x12\x0b\n\x07\x46\x41\x43TORY\x10\x07\x12\x0c\n\x08\x46IRMWARE\x10\x08\x12\x11\n\rCR50_FIRMWARE\x10\t\x12\x11\n\rBASE_GUEST_VM\x10\n\x12\x11\n\rTEST_GUEST_VM\x10\x0b*m\n\x07\x43hannel\x12\x17\n\x13\x43HANNEL_UNSPECIFIED\x10\x00\x12\x12\n\x0e\x43HANNEL_STABLE\x10\x01\x12\x10\n\x0c\x43HANNEL_BETA\x10\x02\x12\x0f\n\x0b\x43HANNEL_DEV\x10\x03\x12\x12\n\x0e\x43HANNEL_CANARY\x10\x04*f\n\x10\x41\x46\x44OArtifactType\x12\r\n\tNONE_TYPE\x10\x00\x12\r\n\tORDERFILE\x10\x01\x12\x12\n\x0e\x42\x45NCHMARK_AFDO\x10\x02\x12\x0f\n\x0bKERNEL_AFDO\x10\x03\x12\x0f\n\x0b\x43HROME_AFDO\x10\x04\x42\x36Z4go.chromium.org/chromiumos/infra/proto/go/chromiumosb\x06proto3')
 )
 
 _IMAGETYPE = _descriptor.EnumDescriptor(
@@ -80,8 +80,8 @@ _IMAGETYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=1718,
-  serialized_end=1908,
+  serialized_start=1719,
+  serialized_end=1909,
 )
 _sym_db.RegisterEnumDescriptor(_IMAGETYPE)
 
@@ -115,8 +115,8 @@ _CHANNEL = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=1910,
-  serialized_end=2019,
+  serialized_start=1911,
+  serialized_end=2020,
 )
 _sym_db.RegisterEnumDescriptor(_CHANNEL)
 
@@ -150,8 +150,8 @@ _AFDOARTIFACTTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=2021,
-  serialized_end=2123,
+  serialized_start=2022,
+  serialized_end=2124,
 )
 _sym_db.RegisterEnumDescriptor(_AFDOARTIFACTTYPE)
 
@@ -989,7 +989,7 @@ _ARTIFACTPROFILEINFO = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='afdo_relase', full_name='chromiumos.ArtifactProfileInfo.afdo_relase', index=2,
+      name='afdo_release', full_name='chromiumos.ArtifactProfileInfo.afdo_release', index=2,
       number=3, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -1011,7 +1011,7 @@ _ARTIFACTPROFILEINFO = _descriptor.Descriptor(
       index=0, containing_type=None, fields=[]),
   ],
   serialized_start=1565,
-  serialized_end=1715,
+  serialized_end=1716,
 )
 
 _CHROOT_CHROOTENV.fields_by_name['use_flags'].message_type = _USEFLAG
@@ -1032,7 +1032,7 @@ _PREPAREFORBUILDADDITIONALARGS.fields_by_name['chrome_cwp_profile'].containing_o
 _PREPAREFORBUILDADDITIONALARGS.oneofs_by_name['prepare_for_build_args'].fields.append(
   _PREPAREFORBUILDADDITIONALARGS.fields_by_name['kernel_version'])
 _PREPAREFORBUILDADDITIONALARGS.fields_by_name['kernel_version'].containing_oneof = _PREPAREFORBUILDADDITIONALARGS.oneofs_by_name['prepare_for_build_args']
-_ARTIFACTPROFILEINFO.fields_by_name['afdo_relase'].message_type = _AFDORELEASE
+_ARTIFACTPROFILEINFO.fields_by_name['afdo_release'].message_type = _AFDORELEASE
 _ARTIFACTPROFILEINFO.oneofs_by_name['artifact_profile_info'].fields.append(
   _ARTIFACTPROFILEINFO.fields_by_name['chrome_cwp_profile'])
 _ARTIFACTPROFILEINFO.fields_by_name['chrome_cwp_profile'].containing_oneof = _ARTIFACTPROFILEINFO.oneofs_by_name['artifact_profile_info']
@@ -1040,8 +1040,8 @@ _ARTIFACTPROFILEINFO.oneofs_by_name['artifact_profile_info'].fields.append(
   _ARTIFACTPROFILEINFO.fields_by_name['kernel_version'])
 _ARTIFACTPROFILEINFO.fields_by_name['kernel_version'].containing_oneof = _ARTIFACTPROFILEINFO.oneofs_by_name['artifact_profile_info']
 _ARTIFACTPROFILEINFO.oneofs_by_name['artifact_profile_info'].fields.append(
-  _ARTIFACTPROFILEINFO.fields_by_name['afdo_relase'])
-_ARTIFACTPROFILEINFO.fields_by_name['afdo_relase'].containing_oneof = _ARTIFACTPROFILEINFO.oneofs_by_name['artifact_profile_info']
+  _ARTIFACTPROFILEINFO.fields_by_name['afdo_release'])
+_ARTIFACTPROFILEINFO.fields_by_name['afdo_release'].containing_oneof = _ARTIFACTPROFILEINFO.oneofs_by_name['artifact_profile_info']
 DESCRIPTOR.message_types_by_name['BuildTarget'] = _BUILDTARGET
 DESCRIPTOR.message_types_by_name['Chroot'] = _CHROOT
 DESCRIPTOR.message_types_by_name['Feature'] = _FEATURE
