@@ -5655,6 +5655,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
       features->allow_warped_motion = 0;
   }
 
+  int hash_table_created = 0;
   if (!is_stat_generation_stage(cpi) && av1_use_hash_me(cpi) &&
       !cpi->sf.rt_sf.use_nonrd_pick_mode) {
     // TODO(any): move this outside of the recoding loop to avoid recalculating
@@ -5680,6 +5681,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
 
     av1_hash_table_init(&x->intrabc_hash_table, x);
     av1_hash_table_create(&x->intrabc_hash_table);
+    hash_table_created = 1;
     av1_generate_block_2x2_hash_value(cpi->source, block_hash_values[0],
                                       is_block_same[0], &cpi->td.mb);
     // Hash data generated for screen contents is used for intraBC ME
@@ -6006,8 +6008,9 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
     }
   }
 
-  if (!is_stat_generation_stage(cpi) && av1_use_hash_me(cpi) &&
-      !cpi->sf.rt_sf.use_nonrd_pick_mode) {
+  if ((!is_stat_generation_stage(cpi) && av1_use_hash_me(cpi) &&
+       !cpi->sf.rt_sf.use_nonrd_pick_mode) ||
+      hash_table_created) {
     av1_hash_table_destroy(&x->intrabc_hash_table);
   }
 }
