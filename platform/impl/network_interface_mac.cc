@@ -85,6 +85,7 @@ std::vector<InterfaceInfo> ProcessInterfacesList(ifaddrs* interfaces) {
         [&name](const InterfaceInfo& info) { return info.name == name; });
     InterfaceInfo* interface;
     if (it == results.end()) {
+      InterfaceInfo::Type type = InterfaceInfo::Type::kOther;
       // Query for the interface media type and status. If not valid/active,
       // skip further processing. Note that "active" here means the media is
       // connected to the interface, which is different than the interface being
@@ -95,19 +96,20 @@ std::vector<InterfaceInfo> ProcessInterfacesList(ifaddrs* interfaces) {
       // ifmr.ifm_name string, and it will always be NUL terminated.
       memcpy(ifmr.ifm_name, name.data(),
              std::min(name.size(), sizeof(ifmr.ifm_name) - 1));
-      if (ioctl(ioctl_socket.get(), SIOCGIFMEDIA, &ifmr) < 0 ||
-          !((ifmr.ifm_status & IFM_AVALID) && (ifmr.ifm_status & IFM_ACTIVE))) {
-        continue;  // Skip this interface since it's not valid or active.
-      }
-      InterfaceInfo::Type type = InterfaceInfo::Type::kOther;
-      if (ifmr.ifm_current & IFM_IEEE80211) {
-        type = InterfaceInfo::Type::kWifi;
-      }
-      if (ifmr.ifm_current & IFM_ETHER) {
-        type = InterfaceInfo::Type::kEthernet;
-      }
-      if (cur->ifa_flags & IFF_LOOPBACK) {
+      if (ioctl(ioctl_socket.get(), SIOCGIFMEDIA, &ifmr) >= 0) {
+        if (!((ifmr.ifm_status & IFM_AVALID) &&
+              (ifmr.ifm_status & IFM_ACTIVE))) {
+          continue;  // Skip this interface since it's not valid or active.
+        }
+        if (ifmr.ifm_current & IFM_IEEE80211) {
+          type = InterfaceInfo::Type::kWifi;
+        } else if (ifmr.ifm_current & IFM_ETHER) {
+          type = InterfaceInfo::Type::kEthernet;
+        }
+      } else if (cur->ifa_flags & IFF_LOOPBACK) {
         type = InterfaceInfo::Type::kLoopback;
+      } else {
+        continue;
       }
 
       // Start with an unknown hardware ethernet address, which should be
