@@ -28,9 +28,10 @@
 #include "av1/common/reconintra.h"
 #include "av1/encoder/reconinter_enc.h"
 
-static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                          int plane, const MB_MODE_INFO *mi,
-                                          int bw, int bh, int mi_x, int mi_y) {
+static void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
+                                   int plane, const MB_MODE_INFO *mi, int bw,
+                                   int bh, int mi_x, int mi_y) {
+  const int build_for_obmc = 0;
   struct macroblockd_plane *const pd = &xd->plane[plane];
   int is_compound = has_second_ref(mi);
   int ref;
@@ -54,11 +55,14 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
   // worth of pixels. Thus (mi_x, mi_y) may not be the correct coordinates for
   // the top-left corner of the prediction source - the correct top-left corner
   // is at (pre_x, pre_y).
-  const int row_start = (block_size_high[bsize] == 4) && ss_y ? -1 : 0;
-  const int col_start = (block_size_wide[bsize] == 4) && ss_x ? -1 : 0;
+  const int row_start =
+      (block_size_high[bsize] == 4) && ss_y && !build_for_obmc ? -1 : 0;
+  const int col_start =
+      (block_size_wide[bsize] == 4) && ss_x && !build_for_obmc ? -1 : 0;
   const int pre_x = (mi_x + MI_SIZE * col_start) >> ss_x;
   const int pre_y = (mi_y + MI_SIZE * row_start) >> ss_y;
 
+  sub8x8_inter = sub8x8_inter && !build_for_obmc;
   if (sub8x8_inter) {
     for (int row = row_start; row <= 0 && sub8x8_inter; ++row) {
       for (int col = col_start; col <= 0; ++col) {
@@ -113,7 +117,7 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
                               &pre_buf, this_mbmi->interp_filters);
 
         inter_pred_params.conv_params = get_conv_params_no_round(
-            ref, plane, xd->tmp_conv_dst, tmp_dst_stride, 0, xd->bd);
+            ref, plane, xd->tmp_conv_dst, tmp_dst_stride, is_compound, xd->bd);
         inter_pred_params.conv_params.use_dist_wtd_comp_avg = 0;
 
         av1_build_inter_predictor(dst, dst_buf->stride, &mv,
@@ -134,16 +138,15 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
     for (ref = 0; ref < 1 + is_compound; ++ref) {
       const struct scale_factors *const sf =
           is_intrabc ? &cm->sf_identity : xd->block_ref_scale_factors[ref];
-      struct buf_2d pre_buf = is_intrabc ? *dst_buf : pd->pre[ref];
+      struct buf_2d *const pre_buf = is_intrabc ? dst_buf : &pd->pre[ref];
       const MV mv = mi->mv[ref].as_mv;
 
-      WarpTypesAllowed warp_types;
-      warp_types.global_warp_allowed = is_global[ref];
-      warp_types.local_warp_allowed = mi->motion_mode == WARPED_CAUSAL;
+      const WarpTypesAllowed warp_types = { is_global[ref],
+                                            mi->motion_mode == WARPED_CAUSAL };
 
       av1_init_inter_params(&inter_pred_params, bw, bh, pre_y, pre_x,
                             pd->subsampling_x, pd->subsampling_y, xd->bd,
-                            is_cur_buf_hbd(xd), mi->use_intrabc, sf, &pre_buf,
+                            is_cur_buf_hbd(xd), mi->use_intrabc, sf, pre_buf,
                             mi->interp_filters);
 
       if (is_compound) av1_init_comp_mode(&inter_pred_params);
@@ -156,12 +159,13 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
           &inter_pred_params.conv_params.bck_offset,
           &inter_pred_params.conv_params.use_dist_wtd_comp_avg, is_compound);
 
-      av1_init_warp_params(&inter_pred_params, &warp_types, ref, xd, mi);
+      if (!build_for_obmc)
+        av1_init_warp_params(&inter_pred_params, &warp_types, ref, xd, mi);
 
       if (is_masked_compound_type(mi->interinter_comp.type)) {
         av1_init_mask_comp(&inter_pred_params, mi->sb_type,
                            &mi->interinter_comp);
-        // Assigne physical buffer
+        // Assign physical buffer.
         inter_pred_params.mask_comp.seg_mask = xd->seg_mask;
       }
 

@@ -700,16 +700,15 @@ static void dec_build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
     assert(!is_compound);
 
     int row = row_start;
-    ref = 0;
     for (int y = 0; y < b8_h; y += b4_h) {
       int col = col_start;
       for (int x = 0; x < b8_w; x += b4_w) {
         MB_MODE_INFO *this_mbmi = xd->mi[row * xd->mi_stride + col];
-        is_compound = has_second_ref(this_mbmi);
         int tmp_dst_stride = 8;
         assert(bw < 8 || bh < 8);
         struct buf_2d *const dst_buf = &pd->dst;
         uint8_t *dst = dst_buf->buf + dst_buf->stride * y + x;
+        ref = 0;
         const RefCntBuffer *ref_buf =
             get_ref_frame_buf(cm, this_mbmi->ref_frame[ref]);
         const struct scale_factors *ref_scale_factors =
@@ -740,11 +739,10 @@ static void dec_build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
             &subpel_params, &src_stride);
 
         InterPredParams inter_pred_params;
-        av1_init_inter_params(
-            &inter_pred_params, b4_w, b4_h, (mi_y >> pd->subsampling_y) + y,
-            (mi_x >> pd->subsampling_x) + x, pd->subsampling_x,
-            pd->subsampling_y, xd->bd, is_cur_buf_hbd(xd), mi->use_intrabc, sf,
-            &pre_buf, this_mbmi->interp_filters);
+        av1_init_inter_params(&inter_pred_params, b4_w, b4_h, pre_y + y,
+                              pre_x + x, pd->subsampling_x, pd->subsampling_y,
+                              xd->bd, is_cur_buf_hbd(xd), mi->use_intrabc, sf,
+                              &pre_buf, this_mbmi->interp_filters);
         inter_pred_params.conv_params = get_conv_params_no_round(
             ref, plane, xd->tmp_conv_dst, tmp_dst_stride, is_compound, xd->bd);
         inter_pred_params.conv_params.use_dist_wtd_comp_avg = 0;
@@ -761,9 +759,9 @@ static void dec_build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
   }
 
   {
+    InterPredParams inter_pred_params;
     struct buf_2d *const dst_buf = &pd->dst;
     uint8_t *const dst = dst_buf->buf;
-    InterPredParams inter_pred_params;
     for (ref = 0; ref < 1 + is_compound; ++ref) {
       const struct scale_factors *const sf =
           is_intrabc ? &cm->sf_identity : xd->block_ref_scale_factors[ref];
@@ -780,13 +778,10 @@ static void dec_build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                         is_intrabc, build_for_obmc, &warp_types,
                                         &pre, &subpel_params, &src_stride);
 
-      inter_pred_params.conv_params.do_average = ref;
-
-      av1_init_inter_params(&inter_pred_params, bw, bh,
-                            mi_y >> pd->subsampling_y,
-                            mi_x >> pd->subsampling_x, pd->subsampling_x,
-                            pd->subsampling_y, xd->bd, is_cur_buf_hbd(xd),
-                            mi->use_intrabc, sf, pre_buf, mi->interp_filters);
+      av1_init_inter_params(&inter_pred_params, bw, bh, pre_y, pre_x,
+                            pd->subsampling_x, pd->subsampling_y, xd->bd,
+                            is_cur_buf_hbd(xd), mi->use_intrabc, sf, pre_buf,
+                            mi->interp_filters);
       if (is_compound) av1_init_comp_mode(&inter_pred_params);
       inter_pred_params.conv_params = get_conv_params_no_round(
           ref, plane, xd->tmp_conv_dst, MAX_SB_SIZE, is_compound, xd->bd);
@@ -802,18 +797,17 @@ static void dec_build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
       if (is_masked_compound_type(mi->interinter_comp.type)) {
         av1_init_mask_comp(&inter_pred_params, mi->sb_type,
                            &mi->interinter_comp);
+        // Assign physical buffer.
         inter_pred_params.mask_comp.seg_mask = xd->seg_mask;
       }
 
-      if (ref && is_masked_compound_type(mi->interinter_comp.type)) {
-        // masked compound type has its own average mechanism
-        inter_pred_params.conv_params.do_average = 0;
-
-        av1_make_masked_inter_predictor(pre, src_stride, dst, dst_buf->stride,
-                                        &inter_pred_params, &subpel_params);
-      } else {
+      if (inter_pred_params.comp_mode == UNIFORM_SINGLE ||
+          inter_pred_params.comp_mode == UNIFORM_COMP) {
         av1_make_inter_predictor(pre, src_stride, dst, dst_buf->stride,
                                  &inter_pred_params, &subpel_params);
+      } else {
+        av1_make_masked_inter_predictor(pre, src_stride, dst, dst_buf->stride,
+                                        &inter_pred_params, &subpel_params);
       }
     }
   }
