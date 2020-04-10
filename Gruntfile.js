@@ -64,16 +64,6 @@ module.exports = function (grunt) {
           },
         ],
       },
-      glslang: {
-        files: [
-          {
-            expand: true,
-            cwd: 'node_modules/@webgpu/glslang/dist/web-devel',
-            src: 'glslang.{js,wasm}',
-            dest: 'out/common/',
-          },
-        ],
-      },
       'out-wpt': {
         files: [
           { expand: true, cwd: '.', src: 'LICENSE.txt', dest: 'out-wpt/' },
@@ -130,7 +120,6 @@ module.exports = function (grunt) {
     'clean',
     'mkdir:out',
     'copy:webgpu-constants',
-    'copy:glslang',
   ]);
   grunt.registerTask('compile', 'Compile and generate (no checks, no WPT)', [
     'run:build-out',

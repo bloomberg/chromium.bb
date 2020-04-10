@@ -26,7 +26,6 @@
     "@types/jquery": "^3.3.30",
     "@types/node": "^13.1.2",
     "@types/offscreencanvas": "^2019.6.1",
-    "@webgpu/glslang": "^0.0.15",
     "@webgpu/types": "0.0.22",
     "babel-plugin-add-header-comment": "^1.0.3",
     "babel-plugin-const-enum": "^0.0.5",

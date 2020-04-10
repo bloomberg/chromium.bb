@@ -110,17 +110,19 @@ let kCasesForMaxResourcesPerStageTests: ParamSpec[];
   //   - If extraTypeSame, any of the binding types which counts toward the same limit as |type|.
   //     (i.e. 'storage-buffer' <-> 'readonly-storage-buffer').
   //   - Otherwise, an arbitrary other type.
-  function pickExtraBindingTypes(type: GPUBindingType, extraTypeSame: boolean): GPUBindingType[] {
+  function* pickExtraBindingTypes(
+    bindingType: GPUBindingType,
+    extraTypeSame: boolean
+  ): IterableIterator<GPUBindingType> {
+    const info = kBindingTypeInfo[bindingType];
     if (extraTypeSame) {
-      switch (type) {
-        case 'storage-buffer':
-        case 'readonly-storage-buffer':
-          return ['storage-buffer', 'readonly-storage-buffer'];
-        default:
-          return [type];
+      for (const extraBindingType of kBindingTypes) {
+        if (info.perStageLimitType === kBindingTypeInfo[extraBindingType].perStageLimitType) {
+          yield extraBindingType;
+        }
       }
     } else {
-      return type === 'sampler' ? ['sampled-texture'] : ['sampler'];
+      yield info.perStageLimitType === 'sampler' ? 'sampled-texture' : 'sampler';
     }
   }
 
