@@ -222,6 +222,7 @@ const char kPluginVmServiceInterface[] =
 const char kPluginVmServiceGetLicenseDataMethod[] = "GetLicenseData";
 const char kPluginVmServiceShowSettingsPage[] = "ShowSettingsPage";
 const char kPluginVmServiceGetPermissionsMethod[] = "GetPermissions";
+const char kPluginVmServiceGetAppLicenseUserId[] = "GetAppLicenseUserId";
 
 const char kGesturePropertiesServiceName[] =
     "org.chromium.GesturePropertiesService";

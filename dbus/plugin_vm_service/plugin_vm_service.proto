@@ -25,3 +25,8 @@ message ShowSettingsPageRequest {
 message GetPermissionsResponse {
   bool data_collection_enabled = 1;  // Data collection enablement status.
 }
+
+// User ID for the Plugin VM user.
+message GetAppLicenseUserIdResponse {
+  string user_id = 1; // The PluginVm user id for the OU.
+}
