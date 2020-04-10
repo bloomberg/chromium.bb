@@ -402,7 +402,7 @@ static int adjust_q_cbr(const AV1_COMP *cpi, int q, int active_worst_quality) {
   }
   // For single spatial layer: if resolution has increased push q closer
   // to the active_worst to avoid excess overshoot.
-  if (cpi->svc.number_spatial_layers == 1 && cm->prev_frame &&
+  if (cpi->svc.number_spatial_layers <= 1 && cm->prev_frame &&
       (cm->width * cm->height >
        1.5 * cm->prev_frame->width * cm->prev_frame->height))
     q = (q + active_worst_quality) >> 1;
