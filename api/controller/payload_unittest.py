@@ -42,8 +42,12 @@ class PayloadApiTests(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
         build=tgt_build, image_type=6, milestone='R70')
 
     self.req = payload_pb2.PayloadGenerationRequest(
-        tgt_unsigned_image=tgt_image, src_unsigned_image=src_image,
-        bucket='test-destination-bucket', verify=True, keyset='update_signer')
+        tgt_unsigned_image=tgt_image,
+        src_unsigned_image=src_image,
+        bucket='test-destination-bucket',
+        verify=True,
+        keyset='update_signer',
+        dryrun=False)
 
     self.result = payload_pb2.PayloadGenerationResult()
 

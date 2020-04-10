@@ -84,8 +84,13 @@ class PaygenPayload(object):
   _KERNEL = 'kernel'
   _ROOTFS = 'root'
 
-  def __init__(self, payload, work_dir, sign=False, verify=False,
-               private_key=None):
+  def __init__(self,
+               payload,
+               work_dir,
+               sign=False,
+               verify=False,
+               private_key=None,
+               upload=True):
     """Init for PaygenPayload.
 
     Args:
@@ -103,12 +108,14 @@ class PaygenPayload(object):
       private_key: If passed, the payload will be signed with that private key.
                    If also verify is True, the public key is extracted from the
                    private key and is used for verification.
+      upload: Boolean saying if payload generation results should be uploaded.
     """
     self.payload = payload
     self.work_dir = work_dir
     self._verify = verify
     self._private_key = private_key
     self._public_key = None
+    self._upload = upload
 
     self.src_image_file = os.path.join(work_dir, 'src_image.bin')
     self.tgt_image_file = os.path.join(work_dir, 'tgt_image.bin')
@@ -960,7 +967,8 @@ class PaygenPayload(object):
     self._Create()
     if self._verify:
       self._VerifyPayload()
-    self._UploadResults()
+    if self._upload:
+      self._UploadResults()
 
     end_time = datetime.datetime.now()
     logging.info('* Finished payload generation in %s', end_time - start_time)
