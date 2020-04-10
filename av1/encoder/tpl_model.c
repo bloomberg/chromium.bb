@@ -369,8 +369,8 @@ static AOM_INLINE void mode_estimation(
                           sf, &ref_buf, kernel);
     inter_pred_params.conv_params = get_conv_params(0, 0, xd->bd);
 
-    av1_build_inter_predictor(predictor, bw, &best_rfidx_mv.as_mv,
-                              &inter_pred_params);
+    av1_enc_build_one_inter_predictor(predictor, bw, &best_rfidx_mv.as_mv,
+                                      &inter_pred_params);
 
     inter_cost = tpl_get_satd_cost(x, src_diff, bw, src_mb_buffer, src_stride,
                                    predictor, bw, coeff, bw, bh, tx_size);
@@ -424,8 +424,8 @@ static AOM_INLINE void mode_estimation(
                           sf, &ref_buf, kernel);
     inter_pred_params.conv_params = get_conv_params(0, 0, xd->bd);
 
-    av1_build_inter_predictor(dst_buffer, dst_buffer_stride, &best_mv.as_mv,
-                              &inter_pred_params);
+    av1_enc_build_one_inter_predictor(dst_buffer, dst_buffer_stride,
+                                      &best_mv.as_mv, &inter_pred_params);
   } else {
     av1_predict_intra_block(cm, xd, block_size_wide[bsize],
                             block_size_high[bsize], tx_size, best_mode, 0, 0,

@@ -364,8 +364,8 @@ static void tf_build_predictor(const YV12_BUFFER_CONFIG *ref_frame,
                               subsampling_y, bit_depth, is_high_bitdepth,
                               is_intrabc, scale, &ref_buf, interp_filters);
         inter_pred_params.conv_params = get_conv_params(0, plane, bit_depth);
-        av1_build_inter_predictor(&pred[plane_offset + i * plane_w + j],
-                                  plane_w, &mv, &inter_pred_params);
+        av1_enc_build_one_inter_predictor(&pred[plane_offset + i * plane_w + j],
+                                          plane_w, &mv, &inter_pred_params);
 
         ++subblock_idx;
       }

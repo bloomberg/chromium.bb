@@ -120,8 +120,8 @@ static void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
             ref, plane, xd->tmp_conv_dst, tmp_dst_stride, is_compound, xd->bd);
         inter_pred_params.conv_params.use_dist_wtd_comp_avg = 0;
 
-        av1_build_inter_predictor(dst, dst_buf->stride, &mv,
-                                  &inter_pred_params);
+        av1_enc_build_one_inter_predictor(dst, dst_buf->stride, &mv,
+                                          &inter_pred_params);
         ++col;
       }
       ++row;
@@ -169,7 +169,8 @@ static void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
         inter_pred_params.mask_comp.seg_mask = xd->seg_mask;
       }
 
-      av1_build_inter_predictor(dst, dst_buf->stride, &mv, &inter_pred_params);
+      av1_enc_build_one_inter_predictor(dst, dst_buf->stride, &mv,
+                                        &inter_pred_params);
     }
   }
 }
@@ -194,7 +195,8 @@ void av1_enc_build_inter_predictor_y(MACROBLOCKD *xd, int mi_row, int mi_col) {
       0, AOM_PLANE_Y, xd->tmp_conv_dst, MAX_SB_SIZE, false, xd->bd);
 
   inter_pred_params.conv_params.use_dist_wtd_comp_avg = 0;
-  av1_build_inter_predictor(dst, dst_buf->stride, &mv, &inter_pred_params);
+  av1_enc_build_one_inter_predictor(dst, dst_buf->stride, &mv,
+                                    &inter_pred_params);
 }
 
 void av1_enc_build_inter_predictor(const AV1_COMMON *cm, MACROBLOCKD *xd,
@@ -258,8 +260,9 @@ static void enc_calc_subpel_params(const MV *const src_mv,
   *src_stride = pre_buf->stride;
 }
 
-void av1_build_inter_predictor(uint8_t *dst, int dst_stride, const MV *src_mv,
-                               InterPredParams *inter_pred_params) {
+void av1_enc_build_one_inter_predictor(uint8_t *dst, int dst_stride,
+                                       const MV *src_mv,
+                                       InterPredParams *inter_pred_params) {
   uint8_t *src;
   SubpelParams subpel_params;
   int src_stride;
@@ -318,8 +321,8 @@ static INLINE void build_obmc_prediction(MACROBLOCKD *xd, int rel_mi_row,
                           above_mbmi->interp_filters);
     inter_pred_params.conv_params = get_conv_params(0, j, xd->bd);
 
-    av1_build_inter_predictor(pd->dst.buf, pd->dst.stride, &mv,
-                              &inter_pred_params);
+    av1_enc_build_one_inter_predictor(pd->dst.buf, pd->dst.stride, &mv,
+                                      &inter_pred_params);
   }
 }
 
@@ -430,8 +433,8 @@ void av1_build_inter_predictors_for_planes_single_buf(
     uint8_t *const dst = get_buf_by_bd(xd, ext_dst[plane]);
     const MV mv = mi->mv[ref].as_mv;
 
-    av1_build_inter_predictor(dst, ext_dst_stride[plane], &mv,
-                              &inter_pred_params);
+    av1_enc_build_one_inter_predictor(dst, ext_dst_stride[plane], &mv,
+                                      &inter_pred_params);
   }
 }
 
