@@ -347,8 +347,6 @@ list(APPEND AOM_AV1_ENCODER_INTRIN_SSE4_1
             "${AOM_ROOT}/av1/encoder/x86/encodetxb_sse4.c"
             "${AOM_ROOT}/av1/encoder/x86/highbd_fwd_txfm_sse4.c"
             "${AOM_ROOT}/av1/encoder/x86/rdopt_sse4.c"
-            "${AOM_ROOT}/av1/encoder/x86/temporal_filter_constants.h"
-            "${AOM_ROOT}/av1/encoder/x86/temporal_filter_sse4.c"
             "${AOM_ROOT}/av1/encoder/x86/pickrst_sse4.c")
 
 list(APPEND AOM_AV1_ENCODER_INTRIN_AVX2
@@ -432,10 +430,8 @@ if(CONFIG_REALTIME_ONLY)
                    "${AOM_ROOT}/av1/encoder/pass2_strategy.c"
                    "${AOM_ROOT}/av1/encoder/temporal_filter.c"
                    "${AOM_ROOT}/av1/encoder/temporal_filter.h"
-                   "${AOM_ROOT}/av1/encoder/temporal_filter_constants.h"
                    "${AOM_ROOT}/av1/encoder/tpl_model.c"
-                   "${AOM_ROOT}/av1/encoder/tpl_model.h"
-                   "${AOM_ROOT}/av1/encoder/x86/temporal_filter_sse4.c")
+                   "${AOM_ROOT}/av1/encoder/tpl_model.h")
 endif()
 
 # Setup AV1 common/decoder/encoder targets. The libaom target must exist before

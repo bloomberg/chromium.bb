@@ -37,22 +37,19 @@ using ::testing::ValuesIn;
 #if !CONFIG_REALTIME_ONLY
 namespace {
 
-typedef void (*TemporalFilterPlanewiseFunc)(
+typedef void (*TemporalFilterFunc)(
     const YV12_BUFFER_CONFIG *ref_frame, const MACROBLOCKD *mbd,
     const BLOCK_SIZE block_size, const int mb_row, const int mb_col,
-    const int num_planes, const double *noise_level, const int use_subblock,
-    const int block_mse, const int *subblock_mses, const int q_factor,
-    const uint8_t *pred, uint32_t *accum, uint16_t *count);
-typedef libaom_test::FuncParam<TemporalFilterPlanewiseFunc>
-    TemporalFilterPlanewiseFuncParam;
+    const int num_planes, const double *noise_level, const int *subblock_mses,
+    const int q_factor, const uint8_t *pred, uint32_t *accum, uint16_t *count);
+typedef libaom_test::FuncParam<TemporalFilterFunc> TemporalFilterFuncParam;
 
-typedef std::tuple<TemporalFilterPlanewiseFuncParam, int>
-    TemporalFilterPlanewiseWithParam;
+typedef std::tuple<TemporalFilterFuncParam, int> TemporalFilterWithParam;
 
-class TemporalFilterPlanewiseTest
-    : public ::testing::TestWithParam<TemporalFilterPlanewiseWithParam> {
+class TemporalFilterTest
+    : public ::testing::TestWithParam<TemporalFilterWithParam> {
  public:
-  virtual ~TemporalFilterPlanewiseTest() {}
+  virtual ~TemporalFilterTest() {}
   virtual void SetUp() {
     params_ = GET_PARAM(0);
     rnd_.Reset(ACMRandom::DeterministicSeed());
@@ -90,14 +87,14 @@ class TemporalFilterPlanewiseTest
   }
 
  protected:
-  TemporalFilterPlanewiseFuncParam params_;
+  TemporalFilterFuncParam params_;
   uint8_t *src1_;
   uint8_t *src2_;
   ACMRandom rnd_;
 };
 
-void TemporalFilterPlanewiseTest::RunTest(int isRandom, int width, int height,
-                                          int run_times) {
+void TemporalFilterTest::RunTest(int isRandom, int width, int height,
+                                 int run_times) {
   aom_usec_timer ref_timer, test_timer;
   for (int k = 0; k < 3; k++) {
     const int stride = width;
@@ -125,8 +122,6 @@ void TemporalFilterPlanewiseTest::RunTest(int isRandom, int width, int height,
 
     assert(width == 32 && height == 32);
     const BLOCK_SIZE block_size = BLOCK_32X32;
-    const int use_subblock = 0;
-    const int block_mse = 20;
     const int subblock_mses[4] = { 15, 16, 17, 18 };
     const int q_factor = 12;
     const int mb_row = 0;
@@ -148,18 +143,18 @@ void TemporalFilterPlanewiseTest::RunTest(int isRandom, int width, int height,
     mbd->bd = 8;
 
     params_.ref_func(ref_frame, mbd, block_size, mb_row, mb_col, num_planes,
-                     sigma, use_subblock, block_mse, subblock_mses, q_factor,
-                     src2_, accumulator_ref, count_ref);
+                     sigma, subblock_mses, q_factor, src2_, accumulator_ref,
+                     count_ref);
     params_.tst_func(ref_frame, mbd, block_size, mb_row, mb_col, num_planes,
-                     sigma, use_subblock, block_mse, subblock_mses, q_factor,
-                     src2_, accumulator_mod, count_mod);
+                     sigma, subblock_mses, q_factor, src2_, accumulator_mod,
+                     count_mod);
 
     if (run_times > 1) {
       aom_usec_timer_start(&ref_timer);
       for (int j = 0; j < run_times; j++) {
         params_.ref_func(ref_frame, mbd, block_size, mb_row, mb_col, num_planes,
-                         sigma, use_subblock, block_mse, subblock_mses,
-                         q_factor, src2_, accumulator_ref, count_ref);
+                         sigma, subblock_mses, q_factor, src2_, accumulator_ref,
+                         count_ref);
       }
       aom_usec_timer_mark(&ref_timer);
       const int elapsed_time_c =
@@ -168,8 +163,8 @@ void TemporalFilterPlanewiseTest::RunTest(int isRandom, int width, int height,
       aom_usec_timer_start(&test_timer);
       for (int j = 0; j < run_times; j++) {
         params_.tst_func(ref_frame, mbd, block_size, mb_row, mb_col, num_planes,
-                         sigma, use_subblock, block_mse, subblock_mses,
-                         q_factor, src2_, accumulator_mod, count_mod);
+                         sigma, subblock_mses, q_factor, src2_, accumulator_mod,
+                         count_mod);
       }
       aom_usec_timer_mark(&test_timer);
       const int elapsed_time_simd =
@@ -200,41 +195,37 @@ void TemporalFilterPlanewiseTest::RunTest(int isRandom, int width, int height,
   }
 }
 
-TEST_P(TemporalFilterPlanewiseTest, OperationCheck) {
+TEST_P(TemporalFilterTest, OperationCheck) {
   for (int height = 32; height <= 32; height = height * 2) {
     RunTest(1, height, height, 1);  // GenRandomData
   }
 }
 
-TEST_P(TemporalFilterPlanewiseTest, ExtremeValues) {
+TEST_P(TemporalFilterTest, ExtremeValues) {
   for (int height = 32; height <= 32; height = height * 2) {
     RunTest(0, height, height, 1);
   }
 }
 
-TEST_P(TemporalFilterPlanewiseTest, DISABLED_Speed) {
+TEST_P(TemporalFilterTest, DISABLED_Speed) {
   for (int height = 32; height <= 32; height = height * 2) {
     RunTest(1, height, height, 100000);
   }
 }
 
 #if HAVE_AVX2
-TemporalFilterPlanewiseFuncParam temporal_filter_planewise_test_avx2[] = {
-  TemporalFilterPlanewiseFuncParam(&av1_apply_temporal_filter_planewise_c,
-                                   &av1_apply_temporal_filter_planewise_avx2)
-};
-INSTANTIATE_TEST_SUITE_P(AVX2, TemporalFilterPlanewiseTest,
-                         Combine(ValuesIn(temporal_filter_planewise_test_avx2),
+TemporalFilterFuncParam temporal_filter_test_avx2[] = { TemporalFilterFuncParam(
+    &av1_apply_temporal_filter_c, &av1_apply_temporal_filter_avx2) };
+INSTANTIATE_TEST_SUITE_P(AVX2, TemporalFilterTest,
+                         Combine(ValuesIn(temporal_filter_test_avx2),
                                  Range(64, 65, 4)));
 #endif  // HAVE_AVX2
 
 #if HAVE_SSE2
-TemporalFilterPlanewiseFuncParam temporal_filter_planewise_test_sse2[] = {
-  TemporalFilterPlanewiseFuncParam(&av1_apply_temporal_filter_planewise_c,
-                                   &av1_apply_temporal_filter_planewise_sse2)
-};
-INSTANTIATE_TEST_SUITE_P(SSE2, TemporalFilterPlanewiseTest,
-                         Combine(ValuesIn(temporal_filter_planewise_test_sse2),
+TemporalFilterFuncParam temporal_filter_test_sse2[] = { TemporalFilterFuncParam(
+    &av1_apply_temporal_filter_c, &av1_apply_temporal_filter_sse2) };
+INSTANTIATE_TEST_SUITE_P(SSE2, TemporalFilterTest,
+                         Combine(ValuesIn(temporal_filter_test_sse2),
                                  Range(64, 65, 4)));
 #endif  // HAVE_SSE2
 

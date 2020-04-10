@@ -25,19 +25,11 @@ extern "C" {
 // Block size used in temporal filtering.
 #define TF_BLOCK_SIZE BLOCK_32X32
 
-// Window size for YUV temporal filtering.
-// This is particually used for function `av1_apply_temporal_filter_yuv()`.
-#define TF_YUV_FILTER_WINDOW_LENGTH 3
-// A scale factor used in YUV temporal filtering for weight adjustment.
-#define TF_YUV_FILTER_WEIGHT_SCALE 3
-
-#define TF_ENABLE_PLANEWISE_STRATEGY 1
-// Window size for plane-wise temporal filtering.
-// This is particually used for function `av1_apply_temporal_filter_planewise()`
-#define TF_PLANEWISE_FILTER_WINDOW_LENGTH 5
-// A scale factor used in plane-wise temporal filtering to raise the filter
-// weight from `double` with range [0, 1] to `int` with range [0, 1000].
-#define TF_PLANEWISE_FILTER_WEIGHT_SCALE 1000
+// Window size for temporal filtering.
+#define TF_WINDOW_LENGTH 5
+// A scale factor used in temporal filtering to raise the filter weight from
+// `double` with range [0, 1] to `int` with range [0, 1000].
+#define TF_WEIGHT_SCALE 1000
 
 #define NOISE_ESTIMATION_EDGE_THRESHOLD 50
 // Estimates noise level from a given frame using a single plane (Y, U, or V).
