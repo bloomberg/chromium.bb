@@ -11,8 +11,8 @@ class F extends Fixture {
   _device: GPUDevice | undefined = undefined;
 
   get device(): GPUDevice {
-    assert(this.device !== undefined);
-    return this.device;
+    assert(this._device !== undefined);
+    return this._device;
   }
 
   async init(): Promise<void> {
