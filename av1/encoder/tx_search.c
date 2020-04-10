@@ -2061,11 +2061,11 @@ static INLINE void update_txb_coeff_cost(RD_STATS *rd_stats, int plane,
 }
 #endif
 
-static INLINE int av1_cost_coeffs(MACROBLOCK *x, int plane, int block,
-                                  TX_SIZE tx_size, const TX_TYPE tx_type,
-                                  const TXB_CTX *const txb_ctx,
-                                  int use_fast_coef_costing,
-                                  int reduced_tx_set_used) {
+static INLINE int cost_coeffs(MACROBLOCK *x, int plane, int block,
+                              TX_SIZE tx_size, const TX_TYPE tx_type,
+                              const TXB_CTX *const txb_ctx,
+                              int use_fast_coef_costing,
+                              int reduced_tx_set_used) {
 #if TXCOEFF_COST_TIMER
   struct aom_usec_timer timer;
   aom_usec_timer_start(&timer);
@@ -2248,9 +2248,9 @@ static void search_tx_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       av1_optimize_b(cpi, x, plane, block, tx_size, tx_type, txb_ctx,
                      cpi->sf.rd_sf.trellis_eob_fast, &rate_cost);
     } else {
-      rate_cost = av1_cost_coeffs(x, plane, block, tx_size, tx_type, txb_ctx,
-                                  use_fast_coef_costing,
-                                  cm->features.reduced_tx_set_used);
+      rate_cost =
+          cost_coeffs(x, plane, block, tx_size, tx_type, txb_ctx,
+                      use_fast_coef_costing, cm->features.reduced_tx_set_used);
     }
 
     // If rd cost based on coeff rate alone is already more than best_rd,

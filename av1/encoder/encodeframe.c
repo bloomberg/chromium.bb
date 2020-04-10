@@ -5207,7 +5207,7 @@ static AOM_INLINE void set_rel_frame_dist(AV1_COMP *cpi) {
   }
 }
 
-static INLINE int av1_refs_are_one_sided(const AV1_COMMON *cm) {
+static INLINE int refs_are_one_sided(const AV1_COMMON *cm) {
   assert(!frame_is_intra_only(cm));
 
   int one_sided_refs = 1;
@@ -5786,7 +5786,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
   memcpy(cm->cur_frame->mode_deltas, cm->lf.mode_deltas, MAX_MODE_LF_DELTAS);
 
   cpi->all_one_sided_refs =
-      frame_is_intra_only(cm) ? 0 : av1_refs_are_one_sided(cm);
+      frame_is_intra_only(cm) ? 0 : refs_are_one_sided(cm);
 
   cpi->prune_ref_frame_mask = 0;
   // Figure out which ref frames can be skipped at frame level.
