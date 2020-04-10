@@ -158,6 +158,18 @@
       ]
     },
     {
+      "name": "betty-arc-r",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "",
+          "arch": "X86_INTERNAL"
+        }
+      ]
+    },
+    {
       "name": "betty-arcmaster",
       "configs": [
         {
@@ -525,18 +537,6 @@
           "experimental": true,
           "leader_board": false,
           "board_group": "",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
-      "name": "eve-arcnext",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": false,
-          "board_group": "poppy",
           "arch": "X86_INTERNAL"
         }
       ]

@@ -247,6 +247,7 @@
     banon-release
     beaglebone-release
     beaglebone_servo-release
+    betty-arc-r-release
     betty-arcmaster-release
     betty-arcnext-release
     betty-arcvm-master-release
@@ -283,7 +284,6 @@
     endeavour-release
     enguarde-release
     eve-arc-r-release
-    eve-arcnext-release
     eve-arcvm-mesa-virgl-next-release
     eve-arm64-release
     eve-kvm-release
@@ -820,11 +820,6 @@
   eve-arc-r-release-tryjob
   eve-arc-r-unittest-stress
   eve-arc-r-vmrvc-android-pfq-tryjob
-  eve-arcnext-full-tryjob
-  eve-arcnext-llvm-next-toolchain-tryjob
-  eve-arcnext-llvm-toolchain-tryjob
-  eve-arcnext-release-tryjob
-  eve-arcnext-unittest-stress
   eve-arcvm-mesa-virgl-next-full-tryjob
   eve-arcvm-mesa-virgl-next-llvm-next-toolchain-tryjob
   eve-arcvm-mesa-virgl-next-llvm-toolchain-tryjob
@@ -1445,6 +1440,7 @@
     banon-release-tryjob
     beaglebone-release-tryjob
     beaglebone_servo-release-tryjob
+    betty-arc-r-release-tryjob
     betty-arcmaster-release-tryjob
     betty-arcnext-release-tryjob
     betty-arcvm-master-release-tryjob
@@ -1481,7 +1477,6 @@
     endeavour-release-tryjob
     enguarde-release-tryjob
     eve-arc-r-release-tryjob
-    eve-arcnext-release-tryjob
     eve-arcvm-mesa-virgl-next-release-tryjob
     eve-arm64-release-tryjob
     eve-kvm-release-tryjob
