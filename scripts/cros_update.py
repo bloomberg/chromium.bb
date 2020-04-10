@@ -93,6 +93,12 @@ class CrOSUpdateTrigger(object):
     self.static_url = static_url
     self.staging_server = staging_server
     self.transfer_class = transfer_class or auto_updater_transfer.LocalTransfer
+    self._request_logs_dir = None
+
+  @property
+  def request_logs_dir(self):
+    """Gets dire containing logs created by the nebraska process."""
+    return self._request_logs_dir
 
   def _WriteAUStatus(self, content):
     if self.progress_tracker:
@@ -312,6 +318,10 @@ class CrOSUpdateTrigger(object):
 
           self._WriteAUStatus('post-check for CrOS auto-update')
           chromeos_AU.PostCheckCrOSUpdate()
+
+          # Get nebraska request logfiles dir from auto_updater.
+          self._request_logs_dir = chromeos_AU.request_logs_dir
+
           self._WriteAUStatus(cros_update_progress.FINISHED)
 
         logging.debug('Provision successfully completed (%s)',

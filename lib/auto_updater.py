@@ -252,6 +252,15 @@ class ChromiumOSUpdater(BaseUpdater):
   def is_au_endtoendtest(self):
     return self.payload_filename is not None
 
+  @property
+  def request_logs_dir(self):
+    """Returns path to the nebraska request logfiles directory.
+
+    Returns:
+      A complete path to the logfiles directory.
+    """
+    return self.tempdir
+
   def _CreateTransferObject(self, transfer_class):
     """Create the correct Transfer class.
 
