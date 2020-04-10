@@ -633,11 +633,15 @@ class Storage(object):
 
     Returns:
       List of items that were uploaded. All other items are already there.
+
+    Raises:
+      The first exception being raised in the worker threads.
     """
     incoming = Queue.Queue()
     batches_to_lookup = Queue.Queue()
     missing = Queue.Queue()
     uploaded = []
+    exc_channel = threading_utils.TaskChannel()
 
     def _create_items_batches_thread():
       """Creates batches for /contains RPC lookup from individual items.
@@ -665,6 +669,8 @@ class Storage(object):
             batch = []
           if item is None:
             break
+      except Exception:
+        exc_channel.send_exception()
       finally:
         # Unblock the next pipeline.
         batches_to_lookup.put(None)
@@ -702,6 +708,8 @@ class Storage(object):
           for missing_item, push_state in channel.next().items():
             missing.put((missing_item, push_state))
           pending_contains -= 1
+      except Exception:
+        exc_channel.send_exception()
       finally:
         # Unblock the next pipeline.
         missing.put((None, None))
@@ -712,36 +720,38 @@ class Storage(object):
       Input: missing
       Output: uploaded
       """
-      with threading_utils.DeadlockDetector(DEADLOCK_TIMEOUT) as detector:
-        channel = threading_utils.TaskChannel()
-        pending_upload = 0
-        while not self._aborted:
-          try:
-            missing_item, push_state = missing.get(True, timeout=5)
-            if missing_item is None:
-              break
-            self._async_push(channel, missing_item, push_state, verify_push)
-            pending_upload += 1
-          except Queue.Empty:
-            pass
-          detector.ping()
-          while not self._aborted and pending_upload:
+      try:
+        with threading_utils.DeadlockDetector(DEADLOCK_TIMEOUT) as detector:
+          channel = threading_utils.TaskChannel()
+          pending_upload = 0
+          while not self._aborted:
             try:
-              item = channel.next(timeout=0)
-            except threading_utils.TaskChannel.Timeout:
-              break
+              missing_item, push_state = missing.get(True, timeout=5)
+              if missing_item is None:
+                break
+              self._async_push(channel, missing_item, push_state, verify_push)
+              pending_upload += 1
+            except Queue.Empty:
+              pass
+            detector.ping()
+            while not self._aborted and pending_upload:
+              try:
+                item = channel.next(timeout=0)
+              except threading_utils.TaskChannel.Timeout:
+                break
+              uploaded.append(item)
+              pending_upload -= 1
+              logging.debug('Uploaded %d; %d pending: %s (%d)', len(uploaded),
+                            pending_upload, item.digest, item.size)
+          while not self._aborted and pending_upload:
+            item = channel.next()
             uploaded.append(item)
             pending_upload -= 1
             logging.debug(
                 'Uploaded %d; %d pending: %s (%d)',
                 len(uploaded), pending_upload, item.digest, item.size)
-        while not self._aborted and pending_upload:
-          item = channel.next()
-          uploaded.append(item)
-          pending_upload -= 1
-          logging.debug(
-              'Uploaded %d; %d pending: %s (%d)',
-              len(uploaded), pending_upload, item.digest, item.size)
+      except Exception:
+        exc_channel.send_exception()
 
     threads = [
         threading.Thread(target=_create_items_batches_thread),
@@ -770,6 +780,11 @@ class Storage(object):
     finally:
       for t in threads:
         t.join()
+      exc_channel.send_done()
+      for _ in exc_channel:
+        # If there is no exception, this loop does nothing. Otherwise, it raises
+        # the first exception put onto |exc_channel|.
+        pass
 
     logging.info('All %s files are uploaded', len(uploaded))
     if seen:
@@ -1507,6 +1522,9 @@ def archive_files_to_storage(storage, files, blacklist, verify_push=False):
   Returns:
     tuple(OrderedDict(path: hash), list(FileItem cold), list(FileItem hot)).
     The first file in the first item is always the .isolated file.
+
+  Raises:
+    Re-raises the exception in upload_items(), if there is any.
   """
   # Dict of path to hash.
   results = collections.OrderedDict()
@@ -1514,10 +1532,16 @@ def archive_files_to_storage(storage, files, blacklist, verify_push=False):
   hash_algo_name = storage.server_ref.hash_algo_name
   # Generator of FileItem to pass to upload_items() concurrent operation.
   channel = threading_utils.TaskChannel()
+  exc_channel = threading_utils.TaskChannel()
   uploaded_digests = set()
+
   def _upload_items():
-    results = storage.upload_items(channel, verify_push)
-    uploaded_digests.update(f.digest for f in results)
+    try:
+      results = storage.upload_items(channel, verify_push)
+      uploaded_digests.update(f.digest for f in results)
+    except Exception:
+      exc_channel.send_exception()
+
   t = threading.Thread(target=_upload_items)
   t.start()
 
@@ -1559,6 +1583,9 @@ def archive_files_to_storage(storage, files, blacklist, verify_push=False):
     # Stops the generator, so _upload_items() can exit.
     channel.send_done()
   t.join()
+  exc_channel.send_done()
+  for _ in exc_channel:
+    pass
 
   cold = []
   hot = []
