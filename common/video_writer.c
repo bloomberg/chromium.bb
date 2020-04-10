@@ -41,8 +41,10 @@ AvxVideoWriter *aom_video_writer_open(const char *filename,
     if (!file) return NULL;
 
     writer = malloc(sizeof(*writer));
-    if (!writer) return NULL;
-
+    if (!writer) {
+      fclose(file);
+      return NULL;
+    }
     writer->frame_count = 0;
     writer->info = *info;
     writer->file = file;
