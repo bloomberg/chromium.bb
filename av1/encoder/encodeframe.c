@@ -246,7 +246,7 @@ static int set_deltaq_rdmult(const AV1_COMP *const cpi, MACROBLOCKD *const xd) {
 }
 
 static AOM_INLINE void set_ssim_rdmult(const AV1_COMP *const cpi,
-                                       MACROBLOCK *const x,
+                                       MvCostInfo *const mv_cost_info,
                                        const BLOCK_SIZE bsize, const int mi_row,
                                        const int mi_col, int *const rdmult) {
   const AV1_COMMON *const cm = &cpi->common;
@@ -278,7 +278,7 @@ static AOM_INLINE void set_ssim_rdmult(const AV1_COMP *const cpi,
 
   *rdmult = (int)((double)(*rdmult) * geom_mean_of_scale + 0.5);
   *rdmult = AOMMAX(*rdmult, 0);
-  set_error_per_bit(x, *rdmult);
+  av1_set_error_per_bit(mv_cost_info, *rdmult);
   aom_clear_system_state();
 }
 
@@ -321,7 +321,7 @@ static int get_hier_tpl_rdmult(const AV1_COMP *const cpi, MACROBLOCK *const x,
   geom_mean_of_scale = exp(geom_mean_of_scale / base_block_count);
   int rdmult = (int)((double)orig_rdmult * geom_mean_of_scale + 0.5);
   rdmult = AOMMAX(rdmult, 0);
-  set_error_per_bit(x, rdmult);
+  av1_set_error_per_bit(&x->mv_cost_info, rdmult);
   aom_clear_system_state();
   if (bsize == cm->seq_params.sb_size) {
     const int rdmult_sb = set_deltaq_rdmult(cpi, xd);
@@ -374,7 +374,7 @@ static AOM_INLINE void setup_block_rdmult(const AV1_COMP *const cpi,
   }
 
   if (cpi->oxcf.tuning == AOM_TUNE_SSIM) {
-    set_ssim_rdmult(cpi, x, bsize, mi_row, mi_col, &x->rdmult);
+    set_ssim_rdmult(cpi, &x->mv_cost_info, bsize, mi_row, mi_col, &x->rdmult);
   }
 #if CONFIG_TUNE_VMAF
   if (cpi->oxcf.tuning == AOM_TUNE_VMAF_WITHOUT_PREPROCESSING ||
@@ -821,7 +821,7 @@ static AOM_INLINE void pick_sb_modes(AV1_COMP *const cpi,
   const int orig_rdmult = x->rdmult;
   setup_block_rdmult(cpi, x, mi_row, mi_col, bsize, aq_mode, mbmi);
   // Set error per bit for current rdmult
-  set_error_per_bit(x, x->rdmult);
+  av1_set_error_per_bit(&x->mv_cost_info, x->rdmult);
   av1_rd_cost_update(x->rdmult, &best_rd);
 
   // Find best coding mode & reconstruct the MB so it is available
@@ -4986,7 +4986,7 @@ static AOM_INLINE void set_cost_upd_freq(AV1_COMP *cpi, ThreadData *td,
           mi_col != tile_info->mi_col_start)
         break;
       av1_fill_mv_costs(xd->tile_ctx, cm->features.cur_frame_force_integer_mv,
-                        cm->features.allow_high_precision_mv, x);
+                        cm->features.allow_high_precision_mv, &x->mv_cost_info);
       break;
     default: assert(0);
   }
@@ -5898,7 +5898,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
 
   av1_frame_init_quantizer(cpi);
   av1_initialize_rd_consts(cpi);
-  av1_initialize_me_consts(cpi, x, quant_params->base_qindex);
+  av1_set_sad_per_bit(cpi, &x->mv_cost_info, quant_params->base_qindex);
 
   init_encode_frame_mb_context(cpi);
   set_default_interp_skip_flags(cm, &cpi->interp_search_flags);

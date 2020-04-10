@@ -1085,9 +1085,9 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
         *rate_mv = 0;
         for (int i = 0; i < 2; ++i) {
           const int_mv ref_mv = av1_get_ref_mv(x, i);
-          *rate_mv +=
-              av1_mv_bit_cost(&cur_mv[i].as_mv, &ref_mv.as_mv, x->nmv_vec_cost,
-                              x->mv_cost_stack, MV_COST_WEIGHT);
+          *rate_mv += av1_mv_bit_cost(
+              &cur_mv[i].as_mv, &ref_mv.as_mv, x->mv_cost_info.nmv_joint_cost,
+              x->mv_cost_info.mv_cost_stack, MV_COST_WEIGHT);
         }
       }
     } else if (this_mode == NEAREST_NEWMV || this_mode == NEAR_NEWMV) {
@@ -1103,9 +1103,9 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
                                                      NULL, 0, rate_mv, 1);
       } else {
         const int_mv ref_mv = av1_get_ref_mv(x, 1);
-        *rate_mv =
-            av1_mv_bit_cost(&cur_mv[1].as_mv, &ref_mv.as_mv, x->nmv_vec_cost,
-                            x->mv_cost_stack, MV_COST_WEIGHT);
+        *rate_mv = av1_mv_bit_cost(
+            &cur_mv[1].as_mv, &ref_mv.as_mv, x->mv_cost_info.nmv_joint_cost,
+            x->mv_cost_info.mv_cost_stack, MV_COST_WEIGHT);
       }
     } else {
       assert(this_mode == NEW_NEARESTMV || this_mode == NEW_NEARMV);
@@ -1121,9 +1121,9 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
                                                      NULL, 0, rate_mv, 0);
       } else {
         const int_mv ref_mv = av1_get_ref_mv(x, 0);
-        *rate_mv =
-            av1_mv_bit_cost(&cur_mv[0].as_mv, &ref_mv.as_mv, x->nmv_vec_cost,
-                            x->mv_cost_stack, MV_COST_WEIGHT);
+        *rate_mv = av1_mv_bit_cost(
+            &cur_mv[0].as_mv, &ref_mv.as_mv, x->mv_cost_info.nmv_joint_cost,
+            x->mv_cost_info.mv_cost_stack, MV_COST_WEIGHT);
       }
     }
   } else {
@@ -1391,9 +1391,10 @@ static int64_t motion_mode_rd(
 
           // Keep the refined MV and WM parameters.
           if (mv0.as_int != mbmi->mv[0].as_int) {
-            tmp_rate_mv = av1_mv_bit_cost(&mbmi->mv[0].as_mv, &ref_mv.as_mv,
-                                          x->nmv_vec_cost, x->mv_cost_stack,
-                                          MV_COST_WEIGHT);
+            tmp_rate_mv =
+                av1_mv_bit_cost(&mbmi->mv[0].as_mv, &ref_mv.as_mv,
+                                x->mv_cost_info.nmv_joint_cost,
+                                x->mv_cost_info.mv_cost_stack, MV_COST_WEIGHT);
             if (cpi->sf.mv_sf.adaptive_motion_search) {
               x->pred_mv[mbmi->ref_frame[0]] = mbmi->mv[0].as_mv;
             }
@@ -2390,8 +2391,9 @@ static int64_t handle_inter_mode(
                     mode_info[i].rate_mv + mode_info[i].drl_cost;
                 const int_mv ref_mv = av1_get_ref_mv(x, 0);
                 this_rate_mv = av1_mv_bit_cost(
-                    &mode_info[i].mv.as_mv, &ref_mv.as_mv, x->nmv_vec_cost,
-                    x->mv_cost_stack, MV_COST_WEIGHT);
+                    &mode_info[i].mv.as_mv, &ref_mv.as_mv,
+                    x->mv_cost_info.nmv_joint_cost,
+                    x->mv_cost_info.mv_cost_stack, MV_COST_WEIGHT);
                 const int this_cost = this_rate_mv + drl_cost;
 
                 if (compare_cost <= this_cost) {

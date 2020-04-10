@@ -32,15 +32,16 @@ static AOM_INLINE int av1_frame_allows_smart_mv(const AV1_COMP *cpi) {
 static AOM_INLINE void av1_set_high_precision_mv(
     AV1_COMP *cpi, int allow_high_precision_mv,
     int cur_frame_force_integer_mv) {
-  MACROBLOCK *const x = &cpi->td.mb;
+  MvCostInfo *const mv_cost_info = &cpi->td.mb.mv_cost_info;
   const int copy_hp = cpi->common.features.allow_high_precision_mv =
       allow_high_precision_mv && !cur_frame_force_integer_mv;
-  x->nmvcost[0] = &x->nmv_costs[0][MV_MAX];
-  x->nmvcost[1] = &x->nmv_costs[1][MV_MAX];
-  x->nmvcost_hp[0] = &x->nmv_costs_hp[0][MV_MAX];
-  x->nmvcost_hp[1] = &x->nmv_costs_hp[1][MV_MAX];
-  int *(*src)[2] = copy_hp ? &x->nmvcost_hp : &x->nmvcost;
-  x->mv_cost_stack = *src;
+
+  mv_cost_info->nmv_cost[0] = &mv_cost_info->nmv_cost_alloc[0][MV_MAX];
+  mv_cost_info->nmv_cost[1] = &mv_cost_info->nmv_cost_alloc[1][MV_MAX];
+  mv_cost_info->nmv_cost_hp[0] = &mv_cost_info->nmv_cost_hp_alloc[0][MV_MAX];
+  mv_cost_info->nmv_cost_hp[1] = &mv_cost_info->nmv_cost_hp_alloc[1][MV_MAX];
+  mv_cost_info->mv_cost_stack =
+      copy_hp ? mv_cost_info->nmv_cost_hp : mv_cost_info->nmv_cost;
 }
 
 void av1_pick_and_set_high_precision_mv(AV1_COMP *cpi, int qindex);

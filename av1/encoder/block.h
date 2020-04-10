@@ -209,13 +209,28 @@ typedef struct {
   uint8_t *tmp_best_mask_buf;  // backup of the best segmentation mask
 } CompoundTypeRdBuffers;
 
-enum {
-  MV_COST_ENTROPY,    // Use the entropy rate of the mv as the cost
-  MV_COST_L1_LOWRES,  // Use the l1 norm of the mv as the cost (<480p)
-  MV_COST_L1_MIDRES,  // Use the l1 norm of the mv as the cost (>=480p)
-  MV_COST_L1_HDRES,   // Use the l1 norm of the mv as the cost (>=720p)
-  MV_COST_NONE        // Use 0 as as cost irrespective of the current mv
-} UENUM1BYTE(MV_COST_TYPE);
+typedef struct {
+  // A multiplier that converts mv cost to l2 error.
+  int errorperbit;
+  // A multiplier that converts mv cost to l1 error.
+  int sadperbit;
+
+  int nmv_joint_cost[MV_JOINTS];
+
+  // Below are the entropy costs needed to encode a given mv.
+  // nmv_costs_(hp_)alloc are two arrays that holds the memory
+  // for holding the mv cost. But since the motion vectors can be negative, we
+  // shift them to the middle and store the resulting pointer in nmvcost(_hp)
+  // for easier referencing. Finally, nmv_cost_stack points to the nmvcost array
+  // with the mv precision we are currently working with. In essence, only
+  // mv_cost_stack is needed for motion search, the other can be considered
+  // private.
+  int nmv_cost_alloc[2][MV_VALS];
+  int nmv_cost_hp_alloc[2][MV_VALS];
+  int *nmv_cost[2];
+  int *nmv_cost_hp[2];
+  int **mv_cost_stack;
+} MvCostInfo;
 
 struct inter_modes_info;
 typedef struct macroblock MACROBLOCK;
@@ -252,12 +267,6 @@ struct macroblock {
   int skip_block;
   int qindex;
 
-  // The equivalent error at the current rdmult of one whole bit (not one
-  // bitcost unit).
-  int errorperbit;
-  // The equivalend SAD error of one (whole) bit at the current quantizer
-  // for large blocks.
-  int sadperbit;
   int rdmult;
   int mb_energy;
   int sb_energy_level;
@@ -278,13 +287,6 @@ struct macroblock {
   unsigned int pred_sse[REF_FRAMES];
   int pred_mv_sad[REF_FRAMES];
   int best_pred_mv_sad;
-
-  int nmv_vec_cost[MV_JOINTS];
-  int nmv_costs[2][MV_VALS];
-  int nmv_costs_hp[2][MV_VALS];
-  int *nmvcost[2];
-  int *nmvcost_hp[2];
-  int **mv_cost_stack;
 
   int32_t *wsrc_buf;
   int32_t *mask_buf;
@@ -313,6 +315,9 @@ struct macroblock {
   // These define limits to motion vector components to prevent them
   // from extending outside the UMV borders
   FullMvLimits mv_limits;
+
+  // Stores the entropy cost needed to encode a motion vector.
+  MvCostInfo mv_cost_info;
 
   uint8_t blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE];
   uint8_t tx_type_map[MAX_MIB_SIZE * MAX_MIB_SIZE];
@@ -465,9 +470,6 @@ struct macroblock {
   int_mv mv_b[MAX_MC_FLOW_BLK_IN_SB * MAX_MC_FLOW_BLK_IN_SB]
              [INTER_REFS_PER_FRAME];
   int cost_stride;
-
-  // The type of mv cost used during motion search
-  MV_COST_TYPE mv_cost_type;
 
   uint8_t search_ref_frame[REF_FRAMES];
 

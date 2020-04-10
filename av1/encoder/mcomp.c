@@ -33,15 +33,16 @@
 #include "av1/encoder/reconinter_enc.h"
 
 static INLINE void init_mv_cost_params(MV_COST_PARAMS *mv_cost_params,
-                                       const MACROBLOCK *x, const MV *ref_mv) {
+                                       const MvCostInfo *mv_cost_info,
+                                       const MV *ref_mv) {
   mv_cost_params->ref_mv = ref_mv;
   mv_cost_params->full_ref_mv = get_fullmv_from_mv(ref_mv);
-  mv_cost_params->error_per_bit = x->errorperbit;
-  mv_cost_params->sad_per_bit = x->sadperbit;
-  mv_cost_params->mvjcost = x->nmv_vec_cost;
-  mv_cost_params->mvcost[0] = x->mv_cost_stack[0];
-  mv_cost_params->mvcost[1] = x->mv_cost_stack[1];
-  mv_cost_params->mv_cost_type = x->mv_cost_type;
+  mv_cost_params->mv_cost_type = MV_COST_ENTROPY;
+  mv_cost_params->error_per_bit = mv_cost_info->errorperbit;
+  mv_cost_params->sad_per_bit = mv_cost_info->sadperbit;
+  mv_cost_params->mvjcost = mv_cost_info->nmv_joint_cost;
+  mv_cost_params->mvcost[0] = mv_cost_info->mv_cost_stack[0];
+  mv_cost_params->mvcost[1] = mv_cost_info->mv_cost_stack[1];
 }
 
 static INLINE void init_ms_buffers(MSBuffers *ms_buffers, const MACROBLOCK *x) {
@@ -84,7 +85,7 @@ void av1_make_default_fullpel_ms_params(FULLPEL_MOTION_SEARCH_PARAMS *ms_params,
   av1_set_mv_search_range(&ms_params->mv_limits, ref_mv);
 
   // Mvcost params
-  init_mv_cost_params(&ms_params->mv_cost_params, x, ref_mv);
+  init_mv_cost_params(&ms_params->mv_cost_params, &x->mv_cost_info, ref_mv);
 }
 
 void av1_make_default_subpel_ms_params(SUBPEL_MOTION_SEARCH_PARAMS *ms_params,
@@ -101,7 +102,7 @@ void av1_make_default_subpel_ms_params(SUBPEL_MOTION_SEARCH_PARAMS *ms_params,
   av1_set_subpel_mv_search_range(&ms_params->mv_limits, &x->mv_limits, ref_mv);
 
   // Mvcost params
-  init_mv_cost_params(&ms_params->mv_cost_params, x, ref_mv);
+  init_mv_cost_params(&ms_params->mv_cost_params, &x->mv_cost_info, ref_mv);
 
   // Subpel variance params
   ms_params->var_params.vfp = &cpi->fn_ptr[bsize];
@@ -3385,22 +3386,18 @@ int av1_find_best_obmc_sub_pixel_tree_up(
 // =============================================================================
 //  Public cost function: mv_cost + pred error
 // =============================================================================
-int av1_get_mvpred_sse(const MACROBLOCK *x, const FULLPEL_MV *best_mv,
-                       const MV *ref_mv, const aom_variance_fn_ptr_t *vfp) {
-  const MACROBLOCKD *const xd = &x->e_mbd;
-  const struct buf_2d *const what = &x->plane[0].src;
-  const struct buf_2d *const in_what = &xd->plane[0].pre[0];
-  const MV mv = get_mv_from_fullmv(best_mv);
-  const MV_COST_TYPE mv_cost_type = x->mv_cost_type;
+int av1_get_mvpred_sse(const MV_COST_PARAMS *mv_cost_params,
+                       const FULLPEL_MV best_mv,
+                       const aom_variance_fn_ptr_t *vfp,
+                       const struct buf_2d *src, const struct buf_2d *pre) {
+  const MV mv = get_mv_from_fullmv(&best_mv);
   unsigned int sse, var;
 
-  var = vfp->vf(what->buf, what->stride, get_buf_from_fullmv(in_what, best_mv),
-                in_what->stride, &sse);
+  var = vfp->vf(src->buf, src->stride, get_buf_from_fullmv(pre, &best_mv),
+                pre->stride, &sse);
   (void)var;
 
-  return sse + mv_err_cost(&mv, ref_mv, x->nmv_vec_cost,
-                           CONVERT_TO_CONST_MVCOST(x->mv_cost_stack),
-                           x->errorperbit, mv_cost_type);
+  return sse + mv_err_cost_(&mv, mv_cost_params);
 }
 
 static INLINE int get_mvpred_av_var(const MV_COST_PARAMS *mv_cost_params,
@@ -3409,13 +3406,11 @@ static INLINE int get_mvpred_av_var(const MV_COST_PARAMS *mv_cost_params,
                                     const aom_variance_fn_ptr_t *vfp,
                                     const struct buf_2d *src,
                                     const struct buf_2d *pre) {
-  const struct buf_2d *const what = src;
-  const struct buf_2d *const in_what = pre;
   const MV mv = get_mv_from_fullmv(&best_mv);
   unsigned int unused;
 
-  return vfp->svaf(get_buf_from_fullmv(in_what, &best_mv), in_what->stride, 0,
-                   0, what->buf, what->stride, &unused, second_pred) +
+  return vfp->svaf(get_buf_from_fullmv(pre, &best_mv), pre->stride, 0, 0,
+                   src->buf, src->stride, &unused, second_pred) +
          mv_err_cost_(&mv, mv_cost_params);
 }
 
@@ -3424,14 +3419,12 @@ static INLINE int get_mvpred_mask_var(
     const uint8_t *second_pred, const uint8_t *mask, int mask_stride,
     int invert_mask, const aom_variance_fn_ptr_t *vfp, const struct buf_2d *src,
     const struct buf_2d *pre) {
-  const struct buf_2d *const what = src;
-  const struct buf_2d *const in_what = pre;
   const MV mv = get_mv_from_fullmv(&best_mv);
   unsigned int unused;
 
-  return vfp->msvf(what->buf, what->stride, 0, 0,
-                   get_buf_from_fullmv(in_what, &best_mv), in_what->stride,
-                   second_pred, mask, mask_stride, invert_mask, &unused) +
+  return vfp->msvf(src->buf, src->stride, 0, 0,
+                   get_buf_from_fullmv(pre, &best_mv), pre->stride, second_pred,
+                   mask, mask_stride, invert_mask, &unused) +
          mv_err_cost_(&mv, mv_cost_params);
 }
 

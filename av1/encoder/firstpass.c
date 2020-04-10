@@ -219,7 +219,6 @@ static AOM_INLINE void first_pass_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
   FULLPEL_MV start_mv = get_fullmv_from_mv(ref_mv);
   int tmp_err;
   const BLOCK_SIZE bsize = xd->mi[0]->sb_type;
-  aom_variance_fn_ptr_t v_fn_ptr = cpi->fn_ptr[bsize];
   const int new_mv_mode_penalty = NEW_MV_MODE_PENALTY;
   const int sr = get_search_range(&cpi->initial_dimensions);
   const int step_param = 3 + sr;
@@ -237,7 +236,10 @@ static AOM_INLINE void first_pass_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
                                   &this_best_mv, NULL);
 
   if (tmp_err < INT_MAX) {
-    tmp_err = av1_get_mvpred_sse(x, &this_best_mv, ref_mv, &v_fn_ptr) +
+    aom_variance_fn_ptr_t v_fn_ptr = cpi->fn_ptr[bsize];
+    const MSBuffers *ms_buffers = &ms_params.ms_buffers;
+    tmp_err = av1_get_mvpred_sse(&ms_params.mv_cost_params, this_best_mv,
+                                 &v_fn_ptr, ms_buffers->src, ms_buffers->ref) +
               new_mv_mode_penalty;
   }
 

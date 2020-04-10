@@ -60,6 +60,7 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
       av1_get_scaled_ref_frame(cpi, ref);
   const int mi_row = xd->mi_row;
   const int mi_col = xd->mi_col;
+  const MvCostInfo *mv_cost_info = &x->mv_cost_info;
 
   if (scaled_ref_frame) {
     // Swap out the reference frame for a version that's been scaled to
@@ -270,8 +271,8 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
     this_mv.as_mv = get_mv_from_fullmv(&best_mv->as_fullmv);
     const int ref_mv_idx = mbmi->ref_mv_idx;
     const int this_mv_rate =
-        av1_mv_bit_cost(&this_mv.as_mv, &ref_mv, x->nmv_vec_cost,
-                        x->mv_cost_stack, MV_COST_WEIGHT);
+        av1_mv_bit_cost(&this_mv.as_mv, &ref_mv, mv_cost_info->nmv_joint_cost,
+                        mv_cost_info->mv_cost_stack, MV_COST_WEIGHT);
     mode_info[ref_mv_idx].full_search_mv.as_int = this_mv.as_int;
     mode_info[ref_mv_idx].full_mv_rate = this_mv_rate;
 
@@ -347,8 +348,9 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
       default: assert(0 && "Invalid motion mode!\n");
     }
   }
-  *rate_mv = av1_mv_bit_cost(&best_mv->as_mv, &ref_mv, x->nmv_vec_cost,
-                             x->mv_cost_stack, MV_COST_WEIGHT);
+  *rate_mv =
+      av1_mv_bit_cost(&best_mv->as_mv, &ref_mv, mv_cost_info->nmv_joint_cost,
+                      mv_cost_info->mv_cost_stack, MV_COST_WEIGHT);
 
   if (cpi->sf.mv_sf.adaptive_motion_search &&
       mbmi->motion_mode == SIMPLE_TRANSLATION)
@@ -370,6 +372,7 @@ void av1_joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   assert(has_second_ref(mbmi));
   const int_mv init_mv[2] = { cur_mv[0], cur_mv[1] };
   const int refs[2] = { mbmi->ref_frame[0], mbmi->ref_frame[1] };
+  const MvCostInfo *mv_cost_info = &x->mv_cost_info;
   int_mv ref_mv[2];
   int ite, ref;
 
@@ -525,9 +528,9 @@ void av1_joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
 
   for (ref = 0; ref < 2; ++ref) {
     const int_mv curr_ref_mv = av1_get_ref_mv(x, ref);
-    *rate_mv +=
-        av1_mv_bit_cost(&cur_mv[ref].as_mv, &curr_ref_mv.as_mv, x->nmv_vec_cost,
-                        x->mv_cost_stack, MV_COST_WEIGHT);
+    *rate_mv += av1_mv_bit_cost(&cur_mv[ref].as_mv, &curr_ref_mv.as_mv,
+                                mv_cost_info->nmv_joint_cost,
+                                mv_cost_info->mv_cost_stack, MV_COST_WEIGHT);
   }
 }
 
@@ -545,6 +548,7 @@ void av1_compound_single_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   const int ref = mbmi->ref_frame[ref_idx];
   const int_mv ref_mv = av1_get_ref_mv(x, ref_idx);
   struct macroblockd_plane *const pd = &xd->plane[0];
+  const MvCostInfo *mv_cost_info = &x->mv_cost_info;
 
   struct buf_2d backup_yv12[MAX_MB_PLANE];
   const YV12_BUFFER_CONFIG *const scaled_ref_frame =
@@ -632,8 +636,9 @@ void av1_compound_single_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
 
   *rate_mv = 0;
 
-  *rate_mv += av1_mv_bit_cost(this_mv, &ref_mv.as_mv, x->nmv_vec_cost,
-                              x->mv_cost_stack, MV_COST_WEIGHT);
+  *rate_mv +=
+      av1_mv_bit_cost(this_mv, &ref_mv.as_mv, mv_cost_info->nmv_joint_cost,
+                      mv_cost_info->mv_cost_stack, MV_COST_WEIGHT);
 }
 
 static AOM_INLINE void build_second_inter_pred(const AV1_COMP *cpi,

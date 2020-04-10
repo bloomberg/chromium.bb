@@ -231,8 +231,9 @@ int av1_compute_rd_mult(const struct AV1_COMP *cpi, int qindex);
 
 void av1_initialize_rd_consts(struct AV1_COMP *cpi);
 
-void av1_initialize_me_consts(const struct AV1_COMP *cpi, MACROBLOCK *x,
-                              int qindex);
+// Sets the multiplier to convert mv cost to l1 error during motion search.
+void av1_set_sad_per_bit(const struct AV1_COMP *cpi, MvCostInfo *mv_cost_info,
+                         int qindex);
 
 void av1_model_rd_from_var_lapndz(int64_t var, unsigned int n,
                                   unsigned int qstep, int *rate, int64_t *dist);
@@ -280,9 +281,9 @@ void av1_mv_pred(const struct AV1_COMP *cpi, MACROBLOCK *x,
                  uint8_t *ref_y_buffer, int ref_y_stride, int ref_frame,
                  BLOCK_SIZE block_size);
 
-static INLINE void set_error_per_bit(MACROBLOCK *x, int rdmult) {
-  x->errorperbit = rdmult >> RD_EPB_SHIFT;
-  x->errorperbit += (x->errorperbit == 0);
+// Sets the multiplier to convert mv cost to l2 error during motion search.
+static INLINE void av1_set_error_per_bit(MvCostInfo *mv_cost_info, int rdmult) {
+  mv_cost_info->errorperbit = AOMMAX(rdmult >> RD_EPB_SHIFT, 1);
 }
 
 // Get the threshold for R-D optimization of coefficients depending upon mode
@@ -357,7 +358,7 @@ void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc,
                           const int num_planes);
 
 void av1_fill_mv_costs(const FRAME_CONTEXT *fc, int integer_mv, int usehp,
-                       MACROBLOCK *x);
+                       MvCostInfo *mv_cost_info);
 
 int av1_get_adaptive_rdmult(const struct AV1_COMP *cpi, double beta);
 

@@ -167,8 +167,8 @@ static int combined_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
   // calculate the bit cost on motion vector
   MV mvp_full = get_mv_from_fullmv(&tmp_mv->as_fullmv);
 
-  *rate_mv = av1_mv_bit_cost(&mvp_full, &ref_mv, x->nmv_vec_cost,
-                             x->mv_cost_stack, MV_COST_WEIGHT);
+  *rate_mv = av1_mv_bit_cost(&mvp_full, &ref_mv, x->mv_cost_info.nmv_joint_cost,
+                             x->mv_cost_info.mv_cost_stack, MV_COST_WEIGHT);
 
   // TODO(kyslov) Account for Rate Mode!
   rv = !(RDCOST(x->rdmult, (*rate_mv), 0) > best_rd_sofar);
@@ -182,8 +182,9 @@ static int combined_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
         xd, cm, &ms_params, subpel_start_mv, &tmp_mv->as_mv, &dis,
         &x->pred_sse[ref], NULL);
 
-    *rate_mv = av1_mv_bit_cost(&tmp_mv->as_mv, &ref_mv, x->nmv_vec_cost,
-                               x->mv_cost_stack, MV_COST_WEIGHT);
+    *rate_mv =
+        av1_mv_bit_cost(&tmp_mv->as_mv, &ref_mv, x->mv_cost_info.nmv_joint_cost,
+                        x->mv_cost_info.mv_cost_stack, MV_COST_WEIGHT);
   }
 
   if (scaled_ref_frame) {
@@ -222,9 +223,9 @@ static int search_new_mv(AV1_COMP *cpi, MACROBLOCK *x,
     best_mv.as_mv.col >>= 3;
     MV ref_mv = av1_get_ref_mv(x, 0).as_mv;
 
-    *rate_mv =
-        av1_mv_bit_cost(&frame_mv[NEWMV][ref_frame].as_mv, &ref_mv,
-                        x->nmv_vec_cost, x->mv_cost_stack, MV_COST_WEIGHT);
+    *rate_mv = av1_mv_bit_cost(&frame_mv[NEWMV][ref_frame].as_mv, &ref_mv,
+                               x->mv_cost_info.nmv_joint_cost,
+                               x->mv_cost_info.mv_cost_stack, MV_COST_WEIGHT);
     frame_mv[NEWMV][ref_frame].as_mv.row >>= 3;
     frame_mv[NEWMV][ref_frame].as_mv.col >>= 3;
 

@@ -60,21 +60,32 @@ struct SPEED_FEATURES;
 // =============================================================================
 //  Cost functions
 // =============================================================================
+
+enum {
+  MV_COST_ENTROPY,    // Use the entropy rate of the mv as the cost
+  MV_COST_L1_LOWRES,  // Use the l1 norm of the mv as the cost (<480p)
+  MV_COST_L1_MIDRES,  // Use the l1 norm of the mv as the cost (>=480p)
+  MV_COST_L1_HDRES,   // Use the l1 norm of the mv as the cost (>=720p)
+  MV_COST_NONE        // Use 0 as as cost irrespective of the current mv
+} UENUM1BYTE(MV_COST_TYPE);
+
 typedef struct {
   const MV *ref_mv;
   FULLPEL_MV full_ref_mv;
+  MV_COST_TYPE mv_cost_type;
   const int *mvjcost;
   const int *mvcost[2];
   int error_per_bit;
   int sad_per_bit;
-  MV_COST_TYPE mv_cost_type;
 } MV_COST_PARAMS;
 
 int av1_mv_bit_cost(const MV *mv, const MV *ref_mv, const int *mvjcost,
                     int *mvcost[2], int weight);
 
-int av1_get_mvpred_sse(const MACROBLOCK *x, const FULLPEL_MV *best_mv,
-                       const MV *ref_mv, const aom_variance_fn_ptr_t *vfp);
+int av1_get_mvpred_sse(const MV_COST_PARAMS *mv_cost_params,
+                       const FULLPEL_MV best_mv,
+                       const aom_variance_fn_ptr_t *vfp,
+                       const struct buf_2d *src, const struct buf_2d *pre);
 int av1_get_mvpred_compound_var(const MV_COST_PARAMS *ms_params,
                                 const FULLPEL_MV best_mv,
                                 const uint8_t *second_pred, const uint8_t *mask,
