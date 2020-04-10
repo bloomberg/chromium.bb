@@ -16,11 +16,13 @@ field_limit=80
 verbose=0
 only_stdout=0
 string_data_array=()
+not_string_data_array=()
 
 print_usage() {
   cat  <<HELP_USAGE
 
-Usage:  $0 -c|--count <search_string> OR -s|--string <search_string>
+Usage:  $0 -c|--count <search_string>
+           OR -s|--string <search_string>|-ns <search_string>
      [-w|-when] <when_string>
      [-l|--limit] <limit_string> [--field_limit <field_limit>]
      [-v|--verbose] [--usage|-u|--help|-h]
@@ -32,6 +34,11 @@ Usage:  $0 -c|--count <search_string> OR -s|--string <search_string>
      so that
        query_build_logs -s "String1" -s "String2" -s "String3"
      returns run where the output contains all 3 search strings.
+     The -ns species results that do NOT match. An -ns args can
+     be used alone but is typically paired with a -s arg to eliminate some
+     matches, such as
+       query_build_logs -s "String1" -s "String2" -ns "string3"
+     to find logs that contain String1 and String2 but not String3
 
      search_string : What to search for in build_cmd logs.
      when_string   : Which dremel table, such as last7days, last1days, etc.
@@ -49,6 +56,10 @@ while (( "$#" )); do
   case "$1" in
     -s|--string)
       string_data_array=( "${string_data_array[@]}" "$2" )
+      shift 2
+      ;;
+    -ns|--not_string)
+      not_string_data_array=( "${not_string_data_array[@]}" "$2" )
       shift 2
       ;;
     -c|--count)
@@ -87,6 +98,7 @@ while (( "$#" )); do
 done
 
 string_data_arraylen=${#string_data_array[@]}
+not_string_data_arraylen=${#not_string_data_array[@]}
 
 if [[ $string_data_arraylen -ne 0 ]] && [[ ! -z ${count_data} ]]; then
   echo "Specifying both -s and -c is not allowed."
@@ -107,9 +119,9 @@ if [[ ! -z ${count_data} ]]; then
   exit 0
 fi
 
-if [[ $string_data_arraylen -eq 0 ]]
-then
-  echo "No search string specified. -s|--string <search_string> is required."
+if [[ $string_data_arraylen -eq 0 && $not_string_data_arraylen -eq 0 ]]; then
+  echo "No search string specified."
+  echo " -s|--string <search_string> or -ns <search_string> is required."
   print_usage
 fi
 
@@ -144,6 +156,16 @@ do
     query="$query WHERE stdout LIKE \"%${string_data}%\""
   else
     query="$query AND stdout LIKE \"%${string_data}%\""
+  fi
+done
+
+for (( index=0; index < $not_string_data_arraylen; index++ ))
+do
+  not_string_data=${not_string_data_array[$index]}
+  if [[ $index -eq 0 && $string_data_arraylen -eq 0 ]]; then
+    query="$query WHERE stdout NOT LIKE \"%${not_string_data}%\""
+  else
+    query="$query AND stdout NOT LIKE \"%${not_string_data}%\""
   fi
 done
 
