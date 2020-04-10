@@ -227,7 +227,7 @@ void aom_quantize_b_adaptive_avx2(
     const int rc = scan[(*eob_ptr - 1)];
     if (qcoeff_ptr[rc] == 1 || qcoeff_ptr[rc] == -1) {
       const int coeff0 = coeff_ptr[rc] * wt;
-      const int coeff_sign = (coeff0 >> 31);
+      const int coeff_sign = AOMSIGN(coeff0);
       const int abs_coeff = (coeff0 ^ coeff_sign) - coeff_sign;
       const int factor = EOB_FACTOR + SKIP_EOB_FACTOR_ADJUST;
       const int prescan_add_val =

@@ -283,7 +283,7 @@ void aom_highbd_quantize_b_adaptive_sse2(
     const int rc = scan[(*eob_ptr - 1)];
     if (qcoeff_ptr[rc] == 1 || qcoeff_ptr[rc] == -1) {
       const int coeff = coeff_ptr[rc] * wt;
-      const int coeff_sign = (coeff >> 31);
+      const int coeff_sign = AOMSIGN(coeff);
       const int abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
       const int factor = EOB_FACTOR + SKIP_EOB_FACTOR_ADJUST;
       const int prescan_add_val =
@@ -500,7 +500,7 @@ void aom_highbd_quantize_b_32x32_adaptive_sse2(
     const int rc = scan[(*eob_ptr - 1)];
     if (qcoeff_ptr[rc] == 1 || qcoeff_ptr[rc] == -1) {
       const int coeff = coeff_ptr[rc] * wt;
-      const int coeff_sign = (coeff >> 31);
+      const int coeff_sign = AOMSIGN(coeff);
       const int abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
       const int factor = EOB_FACTOR + SKIP_EOB_FACTOR_ADJUST;
       const int prescan_add_val =
@@ -716,7 +716,7 @@ void aom_highbd_quantize_b_64x64_adaptive_sse2(
     const int rc = scan[(*eob_ptr - 1)];
     if (qcoeff_ptr[rc] == 1 || qcoeff_ptr[rc] == -1) {
       const int coeff = coeff_ptr[rc] * wt;
-      const int coeff_sign = (coeff >> 31);
+      const int coeff_sign = AOMSIGN(coeff);
       const int abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
       const int factor = EOB_FACTOR + SKIP_EOB_FACTOR_ADJUST;
       const int prescan_add_val =

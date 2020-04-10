@@ -134,7 +134,7 @@ void aom_highbd_quantize_b_32x32_sse2(
   for (i = 0; i < idx; i++) {
     const int rc = idx_arr[i];
     const int coeff = coeff_ptr[rc];
-    const int coeff_sign = (coeff >> 31);
+    const int coeff_sign = AOMSIGN(coeff);
     const int abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
     const int64_t tmp1 = abs_coeff + ROUND_POWER_OF_TWO(round_ptr[rc != 0], 1);
     const int64_t tmp2 = ((tmp1 * quant_ptr[rc != 0]) >> 16) + tmp1;
@@ -192,7 +192,7 @@ void aom_highbd_quantize_b_64x64_sse2(
   for (i = 0; i < idx; i++) {
     const int rc = idx_arr[i];
     const int coeff = coeff_ptr[rc];
-    const int coeff_sign = (coeff >> 31);
+    const int coeff_sign = AOMSIGN(coeff);
     const int abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
     const int64_t tmp1 = abs_coeff + ROUND_POWER_OF_TWO(round_ptr[rc != 0], 2);
     const int64_t tmp2 = ((tmp1 * quant_ptr[rc != 0]) >> 16) + tmp1;

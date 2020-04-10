@@ -54,7 +54,7 @@ void aom_quantize_b_adaptive_helper_c(
   for (i = 0; i < non_zero_count; i++) {
     const int rc = scan[i];
     const int coeff = coeff_ptr[rc];
-    const int coeff_sign = (coeff >> 31);
+    const int coeff_sign = AOMSIGN(coeff);
     const int abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
     int tmp32;
 
@@ -140,7 +140,7 @@ void aom_quantize_b_helper_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
   for (i = 0; i < non_zero_count; i++) {
     const int rc = scan[i];
     const int coeff = coeff_ptr[rc];
-    const int coeff_sign = (coeff >> 31);
+    const int coeff_sign = AOMSIGN(coeff);
     const int abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
     int tmp32;
 
@@ -209,7 +209,7 @@ void aom_highbd_quantize_b_adaptive_helper_c(
   for (i = 0; i < non_zero_count; i++) {
     const int rc = scan[i];
     const int coeff = coeff_ptr[rc];
-    const int coeff_sign = (coeff >> 31);
+    const int coeff_sign = AOMSIGN(coeff);
     const qm_val_t wt = qm_ptr != NULL ? qm_ptr[rc] : (1 << AOM_QM_BITS);
     const int abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
     if (abs_coeff * wt >= (zbins[rc != 0] << AOM_QM_BITS)) {
@@ -292,7 +292,7 @@ void aom_highbd_quantize_b_helper_c(
   for (i = 0; i < idx; i++) {
     const int rc = scan[idx_arr[i]];
     const int coeff = coeff_ptr[rc];
-    const int coeff_sign = (coeff >> 31);
+    const int coeff_sign = AOMSIGN(coeff);
     const qm_val_t wt = qm_ptr != NULL ? qm_ptr[rc] : (1 << AOM_QM_BITS);
     const qm_val_t iwt = iqm_ptr != NULL ? iqm_ptr[rc] : (1 << AOM_QM_BITS);
     const int abs_coeff = (coeff ^ coeff_sign) - coeff_sign;

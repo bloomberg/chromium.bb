@@ -57,7 +57,7 @@ static void quantize_fp_helper_c(
       const int rc = scan[i];
       const int32_t thresh = (int32_t)(dequant_ptr[rc != 0]);
       const int coeff = coeff_ptr[rc];
-      const int coeff_sign = (coeff >> 31);
+      const int coeff_sign = AOMSIGN(coeff);
       int64_t abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
       int tmp32 = 0;
       if ((abs_coeff << (1 + log_scale)) >= thresh) {
@@ -84,7 +84,7 @@ static void quantize_fp_helper_c(
       const int dequant =
           (dequant_ptr[rc != 0] * iwt + (1 << (AOM_QM_BITS - 1))) >>
           AOM_QM_BITS;
-      const int coeff_sign = (coeff >> 31);
+      const int coeff_sign = AOMSIGN(coeff);
       int64_t abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
       int tmp32 = 0;
       if (abs_coeff * wt >=
@@ -132,7 +132,7 @@ static void highbd_quantize_fp_helper_c(
       const int dequant =
           (dequant_ptr[rc != 0] * iwt + (1 << (AOM_QM_BITS - 1))) >>
           AOM_QM_BITS;
-      const int coeff_sign = (coeff >> 31);
+      const int coeff_sign = AOMSIGN(coeff);
       const int64_t abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
       int abs_qcoeff = 0;
       if (abs_coeff * wt >=
@@ -159,7 +159,7 @@ static void highbd_quantize_fp_helper_c(
       const int rc = scan[i];
       const int coeff = coeff_ptr[rc];
       const int rc01 = (rc != 0);
-      const int coeff_sign = (coeff >> 31);
+      const int coeff_sign = AOMSIGN(coeff);
       const int abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
       const int log_scaled_round = log_scaled_round_arr[rc01];
       if ((abs_coeff << (1 + log_scale)) >= dequant_ptr[rc01]) {
@@ -207,7 +207,7 @@ void av1_quantize_lp_c(const int16_t *coeff_ptr, intptr_t n_coeffs,
   for (int i = 0; i < n_coeffs; i++) {
     const int rc = scan[i];
     const int coeff = coeff_ptr[rc];
-    const int coeff_sign = (coeff >> 31);
+    const int coeff_sign = AOMSIGN(coeff);
     const int abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
 
     int tmp = clamp(abs_coeff + round_ptr[rc != 0], INT16_MIN, INT16_MAX);
@@ -358,7 +358,7 @@ static void quantize_dc(const tran_low_t *coeff_ptr, int n_coeffs,
                         const qm_val_t *iqm_ptr, const int log_scale) {
   const int rc = 0;
   const int coeff = coeff_ptr[rc];
-  const int coeff_sign = (coeff >> 31);
+  const int coeff_sign = AOMSIGN(coeff);
   const int abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
   int64_t tmp;
   int eob = -1;
@@ -503,7 +503,7 @@ static INLINE void highbd_quantize_dc(
     const qm_val_t wt = qm_ptr != NULL ? qm_ptr[0] : (1 << AOM_QM_BITS);
     const qm_val_t iwt = iqm_ptr != NULL ? iqm_ptr[0] : (1 << AOM_QM_BITS);
     const int coeff = coeff_ptr[0];
-    const int coeff_sign = (coeff >> 31);
+    const int coeff_sign = AOMSIGN(coeff);
     const int abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
     const int64_t tmp = abs_coeff + ROUND_POWER_OF_TWO(round_ptr[0], log_scale);
     const int64_t tmpw = tmp * wt;

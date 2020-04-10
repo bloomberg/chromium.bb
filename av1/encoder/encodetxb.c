@@ -738,7 +738,7 @@ static INLINE void update_coeff_eob_fast(int *eob, int shift,
     const int rc = scan[i];
     const int qcoeff = qcoeff_ptr[rc];
     const int coeff = coeff_ptr[rc];
-    const int coeff_sign = (coeff >> 31);
+    const int coeff_sign = AOMSIGN(coeff);
     int64_t abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
 
     if (((abs_coeff << (1 + shift)) < zbin[rc != 0]) || (qcoeff == 0)) {
@@ -789,7 +789,7 @@ static AOM_FORCE_INLINE int warehouse_efficients_txb(
   {
     const int pos = scan[c];
     const tran_low_t v = qcoeff[pos];
-    const int sign = v >> 31;
+    const int sign = AOMSIGN(v);
     const int level = (v ^ sign) - sign;
     const int coeff_ctx = coeff_contexts[pos];
     cost += coeff_costs->base_eob_cost[coeff_ctx][AOMMIN(level, 3) - 1];
@@ -831,7 +831,7 @@ static AOM_FORCE_INLINE int warehouse_efficients_txb(
     const int pos = scan[c];
     const tran_low_t v = qcoeff[pos];
     const int coeff_ctx = coeff_contexts[pos];
-    const int sign = v >> 31;
+    const int sign = AOMSIGN(v);
     const int level = (v ^ sign) - sign;
     cost += base_cost[coeff_ctx][AOMMIN(level, 3)];
 
