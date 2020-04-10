@@ -224,9 +224,10 @@ void av1_enc_build_inter_predictor(const AV1_COMMON *cm, MACROBLOCKD *xd,
   }
 }
 
-void av1_build_inter_predictor(uint8_t *dst, int dst_stride, const MV *src_mv,
-                               InterPredParams *inter_pred_params) {
-  SubpelParams subpel_params;
+static void enc_calc_subpel_params(const MV *const src_mv,
+                                   InterPredParams *const inter_pred_params,
+                                   uint8_t **pre, SubpelParams *subpel_params,
+                                   int *src_stride) {
   const struct scale_factors *sf = inter_pred_params->scale_factors;
 
   struct buf_2d *pre_buf = &inter_pred_params->ref_frame_buf;
@@ -248,20 +249,29 @@ void av1_build_inter_predictor(uint8_t *dst, int dst_stride, const MV *src_mv,
   pos_y = clamp(pos_y, top, bottom);
   pos_x = clamp(pos_x, left, right);
 
-  uint8_t *src = pre_buf->buf0 +
-                 (pos_y >> SCALE_SUBPEL_BITS) * pre_buf->stride +
-                 (pos_x >> SCALE_SUBPEL_BITS);
-  subpel_params.subpel_x = pos_x & SCALE_SUBPEL_MASK;
-  subpel_params.subpel_y = pos_y & SCALE_SUBPEL_MASK;
-  subpel_params.xs = sf->x_step_q4;
-  subpel_params.ys = sf->y_step_q4;
+  subpel_params->subpel_x = pos_x & SCALE_SUBPEL_MASK;
+  subpel_params->subpel_y = pos_y & SCALE_SUBPEL_MASK;
+  subpel_params->xs = sf->x_step_q4;
+  subpel_params->ys = sf->y_step_q4;
+  *pre = pre_buf->buf0 + (pos_y >> SCALE_SUBPEL_BITS) * pre_buf->stride +
+         (pos_x >> SCALE_SUBPEL_BITS);
+  *src_stride = pre_buf->stride;
+}
+
+void av1_build_inter_predictor(uint8_t *dst, int dst_stride, const MV *src_mv,
+                               InterPredParams *inter_pred_params) {
+  uint8_t *src;
+  SubpelParams subpel_params;
+  int src_stride;
+  enc_calc_subpel_params(src_mv, inter_pred_params, &src, &subpel_params,
+                         &src_stride);
 
   if (inter_pred_params->comp_mode == UNIFORM_SINGLE ||
       inter_pred_params->comp_mode == UNIFORM_COMP)
-    av1_make_inter_predictor(src, pre_buf->stride, dst, dst_stride,
+    av1_make_inter_predictor(src, src_stride, dst, dst_stride,
                              inter_pred_params, &subpel_params);
   else
-    av1_make_masked_inter_predictor(src, pre_buf->stride, dst, dst_stride,
+    av1_make_masked_inter_predictor(src, src_stride, dst, dst_stride,
                                     inter_pred_params, &subpel_params);
 }
 
