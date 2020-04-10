@@ -539,21 +539,25 @@ static INLINE void extend_mc_border(const struct scale_factors *const sf,
   }
 }
 
-static INLINE void dec_calc_subpel_params(
-    MACROBLOCKD *xd, const struct scale_factors *const sf, const MV mv,
-    int plane, const int pre_x, const int pre_y, int x, int y,
-    struct buf_2d *const pre_buf, SubpelParams *subpel_params, int bw, int bh,
-    PadBlock *block, int mi_x, int mi_y, MV32 *scaled_mv, int *subpel_x_mv,
-    int *subpel_y_mv) {
-  struct macroblockd_plane *const pd = &xd->plane[plane];
+static void dec_calc_subpel_params(const MV *const src_mv,
+                                   InterPredParams *const inter_pred_params,
+                                   const MACROBLOCKD *const xd, int mi_x,
+                                   int mi_y, uint8_t **pre,
+                                   SubpelParams *subpel_params, int *src_stride,
+                                   PadBlock *block, MV32 *scaled_mv,
+                                   int *subpel_x_mv, int *subpel_y_mv) {
+  const struct scale_factors *sf = inter_pred_params->scale_factors;
+  struct buf_2d *pre_buf = &inter_pred_params->ref_frame_buf;
+  const int bw = inter_pred_params->block_width;
+  const int bh = inter_pred_params->block_height;
   const int is_scaled = av1_is_scaled(sf);
   if (is_scaled) {
-    int ssx = pd->subsampling_x;
-    int ssy = pd->subsampling_y;
-    int orig_pos_y = (pre_y + y) << SUBPEL_BITS;
-    orig_pos_y += mv.row * (1 << (1 - ssy));
-    int orig_pos_x = (pre_x + x) << SUBPEL_BITS;
-    orig_pos_x += mv.col * (1 << (1 - ssx));
+    int ssx = inter_pred_params->subsampling_x;
+    int ssy = inter_pred_params->subsampling_y;
+    int orig_pos_y = inter_pred_params->pix_row << SUBPEL_BITS;
+    orig_pos_y += src_mv->row * (1 << (1 - ssy));
+    int orig_pos_x = inter_pred_params->pix_col << SUBPEL_BITS;
+    orig_pos_x += src_mv->col * (1 << (1 - ssx));
     int pos_y = sf->scale_value_y(orig_pos_y, sf);
     int pos_x = sf->scale_value_x(orig_pos_x, sf);
     pos_x += SCALE_EXTRA_OFF;
@@ -583,9 +587,10 @@ static INLINE void dec_calc_subpel_params(
         ((pos_y + (bh - 1) * subpel_params->ys) >> SCALE_SUBPEL_BITS) + 1;
 
     MV temp_mv;
-    temp_mv = clamp_mv_to_umv_border_sb(xd, &mv, bw, bh, pd->subsampling_x,
-                                        pd->subsampling_y);
-    *scaled_mv = av1_scale_mv(&temp_mv, (mi_x + x), (mi_y + y), sf);
+    temp_mv = clamp_mv_to_umv_border_sb(xd, src_mv, bw, bh,
+                                        inter_pred_params->subsampling_x,
+                                        inter_pred_params->subsampling_y);
+    *scaled_mv = av1_scale_mv(&temp_mv, mi_x, mi_y, sf);
     scaled_mv->row += SCALE_EXTRA_OFF;
     scaled_mv->col += SCALE_EXTRA_OFF;
 
@@ -593,11 +598,12 @@ static INLINE void dec_calc_subpel_params(
     *subpel_y_mv = scaled_mv->row & SCALE_SUBPEL_MASK;
   } else {
     // Get block position in current frame.
-    int pos_x = (pre_x + x) << SUBPEL_BITS;
-    int pos_y = (pre_y + y) << SUBPEL_BITS;
+    int pos_x = inter_pred_params->pix_col << SUBPEL_BITS;
+    int pos_y = inter_pred_params->pix_row << SUBPEL_BITS;
 
     const MV mv_q4 = clamp_mv_to_umv_border_sb(
-        xd, &mv, bw, bh, pd->subsampling_x, pd->subsampling_y);
+        xd, src_mv, bw, bh, inter_pred_params->subsampling_x,
+        inter_pred_params->subsampling_y);
     subpel_params->xs = subpel_params->ys = SCALE_SUBPEL_SHIFTS;
     subpel_params->subpel_x = (mv_q4.col & SUBPEL_MASK) << SCALE_EXTRA_BITS;
     subpel_params->subpel_y = (mv_q4.row & SUBPEL_MASK) << SCALE_EXTRA_BITS;
@@ -617,32 +623,46 @@ static INLINE void dec_calc_subpel_params(
     *subpel_x_mv = scaled_mv->col & SUBPEL_MASK;
     *subpel_y_mv = scaled_mv->row & SUBPEL_MASK;
   }
+  *pre = pre_buf->buf0 + block->y0 * pre_buf->stride + block->x0;
+  *src_stride = pre_buf->stride;
 }
 
 static void dec_calc_subpel_params_and_extend(
-    MACROBLOCKD *xd, const struct scale_factors *const sf, const MV mv,
-    int plane, const MB_MODE_INFO *mi, int pre_x, int pre_y, int x, int y,
-    struct buf_2d *const pre_buf, int bw, int bh, int mi_x, int mi_y, int ref,
-    int is_intrabc, int build_for_obmc,
-    const WarpTypesAllowed *const warp_types, uint8_t **pre,
+    const MV *const src_mv, InterPredParams *const inter_pred_params,
+    MACROBLOCKD *xd, int mi_x, int mi_y, int ref, uint8_t **pre,
     SubpelParams *subpel_params, int *src_stride) {
   PadBlock block;
   MV32 scaled_mv;
   int subpel_x_mv, subpel_y_mv;
-  dec_calc_subpel_params(xd, sf, mv, plane, pre_x, pre_y, x, y, pre_buf,
-                         subpel_params, bw, bh, &block, mi_x, mi_y, &scaled_mv,
+  dec_calc_subpel_params(src_mv, inter_pred_params, xd, mi_x, mi_y, pre,
+                         subpel_params, src_stride, &block, &scaled_mv,
                          &subpel_x_mv, &subpel_y_mv);
-  *pre = pre_buf->buf0 + block.y0 * pre_buf->stride + block.x0;
-  *src_stride = pre_buf->stride;
-  const int highbd = is_cur_buf_hbd(xd);
-  const int do_warp =
-      bw >= 8 && bh >= 8 &&
-      av1_allow_warp(mi, warp_types, &xd->global_motion[mi->ref_frame[ref]],
-                     build_for_obmc, sf, NULL) &&
-      (xd->cur_frame_force_integer_mv == 0);
-  extend_mc_border(sf, pre_buf, scaled_mv, block, subpel_x_mv, subpel_y_mv,
-                   do_warp, is_intrabc, highbd, xd->mc_buf[ref], pre,
-                   src_stride);
+  extend_mc_border(
+      inter_pred_params->scale_factors, &inter_pred_params->ref_frame_buf,
+      scaled_mv, block, subpel_x_mv, subpel_y_mv,
+      inter_pred_params->mode == WARP_PRED, inter_pred_params->is_intrabc,
+      inter_pred_params->use_hbd_buf, xd->mc_buf[ref], pre, src_stride);
+}
+
+static void dec_build_one_inter_predictor(uint8_t *dst, int dst_stride,
+                                          const MV *const src_mv,
+                                          InterPredParams *inter_pred_params,
+                                          MACROBLOCKD *xd, int mi_x, int mi_y,
+                                          int ref) {
+  SubpelParams subpel_params;
+  uint8_t *src;
+  int src_stride;
+  dec_calc_subpel_params_and_extend(src_mv, inter_pred_params, xd, mi_x, mi_y,
+                                    ref, &src, &subpel_params, &src_stride);
+
+  if (inter_pred_params->comp_mode == UNIFORM_SINGLE ||
+      inter_pred_params->comp_mode == UNIFORM_COMP) {
+    av1_make_inter_predictor(src, src_stride, dst, dst_stride,
+                             inter_pred_params, &subpel_params);
+  } else {
+    av1_make_masked_inter_predictor(src, src_stride, dst, dst_stride,
+                                    inter_pred_params, &subpel_params);
+  }
 }
 
 static void dec_build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
@@ -726,18 +746,6 @@ static void dec_build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
         const MV mv = this_mbmi->mv[ref].as_mv;
 
-        const WarpTypesAllowed warp_types = {
-          is_global[ref], this_mbmi->motion_mode == WARPED_CAUSAL
-        };
-
-        SubpelParams subpel_params;
-        uint8_t *pre;
-        int src_stride;
-        dec_calc_subpel_params_and_extend(
-            xd, sf, mv, plane, mi, pre_x, pre_y, x, y, &pre_buf, bw, bh, mi_x,
-            mi_y, ref, is_intrabc, build_for_obmc, &warp_types, &pre,
-            &subpel_params, &src_stride);
-
         InterPredParams inter_pred_params;
         av1_init_inter_params(&inter_pred_params, b4_w, b4_h, pre_y + y,
                               pre_x + x, pd->subsampling_x, pd->subsampling_y,
@@ -747,8 +755,9 @@ static void dec_build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
             ref, plane, xd->tmp_conv_dst, tmp_dst_stride, is_compound, xd->bd);
         inter_pred_params.conv_params.use_dist_wtd_comp_avg = 0;
 
-        av1_make_inter_predictor(pre, src_stride, dst, dst_buf->stride,
-                                 &inter_pred_params, &subpel_params);
+        dec_build_one_inter_predictor(dst, dst_buf->stride, &mv,
+                                      &inter_pred_params, xd, mi_x + x,
+                                      mi_y + y, ref);
 
         ++col;
       }
@@ -769,14 +778,6 @@ static void dec_build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
       const MV mv = mi->mv[ref].as_mv;
       const WarpTypesAllowed warp_types = { is_global[ref],
                                             mi->motion_mode == WARPED_CAUSAL };
-
-      SubpelParams subpel_params;
-      uint8_t *pre;
-      int src_stride;
-      dec_calc_subpel_params_and_extend(xd, sf, mv, plane, mi, pre_x, pre_y, 0,
-                                        0, pre_buf, bw, bh, mi_x, mi_y, ref,
-                                        is_intrabc, build_for_obmc, &warp_types,
-                                        &pre, &subpel_params, &src_stride);
 
       av1_init_inter_params(&inter_pred_params, bw, bh, pre_y, pre_x,
                             pd->subsampling_x, pd->subsampling_y, xd->bd,
@@ -801,14 +802,8 @@ static void dec_build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
         inter_pred_params.mask_comp.seg_mask = xd->seg_mask;
       }
 
-      if (inter_pred_params.comp_mode == UNIFORM_SINGLE ||
-          inter_pred_params.comp_mode == UNIFORM_COMP) {
-        av1_make_inter_predictor(pre, src_stride, dst, dst_buf->stride,
-                                 &inter_pred_params, &subpel_params);
-      } else {
-        av1_make_masked_inter_predictor(pre, src_stride, dst, dst_buf->stride,
-                                        &inter_pred_params, &subpel_params);
-      }
+      dec_build_one_inter_predictor(dst, dst_buf->stride, &mv,
+                                    &inter_pred_params, xd, mi_x, mi_y, ref);
     }
   }
 }
