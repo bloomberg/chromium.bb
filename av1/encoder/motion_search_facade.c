@@ -222,17 +222,16 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
             smv, &full_ms_params, step_param, cond_cost_list(cpi, cost_list),
             &x->best_mv.as_fullmv, &second_best_mv.as_fullmv);
 
-        // Use first search's second_best_mv
-        // TODO(yunqing): second_best_mv decision will be improved later.
-        if (!m) second_best_mv0 = second_best_mv.as_fullmv;
-
         if (!m || bestsme < cur_bestsme) {
           cur_bestsme = bestsme;
           best_mv = x->best_mv.as_fullmv;
+          second_best_mv0 = second_best_mv.as_fullmv;
         }
 
         sum_weight += cand[m].weight;
         if (m >= 2 || 4 * sum_weight > 3 * total_weight) break;
+        // Reset MVs
+        x->best_mv.as_int = second_best_mv.as_int = INVALID_MV;
       }
       x->best_mv.as_fullmv = best_mv;
       bestsme = cur_bestsme;
