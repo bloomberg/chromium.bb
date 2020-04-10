@@ -1,4 +1,3 @@
-import { getGlslangPath } from './glslang_path.js';
 import { assert, unreachable } from './util/util.js';
 
 type glslang = typeof import('@webgpu/glslang/dist/web-devel/glslang');
@@ -14,7 +13,7 @@ export async function initGLSL(): Promise<void> {
     assert(glslangInstance !== undefined, 'glslang is not available');
   } else {
     glslangAttempted = true;
-    const glslangPath = getGlslangPath() || '../glslang.js';
+    const glslangPath = '../../third_party/glslang_js/lib/glslang.js';
     let glslangModule: () => Promise<Glslang>;
     try {
       glslangModule = ((await import(glslangPath)) as glslang).default;

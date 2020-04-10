@@ -70,7 +70,7 @@ module.exports = function (grunt) {
             expand: true,
             cwd: 'node_modules/@webgpu/glslang/dist/web-devel',
             src: 'glslang.{js,wasm}',
-            dest: 'out/common/',
+            dest: 'out/third_party/glslang_js/lib/',
           },
         ],
       },
