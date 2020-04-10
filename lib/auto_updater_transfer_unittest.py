@@ -1091,7 +1091,20 @@ class CrosLabTransferTest(cros_test_lib.MockTempDirTestCase):
       CrOS_LabTransfer._RemoteDevserverCall(cmd=cmd)
       self.assertListEqual(
           cros_build_lib.run.call_args_list,
-          [mock.call(['ssh', '0.0.0.0'] + cmd, log_output=True)])
+          [mock.call(['ssh', '0.0.0.0'] + cmd, log_output=True, stdout=False)])
+
+  def test_RemoteDevserverCallWithStdout(self):
+    """Test LabTransfer._RemoteDevserverCall()."""
+    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+      CrOS_LabTransfer = CreateLabTransferInstance(device)
+
+      self.PatchObject(cros_build_lib, 'run')
+      cmd = ['test', 'command']
+
+      CrOS_LabTransfer._RemoteDevserverCall(cmd=cmd, stdout=True)
+      self.assertListEqual(
+          cros_build_lib.run.call_args_list,
+          [mock.call(['ssh', '0.0.0.0'] + cmd, log_output=True, stdout=True)])
 
   def test_RemoteDevserverCallError(self):
     """Test LabTransfer._RemoteDevserverCall().

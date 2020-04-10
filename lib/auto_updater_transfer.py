@@ -365,7 +365,7 @@ class LabTransfer(Transfer):
     """
     return r'.*/(R[0-9]+-)(?P<image_version>.+)'
 
-  def _RemoteDevserverCall(self, cmd):
+  def _RemoteDevserverCall(self, cmd, stdout=False):
     """Runs a command on a remote devserver by sshing into it.
 
     Raises cros_build_lib.RunCommandError() if the command could not be run
@@ -373,10 +373,12 @@ class LabTransfer(Transfer):
 
     Args:
       cmd: (list) the command to be run.
+      stdout: True if the stdout of the command should be captured.
     """
     ip = urllib.parse.urlparse(self._staging_server).hostname
     try:
-      return cros_build_lib.run(['ssh', ip] + cmd, log_output=True)
+      return cros_build_lib.run(['ssh', ip] + cmd, log_output=True,
+                                stdout=stdout)
     except cros_build_lib.RunCommandError:
       logging.error('Remote devserver call failed.')
       raise
@@ -545,7 +547,7 @@ class LabTransfer(Transfer):
       cmd = ['curl',
              self._GetStagedUrl(payload_props_filename, self._payload_dir)]
       try:
-        result = self._RemoteDevserverCall(cmd)
+        result = self._RemoteDevserverCall(cmd, stdout=True)
         json.loads(result.output)
       except cros_build_lib.RunCommandError as e:
         logging.error('Unable to get payload properties file by running %s due '
@@ -585,7 +587,7 @@ class LabTransfer(Transfer):
                                      build_id=self._payload_dir)
     cmd = ['curl', '-I', payload_url, '--fail']
     try:
-      proc = self._RemoteDevserverCall(cmd)
+      proc = self._RemoteDevserverCall(cmd, stdout=True)
     except cros_build_lib.RunCommandError as e:
       logging.error('Unable to get payload size by running command %s due '
                     'to exception: %s.', ' '.join(cmd), e)
