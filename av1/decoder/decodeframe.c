@@ -699,8 +699,6 @@ static void dec_build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
     const int b8_h = block_size_high[plane_bsize];
     assert(!is_compound);
 
-    const struct buf_2d orig_pred_buf[2] = { pd->pre[0], pd->pre[1] };
-
     int row = row_start;
     ref = 0;
     for (int y = 0; y < b8_h; y += b4_h) {
@@ -709,31 +707,23 @@ static void dec_build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
         MB_MODE_INFO *this_mbmi = xd->mi[row * xd->mi_stride + col];
         is_compound = has_second_ref(this_mbmi);
         int tmp_dst_stride = 8;
-        InterPredParams inter_pred_params;
         assert(bw < 8 || bh < 8);
-        inter_pred_params.conv_params = get_conv_params_no_round(
-            ref, plane, xd->tmp_conv_dst, tmp_dst_stride, is_compound, xd->bd);
-        inter_pred_params.conv_params.use_dist_wtd_comp_avg = 0;
         struct buf_2d *const dst_buf = &pd->dst;
         uint8_t *dst = dst_buf->buf + dst_buf->stride * y + x;
         const RefCntBuffer *ref_buf =
             get_ref_frame_buf(cm, this_mbmi->ref_frame[ref]);
         const struct scale_factors *ref_scale_factors =
             get_ref_scale_factors_const(cm, this_mbmi->ref_frame[ref]);
-
-        pd->pre[ref].buf0 =
-            (plane == 1) ? ref_buf->buf.u_buffer : ref_buf->buf.v_buffer;
-        pd->pre[ref].buf =
-            pd->pre[ref].buf0 + scaled_buffer_offset(pre_x, pre_y,
-                                                     ref_buf->buf.uv_stride,
-                                                     ref_scale_factors);
-        pd->pre[ref].width = ref_buf->buf.uv_crop_width;
-        pd->pre[ref].height = ref_buf->buf.uv_crop_height;
-        pd->pre[ref].stride = ref_buf->buf.uv_stride;
-
         const struct scale_factors *const sf =
             is_intrabc ? &cm->sf_identity : ref_scale_factors;
-        struct buf_2d *const pre_buf = is_intrabc ? dst_buf : &pd->pre[ref];
+        struct buf_2d pre_buf = {
+          NULL,
+          (plane == 1) ? ref_buf->buf.u_buffer : ref_buf->buf.v_buffer,
+          ref_buf->buf.uv_crop_width,
+          ref_buf->buf.uv_crop_height,
+          ref_buf->buf.uv_stride,
+        };
+        if (is_intrabc) pre_buf = *dst_buf;
 
         const MV mv = this_mbmi->mv[ref].as_mv;
 
@@ -745,16 +735,19 @@ static void dec_build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
         uint8_t *pre;
         int src_stride;
         dec_calc_subpel_params_and_extend(
-            xd, sf, mv, plane, mi, pre_x, pre_y, x, y, pre_buf, bw, bh, mi_x,
+            xd, sf, mv, plane, mi, pre_x, pre_y, x, y, &pre_buf, bw, bh, mi_x,
             mi_y, ref, is_intrabc, build_for_obmc, &warp_types, &pre,
             &subpel_params, &src_stride);
 
-        inter_pred_params.conv_params.do_average = ref;
+        InterPredParams inter_pred_params;
         av1_init_inter_params(
             &inter_pred_params, b4_w, b4_h, (mi_y >> pd->subsampling_y) + y,
             (mi_x >> pd->subsampling_x) + x, pd->subsampling_x,
             pd->subsampling_y, xd->bd, is_cur_buf_hbd(xd), mi->use_intrabc, sf,
-            pre_buf, this_mbmi->interp_filters);
+            &pre_buf, this_mbmi->interp_filters);
+        inter_pred_params.conv_params = get_conv_params_no_round(
+            ref, plane, xd->tmp_conv_dst, tmp_dst_stride, is_compound, xd->bd);
+        inter_pred_params.conv_params.use_dist_wtd_comp_avg = 0;
 
         av1_make_inter_predictor(pre, src_stride, dst, dst_buf->stride,
                                  &inter_pred_params, &subpel_params);
@@ -764,7 +757,6 @@ static void dec_build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
       ++row;
     }
 
-    for (ref = 0; ref < 2; ++ref) pd->pre[ref] = orig_pred_buf[ref];
     return;
   }
 
