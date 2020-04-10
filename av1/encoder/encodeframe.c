@@ -3993,6 +3993,7 @@ static int get_tpl_stats_b(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
   if (gf_group_index >= MAX_LAG_BUFFERS) return 0;
 
   int mi_count = 0;
+  int count = 0;
   const int mi_col_sr =
       coded_to_superres_mi(mi_col, cm->superres_scale_denominator);
   const int mi_col_end_sr =
@@ -4007,20 +4008,30 @@ static int get_tpl_stats_b(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
   const int step = mi_size_wide[tpl_bsize];
   assert(mi_size_wide[tpl_bsize] == mi_size_high[tpl_bsize]);
 
-  const int str = (mi_col_end_sr > mi_cols_sr)
-                      ? (mi_cols_sr - mi_col_sr) / step
-                      : (mi_col_end_sr - mi_col_sr) / step;
-  *stride = str;
+  // Stride is only based on SB size, and we fill in values for every 16x16
+  // block in a SB.
+  *stride = (mi_col_end_sr - mi_col_sr) / step;
 
   for (int row = mi_row; row < mi_row + mi_high; row += step) {
     for (int col = mi_col_sr; col < mi_col_end_sr; col += step) {
-      if (row >= cm->mi_params.mi_rows || col >= mi_cols_sr) continue;
+      // Handle partial SB, so that no invalid values are used later.
+      if (row >= cm->mi_params.mi_rows || col >= mi_cols_sr) {
+        inter_cost_b[count] = INT64_MAX;
+        intra_cost_b[count] = INT64_MAX;
+        for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
+          mv_b[count][i].as_int = INVALID_MV;
+        }
+        count++;
+        continue;
+      }
+
       TplDepStats *this_stats = &tpl_stats[av1_tpl_ptr_pos(
           row, col, tpl_stride, tpl_data->tpl_stats_block_mis_log2)];
-      inter_cost_b[mi_count] = this_stats->inter_cost;
-      intra_cost_b[mi_count] = this_stats->intra_cost;
-      memcpy(mv_b[mi_count], this_stats->mv, sizeof(this_stats->mv));
+      inter_cost_b[count] = this_stats->inter_cost;
+      intra_cost_b[count] = this_stats->intra_cost;
+      memcpy(mv_b[count], this_stats->mv, sizeof(this_stats->mv));
       mi_count++;
+      count++;
     }
   }
 
