@@ -162,7 +162,7 @@ void av1_nn_predict_sse3(const float *input_nodes,
     const float *layer_weights = nn_config->weights[layer];
     const float *layer_bias = nn_config->bias[layer];
     bool output_layer = (layer == nn_config->num_hidden_layers);
-    float *const output_nodes = output_layer ? output : buf[buf_index];
+    float *const output_nodes = output_layer ? output : &buf[buf_index][0];
     const int num_outputs = output_layer ? nn_config->num_outputs
                                          : nn_config->num_hidden_nodes[layer];
 
