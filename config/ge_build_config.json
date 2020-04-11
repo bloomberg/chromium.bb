@@ -734,18 +734,6 @@
       ]
     },
     {
-      "name": "hatch-blueznext",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": false,
-          "board_group": "hatch",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "heli",
       "configs": [
         {
@@ -1762,6 +1750,14 @@
       "models": [
         {
           "board_name": "dedede",
+          "name": "waddledee",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 419,
+          "is_active": true
+        },
+        {
+          "board_name": "dedede",
           "name": "waddledoo",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
@@ -2743,6 +2739,119 @@
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
           "board_id": 436,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "name": "hatch-blueznext",
+      "reference_board_name": "hatch-blueznext",
+      "arch": "X86_INTERNAL",
+      "builder": "RELEASE",
+      "experimental": true,
+      "models": [
+        {
+          "board_name": "hatch-blueznext",
+          "name": "akemi",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 443,
+          "is_active": true
+        },
+        {
+          "board_name": "hatch-blueznext",
+          "name": "dragonair",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 443,
+          "is_active": true
+        },
+        {
+          "board_name": "hatch-blueznext",
+          "name": "dratini",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 443,
+          "is_active": true
+        },
+        {
+          "board_name": "hatch-blueznext",
+          "name": "hatch",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 443,
+          "is_active": true
+        },
+        {
+          "board_name": "hatch-blueznext",
+          "name": "helios",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 443,
+          "is_active": true
+        },
+        {
+          "board_name": "hatch-blueznext",
+          "name": "helios_diskswap",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 443,
+          "is_active": true
+        },
+        {
+          "board_name": "hatch-blueznext",
+          "name": "jinlon",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 443,
+          "is_active": true
+        },
+        {
+          "board_name": "hatch-blueznext",
+          "name": "kindred",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 443,
+          "is_active": true
+        },
+        {
+          "board_name": "hatch-blueznext",
+          "name": "kled",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 443,
+          "is_active": true
+        },
+        {
+          "board_name": "hatch-blueznext",
+          "name": "kohaku",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 443,
+          "is_active": true
+        },
+        {
+          "board_name": "hatch-blueznext",
+          "name": "nightfury",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 443,
+          "is_active": true
+        },
+        {
+          "board_name": "hatch-blueznext",
+          "name": "unprovisioned_dratini",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 443,
+          "is_active": true
+        },
+        {
+          "board_name": "hatch-blueznext",
+          "name": "unprovisioned_jinlon",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 443,
           "is_active": true
         }
       ]
