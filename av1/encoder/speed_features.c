@@ -250,7 +250,10 @@ static void set_rt_speed_feature_framesize_dependent(const AV1_COMP *const cpi,
 
   if (!is_360p_or_larger) {
     if (speed >= 6) sf->rt_sf.force_tx_search_off = 1;
-    if (speed >= 8) sf->rt_sf.use_nonrd_filter_search = 0;
+    if (speed >= 8) {
+      sf->rt_sf.use_modeled_non_rd_cost = 0;
+      sf->rt_sf.use_nonrd_filter_search = 0;
+    }
   }
   if (is_360p_or_larger) {
     if (speed >= 7) {
