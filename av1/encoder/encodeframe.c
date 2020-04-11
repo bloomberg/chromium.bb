@@ -4997,6 +4997,10 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
                                      TokenExtra **tp) {
   AV1_COMMON *const cm = &cpi->common;
   const TileInfo *const tile_info = &tile_data->tile_info;
+  MultiThreadInfo *const mt_info = &cpi->mt_info;
+  AV1EncRowMultiThreadInfo *const enc_row_mt = &mt_info->enc_row_mt;
+  AV1EncRowMultiThreadSync *const row_mt_sync = &tile_data->row_mt_sync;
+  bool row_mt_enabled = mt_info->row_mt_enabled;
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
   const int sb_cols_in_tile = av1_get_sb_cols_in_tile(cm, tile_data->tile_info);
@@ -5014,7 +5018,7 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
   av1_zero_left_context(xd);
 
   // Reset delta for every tile
-  if (mi_row == tile_info->mi_row_start || cpi->row_mt) {
+  if (mi_row == tile_info->mi_row_start || row_mt_enabled) {
     if (cm->delta_q_info.delta_q_present_flag)
       xd->current_qindex = cm->quant_params.base_qindex;
     if (cm->delta_q_info.delta_lf_present_flag) {
@@ -5026,9 +5030,9 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
   // Code each SB in the row
   for (int mi_col = tile_info->mi_col_start, sb_col_in_tile = 0;
        mi_col < tile_info->mi_col_end; mi_col += mib_size, sb_col_in_tile++) {
-    (*(cpi->row_mt_sync_read_ptr))(&tile_data->row_mt_sync, sb_row,
-                                   sb_col_in_tile);
-    if (tile_data->allow_update_cdf && (cpi->row_mt == 1) &&
+    (*(enc_row_mt->sync_read_ptr))(row_mt_sync, sb_row, sb_col_in_tile);
+
+    if (tile_data->allow_update_cdf && row_mt_enabled &&
         (tile_info->mi_row_start != mi_row)) {
       if ((tile_info->mi_col_start == mi_col)) {
         // restore frame context of 1st column sb
@@ -5073,7 +5077,7 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
       encode_rd_sb(cpi, td, tile_data, tp, mi_row, mi_col, seg_skip);
     }
 
-    if (tile_data->allow_update_cdf && (cpi->row_mt == 1) &&
+    if (tile_data->allow_update_cdf && row_mt_enabled &&
         (tile_info->mi_row_end > (mi_row + mib_size))) {
       if (sb_cols_in_tile == 1)
         memcpy(x->row_ctx, xd->tile_ctx, sizeof(*xd->tile_ctx));
@@ -5081,8 +5085,8 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
         memcpy(x->row_ctx + sb_col_in_tile - 1, xd->tile_ctx,
                sizeof(*xd->tile_ctx));
     }
-    (*(cpi->row_mt_sync_write_ptr))(&tile_data->row_mt_sync, sb_row,
-                                    sb_col_in_tile, sb_cols_in_tile);
+    (*(enc_row_mt->sync_write_ptr))(row_mt_sync, sb_row, sb_col_in_tile,
+                                    sb_cols_in_tile);
   }
 #if CONFIG_COLLECT_COMPONENT_TIMING
   end_timing(cpi, encode_sb_time);
@@ -5742,6 +5746,8 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
   GlobalMotionInfo *const gm_info = &cpi->gm_info;
   FrameProbInfo *const frame_probs = &cpi->frame_probs;
   IntraBCHashInfo *const intrabc_hash_info = &x->intrabc_hash_info;
+  MultiThreadInfo *const mt_info = &cpi->mt_info;
+  AV1EncRowMultiThreadInfo *const enc_row_mt = &mt_info->enc_row_mt;
   int i;
 
   if (!cpi->sf.rt_sf.use_nonrd_pick_mode) {
@@ -6017,14 +6023,14 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
   cm->current_frame.skip_mode_info.skip_mode_flag =
       check_skip_mode_enabled(cpi);
 
-  cpi->row_mt_sync_read_ptr = av1_row_mt_sync_read_dummy;
-  cpi->row_mt_sync_write_ptr = av1_row_mt_sync_write_dummy;
-  cpi->row_mt = 0;
+  enc_row_mt->sync_read_ptr = av1_row_mt_sync_read_dummy;
+  enc_row_mt->sync_write_ptr = av1_row_mt_sync_write_dummy;
+  mt_info->row_mt_enabled = 0;
 
   if (cpi->oxcf.row_mt && (cpi->oxcf.max_threads > 1)) {
-    cpi->row_mt = 1;
-    cpi->row_mt_sync_read_ptr = av1_row_mt_sync_read;
-    cpi->row_mt_sync_write_ptr = av1_row_mt_sync_write;
+    mt_info->row_mt_enabled = 1;
+    enc_row_mt->sync_read_ptr = av1_row_mt_sync_read;
+    enc_row_mt->sync_write_ptr = av1_row_mt_sync_write;
     av1_encode_tiles_row_mt(cpi);
   } else {
     if (AOMMIN(cpi->oxcf.max_threads, cm->tiles.cols * cm->tiles.rows) > 1)

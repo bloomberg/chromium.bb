@@ -604,23 +604,6 @@ typedef struct inter_modes_info {
   RD_STATS rd_cost_uv_arr[MAX_INTER_MODES];
 } InterModesInfo;
 
-// Encoder row synchronization
-typedef struct AV1RowMTSyncData {
-#if CONFIG_MULTITHREAD
-  pthread_mutex_t *mutex_;
-  pthread_cond_t *cond_;
-#endif
-  // Allocate memory to store the sb/mb block index in each row.
-  int *cur_col;
-  int sync_range;
-  int rows;
-} AV1RowMTSync;
-
-typedef struct AV1RowMTInfo {
-  int current_mi_row;
-  int num_threads_working;
-} AV1RowMTInfo;
-
 typedef struct {
   // TODO(kyslov): consider changing to 64bit
 
@@ -685,24 +668,38 @@ typedef struct {
   int64_t threshold_minmax;
 } VarBasedPartitionInfo;
 
+// Synchronization parameters for row based multi-threading of encoder.
+typedef struct {
+#if CONFIG_MULTITHREAD
+  // Synchronization objects for top-right dependency.
+  pthread_mutex_t *mutex_;
+  pthread_cond_t *cond_;
+#endif
+  // Buffer to store the superblock whose encoding is complete.
+  // cur_col[i] stores the number of superblocks which finished encoding in the
+  // ith superblock row.
+  int *num_finished_cols;
+  // Number of extra superblocks of the top row to be complete for encoding
+  // of the current superblock to start. A value of 1 indicates top-right
+  // dependency.
+  int sync_range;
+  // Number of superblock rows.
+  int rows;
+  // The superblock row (in units of MI blocks) to be processed next.
+  int next_mi_row;
+  // Number of threads processing the current tile.
+  int num_threads_working;
+} AV1EncRowMultiThreadSync;
+
 // TODO(jingning) All spatially adaptive variables should go to TileDataEnc.
 typedef struct TileDataEnc {
   TileInfo tile_info;
-  CFL_CTX cfl;
   DECLARE_ALIGNED(16, FRAME_CONTEXT, tctx);
   FRAME_CONTEXT *row_ctx;
   uint8_t allow_update_cdf;
   InterModeRdModel inter_mode_rd_models[BLOCK_SIZES_ALL];
-  AV1RowMTSync row_mt_sync;
-  AV1RowMTInfo row_mt_info;
+  AV1EncRowMultiThreadSync row_mt_sync;
 } TileDataEnc;
-
-typedef struct MultiThreadHandle {
-  int allocated_tile_rows;
-  int allocated_tile_cols;
-  int allocated_sb_rows;
-  int thread_id_to_tile_id[MAX_NUM_THREADS];  // Mapping of threads to tiles
-} MultiThreadHandle;
 
 typedef struct RD_COUNTS {
   int64_t comp_pred_diff[REFERENCE_MODES];
@@ -741,6 +738,54 @@ typedef struct ThreadData {
 } ThreadData;
 
 struct EncWorkerData;
+
+// Encoder row multi-threading related data.
+typedef struct {
+  // Number of tile rows for which row synchronization memory is allocated.
+  int allocated_tile_rows;
+  // Number of tile cols for which row synchronization memory is allocated.
+  int allocated_tile_cols;
+  // Number of superblock rows for which row synchronization memory is allocated
+  // per tile.
+  int allocated_sb_rows;
+
+  // thread_id_to_tile_id[i] indicates the tile id assigned to the ith thread.
+  int thread_id_to_tile_id[MAX_NUM_THREADS];
+
+#if CONFIG_MULTITHREAD
+  // Mutex lock used while dispatching jobs.
+  pthread_mutex_t *mutex_;
+#endif
+
+  // Row synchronization related function pointers.
+  void (*sync_read_ptr)(AV1EncRowMultiThreadSync *const, int, int);
+  void (*sync_write_ptr)(AV1EncRowMultiThreadSync *const, int, int, int);
+} AV1EncRowMultiThreadInfo;
+
+typedef struct {
+  // Number of workers created for encoder multi-threading.
+  int num_workers;
+
+  // Synchronization object used to launch job in the worker thread.
+  AVxWorker *workers;
+
+  // Data specific to each worker in encoder multi-threading.
+  // tile_thr_data[i] stores the worker data of the ith thread.
+  struct EncWorkerData *tile_thr_data;
+
+  // When set, indicates that row based multi-threading of the encoder is
+  // enabled.
+  bool row_mt_enabled;
+
+  // Encoder row multi-threading data.
+  AV1EncRowMultiThreadInfo enc_row_mt;
+
+  // Loop Filter multi-threading object.
+  AV1LfSync lf_row_sync;
+
+  // Loop Restoration multi-threading object.
+  AV1LrSync lr_row_sync;
+} MultiThreadInfo;
 
 typedef struct ActiveMap {
   int enabled;
@@ -1129,7 +1174,6 @@ typedef struct AV1_COMP {
   // Variables related to forcing integer mv decisions for the current frame.
   ForceIntegerMVInfo force_intpel_info;
 
-  unsigned int row_mt;
   RefCntBuffer *scaled_ref_buf[INTER_REFS_PER_FRAME];
 
   RefCntBuffer *last_show_frame_buf;  // last show frame buffer
@@ -1281,10 +1325,9 @@ typedef struct AV1_COMP {
   // Probabilities for pruning of various AV1 tools.
   FrameProbInfo frame_probs;
 
-  // Multi-threading
-  int num_workers;
-  AVxWorker *workers;
-  struct EncWorkerData *tile_thr_data;
+  // Multi-threading parameters.
+  MultiThreadInfo mt_info;
+
   int existing_fb_idx_to_show;
   int internal_altref_allowed;
   // A flag to indicate if intrabc is ever used in current frame.
@@ -1296,8 +1339,6 @@ typedef struct AV1_COMP {
   // Mark which ref frames can be skipped for encoding current frame druing RDO.
   int prune_ref_frame_mask;
 
-  AV1LfSync lf_row_sync;
-  AV1LrSync lr_row_sync;
   AV1LrStruct lr_ctxt;
 
   aom_film_grain_table_t *film_grain_table;
@@ -1308,12 +1349,6 @@ typedef struct AV1_COMP {
   // Flags related to interpolation filter search.
   InterpSearchFlags interp_search_flags;
 
-  MultiThreadHandle multi_thread_ctxt;
-  void (*row_mt_sync_read_ptr)(AV1RowMTSync *const, int, int);
-  void (*row_mt_sync_write_ptr)(AV1RowMTSync *const, int, int, const int);
-#if CONFIG_MULTITHREAD
-  pthread_mutex_t *row_mt_mutex_;
-#endif
   // Set if screen content is set or relevant tools are enabled
   int is_screen_content_type;
 #if CONFIG_COLLECT_PARTITION_STATS == 2

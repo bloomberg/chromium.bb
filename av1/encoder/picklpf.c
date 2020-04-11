@@ -49,6 +49,8 @@ int av1_get_max_filter_level(const AV1_COMP *cpi) {
 static int64_t try_filter_frame(const YV12_BUFFER_CONFIG *sd,
                                 AV1_COMP *const cpi, int filt_level,
                                 int partial_frame, int plane, int dir) {
+  MultiThreadInfo *const mt_info = &cpi->mt_info;
+  int num_workers = mt_info->num_workers;
   AV1_COMMON *const cm = &cpi->common;
   int64_t filt_err;
 
@@ -69,13 +71,14 @@ static int64_t try_filter_frame(const YV12_BUFFER_CONFIG *sd,
 
   // TODO(any): please enable multi-thread and remove the flag when loop
   // filter mask is compatible with multi-thread.
-  if (cpi->num_workers > 1)
+  if (num_workers > 1)
     av1_loop_filter_frame_mt(&cm->cur_frame->buf, cm, &cpi->td.mb.e_mbd, plane,
                              plane + 1, partial_frame,
 #if CONFIG_LPF_MASK
                              0,
 #endif
-                             cpi->workers, cpi->num_workers, &cpi->lf_row_sync);
+                             mt_info->workers, num_workers,
+                             &mt_info->lf_row_sync);
   else
     av1_loop_filter_frame(&cm->cur_frame->buf, cm, &cpi->td.mb.e_mbd,
 #if CONFIG_LPF_MASK

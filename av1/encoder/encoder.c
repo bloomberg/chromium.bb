@@ -3483,6 +3483,10 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf, BufferPool *const pool,
 void av1_remove_compressor(AV1_COMP *cpi) {
   AV1_COMMON *cm;
   TplParams *const tpl_data = &cpi->tpl_data;
+  MultiThreadInfo *const mt_info = &cpi->mt_info;
+#if CONFIG_MULTITHREAD
+  pthread_mutex_t *const enc_row_mt_mutex_ = mt_info->enc_row_mt.mutex_;
+#endif
   int t;
 
   if (!cpi) return;
@@ -3589,9 +3593,9 @@ void av1_remove_compressor(AV1_COMP *cpi) {
     aom_free_frame_buffer(&tpl_data->tpl_rec_pool[frame]);
   }
 
-  for (t = cpi->num_workers - 1; t >= 0; --t) {
-    AVxWorker *const worker = &cpi->workers[t];
-    EncWorkerData *const thread_data = &cpi->tile_thr_data[t];
+  for (t = mt_info->num_workers - 1; t >= 0; --t) {
+    AVxWorker *const worker = &mt_info->workers[t];
+    EncWorkerData *const thread_data = &mt_info->tile_thr_data[t];
 
     // Deallocate allocated threads.
     aom_get_worker_interface()->end(worker);
@@ -3626,18 +3630,18 @@ void av1_remove_compressor(AV1_COMP *cpi) {
     }
   }
 #if CONFIG_MULTITHREAD
-  if (cpi->row_mt_mutex_ != NULL) {
-    pthread_mutex_destroy(cpi->row_mt_mutex_);
-    aom_free(cpi->row_mt_mutex_);
+  if (enc_row_mt_mutex_ != NULL) {
+    pthread_mutex_destroy(enc_row_mt_mutex_);
+    aom_free(enc_row_mt_mutex_);
   }
 #endif
   av1_row_mt_mem_dealloc(cpi);
-  aom_free(cpi->tile_thr_data);
-  aom_free(cpi->workers);
+  aom_free(mt_info->tile_thr_data);
+  aom_free(mt_info->workers);
 
-  if (cpi->num_workers > 1) {
-    av1_loop_filter_dealloc(&cpi->lf_row_sync);
-    av1_loop_restoration_dealloc(&cpi->lr_row_sync, cpi->num_workers);
+  if (mt_info->num_workers > 1) {
+    av1_loop_filter_dealloc(&mt_info->lf_row_sync);
+    av1_loop_restoration_dealloc(&mt_info->lr_row_sync, mt_info->num_workers);
   }
 
   dealloc_compressor_data(cpi);
@@ -4788,6 +4792,8 @@ static void superres_post_encode(AV1_COMP *cpi) {
 static void cdef_restoration_frame(AV1_COMP *cpi, AV1_COMMON *cm,
                                    MACROBLOCKD *xd, int use_restoration,
                                    int use_cdef) {
+  MultiThreadInfo *const mt_info = &cpi->mt_info;
+  const int num_workers = mt_info->num_workers;
   if (use_restoration)
     av1_loop_restoration_save_boundary_lines(&cm->cur_frame->buf, cm, 0);
 
@@ -4822,10 +4828,10 @@ static void cdef_restoration_frame(AV1_COMP *cpi, AV1_COMMON *cm,
     if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
         cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
         cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
-      if (cpi->num_workers > 1)
-        av1_loop_restoration_filter_frame_mt(&cm->cur_frame->buf, cm, 0,
-                                             cpi->workers, cpi->num_workers,
-                                             &cpi->lr_row_sync, &cpi->lr_ctxt);
+      if (num_workers > 1)
+        av1_loop_restoration_filter_frame_mt(
+            &cm->cur_frame->buf, cm, 0, mt_info->workers, num_workers,
+            &mt_info->lr_row_sync, &cpi->lr_ctxt);
       else
         av1_loop_restoration_filter_frame(&cm->cur_frame->buf, cm, 0,
                                           &cpi->lr_ctxt);
@@ -4841,6 +4847,8 @@ static void cdef_restoration_frame(AV1_COMP *cpi, AV1_COMMON *cm,
 }
 
 static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
+  MultiThreadInfo *const mt_info = &cpi->mt_info;
+  const int num_workers = mt_info->num_workers;
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *xd = &cpi->td.mb.e_mbd;
 
@@ -4869,13 +4877,13 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
   }
 
   if (lf->filter_level[0] || lf->filter_level[1]) {
-    if (cpi->num_workers > 1)
+    if (num_workers > 1)
       av1_loop_filter_frame_mt(&cm->cur_frame->buf, cm, xd, 0, num_planes, 0,
 #if CONFIG_LPF_MASK
                                0,
 #endif
-                               cpi->workers, cpi->num_workers,
-                               &cpi->lf_row_sync);
+                               mt_info->workers, num_workers,
+                               &mt_info->lf_row_sync);
     else
       av1_loop_filter_frame(&cm->cur_frame->buf, cm, xd,
 #if CONFIG_LPF_MASK
