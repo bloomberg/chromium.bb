@@ -258,6 +258,12 @@ void av1_build_one_inter_predictor(
     InterPredParams *inter_pred_params, MACROBLOCKD *xd, int mi_x, int mi_y,
     int ref, CalcSubpelParamsFunc calc_subpel_params_func);
 
+void av1_build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
+                                int plane, const MB_MODE_INFO *mi,
+                                int build_for_obmc, int bw, int bh, int mi_x,
+                                int mi_y,
+                                CalcSubpelParamsFunc calc_subpel_params_func);
+
 // TODO(jkoleszar): yet another mv clamping function :-(
 static INLINE MV clamp_mv_to_umv_border_sb(const MACROBLOCKD *xd,
                                            const MV *src_mv, int bw, int bh,

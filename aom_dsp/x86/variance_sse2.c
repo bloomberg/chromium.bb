@@ -508,7 +508,7 @@ void aom_upsampled_pred_sse2(MACROBLOCKD *xd, const struct AV1Common *const cm,
 
     if (is_scaled) {
       // Note: This is mostly a copy from the >=8X8 case in
-      // build_inter_predictors() function, with some small tweaks.
+      // av1_build_inter_predictors() function, with some small tweaks.
 
       // Some assumptions.
       const int plane = 0;
