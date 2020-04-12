@@ -246,6 +246,18 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
                                      InterPredParams *inter_pred_params,
                                      const SubpelParams *subpel_params);
 
+typedef void (*CalcSubpelParamsFunc)(const MV *const src_mv,
+                                     InterPredParams *const inter_pred_params,
+                                     MACROBLOCKD *xd, int mi_x, int mi_y,
+                                     int ref, uint8_t **pre,
+                                     SubpelParams *subpel_params,
+                                     int *src_stride);
+
+void av1_build_one_inter_predictor(
+    uint8_t *dst, int dst_stride, const MV *const src_mv,
+    InterPredParams *inter_pred_params, MACROBLOCKD *xd, int mi_x, int mi_y,
+    int ref, CalcSubpelParamsFunc calc_subpel_params_func);
+
 // TODO(jkoleszar): yet another mv clamping function :-(
 static INLINE MV clamp_mv_to_umv_border_sb(const MACROBLOCKD *xd,
                                            const MV *src_mv, int bw, int bh,

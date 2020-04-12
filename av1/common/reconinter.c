@@ -702,6 +702,26 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
       inter_pred_params->block_width, inter_pred_params);
 }
 
+void av1_build_one_inter_predictor(
+    uint8_t *dst, int dst_stride, const MV *const src_mv,
+    InterPredParams *inter_pred_params, MACROBLOCKD *xd, int mi_x, int mi_y,
+    int ref, CalcSubpelParamsFunc calc_subpel_params_func) {
+  SubpelParams subpel_params;
+  uint8_t *src;
+  int src_stride;
+  calc_subpel_params_func(src_mv, inter_pred_params, xd, mi_x, mi_y, ref, &src,
+                          &subpel_params, &src_stride);
+
+  if (inter_pred_params->comp_mode == UNIFORM_SINGLE ||
+      inter_pred_params->comp_mode == UNIFORM_COMP) {
+    av1_make_inter_predictor(src, src_stride, dst, dst_stride,
+                             inter_pred_params, &subpel_params);
+  } else {
+    av1_make_masked_inter_predictor(src, src_stride, dst, dst_stride,
+                                    inter_pred_params, &subpel_params);
+  }
+}
+
 void av1_dist_wtd_comp_weight_assign(const AV1_COMMON *cm,
                                      const MB_MODE_INFO *mbmi, int order_idx,
                                      int *fwd_offset, int *bck_offset,

@@ -649,20 +649,9 @@ static void dec_build_one_inter_predictor(uint8_t *dst, int dst_stride,
                                           InterPredParams *inter_pred_params,
                                           MACROBLOCKD *xd, int mi_x, int mi_y,
                                           int ref) {
-  SubpelParams subpel_params;
-  uint8_t *src;
-  int src_stride;
-  dec_calc_subpel_params_and_extend(src_mv, inter_pred_params, xd, mi_x, mi_y,
-                                    ref, &src, &subpel_params, &src_stride);
-
-  if (inter_pred_params->comp_mode == UNIFORM_SINGLE ||
-      inter_pred_params->comp_mode == UNIFORM_COMP) {
-    av1_make_inter_predictor(src, src_stride, dst, dst_stride,
-                             inter_pred_params, &subpel_params);
-  } else {
-    av1_make_masked_inter_predictor(src, src_stride, dst, dst_stride,
-                                    inter_pred_params, &subpel_params);
-  }
+  av1_build_one_inter_predictor(dst, dst_stride, src_mv, inter_pred_params, xd,
+                                mi_x, mi_y, ref,
+                                dec_calc_subpel_params_and_extend);
 }
 
 static void dec_build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,

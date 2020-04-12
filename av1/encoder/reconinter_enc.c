@@ -228,8 +228,16 @@ void av1_enc_build_inter_predictor(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
 static void enc_calc_subpel_params(const MV *const src_mv,
                                    InterPredParams *const inter_pred_params,
+                                   MACROBLOCKD *xd, int mi_x, int mi_y, int ref,
                                    uint8_t **pre, SubpelParams *subpel_params,
                                    int *src_stride) {
+  // These are part of the function signature to use this function through a
+  // function pointer. See typedef of 'CalcSubpelParamsFunc'.
+  (void)xd;
+  (void)mi_x;
+  (void)mi_y;
+  (void)ref;
+
   const struct scale_factors *sf = inter_pred_params->scale_factors;
 
   struct buf_2d *pre_buf = &inter_pred_params->ref_frame_buf;
@@ -263,19 +271,9 @@ static void enc_calc_subpel_params(const MV *const src_mv,
 void av1_enc_build_one_inter_predictor(uint8_t *dst, int dst_stride,
                                        const MV *src_mv,
                                        InterPredParams *inter_pred_params) {
-  uint8_t *src;
-  SubpelParams subpel_params;
-  int src_stride;
-  enc_calc_subpel_params(src_mv, inter_pred_params, &src, &subpel_params,
-                         &src_stride);
-
-  if (inter_pred_params->comp_mode == UNIFORM_SINGLE ||
-      inter_pred_params->comp_mode == UNIFORM_COMP)
-    av1_make_inter_predictor(src, src_stride, dst, dst_stride,
-                             inter_pred_params, &subpel_params);
-  else
-    av1_make_masked_inter_predictor(src, src_stride, dst, dst_stride,
-                                    inter_pred_params, &subpel_params);
+  av1_build_one_inter_predictor(dst, dst_stride, src_mv, inter_pred_params,
+                                NULL /* xd */, 0 /* mi_x */, 0 /* mi_y */,
+                                0 /* ref */, enc_calc_subpel_params);
 }
 
 static INLINE void build_obmc_prediction(MACROBLOCKD *xd, int rel_mi_row,
