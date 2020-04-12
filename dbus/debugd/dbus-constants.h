@@ -55,6 +55,8 @@ const char kGetU2fFlags[] = "GetU2fFlags";
 const char kSetSchedulerConfiguration[] = "SetSchedulerConfiguration";
 const char kSetSchedulerConfigurationV2[] = "SetSchedulerConfigurationV2";
 const char kSwapSetParameter[] = "SwapSetParameter";
+const char kBackupArcBugReport[] = "BackupArcBugReport";
+const char kDeleteArcBugReportBackup[] = "DeleteArcBugReportBackup";
 
 // Properties.
 const char kCrashSenderTestMode[] = "CrashSenderTestMode";
