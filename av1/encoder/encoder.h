@@ -1268,9 +1268,9 @@ typedef struct AV1_COMP {
   int internal_altref_allowed;
   // A flag to indicate if intrabc is ever used in current frame.
   int intrabc_used;
-  int dv_cost[2][MV_VALS];
-  // TODO(huisu@google.com): we can update dv_joint_cost per SB.
-  int dv_joint_cost[MV_JOINTS];
+
+  // Tables to calculate IntraBC MV cost.
+  IntraBCMVCosts dv_costs;
 
   // Mark which ref frames can be skipped for encoding current frame druing RDO.
   int prune_ref_frame_mask;

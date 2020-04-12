@@ -2783,11 +2783,12 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
     av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, NULL, bsize, 0,
                                   av1_num_planes(cm) - 1);
 
-    int *dvcost[2] = { (int *)&cpi->dv_cost[0][MV_MAX],
-                       (int *)&cpi->dv_cost[1][MV_MAX] };
+    const IntraBCMVCosts *const dv_costs = &cpi->dv_costs;
+    int *dvcost[2] = { (int *)&dv_costs->mv_component[0][MV_MAX],
+                       (int *)&dv_costs->mv_component[1][MV_MAX] };
     // TODO(aconverse@google.com): The full motion field defining discount
     // in MV_COST_WEIGHT is too large. Explore other values.
-    const int rate_mv = av1_mv_bit_cost(&dv, &dv_ref.as_mv, cpi->dv_joint_cost,
+    const int rate_mv = av1_mv_bit_cost(&dv, &dv_ref.as_mv, dv_costs->joint_mv,
                                         dvcost, MV_COST_WEIGHT_SUB);
     const int rate_mode = x->intrabc_cost[1];
     RD_STATS rd_stats_yuv, rd_stats_y, rd_stats_uv;

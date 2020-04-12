@@ -605,8 +605,10 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
   if (!cpi->sf.rt_sf.use_nonrd_pick_mode && frame_is_intra_only(cm) &&
       cm->features.allow_screen_content_tools &&
       !is_stat_generation_stage(cpi)) {
-    int *dvcost[2] = { &cpi->dv_cost[0][MV_MAX], &cpi->dv_cost[1][MV_MAX] };
-    av1_build_nmv_cost_table(cpi->dv_joint_cost, dvcost, &cm->fc->ndvc,
+    IntraBCMVCosts *const dv_costs = &cpi->dv_costs;
+    int *dvcost[2] = { &dv_costs->mv_component[0][MV_MAX],
+                       &dv_costs->mv_component[1][MV_MAX] };
+    av1_build_nmv_cost_table(dv_costs->joint_mv, dvcost, &cm->fc->ndvc,
                              MV_SUBPEL_NONE);
   }
 
