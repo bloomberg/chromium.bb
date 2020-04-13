@@ -33,17 +33,18 @@ class DeviceTester(cros_test_lib.RunCommandTestCase):
     opts = device.Device.GetParser().parse_args(['--device', '190.0.2.130'])
     self._device = device.Device(opts)
 
-  def CreateDevice(self, device_name, should_start_vm):
+  def CreateDevice(self, device_name, is_vm):
     """Creates a device.
 
     Args:
       device_name: Name of the device.
-      should_start_vm: If True, then created device should be a VM.
+      is_vm: If True, then created device should be a VM.
     """
+    self._device.device = device_name
     created_device = device.Device.Create(
-        vm.VM.GetParser().parse_args(
-            ['--device', device_name] if device_name else []))
-    self.assertEqual(isinstance(created_device, vm.VM), should_start_vm)
+        vm.VM.GetParser().parse_args(['--device', device_name]))
+    self.assertEqual(isinstance(created_device, vm.VM), is_vm)
+    self.assertEqual(self._device.is_vm, is_vm)
 
   def testWaitForBoot(self):
     self._device.WaitForBoot()
@@ -82,10 +83,9 @@ class DeviceTester(cros_test_lib.RunCommandTestCase):
 
   def testCreate(self):
     """Verify Device/VM creation."""
-    # Verify a VM is created when no IP is specified.
+    # Verify a VM is created by default.
     self.CreateDevice(None, True)
-    # Verify a VM isn't created, even if IP address is localhost. This can
-    # happen when SSH tunneling to a remote DUT.
-    self.CreateDevice('localhost:12345', False)
+    # Verify a VM is created when IP is localhost.
+    self.CreateDevice('localhost', True)
     # Verify a Device is created when an IP is specified.
     self.CreateDevice('190.0.2.130', False)
