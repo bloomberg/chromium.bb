@@ -3938,9 +3938,11 @@ static const uint8_t *decode_tiles_row_mt(AV1Decoder *pbi, const uint8_t *data,
     get_tile_buffers(pbi, data, data_end, tile_buffers, start_tile, end_tile);
 
   if (pbi->tile_data == NULL || n_tiles != pbi->allocated_tiles) {
-    for (int i = 0; i < pbi->allocated_tiles; i++) {
-      TileDataDec *const tile_data = pbi->tile_data + i;
-      av1_dec_row_mt_dealloc(&tile_data->dec_row_mt_sync);
+    if (pbi->tile_data != NULL) {
+      for (int i = 0; i < pbi->allocated_tiles; i++) {
+        TileDataDec *const tile_data = pbi->tile_data + i;
+        av1_dec_row_mt_dealloc(&tile_data->dec_row_mt_sync);
+      }
     }
     decoder_alloc_tile_data(pbi, n_tiles);
   }
