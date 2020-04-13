@@ -64,6 +64,10 @@
       "src/v8@refs/heads/experimental/feature",
       "--disable-syntax-validation"
     ],
+    "env": {
+      "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
+      "GIT_HTTP_LOW_SPEED_TIME": "300"
+    },
     "env_suffixes": {
       "PATH": [
         "RECIPE_REPO[depot_tools]"
@@ -172,6 +176,10 @@
       "src/v8@801ada225ddc271c132c3a35f03975671d43e399",
       "--no_fetch_tags"
     ],
+    "env": {
+      "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
+      "GIT_HTTP_LOW_SPEED_TIME": "300"
+    },
     "env_suffixes": {
       "PATH": [
         "RECIPE_REPO[depot_tools]"

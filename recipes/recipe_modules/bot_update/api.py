@@ -30,8 +30,16 @@ class BotUpdateApi(recipe_api.RecipeApi):
     bot_update_path = self.resource('bot_update.py')
     kwargs.setdefault('infra_step', True)
 
-    with self.m.depot_tools.on_path():
-      return self.m.python(name, bot_update_path, cmd, **kwargs)
+    # If a Git HTTP request is constantly below GIT_HTTP_LOW_SPEED_LIMIT
+    # bytes/second for GIT_HTTP_LOW_SPEED_TIME seconds then such request will be
+    # aborted. Otherwise, it would wait for global timeout to be reached.
+    env = {
+        'GIT_HTTP_LOW_SPEED_LIMIT': '102400',  # in bytes
+        'GIT_HTTP_LOW_SPEED_TIME': 300,  # in seconds
+    }
+    with self.m.context(env=env):
+      with self.m.depot_tools.on_path():
+        return self.m.python(name, bot_update_path, cmd, **kwargs)
 
   @property
   def last_returned_properties(self):
