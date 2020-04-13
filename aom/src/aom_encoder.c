@@ -129,9 +129,8 @@ aom_codec_err_t aom_codec_enc_init_multi_ver(
             aom_codec_destroy(ctx);
             i--;
           }
+          break;
         }
-
-        if (res) break;
 
         ctx++;
         cfg++;
