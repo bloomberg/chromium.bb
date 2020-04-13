@@ -1485,6 +1485,8 @@ static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
   cpi->use_svc = 0;
   cpi->svc.external_ref_frame_config = 0;
   cpi->svc.non_reference_frame = 0;
+  cpi->svc.number_spatial_layers = 1;
+  cpi->svc.number_temporal_layers = 1;
   cm->number_spatial_layers = 1;
   cm->number_temporal_layers = 1;
   cm->spatial_layer_id = 0;
