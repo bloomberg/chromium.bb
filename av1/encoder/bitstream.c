@@ -339,9 +339,9 @@ static AOM_INLINE void write_delta_lflevel(const AV1_COMMON *cm,
   }
 }
 
-static AOM_INLINE void pack_map_tokens(aom_writer *w, const TOKENEXTRA **tp,
+static AOM_INLINE void pack_map_tokens(aom_writer *w, const TokenExtra **tp,
                                        int n, int num) {
-  const TOKENEXTRA *p = *tp;
+  const TokenExtra *p = *tp;
   write_uniform(w, n, p->token);  // The first color index.
   ++p;
   --num;
@@ -353,8 +353,8 @@ static AOM_INLINE void pack_map_tokens(aom_writer *w, const TOKENEXTRA **tp,
 }
 
 static AOM_INLINE void pack_txb_tokens(
-    aom_writer *w, AV1_COMMON *cm, MACROBLOCK *const x, const TOKENEXTRA **tp,
-    const TOKENEXTRA *const tok_end, MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
+    aom_writer *w, AV1_COMMON *cm, MACROBLOCK *const x, const TokenExtra **tp,
+    const TokenExtra *const tok_end, MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
     int plane, BLOCK_SIZE plane_bsize, aom_bit_depth_t bit_depth, int block,
     int blk_row, int blk_col, TX_SIZE tx_size, TOKEN_STATS *token_stats) {
   const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
@@ -1390,7 +1390,7 @@ static AOM_INLINE void write_mbmi_b(AV1_COMP *cpi, aom_writer *w) {
 
 static AOM_INLINE void write_inter_txb_coeff(
     AV1_COMMON *const cm, MACROBLOCK *const x, MB_MODE_INFO *const mbmi,
-    aom_writer *w, const TOKENEXTRA **tok, const TOKENEXTRA *const tok_end,
+    aom_writer *w, const TokenExtra **tok, const TokenExtra *const tok_end,
     TOKEN_STATS *token_stats, const int row, const int col, int *block,
     const int plane) {
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -1425,8 +1425,8 @@ static AOM_INLINE void write_inter_txb_coeff(
 }
 
 static AOM_INLINE void write_tokens_b(AV1_COMP *cpi, aom_writer *w,
-                                      const TOKENEXTRA **tok,
-                                      const TOKENEXTRA *const tok_end) {
+                                      const TokenExtra **tok,
+                                      const TokenExtra *const tok_end) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCK *const x = &cpi->td.mb;
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -1479,8 +1479,8 @@ static AOM_INLINE void write_tokens_b(AV1_COMP *cpi, aom_writer *w,
 }
 
 static AOM_INLINE void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
-                                     aom_writer *w, const TOKENEXTRA **tok,
-                                     const TOKENEXTRA *const tok_end,
+                                     aom_writer *w, const TokenExtra **tok,
+                                     const TokenExtra *const tok_end,
                                      int mi_row, int mi_col) {
   const AV1_COMMON *cm = &cpi->common;
   const CommonModeInfoParams *const mi_params = &cm->mi_params;
@@ -1596,7 +1596,7 @@ static AOM_INLINE void write_partition(const AV1_COMMON *const cm,
 
 static AOM_INLINE void write_modes_sb(
     AV1_COMP *const cpi, const TileInfo *const tile, aom_writer *const w,
-    const TOKENEXTRA **tok, const TOKENEXTRA *const tok_end, int mi_row,
+    const TokenExtra **tok, const TokenExtra *const tok_end, int mi_row,
     int mi_col, BLOCK_SIZE bsize) {
   const AV1_COMMON *const cm = &cpi->common;
   const CommonModeInfoParams *const mi_params = &cm->mi_params;
@@ -1719,10 +1719,10 @@ static AOM_INLINE void write_modes(AV1_COMP *const cpi,
        mi_row += cm->seq_params.mib_size) {
     const int sb_row_in_tile =
         (mi_row - tile->mi_row_start) >> cm->seq_params.mib_size_log2;
-    const TOKENEXTRA *tok =
-        cpi->tplist[tile_row][tile_col][sb_row_in_tile].start;
-    const TOKENEXTRA *tok_end =
-        tok + cpi->tplist[tile_row][tile_col][sb_row_in_tile].count;
+    const TokenExtra *tok =
+        cpi->token_info.tplist[tile_row][tile_col][sb_row_in_tile].start;
+    const TokenExtra *tok_end =
+        tok + cpi->token_info.tplist[tile_row][tile_col][sb_row_in_tile].count;
 
     av1_zero_left_context(xd);
 
@@ -1732,7 +1732,7 @@ static AOM_INLINE void write_modes(AV1_COMP *const cpi,
       write_modes_sb(cpi, tile, w, &tok, tok_end, mi_row, mi_col,
                      cm->seq_params.sb_size);
     }
-    assert(tok == cpi->tplist[tile_row][tile_col][sb_row_in_tile].stop);
+    assert(tok == tok_end);
   }
 }
 

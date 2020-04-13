@@ -27,7 +27,7 @@
 #include "av1/encoder/rdopt.h"
 #include "av1/encoder/tokenize.h"
 
-static int cost_and_tokenize_map(Av1ColorMapParam *param, TOKENEXTRA **t,
+static int cost_and_tokenize_map(Av1ColorMapParam *param, TokenExtra **t,
                                  int plane, int calc_rate, int allow_update_cdf,
                                  FRAME_COUNTS *counts, MapCdf map_pb_cdf) {
   const uint8_t *const color_map = param->color_map;
@@ -114,7 +114,7 @@ int av1_cost_color_map(const MACROBLOCK *const x, int plane, BLOCK_SIZE bsize,
 }
 
 void av1_tokenize_color_map(const MACROBLOCK *const x, int plane,
-                            TOKENEXTRA **t, BLOCK_SIZE bsize, TX_SIZE tx_size,
+                            TokenExtra **t, BLOCK_SIZE bsize, TX_SIZE tx_size,
                             COLOR_MAP_TYPE type, int allow_update_cdf,
                             FRAME_COUNTS *counts) {
   assert(plane == 0 || plane == 1);

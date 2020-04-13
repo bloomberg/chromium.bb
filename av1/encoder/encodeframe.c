@@ -75,7 +75,7 @@
 
 static AOM_INLINE void encode_superblock(const AV1_COMP *const cpi,
                                          TileDataEnc *tile_data, ThreadData *td,
-                                         TOKENEXTRA **t, RUN_TYPE dry_run,
+                                         TokenExtra **t, RUN_TYPE dry_run,
                                          BLOCK_SIZE bsize, int *rate);
 
 // This is used as a reference when computing the source variance for the
@@ -1557,7 +1557,7 @@ static AOM_INLINE void save_context(const MACROBLOCK *x,
 
 static AOM_INLINE void encode_b(const AV1_COMP *const cpi,
                                 TileDataEnc *tile_data, ThreadData *td,
-                                TOKENEXTRA **tp, int mi_row, int mi_col,
+                                TokenExtra **tp, int mi_row, int mi_col,
                                 RUN_TYPE dry_run, BLOCK_SIZE bsize,
                                 PARTITION_TYPE partition,
                                 PICK_MODE_CONTEXT *const ctx, int *rate) {
@@ -1689,7 +1689,7 @@ static AOM_INLINE void encode_b(const AV1_COMP *const cpi,
 }
 
 static AOM_INLINE void encode_sb(const AV1_COMP *const cpi, ThreadData *td,
-                                 TileDataEnc *tile_data, TOKENEXTRA **tp,
+                                 TileDataEnc *tile_data, TokenExtra **tp,
                                  int mi_row, int mi_col, RUN_TYPE dry_run,
                                  BLOCK_SIZE bsize, PC_TREE *pc_tree,
                                  int *rate) {
@@ -1880,7 +1880,7 @@ static AOM_INLINE void set_fixed_partitioning(AV1_COMP *cpi,
 
 static AOM_INLINE void rd_use_partition(
     AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data, MB_MODE_INFO **mib,
-    TOKENEXTRA **tp, int mi_row, int mi_col, BLOCK_SIZE bsize, int *rate,
+    TokenExtra **tp, int mi_row, int mi_col, BLOCK_SIZE bsize, int *rate,
     int64_t *dist, int do_recon, PC_TREE *pc_tree) {
   AV1_COMMON *const cm = &cpi->common;
   const CommonModeInfoParams *const mi_params = &cm->mi_params;
@@ -2205,7 +2205,7 @@ static AOM_INLINE int do_slipt_check(BLOCK_SIZE bsize) {
 
 static AOM_INLINE void nonrd_use_partition(AV1_COMP *cpi, ThreadData *td,
                                            TileDataEnc *tile_data,
-                                           MB_MODE_INFO **mib, TOKENEXTRA **tp,
+                                           MB_MODE_INFO **mib, TokenExtra **tp,
                                            int mi_row, int mi_col,
                                            BLOCK_SIZE bsize, PC_TREE *pc_tree) {
   AV1_COMMON *const cm = &cpi->common;
@@ -2542,7 +2542,7 @@ static INLINE void load_pred_mv(MACROBLOCK *x,
 // rdcost is already too high (to tell the caller not to bother searching for
 // encodings of further subblocks)
 static int rd_try_subblock(AV1_COMP *const cpi, ThreadData *td,
-                           TileDataEnc *tile_data, TOKENEXTRA **tp, int is_last,
+                           TileDataEnc *tile_data, TokenExtra **tp, int is_last,
                            int mi_row, int mi_col, BLOCK_SIZE subsize,
                            RD_STATS best_rdcost, RD_STATS *sum_rdc,
                            PARTITION_TYPE partition,
@@ -2584,7 +2584,7 @@ static int rd_try_subblock(AV1_COMP *const cpi, ThreadData *td,
 }
 
 static bool rd_test_partition3(AV1_COMP *const cpi, ThreadData *td,
-                               TileDataEnc *tile_data, TOKENEXTRA **tp,
+                               TileDataEnc *tile_data, TokenExtra **tp,
                                PC_TREE *pc_tree, RD_STATS *best_rdc,
                                PICK_MODE_CONTEXT *ctxs[3],
                                PICK_MODE_CONTEXT *ctx, int mi_row, int mi_col,
@@ -2719,7 +2719,7 @@ int evaluate_ab_partition_based_on_split(
 //     a bool value indicating whether a valid partition is found
 static bool rd_pick_partition(
     AV1_COMP *const cpi, ThreadData *td, TileDataEnc *tile_data,
-    TOKENEXTRA **tp, int mi_row, int mi_col, BLOCK_SIZE bsize,
+    TokenExtra **tp, int mi_row, int mi_col, BLOCK_SIZE bsize,
     BLOCK_SIZE max_sq_part, BLOCK_SIZE min_sq_part, RD_STATS *rd_cost,
     RD_STATS best_rdc, PC_TREE *pc_tree, SIMPLE_MOTION_DATA_TREE *sms_tree,
     int64_t *none_rd, SB_MULTI_PASS_MODE multi_pass_mode,
@@ -2732,7 +2732,7 @@ static bool rd_pick_partition(
   MACROBLOCKD *const xd = &x->e_mbd;
   const int mi_step = mi_size_wide[bsize] / 2;
   RD_SEARCH_MACROBLOCK_CONTEXT x_ctx;
-  const TOKENEXTRA *const tp_orig = *tp;
+  const TokenExtra *const tp_orig = *tp;
   int tmp_partition_cost[PARTITION_TYPES];
   BLOCK_SIZE subsize;
   RD_STATS this_rdc, sum_rdc;
@@ -4530,7 +4530,7 @@ static void source_content_sb(AV1_COMP *cpi, MACROBLOCK *x, int shift) {
 }
 
 static AOM_INLINE void encode_nonrd_sb(AV1_COMP *cpi, ThreadData *td,
-                                       TileDataEnc *tile_data, TOKENEXTRA **tp,
+                                       TileDataEnc *tile_data, TokenExtra **tp,
                                        const int mi_row, const int mi_col,
                                        const int seg_skip) {
   AV1_COMMON *const cm = &cpi->common;
@@ -4820,7 +4820,7 @@ static INLINE void init_encode_rd_sb(AV1_COMP *cpi, ThreadData *td,
 }
 
 static AOM_INLINE void encode_rd_sb(AV1_COMP *cpi, ThreadData *td,
-                                    TileDataEnc *tile_data, TOKENEXTRA **tp,
+                                    TileDataEnc *tile_data, TokenExtra **tp,
                                     const int mi_row, const int mi_col,
                                     const int seg_skip) {
   AV1_COMMON *const cm = &cpi->common;
@@ -4994,7 +4994,7 @@ static AOM_INLINE void set_cost_upd_freq(AV1_COMP *cpi, ThreadData *td,
 
 static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
                                      TileDataEnc *tile_data, int mi_row,
-                                     TOKENEXTRA **tp) {
+                                     TokenExtra **tp) {
   AV1_COMMON *const cm = &cpi->common;
   const TileInfo *const tile_info = &tile_data->tile_info;
   MACROBLOCK *const x = &td->mb;
@@ -5122,8 +5122,9 @@ void av1_init_tile_data(AV1_COMP *cpi) {
   const int tile_cols = cm->tiles.cols;
   const int tile_rows = cm->tiles.rows;
   int tile_col, tile_row;
-  TOKENEXTRA *pre_tok = cpi->tile_tok[0][0];
-  TOKENLIST *tplist = cpi->tplist[0][0];
+  TokenInfo *const token_info = &cpi->token_info;
+  TokenExtra *pre_tok = token_info->tile_tok[0][0];
+  TokenList *tplist = token_info->tplist[0][0];
   unsigned int tile_tok = 0;
   int tplist_count = 0;
 
@@ -5134,12 +5135,12 @@ void av1_init_tile_data(AV1_COMP *cpi) {
       TileInfo *const tile_info = &tile_data->tile_info;
       av1_tile_init(tile_info, cm, tile_row, tile_col);
 
-      cpi->tile_tok[tile_row][tile_col] = pre_tok + tile_tok;
-      pre_tok = cpi->tile_tok[tile_row][tile_col];
+      token_info->tile_tok[tile_row][tile_col] = pre_tok + tile_tok;
+      pre_tok = token_info->tile_tok[tile_row][tile_col];
       tile_tok = allocated_tokens(
           *tile_info, cm->seq_params.mib_size_log2 + MI_SIZE_LOG2, num_planes);
-      cpi->tplist[tile_row][tile_col] = tplist + tplist_count;
-      tplist = cpi->tplist[tile_row][tile_col];
+      token_info->tplist[tile_row][tile_col] = tplist + tplist_count;
+      tplist = token_info->tplist[tile_row][tile_col];
       tplist_count = av1_get_sb_rows_in_tile(cm, tile_data->tile_info);
       tile_data->allow_update_cdf = !cm->tiles.large_scale;
       tile_data->allow_update_cdf =
@@ -5156,7 +5157,8 @@ void av1_encode_sb_row(AV1_COMP *cpi, ThreadData *td, int tile_row,
   const int tile_cols = cm->tiles.cols;
   TileDataEnc *this_tile = &cpi->tile_data[tile_row * tile_cols + tile_col];
   const TileInfo *const tile_info = &this_tile->tile_info;
-  TOKENEXTRA *tok = NULL;
+  TokenExtra *tok = NULL;
+  TokenList *const tplist = cpi->token_info.tplist[tile_row][tile_col];
   const int sb_row_in_tile =
       (mi_row - tile_info->mi_row_start) >> cm->seq_params.mib_size_log2;
   const int tile_mb_cols =
@@ -5166,20 +5168,17 @@ void av1_encode_sb_row(AV1_COMP *cpi, ThreadData *td, int tile_row,
 
   get_start_tok(cpi, tile_row, tile_col, mi_row, &tok,
                 cm->seq_params.mib_size_log2 + MI_SIZE_LOG2, num_planes);
-  cpi->tplist[tile_row][tile_col][sb_row_in_tile].start = tok;
+  tplist[sb_row_in_tile].start = tok;
 
   encode_sb_row(cpi, td, this_tile, mi_row, &tok);
 
-  cpi->tplist[tile_row][tile_col][sb_row_in_tile].stop = tok;
-  cpi->tplist[tile_row][tile_col][sb_row_in_tile].count =
-      (unsigned int)(cpi->tplist[tile_row][tile_col][sb_row_in_tile].stop -
-                     cpi->tplist[tile_row][tile_col][sb_row_in_tile].start);
+  tplist[sb_row_in_tile].count =
+      (unsigned int)(tok - tplist[sb_row_in_tile].start);
 
-  assert(
-      (unsigned int)(tok -
-                     cpi->tplist[tile_row][tile_col][sb_row_in_tile].start) <=
-      get_token_alloc(num_mb_rows_in_sb, tile_mb_cols,
-                      cm->seq_params.mib_size_log2 + MI_SIZE_LOG2, num_planes));
+  assert((unsigned int)(tok - tplist[sb_row_in_tile].start) <=
+         get_token_alloc(num_mb_rows_in_sb, tile_mb_cols,
+                         cm->seq_params.mib_size_log2 + MI_SIZE_LOG2,
+                         num_planes));
 
   (void)tile_mb_cols;
   (void)num_mb_rows_in_sb;
@@ -6412,7 +6411,7 @@ static AOM_INLINE void tx_partition_set_contexts(const AV1_COMMON *const cm,
 
 static AOM_INLINE void encode_superblock(const AV1_COMP *const cpi,
                                          TileDataEnc *tile_data, ThreadData *td,
-                                         TOKENEXTRA **t, RUN_TYPE dry_run,
+                                         TokenExtra **t, RUN_TYPE dry_run,
                                          BLOCK_SIZE bsize, int *rate) {
   const AV1_COMMON *const cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);

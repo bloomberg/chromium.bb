@@ -804,6 +804,7 @@ static void update_film_grain_parameters(struct AV1_COMP *cpi,
 
 static void dealloc_compressor_data(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
+  TokenInfo *token_info = &cpi->token_info;
 
   dealloc_context_buffers_ext(&cpi->mbmi_ext_info);
 
@@ -877,11 +878,7 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
   aom_free_frame_buffer(&cpi->alt_ref_buffer);
   av1_lookahead_destroy(cpi->lookahead);
 
-  aom_free(cpi->tile_tok[0][0]);
-  cpi->tile_tok[0][0] = 0;
-
-  aom_free(cpi->tplist[0][0]);
-  cpi->tplist[0][0] = NULL;
+  free_token_info(token_info);
 
   av1_free_shared_coeff_buffer(&cpi->td.shared_coeff_buf);
   av1_free_sms_tree(&cpi->td);
@@ -1108,16 +1105,12 @@ static void alloc_util_frame_buffers(AV1_COMP *cpi) {
 
 static void alloc_compressor_data(AV1_COMP *cpi) {
   AV1_COMMON *cm = &cpi->common;
-  const int num_planes = av1_num_planes(cm);
+  TokenInfo *token_info = &cpi->token_info;
 
   if (av1_alloc_context_buffers(cm, cm->width, cm->height)) {
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate context buffers");
   }
-
-  int mi_rows_aligned_to_sb =
-      ALIGN_POWER_OF_TWO(cm->mi_params.mi_rows, cm->seq_params.mib_size_log2);
-  int sb_rows = mi_rows_aligned_to_sb >> cm->seq_params.mib_size_log2;
 
   if (!is_stat_generation_stage(cpi)) {
     av1_alloc_txb_buf(cpi);
@@ -1125,19 +1118,10 @@ static void alloc_compressor_data(AV1_COMP *cpi) {
     alloc_context_buffers_ext(cm, &cpi->mbmi_ext_info);
   }
 
-  aom_free(cpi->tile_tok[0][0]);
-  aom_free(cpi->tplist[0][0]);
+  free_token_info(token_info);
 
   if (!is_stat_generation_stage(cpi)) {
-    unsigned int tokens =
-        get_token_alloc(cm->mi_params.mb_rows, cm->mi_params.mb_cols,
-                        MAX_SB_SIZE_LOG2, num_planes);
-    CHECK_MEM_ERROR(cm, cpi->tile_tok[0][0],
-                    aom_calloc(tokens, sizeof(*cpi->tile_tok[0][0])));
-
-    CHECK_MEM_ERROR(cm, cpi->tplist[0][0],
-                    aom_calloc(sb_rows * MAX_TILE_ROWS * MAX_TILE_COLS,
-                               sizeof(*cpi->tplist[0][0])));
+    alloc_token_info(cm, token_info);
   }
 
   av1_setup_shared_coeff_buffer(&cpi->common, &cpi->td.shared_coeff_buf);
