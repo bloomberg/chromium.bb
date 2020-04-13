@@ -142,7 +142,7 @@ class JsonSerializer(Serializer):
     See: Serializer.serialize
     """
     return json_format.MessageToJson(
-        message, sort_keys=True, use_integers_for_enums=True)
+        message, sort_keys=True, use_integers_for_enums=True) or '{}'
 
 
 class MessageHandler(object):
