@@ -201,7 +201,7 @@ void av1_cyclic_refresh_update_segment(const AV1_COMP *cpi,
     for (int x = 0; x < xmis; x++) {
       int map_offset = block_index + y * cm->mi_params.mi_cols + x;
       cr->map[map_offset] = new_map_value;
-      cpi->segmentation_map[map_offset] = mbmi->segment_id;
+      cpi->enc_seg.map[map_offset] = mbmi->segment_id;
     }
 }
 
@@ -210,7 +210,7 @@ void av1_cyclic_refresh_postencode(AV1_COMP *const cpi) {
   AV1_COMMON *const cm = &cpi->common;
   const CommonModeInfoParams *const mi_params = &cm->mi_params;
   CYCLIC_REFRESH *const cr = cpi->cyclic_refresh;
-  unsigned char *const seg_map = cpi->segmentation_map;
+  unsigned char *const seg_map = cpi->enc_seg.map;
   cr->cnt_zeromv = 0;
   cr->actual_num_seg1_blocks = 0;
   cr->actual_num_seg2_blocks = 0;
@@ -263,7 +263,7 @@ static void cyclic_refresh_update_map(AV1_COMP *const cpi) {
   AV1_COMMON *const cm = &cpi->common;
   const CommonModeInfoParams *const mi_params = &cm->mi_params;
   CYCLIC_REFRESH *const cr = cpi->cyclic_refresh;
-  unsigned char *const seg_map = cpi->segmentation_map;
+  unsigned char *const seg_map = cpi->enc_seg.map;
   int i, block_count, bl_index, sb_rows, sb_cols, sbs_in_frame;
   int xmis, ymis, x, y;
   memset(seg_map, CR_SEGMENT_ID_BASE, mi_params->mi_rows * mi_params->mi_cols);
@@ -419,7 +419,7 @@ void av1_cyclic_refresh_setup(AV1_COMP *const cpi) {
   if (cm->current_frame.frame_number == 0) cr->low_content_avg = 0.0;
   if (!cr->apply_cyclic_refresh) {
     // Set segmentation map to 0 and disable.
-    unsigned char *const seg_map = cpi->segmentation_map;
+    unsigned char *const seg_map = cpi->enc_seg.map;
     memset(seg_map, 0, cm->mi_params.mi_rows * cm->mi_params.mi_cols);
     av1_disable_segmentation(&cm->seg);
     if (cm->current_frame.frame_type == KEY_FRAME) {

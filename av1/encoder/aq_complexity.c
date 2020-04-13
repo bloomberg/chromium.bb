@@ -71,8 +71,7 @@ void av1_setup_in_frame_q_adj(AV1_COMP *cpi) {
   aom_clear_system_state();
 
   if (resolution_change) {
-    memset(cpi->segmentation_map, 0,
-           cm->mi_params.mi_rows * cm->mi_params.mi_cols);
+    memset(cpi->enc_seg.map, 0, cm->mi_params.mi_rows * cm->mi_params.mi_cols);
     av1_clearall_segfeatures(seg);
     av1_disable_segmentation(seg);
     return;
@@ -84,7 +83,7 @@ void av1_setup_in_frame_q_adj(AV1_COMP *cpi) {
         get_aq_c_strength(base_qindex, cm->seq_params.bit_depth);
 
     // Clear down the segment map.
-    memset(cpi->segmentation_map, DEFAULT_AQ2_SEG,
+    memset(cpi->enc_seg.map, DEFAULT_AQ2_SEG,
            cm->mi_params.mi_rows * cm->mi_params.mi_cols);
 
     av1_clearall_segfeatures(seg);
@@ -180,8 +179,7 @@ void av1_caq_select_segment(const AV1_COMP *cpi, MACROBLOCK *mb, BLOCK_SIZE bs,
   // Fill in the entires in the segment map corresponding to this SB64.
   for (y = 0; y < ymis; y++) {
     for (x = 0; x < xmis; x++) {
-      cpi->segmentation_map[mi_offset + y * cm->mi_params.mi_cols + x] =
-          segment;
+      cpi->enc_seg.map[mi_offset + y * cm->mi_params.mi_cols + x] = segment;
     }
   }
 }

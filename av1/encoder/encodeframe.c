@@ -442,7 +442,7 @@ static AOM_INLINE void set_offsets(const AV1_COMP *const cpi,
   if (seg->enabled) {
     if (seg->enabled && !cpi->vaq_refresh) {
       const uint8_t *const map =
-          seg->update_map ? cpi->segmentation_map : cm->last_frame_seg_map;
+          seg->update_map ? cpi->enc_seg.map : cm->last_frame_seg_map;
       mbmi->segment_id =
           map ? get_segment_id(&cm->mi_params, map, bsize, mi_row, mi_col) : 0;
     }
@@ -578,7 +578,7 @@ static AOM_INLINE void update_state(const AV1_COMP *const cpi, ThreadData *td,
     // For in frame complexity AQ copy the segment id from the segment map.
     if (cpi->oxcf.aq_mode == COMPLEXITY_AQ) {
       const uint8_t *const map =
-          seg->update_map ? cpi->segmentation_map : cm->last_frame_seg_map;
+          seg->update_map ? cpi->enc_seg.map : cm->last_frame_seg_map;
       mi_addr->segment_id =
           map ? get_segment_id(mi_params, map, bsize, mi_row, mi_col) : 0;
       reset_tx_size(x, mi_addr, x->tx_mode_search_type);
@@ -4947,7 +4947,7 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
     int seg_skip = 0;
     if (seg->enabled) {
       const uint8_t *const map =
-          seg->update_map ? cpi->segmentation_map : cm->last_frame_seg_map;
+          seg->update_map ? cpi->enc_seg.map : cm->last_frame_seg_map;
       const int segment_id =
           map ? get_segment_id(&cm->mi_params, map, sb_size, mi_row, mi_col)
               : 0;
@@ -5733,7 +5733,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
         qindex == 0 && quant_params->y_dc_delta_q == 0 &&
         quant_params->u_dc_delta_q == 0 && quant_params->u_ac_delta_q == 0 &&
         quant_params->v_dc_delta_q == 0 && quant_params->v_ac_delta_q == 0;
-    if (xd->lossless[i]) cpi->has_lossless_segment = 1;
+    if (xd->lossless[i]) cpi->enc_seg.has_lossless_segment = 1;
     xd->qindex[i] = qindex;
     if (xd->lossless[i]) {
       cpi->optimize_seg_arr[i] = NO_TRELLIS_OPT;
@@ -6040,7 +6040,7 @@ void av1_encode_frame(AV1_COMP *cpi) {
     const int mi_rows = cm->mi_params.mi_rows;
     const int mi_cols = cm->mi_params.mi_cols;
     const int last_active_segid = cm->seg.last_active_segid;
-    uint8_t *map = cpi->segmentation_map;
+    uint8_t *map = cpi->enc_seg.map;
     for (int mi_row = 0; mi_row < mi_rows; ++mi_row) {
       for (int mi_col = 0; mi_col < mi_cols; ++mi_col) {
         map[mi_col] = AOMMIN(map[mi_col], last_active_segid);
@@ -6331,7 +6331,7 @@ static AOM_INLINE void encode_superblock(const AV1_COMP *const cpi,
     // block to be 0, in order to avoid the segment_id to be changed by in
     // write_segment_id().
     if (!cpi->common.seg.segid_preskip && cpi->common.seg.update_map &&
-        cpi->has_lossless_segment)
+        cpi->enc_seg.has_lossless_segment)
       mbmi->skip = 0;
 
     xd->cfl.store_y = 0;

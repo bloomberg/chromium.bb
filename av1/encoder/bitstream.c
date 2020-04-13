@@ -455,11 +455,11 @@ static AOM_INLINE void write_segment_id(
     // Still need to transmit tx size for intra blocks even if skip is
     // true. Changing segment_id may make the tx size become invalid, e.g
     // changing from lossless to lossy.
-    assert(is_inter_block(mbmi) || !cpi->has_lossless_segment);
+    assert(is_inter_block(mbmi) || !cpi->enc_seg.has_lossless_segment);
 
     set_spatial_segment_id(&cm->mi_params, cm->cur_frame->seg_map,
                            mbmi->sb_type, mi_row, mi_col, pred);
-    set_spatial_segment_id(&cm->mi_params, cpi->segmentation_map, mbmi->sb_type,
+    set_spatial_segment_id(&cm->mi_params, cpi->enc_seg.map, mbmi->sb_type,
                            mi_row, mi_col, pred);
     /* mbmi is read only but we need to update segment_id */
     ((MB_MODE_INFO *)mbmi)->segment_id = pred;

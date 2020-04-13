@@ -58,8 +58,7 @@ void av1_vaq_frame_setup(AV1_COMP *cpi) {
   avg_ratio = rate_ratio[avg_energy];
 
   if (resolution_change) {
-    memset(cpi->segmentation_map, 0,
-           cm->mi_params.mi_rows * cm->mi_params.mi_cols);
+    memset(cpi->enc_seg.map, 0, cm->mi_params.mi_rows * cm->mi_params.mi_cols);
     av1_clearall_segfeatures(seg);
     aom_clear_system_state();
     av1_disable_segmentation(seg);

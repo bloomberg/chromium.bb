@@ -399,7 +399,7 @@ static INLINE void Scale2Ratio(AOM_SCALING mode, int *hr, int *hs) {
 // Mark all inactive blocks as active. Other segmentation features may be set
 // so memset cannot be used, instead only inactive blocks should be reset.
 static void suppress_active_map(AV1_COMP *cpi) {
-  unsigned char *const seg_map = cpi->segmentation_map;
+  unsigned char *const seg_map = cpi->enc_seg.map;
   int i;
   if (cpi->active_map.enabled || cpi->active_map.update)
     for (i = 0;
@@ -410,7 +410,7 @@ static void suppress_active_map(AV1_COMP *cpi) {
 
 static void apply_active_map(AV1_COMP *cpi) {
   struct segmentation *const seg = &cpi->common.seg;
-  unsigned char *const seg_map = cpi->segmentation_map;
+  unsigned char *const seg_map = cpi->enc_seg.map;
   const unsigned char *const active_map = cpi->active_map.map;
   int i;
 
@@ -492,7 +492,7 @@ int av1_get_active_map(AV1_COMP *cpi, unsigned char *new_map_16x16, int rows,
   const CommonModeInfoParams *const mi_params = &cpi->common.mi_params;
   if (rows == mi_params->mb_rows && cols == mi_params->mb_cols &&
       new_map_16x16) {
-    unsigned char *const seg_map_8x8 = cpi->segmentation_map;
+    unsigned char *const seg_map_8x8 = cpi->enc_seg.map;
     const int mi_rows = mi_params->mi_rows;
     const int mi_cols = mi_params->mi_cols;
     const int row_scale = mi_size_high[BLOCK_16X16] == 2 ? 1 : 2;
@@ -812,8 +812,8 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
   cpi->tile_data = NULL;
 
   // Delete sementation map
-  aom_free(cpi->segmentation_map);
-  cpi->segmentation_map = NULL;
+  aom_free(cpi->enc_seg.map);
+  cpi->enc_seg.map = NULL;
 
   av1_cyclic_refresh_free(cpi->cyclic_refresh);
   cpi->cyclic_refresh = NULL;
@@ -922,8 +922,7 @@ static void configure_static_seg_features(AV1_COMP *cpi) {
   // Disable and clear down for KF
   if (cm->current_frame.frame_type == KEY_FRAME) {
     // Clear down the global segmentation map
-    memset(cpi->segmentation_map, 0,
-           cm->mi_params.mi_rows * cm->mi_params.mi_cols);
+    memset(cpi->enc_seg.map, 0, cm->mi_params.mi_rows * cm->mi_params.mi_cols);
     seg->update_map = 0;
     seg->update_data = 0;
 
@@ -935,8 +934,7 @@ static void configure_static_seg_features(AV1_COMP *cpi) {
   } else if (cpi->refresh_alt_ref_frame) {
     // If this is an alt ref frame
     // Clear down the global segmentation map
-    memset(cpi->segmentation_map, 0,
-           cm->mi_params.mi_rows * cm->mi_params.mi_cols);
+    memset(cpi->enc_seg.map, 0, cm->mi_params.mi_rows * cm->mi_params.mi_cols);
     seg->update_map = 0;
     seg->update_data = 0;
 
@@ -1002,7 +1000,7 @@ static void configure_static_seg_features(AV1_COMP *cpi) {
 
         av1_disable_segmentation(seg);
 
-        memset(cpi->segmentation_map, 0,
+        memset(cpi->enc_seg.map, 0,
                cm->mi_params.mi_rows * cm->mi_params.mi_cols);
 
         seg->update_map = 0;
@@ -2683,8 +2681,8 @@ static void realloc_segmentation_maps(AV1_COMP *cpi) {
   CommonModeInfoParams *const mi_params = &cm->mi_params;
 
   // Create the encoder segmentation map and set all entries to 0
-  aom_free(cpi->segmentation_map);
-  CHECK_MEM_ERROR(cm, cpi->segmentation_map,
+  aom_free(cpi->enc_seg.map);
+  CHECK_MEM_ERROR(cm, cpi->enc_seg.map,
                   aom_calloc(mi_params->mi_rows * mi_params->mi_cols, 1));
 
   // Create a map used for cyclic background refresh.

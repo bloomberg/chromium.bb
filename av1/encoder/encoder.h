@@ -1053,6 +1053,17 @@ typedef struct {
 } FRAME_INFO;
 
 typedef struct {
+  // 3-bit number containing the segment affiliation for each 4x4 block in the
+  // frame. map[y * stride + x] contains the segment id of the 4x4 block at
+  // (x,y) position.
+  uint8_t *map;
+  // Flag to indicate if current frame has lossless segments or not.
+  // 1: frame has at least one lossless segment.
+  // 0: frame has no lossless segments.
+  bool has_lossless_segment;
+} EncSegmentationInfo;
+
+typedef struct {
   // Start time stamp of the previous frame
   int64_t prev_start_seen;
   // End time stamp of the previous frame
@@ -1155,7 +1166,8 @@ typedef struct AV1_COMP {
 
   int all_one_sided_refs;
 
-  uint8_t *segmentation_map;
+  // Segmentation related information for current frame.
+  EncSegmentationInfo enc_seg;
 
   CYCLIC_REFRESH *cyclic_refresh;
   ActiveMap active_map;
@@ -1259,7 +1271,6 @@ typedef struct AV1_COMP {
   int dv_cost[2][MV_VALS];
   // TODO(huisu@google.com): we can update dv_joint_cost per SB.
   int dv_joint_cost[MV_JOINTS];
-  int has_lossless_segment;
 
   // Mark which ref frames can be skipped for encoding current frame druing RDO.
   int prune_ref_frame_mask;
