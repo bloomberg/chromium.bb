@@ -241,25 +241,29 @@ TEST_F(DnsSdQuerierImplTest, TestCreateDeletePtrRecord) {
   const auto ptr = CreatePtrRecord(instance, service, domain);
   const auto ptr2 = CreatePtrRecord(instance, service, domain);
 
-  EXPECT_CALL(*querier.service(),
-              StartQuery(_, DnsType::kANY, DnsClass::kANY, _))
-      .Times(1);
-  querier.OnRecordChanged(ptr, RecordChangedEvent::kCreated);
-  testing::Mock::VerifyAndClearExpectations(querier.service());
+  auto result = querier.OnRecordChanged(ptr, RecordChangedEvent::kCreated);
+  ASSERT_EQ(result.size(), size_t{1});
+  auto query = result[0];
+  EXPECT_EQ(query.dns_type, DnsType::kANY);
+  EXPECT_EQ(query.dns_class, DnsClass::kANY);
+  EXPECT_EQ(query.change_type, PendingQueryChange::kStartQuery);
 
-  EXPECT_CALL(*querier.service(),
-              StopQuery(_, DnsType::kANY, DnsClass::kANY, _))
-      .Times(1);
-  querier.OnRecordChanged(ptr2, RecordChangedEvent::kExpired);
+  result = querier.OnRecordChanged(ptr2, RecordChangedEvent::kExpired);
+  ASSERT_EQ(result.size(), size_t{1});
+  query = result[0];
+  EXPECT_EQ(query.dns_type, DnsType::kANY);
+  EXPECT_EQ(query.dns_class, DnsClass::kANY);
+  EXPECT_EQ(query.change_type, PendingQueryChange::kStopQuery);
 }
 
 TEST_F(DnsSdQuerierImplTest, CallbackCalledWhenPtrDeleted) {
   auto ptr = CreatePtrRecord(instance, service, domain);
-  EXPECT_CALL(*querier.service(),
-              StartQuery(_, DnsType::kANY, DnsClass::kANY, _))
-      .Times(1);
-  querier.OnRecordChanged(ptr, RecordChangedEvent::kCreated);
-  testing::Mock::VerifyAndClearExpectations(querier.service());
+  auto result = querier.OnRecordChanged(ptr, RecordChangedEvent::kCreated);
+  ASSERT_EQ(result.size(), size_t{1});
+  auto query = result[0];
+  EXPECT_EQ(query.dns_type, DnsType::kANY);
+  EXPECT_EQ(query.dns_class, DnsClass::kANY);
+  EXPECT_EQ(query.change_type, PendingQueryChange::kStartQuery);
 
   DnsDataAccessor dns_data = querier.CreateDnsData(instance, service, domain);
   dns_data.set_srv(CreateSrvRecord());
@@ -269,10 +273,13 @@ TEST_F(DnsSdQuerierImplTest, CallbackCalledWhenPtrDeleted) {
   ASSERT_TRUE(dns_data.CanCreateEndpoint());
 
   EXPECT_CALL(callback, OnEndpointDeleted(_)).Times(1);
-  EXPECT_CALL(*querier.service(),
-              StopQuery(_, DnsType::kANY, DnsClass::kANY, _))
-      .Times(1);
-  querier.OnRecordChanged(ptr, RecordChangedEvent::kExpired);
+  result = querier.OnRecordChanged(ptr, RecordChangedEvent::kExpired);
+  ASSERT_EQ(result.size(), size_t{1});
+  query = result[0];
+  EXPECT_EQ(query.dns_type, DnsType::kANY);
+  EXPECT_EQ(query.dns_class, DnsClass::kANY);
+  EXPECT_EQ(query.change_type, PendingQueryChange::kStopQuery);
+
   EXPECT_FALSE(querier.GetDnsData(instance, service, domain).has_value());
 }
 

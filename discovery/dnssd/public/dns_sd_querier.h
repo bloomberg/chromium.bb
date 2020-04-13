@@ -19,14 +19,20 @@ class DnsSdQuerier {
     virtual ~Callback() = default;
 
     // Callback fired when a new InstanceEndpoint is created.
+    // NOTE: This callback may not modify the DnsSdQuerier instance from which
+    // it is called.
     virtual void OnEndpointCreated(
         const DnsSdInstanceEndpoint& new_endpoint) = 0;
 
     // Callback fired when an existing InstanceEndpoint is updated.
+    // NOTE: This callback may not modify the DnsSdQuerier instance from which
+    // it is called.
     virtual void OnEndpointUpdated(
         const DnsSdInstanceEndpoint& modified_endpoint) = 0;
 
     // Callback fired when an existing InstanceEndpoint is deleted.
+    // NOTE: This callback may not modify the DnsSdQuerier instance from which
+    // it is called.
     virtual void OnEndpointDeleted(
         const DnsSdInstanceEndpoint& old_endpoint) = 0;
   };

@@ -44,13 +44,15 @@ class QuerierImpl : public DnsSdQuerier, public MdnsRecordChangedCallback {
   void ReinitializeQueries(const std::string& service) override;
 
   // MdnsRecordChangedCallback overrides.
-  void OnRecordChanged(const MdnsRecord& record,
-                       RecordChangedEvent event) override;
+  std::vector<PendingQueryChange> OnRecordChanged(
+      const MdnsRecord& record,
+      RecordChangedEvent event) override;
 
  private:
   // Process an OnRecordChanged event for a PTR record.
-  Error HandlePtrRecordChange(const MdnsRecord& record,
-                              RecordChangedEvent event);
+  ErrorOr<std::vector<PendingQueryChange>> HandlePtrRecordChange(
+      const MdnsRecord& record,
+      RecordChangedEvent event);
 
   // Process an OnRecordChanged event for non-PTR records (SRV, TXT, A, and AAAA
   // records).
@@ -61,11 +63,20 @@ class QuerierImpl : public DnsSdQuerier, public MdnsRecordChangedCallback {
     return callback_map_.find(key) != callback_map_.end();
   }
 
-  // Initiates or terminates queries on the mdns_querier_ object.
-  void StartDnsQuery(InstanceKey key);
-  void StartDnsQuery(ServiceKey key);
-  void StopDnsQuery(InstanceKey key, bool should_inform_callbacks = true);
-  void StopDnsQuery(ServiceKey key);
+  std::vector<DnsQueryInfo> GetDataToStopDnsQuery(ServiceKey key);
+  std::vector<DnsQueryInfo> GetDataToStartDnsQuery(ServiceKey key);
+  std::vector<DnsQueryInfo> GetDataToStopDnsQuery(
+      InstanceKey key,
+      bool should_inform_callbacks = true);
+  std::vector<DnsQueryInfo> GetDataToStartDnsQuery(InstanceKey key);
+
+  void StartDnsQueriesImmediately(const std::vector<DnsQueryInfo>& query_infos);
+  void StopDnsQueriesImmediately(const std::vector<DnsQueryInfo>& query_infos);
+
+  std::vector<PendingQueryChange> StartDnsQueriesDelayed(
+      std::vector<DnsQueryInfo> query_infos);
+  std::vector<PendingQueryChange> StopDnsQueriesDelayed(
+      std::vector<DnsQueryInfo> query_infos);
 
   // Calls the appropriate callback method based on the provided Instance
   // Endpoint values.

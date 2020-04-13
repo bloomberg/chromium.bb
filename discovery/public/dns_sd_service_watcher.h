@@ -41,6 +41,8 @@ class DnsSdServiceWatcher : public DnsSdQuerier::Callback {
   // a previously discovered service instance ceases to be available. The vector
   // is the set of all currently active service instances which have been
   // discovered so far.
+  // NOTE: This callback may not modify the DnsSdServiceWatcher instance from
+  // which it is called.
   using ServicesUpdatedCallback =
       std::function<void(std::vector<ConstRefT> services)>;
 

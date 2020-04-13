@@ -418,6 +418,23 @@ TEST_F(DiscoveryE2ETest, ValidateAnnouncementFlow) {
   CheckForPublishedService(instance2, &found2);
   CheckForPublishedService(instance3, &found3);
   WaitUntilSeen(true, &found1, &found2, &found3);
+  OSP_LOG << "\tAll services successfully discovered!\n";
+
+  // Deregister all service instances.
+  OSP_LOG << "Deregister all services...";
+  task_runner_->PostTask([this]() {
+    ErrorOr<int> result = publisher_->DeregisterAll();
+    ASSERT_FALSE(result.is_error());
+    ASSERT_EQ(result.value(), 3);
+  });
+  std::this_thread::sleep_for(std::chrono::seconds(3));
+  found1 = false;
+  found2 = false;
+  found3 = false;
+  CheckNotPublishedService(instance1, &found1);
+  CheckNotPublishedService(instance2, &found2);
+  CheckNotPublishedService(instance3, &found3);
+  WaitUntilSeen(false, &found1, &found2, &found3);
 }
 
 // In this test, the following operations are performed:

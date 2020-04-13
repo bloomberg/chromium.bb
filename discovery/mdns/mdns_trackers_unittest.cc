@@ -62,7 +62,7 @@ class MockMdnsSender : public MdnsSender {
 
 class MockRecordChangedCallback : public MdnsRecordChangedCallback {
  public:
-  MOCK_METHOD(void,
+  MOCK_METHOD(std::vector<PendingQueryChange>,
               OnRecordChanged,
               (const MdnsRecord&, RecordChangedEvent event),
               (override));

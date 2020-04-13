@@ -193,6 +193,9 @@ class MdnsQuerier : public MdnsReceiver::ResponseClient {
   // Begins tracking the provided record.
   void AddRecord(const MdnsRecord& record, DnsType type);
 
+  // Applies the supplied pending changes.
+  void ApplyPendingChanges(std::vector<PendingQueryChange> pending_changes);
+
   MdnsSender* const sender_;
   MdnsReceiver* const receiver_;
   TaskRunner* const task_runner_;
