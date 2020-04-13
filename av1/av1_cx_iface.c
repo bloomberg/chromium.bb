@@ -1030,6 +1030,7 @@ static aom_codec_err_t set_encoder_config(AV1EncoderConfig *oxcf,
 
 static aom_codec_err_t encoder_set_config(aom_codec_alg_priv_t *ctx,
                                           const aom_codec_enc_cfg_t *cfg) {
+  InitialDimensions *const initial_dimensions = &ctx->cpi->initial_dimensions;
   aom_codec_err_t res;
   int force_key = 0;
 
@@ -1037,8 +1038,10 @@ static aom_codec_err_t encoder_set_config(aom_codec_alg_priv_t *ctx,
     if (cfg->g_lag_in_frames > 1 || cfg->g_pass != AOM_RC_ONE_PASS)
       ERROR("Cannot change width or height after initialization");
     if (!valid_ref_frame_size(ctx->cfg.g_w, ctx->cfg.g_h, cfg->g_w, cfg->g_h) ||
-        (ctx->cpi->initial_width && (int)cfg->g_w > ctx->cpi->initial_width) ||
-        (ctx->cpi->initial_height && (int)cfg->g_h > ctx->cpi->initial_height))
+        (initial_dimensions->width &&
+         (int)cfg->g_w > initial_dimensions->width) ||
+        (initial_dimensions->height &&
+         (int)cfg->g_h > initial_dimensions->height))
       force_key = 1;
   }
 

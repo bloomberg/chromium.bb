@@ -896,6 +896,11 @@ typedef struct {
 } GlobalMotionInfo;
 
 typedef struct {
+  int width;
+  int height;
+} InitialDimensions;
+
+typedef struct {
   // Stores the default value of skip flag depending on chroma format
   // Set as 1 for monochrome and 3 for other color formats
   int default_interp_skip_flags;
@@ -1247,8 +1252,13 @@ typedef struct AV1_COMP {
 
   FRAME_INFO frame_info;
 
-  int initial_width;
-  int initial_height;
+  // Tracks the frame dimensions(width and height) using which:
+  //  a) Frame buffers(like altref and util frame buffers) were allocated
+  //  b) ME related initializations were done
+  // This structure is helpful to reallocate / reinitialize above when there is
+  // a change in frame dimensions.
+  InitialDimensions initial_dimensions;
+
   int initial_mbs;  // Number of MBs in the full-size frame; to be used to
                     // normalize the firstpass stats. This will differ from the
                     // number of MBs in the current frame when the frame is

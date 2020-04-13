@@ -988,9 +988,10 @@ static INLINE int detect_gf_cut(AV1_COMP *cpi, int frame_index, int cur_start,
                                 GF_GROUP_STATS *gf_stats) {
   RATE_CONTROL *const rc = &cpi->rc;
   TWO_PASS *const twopass = &cpi->twopass;
+  InitialDimensions *const initial_dimensions = &cpi->initial_dimensions;
   // Motion breakout threshold for loop below depends on image size.
   const double mv_ratio_accumulator_thresh =
-      (cpi->initial_height + cpi->initial_width) / 4.0;
+      (initial_dimensions->height + initial_dimensions->width) / 4.0;
 
   if (!flash_detected) {
     // Break clause to detect very still sections after motion. For example,

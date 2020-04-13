@@ -203,9 +203,9 @@ static unsigned int highbd_get_prediction_error(BLOCK_SIZE bsize,
 
 // Refine the motion search range according to the frame dimension
 // for first pass test.
-static int get_search_range(const AV1_COMP *cpi) {
+static int get_search_range(const InitialDimensions *initial_dimensions) {
   int sr = 0;
-  const int dim = AOMMIN(cpi->initial_width, cpi->initial_height);
+  const int dim = AOMMIN(initial_dimensions->width, initial_dimensions->height);
 
   while ((dim << sr) < MAX_FULL_PEL_VAL) ++sr;
   return sr;
@@ -221,7 +221,7 @@ static AOM_INLINE void first_pass_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
   const BLOCK_SIZE bsize = xd->mi[0]->sb_type;
   aom_variance_fn_ptr_t v_fn_ptr = cpi->fn_ptr[bsize];
   const int new_mv_mode_penalty = NEW_MV_MODE_PENALTY;
-  const int sr = get_search_range(cpi);
+  const int sr = get_search_range(&cpi->initial_dimensions);
   const int step_param = 3 + sr;
 
   const search_site_config *first_pass_search_sites =
