@@ -54,4 +54,4 @@ infra/tools/bb/${platform} git_revision:36780e0d5ac28dd0d8e2eeb69c67ae51a4ad2685
 chromiumos/infra/crosjobs/${platform=linux-amd64} git_revision:ed616d595eb7241d39d34907050d2949121d6ae8
 
 # goma client
-infra/goma/client/${os}-${arch=amd64} git_revision:bd9711495c9357eead845f0ae2d4eef92494c6d5
+infra/goma/client/${os}-${arch=amd64} git_revision:897c9f8406700b241acbcedefa1ab02486bdf063
