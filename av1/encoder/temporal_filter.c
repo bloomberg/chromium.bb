@@ -1210,12 +1210,17 @@ int av1_temporal_filter(AV1_COMP *cpi, const int filter_frame_lookahead_idx,
   const GF_GROUP *const gf_group = &cpi->gf_group;
   const uint8_t group_idx = gf_group->index;
   const FRAME_UPDATE_TYPE update_type = gf_group->update_type[group_idx];
-
   // Filter one more ARF if the lookahead index is leq 7 (w.r.t. 9-th frame).
   // This frame is ALWAYS a show existing frame.
   const int is_second_arf = (update_type == INTNL_ARF_UPDATE) &&
                             (filter_frame_lookahead_idx >= 7) &&
                             cpi->sf.hl_sf.second_alt_ref_filtering;
+  // TODO(anyone): Currently, we enforce the filtering strength on internal
+  // ARFs except the second ARF to be zero. We should investigate in which case
+  // it is more beneficial to use non-zero strength filtering.
+  if (update_type == INTNL_ARF_UPDATE && !is_second_arf) {
+    return 0;
+  }
 
   // TODO(yunqing): For INTNL_ARF_UPDATE type, the following me initialization
   // is used somewhere unexpectedly. Should be resolved later.
@@ -1226,13 +1231,6 @@ int av1_temporal_filter(AV1_COMP *cpi, const int filter_frame_lookahead_idx,
   av1_fill_mv_costs(cpi->common.fc,
                     cpi->common.features.cur_frame_force_integer_mv,
                     cpi->common.features.allow_high_precision_mv, &cpi->td.mb);
-
-  // TODO(weitinglin): Currently, we enforce the filtering strength on internal
-  // ARFs to be zeros. We should investigate in which case it is more beneficial
-  // to use non-zero strength filtering.
-  if (update_type == INTNL_ARF_UPDATE && !is_second_arf) {
-    return 0;
-  }
 
   // Setup frame buffer for filtering.
   YV12_BUFFER_CONFIG *frames[MAX_LAG_BUFFERS] = { NULL };
