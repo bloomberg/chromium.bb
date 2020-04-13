@@ -757,6 +757,10 @@ class ChromeSDKCommand(command.CliCommand):
     parser.add_argument(
         '--board', required=True, help='The board SDK to use.')
     parser.add_argument(
+        '--build-label', default='Release',
+        help='The label for this build. Used as a subdirectory name under '
+             'out_${BOARD}/')
+    parser.add_argument(
         '--bashrc', type='path',
         default=constants.CHROME_SDK_BASHRC,
         help='A bashrc file used to set up the SDK shell environment. '
@@ -902,11 +906,6 @@ class ChromeSDKCommand(command.CliCommand):
     ps1_prefix = ChromeSDKCommand._PS1Prefix(board, version, chroot)
     return '%s %s' % (ps1_prefix, current_ps1)
 
-  def _BuildDir(self):
-    """Returns a full path build directory."""
-    return os.path.join(self.options.chrome_src, 'out_%s' % self.board,
-                        'Release')
-
   def _UpdateGnArgsIfStale(self, out_dir, build_label, gn_args, board):
     """Runs 'gn gen' if gn args are stale or logs a warning."""
     if not self.options.use_shell:
@@ -915,20 +914,21 @@ class ChromeSDKCommand(command.CliCommand):
       osutils.WriteFile(gn_args_file_path, gn_helpers.ToGNString(gn_args))
       return
 
+    build_dir = os.path.join(out_dir, build_label)
     gn_args_file_path = os.path.join(
-        self.options.chrome_src, out_dir, build_label, 'args.gn')
+        self.options.chrome_src, build_dir, 'args.gn')
 
     if not self._StaleGnArgs(gn_args, gn_args_file_path):
       return
 
     if not self.options.gn_gen:
       logging.warning('To update gn args run:')
-      logging.warning('gn gen out_$SDK_BOARD/Release --args="$GN_ARGS"')
+      logging.warning('gn gen %s --args="$GN_ARGS"', build_dir)
       return
 
     logging.warning('Running gn gen')
     cros_build_lib.run(
-        ['gn', 'gen', 'out_%s/Release' % board,
+        ['gn', 'gen', build_dir,
          '--args=%s' % gn_helpers.ToGNString(gn_args)],
         print_cmd=logging.getLogger().isEnabledFor(logging.DEBUG),
         cwd=self.options.chrome_src)
@@ -1178,14 +1178,13 @@ class ChromeSDKCommand(command.CliCommand):
     out_dir = 'out_%s' % self.board
     env['builddir_name'] = out_dir
 
-    build_label = 'Release'
-
     # This is used by landmines.py to prevent collisions when building both
     # chromeos and android from shared source.
     # For context, see crbug.com/407417
     env['CHROMIUM_OUT_DIR'] = os.path.join(options.chrome_src, out_dir)
 
-    self._UpdateGnArgsIfStale(out_dir, build_label, gn_args, env['SDK_BOARD'])
+    self._UpdateGnArgsIfStale(
+        out_dir, options.build_label, gn_args, env['SDK_BOARD'])
 
     return env
 
