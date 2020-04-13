@@ -713,7 +713,7 @@ class GclientTest(trial_dir.TestCase):
     This is what we mean to check here:
     - |recursedeps| = [...] on 2 levels means we pull exactly 3 deps
       (up to /fizz, but not /fuzz)
-    - pulling foo/bar with no recursion (in .gclient) is overriden by
+    - pulling foo/bar with no recursion (in .gclient) is overridden by
       a later pull of foo/bar with recursion (in the dep tree)
     - pulling foo/tar with no recursion (in .gclient) is no recursively
       pulled (taz is left out)

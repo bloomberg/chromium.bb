@@ -50,7 +50,7 @@ def BaseConfig(USE_MIRROR=True, CACHE_DIR=None,
     # Maps build_property -> 'solution'
     got_revision_reverse_mapping = Dict(hidden=True),
 
-    # Addition revisions we want to pass in.  For now theres a duplication
+    # Addition revisions we want to pass in.  For now there's a duplication
     # of code here of setting custom vars AND passing in --revision. We hope
     # to remove custom vars later.
     revisions = Dict(

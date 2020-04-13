@@ -75,7 +75,7 @@ class TryserverApi(recipe_api.RecipeApi):
         query_params=[('change', cl.change)],
         # This list must remain static/hardcoded.
         # If you need extra info, either change it here (hardcoded) or
-        # fetch separetely.
+        # fetch separately.
         o_params=['ALL_REVISIONS', 'DOWNLOAD_COMMANDS'],
         limit=1,
         name='fetch current CL info',

@@ -66,7 +66,7 @@ def epilog(text):
 
 def CMDhelp(parser, args):
   """Prints list of commands or help for a specific command."""
-  # This is the default help implementation. It can be disabled or overriden if
+  # This is the default help implementation. It can be disabled or overridden if
   # wanted.
   if not any(i in ('-h', '--help') for i in args):
     args = args + ['--help']
@@ -235,14 +235,14 @@ class CommandDispatcher(object):
 
     if args:
       if args[0] in ('-h', '--help') and len(args) > 1:
-        # Inverse the argument order so 'tool --help cmd' is rewritten to
+        # Reverse the argument order so 'tool --help cmd' is rewritten to
         # 'tool cmd --help'.
         args = [args[1], args[0]] + args[2:]
       command = self.find_nearest_command(args[0])
       if command:
         if command.__name__ == 'CMDhelp' and len(args) > 1:
-          # Inverse the arguments order so 'tool help cmd' is rewritten to
-          # 'tool cmd --help'. Do it here since we want 'tool hel cmd' to work
+          # Reverse the argument order so 'tool help cmd' is rewritten to
+          # 'tool cmd --help'. Do it here since we want 'tool help cmd' to work
           # too.
           args = [args[1], '--help'] + args[2:]
           command = self.find_nearest_command(args[0]) or command

@@ -390,7 +390,7 @@ class GitWrapper(SCMWrapper):
       # remote ref for it, since |target_rev| might point to a local ref which
       # is not up to date with the corresponding remote ref.
       remote_ref = ''.join(scm.GIT.RefToRemoteRef(target_rev, self.remote))
-      self.Print('Trying the correspondig remote ref for %r: %r\n' % (
+      self.Print('Trying the corresponding remote ref for %r: %r\n' % (
           target_rev, remote_ref))
       if scm.GIT.IsValidRevision(self.checkout_path, remote_ref):
         target_rev = remote_ref
@@ -854,7 +854,7 @@ class GitWrapper(SCMWrapper):
     if not os.path.isdir(self.checkout_path):
       # revert won't work if the directory doesn't exist. It needs to
       # checkout instead.
-      self.Print('_____ %s is missing, synching instead' % self.relpath)
+      self.Print('_____ %s is missing, syncing instead' % self.relpath)
       # Don't reuse the args.
       return self.update(options, [], file_list)
 
@@ -1279,7 +1279,7 @@ class GitWrapper(SCMWrapper):
     Args:
       options: The configured option set
       ref: (str) The branch/commit to checkout
-      quiet: (bool/None) Whether or not the checkout shoud pass '--quiet'; if
+      quiet: (bool/None) Whether or not the checkout should pass '--quiet'; if
           'None', the behavior is inferred from 'options.verbose'.
     Returns: (str) The output of the checkout operation
     """

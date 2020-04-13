@@ -76,7 +76,7 @@ def split_footers(message):
       maybe_footer_lines = []
       footer_lines.append(line)
     else:
-      # We only want to include malformed lines if they are preceeded by
+      # We only want to include malformed lines if they are preceded by
       # well-formed lines. So keep them in holding until we see a well-formed
       # line (case above).
       maybe_footer_lines.append(line)

@@ -454,7 +454,7 @@ def Parse(content, filename, vars_override=None, builtin_vars=None):
   """Parses DEPS strings.
 
   Executes the Python-like string stored in content, resulting in a Python
-  dictionary specifyied by the schema above. Supports syntax validation and
+  dictionary specified by the schema above. Supports syntax validation and
   variable expansion.
 
   Args:

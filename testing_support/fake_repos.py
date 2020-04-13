@@ -816,7 +816,7 @@ class FakeReposTestBase(trial_dir.TestCase):
     """Prints the diffs to ease debugging."""
     self.assertEqual(expected.splitlines(), result.splitlines(), msg)
     if expected != result:
-      # Strip the begining
+      # Strip the beginning
       while expected and result and expected[0] == result[0]:
         expected = expected[1:]
         result = result[1:]

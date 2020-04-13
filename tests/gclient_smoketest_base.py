@@ -106,7 +106,7 @@ class GClientSmokeBase(fake_repos.FakeReposTestBase):
         results.append([[match.group(1), match.group(2), match.group(3)]])
         continue
 
-      match = re.match(r'^_____ (.*) is missing, synching instead$', line)
+      match = re.match(r'^_____ (.*) is missing, syncing instead$', line)
       if match:
         # Blah, it's when a dependency is deleted, we should probably not
         # output this message.

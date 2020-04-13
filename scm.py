@@ -207,7 +207,7 @@ class GIT(object):
 
   @staticmethod
   def FetchUpstreamTuple(cwd, branch=None):
-    """Returns a tuple containg remote and remote ref,
+    """Returns a tuple containing remote and remote ref,
        e.g. 'origin', 'refs/heads/master'
     """
     try:

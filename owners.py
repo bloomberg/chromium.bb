@@ -579,7 +579,7 @@ class Database(object):
     return all_possible_owners
 
   def _fnmatch(self, filename, pattern):
-    """Same as fnmatch.fnmatch(), but interally caches the compiled regexes."""
+    """Same as fnmatch.fnmatch(), but internally caches the compiled regexes."""
     matcher = self._fnmatch_cache.get(pattern)
     if matcher is None:
       matcher = re.compile(fnmatch.translate(pattern)).match

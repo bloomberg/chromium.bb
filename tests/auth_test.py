@@ -128,7 +128,7 @@ class HasLuciContextLocalAuthTest(unittest.TestCase):
     os.environ = {}
     self.assertFalse(auth.has_luci_context_local_auth())
 
-  def testUnexistentPath(self):
+  def testNonexistentPath(self):
     os.environ = {'LUCI_CONTEXT': 'path'}
     open.side_effect = OSError
     self.assertFalse(auth.has_luci_context_local_auth())

@@ -469,7 +469,7 @@ def freeze():
         .git/info/exclude
       file. See `git help ignore` for the format of this file.
 
-      If this data is indended as part of your commit, you may adjust the
+      If this data is intended as part of your commit, you may adjust the
       freeze limit by running:
         git config %s <new_limit>
       Where <new_limit> is an integer threshold in megabytes.""",

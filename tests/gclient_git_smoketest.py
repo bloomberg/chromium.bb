@@ -171,7 +171,7 @@ class GClientSmokeGIT(gclient_smoketest_base.GClientSmokeBase):
     tree['src/git_hooked2'] = 'git_hooked2'
     self.assertTree(tree)
 
-    # Manually remove git_hooked1 before synching to make sure it's not
+    # Manually remove git_hooked1 before syncing to make sure it's not
     # recreated.
     os.remove(join(self.root_dir, 'src', 'git_hooked1'))
 
@@ -310,7 +310,7 @@ class GClientSmokeGIT(gclient_smoketest_base.GClientSmokeBase):
     tree['src/git_hooked2'] = 'git_hooked2'
     self.assertTree(tree)
 
-    # Manually remove git_hooked1 before synching to make sure it's not
+    # Manually remove git_hooked1 before syncing to make sure it's not
     # recreated.
     os.remove(join(self.root_dir, 'src', 'git_hooked1'))
 

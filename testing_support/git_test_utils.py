@@ -252,7 +252,7 @@ class GitRepo(object):
       ...
     }
 
-  The SPECIAL_KEYs are the following attribues of the GitRepo class:
+  The SPECIAL_KEYs are the following attributes of the GitRepo class:
     * AUTHOR_NAME
     * AUTHOR_EMAIL
     * AUTHOR_DATE - must be a datetime.datetime instance

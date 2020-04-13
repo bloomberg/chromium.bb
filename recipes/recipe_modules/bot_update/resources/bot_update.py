@@ -443,7 +443,7 @@ def create_manifest_old():
 
 # TODO(hinoka): Include patch revision.
 def create_manifest(gclient_output, patch_root):
-  """Return the JSONPB equivilent of the source manifest proto.
+  """Return the JSONPB equivalent of the source manifest proto.
 
   The source manifest proto is defined here:
   https://chromium.googlesource.com/infra/luci/recipes-py/+/master/recipe_engine/source_manifest.proto
@@ -746,7 +746,7 @@ def _git_checkout(sln, sln_dir, revisions, refs, no_fetch_tags, git_cache_dir,
       git('clean', '-dff', cwd=sln_dir)
       return
     except SubprocessFailed as e:
-      # Exited abnormally, theres probably something wrong.
+      # Exited abnormally, there's probably something wrong.
       print('Something failed: %s.' % str(e))
       if first_try:
         first_try = False
@@ -1012,7 +1012,7 @@ def parse_args():
       options.revision_mapping = json.load(f)
   except Exception as e:
     print(
-        'WARNING: Caught execption while parsing revision_mapping*: %s'
+        'WARNING: Caught exception while parsing revision_mapping*: %s'
         % (str(e),))
 
   # Because we print CACHE_DIR out into a .gclient file, and then later run
@@ -1164,7 +1164,7 @@ def main():
   # Check if this script should activate or not.
   active = True
 
-  # Print a helpful message to tell developers whats going on with this step.
+  # Print a helpful message to tell developers what's going on with this step.
   print_debug_info()
 
   # Parse, manipulate, and print the gclient solutions.

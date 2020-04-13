@@ -1421,7 +1421,7 @@ class InputApiUnittest(PresubmitTestsBase):
         'mychange', '', self.fake_root_dir, files, 0, 0, None)
     input_api = presubmit.InputApi(
         change, './PRESUBMIT.py', False, None, False)
-    # Sample usage of overiding the default white and black lists.
+    # Sample usage of overriding the default white and black lists.
     got_files = input_api.AffectedSourceFiles(
         lambda x: input_api.FilterSourceFile(x, white_list, black_list))
     self.assertEqual(len(got_files), 2)

@@ -563,7 +563,7 @@ def GenerateAllChanges(host, params, first_param=None, limit=500,
     # (say user posting comment), subsequent calls may overalp like this:
     #   > initial order ABCDEFGH
     #   query[0..3]  => ABC
-    #   > E get's updated. New order: EABCDFGH
+    #   > E gets updated. New order: EABCDFGH
     #   query[3..6] => CDF   # C is a dup
     #   query[6..9] => GH    # E is missed.
     page = QueryChanges(host, params, first_param, limit, o_params,
@@ -850,7 +850,7 @@ def ResetReviewLabels(host, change, label, value='0', message=None,
       '%s label set to %s programmatically.' % (label, value))
   jmsg = GetReview(host, change, revision)
   if not jmsg:
-    raise GerritError(200, 'Could not get review information for revison %s '
+    raise GerritError(200, 'Could not get review information for revision %s '
                    'of change %s' % (revision, change))
   for review in jmsg.get('labels', {}).get(label, {}).get('all', []):
     if str(review.get('value', value)) != value:

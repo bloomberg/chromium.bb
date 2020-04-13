@@ -23,7 +23,7 @@ class Gitiles(recipe_api.RecipeApi):
           * archive - implies the response is a compressed tarball; requires
             `extract_to`.
       extract_to (Path): When fmt=='archive', instructs gitiles_client to
-        extract the archive to this non-existant folder.
+        extract the archive to this non-existent folder.
       log_limit: for log URLs, limit number of results. None implies 1 page,
         as returned by Gitiles.
       log_start: for log URLs, the start cursor for paging.

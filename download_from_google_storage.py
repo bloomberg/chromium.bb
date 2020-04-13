@@ -382,7 +382,7 @@ def _data_exists(input_sha1_sum, output_filename, extract):
     input_sha1_sum: Expected sha1 stored on disk.
     output_filename: The file to potentially download later. Its sha1 will be
         compared to input_sha1_sum.
-    extract: Wheather or not a downloaded file should be extracted. If the file
+    extract: Whether or not a downloaded file should be extracted. If the file
         is not extracted, this just compares the sha1 of the file. If the file
         is to be extracted, this only compares the sha1 of the target archive if
         the target directory already exists. The content of the target directory

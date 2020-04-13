@@ -19,7 +19,7 @@
 #   cipd ensure-file-resolve -ensure-file cipd_manifest.txt
 $ResolvedVersions cipd_manifest.versions
 
-# Fully supported plaforms.
+# Fully supported platforms.
 $VerifiedPlatform linux-amd64 mac-amd64 windows-amd64 windows-386
 
 # Platform with best-effort support: we have some binaries cross-compiled for

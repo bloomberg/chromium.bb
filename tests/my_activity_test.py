@@ -30,7 +30,7 @@ class MyActivityTest(unittest.TestCase):
     self.assertEqual(
         (datetime(2020, 7, 1), datetime(2020, 10, 1)),
         my_activity.get_quarter_of(datetime(2020, 9, 12)))
-    # Quarter range includes beggining
+    # Quarter range includes beginning
     self.assertEqual(
         (datetime(2020, 10, 1), datetime(2021, 1, 1)),
         my_activity.get_quarter_of(datetime(2020, 10, 1)))
@@ -46,7 +46,7 @@ class MyActivityTest(unittest.TestCase):
     self.assertEqual(
         (datetime(2020, 1, 1), datetime(2021, 1, 1)),
         my_activity.get_year_of(datetime(2020, 9, 12)))
-    # Year range includes beggining
+    # Year range includes beginning
     self.assertEqual(
         (datetime(2020, 1, 1), datetime(2021, 1, 1)),
         my_activity.get_year_of(datetime(2020, 1, 1)))

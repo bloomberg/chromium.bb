@@ -324,7 +324,7 @@ def rmtree(path):
 def safe_makedirs(tree):
   """Creates the directory in a safe manner.
 
-  Because multiple threads can create these directories concurently, trap the
+  Because multiple threads can create these directories concurrently, trap the
   exception and pass on.
   """
   count = 0
@@ -456,7 +456,7 @@ class Annotated(Wrapper):
     finally:
       self.lock.release()
 
-    # Don't keep the lock while writting. Will append \n when it shouldn't.
+    # Don't keep the lock while writing. Will append \n when it shouldn't.
     for orphan in orphans:
       if orphan[1]:
         self._wrapped_write(b'%d>%s\n' % (orphan[0], orphan[1]))
@@ -1205,7 +1205,7 @@ def FindExecutable(executable):
 
   for path_folder in path_folders:
     target = os.path.join(path_folder, executable)
-    # Just incase we have some ~/blah paths.
+    # Just in case we have some ~/blah paths.
     target = os.path.abspath(os.path.expanduser(target))
     if os.path.isfile(target) and os.access(target, os.X_OK):
       return target

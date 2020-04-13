@@ -190,7 +190,7 @@ class MetricsCollector(object):
   def _collect_metrics(self, func, command_name, *args, **kwargs):
     # If we're already collecting metrics, just execute the function.
     # e.g. git-cl split invokes git-cl upload several times to upload each
-    # splitted CL.
+    # split CL.
     if self.collecting_metrics:
       # Don't collect metrics for this function.
       # e.g. Don't record the arguments git-cl split passes to git-cl upload.

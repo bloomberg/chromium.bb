@@ -820,7 +820,7 @@ class RevisionTest(unittest.TestCase):
   def test_preserves_formatting(self):
     before = [
         'vars = {',
-        ' # Some coment on deadbeef ',
+        ' # Some comment on deadbeef ',
         '  "dep_revision": "deadbeef",',
         '}',
         'deps = {',
@@ -833,7 +833,7 @@ class RevisionTest(unittest.TestCase):
     ]
     after = [
         'vars = {',
-        ' # Some coment on deadbeef ',
+        ' # Some comment on deadbeef ',
         '  "dep_revision": "deadfeed",',
         '}',
         'deps = {',
