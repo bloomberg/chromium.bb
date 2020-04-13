@@ -1213,7 +1213,8 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
     sf->rd_sf.optimize_coefficients = NO_TRELLIS_OPT;
 
   // No recode or trellis for 1 pass.
-  if (oxcf->pass == 0) sf->hl_sf.recode_loop = DISALLOW_RECODE;
+  if (oxcf->pass == 0 && has_no_stats_stage(cpi))
+    sf->hl_sf.recode_loop = DISALLOW_RECODE;
 
   MotionVectorSearchParams *const mv_search_params = &cpi->mv_search_params;
   if (sf->mv_sf.subpel_search_method == SUBPEL_TREE) {
