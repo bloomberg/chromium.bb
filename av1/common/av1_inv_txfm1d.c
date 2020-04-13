@@ -806,7 +806,6 @@ void av1_iadst8(const int32_t *input, int32_t *output, int8_t cos_bit,
   av1_range_check_buf(stage, input, bf1, size, stage_range[stage]);
 
   // stage 7
-  stage++;
   bf0 = step;
   bf1 = output;
   bf1[0] = bf0[0];
@@ -1007,7 +1006,6 @@ void av1_iadst16(const int32_t *input, int32_t *output, int8_t cos_bit,
   av1_range_check_buf(stage, input, bf1, size, stage_range[stage]);
 
   // stage 9
-  stage++;
   bf0 = step;
   bf1 = output;
   bf1[0] = bf0[0];
