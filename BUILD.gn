@@ -5,7 +5,13 @@
 import("//build/config/compiler/compiler.gni")
 import("nasm_sources.gni")
 
-configs_to_delete = [ "//build/config/compiler:chromium_code" ]
+configs_to_delete = [
+  "//build/config/compiler:chromium_code",
+
+  # Don't enable sanitizers for build tools. They slow down the overall build.
+  "//build/config/sanitizers:default_sanitizer_flags",
+]
+
 configs_to_add = [ "//build/config/compiler:no_chromium_code" ]
 if (is_debug) {
   configs_to_delete += [
@@ -17,9 +23,6 @@ if (is_debug) {
 
     # Don't define _DEBUG. Modest savings, but good for consistency.
     "//build/config:debug",
-
-    # Don't enable sanitizers for build tools. They slow down the overall build.
-    "//build/config/sanitizers:default_sanitizer_flags",
   ]
 
   configs_to_add += [
