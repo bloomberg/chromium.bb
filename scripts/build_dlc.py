@@ -43,6 +43,9 @@ DLC_APPID_KEY = 'DLC_RELEASE_APPID'
 _SQUASHFS_TYPE = 'squashfs'
 _EXT4_TYPE = 'ext4'
 
+_USED_BY_USER = 'user'
+_USED_BY_SYSTEM = 'system'
+
 MAX_ID_NAME = 40
 
 
@@ -87,10 +90,11 @@ class EbuildParams(object):
     name: (str) DLC name.
     description: (str) DLC description.
     preload: (bool) allow for preloading DLC.
+    used_by: (str) The user of this DLC, e.g. "system" or "user"
   """
 
   def __init__(self, dlc_id, dlc_package, fs_type, pre_allocated_blocks,
-               version, name, description, preload):
+               version, name, description, preload, used_by):
     self.dlc_id = dlc_id
     self.dlc_package = dlc_package
     self.fs_type = fs_type
@@ -99,6 +103,7 @@ class EbuildParams(object):
     self.name = name
     self.description = description
     self.preload = preload
+    self.used_by = used_by
 
   def StoreDlcParameters(self, install_root_dir, sudo):
     """Store DLC parameters defined in the ebuild.
@@ -399,6 +404,7 @@ class DlcGenerator(object):
         'table-sha256-hash': table_hash,
         'version': self.ebuild_params.version,
         'preload-allowed': self.ebuild_params.preload,
+        'used-by': self.ebuild_params.used_by,
     }
 
   def GenerateVerity(self):
@@ -663,6 +669,13 @@ def GetParser():
       action='store_true',
       help='Allow preloading of DLC.')
   one_dlc.add_argument(
+      '--used-by', default=_USED_BY_SYSTEM,
+      choices=(_USED_BY_USER, _USED_BY_SYSTEM),
+      help='Defines how this DLC will be used so dlcservice can take proper '
+      'actions based on the type of usage. For example, if "user" is passed, '
+      'dlcservice does ref counting when DLC is installed/uninstalled. For '
+      '"system", there will be no such provisions.')
+  one_dlc.add_argument(
       '--build-package',
       default=False,
       action='store_true',
@@ -759,7 +772,8 @@ def main(argv):
         description=opts.description,
         pre_allocated_blocks=opts.pre_allocated_blocks,
         version=opts.version,
-        preload=opts.preload)
+        preload=opts.preload,
+        used_by=opts.used_by)
     params.StoreDlcParameters(install_root_dir=opts.install_root_dir, sudo=True)
 
   else:

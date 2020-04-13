@@ -31,6 +31,8 @@ _IMAGE_DIR = 'build/rootfs/dlc/'
 
 _BLOCK_SIZE = 4096
 
+# pylint: disable=protected-access
+
 
 class UtilsTest(cros_test_lib.TempDirTestCase):
   """Tests build_dlc utility functions."""
@@ -82,7 +84,8 @@ class EbuildParamsTest(cros_test_lib.TempDirTestCase):
                   description=_DESCRIPTION,
                   pre_allocated_blocks=_PRE_ALLOCATED_BLOCKS,
                   version=_VERSION,
-                  preload=False):
+                  preload=False,
+                  used_by=build_dlc._USED_BY_SYSTEM):
     """Tests EbuildParams JSON values"""
     self.assertDictEqual(ebuild_params,
                          {'dlc_id': dlc_id,
@@ -92,7 +95,8 @@ class EbuildParamsTest(cros_test_lib.TempDirTestCase):
                           'version': version,
                           'name': name,
                           'description': description,
-                          'preload': preload})
+                          'preload': preload,
+                          'used_by': used_by})
 
   def GenerateParams(self,
                      install_root_dir,
@@ -103,7 +107,8 @@ class EbuildParamsTest(cros_test_lib.TempDirTestCase):
                      description=_DESCRIPTION,
                      pre_allocated_blocks=_PRE_ALLOCATED_BLOCKS,
                      version=_VERSION,
-                     preload=False):
+                     preload=False,
+                     used_by=build_dlc._USED_BY_SYSTEM):
     """Creates and Stores DLC params at install_root_dir"""
     params = build_dlc.EbuildParams(
         dlc_id=dlc_id,
@@ -113,7 +118,8 @@ class EbuildParamsTest(cros_test_lib.TempDirTestCase):
         description=description,
         pre_allocated_blocks=pre_allocated_blocks,
         version=version,
-        preload=preload)
+        preload=preload,
+        used_by=used_by)
     return params.StoreDlcParameters(
         install_root_dir=install_root_dir, sudo=False)
 
@@ -164,7 +170,8 @@ class DlcGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):
         description=_DESCRIPTION,
         pre_allocated_blocks=_PRE_ALLOCATED_BLOCKS,
         version=_VERSION,
-        preload=False)
+        preload=False,
+        used_by=build_dlc._USED_BY_SYSTEM)
     return build_dlc.DlcGenerator(
         ebuild_params=params,
         src_dir=src_dir,
@@ -260,6 +267,7 @@ class DlcGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):
             'is-removable': True,
             'manifest-version': 1,
             'preload-allowed': False,
+            'used-by': build_dlc._USED_BY_SYSTEM,
         })
 
   def testVerifyImageSize(self):
