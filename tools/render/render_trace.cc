@@ -44,17 +44,24 @@ int main(int argc, char* argv[]) {
   {
     std::string filename(argv[1]);
     std::ifstream f(filename);
-    if (GuessInputFileFormat(filename) == INPUT_QTR) {
-      trace->ParseFromIstream(&f);
-    } else {
-      std::istreambuf_iterator<char> it(f);
-      std::istreambuf_iterator<char> end;
-
-      auto status = google::protobuf::util::JsonStringToMessage(
-          std::string(it, end), &*trace);
-      if (!status.ok()) {
-        LOG(FATAL) << "Failed to load '" << filename << "': " << status;
+    switch (GuessInputFileFormat(filename)) {
+      case INPUT_QTR: {
+        trace->ParseFromIstream(&f);
+        break;
       }
+      case INPUT_JSON: {
+        std::istreambuf_iterator<char> it(f);
+        std::istreambuf_iterator<char> end;
+
+        auto status = google::protobuf::util::JsonStringToMessage(
+            std::string(it, end), &*trace);
+        if (!status.ok()) {
+          LOG(FATAL) << "Failed to load '" << filename << "': " << status;
+        }
+        break;
+      }
+      default:
+        LOG(FATAL) << "Unexpected format";
     }
   }
 
