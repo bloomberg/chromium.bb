@@ -237,6 +237,7 @@
     amd64-generic-cheets-release
     arkham-release
     asuka-release
+    asurada-release
     atlas-blueznext-release
     atlas-kvm-release
     atlas-release
@@ -1429,6 +1430,7 @@
     amd64-generic-cheets-release-tryjob
     arkham-release-tryjob
     asuka-release-tryjob
+    asurada-release-tryjob
     atlas-blueznext-release-tryjob
     atlas-kvm-release-tryjob
     atlas-release-tryjob
