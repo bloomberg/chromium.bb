@@ -347,11 +347,8 @@ const char kSecurityPsk[] = "psk";
 const char kSecurityNone[] = "none";
 
 // Flimflam L2TPIPsec property names.
-const char kL2tpIpsecAuthenticationType[] = "L2TPIPsec.AuthenticationType";
-const char kL2tpIpsecCaCertNssProperty[] = "L2TPIPsec.CACertNSS";
 const char kL2tpIpsecClientCertIdProperty[] = "L2TPIPsec.ClientCertID";
 const char kL2tpIpsecClientCertSlotProperty[] = "L2TPIPsec.ClientCertSlot";
-const char kL2tpIpsecIkeVersion[] = "L2TPIPsec.IKEVersion";
 const char kL2tpIpsecPinProperty[] = "L2TPIPsec.PIN";
 const char kL2tpIpsecPskProperty[] = "L2TPIPsec.PSK";
 const char kL2tpIpsecPskRequiredProperty[] = "L2TPIPsec.PSKRequired";
