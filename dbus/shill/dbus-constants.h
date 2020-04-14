@@ -15,7 +15,6 @@ const char kFlimflamServiceInterface[] = "org.chromium.flimflam.Service";
 const char kFlimflamIPConfigInterface[] = "org.chromium.flimflam.IPConfig";
 const char kFlimflamDeviceInterface[] = "org.chromium.flimflam.Device";
 const char kFlimflamProfileInterface[] = "org.chromium.flimflam.Profile";
-const char kFlimflamNetworkInterface[] = "org.chromium.flimflam.Network";
 const char kFlimflamThirdPartyVpnInterface[] =
     "org.chromium.flimflam.ThirdPartyVpn";
 
