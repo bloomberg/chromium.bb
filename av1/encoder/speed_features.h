@@ -298,6 +298,9 @@ typedef struct TPL_SPEED_FEATURES {
   // full-pixel center MVs. If set to 2, motion estimation is skipped if the
   // difference between center MVs is less than the threshold.
   int skip_alike_starting_mv;
+
+  // When to stop subpel search.
+  SUBPEL_FORCE_STOP subpel_force_stop;
 } TPL_SPEED_FEATURES;
 
 typedef struct GLOBAL_MOTION_SPEED_FEATURES {
@@ -440,6 +443,9 @@ typedef struct MV_SPEED_FEATURES {
 
   // When to stop subpel search.
   SUBPEL_FORCE_STOP subpel_force_stop;
+
+  // When to stop subpel search in simple motion search.
+  SUBPEL_FORCE_STOP simple_motion_subpel_force_stop;
 
   // If true, sub-pixel search uses the exact convolve function used for final
   // encoding and decoding; otherwise, it uses bilinear interpolation.

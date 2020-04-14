@@ -159,7 +159,7 @@ static uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
   SUBPEL_MOTION_SEARCH_PARAMS ms_params;
   av1_make_default_subpel_ms_params(&ms_params, cpi, x, bsize, &center_mv,
                                     cost_list);
-  ms_params.forced_stop = EIGHTH_PEL;
+  ms_params.forced_stop = tpl_sf->subpel_force_stop;
   ms_params.var_params.subpel_search_type = USE_2_TAPS;
   ms_params.mv_cost_params.mv_cost_type = MV_COST_NONE;
   MV subpel_start_mv = get_mv_from_fullmv(&best_mv->as_fullmv);

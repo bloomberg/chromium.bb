@@ -591,8 +591,11 @@ static void set_good_speed_features_framesize_independent(
     sf->lpf_sf.lpf_pick = LPF_PICK_FROM_FULL_IMAGE_NON_DUAL;
     sf->lpf_sf.disable_lr_filter = 1;
 
+    sf->mv_sf.simple_motion_subpel_force_stop = QUARTER_PEL;
     sf->mv_sf.prune_mesh_search = 1;
     sf->mv_sf.reduce_search_range = 1;
+
+    sf->tpl_sf.subpel_force_stop = QUARTER_PEL;
   }
 
   if (speed >= 6) {
@@ -890,6 +893,7 @@ static AOM_INLINE void init_tpl_sf(TPL_SPEED_FEATURES *tpl_sf) {
   tpl_sf->prune_intra_modes = 0;
   tpl_sf->reduce_first_step_size = 0;
   tpl_sf->skip_alike_starting_mv = 0;
+  tpl_sf->subpel_force_stop = EIGHTH_PEL;
 }
 
 static AOM_INLINE void init_gm_sf(GLOBAL_MOTION_SPEED_FEATURES *gm_sf) {
@@ -946,6 +950,7 @@ static AOM_INLINE void init_mv_sf(MV_SPEED_FEATURES *mv_sf) {
   mv_sf->prune_mesh_search = 0;
   mv_sf->reduce_search_range = 0;
   mv_sf->search_method = NSTEP;
+  mv_sf->simple_motion_subpel_force_stop = EIGHTH_PEL;
   mv_sf->subpel_force_stop = EIGHTH_PEL;
   mv_sf->subpel_iters_per_step = 2;
   mv_sf->subpel_search_method = SUBPEL_TREE;
