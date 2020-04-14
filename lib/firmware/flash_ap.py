@@ -288,7 +288,7 @@ def _deploy_servo(image, module, flashrom, fast, verbose, port, dryrun):
     dryrun (bool): Whether to actually execute the deployment or just print the
       operations that would have been performed.
   """
-  logging.info('Attempting to flash via servo.')
+  logging.notice('Attempting to flash via servo.')
   dut_ctl = DutControl(port)
   servo = servo_lib.get(dut_ctl)
   # TODO(b/143240576): Fast mode is sometimes necessary to flash successfully.
@@ -314,7 +314,7 @@ def _deploy_servo(image, module, flashrom, fast, verbose, port, dryrun):
     futility_cmd += ['-v']
   flash_cmd = flashrom_cmd if flashrom else futility_cmd
   if _flash(dut_ctl, dut_on, dut_off, flash_cmd, verbose, dryrun):
-    logging.info('SUCCESS. Exiting flash_ap.')
+    logging.notice('SUCCESS. Exiting flash_ap.')
   else:
     logging.error('Unable to complete flash, verify servo connection '
                   'is correct and servod is running in the background.')
@@ -333,7 +333,7 @@ def _deploy_ssh(image, module, flashrom, fast, verbose, ip, dryrun):
     dryrun (bool): Whether to execute the deployment or just print the
       commands that would have been executed.
   """
-  logging.info('Attempting to flash via ssh.')
+  logging.notice('Attempting to flash via ssh.')
   # TODO(b/143241417): Can't use flashrom over ssh on wilco.
   if (hasattr(module, 'DEPLOY_SSH_FORCE_FUTILITY') and
       module.DEPLOY_SSH_FORCE_FUTILITY and flashrom):
@@ -341,7 +341,7 @@ def _deploy_ssh(image, module, flashrom, fast, verbose, ip, dryrun):
                     'consistently, flashing with futility instead.')
     flashrom = False
   if _ssh_flash(not flashrom, image, verbose, ip, fast, dryrun):
-    logging.info('ssh flash successful. Exiting flash_ap')
+    logging.notice('ssh flash successful. Exiting flash_ap')
   else:
     raise DeployFailed('ssh failed, try using a servo connection instead.')
 
