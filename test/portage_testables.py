@@ -43,6 +43,9 @@ def _dict_to_ebuild(dictionary):
 class Overlay(object):
   """Portage overlay object, responsible for all writes to its directory."""
 
+  HIERARCHY_NAMES = ('stable', 'project', 'chipset', 'baseboard', 'board',
+                     'board-private')
+
   def __init__(self, root_path, name, masters=None):
     self.path = pathlib.Path(root_path)
     self.name = str(name)

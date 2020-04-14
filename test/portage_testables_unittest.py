@@ -15,31 +15,49 @@ import chromite as cr
 # redefined outer names.
 # pylint: disable=redefined-outer-name
 
-@pytest.fixture
-def bare_overlay(tmp_path_factory):
-  """Create a single bare overlay."""
-  p = tmp_path_factory.mktemp('bare-overlay')
-  return cr.test.Overlay(p, 'bare')
+_OVERLAY_STACK_PARAMS = list(range(1, len(cr.test.Overlay.HIERARCHY_NAMES) + 1))
+
+
+@pytest.mark.parametrize('height', _OVERLAY_STACK_PARAMS)
+def test_overlay_stack_masters(height, overlay_stack):
+  """Test that overlays have the correct masters set."""
+  overlays = list(overlay_stack(height))
+
+  assert overlays[0].masters is None
+
+  for x in range(1, height):
+    assert overlays[x].masters == tuple(overlays[:x])
+
+
+@pytest.mark.parametrize('height', _OVERLAY_STACK_PARAMS)
+def test_overlay_stack_names(height, overlay_stack):
+  """Test that generated overlays have the expected names."""
+  overlays = overlay_stack(height)
+
+  for i, o in enumerate(overlays):
+    assert o.name == cr.test.Overlay.HIERARCHY_NAMES[i]
 
 
 @pytest.fixture
-def minimal_sysroot(bare_overlay, tmp_path_factory):
+def minimal_sysroot(overlay_stack, tmp_path_factory):
   """Set up a barebones sysroot with a single associated overlay."""
+  overlay, = overlay_stack(1)
   path = tmp_path_factory.mktemp('minimal-sysroot')
-  base = bare_overlay.create_profile()
-  return cr.test.Sysroot(path, base, [bare_overlay])
+  base = overlay.create_profile()
+  return overlay, cr.test.Sysroot(path, base, overlays=[overlay])
 
 
-def test_emerge_against_fake_sysroot(bare_overlay, minimal_sysroot):
+def test_emerge_against_fake_sysroot(minimal_sysroot):
   """Test that a basic `emerge` operation works against a test sysroot."""
+  overlay, sysroot = minimal_sysroot
   pkg1 = cr.test.Package('foo', 'bar')
-  bare_overlay.add_package(pkg1)
+  overlay.add_package(pkg1)
 
   pkg2 = cr.test.Package('foo', 'spam', depend='foo/bar')
-  bare_overlay.add_package(pkg2)
+  overlay.add_package(pkg2)
 
-  minimal_sysroot.run(['emerge', 'foo/spam'])
+  sysroot.run(['emerge', 'foo/spam'])
 
-  res = minimal_sysroot.run(['equery', 'list', '*'], stdout=True)
+  res = sysroot.run(['equery', 'list', '*'], stdout=True)
 
   assert 'foo/bar' in res.stdout
