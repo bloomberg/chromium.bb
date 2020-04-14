@@ -18,31 +18,66 @@ const char kFlimflamProfileInterface[] = "org.chromium.flimflam.Profile";
 const char kFlimflamThirdPartyVpnInterface[] =
     "org.chromium.flimflam.ThirdPartyVpn";
 
-// Flimflam function names.
+// Common function names.
 const char kGetPropertiesFunction[] = "GetProperties";
 const char kSetPropertyFunction[] = "SetProperty";
 const char kClearPropertyFunction[] = "ClearProperty";
+
+// Manager function names.
+const char kConfigureServiceFunction[] = "ConfigureService";
+const char kConfigureServiceForProfileFunction[] = "ConfigureServiceForProfile";
+const char kConnectToBestServicesFunction[] = "ConnectToBestServices";
+const char kCreateConnectivityReportFunction[] = "CreateConnectivityReport";
+const char kDisableTechnologyFunction[] = "DisableTechnology";
+const char kEnableTechnologyFunction[] = "EnableTechnology";
+const char kFindMatchingServiceFunction[] = "FindMatchingService";
+const char kGetNetworksForGeolocation[] = "GetNetworksForGeolocation";
+const char kGetServiceFunction[] = "GetService";
+const char kRequestScanFunction[] = "RequestScan";
+const char kSetNetworkThrottlingFunction[] = "SetNetworkThrottlingStatus";
+
+// Service function names.
+const char kActivateCellularModemFunction[] = "ActivateCellularModem";
+const char kClearPropertiesFunction[] = "ClearProperties";
+const char kCompleteCellularActivationFunction[] = "CompleteCellularActivation";
 const char kConnectFunction[] = "Connect";
 const char kDisconnectFunction[] = "Disconnect";
-const char kRequestScanFunction[] = "RequestScan";
-const char kGetServiceFunction[] = "GetService";
+const char kGetLoadableProfileEntriesFunction[] = "GetLoadableProfileEntries";
+const char kGetWiFiPassphraseFunction[] = "GetWiFiPassphrase";
 const char kRemoveServiceFunction[] = "Remove";
-const char kEnableTechnologyFunction[] = "EnableTechnology";
-const char kDisableTechnologyFunction[] = "DisableTechnology";
+const char kSetPropertiesFunction[] = "SetProperties";
+
+// IPConfig function names.
 const char kRemoveConfigFunction[] = "Remove";
-const char kGetEntryFunction[] = "GetEntry";
-const char kDeleteEntryFunction[] = "DeleteEntry";
-const char kActivateCellularModemFunction[] = "ActivateCellularModem";
-const char kRequirePinFunction[] = "RequirePin";
-const char kEnterPinFunction[] = "EnterPin";
-const char kUnblockPinFunction[] = "UnblockPin";
+
+// Device function names.
+const char kAddWakeOnPacketConnectionFunction[] = "AddWakeOnPacketConnection";
+const char kAddWakeOnPacketOfTypesFunction[] = "AddWakeOnPacketOfTypes";
 const char kChangePinFunction[] = "ChangePin";
+const char kEnterPinFunction[] = "EnterPin";
+const char kPerformTDLSOperationFunction[] = "PerformTDLSOperation";
 const char kRegisterFunction[] = "Register";
-const char kConfigureServiceFunction[] = "ConfigureService";
-const char kFindMatchingServiceFunction[] = "FindMatchingService";
-const char kSetNetworkThrottlingFunction[] = "SetNetworkThrottlingStatus";
+const char kRemoveAllWakeOnPacketConnectionsFunction[] =
+    "RemoveAllWakeOnPacketConnections";
+const char kRemoveWakeOnPacketConnectionFunction[] =
+    "RemoveWakeOnPacketConnection";
+const char kRemoveWakeOnPacketOfTypesFunction[] = "RemoveWakeOnPacketOfTypes";
+const char kRequirePinFunction[] = "RequirePin";
+const char kResetFunction[] = "Reset";
 const char kSetUsbEthernetMacAddressSourceFunction[] =
     "SetUsbEthernetMacAddressSource";
+const char kUnblockPinFunction[] = "UnblockPin";
+
+// Profile function names.
+const char kDeleteEntryFunction[] = "DeleteEntry";
+const char kGetEntryFunction[] = "GetEntry";
+
+// ThirdPartyVpn function names.
+const char kOnPacketReceivedFunction[] = "OnPacketReceived";
+const char kOnPlatformMessageFunction[] = "OnPlatformMessage";
+const char kSetParametersFunction[] = "SetParameters";
+const char kSendPacketFunction[] = "SendPacket";
+const char kUpdateConnectionStateFunction[] = "UpdateConnectionState";
 
 // Flimflam Service property names.
 const char kSecurityProperty[] = "Security";
@@ -525,38 +560,6 @@ const char kErrorResultPinRequired[] =
 const char kErrorResultWrongState[] = "org.chromium.flimflam.Error.WrongState";
 
 const char kUnknownString[] = "UNKNOWN";
-
-// Function names.
-const char kClearPropertiesFunction[] = "ClearProperties";
-const char kCompleteCellularActivationFunction[] = "CompleteCellularActivation";
-const char kConfigureServiceForProfileFunction[] = "ConfigureServiceForProfile";
-const char kConnectToBestServicesFunction[] = "ConnectToBestServices";
-const char kCreateConnectivityReportFunction[] = "CreateConnectivityReport";
-const char kAddWakeOnPacketConnectionFunction[] = "AddWakeOnPacketConnection";
-const char kAddWakeOnPacketOfTypesFunction[] = "AddWakeOnPacketOfTypes";
-const char kRemoveWakeOnPacketConnectionFunction[] =
-    "RemoveWakeOnPacketConnection";
-const char kRemoveWakeOnPacketOfTypesFunction[] = "RemoveWakeOnPacketOfTypes";
-const char kRemoveAllWakeOnPacketConnectionsFunction[] =
-    "RemoveAllWakeOnPacketConnections";
-const char kGetLoadableProfileEntriesFunction[] = "GetLoadableProfileEntries";
-const char kGetNetworksForGeolocation[] = "GetNetworksForGeolocation";
-const char kGetWiFiPassphraseFunction[] = "GetWiFiPassphrase";
-const char kPerformTDLSOperationFunction[] = "PerformTDLSOperation";
-const char kRefreshFunction[] = "Refresh";
-const char kResetFunction[] = "Reset";
-const char kSetPropertiesFunction[] = "SetProperties";
-const char kVerifyAndEncryptCredentialsFunction[] =
-    "VerifyAndEncryptCredentials";
-const char kVerifyAndEncryptDataFunction[] = "VerifyAndEncryptData";
-const char kVerifyDestinationFunction[] = "VerifyDestination";
-
-// ThirdPartyVpn functions.
-const char kSetParametersFunction[] = "SetParameters";
-const char kSendPacketFunction[] = "SendPacket";
-const char kUpdateConnectionStateFunction[] = "UpdateConnectionState";
-const char kOnPacketReceivedFunction[] = "OnPacketReceived";
-const char kOnPlatformMessageFunction[] = "OnPlatformMessage";
 
 // Device bus types.
 const char kDeviceBusTypePci[] = "pci";
