@@ -183,9 +183,7 @@ def prepare_logging(filename, root=None):
   Makes it log in UTC all the time. Prepare a rotating file based log.
   """
   assert not find_stderr(root)
-  formatter = UTCFormatter(
-      '%(process)d %(asctime)s %(severity)s %(pathname)s %(lineno)d:'
-      ' %(message)s')
+  formatter = UTCFormatter('%(process)d %(asctime)s %(severity)s: %(message)s')
 
   # It is a requirement that the root logger is set to DEBUG, so the messages
   # are not lost. It defaults to WARNING otherwise.

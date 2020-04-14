@@ -58,7 +58,7 @@ class Test(unittest.TestCase):
       result = f.read()
     # It'd be nice to figure out a way to ensure it's properly in UTC but it's
     # tricky to do reliably.
-    expected = _LOG_HEADER + ' D [a-zA-Z/._]+ \\d+: foo\n$'
+    expected = _LOG_HEADER + ' D: foo\n$'
     self.assertTrue(
         re.match(expected.encode('utf-8'), result), (expected, result))
 
@@ -75,10 +75,10 @@ class Test(unittest.TestCase):
     with open(os.path.join(self.tmp, 'shared.1.log'), 'rb') as f:
       lines = f.read().splitlines()
     expected = [
-        r' I phase1.py 21: Parent1',
-        r' I phase2.py 21: Child1',
-        r' I phase2.py 23: Child2',
-        r' I phase1.py 23: Parent2',
+      r' I: Parent1',
+      r' I: Child1',
+      r' I: Child2',
+      r' I: Parent2',
     ]
     for e, l in zip(expected, lines):
       ex = _LOG_HEADER_PID + e + '$'
