@@ -55,8 +55,9 @@ message DlcState {
   // This is the message that indicates what state a DLC is in.
   enum State {
     NOT_INSTALLED = 0;
-    INSTALLED = 1;
-    INSTALLING = 2;
+    INSTALLING = 1;
+    MOUNTABLE = 2;
+    INSTALLED = 3;
   }
   State state = 1;
 }
