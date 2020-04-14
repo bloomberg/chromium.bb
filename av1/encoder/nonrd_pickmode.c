@@ -196,12 +196,10 @@ static int search_new_mv(AV1_COMP *cpi, MACROBLOCK *x,
                          int_mv frame_mv[][REF_FRAMES],
                          MV_REFERENCE_FRAME ref_frame, int gf_temporal_ref,
                          BLOCK_SIZE bsize, int mi_row, int mi_col,
-                         int best_pred_sad, int *rate_mv,
-                         int64_t best_sse_sofar, RD_STATS *best_rdc) {
+                         int best_pred_sad, int *rate_mv, RD_STATS *best_rdc) {
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mi = xd->mi[0];
   AV1_COMMON *cm = &cpi->common;
-  (void)best_sse_sofar;
   if (ref_frame > LAST_FRAME && gf_temporal_ref &&
       cpi->oxcf.rc_mode == AOM_CBR) {
     int tmp_sad;
@@ -248,10 +246,10 @@ static int search_new_mv(AV1_COMP *cpi, MACROBLOCK *x,
 
 static INLINE void find_predictors(
     AV1_COMP *cpi, MACROBLOCK *x, MV_REFERENCE_FRAME ref_frame,
-    int_mv frame_mv[MB_MODE_COUNT][REF_FRAMES], int const_motion[REF_FRAMES],
-    int *ref_frame_skip_mask, const int flag_list[4], TileDataEnc *tile_data,
+    int_mv frame_mv[MB_MODE_COUNT][REF_FRAMES], int *ref_frame_skip_mask,
+    const int flag_list[4], TileDataEnc *tile_data,
     struct buf_2d yv12_mb[8][MAX_MB_PLANE], BLOCK_SIZE bsize,
-    int force_skip_low_temp_var, int comp_pred_allowed) {
+    int force_skip_low_temp_var) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
@@ -259,8 +257,6 @@ static INLINE void find_predictors(
   const YV12_BUFFER_CONFIG *yv12 = get_ref_frame_yv12_buf(cm, ref_frame);
   const int num_planes = av1_num_planes(cm);
   (void)tile_data;
-  (void)const_motion;
-  (void)comp_pred_allowed;
 
   x->pred_mv_sad[ref_frame] = INT_MAX;
   frame_mv[NEWMV][ref_frame].as_int = INVALID_MV;
@@ -1504,7 +1500,6 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   const int *const rd_threshes = cpi->rd.threshes[mi->segment_id][bsize];
   const int *const rd_thresh_freq_fact = x->thresh_freq_fact[bsize];
   InterpFilter filter_ref;
-  int const_motion[REF_FRAMES] = { 0 };
   int ref_frame_skip_mask = 0;
   int best_pred_sad = INT_MAX;
   int best_early_term = 0;
@@ -1514,10 +1509,8 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   int skip_ref_find_pred[8] = { 0 };
   unsigned int sse_zeromv_norm = UINT_MAX;
   const unsigned int thresh_skip_golden = 500;
-  int64_t best_sse_sofar = INT64_MAX;
   int gf_temporal_ref = 0;
   const struct segmentation *const seg = &cm->seg;
-  int comp_modes = 0;
   int num_inter_modes = RT_INTER_MODES;
   unsigned char segment_id = mi->segment_id;
   PRED_BUFFER tmp[4];
@@ -1638,9 +1631,9 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     skip_ref_find_pred[ref_frame_iter] =
         !(cpi->ref_frame_flags & flag_list[ref_frame_iter]);
     if (!skip_ref_find_pred[ref_frame_iter]) {
-      find_predictors(cpi, x, ref_frame_iter, frame_mv, const_motion,
-                      &ref_frame_skip_mask, flag_list, tile_data, yv12_mb,
-                      bsize, force_skip_low_temp_var, comp_modes > 0);
+      find_predictors(cpi, x, ref_frame_iter, frame_mv, &ref_frame_skip_mask,
+                      flag_list, tile_data, yv12_mb, bsize,
+                      force_skip_low_temp_var);
     }
   }
 
@@ -1735,8 +1728,6 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
     if (!(inter_mode_mask[bsize] & (1 << this_mode))) continue;
 
-    if (const_motion[ref_frame] && this_mode == NEARMV) continue;
-
     // Skip testing non-LAST if this flag is set.
     if (x->nonrd_prune_ref_frame_search) {
       if (x->nonrd_prune_ref_frame_search > 1 && ref_frame != LAST_FRAME &&
@@ -1805,8 +1796,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
     if (this_mode == NEWMV && !force_mv_inter_layer) {
       if (search_new_mv(cpi, x, frame_mv, ref_frame, gf_temporal_ref, bsize,
-                        mi_row, mi_col, best_pred_sad, &rate_mv, best_sse_sofar,
-                        &best_rdc))
+                        mi_row, mi_col, best_pred_sad, &rate_mv, &best_rdc))
         continue;
     }
 
@@ -1865,8 +1855,6 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       sse_zeromv_norm =
           sse_y >> (b_width_log2_lookup[bsize] + b_height_log2_lookup[bsize]);
     }
-
-    if (sse_y < best_sse_sofar) best_sse_sofar = sse_y;
 
     const int skip_ctx = av1_get_skip_context(xd);
     const int skip_cost = x->skip_cost[skip_ctx][1];
