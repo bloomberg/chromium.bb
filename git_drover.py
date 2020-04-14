@@ -320,7 +320,10 @@ class _Drover(object):
     stderr = None if self._verbose else _DEV_NULL_FILE
 
     try:
-      return run(['git'] + args, shell=False, cwd=cwd, stderr=stderr)
+      rv = run(['git'] + args, shell=False, cwd=cwd, stderr=stderr)
+      if sys.version_info.major == 3:
+        return rv.decode('utf-8', 'ignore')
+      return rv
     except (OSError, subprocess.CalledProcessError) as e:
       if error_message:
         raise Error(error_message)

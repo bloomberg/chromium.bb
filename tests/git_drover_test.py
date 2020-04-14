@@ -121,13 +121,16 @@ class GitDroverTest(unittest.TestCase):
         self._fail_on_command == len(self._commands)):
       self._fail_on_command = None
       raise subprocess.CalledProcessError(1, args[0])
+    rv = ''
     if args == ['git', 'rev-parse', '--git-dir']:
-      return os.path.join(self._parent_repo, '.git')
+      rv = os.path.join(self._parent_repo, '.git')
     if args == ['git', '-c', 'core.quotePath=false', 'status', '--porcelain']:
-      return ' D foo\nUU baz\n D bar\n'
+      rv = ' D foo\nUU baz\n D bar\n'
     if args == ['git', 'log', '-1', '--format=%ae']:
-      return 'author@domain.org'
-    return ''
+      rv = 'author@domain.org'
+    if sys.version_info.major == 3:
+      return bytes(rv, 'utf-8')
+    return rv
 
   def _Popen(self, args, shell=False, cwd=None, stdin=None, stdout=None,
              stderr=None):
