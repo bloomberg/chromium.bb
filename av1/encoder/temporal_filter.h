@@ -25,6 +25,23 @@ extern "C" {
 // Block size used in temporal filtering.
 #define TF_BLOCK_SIZE BLOCK_32X32
 
+// Hyper-parameters used to compute filtering weight. These hyper-parameters can
+// be tuned for a better performance.
+// 1. Weight factor used to balance the weighted-average between window error
+//    and block error. The weight is for window error while the weight for block
+//    error is always set as 1.
+#define TF_WINDOW_BLOCK_BALANCE_WEIGHT 5
+// 2. Threshold for using q to adjust the filtering weight. Concretely, when
+//    using a small q (high bitrate), we would like to reduce the filtering
+//    strength such that more detailed information can be preserved. Hence, when
+//    q is smaller than this index, we will adjust the filtering weight based on
+//    the q-value.
+#define TF_Q_DECAY_THRESHOLD 20
+// 3. Normalization factor used to normalize the motion search error. Since the
+//    motion search error can be large and uncontrollable, we will simply
+//    normalize it before using it to compute the filtering weight.
+#define TF_SEARCH_ERROR_NORM_WEIGHT 20
+
 // Window size for temporal filtering.
 #define TF_WINDOW_LENGTH 5
 // A scale factor used in temporal filtering to raise the filter weight from

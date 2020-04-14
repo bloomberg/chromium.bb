@@ -502,11 +502,6 @@ void av1_apply_temporal_filter_c(
   assert(TF_WINDOW_LENGTH % 2 == 1);
   const int half_window = TF_WINDOW_LENGTH >> 1;
 
-  // Hyper-parameter for filter weight adjustment.
-  const int frame_height = frame_to_filter->heights[0]
-                           << mbd->plane[0].subsampling_y;
-  const int decay_control = frame_height >= 720 ? 4 : 3;
-
   // Handle planes in sequence.
   plane_offset = 0;
   for (int plane = 0; plane < num_planes; ++plane) {
@@ -551,24 +546,30 @@ void av1_apply_temporal_filter_c(
 
         // Scale down the difference for high bit depth input.
         if (mbd->bd > 8) sum_square_diff >>= (mbd->bd - 8) * (mbd->bd - 8);
-        const double window_error = (double)(sum_square_diff) / num_ref_pixels;
+        const double window_error = (double)sum_square_diff / num_ref_pixels;
         const int subblock_idx = (i >= h / 2) * 2 + (j >= w / 2);
         const double block_error = (double)subblock_mses[subblock_idx];
+        // Combine window error and block error, and normalize it.
+        const double combined_error =
+            (TF_WINDOW_BLOCK_BALANCE_WEIGHT * window_error + block_error) /
+            (TF_WINDOW_BLOCK_BALANCE_WEIGHT + 1) / TF_SEARCH_ERROR_NORM_WEIGHT;
 
-        // Control factor for non-local mean approach.
-        const double r =
-            (double)decay_control * (0.7 + log(noise_levels[plane] + 1.0));
-        const double q = AOMMIN((double)(q_factor * q_factor) / 256.0, 1);
+        // Decay factor for non-local mean approach.
+        // Larger noise -> larger filtering weight.
+        const double n_decay = 0.5 + log(2 * noise_levels[plane] + 5.0);
+        // Smaller q -> smaller filtering weight.
+        const double q_decay =
+            AOMMIN(pow((double)q_factor / TF_Q_DECAY_THRESHOLD, 2), 1);
 
         // Compute filter weight.
-        const double scaled_diff =
-            AOMMAX(-(window_error + block_error / 10) / (2 * r * r * q), -15.0);
-        const int adjusted_weight = (int)(exp(scaled_diff) * TF_WEIGHT_SCALE);
+        const double scaled_error =
+            AOMMIN(combined_error / n_decay / q_decay, 7);
+        const int weight = (int)(exp(-scaled_error) * TF_WEIGHT_SCALE);
 
         const int idx = plane_offset + pred_idx;  // Index with plane shift.
         const int pred_value = is_high_bitdepth ? pred16[idx] : pred[idx];
-        accum[idx] += adjusted_weight * pred_value;
-        count[idx] += adjusted_weight;
+        accum[idx] += weight * pred_value;
+        count[idx] += weight;
 
         ++pred_idx;
       }
