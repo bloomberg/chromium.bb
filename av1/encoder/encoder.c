@@ -2952,7 +2952,7 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   set_tile_info(cpi);
 
   if (!cpi->svc.external_ref_frame_config)
-    cpi->ext_flags.refresh_frame_flags_pending = 0;
+    cpi->ext_flags.refresh_frame.update_pending = 0;
   cpi->ext_flags.refresh_frame_context_pending = 0;
 
 #if CONFIG_AV1_HIGHBITDEPTH
@@ -7025,13 +7025,13 @@ int av1_convert_sect5obus_to_annexb(uint8_t *buffer, size_t *frame_size) {
 }
 
 static void svc_set_updates_external_ref_frame_config(
-    ExternalFlags *const ext_flags, SVC *const svc) {
-  ext_flags->refresh_frame_flags_pending = 1;
-  ext_flags->refresh_last_frame = svc->refresh[svc->ref_idx[0]];
-  ext_flags->refresh_golden_frame = svc->refresh[svc->ref_idx[3]];
-  ext_flags->refresh_bwd_ref_frame = svc->refresh[svc->ref_idx[4]];
-  ext_flags->refresh_alt2_ref_frame = svc->refresh[svc->ref_idx[5]];
-  ext_flags->refresh_alt_ref_frame = svc->refresh[svc->ref_idx[6]];
+    ExtRefreshFrameFlagsInfo *const ext_refresh_frame_flags, SVC *const svc) {
+  ext_refresh_frame_flags->update_pending = 1;
+  ext_refresh_frame_flags->last_frame = svc->refresh[svc->ref_idx[0]];
+  ext_refresh_frame_flags->golden_frame = svc->refresh[svc->ref_idx[3]];
+  ext_refresh_frame_flags->bwd_ref_frame = svc->refresh[svc->ref_idx[4]];
+  ext_refresh_frame_flags->alt2_ref_frame = svc->refresh[svc->ref_idx[5]];
+  ext_refresh_frame_flags->alt_ref_frame = svc->refresh[svc->ref_idx[6]];
   svc->non_reference_frame = 1;
   for (int i = 0; i < REF_FRAMES; i++) {
     if (svc->refresh[i] == 1) {
@@ -7059,6 +7059,8 @@ void av1_apply_encoding_flags(AV1_COMP *cpi, aom_enc_frame_flags_t flags) {
   // GOLDEN, BWDREF, ALTREF2.
 
   ExternalFlags *const ext_flags = &cpi->ext_flags;
+  ExtRefreshFrameFlagsInfo *const ext_refresh_frame_flags =
+      &ext_flags->refresh_frame;
   ext_flags->ref_frame_flags = AOM_REFFRAME_ALL;
   if (flags &
       (AOM_EFLAG_NO_REF_LAST | AOM_EFLAG_NO_REF_LAST2 | AOM_EFLAG_NO_REF_LAST3 |
@@ -7104,17 +7106,18 @@ void av1_apply_encoding_flags(AV1_COMP *cpi, aom_enc_frame_flags_t flags) {
       upd ^= AOM_ALT2_FLAG;
     }
 
-    ext_flags->refresh_last_frame = (upd & AOM_LAST_FLAG) != 0;
-    ext_flags->refresh_golden_frame = (upd & AOM_GOLD_FLAG) != 0;
-    ext_flags->refresh_alt_ref_frame = (upd & AOM_ALT_FLAG) != 0;
-    ext_flags->refresh_bwd_ref_frame = (upd & AOM_BWD_FLAG) != 0;
-    ext_flags->refresh_alt2_ref_frame = (upd & AOM_ALT2_FLAG) != 0;
-    ext_flags->refresh_frame_flags_pending = 1;
+    ext_refresh_frame_flags->last_frame = (upd & AOM_LAST_FLAG) != 0;
+    ext_refresh_frame_flags->golden_frame = (upd & AOM_GOLD_FLAG) != 0;
+    ext_refresh_frame_flags->alt_ref_frame = (upd & AOM_ALT_FLAG) != 0;
+    ext_refresh_frame_flags->bwd_ref_frame = (upd & AOM_BWD_FLAG) != 0;
+    ext_refresh_frame_flags->alt2_ref_frame = (upd & AOM_ALT2_FLAG) != 0;
+    ext_refresh_frame_flags->update_pending = 1;
   } else {
     if (cpi->svc.external_ref_frame_config)
-      svc_set_updates_external_ref_frame_config(ext_flags, &cpi->svc);
+      svc_set_updates_external_ref_frame_config(ext_refresh_frame_flags,
+                                                &cpi->svc);
     else
-      ext_flags->refresh_frame_flags_pending = 0;
+      ext_refresh_frame_flags->update_pending = 0;
   }
 
   ext_flags->use_ref_frame_mvs = cpi->oxcf.allow_ref_frame_mvs &
