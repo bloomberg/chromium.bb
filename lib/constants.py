@@ -377,9 +377,12 @@ ANDROID_RVC_BUILD_TARGETS = {
     'X86_USERDEBUG': ('linux-cheets_x86-userdebug', r'\.zip$'),
     'X86_64_USERDEBUG': ('linux-cheets_x86_64-userdebug', r'\.zip$'),
 }
-# TODO(b/147612469): add -user builds once they are available
 ANDROID_VMRVC_BUILD_TARGETS = {
     # For XkbToKcmConverter, see the comment in ANDROID_PI_BUILD_TARGETS.
+    'ARM': ('linux-bertha_arm-user', r'\.zip$'),
+    'ARM64': ('linux-bertha_arm64-user', r'(\.zip|/XkbToKcmConverter)$'),
+    'X86': ('linux-bertha_x86-user', r'(\.zip|/XkbToKcmConverter)$'),
+    'X86_64': ('linux-bertha_x86_64-user', r'\.zip$'),
     'ARM_USERDEBUG': ('linux-bertha_arm-userdebug', r'\.zip$'),
     'ARM64_USERDEBUG': ('linux-bertha_arm64-userdebug',
                         r'(\.zip|/XkbToKcmConverter)$'),
