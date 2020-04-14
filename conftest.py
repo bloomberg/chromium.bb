@@ -18,6 +18,7 @@ import pytest  # pylint: disable=import-error
 
 from chromite.lib import cidb
 from chromite.lib import parallel
+from chromite.lib import retry_stats
 
 
 @pytest.fixture(scope='class', autouse=True)
@@ -50,6 +51,19 @@ def assert_no_zombies():
                 (len(children), children))
 
 
+@pytest.fixture(scope='class', autouse=True)
+def clear_retry_stats_manager():
+  """Reset the global state of the stats manager before every test.
+
+  Without this fixture many tests fail due to this global value being set and
+  then not cleared. The child manager process may have been killed but this
+  module level variable is still pointing at it, leading to the test trying to
+  write to a closed pipe.
+  """
+  # pylint: disable=protected-access
+  retry_stats._STATS_COLLECTION = None
+
+
 @pytest.fixture
 def singleton_manager(monkeypatch):
   """Force tests to use a singleton Manager and automatically clean it up."""
@@ -79,3 +93,21 @@ def legacy_capture_output(request, capfd):
   https://docs.pytest.org/en/latest/unittest.html#mixing-pytest-fixtures-into-unittest-testcase-subclasses-using-marks
   """
   request.cls.capfd = capfd
+
+
+@pytest.fixture
+def testcase_caplog(request, caplog):
+  """Adds the `caplog` fixture to TestCase-style test classes.
+
+  This fixture should only be used on cros_test_lib.TestCase test classes, since
+  it doesn't yield anything and just attaches the built-in pytest `caplog`
+  fixture to the requesting class. Tests written as standalone functions should
+  use pytest's built-in `caplog` fixture instead of this. See the documentation
+  for more information on how to use the `caplog` fixture that this provides:
+  https://docs.pytest.org/en/latest/reference.html#caplog
+
+  See the following documentation for an explanation of why fixtures have to be
+  provided to TestCase classes in this manner:
+  https://docs.pytest.org/en/latest/unittest.html#mixing-pytest-fixtures-into-unittest-testcase-subclasses-using-marks
+  """
+  request.cls.caplog = caplog

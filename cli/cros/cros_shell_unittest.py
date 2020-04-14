@@ -9,6 +9,8 @@ from __future__ import print_function
 
 import sys
 
+import pytest  # pylint: disable=import-error
+
 from chromite.cli import command_unittest
 from chromite.cli.cros import cros_shell
 from chromite.lib import cros_build_lib
@@ -32,8 +34,8 @@ class MockShellCommand(command_unittest.MockCommand):
   COMMAND = 'shell'
 
 
-class ShellTest(cros_test_lib.MockTempDirTestCase,
-                cros_test_lib.OutputTestCase):
+@pytest.mark.usefixtures('testcase_caplog')
+class ShellTest(cros_test_lib.MockTempDirTestCase):
   """Test the flow of ShellCommand.run with the SSH methods mocked out."""
 
   DEVICE_IP = remote_access.TEST_IP
@@ -120,10 +122,9 @@ class ShellTest(cros_test_lib.MockTempDirTestCase,
     # User chooses to continue.
     self.mock_prompt.return_value = True
 
-    with self.OutputCapturer():
-      self.cmd_mock.inst.Run()
+    self.cmd_mock.inst.Run()
 
-    self.AssertOutputContainsWarning(error_message, check_stderr=True)
+    self.assertIn(error_message, self.caplog.text)
     self.assertTrue(self.mock_prompt.called)
     self.assertEqual(self.mock_base_run_command.call_count, 2)
     self.assertTrue(self.mock_remove_known_host.called)

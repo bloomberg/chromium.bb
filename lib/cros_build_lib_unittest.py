@@ -732,6 +732,8 @@ class TestRunCommand(cros_test_lib.MockTestCase):
     self.assertEqual(self.stdin, unicode_input.encode('utf-8'))
 
 
+# TODO(crbug.com/1072139): Migrate tests to use 'legacy_capture_output' fixture
+#                          once this module is Python 3-only.
 class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
                            cros_test_lib.OutputTestCase):
   """Tests of run output options."""

@@ -11,6 +11,7 @@ import datetime as dt
 import json
 
 import mock
+import pytest  # pylint: disable=import-error
 
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import cbuildbot_unittest
@@ -127,6 +128,7 @@ class SlaveFailureSummaryStageTest(
     self.assertEqual(logging.PrintBuildbotLink.call_count, 1)
 
 
+@pytest.mark.usefixtures('singleton_manager')
 class BuildStartStageTest(generic_stages_unittest.AbstractStageTestCase):
   """Tests that BuildStartStage behaves as expected."""
 
@@ -238,6 +240,7 @@ class AbstractReportStageTestCase(
     return report_stages.ReportStage(self._run, self.buildstore, None)
 
 
+@pytest.mark.usefixtures('singleton_manager')
 class ReportStageTest(AbstractReportStageTestCase):
   """Test the Report stage."""
 
@@ -418,6 +421,7 @@ class ReportStageTest(AbstractReportStageTestCase):
     self.assertEqual(mock_sd.call_count, 1)
 
 
+@pytest.mark.usefixtures('singleton_manager')
 class ReportStageNoSyncTest(AbstractReportStageTestCase):
   """Test the Report stage if SyncStage didn't complete.
 

@@ -51,7 +51,6 @@ try:
   pytestmark_leaks_process = pytest.mark.leaks_process
   pytestmark_legacy_slow = pytest.mark.legacy_slow
   pytestmark_network_test = pytest.mark.network_test
-  pytestmark_output_test = pytest.mark.output_test
   pytestmark_sigterm = pytest.mark.sigterm
   pytestmark_skip = pytest.mark.skip
   pytestmark_skipif = pytest.mark.skipif
@@ -65,7 +64,6 @@ except (ImportError, AttributeError):
   pytestmark_legacy_slow = null_decorator
   pytestmark_leaks_process = null_decorator
   pytestmark_network_test = null_decorator
-  pytestmark_output_test = null_decorator
   pytestmark_sigterm = null_decorator
   pytestmark_skip = null_decorator
   pytestmark_skipif = lambda condition, reason=None: None
@@ -799,7 +797,6 @@ class LoggingTestCase(TestCase):
     return self.AssertLogsMatch(log_capturer, re.escape(msg), inverted=inverted)
 
 
-@pytestmark_output_test
 class OutputTestCase(TestCase):
   """Base class for cros unit tests with utility methods."""
 

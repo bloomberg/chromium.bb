@@ -9,6 +9,8 @@ from __future__ import print_function
 
 import sys
 
+import pytest  # pylint: disable=import-error
+
 from chromite.cli import command
 from chromite.cli import command_unittest
 from chromite.cli.cros import cros_build
@@ -60,8 +62,8 @@ class FakeWorkonHelper(object):
     self.use_workon_only = kwargs.get('use_workon_only')
 
 
-class BuildCommandTest(cros_test_lib.MockTempDirTestCase,
-                       cros_test_lib.OutputTestCase):
+@pytest.mark.usefixtures('testcase_caplog')
+class BuildCommandTest(cros_test_lib.MockTempDirTestCase):
   """Test class for our BuildCommand class."""
 
   def testBrilloBuildOperationCalled(self):
@@ -115,10 +117,9 @@ class BuildCommandTest(cros_test_lib.MockTempDirTestCase,
     with MockBuildCommand(args) as build:
       cmd = partial_mock.In('--backtrack=0')
       build.rc_mock.AddCmdResult(cmd=cmd, returncode=1, error='error\n')
-      with self.OutputCapturer():
-        try:
-          build.inst.Run()
-        except Exception as e:
-          logging.error(e)
-      self.AssertOutputContainsError(cros_build.BuildCommand._BAD_DEPEND_MSG,
-                                     check_stderr=True)
+      try:
+        build.inst.Run()
+      except Exception as e:
+        logging.error(e)
+
+      self.assertIn(cros_build.BuildCommand._BAD_DEPEND_MSG, self.caplog.text)

@@ -250,6 +250,7 @@ class OutputTestCaseTest(cros_test_lib.OutputTestCase,
       print('bar')
     self.AssertOutputContainsLine('bar')
 
+  @cros_test_lib.pytestmark_skip
   def testRunCommandCapture(self):
     """Check capturing run() subprocess output."""
     with self.OutputCapturer():

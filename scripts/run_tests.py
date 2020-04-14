@@ -74,7 +74,6 @@ SKIP = 'skip'
 SPECIAL_TESTS = {
     # Tests that need to run inside the chroot.
     'api/controller/dependency_unittest': INSIDE,
-    'cli/cros/cros_build_unittest': INSIDE,
     'cli/cros/cros_chroot_unittest': INSIDE,
     'cli/cros/cros_debug_unittest': INSIDE,
     'cli/cros/lint_unittest': INSIDE,
@@ -83,7 +82,6 @@ SPECIAL_TESTS = {
     'lib/androidbuild_unittest': INSIDE,
     'lib/chroot_util_unittest': INSIDE,
     'lib/cros_test_lib_unittest': INSIDE,
-    'lib/cros_test_unittest': INSIDE,
     'lib/filetype_unittest': INSIDE,
     'lib/operation_unittest': INSIDE,
     'lib/paygen/paygen_payload_lib_unittest': INSIDE,
