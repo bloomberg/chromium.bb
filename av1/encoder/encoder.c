@@ -598,7 +598,7 @@ static BLOCK_SIZE select_sb_size(const AV1_COMP *const cpi) {
   // Things break if superblock size changes between the first pass and second
   // pass encoding, which is why this heuristic is not configured as a
   // speed-feature.
-  if (cpi->oxcf.superres_mode == SUPERRES_NONE &&
+  if (cpi->oxcf.superres_mode == AOM_SUPERRES_NONE &&
       cpi->oxcf.resize_mode == RESIZE_NONE && cpi->oxcf.speed >= 1) {
     return AOMMIN(cm->width, cm->height) > 480 ? BLOCK_128X128 : BLOCK_64X64;
   }
@@ -4449,7 +4449,7 @@ static uint8_t calculate_next_resize_scale(const AV1_COMP *cpi) {
 static int superres_in_recode_allowed(const AV1_COMP *const cpi) {
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   // Empirically found to not be beneficial for AOM_Q mode and images coding.
-  return oxcf->superres_mode == SUPERRES_AUTO &&
+  return oxcf->superres_mode == AOM_SUPERRES_AUTO &&
          (oxcf->rc_mode == AOM_VBR || oxcf->rc_mode == AOM_CQ) &&
          cpi->rc.frames_to_key > 1;
 }
@@ -4525,7 +4525,7 @@ static uint8_t get_superres_denom_for_qindex(const AV1_COMP *cpi, int qindex,
   */
 #if CONFIG_SUPERRES_IN_RECODE
   if (superres_in_recode_allowed(cpi)) {
-    assert(cpi->superres_mode != SUPERRES_NONE);
+    assert(cpi->superres_mode != AOM_SUPERRES_NONE);
     // Force superres to be tried in the recode loop, as full-res is also going
     // to be tried anyway.
     denom = AOMMAX(denom, SCALE_NUMERATOR + 1);
@@ -4534,7 +4534,7 @@ static uint8_t get_superres_denom_for_qindex(const AV1_COMP *cpi, int qindex,
   return denom;
 }
 
-// If true, SUPERRES_AUTO mode will exhaustively search over all superres
+// If true, AOM_SUPERRES_AUTO mode will exhaustively search over all superres
 // denominators for all frames (except overlay and internal overlay frames).
 #define SUPERRES_RECODE_ALL_RATIOS 0
 
@@ -4547,27 +4547,27 @@ static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
 
   // Make sure that superres mode of the frame is consistent with the
   // sequence-level flag.
-  assert(IMPLIES(oxcf->superres_mode != SUPERRES_NONE,
+  assert(IMPLIES(oxcf->superres_mode != AOM_SUPERRES_NONE,
                  cpi->common.seq_params.enable_superres));
   assert(IMPLIES(!cpi->common.seq_params.enable_superres,
-                 oxcf->superres_mode == SUPERRES_NONE));
+                 oxcf->superres_mode == AOM_SUPERRES_NONE));
   // Make sure that superres mode for current encoding is consistent with user
   // provided superres mode.
-  assert(IMPLIES(oxcf->superres_mode != SUPERRES_AUTO,
+  assert(IMPLIES(oxcf->superres_mode != AOM_SUPERRES_AUTO,
                  cpi->superres_mode == oxcf->superres_mode));
 
   // Note: we must look at the current superres_mode to be tried in 'cpi' here,
   // not the user given mode in 'oxcf'.
   switch (cpi->superres_mode) {
-    case SUPERRES_NONE: new_denom = SCALE_NUMERATOR; break;
-    case SUPERRES_FIXED:
+    case AOM_SUPERRES_NONE: new_denom = SCALE_NUMERATOR; break;
+    case AOM_SUPERRES_FIXED:
       if (cpi->common.current_frame.frame_type == KEY_FRAME)
         new_denom = oxcf->superres_kf_scale_denominator;
       else
         new_denom = oxcf->superres_scale_denominator;
       break;
-    case SUPERRES_RANDOM: new_denom = lcg_rand16(&seed) % 9 + 8; break;
-    case SUPERRES_QTHRESH: {
+    case AOM_SUPERRES_RANDOM: new_denom = lcg_rand16(&seed) % 9 + 8; break;
+    case AOM_SUPERRES_QTHRESH: {
       // Do not use superres when screen content tools are used.
       if (cpi->common.features.allow_screen_content_tools) break;
       if (oxcf->rc_mode == AOM_VBR || oxcf->rc_mode == AOM_CQ)
@@ -4589,7 +4589,7 @@ static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
       }
       break;
     }
-    case SUPERRES_AUTO: {
+    case AOM_SUPERRES_AUTO: {
       // Do not use superres when screen content tools are used.
       if (cpi->common.features.allow_screen_content_tools) break;
       if (oxcf->rc_mode == AOM_VBR || oxcf->rc_mode == AOM_CQ)
@@ -4632,7 +4632,7 @@ static int dimensions_are_ok(int owidth, int oheight, size_params_type *rsz) {
 }
 
 static int validate_size_scales(RESIZE_MODE resize_mode,
-                                SUPERRES_MODE superres_mode, int owidth,
+                                aom_superres_mode superres_mode, int owidth,
                                 int oheight, size_params_type *rsz) {
   if (dimensions_are_ok(owidth, oheight, rsz)) {  // Nothing to do.
     return 1;
@@ -4643,14 +4643,15 @@ static int validate_size_scales(RESIZE_MODE resize_mode,
       AOMMAX(DIVIDE_AND_ROUND(owidth * SCALE_NUMERATOR, rsz->resize_width),
              DIVIDE_AND_ROUND(oheight * SCALE_NUMERATOR, rsz->resize_height));
 
-  if (resize_mode != RESIZE_RANDOM && superres_mode == SUPERRES_RANDOM) {
+  if (resize_mode != RESIZE_RANDOM && superres_mode == AOM_SUPERRES_RANDOM) {
     // Alter superres scale as needed to enforce conformity.
     rsz->superres_denom =
         (2 * SCALE_NUMERATOR * SCALE_NUMERATOR) / resize_denom;
     if (!dimensions_are_ok(owidth, oheight, rsz)) {
       if (rsz->superres_denom > SCALE_NUMERATOR) --rsz->superres_denom;
     }
-  } else if (resize_mode == RESIZE_RANDOM && superres_mode != SUPERRES_RANDOM) {
+  } else if (resize_mode == RESIZE_RANDOM &&
+             superres_mode != AOM_SUPERRES_RANDOM) {
     // Alter resize scale as needed to enforce conformity.
     resize_denom =
         (2 * SCALE_NUMERATOR * SCALE_NUMERATOR) / rsz->superres_denom;
@@ -4667,7 +4668,8 @@ static int validate_size_scales(RESIZE_MODE resize_mode,
                                   resize_denom);
       }
     }
-  } else if (resize_mode == RESIZE_RANDOM && superres_mode == SUPERRES_RANDOM) {
+  } else if (resize_mode == RESIZE_RANDOM &&
+             superres_mode == AOM_SUPERRES_RANDOM) {
     // Alter both resize and superres scales as needed to enforce conformity.
     do {
       if (resize_denom > rsz->superres_denom)
@@ -5301,7 +5303,7 @@ static void determine_sc_tools_with_encoding(AV1_COMP *cpi, const int q_orig) {
   const int is_screen_content_type_orig_decision = cpi->is_screen_content_type;
   // Turn off the encoding trial for forward key frame and superres.
   if (cpi->sf.rt_sf.use_nonrd_pick_mode || cpi->oxcf.fwd_kf_enabled ||
-      cpi->superres_mode != SUPERRES_NONE || cpi->oxcf.mode == REALTIME ||
+      cpi->superres_mode != AOM_SUPERRES_NONE || cpi->oxcf.mode == REALTIME ||
       is_screen_content_type_orig_decision || !is_key_frame) {
     return;
   }
@@ -5399,7 +5401,8 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
   av1_setup_frame_size(cpi);
 
 #if CONFIG_SUPERRES_IN_RECODE
-  if (superres_in_recode_allowed(cpi) && cpi->superres_mode != SUPERRES_NONE &&
+  if (superres_in_recode_allowed(cpi) &&
+      cpi->superres_mode != AOM_SUPERRES_NONE &&
       cm->superres_scale_denominator == SCALE_NUMERATOR) {
     // Superres mode is currently enabled, but the denominator selected will
     // disable superres. So no need to continue, as we will go through another
@@ -5877,11 +5880,11 @@ static int encode_with_and_without_superres(AV1_COMP *cpi, size_t *size,
   int64_t sse2 = INT64_MAX;
   int64_t rate2 = INT64_MAX;
   int largest_tile_id2;
-  cpi->superres_mode = SUPERRES_NONE;  // To force full-res.
+  cpi->superres_mode = AOM_SUPERRES_NONE;  // To force full-res.
   err = encode_with_recode_loop_and_filter(cpi, size, dest, &sse2, &rate2,
                                            &largest_tile_id2);
   cpi->superres_mode = cpi->oxcf.superres_mode;  // Reset.
-  assert(cpi->oxcf.superres_mode == SUPERRES_AUTO);
+  assert(cpi->oxcf.superres_mode == AOM_SUPERRES_AUTO);
   if (err != AOM_CODEC_OK) return err;
 
   // Note: Both use common rdmult based on base qindex of fullres.

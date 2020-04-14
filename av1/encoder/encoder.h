@@ -123,18 +123,6 @@ enum {
   RESIZE_MODES
 } UENUM1BYTE(RESIZE_MODE);
 
-enum {
-  SUPERRES_NONE,     // No frame superres allowed.
-  SUPERRES_FIXED,    // All frames are coded at the specified scale,
-                     // and super-resolved.
-  SUPERRES_RANDOM,   // All frames are coded at a random scale,
-                     // and super-resolved.
-  SUPERRES_QTHRESH,  // Superres scale for a frame is determined based on
-                     // q_index.
-  SUPERRES_AUTO,     // Automatically select superres for appropriate frames.
-  SUPERRES_MODES
-} UENUM1BYTE(SUPERRES_MODE);
-
 typedef enum {
   kInvalid = 0,
   kLowSad = 1,
@@ -307,7 +295,7 @@ typedef struct AV1EncoderConfig {
   uint8_t resize_kf_scale_denominator;
 
   // Frame Super-Resolution size scaling.
-  SUPERRES_MODE superres_mode;
+  aom_superres_mode superres_mode;
   uint8_t superres_scale_denominator;
   uint8_t superres_kf_scale_denominator;
   int superres_qthresh;
@@ -1379,7 +1367,7 @@ typedef struct AV1_COMP {
   // Super-resolution mode currently being used by the encoder.
   // This may / may not be same as user-supplied mode in oxcf->superres_mode
   // (when we are recoding to try multiple options for example).
-  SUPERRES_MODE superres_mode;
+  aom_superres_mode superres_mode;
 } AV1_COMP;
 
 typedef struct {

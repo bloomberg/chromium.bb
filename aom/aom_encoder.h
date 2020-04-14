@@ -202,6 +202,22 @@ enum aom_kf_mode {
   AOM_KF_DISABLED = 0 /**< Encoder does not place keyframes. */
 };
 
+/*!\brief Frame super-resolution mode. */
+typedef enum {
+  /**< Frame super-resolution is disabled for all frames. */
+  AOM_SUPERRES_NONE,
+  /**< All frames are coded at the specified scale and super-resolved. */
+  AOM_SUPERRES_FIXED,
+  /**< All frames are coded at a random scale and super-resolved. */
+  AOM_SUPERRES_RANDOM,
+  /**< Super-resolution scale for each frame is determined based on the q index
+     of that frame. */
+  AOM_SUPERRES_QTHRESH,
+  /**< Full-resolution or super-resolution and the scale (in case of
+     super-resolution) are automatically selected for each frame. */
+  AOM_SUPERRES_AUTO,
+} aom_superres_mode;
+
 /*!\brief Encoder Config Options
  *
  * This type allows to enumerate and control flags defined for encoder control
@@ -546,10 +562,8 @@ typedef struct aom_codec_enc_cfg {
    * Similar to spatial resampling, frame super-resolution integrates
    * upscaling after the encode/decode process. Taking control of upscaling and
    * using restoration filters should allow it to outperform normal resizing.
-   *
-   * Valid values are 0 to 4 as defined in enum SUPERRES_MODE.
    */
-  unsigned int rc_superres_mode;
+  aom_superres_mode rc_superres_mode;
 
   /*!\brief Frame super-resolution denominator.
    *
@@ -559,7 +573,7 @@ typedef struct aom_codec_enc_cfg {
    *
    * Valid denominators are 8 to 16.
    *
-   * Used only by SUPERRES_FIXED.
+   * Used only by AOM_SUPERRES_FIXED.
    */
   unsigned int rc_superres_denominator;
 
@@ -578,7 +592,7 @@ typedef struct aom_codec_enc_cfg {
    * The q level threshold after which superres is used.
    * Valid values are 1 to 63.
    *
-   * Used only by SUPERRES_QTHRESH
+   * Used only by AOM_SUPERRES_QTHRESH
    */
   unsigned int rc_superres_qthresh;
 
@@ -587,7 +601,7 @@ typedef struct aom_codec_enc_cfg {
    * The q level threshold after which superres is used for key frames.
    * Valid values are 1 to 63.
    *
-   * Used only by SUPERRES_QTHRESH
+   * Used only by AOM_SUPERRES_QTHRESH
    */
   unsigned int rc_superres_kf_qthresh;
 

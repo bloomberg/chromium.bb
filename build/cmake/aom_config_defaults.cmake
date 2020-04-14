@@ -134,7 +134,7 @@ set_aom_config_var(CONFIG_AV1_HIGHBITDEPTH 1
 set_aom_config_var(CONFIG_NN_V2 0 "Fully-connected neural nets ver.2.")
 set_aom_config_var(CONFIG_SUPERRES_IN_RECODE 1
                    "Enable encoding both full-res and superres in recode loop"
-                   "when SUPERRES_AUTO mode is used.")
+                   "when AOM_SUPERRES_AUTO mode is used.")
 #
 # Variables in this section control optional features of the build system.
 #
