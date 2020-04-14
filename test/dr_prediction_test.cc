@@ -471,4 +471,44 @@ TEST_P(HighbdDrPredTest, OperationCheck) {
 #endif  // CONFIG_AV1_HIGHBITDEPTH
 #endif  // HAVE_AVX2
 
+#if HAVE_NEON
+INSTANTIATE_TEST_SUITE_P(
+    NEON, LowbdDrPredTest,
+    ::testing::Values(DrPredFunc<DrPred>(&z1_wrapper<av1_dr_prediction_z1_c>,
+                                         &z1_wrapper<av1_dr_prediction_z1_neon>,
+                                         AOM_BITS_8, kZ1Start),
+                      DrPredFunc<DrPred>(&z2_wrapper<av1_dr_prediction_z2_c>,
+                                         &z2_wrapper<av1_dr_prediction_z2_neon>,
+                                         AOM_BITS_8, kZ2Start),
+                      DrPredFunc<DrPred>(&z3_wrapper<av1_dr_prediction_z3_c>,
+                                         &z3_wrapper<av1_dr_prediction_z3_neon>,
+                                         AOM_BITS_8, kZ3Start)));
+
+TEST_P(LowbdDrPredTest, DISABLED_Speed) {
+  const int angles[] = { 3, 45, 87 };
+  for (enable_upsample_ = 0; enable_upsample_ < 2; ++enable_upsample_) {
+    for (int i = 0; i < 3; ++i) {
+      const int angle = angles[i] + start_angle_;
+      dx_ = av1_get_dx(angle);
+      dy_ = av1_get_dy(angle);
+      printf("enable_upsample: %d angle: %d ~~~~~~~~~~~~~~~\n",
+             enable_upsample_, angle);
+      if (dx_ && dy_) RunTest(true, false, angle);
+    }
+  }
+}
+
+TEST_P(LowbdDrPredTest, OperationCheck) {
+  if (params_.tst_fn == NULL) return;
+  // const int angles[] = { 3, 45, 81, 87, 93, 100, 145, 187, 199, 260 };
+  for (enable_upsample_ = 0; enable_upsample_ < 2; ++enable_upsample_) {
+    for (int angle = start_angle_; angle < stop_angle_; ++angle) {
+      dx_ = av1_get_dx(angle);
+      dy_ = av1_get_dy(angle);
+      if (dx_ && dy_) RunTest(false, false, angle);
+    }
+  }
+}
+#endif  // HAVE_NEON
+
 }  // namespace
