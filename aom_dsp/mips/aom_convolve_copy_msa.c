@@ -198,15 +198,8 @@ static void copy_width64_msa(const uint8_t *src, int32_t src_stride,
 }
 
 void aom_convolve_copy_msa(const uint8_t *src, ptrdiff_t src_stride,
-                           uint8_t *dst, ptrdiff_t dst_stride,
-                           const int16_t *filter_x, int32_t filter_x_stride,
-                           const int16_t *filter_y, int32_t filter_y_stride,
-                           int32_t w, int32_t h) {
-  (void)filter_x;
-  (void)filter_y;
-  (void)filter_x_stride;
-  (void)filter_y_stride;
-
+                           uint8_t *dst, ptrdiff_t dst_stride, int32_t w,
+                           int32_t h) {
   switch (w) {
     case 4: {
       uint32_t cnt, tmp;
@@ -238,7 +231,7 @@ void aom_convolve_copy_msa(const uint8_t *src, ptrdiff_t src_stride,
     default: {
       uint32_t cnt;
       for (cnt = h; cnt--;) {
-        memcpy(dst, src, w);
+        memmove(dst, src, w);
         src += src_stride;
         dst += dst_stride;
       }

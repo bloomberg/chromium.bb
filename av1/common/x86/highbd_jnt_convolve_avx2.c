@@ -22,17 +22,13 @@
 #include "aom_dsp/aom_filter.h"
 #include "av1/common/convolve.h"
 
-void av1_highbd_dist_wtd_convolve_2d_copy_avx2(
-    const uint16_t *src, int src_stride, uint16_t *dst0, int dst_stride0, int w,
-    int h, const InterpFilterParams *filter_params_x,
-    const InterpFilterParams *filter_params_y, const int subpel_x_qn,
-    const int subpel_y_qn, ConvolveParams *conv_params, int bd) {
+void av1_highbd_dist_wtd_convolve_2d_copy_avx2(const uint16_t *src,
+                                               int src_stride, uint16_t *dst0,
+                                               int dst_stride0, int w, int h,
+                                               ConvolveParams *conv_params,
+                                               int bd) {
   CONV_BUF_TYPE *dst = conv_params->dst;
   int dst_stride = conv_params->dst_stride;
-  (void)filter_params_x;
-  (void)filter_params_y;
-  (void)subpel_x_qn;
-  (void)subpel_y_qn;
 
   const int bits =
       FILTER_BITS * 2 - conv_params->round_1 - conv_params->round_0;
@@ -466,16 +462,13 @@ void av1_highbd_dist_wtd_convolve_2d_avx2(
 
 void av1_highbd_dist_wtd_convolve_x_avx2(
     const uint16_t *src, int src_stride, uint16_t *dst0, int dst_stride0, int w,
-    int h, const InterpFilterParams *filter_params_x,
-    const InterpFilterParams *filter_params_y, const int subpel_x_qn,
-    const int subpel_y_qn, ConvolveParams *conv_params, int bd) {
+    int h, const InterpFilterParams *filter_params_x, const int subpel_x_qn,
+    ConvolveParams *conv_params, int bd) {
   CONV_BUF_TYPE *dst = conv_params->dst;
   int dst_stride = conv_params->dst_stride;
   const int fo_horiz = filter_params_x->taps / 2 - 1;
   const uint16_t *const src_ptr = src - fo_horiz;
   const int bits = FILTER_BITS - conv_params->round_1;
-  (void)filter_params_y;
-  (void)subpel_y_qn;
 
   int i, j;
   __m256i s[4], coeffs_x[4];
@@ -635,16 +628,13 @@ void av1_highbd_dist_wtd_convolve_x_avx2(
 
 void av1_highbd_dist_wtd_convolve_y_avx2(
     const uint16_t *src, int src_stride, uint16_t *dst0, int dst_stride0, int w,
-    int h, const InterpFilterParams *filter_params_x,
-    const InterpFilterParams *filter_params_y, const int subpel_x_qn,
-    const int subpel_y_qn, ConvolveParams *conv_params, int bd) {
+    int h, const InterpFilterParams *filter_params_y, const int subpel_y_qn,
+    ConvolveParams *conv_params, int bd) {
   CONV_BUF_TYPE *dst = conv_params->dst;
   int dst_stride = conv_params->dst_stride;
   const int fo_vert = filter_params_y->taps / 2 - 1;
   const uint16_t *const src_ptr = src - fo_vert * src_stride;
   const int bits = FILTER_BITS - conv_params->round_0;
-  (void)filter_params_x;
-  (void)subpel_x_qn;
 
   assert(bits >= 0);
   int i, j;

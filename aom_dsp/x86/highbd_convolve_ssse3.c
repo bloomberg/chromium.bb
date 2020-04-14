@@ -18,21 +18,11 @@
 
 void av1_highbd_convolve_y_sr_ssse3(const uint16_t *src, int src_stride,
                                     uint16_t *dst, int dst_stride, int w, int h,
-                                    const InterpFilterParams *filter_params_x,
                                     const InterpFilterParams *filter_params_y,
-                                    const int subpel_x_qn,
-                                    const int subpel_y_qn,
-                                    ConvolveParams *conv_params, int bd) {
+                                    const int subpel_y_qn, int bd) {
   int i, j;
   const int fo_vert = filter_params_y->taps / 2 - 1;
   const uint16_t *const src_ptr = src - fo_vert * src_stride;
-  (void)filter_params_x;
-  (void)subpel_x_qn;
-  (void)conv_params;
-
-  assert(conv_params->round_0 <= FILTER_BITS);
-  assert(((conv_params->round_0 + conv_params->round_1) <= (FILTER_BITS + 1)) ||
-         ((conv_params->round_0 + conv_params->round_1) == (2 * FILTER_BITS)));
 
   __m128i s[16], coeffs_y[4];
 
@@ -167,15 +157,11 @@ void av1_highbd_convolve_y_sr_ssse3(const uint16_t *src, int src_stride,
 void av1_highbd_convolve_x_sr_ssse3(const uint16_t *src, int src_stride,
                                     uint16_t *dst, int dst_stride, int w, int h,
                                     const InterpFilterParams *filter_params_x,
-                                    const InterpFilterParams *filter_params_y,
                                     const int subpel_x_qn,
-                                    const int subpel_y_qn,
                                     ConvolveParams *conv_params, int bd) {
   int i, j;
   const int fo_horiz = filter_params_x->taps / 2 - 1;
   const uint16_t *const src_ptr = src - fo_horiz;
-  (void)subpel_y_qn;
-  (void)filter_params_y;
 
   // Check that, even with 12-bit input, the intermediate values will fit
   // into an unsigned 16-bit intermediate array.

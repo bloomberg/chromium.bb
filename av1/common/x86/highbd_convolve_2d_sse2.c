@@ -71,17 +71,9 @@ static INLINE void copy_128(const uint16_t *src, uint16_t *dst) {
   _mm_store_si128((__m128i *)(dst + 15 * 8), s[15]);
 }
 
-void av1_highbd_convolve_2d_copy_sr_sse2(
-    const uint16_t *src, int src_stride, uint16_t *dst, int dst_stride, int w,
-    int h, const InterpFilterParams *filter_params_x,
-    const InterpFilterParams *filter_params_y, const int subpel_x_qn,
-    const int subpel_y_qn, ConvolveParams *conv_params, int bd) {
-  (void)filter_params_x;
-  (void)filter_params_y;
-  (void)subpel_x_qn;
-  (void)subpel_y_qn;
-  (void)conv_params;
-  (void)bd;
+void av1_highbd_convolve_2d_copy_sr_sse2(const uint16_t *src, int src_stride,
+                                         uint16_t *dst, int dst_stride, int w,
+                                         int h) {
   if (w >= 16) {
     assert(!((intptr_t)dst % 16));
     assert(!(dst_stride % 16));

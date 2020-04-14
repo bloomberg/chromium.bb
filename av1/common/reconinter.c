@@ -141,25 +141,25 @@ void av1_make_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
   } else if (inter_pred_params->mode == TRANSLATION_PRED) {
 #if CONFIG_AV1_HIGHBITDEPTH
     if (inter_pred_params->use_hbd_buf) {
-      highbd_inter_predictor(
-          src, src_stride, dst, dst_stride, subpel_params,
-          inter_pred_params->scale_factors, inter_pred_params->block_width,
-          inter_pred_params->block_height, &inter_pred_params->conv_params,
-          inter_pred_params->interp_filter_params,
-          inter_pred_params->bit_depth);
+      highbd_inter_predictor(src, src_stride, dst, dst_stride, subpel_params,
+                             inter_pred_params->block_width,
+                             inter_pred_params->block_height,
+                             &inter_pred_params->conv_params,
+                             inter_pred_params->interp_filter_params,
+                             inter_pred_params->bit_depth);
     } else {
-      inter_predictor(
-          src, src_stride, dst, dst_stride, subpel_params,
-          inter_pred_params->scale_factors, inter_pred_params->block_width,
-          inter_pred_params->block_height, &inter_pred_params->conv_params,
-          inter_pred_params->interp_filter_params);
+      inter_predictor(src, src_stride, dst, dst_stride, subpel_params,
+                      inter_pred_params->block_width,
+                      inter_pred_params->block_height,
+                      &inter_pred_params->conv_params,
+                      inter_pred_params->interp_filter_params);
     }
 #else
-    inter_predictor(
-        src, src_stride, dst, dst_stride, subpel_params,
-        inter_pred_params->scale_factors, inter_pred_params->block_width,
-        inter_pred_params->block_height, &inter_pred_params->conv_params,
-        inter_pred_params->interp_filter_params);
+    inter_predictor(src, src_stride, dst, dst_stride, subpel_params,
+                    inter_pred_params->block_width,
+                    inter_pred_params->block_height,
+                    &inter_pred_params->conv_params,
+                    inter_pred_params->interp_filter_params);
 #endif
   }
 }
@@ -543,13 +543,13 @@ static AOM_INLINE void init_wedge_masks() {
     int w;
     for (w = 0; w < wtypes; ++w) {
       mask = get_wedge_mask_inplace(w, 0, bsize);
-      aom_convolve_copy(mask, MASK_MASTER_STRIDE, dst, bw, NULL, 0, NULL, 0, bw,
+      aom_convolve_copy(mask, MASK_MASTER_STRIDE, dst, bw /* dst_stride */, bw,
                         bh);
       wedge_params->masks[0][w] = dst;
       dst += bw * bh;
 
       mask = get_wedge_mask_inplace(w, 1, bsize);
-      aom_convolve_copy(mask, MASK_MASTER_STRIDE, dst, bw, NULL, 0, NULL, 0, bw,
+      aom_convolve_copy(mask, MASK_MASTER_STRIDE, dst, bw /* dst_stride */, bw,
                         bh);
       wedge_params->masks[1][w] = dst;
       dst += bw * bh;

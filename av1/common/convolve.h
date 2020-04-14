@@ -59,8 +59,7 @@ void av1_convolve_2d_facade(const uint8_t *src, int src_stride, uint8_t *dst,
                             const InterpFilterParams *interp_filters[2],
                             const int subpel_x_qn, int x_step_q4,
                             const int subpel_y_qn, int y_step_q4, int scaled,
-                            ConvolveParams *conv_params,
-                            const struct scale_factors *sf);
+                            ConvolveParams *conv_params);
 
 static INLINE ConvolveParams get_conv_params_no_round(int cmp_index, int plane,
                                                       CONV_BUF_TYPE *dst,
@@ -122,7 +121,7 @@ void av1_highbd_convolve_2d_facade(const uint8_t *src8, int src_stride,
                                    const int subpel_x_qn, int x_step_q4,
                                    const int subpel_y_qn, int y_step_q4,
                                    int scaled, ConvolveParams *conv_params,
-                                   const struct scale_factors *sf, int bd);
+                                   int bd);
 
 // TODO(sarahparker) This will need to be integerized and optimized
 void av1_convolve_2d_sobel_y_c(const uint8_t *src, int src_stride, double *dst,

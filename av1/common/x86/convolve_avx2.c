@@ -19,10 +19,8 @@
 
 void av1_convolve_y_sr_avx2(const uint8_t *src, int src_stride, uint8_t *dst,
                             int dst_stride, int w, int h,
-                            const InterpFilterParams *filter_params_x,
                             const InterpFilterParams *filter_params_y,
-                            const int subpel_x_qn, const int subpel_y_qn,
-                            ConvolveParams *conv_params) {
+                            const int subpel_y_qn) {
   int i, j, is_vert_4tap = 0;
   // right shift is F-1 because we are already dividing
   // filter co-efficients by 2
@@ -31,13 +29,6 @@ void av1_convolve_y_sr_avx2(const uint8_t *src, int src_stride, uint8_t *dst,
   const __m256i right_shift_const =
       _mm256_set1_epi16((1 << right_shift_bits) >> 1);
 
-  assert(conv_params->round_0 <= FILTER_BITS);
-  assert(((conv_params->round_0 + conv_params->round_1) <= (FILTER_BITS + 1)) ||
-         ((conv_params->round_0 + conv_params->round_1) == (2 * FILTER_BITS)));
-
-  (void)filter_params_x;
-  (void)subpel_x_qn;
-  (void)conv_params;
   __m256i coeffs[4], s[8];
   __m128i d[6];
 
@@ -263,8 +254,7 @@ void av1_convolve_y_sr_avx2(const uint8_t *src, int src_stride, uint8_t *dst,
 void av1_convolve_x_sr_avx2(const uint8_t *src, int src_stride, uint8_t *dst,
                             int dst_stride, int w, int h,
                             const InterpFilterParams *filter_params_x,
-                            const InterpFilterParams *filter_params_y,
-                            const int subpel_x_qn, const int subpel_y_qn,
+                            const int subpel_x_qn,
                             ConvolveParams *conv_params) {
   const int bits = FILTER_BITS - conv_params->round_0;
 
@@ -274,8 +264,6 @@ void av1_convolve_x_sr_avx2(const uint8_t *src, int src_stride, uint8_t *dst,
   const __m256i round_const = _mm256_set1_epi16((1 << bits) >> 1);
   const __m128i round_shift = _mm_cvtsi32_si128(bits);
   int i, is_horiz_4tap = 0;
-  (void)filter_params_y;
-  (void)subpel_y_qn;
 
   assert(bits >= 0);
   assert((FILTER_BITS - conv_params->round_1) >= 0 ||

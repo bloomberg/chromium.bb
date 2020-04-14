@@ -1206,16 +1206,14 @@ static INLINE int64_t dist_block_px_domain(const AV1_COMP *cpi, MACROBLOCK *x,
     recon = CONVERT_TO_BYTEPTR(recon16);
     av1_highbd_convolve_2d_copy_sr(CONVERT_TO_SHORTPTR(dst), dst_stride,
                                    CONVERT_TO_SHORTPTR(recon), MAX_TX_SIZE, bsw,
-                                   bsh, NULL, NULL, 0, 0, NULL, xd->bd);
+                                   bsh);
   } else {
     recon = (uint8_t *)recon16;
-    av1_convolve_2d_copy_sr(dst, dst_stride, recon, MAX_TX_SIZE, bsw, bsh, NULL,
-                            NULL, 0, 0, NULL);
+    aom_convolve_copy(dst, dst_stride, recon, MAX_TX_SIZE, bsw, bsh);
   }
 #else
   recon = (uint8_t *)recon16;
-  av1_convolve_2d_copy_sr(dst, dst_stride, recon, MAX_TX_SIZE, bsw, bsh, NULL,
-                          NULL, 0, 0, NULL);
+  aom_convolve_copy(dst, dst_stride, recon, MAX_TX_SIZE, bsw, bsh);
 #endif
 
   const PLANE_TYPE plane_type = get_plane_type(plane);

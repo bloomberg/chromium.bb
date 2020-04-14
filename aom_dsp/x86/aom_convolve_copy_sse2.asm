@@ -292,6 +292,5 @@ cglobal convolve_%1, 4, 7, 4+AUX_XMM_REGS, src, src_stride, \
 %endmacro
 
 INIT_XMM sse2
-convolve_fn copy
 convolve_fn avg
 convolve_fn copy, highbd

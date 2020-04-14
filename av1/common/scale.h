@@ -33,10 +33,6 @@ struct scale_factors {
 
   int (*scale_value_x)(int val, const struct scale_factors *sf);
   int (*scale_value_y)(int val, const struct scale_factors *sf);
-
-  // convolve_fn_ptr[subpel_x != 0][subpel_y != 0][is_compound]
-  aom_convolve_fn_t convolve[2][2][2];
-  aom_highbd_convolve_fn_t highbd_convolve[2][2][2];
 };
 
 MV32 av1_scale_mv(const MV *mv, int x, int y, const struct scale_factors *sf);
