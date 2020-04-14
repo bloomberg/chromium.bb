@@ -183,7 +183,11 @@ if (aom_config("CONFIG_AV1_HIGHBITDEPTH") eq "yes") {
   add_proto qw/void av1_highbd_dr_prediction_z1/, "uint16_t *dst, ptrdiff_t stride, int bw, int bh, const uint16_t *above, const uint16_t *left, int upsample_above, int dx, int dy, int bd";
   specialize qw/av1_highbd_dr_prediction_z1 avx2/;
   add_proto qw/void av1_highbd_dr_prediction_z2/, "uint16_t *dst, ptrdiff_t stride, int bw, int bh, const uint16_t *above, const uint16_t *left, int upsample_above, int upsample_left, int dx, int dy, int bd";
-  specialize qw/av1_highbd_dr_prediction_z2 avx2/;
+
+# TODO(Krishna Malladi) Disavowing following function as the implementation of
+# base_x calculation is not exact as that of C-code. The default cases below
+# have been adjusted for base_x calculations exactly like C-code.
+  #  specialize qw/av1_highbd_dr_prediction_z2 avx2/;
   add_proto qw/void av1_highbd_dr_prediction_z3/, "uint16_t *dst, ptrdiff_t stride, int bw, int bh, const uint16_t *above, const uint16_t *left, int upsample_left, int dx, int dy, int bd";
   specialize qw/av1_highbd_dr_prediction_z3 avx2/;
 }
