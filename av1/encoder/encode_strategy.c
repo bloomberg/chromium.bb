@@ -873,33 +873,27 @@ void setup_mi(AV1_COMP *const cpi, YV12_BUFFER_CONFIG *src) {
 static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
                               EncodeFrameInput *const frame_input,
                               EncodeFrameParams *const frame_params,
-                              EncodeFrameResults *const frame_results,
-                              int *temporal_filtered) {
-  if (frame_params->frame_type != KEY_FRAME ||
-      !cpi->oxcf.enable_keyframe_filtering) {
-    if (av1_encode(cpi, dest, frame_input, frame_params, frame_results) !=
-        AOM_CODEC_OK) {
-      return AOM_CODEC_ERROR;
-    }
-    return AOM_CODEC_OK;
-  }
-
+                              EncodeFrameResults *const frame_results) {
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   AV1_COMMON *const cm = &cpi->common;
-  const int num_planes = av1_num_planes(cm);
 
-  const double y_noise_level = av1_estimate_noise_from_single_plane(
-      frame_input->source, 0, cm->seq_params.bit_depth);
-  const int apply_filtering =
-      !is_stat_generation_stage(cpi) && frame_params->frame_type == KEY_FRAME &&
+  // Decide whether to apply temporal filtering to the source frame.
+  int apply_filtering =
+      frame_params->frame_type == KEY_FRAME &&
+      oxcf->enable_keyframe_filtering && !is_stat_generation_stage(cpi) &&
       !frame_params->show_existing_frame &&
       cpi->rc.frames_to_key > TF_NUM_FILTERING_FRAMES_FOR_KEY_FRAME &&
-      y_noise_level > 0 && !is_lossless_requested(oxcf) &&
-      oxcf->arnr_max_frames > 0;
+      !is_lossless_requested(oxcf) && oxcf->arnr_max_frames > 0;
+  if (apply_filtering) {
+    const double y_noise_level = av1_estimate_noise_from_single_plane(
+        frame_input->source, 0, cm->seq_params.bit_depth);
+    apply_filtering = y_noise_level > 0;
+  }
+
   // Save the pointer to the original source image.
   YV12_BUFFER_CONFIG *source_kf_buffer = frame_input->source;
 
-  // Apply filtering to key frame and encode.
+  // Apply filtering to key frame.
   if (apply_filtering) {
     // Initialization for frame motion estimation.
     MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
@@ -924,22 +918,16 @@ static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
     } else {
       av1_temporal_filter(cpi, -1, NULL);
     }
-    aom_extend_frame_borders(&cpi->alt_ref_buffer, num_planes);
+    aom_extend_frame_borders(&cpi->alt_ref_buffer, av1_num_planes(cm));
     // Use the filtered frame for encoding.
     frame_input->source = &cpi->alt_ref_buffer;
     // Copy metadata info to alt-ref buffer.
     aom_remove_metadata_from_frame_buffer(frame_input->source);
     aom_copy_metadata_to_frame_buffer(frame_input->source,
                                       source_kf_buffer->metadata);
-    *temporal_filtered = 1;
-  }
 
-  if (oxcf->lag_in_frames > 0 && !is_stat_generation_stage(cpi) &&
-      frame_params->frame_type == KEY_FRAME && frame_params->show_frame) {
-    av1_configure_buffer_updates(cpi, frame_params, KEY_FRAME, 0);
-    av1_set_frame_size(cpi, cm->width, cm->height);
-    av1_set_speed_features_framesize_independent(cpi, oxcf->speed);
-    if (cpi->oxcf.enable_tpl_model) {
+    if (oxcf->enable_tpl_model && oxcf->lag_in_frames > 0 &&
+        frame_params->show_frame) {
       av1_tpl_setup_stats(cpi, 0, frame_params, frame_input);
     }
   }
@@ -950,7 +938,7 @@ static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
   }
 
   // Set frame_input source to true source for psnr calculation.
-  if (oxcf->arnr_max_frames > 0 && *temporal_filtered) {
+  if (apply_filtering) {
     cpi->source = source_kf_buffer;
     cpi->unscaled_source = source_kf_buffer;
   }
@@ -1279,8 +1267,8 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
     return AOM_CODEC_ERROR;
   }
 #else
-  if (denoise_and_encode(cpi, dest, &frame_input, &frame_params, &frame_results,
-                         &code_arf) != AOM_CODEC_OK) {
+  if (denoise_and_encode(cpi, dest, &frame_input, &frame_params,
+                         &frame_results) != AOM_CODEC_OK) {
     return AOM_CODEC_ERROR;
   }
 #endif  // CONFIG_REALTIME_ONLY
