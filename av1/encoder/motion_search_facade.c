@@ -124,8 +124,10 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
   else
     start_mv = get_fullmv_from_mv(&ref_mv);
 
-  cand_mv_t cand[MAX_MC_FLOW_BLK_IN_SB * MAX_MC_FLOW_BLK_IN_SB] = { { { 0, 0 },
-                                                                      0 } };
+  // cand stores start_mv and all possible MVs in a SB.
+  cand_mv_t cand[MAX_MC_FLOW_BLK_IN_SB * MAX_MC_FLOW_BLK_IN_SB + 1] = {
+    { { 0, 0 }, 0 }
+  };
   cand[0].fmv = start_mv;
   int cnt = 1;
   int total_weight = 0;
