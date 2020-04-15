@@ -3132,28 +3132,6 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
                      'into build tool'),
     )
 
-  # Pre-R80 branches still need this builder to generate AFDO profiles.
-  # TODO: Use chell-chrome-no-afdo-uprev-pre-flight-branch for branch after R79
-  site_config.Add(
-      'chell-chrome-pre-flight-branch',
-      site_config.templates.pre_flight_branch,
-      display_label=config_lib.DISPLAY_LABEL_CHROME_PFQ,
-      boards=['chell'],
-      afdo_generate=True,
-      afdo_use=False,
-      afdo_update_chrome_ebuild=True,
-      afdo_update_kernel_ebuild=True,
-      sync_chrome=True,
-      chrome_rev=constants.CHROME_REV_STICKY,
-      hw_tests=[hw_test_list.AFDORecordTest(warn_only=True)],
-      useflags=config_lib.append_useflags(['-transparent_hugepage',
-                                           '-debug_fission',
-                                           '-thinlto',
-                                           '-cfi']),
-      prebuilts=False,
-      archive_build_debug=True,
-  )
-
   # TODO(b/146630610): gandof is switched to pi since R81, this builder config
   # is still kept for R79 and R80. Remove this once completely retired.
   site_config.Add(

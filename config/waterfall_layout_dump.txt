@@ -708,7 +708,6 @@
   celes-release-tryjob
   celes-unittest-stress
   chell-chrome-no-afdo-uprev-pre-flight-branch-tryjob
-  chell-chrome-pre-flight-branch-tryjob
   chell-factory-glados-7657.B-factorybranch-tryjob
   chell-factory-glados-7828.B-factorybranch-tryjob
   chell-full-tryjob
