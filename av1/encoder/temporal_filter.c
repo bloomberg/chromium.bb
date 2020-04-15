@@ -807,10 +807,21 @@ void av1_apply_temporal_filter_others(
     const uint8_t *pred, uint32_t *accum, uint16_t *count) {
   assert(num_planes >= 1 && num_planes <= MAX_MB_PLANE);
 
+  // Determines whether the video is with `YUV 4:2:2` format, since avx2/sse2
+  // function only supports square block size.
+  int is_yuv422_format = 0;
+  for (int plane = 1; plane < num_planes; ++plane) {
+    if (mbd->plane[plane].subsampling_x != mbd->plane[plane].subsampling_y) {
+      is_yuv422_format = 1;
+      break;
+    }
+  }
+
   if (TF_ENABLE_PLANEWISE_STRATEGY) {
     // TODO(any): avx2 and sse2 version should be changed to align with C
     // function before using.
-    if (is_frame_high_bitdepth(frame_to_filter) || block_size != BLOCK_32X32) {
+    if (is_frame_high_bitdepth(frame_to_filter) || block_size != BLOCK_32X32 ||
+        is_yuv422_format) {
       av1_apply_temporal_filter_planewise_c(
           frame_to_filter, mbd, block_size, mb_row, mb_col, num_planes,
           noise_levels, use_subblock, block_mse, subblock_mses, q_factor, pred,
