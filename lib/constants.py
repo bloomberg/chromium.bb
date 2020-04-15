@@ -368,6 +368,7 @@ ANDROID_VMMST_BUILD_TARGETS = {
 }
 ANDROID_RVC_BUILD_TARGETS = {
     # For XkbToKcmConverter, see the comment in ANDROID_PI_BUILD_TARGETS.
+    'APPS': ('linux-apps', 'org.chromium.arc.cachebuilder.jar'),
     'ARM': ('linux-cheets_arm-user', r'(\.zip|/XkbToKcmConverter)$'),
     'ARM64': ('linux-cheets_arm64-user', r'\.zip$'),
     'X86': ('linux-cheets_x86-user', r'(\.zip|/XkbToKcmConverter)$'),
@@ -379,6 +380,7 @@ ANDROID_RVC_BUILD_TARGETS = {
 }
 ANDROID_VMRVC_BUILD_TARGETS = {
     # For XkbToKcmConverter, see the comment in ANDROID_PI_BUILD_TARGETS.
+    'APPS': ('linux-apps', 'org.chromium.arc.cachebuilder.jar'),
     'ARM64': ('linux-bertha_arm64-user', r'(\.zip|/XkbToKcmConverter)$'),
     'X86': ('linux-bertha_x86-user', r'(\.zip|/XkbToKcmConverter)$'),
     'X86_64': ('linux-bertha_x86_64-user', r'\.zip$'),
