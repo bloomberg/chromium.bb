@@ -815,6 +815,18 @@ class RequestsLibEngine(object):
       raise ConnectionError(e)
 
 
+def set_user_agent(useragent):
+  """Globally changes a useragent to use to execute HTTP requests."""
+
+  class UserAgentRequestsLibEngine(get_engine_class()):
+
+    def perform_request(self, request):
+      request.headers['User-Agent'] = useragent
+      return super(UserAgentRequestsLibEngine, self).perform_request(request)
+
+  set_engine_class(UserAgentRequestsLibEngine)
+
+
 class RetryAttempt(object):
   """Contains information about current retry attempt.
 

@@ -1970,13 +1970,6 @@ class OptionParserSwarming(logging_utils.OptionParserWithLogging):
     return user
 
 
-class UserAgentRequestsLibEngine(net.RequestsLibEngine):
-
-  def perform_request(self, request):
-    request.headers['User-Agent'] = 'swarming.py/%s' % __version__
-    return super(UserAgentRequestsLibEngine, self).perform_request(request)
-
-
 def main(args):
   dispatcher = subcommand.CommandDispatcher(__name__)
   return dispatcher.execute(OptionParserSwarming(version=__version__), args)
@@ -1987,5 +1980,5 @@ if __name__ == '__main__':
   fix_encoding.fix_encoding()
   tools.disable_buffering()
   colorama.init()
-  net.set_engine_class(UserAgentRequestsLibEngine)
+  net.set_user_agent('swarming.py/' + __version__)
   sys.exit(main(sys.argv[1:]))
