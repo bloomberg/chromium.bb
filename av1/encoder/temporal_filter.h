@@ -34,13 +34,19 @@ extern "C" {
 // 2. Threshold for using q to adjust the filtering weight. Concretely, when
 //    using a small q (high bitrate), we would like to reduce the filtering
 //    strength such that more detailed information can be preserved. Hence, when
-//    q is smaller than this index, we will adjust the filtering weight based on
-//    the q-value.
+//    q is smaller than this threshold, we will adjust the filtering weight
+//    based on the q-value.
 #define TF_Q_DECAY_THRESHOLD 20
 // 3. Normalization factor used to normalize the motion search error. Since the
 //    motion search error can be large and uncontrollable, we will simply
 //    normalize it before using it to compute the filtering weight.
 #define TF_SEARCH_ERROR_NORM_WEIGHT 20
+// 4. Threshold for using `arnr_strength` to adjust the filtering strength.
+//    Concretely, users can use `arnr_strength` arguments to control the
+//    strength of temporal filtering. When `arnr_strength` is small enough (
+//    i.e., smaller than this threshold), we will adjust the filtering weight
+//    based on the strength value.
+#define TF_STRENGTH_THRESHOLD 4
 
 // Window size for temporal filtering.
 #define TF_WINDOW_LENGTH 5
