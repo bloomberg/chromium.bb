@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DISCOVERY_DNSSD_IMPL_SERVICE_IMPL_H_
-#define DISCOVERY_DNSSD_IMPL_SERVICE_IMPL_H_
+#ifndef DISCOVERY_DNSSD_IMPL_SERVICE_INSTANCE_H_
+#define DISCOVERY_DNSSD_IMPL_SERVICE_INSTANCE_H_
 
 #include <memory>
 
@@ -21,12 +21,22 @@ namespace discovery {
 
 class MdnsService;
 
-class ServiceImpl final : public DnsSdService {
+class ServiceInstance final : public DnsSdService {
  public:
-  ServiceImpl(TaskRunner* task_runner,
-              ReportingClient* reporting_client,
-              const Config& config);
-  ~ServiceImpl() override;
+  ServiceInstance(TaskRunner* task_runner,
+                  ReportingClient* reporting_client,
+                  const Config& config,
+                  const Config::NetworkInfo& network_info);
+  ServiceInstance(const ServiceInstance& other) = delete;
+  ServiceInstance(ServiceInstance&& other) = delete;
+  ~ServiceInstance() override;
+
+  ServiceInstance& operator=(const ServiceInstance& other) = delete;
+  ServiceInstance& operator=(ServiceInstance&& other) = delete;
+
+  const NetworkInterfaceConfig& network_config() const {
+    return network_config_;
+  }
 
   // DnsSdService overrides.
   DnsSdQuerier* GetQuerier() override { return querier_.get(); }
@@ -46,4 +56,4 @@ class ServiceImpl final : public DnsSdService {
 }  // namespace discovery
 }  // namespace openscreen
 
-#endif  // DISCOVERY_DNSSD_IMPL_SERVICE_IMPL_H_
+#endif  // DISCOVERY_DNSSD_IMPL_SERVICE_INSTANCE_H_
