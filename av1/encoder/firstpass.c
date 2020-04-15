@@ -848,6 +848,45 @@ static void print_reconstruction_frame(
   fclose(recon_file);
 }
 
+static FRAME_STATS accumulate_frame_stats(FRAME_STATS *mb_stats, int mb_rows,
+                                          int mb_cols) {
+  FRAME_STATS stats = { 0 };
+  int i, j;
+
+  stats.image_data_start_row = INVALID_ROW;
+  for (j = 0; j < mb_rows; j++) {
+    for (i = 0; i < mb_cols; i++) {
+      FRAME_STATS mb_stat = mb_stats[j * mb_cols + i];
+      stats.brightness_factor += mb_stat.brightness_factor;
+      stats.coded_error += mb_stat.coded_error;
+      stats.frame_avg_wavelet_energy += mb_stat.frame_avg_wavelet_energy;
+      if (stats.image_data_start_row == INVALID_ROW &&
+          mb_stat.image_data_start_row != INVALID_ROW) {
+        stats.image_data_start_row = mb_stat.image_data_start_row;
+      }
+      stats.inter_count += mb_stat.inter_count;
+      stats.intra_error += mb_stat.intra_error;
+      stats.intra_factor += mb_stat.intra_factor;
+      stats.intra_skip_count += mb_stat.intra_skip_count;
+      stats.mv_count += mb_stat.mv_count;
+      stats.neutral_count += mb_stat.neutral_count;
+      stats.new_mv_count += mb_stat.new_mv_count;
+      stats.second_ref_count += mb_stat.second_ref_count;
+      stats.sr_coded_error += mb_stat.sr_coded_error;
+      stats.sum_in_vectors += mb_stat.sum_in_vectors;
+      stats.sum_mvc += mb_stat.sum_mvc;
+      stats.sum_mvc_abs += mb_stat.sum_mvc_abs;
+      stats.sum_mvcs += mb_stat.sum_mvcs;
+      stats.sum_mvr += mb_stat.sum_mvr;
+      stats.sum_mvr_abs += mb_stat.sum_mvr_abs;
+      stats.sum_mvrs += mb_stat.sum_mvrs;
+      stats.third_ref_count += mb_stat.third_ref_count;
+      stats.tr_coded_error += mb_stat.tr_coded_error;
+    }
+  }
+  return stats;
+}
+
 #define FIRST_PASS_ALT_REF_DISTANCE 16
 void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
   MACROBLOCK *const x = &cpi->td.mb;
@@ -879,8 +918,15 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
   // Tiling is ignored in the first pass.
   TileInfo tile;
   av1_tile_init(&tile, cm, 0, 0);
-  FRAME_STATS stats = { 0 };
-  stats.image_data_start_row = INVALID_ROW;
+  FRAME_STATS *mb_stats;
+  CHECK_MEM_ERROR(
+      cm, mb_stats,
+      aom_calloc(mi_params->mb_rows * mi_params->mb_cols, sizeof(*mb_stats)));
+  for (int j = 0; j < mi_params->mb_rows; j++) {
+    for (int i = 0; i < mi_params->mb_cols; i++) {
+      mb_stats[j * mi_params->mb_cols + i].image_data_start_row = INVALID_ROW;
+    }
+  }
 
   const YV12_BUFFER_CONFIG *const last_frame =
       get_ref_frame_yv12_buf(cm, LAST_FRAME);
@@ -950,6 +996,7 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
 
   for (int mb_row = 0; mb_row < mi_params->mb_rows; ++mb_row) {
     MV best_ref_mv = kZeroMv;
+    FRAME_STATS *mb_stat = &mb_stats[mb_row * mi_params->mb_cols];
 
     // Reset above block coeffs.
     xd->up_available = (mb_row != 0);
@@ -970,20 +1017,20 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
     for (int mb_col = 0; mb_col < mi_params->mb_cols; ++mb_col) {
       int this_intra_error = firstpass_intra_prediction(
           cpi, this_frame, &tile, mb_row, mb_col, recon_yoffset, recon_uvoffset,
-          fp_block_size, qindex, &stats);
+          fp_block_size, qindex, mb_stat);
 
       if (!frame_is_intra_only(cm)) {
         const int this_inter_error = firstpass_inter_prediction(
             cpi, last_frame, golden_frame, alt_ref_frame, mb_row, mb_col,
             recon_yoffset, recon_uvoffset, src_yoffset, alt_ref_frame_yoffset,
             fp_block_size, this_intra_error, raw_motion_err_counts,
-            raw_motion_err_list, &best_ref_mv, &last_mv, &stats);
-        stats.coded_error += this_inter_error;
+            raw_motion_err_list, &best_ref_mv, &last_mv, mb_stat);
+        mb_stat->coded_error += this_inter_error;
         ++raw_motion_err_counts;
       } else {
-        stats.sr_coded_error += this_intra_error;
-        stats.tr_coded_error += this_intra_error;
-        stats.coded_error += this_intra_error;
+        mb_stat->sr_coded_error += this_intra_error;
+        mb_stat->tr_coded_error += this_intra_error;
+        mb_stat->coded_error += this_intra_error;
       }
 
       // Adjust to the next column of MBs.
@@ -995,6 +1042,7 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
       src_yoffset += fp_block_size_width;
       recon_uvoffset += uv_mb_height;
       alt_ref_frame_yoffset += fp_block_size_width;
+      mb_stat++;
     }
     // Adjust to the next row of MBs.
     x->plane[0].src.buf += fp_block_size_height * x->plane[0].src.stride -
@@ -1005,9 +1053,13 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
                            uv_mb_height * mi_params->mb_cols;
   }
   av1_free_pmc(ctx, num_planes);
+
+  FRAME_STATS stats =
+      accumulate_frame_stats(mb_stats, mi_params->mb_rows, mi_params->mb_cols);
   const double raw_err_stdev =
       raw_motion_error_stdev(raw_motion_err_list, raw_motion_err_counts);
   aom_free(raw_motion_err_list);
+  aom_free(mb_stats);
 
   // Clamp the image start to rows/2. This number of rows is discarded top
   // and bottom as dead data so rows / 2 means the frame is blank.
