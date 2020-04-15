@@ -45,8 +45,12 @@ from chromite.scripts import cros_mark_as_stable
 # Dir where all the action happens.
 _OVERLAY_DIR = '%(srcroot)s/private-overlays/project-cheets-private/'
 
-_GIT_COMMIT_MESSAGE = ('Marking latest for %(android_package)s ebuild '
-                       'with version %(android_version)s as stable.')
+_GIT_COMMIT_MESSAGE = """Marking latest for %(android_package)s ebuild with \
+version %(android_version)s as stable.
+
+BUG=None
+TEST=CQ
+"""
 
 # URLs that print lists of Android revisions between two build ids.
 _ANDROID_VERSION_URL = ('http://android-build-uber.corp.google.com/repo.html?'
