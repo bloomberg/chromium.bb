@@ -1907,8 +1907,8 @@ static aom_codec_err_t encoder_init(aom_codec_ctx_t *ctx,
       reduce_ratio(&priv->timestamp_ratio);
 
       set_encoder_config(&priv->oxcf, &priv->cfg, &priv->extra_cfg);
-      if (priv->oxcf.rc_mode == AOM_Q && priv->oxcf.pass == 0 &&
-          priv->oxcf.mode == GOOD) {
+      if ((priv->oxcf.rc_mode == AOM_Q || priv->oxcf.rc_mode == AOM_VBR) &&
+          priv->oxcf.pass == 0 && priv->oxcf.mode == GOOD) {
         // Enable look ahead
         *num_lap_buffers = priv->cfg.g_lag_in_frames;
         *num_lap_buffers =
