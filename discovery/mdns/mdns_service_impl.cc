@@ -90,7 +90,7 @@ MdnsServiceImpl::MdnsServiceImpl(
                                         task_runner_, now_function_, config);
     responder_ = std::make_unique<MdnsResponder>(
         publisher_.get(), probe_manager_.get(), sender_.get(), &receiver_,
-        task_runner_, &random_delay_);
+        task_runner_, now_function_, &random_delay_, config);
   }
 
   receiver_.Start();

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "discovery/common/config.h"
 #include "discovery/mdns/mdns_probe_manager.h"
 #include "discovery/mdns/mdns_publisher.h"
 #include "discovery/mdns/mdns_querier.h"
@@ -271,26 +272,115 @@ void ApplyServiceTypeEnumerationResults(
   }
 }
 
+bool IsMultiPacketTruncatedQueryMessage(const MdnsMessage& message) {
+  return message.is_truncated() || message.questions().empty();
+}
+
 }  // namespace
+
+MdnsResponder::RecordHandler::~RecordHandler() = default;
+
+MdnsResponder::TruncatedQuery::TruncatedQuery(MdnsResponder* responder,
+                                              TaskRunner* task_runner,
+                                              ClockNowFunctionPtr now_function,
+                                              IPEndpoint src,
+                                              const MdnsMessage& message,
+                                              const Config& config)
+    : max_allowed_messages_(config.maximum_truncated_messages_per_query),
+      max_allowed_records_(config.maximum_known_answer_records_per_query),
+      src_(std::move(src)),
+      responder_(responder),
+      questions_(message.questions()),
+      known_answers_(message.answers()),
+      alarm_(now_function, task_runner) {
+  OSP_DCHECK(responder_);
+  OSP_DCHECK_GT(max_allowed_messages_, 0);
+  OSP_DCHECK_GT(max_allowed_records_, 0);
+
+  RescheduleSend();
+}
+
+void MdnsResponder::TruncatedQuery::SetQuery(const MdnsMessage& message) {
+  OSP_DCHECK(questions_.empty());
+  questions_.insert(questions_.end(), message.questions().begin(),
+                    message.questions().end());
+
+  // |messages_received_so_far| does not need to be validated here because it is
+  // checked as part of RescheduleSend().
+  known_answers_.insert(known_answers_.end(), message.answers().begin(),
+                        message.answers().end());
+  messages_received_so_far++;
+
+  RescheduleSend();
+}
+
+void MdnsResponder::TruncatedQuery::AddKnownAnswers(
+    const std::vector<MdnsRecord>& records) {
+  // |messages_received_so_far| does not need to be validated here because it is
+  // checked as part of RescheduleSend().
+  known_answers_.insert(known_answers_.end(), records.begin(), records.end());
+  messages_received_so_far++;
+
+  RescheduleSend();
+}
+
+void MdnsResponder::TruncatedQuery::RescheduleSend() {
+  alarm_.Cancel();
+
+  Clock::duration send_delay;
+  if (messages_received_so_far >= max_allowed_messages_) {
+    // Maximum number of truncated messages have already been received for this
+    // query.
+    send_delay = Clock::duration(0);
+  } else if (known_answers_.size() >=
+             static_cast<size_t>(max_allowed_records_)) {
+    // Maximum number of known answer records have already been received for
+    // this query.
+    send_delay = Clock::duration(0);
+  } else {
+    // Reschedule to send after a random delay, per RFC 6762.
+    send_delay = responder_->random_delay_->GetTruncatedQueryResponseDelay();
+  }
+
+  alarm_.ScheduleFromNow([this]() { SendResponse(); }, send_delay);
+}
+
+void MdnsResponder::TruncatedQuery::SendResponse() {
+  alarm_.Cancel();
+
+  if (questions_.empty()) {
+    OSP_DVLOG << "Known answers received for unknown query, and non received "
+                 "after delay. Dropping them...";
+    return;
+  }
+
+  responder_->RespondToTruncatedQuery(this);
+}
 
 MdnsResponder::MdnsResponder(RecordHandler* record_handler,
                              MdnsProbeManager* ownership_handler,
                              MdnsSender* sender,
                              MdnsReceiver* receiver,
                              TaskRunner* task_runner,
-                             MdnsRandom* random_delay)
+                             ClockNowFunctionPtr now_function,
+                             MdnsRandom* random_delay,
+                             const Config& config)
     : record_handler_(record_handler),
       ownership_handler_(ownership_handler),
       sender_(sender),
       receiver_(receiver),
       task_runner_(task_runner),
-      random_delay_(random_delay) {
+      now_function_(now_function),
+      random_delay_(random_delay),
+      config_(config) {
   OSP_DCHECK(record_handler_);
   OSP_DCHECK(ownership_handler_);
   OSP_DCHECK(sender_);
   OSP_DCHECK(receiver_);
   OSP_DCHECK(task_runner_);
   OSP_DCHECK(random_delay_);
+  OSP_DCHECK_GT(config_.maximum_truncated_messages_per_query, 0);
+  OSP_DCHECK_GT(config_.maximum_concurrent_truncated_queries_per_interface, 0);
 
   auto func = [this](const MdnsMessage& message, const IPEndpoint& src) {
     OnMessageReceived(message, src);
@@ -302,29 +392,128 @@ MdnsResponder::~MdnsResponder() {
   receiver_->SetQueryCallback(nullptr);
 }
 
-MdnsResponder::RecordHandler::~RecordHandler() = default;
-
 void MdnsResponder::OnMessageReceived(const MdnsMessage& message,
                                       const IPEndpoint& src) {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
   OSP_DCHECK(message.type() == MessageType::Query);
 
-  if (message.questions().empty()) {
-    // TODO(rwkeane): Support multi-packet known answer suppression.
-    return;
+  // Handle multi-packet known answer suppression
+  if (IsMultiPacketTruncatedQueryMessage(message)) {
+    // If there have been an excessive number of known answers received already,
+    // then skip them. This would most likely mean that:
+    // - A host on the network is misbehaving.
+    // - There is a malicious actor on the network.
+    // In either of these cases, optimize for this host's resource usage.
+    if (truncated_queries_.size() >
+        static_cast<size_t>(
+            config_.maximum_concurrent_truncated_queries_per_interface)) {
+      OSP_DVLOG << "Too many truncated queries have been received. Treating "
+                   "new multi-packet known answer message as normal query";
+    } else {
+      ProcessMultiPacketTruncatedMessage(message, src);
+      return;
+    }
   }
 
+  // If the query is a probe query, it will be handled separately by the
+  // MdnsProbeManager. Ignore it here.
   if (message.IsProbeQuery()) {
     ownership_handler_->RespondToProbeQuery(message, src);
     return;
   }
 
+  // Else, this is a normal query. Process it as such.
+  // This is the case that should be hit 95+% of the time.
   OSP_DVLOG << "Received mDNS Query with " << message.questions().size()
             << " questions. Processing...";
-
   const std::vector<MdnsRecord>& known_answers = message.answers();
+  const std::vector<MdnsQuestion>& questions = message.questions();
+  ProcessQueries(src, questions, known_answers);
+}
 
-  for (const auto& question : message.questions()) {
+void MdnsResponder::ProcessMultiPacketTruncatedMessage(
+    const MdnsMessage& message,
+    const IPEndpoint& src) {
+  OSP_DVLOG << "Multi-packet truncated message received. Processing...";
+
+  const bool message_has_question = !message.questions().empty();
+  const bool message_is_truncated = message.is_truncated();
+  OSP_DCHECK(!message_has_question || message_is_truncated);
+
+  auto pair =
+      truncated_queries_.emplace(src, std::unique_ptr<TruncatedQuery>());
+  std::unique_ptr<TruncatedQuery>& stored_query = pair.first->second;
+
+  // First, handle the case where this host doesn't have a known answer query
+  // tracked yet. In this case, start tracking the new query.
+  if (pair.second) {
+    // Create a new query and swap it with the old one to save an extra lookup.
+    auto new_query = std::make_unique<TruncatedQuery>(
+        this, task_runner_, now_function_, src, message, config_);
+    stored_query.swap(new_query);
+    return;
+  }
+
+  // Else, there was already a message received from this host.
+  const bool are_questions_already_stored = !stored_query->questions().empty();
+
+  // If the new message doesn't have a question, then it must be additional
+  // known answers. Add them to the set of known answers for this truncated
+  // query.
+  if (!message_has_question) {
+    stored_query->AddKnownAnswers(message.answers());
+    return;
+  }
+
+  // Alternatively, if a record for this host existed, it might be because the
+  // messages were received out-of-order and known answers have already been
+  // received. In this case, associate the new message's query with the known
+  // answers already received.
+  if (!are_questions_already_stored) {
+    stored_query->SetQuery(message);
+    return;
+  }
+
+  // Else, an ongoing truncated query is already associated with this host and a
+  // new one has also been received. This implies one of the following occurred:
+  // - The sender must have finished sending packets.
+  // - The known answers completing this query somehow got lost on the network.
+  // - A second truncated query was started by the same host, and this host
+  //   won't be able to differentiate which query future known answers are
+  //   associated with.
+  // In any of these cases, there's no reason to continue tracking the old
+  // query. So process it.
+  //
+  // Create a new query and swap it with the old one to save an extra lookup.
+  auto new_query = std::make_unique<TruncatedQuery>(
+      this, task_runner_, now_function_, src, message, config_);
+  stored_query.swap(new_query);
+
+  // Now that the pointers have been swapped, process the previously stored
+  // query.
+  new_query->SendResponse();
+}
+
+void MdnsResponder::RespondToTruncatedQuery(TruncatedQuery* query) {
+  ProcessQueries(query->src(), query->questions(), query->known_answers());
+  auto it = truncated_queries_.find(query->src());
+
+  if (it == truncated_queries_.end()) {
+    return;
+  }
+
+  // If a second query for this same host arrives, then the question found may
+  // not match what is being sent due to the swap done in OnMessageReceived().
+  if (it->second.get() == query) {
+    truncated_queries_.erase(it);
+  }
+}
+
+void MdnsResponder::ProcessQueries(
+    const IPEndpoint& src,
+    const std::vector<MdnsQuestion>& questions,
+    const std::vector<MdnsRecord>& known_answers) {
+  for (const auto& question : questions) {
     OSP_DVLOG << "\tProcessing mDNS Query for domain: '"
               << question.name().ToString() << "', type: '"
               << question.dns_type() << "'";

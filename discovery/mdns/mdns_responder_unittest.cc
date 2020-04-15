@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "discovery/common/config.h"
 #include "discovery/mdns/mdns_probe_manager.h"
 #include "discovery/mdns/mdns_random.h"
 #include "discovery/mdns/mdns_receiver.h"
@@ -131,7 +132,9 @@ class MdnsResponderTest : public testing::Test {
                    &sender_,
                    &receiver_,
                    &task_runner_,
-                   &random_) {}
+                   FakeClock::now,
+                   &random_,
+                   config_) {}
 
  protected:
   MdnsRecord GetFakePtrRecord(const DomainName& target) {
@@ -204,6 +207,7 @@ class MdnsResponderTest : public testing::Test {
     return message;
   }
 
+  const Config config_;
   FakeClock clock_;
   FakeTaskRunner task_runner_;
   FakeUdpSocket socket_;
@@ -512,6 +516,107 @@ TEST_F(MdnsResponderTest, RecordOnlySentIfNotKnown) {
       });
 
   OnMessageReceived(message, endpoint_);
+}
+
+TEST_F(MdnsResponderTest, RecordOnlySentIfNotKnownMultiplePackets) {
+  MdnsMessage message = CreateMulticastMdnsQuery(DnsType::kANY);
+  message.set_truncated();
+
+  MdnsMessage message2(1, MessageType::Query);
+  MdnsRecord aaaa_record = GetFakeAAAARecord(domain_);
+  message2.AddAnswer(aaaa_record);
+
+  OnMessageReceived(message, endpoint_);
+  OnMessageReceived(message2, endpoint_);
+
+  EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillOnce(Return(true));
+  EXPECT_CALL(record_handler_, HasRecords(_, _, _))
+      .WillRepeatedly(Return(true));
+  record_handler_.AddRecord(GetFakeARecord(domain_));
+  record_handler_.AddRecord(aaaa_record);
+  EXPECT_CALL(sender_, SendMulticast(_))
+      .WillOnce([](const MdnsMessage& message) -> Error {
+        EXPECT_EQ(message.questions().size(), size_t{0});
+        EXPECT_EQ(message.authority_records().size(), size_t{0});
+        EXPECT_EQ(message.additional_records().size(), size_t{0});
+
+        EXPECT_EQ(message.answers().size(), size_t{1});
+        EXPECT_TRUE(ContainsRecordType(message.answers(), DnsType::kA));
+        return Error::None();
+      });
+  clock_.Advance(std::chrono::seconds(1));
+}
+
+TEST_F(MdnsResponderTest, RecordOnlySentIfNotKnownMultiplePacketsOutOfOrder) {
+  MdnsMessage message = CreateMulticastMdnsQuery(DnsType::kANY);
+  message.set_truncated();
+
+  MdnsMessage message2(2, MessageType::Query);
+  MdnsRecord aaaa_record = GetFakeAAAARecord(domain_);
+  message2.AddAnswer(aaaa_record);
+  message2.set_truncated();
+
+  MdnsMessage message3(3, MessageType::Query);
+  MdnsRecord a_record = GetFakeARecord(domain_);
+  message3.AddAnswer(a_record);
+
+  OnMessageReceived(message2, endpoint_);
+  OnMessageReceived(message3, endpoint_);
+  OnMessageReceived(message, endpoint_);
+
+  EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillOnce(Return(true));
+  EXPECT_CALL(record_handler_, HasRecords(_, _, _))
+      .WillRepeatedly(Return(true));
+  record_handler_.AddRecord(a_record);
+  record_handler_.AddRecord(aaaa_record);
+  record_handler_.AddRecord(aaaa_record);
+  record_handler_.AddRecord(GetFakeSrvRecord(domain_));
+  EXPECT_CALL(sender_, SendMulticast(_))
+      .WillOnce([](const MdnsMessage& message) -> Error {
+        EXPECT_EQ(message.questions().size(), size_t{0});
+        EXPECT_EQ(message.authority_records().size(), size_t{0});
+        EXPECT_EQ(message.additional_records().size(), size_t{0});
+
+        EXPECT_EQ(message.answers().size(), size_t{1});
+        EXPECT_TRUE(ContainsRecordType(message.answers(), DnsType::kSRV));
+        return Error::None();
+      });
+  clock_.Advance(std::chrono::seconds(1));
+}
+
+TEST_F(MdnsResponderTest, RecordSentForMultiPacketsSuppressionIfMoreNotFound) {
+  MdnsMessage message = CreateMulticastMdnsQuery(DnsType::kANY);
+  MdnsRecord aaaa_record = GetFakeAAAARecord(domain_);
+  message.AddAnswer(aaaa_record);
+  message.set_truncated();
+
+  OnMessageReceived(message, endpoint_);
+
+  EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillOnce(Return(true));
+  EXPECT_CALL(record_handler_, HasRecords(_, _, _))
+      .WillRepeatedly(Return(true));
+  record_handler_.AddRecord(GetFakeARecord(domain_));
+  record_handler_.AddRecord(aaaa_record);
+  EXPECT_CALL(sender_, SendMulticast(_))
+      .WillOnce([](const MdnsMessage& message) -> Error {
+        EXPECT_EQ(message.questions().size(), size_t{0});
+        EXPECT_EQ(message.authority_records().size(), size_t{0});
+        EXPECT_EQ(message.additional_records().size(), size_t{0});
+
+        EXPECT_EQ(message.answers().size(), size_t{1});
+        EXPECT_TRUE(ContainsRecordType(message.answers(), DnsType::kA));
+        return Error::None();
+      });
+  clock_.Advance(std::chrono::seconds(1));
+}
+
+TEST_F(MdnsResponderTest, RecordNotSentForMultiPacketsSuppressionIfNoQuery) {
+  MdnsMessage message(1, MessageType::Query);
+  MdnsRecord aaaa_record = GetFakeAAAARecord(domain_);
+  message.AddAnswer(aaaa_record);
+
+  OnMessageReceived(message, endpoint_);
+  clock_.Advance(std::chrono::seconds(1));
 }
 
 // Validate NSEC records are used correctly.
