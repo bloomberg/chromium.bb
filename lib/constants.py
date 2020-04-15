@@ -379,7 +379,6 @@ ANDROID_RVC_BUILD_TARGETS = {
 }
 ANDROID_VMRVC_BUILD_TARGETS = {
     # For XkbToKcmConverter, see the comment in ANDROID_PI_BUILD_TARGETS.
-    'ARM': ('linux-bertha_arm-user', r'\.zip$'),
     'ARM64': ('linux-bertha_arm64-user', r'(\.zip|/XkbToKcmConverter)$'),
     'X86': ('linux-bertha_x86-user', r'(\.zip|/XkbToKcmConverter)$'),
     'X86_64': ('linux-bertha_x86_64-user', r'\.zip$'),
