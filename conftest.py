@@ -12,6 +12,8 @@ https://docs.pytest.org/en/latest/fixture.html#conftest-py-sharing-fixture-funct
 
 from __future__ import print_function
 
+import multiprocessing
+
 import pytest  # pylint: disable=import-error
 
 from chromite.lib import cidb
@@ -31,3 +33,17 @@ def mock_cidb_connection():
   # pylint: disable=protected-access
   cidb.CIDBConnectionFactory._ClearCIDBSetup()
   cidb.CIDBConnectionFactory.SetupMockCidb()
+
+
+@pytest.fixture(scope='class', autouse=True)
+def assert_no_zombies():
+  """Assert that tests have no active child processes after completion.
+
+  This assertion runs after class tearDown methods because of the scope='class'
+  declaration.
+  """
+  yield
+  children = multiprocessing.active_children()
+  if children:
+    pytest.fail('Test has %s active child processes after tearDown: %s' %
+                (len(children), children))
