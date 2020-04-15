@@ -196,6 +196,8 @@ const char kChromeFeaturesServiceIsCrostiniEnabledMethod[] =
     "IsCrostiniEnabled";
 const char kChromeFeaturesServiceIsCryptohomeDistributedModelEnabledMethod[] =
     "IsCryptohomeDistributedModelEnabled";
+const char kChromeFeaturesServiceIsCryptohomeUserDataAuthEnabledMethod[] =
+    "IsCryptohomeUserDataAuthEnabled";
 const char kChromeFeaturesServiceIsPluginVmEnabledMethod[] =
     "IsPluginVmEnabled";
 const char kChromeFeaturesServiceIsUsbguardEnabledMethod[] =
