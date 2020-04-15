@@ -501,6 +501,9 @@ class GitWrapper(SCMWrapper):
     if ':' in revision:
       revision_ref, _, revision = revision.partition(':')
 
+    if revision_ref.startswith('refs/branch-heads'):
+      options.with_branch_heads = True
+
     mirror = self._GetMirror(url, options, revision_ref)
     if mirror:
       url = mirror.mirror_path
