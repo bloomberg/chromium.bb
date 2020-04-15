@@ -112,10 +112,8 @@ class NoAndroidABIError(Exception):
 class NoAndroidVariantError(Exception):
   """For when Android variant cannot be determined."""
 
-
 class NoAndroidTargetError(Exception):
   """For when Android target cannot be determined."""
-
 
 class NoAndroidVersionError(Exception):
   """For when Android version cannot be determined."""
@@ -816,12 +814,10 @@ class _BuilderRunBase(object):
       return 'x86_64'
     elif 'abi_x86_32' in use_flags.get('sys-devel/arc-build', []):
       return 'x86'
-    elif 'abi_arm_32' in use_flags.get('sys-devel/arc-build', []):
+    else:
+      # ARM only supports 32-bit so it does not have abi_x86_{32,64} set. But it
+      # is also the last possible ABI, so returning by default.
       return 'arm'
-    elif 'abi_arm_64' in use_flags.get('sys-devel/arc-build', []):
-      return 'arm64'
-    raise NoAndroidABIError(
-        'Android arch or ABI could not be determined for %s' % board)
 
   def DetermineAndroidVariant(self, board):
     """Returns the Android variant in use by the active container ebuild."""
