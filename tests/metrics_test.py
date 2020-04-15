@@ -138,7 +138,7 @@ class MetricsCollectorTest(unittest.TestCase):
     self.default_metrics.update(update_metrics or {})
     # Assert we invoked the script to upload them.
     self.Popen.assert_called_with(
-        ['vpython3', metrics.UPLOAD_SCRIPT], stdin=metrics.subprocess.PIPE)
+        [sys.executable, metrics.UPLOAD_SCRIPT], stdin=metrics.subprocess.PIPE)
     # Assert we collected the right metrics.
     write_call = self.Popen.return_value.stdin.write.call_args
     collected_metrics = json.loads(write_call[0][0])

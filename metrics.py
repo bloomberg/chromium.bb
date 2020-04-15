@@ -184,7 +184,7 @@ class MetricsCollector(object):
     # We invoke a subprocess, and use stdin.write instead of communicate(),
     # so that we are able to return immediately, leaving the upload running in
     # the background.
-    p = subprocess.Popen(['vpython3', UPLOAD_SCRIPT], stdin=subprocess.PIPE)
+    p = subprocess.Popen([sys.executable, UPLOAD_SCRIPT], stdin=subprocess.PIPE)
     p.stdin.write(json.dumps(self._reported_metrics).encode('utf-8'))
 
   def _collect_metrics(self, func, command_name, *args, **kwargs):
