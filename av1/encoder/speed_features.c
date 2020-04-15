@@ -327,10 +327,12 @@ static void set_good_speed_features_framesize_independent(
   sf->rt_sf.use_nonrd_pick_mode = 0;
   sf->rt_sf.use_real_time_ref_set = 0;
 
-  if (cpi->twopass.fr_content_type == FC_GRAPHICS_ANIMATION)
-    sf->mv_sf.exhaustive_searches_thresh = (1 << 24);
-  else
+  if (cpi->twopass.fr_content_type == FC_GRAPHICS_ANIMATION ||
+      cpi->is_screen_content_type) {
+    sf->mv_sf.exhaustive_searches_thresh = (1 << 20);
+  } else {
     sf->mv_sf.exhaustive_searches_thresh = (1 << 25);
+  }
 
   sf->rd_sf.perform_coeff_opt = 1;
 

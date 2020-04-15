@@ -145,6 +145,10 @@ typedef struct {
                           // higher than the threshold.
   const struct MESH_PATTERN *mesh_patterns[2];
 
+  // Use maximum search interval of 4 if true. This helps motion search to find
+  // the best motion vector for screen content types.
+  int fine_search_interval;
+
   int is_intra_mode;
 
   int fast_obmc_search;
@@ -157,7 +161,8 @@ void av1_make_default_fullpel_ms_params(FULLPEL_MOTION_SEARCH_PARAMS *ms_params,
                                         const struct AV1_COMP *cpi,
                                         const MACROBLOCK *x, BLOCK_SIZE bsize,
                                         const MV *ref_mv,
-                                        const search_site_config *search_sites);
+                                        const search_site_config *search_sites,
+                                        int fine_search_interval);
 
 // Sets up configs for fullpixel diamond search
 void av1_init_dsmotion_compensation(search_site_config *cfg, int stride);

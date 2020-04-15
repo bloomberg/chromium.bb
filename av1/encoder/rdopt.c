@@ -2703,7 +2703,8 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
   const search_site_config *lookahead_search_sites =
       &cpi->mv_search_params.ss_cfg[SS_CFG_LOOKAHEAD];
   av1_make_default_fullpel_ms_params(&fullms_params, cpi, x, bsize,
-                                     &dv_ref.as_mv, lookahead_search_sites);
+                                     &dv_ref.as_mv, lookahead_search_sites,
+                                     /*fine_search_interval=*/0);
   fullms_params.is_intra_mode = 1;
 
   for (enum IntrabcMotionDirection dir = IBC_MOTION_ABOVE;

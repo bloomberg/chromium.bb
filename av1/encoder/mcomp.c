@@ -54,10 +54,12 @@ static INLINE void init_ms_buffers(MSBuffers *ms_buffers, const MACROBLOCK *x) {
   ms_buffers->obmc_mask = x->mask_buf;
 }
 
-void av1_make_default_fullpel_ms_params(
-    FULLPEL_MOTION_SEARCH_PARAMS *ms_params, const struct AV1_COMP *cpi,
-    const MACROBLOCK *x, BLOCK_SIZE bsize, const MV *ref_mv,
-    const search_site_config *search_sites) {
+void av1_make_default_fullpel_ms_params(FULLPEL_MOTION_SEARCH_PARAMS *ms_params,
+                                        const struct AV1_COMP *cpi,
+                                        const MACROBLOCK *x, BLOCK_SIZE bsize,
+                                        const MV *ref_mv,
+                                        const search_site_config *search_sites,
+                                        const int fine_search_interval) {
   // High level params
   ms_params->bsize = bsize;
   ms_params->vfp = &cpi->fn_ptr[bsize];
@@ -72,6 +74,7 @@ void av1_make_default_fullpel_ms_params(
   ms_params->force_mesh_thresh = cpi->sf.mv_sf.exhaustive_searches_thresh;
   ms_params->prune_mesh_search = cpi->sf.mv_sf.prune_mesh_search;
   ms_params->run_mesh_search = 0;
+  ms_params->fine_search_interval = fine_search_interval;
 
   ms_params->is_intra_mode = 0;
 
@@ -1295,6 +1298,15 @@ static int full_pixel_exhaustive(const FULLPEL_MV start_mv,
   range = AOMMAX(range, (5 * AOMMAX(abs(best_mv->row), abs(best_mv->col))) / 4);
   range = AOMMIN(range, kMaxRange);
   interval = AOMMAX(interval, range / baseline_interval_divisor);
+  // Use a small search step/interval for certain kind of clips.
+  // For example, screen content clips with a lot of texts.
+  // Large interval could lead to a false matching position, and it can't find
+  // the best global candidate in following iterations due to reduced search
+  // range. The solution here is to use a small search iterval in the beginning
+  // and thus reduces the chance of missing the best candidate.
+  if (ms_params->fine_search_interval) {
+    interval = AOMMIN(interval, 4);
+  }
 
   // initial search
   bestsme = exhaustive_mesh_search(*best_mv, ms_params, range, interval,
@@ -1461,11 +1473,11 @@ int av1_full_pixel_search(const FULLPEL_MV start_mv,
 
   // Should we allow a follow on exhaustive search?
   if (!run_mesh_search && search_method == NSTEP) {
-    int exhuastive_thr = ms_params->force_mesh_thresh;
-    exhuastive_thr >>=
+    int exhaustive_thr = ms_params->force_mesh_thresh;
+    exhaustive_thr >>=
         10 - (mi_size_wide_log2[bsize] + mi_size_high_log2[bsize]);
     // Threshold variance for an exhaustive full search.
-    if (var > exhuastive_thr) run_mesh_search = 1;
+    if (var > exhaustive_thr) run_mesh_search = 1;
   }
 
   // TODO(yunqing): the following is used to reduce mesh search in temporal
