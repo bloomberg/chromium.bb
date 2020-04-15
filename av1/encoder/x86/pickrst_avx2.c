@@ -10,6 +10,7 @@
  */
 
 #include <immintrin.h>  // AVX2
+#include "aom_dsp/x86/mem_sse2.h"
 #include "aom_dsp/x86/synonyms.h"
 #include "aom_dsp/x86/synonyms_avx2.h"
 #include "aom_dsp/x86/transpose_sse2.h"
@@ -49,7 +50,7 @@ static INLINE void acc_stat_win7_one_line_avx2(
         M_int[k][l] += D1 * X1 + D2 * X2;
 
         const __m256i kl =
-            _mm256_cvtepu8_epi16(_mm_set1_epi16(*((uint16_t *)(dgd_ijk + l))));
+            _mm256_cvtepu8_epi16(_mm_set1_epi16(loadu_uint16(dgd_ijk + l)));
         acc_stat_avx2(H_ + 0 * 8, dgd_ij + 0 * dgd_stride, shuffle, &kl);
         acc_stat_avx2(H_ + 1 * 8, dgd_ij + 1 * dgd_stride, shuffle, &kl);
         acc_stat_avx2(H_ + 2 * 8, dgd_ij + 2 * dgd_stride, shuffle, &kl);
@@ -181,8 +182,7 @@ static INLINE void acc_stat_highbd_win7_one_line_avx2(
 
         // Load two u16 values from dgd_ijkl combined as a u32,
         // then broadcast to 8x u32 slots of a 256
-        const __m256i dgd_ijkl =
-            _mm256_set1_epi32(*((uint32_t *)(dgd_ijk + l)));
+        const __m256i dgd_ijkl = _mm256_set1_epi32(loadu_uint32(dgd_ijk + l));
         // dgd_ijkl = [y x y x y x y x] [y x y x y x y x] where each is a u16
 
         acc_stat_highbd_avx2(H_ + 0 * 8, dgd_ij + 0 * dgd_stride, shuffle,
@@ -285,8 +285,7 @@ static INLINE void acc_stat_highbd_win5_one_line_avx2(
 
         // Load two u16 values from dgd_ijkl combined as a u32,
         // then broadcast to 8x u32 slots of a 256
-        const __m256i dgd_ijkl =
-            _mm256_set1_epi32(*((uint32_t *)(dgd_ijk + l)));
+        const __m256i dgd_ijkl = _mm256_set1_epi32(loadu_uint32(dgd_ijk + l));
         // dgd_ijkl = [x y x y x y x y] [x y x y x y x y] where each is a u16
 
         acc_stat_highbd_avx2(H_ + 0 * 8, dgd_ij + 0 * dgd_stride, shuffle,
@@ -406,7 +405,7 @@ static INLINE void acc_stat_win5_one_line_avx2(
         M_int[k][l] += D1 * X1 + D2 * X2;
 
         const __m256i kl =
-            _mm256_cvtepu8_epi16(_mm_set1_epi16(*((uint16_t *)(dgd_ijk + l))));
+            _mm256_cvtepu8_epi16(_mm_set1_epi16(loadu_uint16(dgd_ijk + l)));
         acc_stat_avx2(H_ + 0 * 8, dgd_ij + 0 * dgd_stride, shuffle, &kl);
         acc_stat_avx2(H_ + 1 * 8, dgd_ij + 1 * dgd_stride, shuffle, &kl);
         acc_stat_avx2(H_ + 2 * 8, dgd_ij + 2 * dgd_stride, shuffle, &kl);
