@@ -1008,11 +1008,20 @@ void av1_get_ref_frames(AV1_COMP *const cpi, RefBufferStack *ref_buffer_stack) {
   if (gld_stack_size) {
     remapped_ref_idx[GOLDEN_FRAME - LAST_FRAME] = gld_stack[0];
 
+    // If there are more frames in the golden stack, assign them to BWDREF,
+    // ALTREF2, or LAST3.
     if (gld_stack_size > 1) {
-      if (arf_stack_size <= 1)
-        remapped_ref_idx[BWDREF_FRAME - LAST_FRAME] = gld_stack[1];
-      else
+      if (arf_stack_size <= 2) {
+        if (arf_stack_size <= 1) {
+          remapped_ref_idx[BWDREF_FRAME - LAST_FRAME] = gld_stack[1];
+          if (gld_stack_size > 2)
+            remapped_ref_idx[ALTREF2_FRAME - LAST_FRAME] = gld_stack[2];
+        } else {
+          remapped_ref_idx[ALTREF2_FRAME - LAST_FRAME] = gld_stack[1];
+        }
+      } else {
         remapped_ref_idx[LAST3_FRAME - LAST_FRAME] = gld_stack[1];
+      }
     }
   }
 
