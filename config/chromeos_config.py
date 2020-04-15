@@ -2436,15 +2436,6 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
 
       if config_lib.CONFIG_TEMPLATE_MODEL_TEST_SUITES in model:
         test_suites = model[config_lib.CONFIG_TEMPLATE_MODEL_TEST_SUITES]
-        if 'bvt-arc' in test_suites:
-          # TODO(crbug.com/814793)
-          # We're tying these test suites to bvt-arc because it's not worth
-          # plumbing this all the way through the GE UI since that architecture
-          # was never fully implemented and we shouldn't have tied to it in
-          # the first place.
-          # Once test planning is properly implemented, this will fall out.
-          test_suites.append('arc-cts-qual')
-          test_suites.append('arc-gts-qual')
         models.append(config_lib.ModelTestConfig(
             name,
             lab_board_name,
@@ -2472,9 +2463,7 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
         'models': models,
         'important': important,
         'enable_skylab_hw_tests': enable_skylab_hw_tests['default'],
-        'enable_skylab_cts_hw_tests': enable_skylab_hw_tests['cts'],
-        'hw_tests': (hw_test_list.SharedPoolCanary(pool=pool)
-                     + hw_test_list.CtsGtsQualTests())
+        'hw_tests': hw_test_list.SharedPoolCanary(pool=pool)
     }
     if config_name in _no_unittest_configs:
       props['unittests'] = False

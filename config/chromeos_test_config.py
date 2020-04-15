@@ -284,32 +284,6 @@ class HWTestList(object):
             config_lib.HWTestConfig('security',
                                     **default_dict)]
 
-  # pylint: disable=unused-argument
-  def CtsGtsQualTests(self, **kwargs):
-    """Return a list of HWTestConfigs for CTS, GTS tests."""
-    cts_config = dict(
-        pool=constants.HWTEST_CTS_POOL,
-        timeout=config_lib.HWTestConfig.CTS_QUAL_HW_TEST_TIMEOUT,
-        priority=constants.HWTEST_CTS_PRIORITY,
-        enable_skylab=False)
-    # Python 3.7+ made async a reserved keyword.
-    cts_config['async'] = True
-    cts_config.update(kwargs)
-
-    gts_config = dict(
-        pool=constants.HWTEST_GTS_POOL,
-        timeout=config_lib.HWTestConfig.GTS_QUAL_HW_TEST_TIMEOUT,
-        priority=constants.HWTEST_GTS_PRIORITY,
-        enable_skylab=False)
-    # Python 3.7+ made async a reserved keyword.
-    gts_config['async'] = True
-    gts_config.update(kwargs)
-
-    return [config_lib.HWTestConfig(constants.HWTEST_CTS_QUAL_SUITE,
-                                    **cts_config),
-            config_lib.HWTestConfig(constants.HWTEST_GTS_QUAL_SUITE,
-                                    **gts_config)]
-
   def TastConfig(self, suite_name, **kwargs):
     """Return an HWTestConfig that runs the provided Tast test suite.
 
@@ -632,8 +606,7 @@ def GeneralTemplates(site_config, ge_build_config):
   # END Dustbuster
 
   # BEGIN Release
-  release_hw_tests = (hw_test_list.CtsGtsQualTests() +
-                      hw_test_list.SharedPoolCanary())
+  release_hw_tests = hw_test_list.SharedPoolCanary()
 
   site_config.templates.release.apply(
       site_config.templates.default_hw_tests_override,
