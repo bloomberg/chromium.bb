@@ -150,7 +150,20 @@ enum {
 } UENUM1BYTE(SS_CFG_OFFSET);
 
 // TODO(jingning): This needs to be cleaned up next.
-#define MAX_LENGTH_TPL_FRAME_STATS (MAX_TOTAL_BUFFERS + REF_FRAMES + 1)
+
+// TPL stats buffers are prepared for every frame in the GOP,
+// including (internal) overlays and (internal) arfs.
+// In addition, frames in the lookahead that are outside of the GOP
+// are also used.
+// Thus it should use
+// (gop_length) + (# overlays) + (MAX_LAG_BUFFERS - gop_len) =
+// MAX_LAG_BUFFERS + (# overlays)
+// 2 * MAX_LAG_BUFFERS is therefore a safe estimate.
+// TODO(bohanli): test setting it to 1.5 * MAX_LAG_BUFFER
+#define MAX_TPL_FRAME_IDX (2 * MAX_LAG_BUFFERS)
+// The first REF_FRAMES + 1 buffers are reserved.
+// tpl_data->tpl_frame starts after REF_FRAMES + 1
+#define MAX_LENGTH_TPL_FRAME_STATS (MAX_TPL_FRAME_IDX + REF_FRAMES + 1)
 
 typedef struct TplDepStats {
   int64_t intra_cost;

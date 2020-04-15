@@ -294,7 +294,7 @@ static int get_hier_tpl_rdmult(const AV1_COMP *const cpi, MACROBLOCK *const x,
   const int deltaq_rdmult = set_deltaq_rdmult(cpi, xd);
   if (tpl_frame->is_valid == 0) return deltaq_rdmult;
   if (!is_frame_tpl_eligible((AV1_COMP *)cpi)) return deltaq_rdmult;
-  if (tpl_idx >= MAX_LAG_BUFFERS) return deltaq_rdmult;
+  if (tpl_idx >= MAX_TPL_FRAME_IDX) return deltaq_rdmult;
   if (cpi->superres_mode != SUPERRES_NONE) return deltaq_rdmult;
   if (cpi->oxcf.aq_mode != NO_AQ) return deltaq_rdmult;
 
@@ -4013,7 +4013,7 @@ static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int analysis_type,
 
   if (!is_frame_tpl_eligible(cpi)) return orig_rdmult;
 
-  if (cpi->gf_group.index >= MAX_LAG_BUFFERS) return orig_rdmult;
+  if (cpi->gf_group.index >= MAX_TPL_FRAME_IDX) return orig_rdmult;
 
   int64_t mc_count = 0, mc_saved = 0;
   int mi_count = 0;
@@ -4093,7 +4093,7 @@ static int get_tpl_stats_b(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
   const int mi_high = mi_size_high[bsize];
 
   if (tpl_frame->is_valid == 0) return 0;
-  if (gf_group_index >= MAX_LAG_BUFFERS) return 0;
+  if (gf_group_index >= MAX_TPL_FRAME_IDX) return 0;
 
   int mi_count = 0;
   int count = 0;
@@ -4166,7 +4166,7 @@ static int get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
 
   if (!is_frame_tpl_eligible(cpi)) return base_qindex;
 
-  if (cpi->gf_group.index >= MAX_LAG_BUFFERS) return base_qindex;
+  if (cpi->gf_group.index >= MAX_TPL_FRAME_IDX) return base_qindex;
 
   int64_t mc_count = 0, mc_saved = 0;
   int mi_count = 0;
@@ -4689,7 +4689,7 @@ static void init_ref_frame_space(AV1_COMP *cpi, ThreadData *td, int mi_row,
 
   if (tpl_frame->is_valid == 0) return;
   if (!is_frame_tpl_eligible(cpi)) return;
-  if (frame_idx >= MAX_LAG_BUFFERS) return;
+  if (frame_idx >= MAX_TPL_FRAME_IDX) return;
   if (cpi->superres_mode != SUPERRES_NONE) return;
   if (cpi->oxcf.aq_mode != NO_AQ) return;
 

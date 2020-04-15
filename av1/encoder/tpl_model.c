@@ -833,7 +833,7 @@ static AOM_INLINE void init_gop_frames_for_tpl(
   int anc_frame_offset = gf_group->cur_frame_idx[cur_frame_idx] + 1;
   int process_frame_count = 0;
   const int gop_length =
-      AOMMIN(gf_group->size - 1 + use_arf, MAX_LENGTH_TPL_FRAME_STATS - 1);
+      AOMMIN(gf_group->size - 1 + use_arf, MAX_TPL_FRAME_IDX - 1);
   for (gf_index = cur_frame_idx; gf_index <= gop_length; ++gf_index) {
     TplDepFrame *tpl_frame = &tpl_data->tpl_frame[gf_index];
     FRAME_UPDATE_TYPE frame_update_type = gf_group->update_type[gf_index];
@@ -904,8 +904,8 @@ static AOM_INLINE void init_gop_frames_for_tpl(
              cpi->rc.frames_to_key - cpi->rc.baseline_gf_interval);
   int frame_display_index = cpi->rc.baseline_gf_interval + 1;
 
-  for (; gf_index < MAX_LENGTH_TPL_FRAME_STATS &&
-         extend_frame_count < extend_frame_length;
+  for (;
+       gf_index < MAX_TPL_FRAME_IDX && extend_frame_count < extend_frame_length;
        ++gf_index) {
     TplDepFrame *tpl_frame = &tpl_data->tpl_frame[gf_index];
     FRAME_UPDATE_TYPE frame_update_type = LF_UPDATE;
@@ -1137,7 +1137,7 @@ void av1_tpl_rdmult_setup_sb(AV1_COMP *cpi, MACROBLOCK *const x,
 
   if (tpl_frame->is_valid == 0) return;
   if (!is_frame_tpl_eligible(cpi)) return;
-  if (tpl_idx >= MAX_LAG_BUFFERS) return;
+  if (tpl_idx >= MAX_TPL_FRAME_IDX) return;
   if (cpi->superres_mode != SUPERRES_NONE) return;
   if (cpi->oxcf.aq_mode != NO_AQ) return;
 
