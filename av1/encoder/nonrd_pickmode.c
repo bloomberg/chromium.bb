@@ -1530,7 +1530,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       quant_params->base_qindex, quant_params->y_dc_delta_q,
       cm->seq_params.bit_depth);
   int64_t inter_mode_thresh = RDCOST(x->rdmult, intra_cost_penalty, 0);
-  const int perform_intra_pred = cpi->sf.rt_sf.check_intra_pred_nonrd;
+  int perform_intra_pred = cpi->sf.rt_sf.check_intra_pred_nonrd;
   int use_modeled_non_rd_cost = 0;
   int enable_filter_search = 0;
   InterpFilter default_interp_filter = EIGHTTAP_REGULAR;
@@ -1994,6 +1994,9 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     // For big blocks worth checking intra (since only DC will be checked),
     // even if best_early_term is set.
     if (bsize >= BLOCK_32X32) best_early_term = 0;
+  } else if (cpi->sf.rt_sf.source_metrics_sb_nonrd &&
+             x->content_state_sb == kLowSad) {
+    perform_intra_pred = 0;
   }
 
   if (best_rdc.rdcost == INT64_MAX ||
