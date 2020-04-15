@@ -5301,29 +5301,30 @@ static int do_gm_search_logic(SPEED_FEATURES *const sf, int frame) {
 }
 
 // Set the relative distance of a reference frame w.r.t. current frame
-static AOM_INLINE void set_rel_frame_dist(AV1_COMP *cpi) {
-  const AV1_COMMON *const cm = &cpi->common;
+static AOM_INLINE void set_rel_frame_dist(
+    const AV1_COMMON *const cm, RefFrameDistanceInfo *const ref_frame_dist_info,
+    const int ref_frame_flags) {
   const OrderHintInfo *const order_hint_info = &cm->seq_params.order_hint_info;
   MV_REFERENCE_FRAME ref_frame;
   int min_past_dist = INT32_MAX, min_future_dist = INT32_MAX;
-  cpi->nearest_past_ref = NONE_FRAME;
-  cpi->nearest_future_ref = NONE_FRAME;
+  ref_frame_dist_info->nearest_past_ref = NONE_FRAME;
+  ref_frame_dist_info->nearest_future_ref = NONE_FRAME;
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
-    cpi->ref_relative_dist[ref_frame - LAST_FRAME] = 0;
-    if (cpi->ref_frame_flags & av1_ref_frame_flag_list[ref_frame]) {
+    ref_frame_dist_info->ref_relative_dist[ref_frame - LAST_FRAME] = 0;
+    if (ref_frame_flags & av1_ref_frame_flag_list[ref_frame]) {
       int dist = av1_encoder_get_relative_dist(
           order_hint_info,
           cm->cur_frame->ref_display_order_hint[ref_frame - LAST_FRAME],
           cm->current_frame.display_order_hint);
-      cpi->ref_relative_dist[ref_frame - LAST_FRAME] = dist;
+      ref_frame_dist_info->ref_relative_dist[ref_frame - LAST_FRAME] = dist;
       // Get the nearest ref_frame in the past
       if (abs(dist) < min_past_dist && dist < 0) {
-        cpi->nearest_past_ref = ref_frame;
+        ref_frame_dist_info->nearest_past_ref = ref_frame;
         min_past_dist = abs(dist);
       }
       // Get the nearest ref_frame in the future
       if (dist < min_future_dist && dist > 0) {
-        cpi->nearest_future_ref = ref_frame;
+        ref_frame_dist_info->nearest_future_ref = ref_frame;
         min_future_dist = dist;
       }
     }
@@ -6164,7 +6165,8 @@ void av1_encode_frame(AV1_COMP *cpi) {
 
   av1_setup_frame_buf_refs(cm);
   enforce_max_ref_frames(cpi, &cpi->ref_frame_flags);
-  set_rel_frame_dist(cpi);
+  set_rel_frame_dist(&cpi->common, &cpi->ref_frame_dist_info,
+                     cpi->ref_frame_flags);
   av1_setup_frame_sign_bias(cm);
 
 #if CHECK_PRECOMPUTED_REF_FRAME_MAP

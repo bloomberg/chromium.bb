@@ -1825,10 +1825,11 @@ static int get_drl_refmv_count(const MACROBLOCK *const x,
 
 // Whether this reference motion vector can be skipped, based on initial
 // heuristics.
-static bool ref_mv_idx_early_breakout(const AV1_COMP *const cpi, MACROBLOCK *x,
-                                      const HandleInterModeArgs *const args,
-                                      int64_t ref_best_rd, int ref_mv_idx) {
-  const SPEED_FEATURES *const sf = &cpi->sf;
+static bool ref_mv_idx_early_breakout(
+    const SPEED_FEATURES *const sf,
+    const RefFrameDistanceInfo *const ref_frame_dist_info, MACROBLOCK *x,
+    const HandleInterModeArgs *const args, int64_t ref_best_rd,
+    int ref_mv_idx) {
   MACROBLOCKD *xd = &x->e_mbd;
   MB_MODE_INFO *mbmi = xd->mi[0];
   const MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
@@ -1848,8 +1849,8 @@ static bool ref_mv_idx_early_breakout(const AV1_COMP *const cpi, MACROBLOCK *x,
     // TODO(any): Experiment with reduce_inter_modes for compound prediction
     if (sf->inter_sf.reduce_inter_modes >= 2 && !is_comp_pred &&
         have_newmv_in_inter_mode(mbmi->mode)) {
-      if (mbmi->ref_frame[0] != cpi->nearest_past_ref &&
-          mbmi->ref_frame[0] != cpi->nearest_future_ref) {
+      if (mbmi->ref_frame[0] != ref_frame_dist_info->nearest_past_ref &&
+          mbmi->ref_frame[0] != ref_frame_dist_info->nearest_future_ref) {
         const int has_nearmv = have_nearmv_in_inter_mode(mbmi->mode) ? 1 : 0;
         if (mbmi_ext->weight[ref_frame_type][ref_mv_idx + has_nearmv] <
             REF_CAT_LEVEL) {
@@ -1979,7 +1980,8 @@ static int ref_mv_idx_to_search(AV1_COMP *const cpi, MACROBLOCK *x,
   // Only search indices if they have some chance of being good.
   int good_indices = 0;
   for (int i = 0; i < ref_set; ++i) {
-    if (ref_mv_idx_early_breakout(cpi, x, args, ref_best_rd, i)) {
+    if (ref_mv_idx_early_breakout(&cpi->sf, &cpi->ref_frame_dist_info, x, args,
+                                  ref_best_rd, i)) {
       continue;
     }
     mask_set_bit(&good_indices, i);
@@ -3387,7 +3389,8 @@ static AOM_INLINE void init_mode_skip_mask(mode_skip_mask_t *mask,
       // Conservatively skip the modes w.r.t. BWDREF, ALTREF2 and ALTREF, if
       // those are past frames
       for (ref_frame = BWDREF_FRAME; ref_frame <= ALTREF_FRAME; ref_frame++) {
-        if (cpi->ref_relative_dist[ref_frame - LAST_FRAME] < 0)
+        if (cpi->ref_frame_dist_info.ref_relative_dist[ref_frame - LAST_FRAME] <
+            0)
           if (x->pred_mv_sad[ref_frame] > sad_thresh)
             mask->pred_modes[ref_frame] |= INTER_ALL;
       }
@@ -3482,7 +3485,7 @@ static AOM_INLINE void set_params_rd_pick_inter_mode(
     }
     // Store the best pred_mv_sad across all past frames
     if (cpi->sf.inter_sf.alt_ref_search_fp &&
-        cpi->ref_relative_dist[ref_frame - LAST_FRAME] < 0)
+        cpi->ref_frame_dist_info.ref_relative_dist[ref_frame - LAST_FRAME] < 0)
       x->best_pred_mv_sad =
           AOMMIN(x->best_pred_mv_sad, x->pred_mv_sad[ref_frame]);
   }
