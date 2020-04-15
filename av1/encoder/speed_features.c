@@ -538,6 +538,10 @@ static void set_good_speed_features_framesize_independent(
     // presets as well
     sf->intra_sf.skip_intra_in_interframe = 2;
 
+    sf->mv_sf.simple_motion_subpel_force_stop = HALF_PEL;
+
+    sf->tpl_sf.subpel_force_stop = HALF_PEL;
+
     sf->tx_sf.tx_type_search.enable_winner_mode_tx_type_pruning = 1;
     sf->tx_sf.tx_type_search.fast_intra_tx_type_search = 1;
     sf->tx_sf.tx_type_search.prune_mode = PRUNE_2D_MORE;
