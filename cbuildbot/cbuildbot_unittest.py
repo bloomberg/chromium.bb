@@ -394,7 +394,7 @@ class FullInterfaceTest(cros_test_lib.MockTempDirTestCase):
     finally:
       cros_build_lib.STRICT_SUDO = False
 
-  @cros_test_lib.pytestmark_redirected_stdin_error
+  @cros_test_lib.pytestmark_leaks_process
   def testNullArgsStripped(self):
     """Test that null args are stripped out and don't cause error."""
     self.assertMain(['-r', self.buildroot, '', '',

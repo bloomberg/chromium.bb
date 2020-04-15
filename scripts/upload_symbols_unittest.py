@@ -144,6 +144,7 @@ class SymbolServer(socketserver.ThreadingTCPServer, BaseHTTPServer.HTTPServer):
   """Simple HTTP server that forks each request"""
 
 
+@cros_test_lib.pytestmark_leaks_process
 class UploadSymbolsServerTest(cros_test_lib.MockTempDirTestCase):
   """Tests for UploadSymbols() and a local HTTP server"""
 
@@ -564,6 +565,7 @@ class PerformSymbolFilesUploadTest(SymbolsTestBase):
     self.assertEqual(skipped, 10 * 2)
 
 
+@cros_test_lib.pytestmark_leaks_process
 class UploadSymbolsTest(SymbolsTestBase):
   """Test UploadSymbols, along with most helper methods."""
   def setUp(self):

@@ -428,6 +428,7 @@ class HWTestPlanStageTest(cros_test_lib.MockTempDirTestCase):
     return cbuildbot_run.BuilderRun(options, site_config, build_config,
                                     parallel.Manager())
 
+  @cros_test_lib.pytestmark_leaks_process
   def testGetHWTestStageWithPerModelFilters(self):
     """Verify hwtests are filtered correctly on a per-model basis"""
     extra_argv = ['--hwtest']

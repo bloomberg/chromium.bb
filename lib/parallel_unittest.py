@@ -549,6 +549,7 @@ class TestConstants(cros_test_lib.TestCase):
 class TestExitWithParent(cros_test_lib.TestCase):
   """Tests ExitWithParent."""
 
+  @cros_test_lib.pytestmark_leaks_process
   def testChildExits(self):
     """Create a child and a grandchild. The child should die with the parent."""
     def GrandChild():

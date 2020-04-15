@@ -20,6 +20,8 @@ from chromite.lib import retry_stats
 class TestRetryException(Exception):
   """Used when testing failure cases."""
 
+
+@cros_test_lib.pytestmark_leaks_process
 class TestRetryStats(cros_test_lib.TestCase):
   """This contains test cases for the retry_stats module."""
 
