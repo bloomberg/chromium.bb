@@ -454,7 +454,7 @@ def freeze():
       die("Cannot freeze unmerged changes!")
     if limit_mb > 0:
       if s.lstat == '?':
-        untracked_bytes += os.stat(os.path.join(root_path, f)).st_size
+        untracked_bytes += os.lstat(os.path.join(root_path, f)).st_size
   if limit_mb > 0 and untracked_bytes > limit_mb * MB:
     die("""\
       You appear to have too much untracked+unignored data in your git
