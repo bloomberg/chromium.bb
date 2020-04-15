@@ -33,6 +33,7 @@ import isolated_format
 import isolateserver
 import run_isolated
 
+from utils import net
 from utils import tools
 tools.force_local_third_party()
 
@@ -1304,4 +1305,5 @@ if __name__ == '__main__':
   fix_encoding.fix_encoding()
   tools.disable_buffering()
   colorama.init()
+  net.set_user_agent('isolate.py/' + __version__)
   sys.exit(main(sys.argv[1:]))
