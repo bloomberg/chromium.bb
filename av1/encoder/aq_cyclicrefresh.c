@@ -385,7 +385,7 @@ void av1_cyclic_refresh_update_parameters(AV1_COMP *const cpi) {
     cr->percent_refresh = 10;
     cr->rate_ratio_qdelta = 1.5;
     cr->rate_boost_fac = 10;
-    if (cpi->refresh_golden_frame == 1) {
+    if (cpi->refresh_frame.golden_frame) {
       cr->percent_refresh = 0;
       cr->rate_ratio_qdelta = 1.0;
     }
@@ -497,5 +497,5 @@ void av1_cyclic_refresh_reset_resize(AV1_COMP *const cpi) {
   CYCLIC_REFRESH *const cr = cpi->cyclic_refresh;
   memset(cr->map, 0, cm->mi_params.mi_rows * cm->mi_params.mi_cols);
   cr->sb_index = 0;
-  cpi->refresh_golden_frame = 1;
+  cpi->refresh_frame.golden_frame = true;
 }

@@ -36,10 +36,17 @@
 
 #define TEMPORAL_FILTER_KEY_FRAME (CONFIG_REALTIME_ONLY ? 0 : 1)
 
-void av1_configure_buffer_updates(AV1_COMP *const cpi,
-                                  EncodeFrameParams *const frame_params,
-                                  const FRAME_UPDATE_TYPE type,
-                                  int force_refresh_all) {
+static INLINE void set_refresh_frame_flags(
+    RefreshFrameFlagsInfo *const refresh_frame_flags, bool refresh_gf,
+    bool refresh_bwdref, bool refresh_arf) {
+  refresh_frame_flags->golden_frame = refresh_gf;
+  refresh_frame_flags->bwd_ref_frame = refresh_bwdref;
+  refresh_frame_flags->alt_ref_frame = refresh_arf;
+}
+
+void av1_configure_buffer_updates(
+    AV1_COMP *const cpi, RefreshFrameFlagsInfo *const refresh_frame_flags,
+    const FRAME_UPDATE_TYPE type, int force_refresh_all) {
   // NOTE(weitinglin): Should we define another function to take care of
   // cpi->rc.is_$Source_Type to make this function as it is in the comment?
 
@@ -49,69 +56,48 @@ void av1_configure_buffer_updates(AV1_COMP *const cpi,
 
   switch (type) {
     case KF_UPDATE:
-      frame_params->refresh_golden_frame = 1;
-      frame_params->refresh_bwd_ref_frame = 1;
-      frame_params->refresh_alt_ref_frame = 1;
+      set_refresh_frame_flags(refresh_frame_flags, true, true, true);
       break;
 
     case LF_UPDATE:
-      frame_params->refresh_golden_frame = 0;
-      frame_params->refresh_bwd_ref_frame = 0;
-      frame_params->refresh_alt_ref_frame = 0;
+      set_refresh_frame_flags(refresh_frame_flags, false, false, false);
       break;
 
     case GF_UPDATE:
-      frame_params->refresh_golden_frame = 1;
-      frame_params->refresh_bwd_ref_frame = 0;
-      frame_params->refresh_alt_ref_frame = 0;
+      set_refresh_frame_flags(refresh_frame_flags, true, false, false);
       break;
 
     case OVERLAY_UPDATE:
-      frame_params->refresh_golden_frame = 1;
-      frame_params->refresh_bwd_ref_frame = 0;
-      frame_params->refresh_alt_ref_frame = 0;
-
+      set_refresh_frame_flags(refresh_frame_flags, true, false, false);
       cpi->rc.is_src_frame_alt_ref = 1;
       break;
 
     case ARF_UPDATE:
-      frame_params->refresh_golden_frame = 0;
       // NOTE: BWDREF does not get updated along with ALTREF_FRAME.
-      frame_params->refresh_bwd_ref_frame = 0;
-      frame_params->refresh_alt_ref_frame = 1;
+      set_refresh_frame_flags(refresh_frame_flags, false, false, true);
       break;
 
     case INTNL_OVERLAY_UPDATE:
-      frame_params->refresh_golden_frame = 0;
-      frame_params->refresh_bwd_ref_frame = 0;
-      frame_params->refresh_alt_ref_frame = 0;
-
+      set_refresh_frame_flags(refresh_frame_flags, false, false, false);
       cpi->rc.is_src_frame_alt_ref = 1;
       break;
 
     case INTNL_ARF_UPDATE:
-      frame_params->refresh_golden_frame = 0;
-      frame_params->refresh_bwd_ref_frame = 1;
-      frame_params->refresh_alt_ref_frame = 0;
+      set_refresh_frame_flags(refresh_frame_flags, false, true, false);
       break;
 
     default: assert(0); break;
   }
 
   if (ext_refresh_frame_flags->update_pending &&
-      (!is_stat_generation_stage(cpi))) {
-    frame_params->refresh_golden_frame = ext_refresh_frame_flags->golden_frame;
-    frame_params->refresh_alt_ref_frame =
-        ext_refresh_frame_flags->alt_ref_frame;
-    frame_params->refresh_bwd_ref_frame =
-        ext_refresh_frame_flags->bwd_ref_frame;
-  }
+      (!is_stat_generation_stage(cpi)))
+    set_refresh_frame_flags(refresh_frame_flags,
+                            ext_refresh_frame_flags->golden_frame,
+                            ext_refresh_frame_flags->bwd_ref_frame,
+                            ext_refresh_frame_flags->alt_ref_frame);
 
-  if (force_refresh_all) {
-    frame_params->refresh_golden_frame = 1;
-    frame_params->refresh_bwd_ref_frame = 1;
-    frame_params->refresh_alt_ref_frame = 1;
-  }
+  if (force_refresh_all)
+    set_refresh_frame_flags(refresh_frame_flags, true, true, true);
 }
 
 static void set_additional_frame_flags(const AV1_COMMON *const cm,
@@ -404,7 +390,8 @@ static struct lookahead_entry *setup_arf_frame(
         cm->current_frame.frame_type = INTER_FRAME;
         FRAME_UPDATE_TYPE frame_update_type =
             get_frame_update_type(&cpi->gf_group);
-        av1_configure_buffer_updates(cpi, frame_params, frame_update_type, 0);
+        av1_configure_buffer_updates(cpi, &frame_params->refresh_frame,
+                                     frame_update_type, 0);
         *code_arf =
             av1_temporal_filter(cpi, arf_src_index, show_existing_alt_ref);
         if (*code_arf) {
@@ -505,8 +492,11 @@ static int allow_show_existing(const AV1_COMP *const cpi,
 
 // Update frame_flags to tell the encoder's caller what sort of frame was
 // encoded.
-static void update_frame_flags(AV1_COMP *cpi, unsigned int *frame_flags) {
-  if (encode_show_existing_frame(&cpi->common)) {
+static void update_frame_flags(
+    const AV1_COMMON *const cm,
+    const RefreshFrameFlagsInfo *const refresh_frame_flags,
+    unsigned int *frame_flags) {
+  if (encode_show_existing_frame(cm)) {
     *frame_flags &= ~FRAMEFLAGS_GOLDEN;
     *frame_flags &= ~FRAMEFLAGS_BWDREF;
     *frame_flags &= ~FRAMEFLAGS_ALTREF;
@@ -514,25 +504,25 @@ static void update_frame_flags(AV1_COMP *cpi, unsigned int *frame_flags) {
     return;
   }
 
-  if (cpi->refresh_golden_frame == 1) {
+  if (refresh_frame_flags->golden_frame) {
     *frame_flags |= FRAMEFLAGS_GOLDEN;
   } else {
     *frame_flags &= ~FRAMEFLAGS_GOLDEN;
   }
 
-  if (cpi->refresh_alt_ref_frame == 1) {
+  if (refresh_frame_flags->alt_ref_frame) {
     *frame_flags |= FRAMEFLAGS_ALTREF;
   } else {
     *frame_flags &= ~FRAMEFLAGS_ALTREF;
   }
 
-  if (cpi->refresh_bwd_ref_frame == 1) {
+  if (refresh_frame_flags->bwd_ref_frame) {
     *frame_flags |= FRAMEFLAGS_BWDREF;
   } else {
     *frame_flags &= ~FRAMEFLAGS_BWDREF;
   }
 
-  if (cpi->common.current_frame.frame_type == KEY_FRAME) {
+  if (cm->current_frame.frame_type == KEY_FRAME) {
     *frame_flags |= FRAMEFLAGS_KEY;
   } else {
     *frame_flags &= ~FRAMEFLAGS_KEY;
@@ -1217,8 +1207,8 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
        frame_params.frame_type == S_FRAME) &&
       !frame_params.show_existing_frame;
 
-  av1_configure_buffer_updates(cpi, &frame_params, frame_update_type,
-                               force_refresh_all);
+  av1_configure_buffer_updates(cpi, &frame_params.refresh_frame,
+                               frame_update_type, force_refresh_all);
 
   if (!is_stat_generation_stage(cpi)) {
     const RefCntBuffer *ref_frames[INTER_REFS_PER_FRAME];
@@ -1273,7 +1263,8 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
 #if !CONFIG_REALTIME_ONLY
     if (oxcf->lag_in_frames > 0 && !is_stat_generation_stage(cpi)) {
       if (cpi->gf_group.index == 1 && cpi->oxcf.enable_tpl_model) {
-        av1_configure_buffer_updates(cpi, &frame_params, frame_update_type, 0);
+        av1_configure_buffer_updates(cpi, &frame_params.refresh_frame,
+                                     frame_update_type, 0);
         av1_set_frame_size(cpi, cm->width, cm->height);
         av1_tpl_setup_stats(cpi, 0, &frame_params, &frame_input);
         assert(cpi->num_gf_group_show_frames == 1);
@@ -1299,7 +1290,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
   if (!is_stat_generation_stage(cpi)) {
     // First pass doesn't modify reference buffer assignment or produce frame
     // flags
-    update_frame_flags(cpi, frame_flags);
+    update_frame_flags(&cpi->common, &cpi->refresh_frame, frame_flags);
     if (!ext_flags->refresh_frame.update_pending) {
       int ref_map_index =
           av1_get_refresh_ref_frame_map(cm->current_frame.refresh_frame_flags);

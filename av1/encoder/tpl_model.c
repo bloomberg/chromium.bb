@@ -984,12 +984,11 @@ int av1_tpl_setup_stats(AV1_COMP *cpi, int gop_eval,
 
   cm->current_frame.frame_type = frame_params->frame_type;
   for (int gf_index = gf_group->index; gf_index < gf_group->size; ++gf_index) {
-    av1_configure_buffer_updates(cpi, &this_frame_params,
+    av1_configure_buffer_updates(cpi, &this_frame_params.refresh_frame,
                                  gf_group->update_type[gf_index], 0);
 
-    cpi->refresh_golden_frame = this_frame_params.refresh_golden_frame;
-    cpi->refresh_bwd_ref_frame = this_frame_params.refresh_bwd_ref_frame;
-    cpi->refresh_alt_ref_frame = this_frame_params.refresh_alt_ref_frame;
+    memcpy(&cpi->refresh_frame, &this_frame_params.refresh_frame,
+           sizeof(cpi->refresh_frame));
 
     cm->show_frame = gf_group->update_type[gf_index] != ARF_UPDATE &&
                      gf_group->update_type[gf_index] != INTNL_ARF_UPDATE;
@@ -1032,7 +1031,7 @@ int av1_tpl_setup_stats(AV1_COMP *cpi, int gop_eval,
     mc_flow_synthesizer(cpi, frame_idx);
   }
 
-  av1_configure_buffer_updates(cpi, &this_frame_params,
+  av1_configure_buffer_updates(cpi, &this_frame_params.refresh_frame,
                                gf_group->update_type[gf_group->index], 0);
   cm->current_frame.frame_type = frame_params->frame_type;
   cm->show_frame = frame_params->show_frame;
