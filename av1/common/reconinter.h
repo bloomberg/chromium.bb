@@ -340,6 +340,11 @@ static INLINE int av1_is_interp_needed(const MACROBLOCKD *const xd) {
   return 1;
 }
 
+// Sets up buffers 'dst_buf1' and 'dst_buf2' from relevant buffers in 'xd' for
+// subsequent use in OBMC prediction.
+void av1_setup_obmc_dst_bufs(MACROBLOCKD *xd, uint8_t **dst_buf1,
+                             uint8_t **dst_buf2);
+
 void av1_setup_build_prediction_by_above_pred(
     MACROBLOCKD *xd, int rel_mi_col, uint8_t above_mi_width,
     MB_MODE_INFO *above_mbmi, struct build_prediction_ctxt *ctxt,

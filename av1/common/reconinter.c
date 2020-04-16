@@ -1194,6 +1194,34 @@ void av1_build_obmc_inter_prediction(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                build_obmc_inter_pred_left, &ctxt_left);
 }
 
+void av1_setup_obmc_dst_bufs(MACROBLOCKD *xd, uint8_t **dst_buf1,
+                             uint8_t **dst_buf2) {
+#if CONFIG_AV1_HIGHBITDEPTH
+  if (is_cur_buf_hbd(xd)) {
+    int len = sizeof(uint16_t);
+    dst_buf1[0] = CONVERT_TO_BYTEPTR(xd->tmp_obmc_bufs[0]);
+    dst_buf1[1] =
+        CONVERT_TO_BYTEPTR(xd->tmp_obmc_bufs[0] + MAX_SB_SQUARE * len);
+    dst_buf1[2] =
+        CONVERT_TO_BYTEPTR(xd->tmp_obmc_bufs[0] + MAX_SB_SQUARE * 2 * len);
+    dst_buf2[0] = CONVERT_TO_BYTEPTR(xd->tmp_obmc_bufs[1]);
+    dst_buf2[1] =
+        CONVERT_TO_BYTEPTR(xd->tmp_obmc_bufs[1] + MAX_SB_SQUARE * len);
+    dst_buf2[2] =
+        CONVERT_TO_BYTEPTR(xd->tmp_obmc_bufs[1] + MAX_SB_SQUARE * 2 * len);
+  } else {
+#endif  // CONFIG_AV1_HIGHBITDEPTH
+    dst_buf1[0] = xd->tmp_obmc_bufs[0];
+    dst_buf1[1] = xd->tmp_obmc_bufs[0] + MAX_SB_SQUARE;
+    dst_buf1[2] = xd->tmp_obmc_bufs[0] + MAX_SB_SQUARE * 2;
+    dst_buf2[0] = xd->tmp_obmc_bufs[1];
+    dst_buf2[1] = xd->tmp_obmc_bufs[1] + MAX_SB_SQUARE;
+    dst_buf2[2] = xd->tmp_obmc_bufs[1] + MAX_SB_SQUARE * 2;
+#if CONFIG_AV1_HIGHBITDEPTH
+  }
+#endif  // CONFIG_AV1_HIGHBITDEPTH
+}
+
 void av1_setup_build_prediction_by_above_pred(
     MACROBLOCKD *xd, int rel_mi_col, uint8_t above_mi_width,
     MB_MODE_INFO *above_mbmi, struct build_prediction_ctxt *ctxt,

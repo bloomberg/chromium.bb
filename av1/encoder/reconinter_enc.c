@@ -255,26 +255,7 @@ void av1_build_obmc_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd) {
   int dst_height1[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
   int dst_height2[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
 
-  if (is_cur_buf_hbd(xd)) {
-    int len = sizeof(uint16_t);
-    dst_buf1[0] = CONVERT_TO_BYTEPTR(xd->tmp_obmc_bufs[0]);
-    dst_buf1[1] =
-        CONVERT_TO_BYTEPTR(xd->tmp_obmc_bufs[0] + MAX_SB_SQUARE * len);
-    dst_buf1[2] =
-        CONVERT_TO_BYTEPTR(xd->tmp_obmc_bufs[0] + MAX_SB_SQUARE * 2 * len);
-    dst_buf2[0] = CONVERT_TO_BYTEPTR(xd->tmp_obmc_bufs[1]);
-    dst_buf2[1] =
-        CONVERT_TO_BYTEPTR(xd->tmp_obmc_bufs[1] + MAX_SB_SQUARE * len);
-    dst_buf2[2] =
-        CONVERT_TO_BYTEPTR(xd->tmp_obmc_bufs[1] + MAX_SB_SQUARE * 2 * len);
-  } else {
-    dst_buf1[0] = xd->tmp_obmc_bufs[0];
-    dst_buf1[1] = xd->tmp_obmc_bufs[0] + MAX_SB_SQUARE;
-    dst_buf1[2] = xd->tmp_obmc_bufs[0] + MAX_SB_SQUARE * 2;
-    dst_buf2[0] = xd->tmp_obmc_bufs[1];
-    dst_buf2[1] = xd->tmp_obmc_bufs[1] + MAX_SB_SQUARE;
-    dst_buf2[2] = xd->tmp_obmc_bufs[1] + MAX_SB_SQUARE * 2;
-  }
+  av1_setup_obmc_dst_bufs(xd, dst_buf1, dst_buf2);
 
   const int mi_row = xd->mi_row;
   const int mi_col = xd->mi_col;

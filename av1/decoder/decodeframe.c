@@ -785,31 +785,6 @@ static AOM_INLINE void dec_build_prediction_by_left_preds(
   xd->mb_to_bottom_edge = ctxt.mb_to_far_edge;
 }
 
-static void set_dst_buf(MACROBLOCKD *xd, uint8_t **dst_buf1,
-                        uint8_t **dst_buf2) {
-  dst_buf1[0] = xd->tmp_obmc_bufs[0];
-  dst_buf1[1] = xd->tmp_obmc_bufs[0] + MAX_SB_SQUARE;
-  dst_buf1[2] = xd->tmp_obmc_bufs[0] + MAX_SB_SQUARE * 2;
-  dst_buf2[0] = xd->tmp_obmc_bufs[1];
-  dst_buf2[1] = xd->tmp_obmc_bufs[1] + MAX_SB_SQUARE;
-  dst_buf2[2] = xd->tmp_obmc_bufs[1] + MAX_SB_SQUARE * 2;
-}
-
-#if CONFIG_AV1_HIGHBITDEPTH
-static void set_dst_buf_highbd(MACROBLOCKD *xd, uint8_t **dst_buf1,
-                               uint8_t **dst_buf2) {
-  int len = sizeof(uint16_t);
-  dst_buf1[0] = CONVERT_TO_BYTEPTR(xd->tmp_obmc_bufs[0]);
-  dst_buf1[1] = CONVERT_TO_BYTEPTR(xd->tmp_obmc_bufs[0] + MAX_SB_SQUARE * len);
-  dst_buf1[2] =
-      CONVERT_TO_BYTEPTR(xd->tmp_obmc_bufs[0] + MAX_SB_SQUARE * 2 * len);
-  dst_buf2[0] = CONVERT_TO_BYTEPTR(xd->tmp_obmc_bufs[1]);
-  dst_buf2[1] = CONVERT_TO_BYTEPTR(xd->tmp_obmc_bufs[1] + MAX_SB_SQUARE * len);
-  dst_buf2[2] =
-      CONVERT_TO_BYTEPTR(xd->tmp_obmc_bufs[1] + MAX_SB_SQUARE * 2 * len);
-}
-#endif
-
 static AOM_INLINE void dec_build_obmc_inter_predictors_sb(const AV1_COMMON *cm,
                                                           MACROBLOCKD *xd) {
   const int num_planes = av1_num_planes(cm);
@@ -821,15 +796,7 @@ static AOM_INLINE void dec_build_obmc_inter_predictors_sb(const AV1_COMMON *cm,
   int dst_height1[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
   int dst_height2[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
 
-#if CONFIG_AV1_HIGHBITDEPTH
-  if (is_cur_buf_hbd(xd)) {
-    set_dst_buf_highbd(xd, dst_buf1, dst_buf2);
-  } else {
-    set_dst_buf(xd, dst_buf1, dst_buf2);
-  }
-#else
-  set_dst_buf(xd, dst_buf1, dst_buf2);
-#endif
+  av1_setup_obmc_dst_bufs(xd, dst_buf1, dst_buf2);
 
   dec_build_prediction_by_above_preds(cm, xd, dst_buf1, dst_width1, dst_height1,
                                       dst_stride1);
