@@ -17,6 +17,8 @@ const char kFlashCarrierFirmware[] = "flash_carrier_fw";
 const char kFlashModeCheck[] = "flash_mode_check";
 const char kReboot[] = "reboot";
 
+const char kFwVersion[] = "fw_version";
+
 }  // namespace modemfwd
 
 #endif  // SYSTEM_API_SWITCHES_MODEMFWD_SWITCHES_H_
