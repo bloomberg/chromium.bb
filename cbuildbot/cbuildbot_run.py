@@ -810,14 +810,19 @@ class _BuilderRunBase(object):
     """Returns the Android ABI in use by the active container ebuild."""
     use_flags = portage_util.GetInstalledPackageUseFlags(
         'sys-devel/arc-build', board)
-    if 'abi_x86_64' in use_flags.get('sys-devel/arc-build', []):
+    arc_build_flags = use_flags.get('sys-devel/arc-build', [])
+    if 'abi_x86_64' in arc_build_flags:
       return 'x86_64'
-    elif 'abi_x86_32' in use_flags.get('sys-devel/arc-build', []):
+    elif 'abi_x86_32' in arc_build_flags:
       return 'x86'
-    else:
-      # ARM only supports 32-bit so it does not have abi_x86_{32,64} set. But it
-      # is also the last possible ABI, so returning by default.
+    elif 'abi_arm_64' in arc_build_flags:
+      return 'arm64'
+    elif 'abi_arm_32' in arc_build_flags:
       return 'arm'
+    # We should be throwing NoAndroidABIError exception here, but some boards
+    # rely on the default behavior that if there are no abi use flags set, then
+    # it's an arm board, so we return 'arm' instead.
+    return 'arm'
 
   def DetermineAndroidVariant(self, board):
     """Returns the Android variant in use by the active container ebuild."""
