@@ -122,20 +122,22 @@ class MockCallFrameInfoHandler: public CallFrameInfo::Handler {
 class MockCallFrameErrorReporter: public CallFrameInfo::Reporter {
  public:
   MockCallFrameErrorReporter() : Reporter("mock filename", "mock section") { }
-  MOCK_METHOD2(Incomplete, void(uint64, CallFrameInfo::EntryKind));
-  MOCK_METHOD1(EarlyEHTerminator, void(uint64));
-  MOCK_METHOD2(CIEPointerOutOfRange, void(uint64, uint64));
-  MOCK_METHOD2(BadCIEId, void(uint64, uint64));
-  MOCK_METHOD2(UnexpectedAddressSize, void(uint64, uint8_t));
-  MOCK_METHOD2(UnexpectedSegmentSize, void(uint64, uint8_t));
-  MOCK_METHOD2(UnrecognizedVersion, void(uint64, int version));
-  MOCK_METHOD2(UnrecognizedAugmentation, void(uint64, const string &));
-  MOCK_METHOD2(InvalidPointerEncoding, void(uint64, uint8));
-  MOCK_METHOD2(UnusablePointerEncoding, void(uint64, uint8));
-  MOCK_METHOD2(RestoreInCIE, void(uint64, uint64));
-  MOCK_METHOD3(BadInstruction, void(uint64, CallFrameInfo::EntryKind, uint64));
-  MOCK_METHOD3(NoCFARule, void(uint64, CallFrameInfo::EntryKind, uint64));
-  MOCK_METHOD3(EmptyStateStack, void(uint64, CallFrameInfo::EntryKind, uint64));
+  MOCK_METHOD2(Incomplete, void(uint64_t, CallFrameInfo::EntryKind));
+  MOCK_METHOD1(EarlyEHTerminator, void(uint64_t));
+  MOCK_METHOD2(CIEPointerOutOfRange, void(uint64_t, uint64_t));
+  MOCK_METHOD2(BadCIEId, void(uint64_t, uint64_t));
+  MOCK_METHOD2(UnexpectedAddressSize, void(uint64_t, uint8_t));
+  MOCK_METHOD2(UnexpectedSegmentSize, void(uint64_t, uint8_t));
+  MOCK_METHOD2(UnrecognizedVersion, void(uint64_t, int version));
+  MOCK_METHOD2(UnrecognizedAugmentation, void(uint64_t, const string &));
+  MOCK_METHOD2(InvalidPointerEncoding, void(uint64_t, uint8_t));
+  MOCK_METHOD2(UnusablePointerEncoding, void(uint64_t, uint8_t));
+  MOCK_METHOD2(RestoreInCIE, void(uint64_t, uint64_t));
+  MOCK_METHOD3(BadInstruction, void(uint64_t, CallFrameInfo::EntryKind,
+                                    uint64_t));
+  MOCK_METHOD3(NoCFARule, void(uint64_t, CallFrameInfo::EntryKind, uint64_t));
+  MOCK_METHOD3(EmptyStateStack, void(uint64_t, CallFrameInfo::EntryKind,
+                                     uint64_t));
 };
 
 struct CFIFixture {

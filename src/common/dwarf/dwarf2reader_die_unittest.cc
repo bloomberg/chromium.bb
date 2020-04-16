@@ -85,7 +85,7 @@ class MockDwarf2Handler: public Dwarf2Handler {
   MOCK_METHOD4(ProcessAttributeSigned, void(uint64_t offset,
                                             enum DwarfAttribute attr,
                                             enum DwarfForm form,
-                                            int64 data));
+                                            int64_t data));
   MOCK_METHOD4(ProcessAttributeReference, void(uint64_t offset,
                                                enum DwarfAttribute attr,
                                                enum DwarfForm form,
