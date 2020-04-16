@@ -136,13 +136,44 @@ void av1_enc_build_inter_predictor(const AV1_COMMON *cm, MACROBLOCKD *xd,
   }
 }
 
+static void setup_address_for_obmc(MACROBLOCKD *xd, int mi_row_offset,
+                                   int mi_col_offset, MB_MODE_INFO *ref_mbmi,
+                                   struct build_prediction_ctxt *ctxt,
+                                   const int num_planes) {
+  const BLOCK_SIZE ref_bsize = AOMMAX(BLOCK_8X8, ref_mbmi->sb_type);
+  const int ref_mi_row = xd->mi_row + mi_row_offset;
+  const int ref_mi_col = xd->mi_col + mi_col_offset;
+
+  for (int plane = 0; plane < num_planes; ++plane) {
+    struct macroblockd_plane *const pd = &xd->plane[plane];
+    setup_pred_plane(&pd->dst, ref_bsize, ctxt->tmp_buf[plane],
+                     ctxt->tmp_width[plane], ctxt->tmp_height[plane],
+                     ctxt->tmp_stride[plane], mi_row_offset, mi_col_offset,
+                     NULL, pd->subsampling_x, pd->subsampling_y);
+  }
+
+  const MV_REFERENCE_FRAME frame = ref_mbmi->ref_frame[0];
+
+  const RefCntBuffer *const ref_buf = get_ref_frame_buf(ctxt->cm, frame);
+  const struct scale_factors *const sf =
+      get_ref_scale_factors_const(ctxt->cm, frame);
+
+  xd->block_ref_scale_factors[0] = sf;
+  if ((!av1_is_valid_scale(sf)))
+    aom_internal_error(xd->error_info, AOM_CODEC_UNSUP_BITSTREAM,
+                       "Reference frame has invalid dimensions");
+
+  av1_setup_pre_planes(xd, 0, &ref_buf->buf, ref_mi_row, ref_mi_col, sf,
+                       num_planes);
+}
+
 static INLINE void build_obmc_prediction(MACROBLOCKD *xd, int rel_mi_row,
                                          int rel_mi_col, uint8_t op_mi_size,
                                          int dir, MB_MODE_INFO *above_mbmi,
                                          void *fun_ctxt, const int num_planes) {
   struct build_prediction_ctxt *ctxt = (struct build_prediction_ctxt *)fun_ctxt;
-  av1_setup_address_for_obmc(xd, rel_mi_row, rel_mi_col, above_mbmi, ctxt,
-                             num_planes);
+  setup_address_for_obmc(xd, rel_mi_row, rel_mi_col, above_mbmi, ctxt,
+                         num_planes);
 
   const int mi_x = (xd->mi_col + rel_mi_col) << MI_SIZE_LOG2;
   const int mi_y = (xd->mi_row + rel_mi_row) << MI_SIZE_LOG2;

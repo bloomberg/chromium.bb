@@ -1194,37 +1194,6 @@ void av1_build_obmc_inter_prediction(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                build_obmc_inter_pred_left, &ctxt_left);
 }
 
-void av1_setup_address_for_obmc(MACROBLOCKD *xd, int mi_row_offset,
-                                int mi_col_offset, MB_MODE_INFO *ref_mbmi,
-                                struct build_prediction_ctxt *ctxt,
-                                const int num_planes) {
-  const BLOCK_SIZE ref_bsize = AOMMAX(BLOCK_8X8, ref_mbmi->sb_type);
-  const int ref_mi_row = xd->mi_row + mi_row_offset;
-  const int ref_mi_col = xd->mi_col + mi_col_offset;
-
-  for (int plane = 0; plane < num_planes; ++plane) {
-    struct macroblockd_plane *const pd = &xd->plane[plane];
-    setup_pred_plane(&pd->dst, ref_bsize, ctxt->tmp_buf[plane],
-                     ctxt->tmp_width[plane], ctxt->tmp_height[plane],
-                     ctxt->tmp_stride[plane], mi_row_offset, mi_col_offset,
-                     NULL, pd->subsampling_x, pd->subsampling_y);
-  }
-
-  const MV_REFERENCE_FRAME frame = ref_mbmi->ref_frame[0];
-
-  const RefCntBuffer *const ref_buf = get_ref_frame_buf(ctxt->cm, frame);
-  const struct scale_factors *const sf =
-      get_ref_scale_factors_const(ctxt->cm, frame);
-
-  xd->block_ref_scale_factors[0] = sf;
-  if ((!av1_is_valid_scale(sf)))
-    aom_internal_error(xd->error_info, AOM_CODEC_UNSUP_BITSTREAM,
-                       "Reference frame has invalid dimensions");
-
-  av1_setup_pre_planes(xd, 0, &ref_buf->buf, ref_mi_row, ref_mi_col, sf,
-                       num_planes);
-}
-
 void av1_setup_build_prediction_by_above_pred(
     MACROBLOCKD *xd, int rel_mi_col, uint8_t above_mi_width,
     MB_MODE_INFO *above_mbmi, struct build_prediction_ctxt *ctxt,
