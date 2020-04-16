@@ -460,7 +460,9 @@ class PrepareForBuildHandlerTest(PrepareBundleTest):
             'UnverifiedChromeBenchmarkAfdoFile': ['gs://path/to/unvetted'],
             'ChromeDebugBinary': ['gs://image-archive/path'],
         })
-    self.gsc_exists.return_value = False
+    # Published artifact is missing, debug binary is present, perf.data is
+    # missing.
+    self.gsc_exists.side_effect = (False, True, False)
     self.assertEqual(toolchain_util.PrepareForBuildReturn.NEEDED,
                      self.obj.Prepare())
     expected = [
@@ -468,7 +470,7 @@ class PrepareForBuildHandlerTest(PrepareBundleTest):
                   'chromeos-chrome-amd64-78.0.3893.0-r1.afdo.bz2'),
         mock.call('gs://image-archive/path/chrome.debug.bz2'),
         mock.call('gs://path/to/perfdata/'
-                  'chromeos-chrome-amd64-78.0.3893.0-r1.perf.data.bz2'),
+                  'chromeos-chrome-amd64-78.0.3893.0.perf.data.bz2'),
     ]
     self.assertEqual(expected, self.gs_context.Exists.call_args_list)
     self.patch_ebuild.assert_not_called()
@@ -584,8 +586,10 @@ class BundleArtifactHandlerTest(PrepareBundleTest):
         'sysroot': self.sysroot
     }
     osutils.WriteFile(bin_path, '', makedirs=True)
-    self.assertEqual([bin_path + toolchain_util.BZ2_COMPRESSION_SUFFIX],
-                     self.obj.Bundle())
+    output = os.path.join(
+        self.outdir,
+        os.path.basename(bin_path) + toolchain_util.BZ2_COMPRESSION_SUFFIX)
+    self.assertEqual([output], self.obj.Bundle())
 
 
 class FindEbuildPathTest(cros_test_lib.MockTempDirTestCase):
@@ -1275,7 +1279,7 @@ class GenerateBenchmarkAFDOProfile(cros_test_lib.MockTempDirTestCase):
     perf_data_name = toolchain_util.CHROME_PERF_AFDO_FILE % {
         'package': self.package,
         'arch': self.arch,
-        'version': self.version.split('_')[0]
+        'versionnorev': self.version.split('_')[0]
     }
     self.assertEqual(ret, perf_data_name)
 

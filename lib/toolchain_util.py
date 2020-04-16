@@ -183,7 +183,7 @@ MERGED_PROFILE_NAME_REGEX = r"""
 """
 
 CHROME_ARCH_VERSION = '%(package)s-%(arch)s-%(version)s'
-CHROME_PERF_AFDO_FILE = '%s.perf.data' % CHROME_ARCH_VERSION
+CHROME_PERF_AFDO_FILE = '%(package)s-%(arch)s-%(versionnorev)s.perf.data'
 CHROME_BENCHMARK_AFDO_FILE = '%s%s' % (CHROME_ARCH_VERSION, AFDO_SUFFIX)
 
 
@@ -1042,6 +1042,9 @@ class _CommonPrepareBundle(object):
     self.chroot = chroot
     self.sysroot_path = sysroot_path
     self.build_target = build_target
+    # TODO(crbug/1019868): revisit when arch != amd64 becomes something we care
+    # about.
+    self.arch = 'amd64'
     # Turn the input artifacts list into a dictionary.
     self.input_artifacts = input_artifacts or []
     self.profile_info = profile_info or {}
@@ -1097,12 +1100,11 @@ class _CommonPrepareBundle(object):
   def _GetBenchmarkAFDOName(self, template=CHROME_BENCHMARK_AFDO_FILE):
     """Get the name of the benchmark AFDO file from the Chrome ebuild."""
     cpv = self._GetEbuildInfo(constants.CHROME_PN).CPV
-    # TODO(crbug/1019868): revisit when arch != amd64 becomes something we care
-    # about.
     afdo_spec = {
-        'arch': 'amd64',
+        'arch': self.arch,
         'package': cpv.package,
         'version': cpv.version,
+        'versionnorev': cpv.version_no_rev.split('_')[0]
     }
     return template % afdo_spec
 
@@ -1258,6 +1260,21 @@ class _CommonPrepareBundle(object):
     name = latest[1]
     logging.info('Latest AFDO artifact is %s', name)
     return name
+
+  def _AfdoTmpPath(self, path=''):
+    """Return the directory for benchmark-afdo-generate artifacts.
+
+    Args:
+      path (str): path relative to the directory.
+
+    Returns:
+      string, path to the directory.
+    """
+    gen_dir = '/tmp/benchmark-afdo-generate'
+    if path:
+      return os.path.join(gen_dir, path.lstrip(os.path.sep))
+    else:
+      return gen_dir
 
   def _FindArtifact(self, name, gs_urls):
     """Find an artifact |name|, from a list of |gs_urls|.
@@ -1517,37 +1534,27 @@ class PrepareForBuildHandler(_CommonPrepareBundle):
     """Prepare to build the Chrome benchmark perf.data file."""
     return self._UnverifiedAfdoFileExists()
 
-  def _afdo_tmp_path(self, path=''):
-    """Return the directory for benchmark-afdo-generate artifacts.
-
-    Args:
-      path (str): path relative to the directory.
-
-    Returns:
-      string, path to the directory.
-    """
-    gen_dir = '/tmp/benchmark-afdo-generate'
-    if path:
-      return os.path.join(gen_dir, path.lstrip(os.path.sep))
-    else:
-      return gen_dir
-
   def _PrepareUnverifiedChromeBenchmarkAfdoFile(self):
     """Prepare to build an Unverified Chrome benchmark AFDO file."""
     ret = self._UnverifiedAfdoFileExists()
     if ret == PrepareForBuildReturn.NEEDED and self.chroot:
       # Fetch the CHROME_DEBUG_BINARY and UNVERIFIED_CHROME_BENCHMARK_PERF_FILE
       # artifacts and unpack them for the Bundle call.
-      workdir_full = self.chroot.full_path(self._afdo_tmp_path())
+      workdir_full = self.chroot.full_path(self._AfdoTmpPath())
       # Clean out the workdir.
       osutils.RmDir(workdir_full, ignore_missing=True, sudo=True)
       osutils.SafeMakedirs(workdir_full)
 
       bin_name = os.path.basename(_CHROME_DEBUG_BIN) + BZ2_COMPRESSION_SUFFIX
-      bin_compressed = self._afdo_tmp_path(bin_name)
+      bin_compressed = self._AfdoTmpPath(bin_name)
       bin_url = self._FindArtifact(
           bin_name, self.input_artifacts.get('ChromeDebugBinary', []))
-      self.gs_context.Copy(bin_url, self.chroot.full_path(bin_compressed))
+      cros_build_lib.run([
+          'gsutil', '-o', 'Boto:num_retries=10', 'cp', '-v', '--', bin_url,
+          bin_compressed
+      ],
+                         enter_chroot=True,
+                         print_cmd=True)
       cros_build_lib.run(['bzip2', '-d', bin_compressed],
                          enter_chroot=True,
                          print_cmd=True)
@@ -1555,7 +1562,7 @@ class PrepareForBuildHandler(_CommonPrepareBundle):
       perf_name = (
           self._GetBenchmarkAFDOName(template=CHROME_PERF_AFDO_FILE) +
           BZ2_COMPRESSION_SUFFIX)
-      perf_compressed = self._afdo_tmp_path(perf_name)
+      perf_compressed = self._AfdoTmpPath(perf_name)
       perf_url = self._FindArtifact(
           perf_name,
           self.input_artifacts.get('UnverifiedChromeBenchmarkPerfFile', []))
@@ -1973,13 +1980,15 @@ class BundleArtifactHandler(_CommonPrepareBundle):
 
   def _BundleChromeDebugBinary(self):
     """Bundle the unstripped Chrome binary."""
-    debug_bin = _CHROME_DEBUG_BIN % {
-        'root': self.chroot.path,
+    debug_bin_inside = _CHROME_DEBUG_BIN % {
+        'root': '',
         'sysroot': self.sysroot_path
     }
-    bin_path = os.path.join(self.output_dir, debug_bin + BZ2_COMPRESSION_SUFFIX)
+    bin_path = os.path.join(
+        self.output_dir,
+        os.path.basename(debug_bin_inside) + BZ2_COMPRESSION_SUFFIX)
     with open(bin_path, 'w') as f:
-      cros_build_lib.run(['bzip2', '-c'],
+      cros_build_lib.run(['bzip2', '-c', debug_bin_inside],
                          stdout=f,
                          enter_chroot=True,
                          print_cmd=True)
@@ -1991,17 +2000,17 @@ class BundleArtifactHandler(_CommonPrepareBundle):
     # create_llvm_prof demands it exactly matches the name of the unstripped
     # binary.  Create a symbolic link named 'chrome.unstripped'.
     CHROME_UNSTRIPPED_NAME = 'chrome.unstripped'
-    bin_path_in = self._afdo_tmp_path(CHROME_UNSTRIPPED_NAME)
+    bin_path_in = self._AfdoTmpPath(CHROME_UNSTRIPPED_NAME)
     osutils.SafeSymlink(
         os.path.basename(_CHROME_DEBUG_BIN), self.chroot.full_path(bin_path_in))
-    perf_path_inside = self._afdo_tmp_path(
+    perf_path_inside = self._AfdoTmpPath(
         self._GetBenchmarkAFDOName(template=CHROME_PERF_AFDO_FILE))
     afdo_name = self._GetBenchmarkAFDOName()
-    afdo_path_inside = self._afdo_tmp_path(afdo_name)
+    afdo_path_inside = self._AfdoTmpPath(afdo_name)
     # Generate the afdo profile.
     cros_build_lib.run([
         _AFDO_GENERATE_LLVM_PROF,
-        '--binary=%s' % self._afdo_tmp_path(CHROME_UNSTRIPPED_NAME),
+        '--binary=%s' % self._AfdoTmpPath(CHROME_UNSTRIPPED_NAME),
         '--profile=%s' % perf_path_inside,
         '--out=%s' % afdo_path_inside,
     ],
@@ -2274,7 +2283,7 @@ class GenerateBenchmarkAFDOProfile(object):
     chrome_spec = {
         'package': self.chrome_cpv.package,
         'arch': self.arch,
-        'version': version_number
+        'versionnorev': version_number
     }
     return CHROME_PERF_AFDO_FILE % chrome_spec
 

@@ -175,8 +175,7 @@ def PrepareForBuild(input_proto, output_proto, _config):
 # TODO(crbug/1031213): When @faux is expanded to have more than success/failure,
 # this should be changed.
 @faux.all_empty
-@validate.require('chroot.path', 'sysroot.path', 'sysroot.build_target.name',
-                  'output_dir', 'artifact_types')
+@validate.require('chroot.path', 'output_dir', 'artifact_types')
 @validate.exists('output_dir')
 @validate.validation_complete
 def BundleArtifacts(input_proto, output_proto, _config):
@@ -185,9 +184,10 @@ def BundleArtifacts(input_proto, output_proto, _config):
   The handlers (from _TOOLCHAIN_ARTIFACT_HANDLERS above) are called with:
       artifact_name (str): name of the artifact type
       chroot (chroot_lib.Chroot): chroot
-      sysroot_path (str): sysroot path inside the chroot (e.g., /build/atlas)
+      sysroot_path (str): sysroot path inside the chroot (e.g., /build/atlas),
+          or None.
       chrome_root (str): path to chrome root. (e.g., /b/s/w/ir/k/chrome)
-      build_target_name (str): name of the build target (e.g., atlas)
+      build_target_name (str): name of the build target (e.g., atlas), or None.
       output_dir (str): absolute path where artifacts are being bundled.
         (e.g., /b/s/w/ir/k/recipe_cleanup/artifactssptfMU)
       profile_info ({(str) name: (str) value}) Dictionary containing profile
