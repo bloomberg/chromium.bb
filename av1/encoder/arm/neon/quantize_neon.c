@@ -323,7 +323,7 @@ void av1_quantize_fp_32x32_neon(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
     const int16x4_t v_eobmax_final =
         vmax_s16(v_eobmax_tmp, vreinterpret_s16_s64(v_eobmax_xxx3));
 
-    *eob_ptr = (uint16_t)vget_lane_s16(v_eobmax_final, 0);
+    *eob_ptr = (uint16_t)vget_lane_s16(v_eobmax_final, 0) + 1;
   }
 #endif  // __aarch64__
 }
@@ -450,7 +450,7 @@ void av1_quantize_fp_64x64_neon(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
     const int16x4_t v_eobmax_final =
         vmax_s16(v_eobmax_tmp, vreinterpret_s16_s64(v_eobmax_xxx3));
 
-    *eob_ptr = (uint16_t)vget_lane_s16(v_eobmax_final, 0);
+    *eob_ptr = (uint16_t)vget_lane_s16(v_eobmax_final, 0) + 1;
   }
 #endif  // __aarch64__
 }
@@ -623,7 +623,7 @@ static void aom_quantize_b_helper_16x16_neon(
     if (qm_ptr == NULL) {
       vtmp2 = vsraq_n_s16(vtmp, vqdmulhq_s16(vtmp, vquant), 1);
     } else {
-      vtmp2 = QM_MULL_SHIFT(vtmp2, vwt);
+      vtmp2 = QM_MULL_SHIFT(vtmp, vwt);
       vtmp2 = vaddq_s16(vtmp2, vtmp);
     }
 
@@ -675,7 +675,7 @@ static void aom_quantize_b_helper_16x16_neon(
       if (qm_ptr == NULL) {
         vtmp2 = vsraq_n_s16(vtmp, vqdmulhq_s16(vtmp, vquant), 1);
       } else {
-        vtmp2 = QM_MULL_SHIFT(vtmp2, vwt);
+        vtmp2 = QM_MULL_SHIFT(vtmp, vwt);
         vtmp2 = vaddq_s16(vtmp2, vtmp);
       }
 
@@ -775,7 +775,7 @@ static void aom_quantize_b_helper_32x32_neon(
     if (qm_ptr == NULL) {
       vtmp2 = vsraq_n_s16(vtmp, vqdmulhq_s16(vtmp, vquant), 1);
     } else {
-      vtmp2 = QM_MULL_SHIFT(vtmp2, vwt);
+      vtmp2 = QM_MULL_SHIFT(vtmp, vwt);
       vtmp2 = vaddq_s16(vtmp2, vtmp);
     }
 
@@ -830,7 +830,7 @@ static void aom_quantize_b_helper_32x32_neon(
       if (qm_ptr == NULL) {
         vtmp2 = vsraq_n_s16(vtmp, vqdmulhq_s16(vtmp, vquant), 1);
       } else {
-        vtmp2 = QM_MULL_SHIFT(vtmp2, vwt);
+        vtmp2 = QM_MULL_SHIFT(vtmp, vwt);
         vtmp2 = vaddq_s16(vtmp2, vtmp);
       }
       vtmp2 = vqdmulhq_s16(vtmp2, vquant_shift);
@@ -933,7 +933,7 @@ static void aom_quantize_b_helper_64x64_neon(
     if (qm_ptr == NULL) {
       vtmp2 = vsraq_n_s16(vtmp, vqdmulhq_s16(vtmp, vquant), 1);
     } else {
-      vtmp2 = QM_MULL_SHIFT(vtmp2, vwt);
+      vtmp2 = QM_MULL_SHIFT(vtmp, vwt);
       vtmp2 = vaddq_s16(vtmp2, vtmp);
     }
 
@@ -992,7 +992,7 @@ static void aom_quantize_b_helper_64x64_neon(
       if (qm_ptr == NULL) {
         vtmp2 = vsraq_n_s16(vtmp, vqdmulhq_s16(vtmp, vquant), 1);
       } else {
-        vtmp2 = QM_MULL_SHIFT(vtmp2, vwt);
+        vtmp2 = QM_MULL_SHIFT(vtmp, vwt);
         vtmp2 = vaddq_s16(vtmp2, vtmp);
       }
 
