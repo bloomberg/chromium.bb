@@ -39,7 +39,6 @@ def ConstructFailureMessages(build_config):
 class BuilderStatusLibTests(cros_test_lib.MockTestCase):
   """Tests for builder_status_lib."""
 
-  @cros_test_lib.pytestmark_mock_error
   def testGetSlavesAbortedBySelfDestructedMaster(self):
     """Test GetSlavesAbortedBySelfDestructedMaster with aborted slaves."""
     db = fake_cidb.FakeCIDBConnection()

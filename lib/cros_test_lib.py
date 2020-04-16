@@ -50,7 +50,6 @@ try:
   pytestmark_inside_only = pytest.mark.inside_only
   pytestmark_leaks_process = pytest.mark.leaks_process
   pytestmark_legacy_slow = pytest.mark.legacy_slow
-  pytestmark_mock_error = pytest.mark.mock_error
   pytestmark_network_test = pytest.mark.network_test
   pytestmark_output_test = pytest.mark.output_test
   pytestmark_redirected_stdin_error = pytest.mark.redirected_stdin_error
@@ -67,7 +66,6 @@ except (ImportError, AttributeError):
   pytestmark_inside_only = null_decorator
   pytestmark_legacy_slow = null_decorator
   pytestmark_leaks_process = null_decorator
-  pytestmark_mock_error = null_decorator
   pytestmark_network_test = null_decorator
   pytestmark_output_test = null_decorator
   pytestmark_redirected_stdin_error = null_decorator
