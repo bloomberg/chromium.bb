@@ -3161,8 +3161,11 @@ def CheckSpacing(filename, clean_lines, linenum, nesting_state, error):
   line = clean_lines.elided[linenum]
 
   # You shouldn't have spaces before your brackets, except maybe after
-  # 'delete []' or 'return []() {};'
-  if Search(r'\w\s+\[', line) and not Search(r'(?:delete|return)\s+\[', line):
+  # 'delete []' or 'return []() {};', or in the case of c++ attributes
+  # like 'class [[clang::lto_visibility_public]] MyClass'.
+  if (Search(r'\w\s+\[', line)
+      and not Search(r'(?:delete|return)\s+\[', line)
+      and not Search(r'\s+\[\[', line)):
     error(filename, linenum, 'whitespace/braces', 5,
           'Extra space before [')
 
