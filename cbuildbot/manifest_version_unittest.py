@@ -232,6 +232,27 @@ class ResolveHelpersTest(cros_test_lib.TempDirTestCase):
       manifest_version.ResolveBuildspecVersion(
           self.mv_path, '1.2.0')
 
+
+class FilterManifestTest(cros_test_lib.TempDirTestCase):
+  """Test for FilterManifest."""
+
+  def testSimple(self):
+    """Basic check of functionality."""
+    path = os.path.join(self.tempdir, 'input.xml')
+    osutils.WriteFile(path, """\
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <include name="default.xml" />
+</manifest>
+""")
+    new_path = manifest_version.FilterManifest(path)
+    self.assertEqual("""\
+<?xml version="1.0" encoding="utf-8"?><manifest>
+<include name="default.xml"/>
+</manifest>\
+""", osutils.ReadFile(new_path))
+
+
 class BuildSpecFunctionsTest(cros_test_lib.MockTempDirTestCase):
   """Tests for methods related to publishing buildspecs."""
 
