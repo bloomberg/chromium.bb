@@ -109,8 +109,8 @@ void av1_twopass_zero_stats(FIRSTPASS_STATS *section) {
   section->duration = 1.0;
 }
 
-static AOM_INLINE void accumulate_stats(FIRSTPASS_STATS *section,
-                                        const FIRSTPASS_STATS *frame) {
+void av1_accumulate_stats(FIRSTPASS_STATS *section,
+                          const FIRSTPASS_STATS *frame) {
   section->frame += frame->frame;
   section->weight += frame->weight;
   section->intra_error += frame->intra_error;
@@ -817,7 +817,7 @@ static void update_firstpass_stats(AV1_COMP *cpi,
   *this_frame_stats = fps;
   output_stats(this_frame_stats, cpi->output_pkt_list);
   if (cpi->twopass.stats_buf_ctx->total_stats != NULL) {
-    accumulate_stats(cpi->twopass.stats_buf_ctx->total_stats, &fps);
+    av1_accumulate_stats(cpi->twopass.stats_buf_ctx->total_stats, &fps);
   }
   /*In the case of two pass, first pass uses it as a circular buffer,
    * when LAP is enabled it is used as a linear buffer*/

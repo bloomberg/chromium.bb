@@ -188,6 +188,8 @@ void av1_first_pass(struct AV1_COMP *cpi, const int64_t ts_duration);
 void av1_end_first_pass(struct AV1_COMP *cpi);
 
 void av1_twopass_zero_stats(FIRSTPASS_STATS *section);
+void av1_accumulate_stats(FIRSTPASS_STATS *section,
+                          const FIRSTPASS_STATS *frame);
 
 #ifdef __cplusplus
 }  // extern "C"

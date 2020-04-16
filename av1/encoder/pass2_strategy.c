@@ -2176,6 +2176,103 @@ static int64_t get_kf_group_bits(AV1_COMP *cpi, double kf_group_err) {
   return kf_group_bits;
 }
 
+static int calc_avg_stats(AV1_COMP *cpi, FIRSTPASS_STATS *avg_frame_stat) {
+  RATE_CONTROL *const rc = &cpi->rc;
+  TWO_PASS *const twopass = &cpi->twopass;
+  FIRSTPASS_STATS cur_frame;
+  av1_zero(cur_frame);
+  int num_frames = 0;
+  // Accumulate total stat using available number of stats.
+  for (num_frames = 0; num_frames < (rc->frames_to_key - 1); ++num_frames) {
+    if (EOF == input_stats(twopass, &cur_frame)) break;
+    av1_accumulate_stats(avg_frame_stat, &cur_frame);
+  }
+
+  if (num_frames < 2) {
+    return num_frames;
+  }
+  // Average the total stat
+  avg_frame_stat->weight = avg_frame_stat->weight / num_frames;
+  avg_frame_stat->intra_error = avg_frame_stat->intra_error / num_frames;
+  avg_frame_stat->frame_avg_wavelet_energy =
+      avg_frame_stat->frame_avg_wavelet_energy / num_frames;
+  avg_frame_stat->coded_error = avg_frame_stat->coded_error / num_frames;
+  avg_frame_stat->sr_coded_error = avg_frame_stat->sr_coded_error / num_frames;
+  avg_frame_stat->pcnt_inter = avg_frame_stat->pcnt_inter / num_frames;
+  avg_frame_stat->pcnt_motion = avg_frame_stat->pcnt_motion / num_frames;
+  avg_frame_stat->pcnt_second_ref =
+      avg_frame_stat->pcnt_second_ref / num_frames;
+  avg_frame_stat->pcnt_neutral = avg_frame_stat->pcnt_neutral / num_frames;
+  avg_frame_stat->intra_skip_pct = avg_frame_stat->intra_skip_pct / num_frames;
+  avg_frame_stat->inactive_zone_rows =
+      avg_frame_stat->inactive_zone_rows / num_frames;
+  avg_frame_stat->inactive_zone_cols =
+      avg_frame_stat->inactive_zone_cols / num_frames;
+  avg_frame_stat->MVr = avg_frame_stat->MVr / num_frames;
+  avg_frame_stat->mvr_abs = avg_frame_stat->mvr_abs / num_frames;
+  avg_frame_stat->MVc = avg_frame_stat->MVc / num_frames;
+  avg_frame_stat->mvc_abs = avg_frame_stat->mvc_abs / num_frames;
+  avg_frame_stat->MVrv = avg_frame_stat->MVrv / num_frames;
+  avg_frame_stat->MVcv = avg_frame_stat->MVcv / num_frames;
+  avg_frame_stat->mv_in_out_count =
+      avg_frame_stat->mv_in_out_count / num_frames;
+  avg_frame_stat->new_mv_count = avg_frame_stat->new_mv_count / num_frames;
+  avg_frame_stat->count = avg_frame_stat->count / num_frames;
+  avg_frame_stat->duration = avg_frame_stat->duration / num_frames;
+
+  return num_frames;
+}
+
+static double get_kf_boost_score(AV1_COMP *cpi, double kf_raw_err,
+                                 double *zero_motion_accumulator,
+                                 double *sr_accumulator, int use_avg_stat) {
+  RATE_CONTROL *const rc = &cpi->rc;
+  TWO_PASS *const twopass = &cpi->twopass;
+  FRAME_INFO *const frame_info = &cpi->frame_info;
+  FIRSTPASS_STATS frame_stat;
+  av1_zero(frame_stat);
+  int i = 0, num_stat_used = 0;
+  double boost_score = 0.0;
+  const double kf_max_boost =
+      cpi->oxcf.rc_mode == AOM_Q
+          ? AOMMIN(AOMMAX(rc->frames_to_key * 2.0, KF_MIN_FRAME_BOOST),
+                   KF_MAX_FRAME_BOOST)
+          : KF_MAX_FRAME_BOOST;
+
+  // Calculate the average using available number of stats.
+  if (use_avg_stat) num_stat_used = calc_avg_stats(cpi, &frame_stat);
+
+  for (i = num_stat_used; i < (rc->frames_to_key - 1); ++i) {
+    if (!use_avg_stat && EOF == input_stats(twopass, &frame_stat)) break;
+
+    // Monitor for static sections.
+    // For the first frame in kf group, the second ref indicator is invalid.
+    if (i > 0) {
+      *zero_motion_accumulator =
+          AOMMIN(*zero_motion_accumulator,
+                 get_zero_motion_factor(frame_info, &frame_stat));
+    } else {
+      *zero_motion_accumulator = frame_stat.pcnt_inter - frame_stat.pcnt_motion;
+    }
+
+    // Not all frames in the group are necessarily used in calculating boost.
+    if ((*sr_accumulator < (kf_raw_err * 1.50)) &&
+        (i <= rc->max_gf_interval * 2)) {
+      double frame_boost;
+      double zm_factor;
+
+      // Factor 0.75-1.25 based on how much of frame is static.
+      zm_factor = (0.75 + (*zero_motion_accumulator / 2.0));
+
+      if (i < 2) *sr_accumulator = 0.0;
+      frame_boost = calc_kf_frame_boost(rc, frame_info, &frame_stat,
+                                        sr_accumulator, kf_max_boost);
+      boost_score += frame_boost * zm_factor;
+    }
+  }
+  return boost_score;
+}
+
 static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   RATE_CONTROL *const rc = &cpi->rc;
   TWO_PASS *const twopass = &cpi->twopass;
@@ -2307,43 +2404,9 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
 
   // Scan through the kf group collating various stats used to determine
   // how many bits to spend on it.
-  boost_score = 0.0;
-  const double kf_max_boost =
-      cpi->oxcf.rc_mode == AOM_Q
-          ? AOMMIN(AOMMAX(rc->frames_to_key * 2.0, KF_MIN_FRAME_BOOST),
-                   KF_MAX_FRAME_BOOST)
-          : KF_MAX_FRAME_BOOST;
-  for (i = 0; i < (rc->frames_to_key - 1); ++i) {
-    if (EOF == input_stats(twopass, &next_frame)) break;
-
-    // Monitor for static sections.
-    // For the first frame in kf group, the second ref indicator is invalid.
-    if (i > 0) {
-      zero_motion_accumulator =
-          AOMMIN(zero_motion_accumulator,
-                 get_zero_motion_factor(frame_info, &next_frame));
-    } else {
-      zero_motion_accumulator = next_frame.pcnt_inter - next_frame.pcnt_motion;
-    }
-
-    // Not all frames in the group are necessarily used in calculating boost.
-    if ((sr_accumulator < (kf_raw_err * 1.50)) &&
-        (i <= rc->max_gf_interval * 2)) {
-      double frame_boost;
-      double zm_factor;
-
-      // Factor 0.75-1.25 based on how much of frame is static.
-      zm_factor = (0.75 + (zero_motion_accumulator / 2.0));
-
-      if (i < 2) sr_accumulator = 0.0;
-      frame_boost = calc_kf_frame_boost(rc, frame_info, &next_frame,
-                                        &sr_accumulator, kf_max_boost);
-      boost_score += frame_boost * zm_factor;
-    }
-  }
-
+  boost_score = get_kf_boost_score(cpi, kf_raw_err, &zero_motion_accumulator,
+                                   &sr_accumulator, 0);
   reset_fpf_position(twopass, start_position);
-
   // Store the zero motion percentage
   twopass->kf_zeromotion_pct = (int)(zero_motion_accumulator * 100.0);
 
@@ -2354,7 +2417,15 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   rc->kf_boost = (int)boost_score;
 
   if (cpi->lap_enabled) {
-    rc->kf_boost = get_projected_kf_boost(cpi);
+    if (cpi->oxcf.rc_mode == AOM_Q)
+      rc->kf_boost = get_projected_kf_boost(cpi);
+    else if (cpi->oxcf.rc_mode == AOM_VBR) {
+      // TODO(any): Explore using average frame stats for AOM_Q as well.
+      boost_score = get_kf_boost_score(
+          cpi, kf_raw_err, &zero_motion_accumulator, &sr_accumulator, 1);
+      reset_fpf_position(twopass, start_position);
+      rc->kf_boost += (int)boost_score;
+    }
   }
 
   // Special case for static / slide show content but don't apply
