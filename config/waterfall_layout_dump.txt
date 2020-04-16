@@ -358,6 +358,7 @@
     palkia-release
     puff-release
     pyro-release
+    rammus-arc-r-release
     rammus-release
     reef-release
     reks-release
@@ -1551,6 +1552,7 @@
     palkia-release-tryjob
     puff-release-tryjob
     pyro-release-tryjob
+    rammus-arc-r-release-tryjob
     rammus-release-tryjob
     reef-release-tryjob
     reks-release-tryjob
@@ -1755,6 +1757,11 @@
   pyro-payloads-tryjob
   pyro-release-tryjob
   pyro-unittest-stress
+  rammus-arc-r-full-tryjob
+  rammus-arc-r-llvm-next-toolchain-tryjob
+  rammus-arc-r-llvm-toolchain-tryjob
+  rammus-arc-r-release-tryjob
+  rammus-arc-r-unittest-stress
   rammus-factory-rammus-11289.B-factorybranch-tryjob
   rammus-full-tryjob
   rammus-llvm-next-toolchain-tryjob
