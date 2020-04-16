@@ -138,6 +138,8 @@ _KNOWN_GERRIT_TO_SHORT_URLS = {
     'https://chrome-internal-review.googlesource.com': 'https://crrev.com/i',
     'https://chromium-review.googlesource.com': 'https://crrev.com/c',
 }
+assert len(_KNOWN_GERRIT_TO_SHORT_URLS) == len(
+    set(_KNOWN_GERRIT_TO_SHORT_URLS.values())), 'must have unique values'
 
 
 def DieWithError(message, change_desc=None):
@@ -858,6 +860,11 @@ def ParseIssueNumberArgument(arg):
     return fail_result
 
   url = gclient_utils.UpgradeToHttps(arg)
+  for gerrit_url, short_url in _KNOWN_GERRIT_TO_SHORT_URLS.items():
+    if url.startswith(short_url):
+      url = gerrit_url + url[len(short_url):]
+      break
+
   try:
     parsed_url = urllib.parse.urlparse(url)
   except ValueError:
