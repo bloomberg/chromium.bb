@@ -659,17 +659,35 @@ typedef struct macroblockd {
   // cm->mi_params.mi_grid_base).
   bool cdef_transmitted[4];
 
+  // Mask for this block used for compound prediction.
   DECLARE_ALIGNED(16, uint8_t, seg_mask[2 * MAX_SB_SQUARE]);
+
+  // TODO(urvang): Move to decoder.
   uint8_t *mc_buf[2];
+  // CFL (chroma from luma) related parameters.
   CFL_CTX cfl;
 
+  // TODO(urvang): Move to encoder.
   DIST_WTD_COMP_PARAMS jcp_param;
 
+  // TODO(urvang): Move to decoder.
   uint16_t cb_offset[MAX_MB_PLANE];
+  // TODO(urvang): Move to decoder.
   uint16_t txb_offset[MAX_MB_PLANE];
   uint16_t color_index_map_offset[2];
 
+  // Temporary buffer used for convolution in case of compound reference only
+  // for (weighted or uniform) averaging operation.
+  // There are pointers to actual buffers allocated elsewhere: e.g. In dec,
+  // 'pbi->td.tmp_conv_dst' or 'pbi->thread_data[t].td->xd.tmp_conv_dst' and in
+  // enc, 'x->tmp_conv_dst' or 'cpi->tile_thr_data[t].td->mb.tmp_conv_dst'.
   CONV_BUF_TYPE *tmp_conv_dst;
+  // Temporary buffers used to build OBMC prediction by above (index 0) and left
+  // (index 1) predictors respectively.
+  // tmp_obmc_bufs[i][p * MAX_SB_SQUARE] is the buffer used for plane 'p'.
+  // There are pointers to actual buffers allocated elsewhere: e.g. In dec,
+  // 'pbi->td.tmp_obmc_bufs' or 'pbi->thread_data[t].td->xd.tmp_conv_dst' and in
+  // enc, 'x->tmp_obmc_bufs' or 'cpi->tile_thr_data[t].td->mb.tmp_obmc_bufs'.
   uint8_t *tmp_obmc_bufs[2];
 } MACROBLOCKD;
 
