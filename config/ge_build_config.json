@@ -3067,17 +3067,7 @@
         {
           "board_name": "hatch-kernelnext",
           "name": "kindred",
-          "test_suites": [
-            "sanity",
-            "bvt-inline",
-            "bvt-tast-cq",
-            "bvt-installer",
-            "bvt-arc",
-            "bvt-cq",
-            "bvt-perbuild",
-            "bvt-tast-informational"
-          ],
-          "cq_test_enabled": true,
+          "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
           "board_id": 440,
           "is_active": true
@@ -3104,7 +3094,7 @@
             "bvt-perbuild",
             "bvt-tast-informational"
           ],
-          "cq_test_enabled": false,
+          "cq_test_enabled": true,
           "release_builder_test_pool": "bvt",
           "board_id": 440,
           "is_active": true
