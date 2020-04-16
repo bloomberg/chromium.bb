@@ -405,6 +405,9 @@ typedef struct macroblockd_plane {
   // dequantization process.  They have the same coefficient
   // shift/scale as TX.
   int16_t seg_dequant_QTX[MAX_SEGMENTS][2];
+  // Pointer to color index map of:
+  // - Current coding block, on encoder side.
+  // - Current superblock, on decoder side.
   uint8_t *color_index_map;
 
   // block size in pixels
@@ -674,6 +677,13 @@ typedef struct macroblockd {
   uint16_t cb_offset[MAX_MB_PLANE];
   // TODO(urvang): Move to decoder.
   uint16_t txb_offset[MAX_MB_PLANE];
+  // Offset to plane[p].color_index_map.
+  // Currently:
+  // - On encoder side, this is always 0 as 'color_index_map' is allocated per
+  // *coding block* there.
+  // - On decoder side, this may be non-zero, as 'color_index_map' is a (static)
+  // memory pointing to the base of a *superblock* there, and we need an offset
+  // to it to get the color index map for current coding block.
   uint16_t color_index_map_offset[2];
 
   // Temporary buffer used for convolution in case of compound reference only
