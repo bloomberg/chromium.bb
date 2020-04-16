@@ -121,6 +121,34 @@ TEST_F(CastSocketTest, ReadChunkedMessage) {
                                            data + double_message.size()));
 }
 
+TEST_F(CastSocketTest, ReadMultipleMessagesPerBlock) {
+  CastMessage message2;
+  std::vector<uint8_t> frame_serial2;
+  message2.set_protocol_version(CastMessage::CASTV2_1_0);
+  message2.set_source_id("alt-source");
+  message2.set_destination_id("alt-destination");
+  message2.set_namespace_("alt-namespace");
+  message2.set_payload_type(CastMessage::STRING);
+  message2.set_payload_utf8("alternate payload");
+  ErrorOr<std::vector<uint8_t>> serialized_or_error =
+      message_serialization::Serialize(message2);
+  ASSERT_TRUE(serialized_or_error);
+  frame_serial2 = std::move(serialized_or_error.value());
+
+  std::vector<uint8_t> send_data;
+  send_data.reserve(frame_serial_.size() + frame_serial2.size());
+  send_data.insert(send_data.end(), frame_serial_.begin(), frame_serial_.end());
+  send_data.insert(send_data.end(), frame_serial2.begin(), frame_serial2.end());
+  EXPECT_CALL(mock_client(), OnMessage(_, _))
+      .WillOnce(Invoke([this](CastSocket* socket, CastMessage message) {
+        EXPECT_EQ(message_.SerializeAsString(), message.SerializeAsString());
+      }))
+      .WillOnce([message2](CastSocket* socket, CastMessage message) {
+        EXPECT_EQ(message2.SerializeAsString(), message.SerializeAsString());
+      });
+  connection().OnRead(std::move(send_data));
+}
+
 TEST_F(CastSocketTest, SanitizedAddress) {
   std::array<uint8_t, 2> result1 = socket().GetSanitizedIpAddress();
   EXPECT_EQ(result1[0], 1u);

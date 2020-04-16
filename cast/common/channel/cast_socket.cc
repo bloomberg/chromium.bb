@@ -71,15 +71,19 @@ void CastSocket::OnError(TlsConnection* connection, Error error) {
 
 void CastSocket::OnRead(TlsConnection* connection, std::vector<uint8_t> block) {
   read_buffer_.insert(read_buffer_.end(), block.begin(), block.end());
-  ErrorOr<DeserializeResult> message_or_error =
-      message_serialization::TryDeserialize(
-          absl::Span<uint8_t>(&read_buffer_[0], read_buffer_.size()));
-  if (!message_or_error) {
-    return;
-  }
-  read_buffer_.erase(read_buffer_.begin(),
-                     read_buffer_.begin() + message_or_error.value().length);
-  client_->OnMessage(this, std::move(message_or_error.value().message));
+  // NOTE: Read as many messages as possible out of |read_buffer_| since we only
+  // get one callback opportunity for this.
+  do {
+    ErrorOr<DeserializeResult> message_or_error =
+        message_serialization::TryDeserialize(
+            absl::Span<uint8_t>(&read_buffer_[0], read_buffer_.size()));
+    if (!message_or_error) {
+      return;
+    }
+    read_buffer_.erase(read_buffer_.begin(),
+                       read_buffer_.begin() + message_or_error.value().length);
+    client_->OnMessage(this, std::move(message_or_error.value().message));
+  } while (!read_buffer_.empty());
 }
 
 int CastSocket::g_next_socket_id_ = 1;
