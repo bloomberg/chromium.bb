@@ -2528,6 +2528,8 @@ int av1_find_best_sub_pixel_tree_pruned_evenmore(
 
   besterr = setup_center_error(xd, bestmv, var_params, mv_cost_params, sse1,
                                distortion);
+  // If forced_stop is FULL_PEL, return.
+  if (forced_stop == FULL_PEL) return besterr;
 
   if (check_repeated_mv_and_update(last_mv_search_list, *bestmv, iter)) {
     return INT_MAX;
@@ -2552,7 +2554,7 @@ int av1_find_best_sub_pixel_tree_pruned_evenmore(
 
     // Each subsequent iteration checks at least one point in common with
     // the last iteration could be 2 ( if diag selected) 1/4 pel
-    if (forced_stop != HALF_PEL) {
+    if (forced_stop < HALF_PEL) {
       if (check_repeated_mv_and_update(last_mv_search_list, *bestmv, iter)) {
         return INT_MAX;
       }
@@ -2604,6 +2606,8 @@ int av1_find_best_sub_pixel_tree_pruned_more(
 
   besterr = setup_center_error(xd, bestmv, var_params, mv_cost_params, sse1,
                                distortion);
+  // If forced_stop is FULL_PEL, return.
+  if (forced_stop == FULL_PEL) return besterr;
 
   if (check_repeated_mv_and_update(last_mv_search_list, *bestmv, iter)) {
     return INT_MAX;
@@ -2630,7 +2634,7 @@ int av1_find_best_sub_pixel_tree_pruned_more(
 
   // Each subsequent iteration checks at least one point in common with
   // the last iteration could be 2 ( if diag selected) 1/4 pel
-  if (forced_stop != HALF_PEL) {
+  if (forced_stop < HALF_PEL) {
     if (check_repeated_mv_and_update(last_mv_search_list, *bestmv, iter)) {
       return INT_MAX;
     }
@@ -2681,6 +2685,9 @@ int av1_find_best_sub_pixel_tree_pruned(
 
   besterr = setup_center_error(xd, bestmv, var_params, mv_cost_params, sse1,
                                distortion);
+  // If forced_stop is FULL_PEL, return.
+  if (forced_stop == FULL_PEL) return besterr;
+
   if (check_repeated_mv_and_update(last_mv_search_list, *bestmv, iter)) {
     return INT_MAX;
   }
@@ -2746,7 +2753,7 @@ int av1_find_best_sub_pixel_tree_pruned(
 
   // Each subsequent iteration checks at least one point in common with
   // the last iteration could be 2 ( if diag selected) 1/4 pel
-  if (forced_stop != HALF_PEL) {
+  if (forced_stop < HALF_PEL) {
     if (check_repeated_mv_and_update(last_mv_search_list, *bestmv, iter)) {
       return INT_MAX;
     }
@@ -2805,6 +2812,9 @@ int av1_find_best_sub_pixel_tree(MACROBLOCKD *xd, const AV1_COMMON *const cm,
     besterr = setup_center_error(xd, bestmv, var_params, mv_cost_params, sse1,
                                  distortion);
   }
+
+  // If forced_stop is FULL_PEL, return.
+  if (!round) return besterr;
 
   for (int iter = 0; iter < round; ++iter) {
     MV iter_center_mv = *bestmv;
