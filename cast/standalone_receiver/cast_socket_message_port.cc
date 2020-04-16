@@ -49,7 +49,7 @@ void CastSocketMessagePort::PostMessage(absl::string_view sender_id,
                               message_namespace.size());
   cast_message.set_payload_utf8(message.data(), message.size());
 
-  Error error = socket_->SendMessage(cast_message);
+  Error error = socket_->Send(cast_message);
   if (!error.ok()) {
     client_->OnError(error);
   }

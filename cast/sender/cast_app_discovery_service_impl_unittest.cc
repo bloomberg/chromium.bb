@@ -108,7 +108,7 @@ TEST_F(CastAppDiscoveryServiceImplTest, StartObservingAvailability) {
 
   CastMessage availability_response =
       CreateAppAvailableResponseChecked(request_id, sender_id, "AAA");
-  EXPECT_TRUE(peer_socket().SendMessage(availability_response).ok());
+  EXPECT_TRUE(peer_socket().Send(availability_response).ok());
   ASSERT_EQ(receivers1.size(), 1u);
   ASSERT_EQ(receivers2.size(), 1u);
   EXPECT_EQ(receivers1[0].unique_id, "deviceId1");
@@ -131,7 +131,7 @@ TEST_F(CastAppDiscoveryServiceImplTest, ReAddAvailQueryUsesCachedValue) {
 
   CastMessage availability_response =
       CreateAppAvailableResponseChecked(request_id, sender_id, "AAA");
-  EXPECT_TRUE(peer_socket().SendMessage(availability_response).ok());
+  EXPECT_TRUE(peer_socket().Send(availability_response).ok());
   ASSERT_EQ(receivers1.size(), 1u);
   EXPECT_EQ(receivers1[0].unique_id, "deviceId1");
 
@@ -154,7 +154,7 @@ TEST_F(CastAppDiscoveryServiceImplTest, AvailQueryUpdatedOnReceiverUpdate) {
   // Result set now includes |receiver_|.
   CastMessage availability_response =
       CreateAppAvailableResponseChecked(request_id, sender_id, "AAA");
-  EXPECT_TRUE(peer_socket().SendMessage(availability_response).ok());
+  EXPECT_TRUE(peer_socket().Send(availability_response).ok());
   ASSERT_EQ(receivers1.size(), 1u);
   EXPECT_EQ(receivers1[0].unique_id, "deviceId1");
 
@@ -202,10 +202,10 @@ TEST_F(CastAppDiscoveryServiceImplTest, Refresh) {
 
   CastMessage availability_response =
       CreateAppAvailableResponseChecked(request_idA, sender_id, "AAA");
-  EXPECT_TRUE(peer_socket().SendMessage(availability_response).ok());
+  EXPECT_TRUE(peer_socket().Send(availability_response).ok());
   availability_response =
       CreateAppUnavailableResponseChecked(request_idB, sender_id, "BBB");
-  EXPECT_TRUE(peer_socket().SendMessage(availability_response).ok());
+  EXPECT_TRUE(peer_socket().Send(availability_response).ok());
   ASSERT_EQ(receivers1.size(), 1u);
   ASSERT_EQ(receivers2.size(), 0u);
   EXPECT_EQ(receivers1[0].unique_id, "deviceId1");
@@ -291,7 +291,7 @@ TEST_F(CastAppDiscoveryServiceImplTest, StartObservingAvailabilityCachedValue) {
 
   CastMessage availability_response =
       CreateAppAvailableResponseChecked(request_id, sender_id, "AAA");
-  EXPECT_TRUE(peer_socket().SendMessage(availability_response).ok());
+  EXPECT_TRUE(peer_socket().Send(availability_response).ok());
   ASSERT_EQ(receivers1.size(), 1u);
   EXPECT_EQ(receivers1[0].unique_id, "deviceId1");
 
@@ -326,7 +326,7 @@ TEST_F(CastAppDiscoveryServiceImplTest, AvailabilityUnknownOrUnavailable) {
 
   CastMessage availability_response =
       CreateAppUnavailableResponseChecked(request_id, sender_id, "AAA");
-  EXPECT_TRUE(peer_socket().SendMessage(availability_response).ok());
+  EXPECT_TRUE(peer_socket().Send(availability_response).ok());
 
   // Known availability so no request sent.
   EXPECT_CALL(peer_client(), OnMessage(_, _)).Times(0);

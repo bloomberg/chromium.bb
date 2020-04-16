@@ -74,12 +74,12 @@ TEST_F(CastPlatformClientTest, AppAvailability) {
 
   CastMessage availability_response =
       CreateAppAvailableResponseChecked(request_id, sender_id, "AAA");
-  EXPECT_TRUE(peer_socket().SendMessage(availability_response).ok());
+  EXPECT_TRUE(peer_socket().Send(availability_response).ok());
   EXPECT_TRUE(ran);
 
   // NOTE: Callback should only fire once, so it should not fire again here.
   ran = false;
-  EXPECT_TRUE(peer_socket().SendMessage(availability_response).ok());
+  EXPECT_TRUE(peer_socket().Send(availability_response).ok());
   EXPECT_FALSE(ran);
 }
 
@@ -103,7 +103,7 @@ TEST_F(CastPlatformClientTest, CancelRequest) {
 
   CastMessage availability_response =
       CreateAppAvailableResponseChecked(request_id, sender_id, "AAA");
-  EXPECT_TRUE(peer_socket().SendMessage(availability_response).ok());
+  EXPECT_TRUE(peer_socket().Send(availability_response).ok());
 }
 
 }  // namespace cast

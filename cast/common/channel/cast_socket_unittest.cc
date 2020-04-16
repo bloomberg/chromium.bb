@@ -57,7 +57,7 @@ TEST_F(CastSocketTest, SendMessage) {
                                  reinterpret_cast<const uint8_t*>(data) + len));
         return true;
       }));
-  ASSERT_TRUE(socket().SendMessage(message_).ok());
+  ASSERT_TRUE(socket().Send(message_).ok());
 }
 
 TEST_F(CastSocketTest, SendMessageEventuallyBlocks) {
@@ -71,12 +71,12 @@ TEST_F(CastSocketTest, SendMessageEventuallyBlocks) {
         return true;
       }))
       .RetiresOnSaturation();
-  ASSERT_TRUE(socket().SendMessage(message_).ok());
-  ASSERT_TRUE(socket().SendMessage(message_).ok());
-  ASSERT_TRUE(socket().SendMessage(message_).ok());
+  ASSERT_TRUE(socket().Send(message_).ok());
+  ASSERT_TRUE(socket().Send(message_).ok());
+  ASSERT_TRUE(socket().Send(message_).ok());
 
   EXPECT_CALL(connection(), Send(_, _)).WillOnce(Return(false));
-  ASSERT_EQ(socket().SendMessage(message_).code(), Error::Code::kAgain);
+  ASSERT_EQ(socket().Send(message_).code(), Error::Code::kAgain);
 }
 
 TEST_F(CastSocketTest, ReadCompleteMessage) {

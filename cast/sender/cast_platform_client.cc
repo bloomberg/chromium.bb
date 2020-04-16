@@ -87,8 +87,8 @@ absl::optional<int> CastPlatformClient::RequestAppAvailability(
                                          VirtualConnection::AssociatedData{});
   }
 
-  virtual_conn_router_->SendMessage(std::move(virtual_conn),
-                                    std::move(message.value()));
+  virtual_conn_router_->Send(std::move(virtual_conn),
+                             std::move(message.value()));
 
   return request_id;
 }

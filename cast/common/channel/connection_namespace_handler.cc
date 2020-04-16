@@ -231,7 +231,7 @@ void ConnectionNamespaceHandler::SendClose(VirtualConnectionRouter* router,
     return;
   }
 
-  router->SendMessage(
+  router->Send(
       std::move(virtual_conn),
       MakeSimpleUTF8Message(kConnectionNamespace, std::move(result.value())));
 }
@@ -250,9 +250,8 @@ void ConnectionNamespaceHandler::SendConnectedResponse(
     return;
   }
 
-  router->SendMessage(
-      virtual_conn,
-      MakeSimpleUTF8Message(kConnectionNamespace, std::move(result.value())));
+  router->Send(virtual_conn, MakeSimpleUTF8Message(kConnectionNamespace,
+                                                   std::move(result.value())));
 }
 
 }  // namespace cast

@@ -26,7 +26,7 @@ CastSocket::~CastSocket() {
   connection_->SetClient(nullptr);
 }
 
-Error CastSocket::SendMessage(const CastMessage& message) {
+Error CastSocket::Send(const CastMessage& message) {
   if (state_ == State::kError) {
     return Error::Code::kSocketClosedFailure;
   }

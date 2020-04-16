@@ -85,9 +85,8 @@ void DeviceAuthNamespaceHandler::OnMessage(VirtualConnectionRouter* router,
        sig_alg != ::cast::channel::RSASSA_PKCS1v15) ||
       (hash_alg != ::cast::channel::SHA1 &&
        hash_alg != ::cast::channel::SHA256)) {
-    router->SendMessage(
-        virtual_conn,
-        GenerateErrorMessage(AuthError::SIGNATURE_ALGORITHM_UNAVAILABLE));
+    router->Send(virtual_conn, GenerateErrorMessage(
+                                   AuthError::SIGNATURE_ALGORITHM_UNAVAILABLE));
     return;
   }
   const EVP_MD* digest =
@@ -100,8 +99,7 @@ void DeviceAuthNamespaceHandler::OnMessage(VirtualConnectionRouter* router,
   if (tls_cert_der.empty() || device_creds.certs.empty() ||
       !device_creds.private_key) {
     // TODO(btolsch): Add this to future error reporting.
-    router->SendMessage(virtual_conn,
-                        GenerateErrorMessage(AuthError::INTERNAL_ERROR));
+    router->Send(virtual_conn, GenerateErrorMessage(AuthError::INTERNAL_ERROR));
     return;
   }
 
@@ -131,8 +129,7 @@ void DeviceAuthNamespaceHandler::OnMessage(VirtualConnectionRouter* router,
   ErrorOr<std::string> signature =
       SignData(digest, device_creds.private_key.get(), to_be_signed);
   if (!signature) {
-    router->SendMessage(virtual_conn,
-                        GenerateErrorMessage(AuthError::INTERNAL_ERROR));
+    router->Send(virtual_conn, GenerateErrorMessage(AuthError::INTERNAL_ERROR));
     return;
   }
   auth_response->set_signature(std::move(signature.value()));
@@ -148,7 +145,7 @@ void DeviceAuthNamespaceHandler::OnMessage(VirtualConnectionRouter* router,
   response.set_namespace_(kAuthNamespace);
   response.set_payload_type(::cast::channel::CastMessage_PayloadType_BINARY);
   response.set_payload_binary(std::move(response_string));
-  router->SendMessage(virtual_conn, std::move(response));
+  router->Send(virtual_conn, std::move(response));
 }
 
 }  // namespace cast

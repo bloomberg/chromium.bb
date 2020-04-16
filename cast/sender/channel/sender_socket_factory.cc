@@ -92,7 +92,7 @@ void SenderSocketFactory::OnConnected(
   PendingAuth& pending = *pending_auth_.back();
 
   CastMessage auth_challenge = CreateAuthChallengeMessage(pending.auth_context);
-  Error error = pending.socket->SendMessage(auth_challenge);
+  Error error = pending.socket->Send(auth_challenge);
   if (!error.ok()) {
     pending_auth_.pop_back();
     client_->OnError(this, endpoint, error);

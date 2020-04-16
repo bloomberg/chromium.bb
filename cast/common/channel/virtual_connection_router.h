@@ -36,9 +36,9 @@ class VirtualConnectionManager;
 //    VCRouter::TakeSocket.
 //
 // 4. Anything Foo wants to send (launch, app availability, etc.) goes through
-//    VCRouter::SendMessage via an appropriate VC.  The virtual connection is
-//    not created automatically, so Foo should either ensure its existence via
-//    logic or check with the VirtualConnectionManager first.
+//    VCRouter::Send via an appropriate VC.  The virtual connection is not
+//    created automatically, so Foo should either ensure its existence via logic
+//    or check with the VirtualConnectionManager first.
 class VirtualConnectionRouter final : public CastSocket::Client {
  public:
   class SocketErrorHandler {
@@ -59,8 +59,8 @@ class VirtualConnectionRouter final : public CastSocket::Client {
                   std::unique_ptr<CastSocket> socket);
   void CloseSocket(int id);
 
-  Error SendMessage(VirtualConnection virtual_conn,
-                    ::cast::channel::CastMessage message);
+  Error Send(VirtualConnection virtual_conn,
+             ::cast::channel::CastMessage message);
 
   // CastSocket::Client overrides.
   void OnError(CastSocket* socket, Error error) override;

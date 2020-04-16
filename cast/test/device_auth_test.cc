@@ -83,9 +83,9 @@ class DeviceAuthTest : public ::testing::Test {
             Invoke([&challenge_reply](CastSocket* socket, CastMessage message) {
               challenge_reply = std::move(message);
             }));
-    ASSERT_TRUE(fake_cast_socket_pair_.peer_socket
-                    ->SendMessage(std::move(auth_challenge))
-                    .ok());
+    ASSERT_TRUE(
+        fake_cast_socket_pair_.peer_socket->Send(std::move(auth_challenge))
+            .ok());
 
     if (record_this_test) {
       std::string output;
