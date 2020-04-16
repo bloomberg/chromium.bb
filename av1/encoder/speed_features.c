@@ -604,6 +604,8 @@ static void set_good_speed_features_framesize_independent(
   }
 
   if (speed >= 6) {
+    sf->mv_sf.simple_motion_subpel_force_stop = FULL_PEL;
+    sf->tpl_sf.subpel_force_stop = FULL_PEL;
   }
 }
 
