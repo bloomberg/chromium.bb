@@ -579,16 +579,39 @@ static AOM_FORCE_INLINE void calc_int_sad_list(
   }
 }
 
-#define CHECK_BETTER                                                      \
-  if (thissad < bestsad) {                                                \
-    int tmp_thissad = thissad;                                            \
-    if (use_mvcost) thissad += mvsad_err_cost_(&this_mv, mv_cost_params); \
-    if (thissad < bestsad) {                                              \
-      raw_bestsad = tmp_thissad;                                          \
-      bestsad = thissad;                                                  \
-      best_site = i;                                                      \
-    }                                                                     \
+// Computes motion vector cost and adds to the sad cost.
+// Then updates the best sad and motion vectors.
+// Inputs:
+//   this_sad: the sad to be evaluated.
+//   mv: the current motion vector.
+//   mv_cost_params: a structure containing information to compute mv cost.
+//   best_sad: the current best sad.
+//   raw_best_sad (optional): the current best sad without calculating mv cost.
+//   best_mv: the current best motion vector.
+//   second_best_mv (optional): the second best motion vector up to now.
+// Modifies:
+//   best_sad, raw_best_sad, best_mv, second_best_mv
+//   If the current sad is lower than the current best sad.
+// Returns:
+//   Whether the input sad (mv) is better than the current best.
+static int update_mvs_and_sad(const unsigned int this_sad, const FULLPEL_MV *mv,
+                              const MV_COST_PARAMS *mv_cost_params,
+                              unsigned int *best_sad,
+                              unsigned int *raw_best_sad, FULLPEL_MV *best_mv,
+                              FULLPEL_MV *second_best_mv) {
+  if (this_sad >= *best_sad) return 0;
+
+  // Add the motion vector cost.
+  const unsigned int sad = this_sad + mvsad_err_cost_(mv, mv_cost_params);
+  if (sad < *best_sad) {
+    if (raw_best_sad) *raw_best_sad = this_sad;
+    *best_sad = sad;
+    if (second_best_mv) *second_best_mv = *best_mv;
+    *best_mv = *mv;
+    return 1;
   }
+  return 0;
+}
 
 // Generic pattern search function that searches over multiple scales.
 // Each scale can have a different number of candidates and shape of
@@ -610,10 +633,9 @@ static int pattern_search(
   const int ref_stride = ref->stride;
   const int last_is_4 = num_candidates[0] == 4;
   int br, bc;
-  int bestsad = INT_MAX, raw_bestsad = INT_MAX;
+  unsigned int bestsad = UINT_MAX, raw_bestsad = UINT_MAX;
   int thissad;
   int k = -1;
-  const int use_mvcost = ms_params->mv_cost_params.mv_cost_type != MV_COST_NONE;
   const MV_COST_PARAMS *mv_cost_params = &ms_params->mv_cost_params;
   assert(search_param < MAX_MVSEARCH_STEPS);
   int best_init_s = search_param_to_steps[search_param];
@@ -646,7 +668,11 @@ static int pattern_search(
                                        bc + candidates[t][i].col };
           thissad = get_mvpred_sad(
               ms_params, src, get_buf_from_fullmv(ref, &this_mv), ref_stride);
-          CHECK_BETTER
+          const int found_better_mv =
+              update_mvs_and_sad(thissad, &this_mv, mv_cost_params, &bestsad,
+                                 &raw_bestsad, best_mv,
+                                 /*second_best_mv=*/NULL);
+          if (found_better_mv) best_site = i;
         }
       } else {
         for (i = 0; i < num_candidates[t]; i++) {
@@ -655,7 +681,11 @@ static int pattern_search(
           if (!av1_is_fullmv_in_range(&ms_params->mv_limits, this_mv)) continue;
           thissad = get_mvpred_sad(
               ms_params, src, get_buf_from_fullmv(ref, &this_mv), ref_stride);
-          CHECK_BETTER
+          const int found_better_mv =
+              update_mvs_and_sad(thissad, &this_mv, mv_cost_params, &bestsad,
+                                 &raw_bestsad, best_mv,
+                                 /*second_best_mv=*/NULL);
+          if (found_better_mv) best_site = i;
         }
       }
       if (best_site == -1) {
@@ -687,7 +717,11 @@ static int pattern_search(
                                          bc + candidates[s][i].col };
             thissad = get_mvpred_sad(
                 ms_params, src, get_buf_from_fullmv(ref, &this_mv), ref_stride);
-            CHECK_BETTER
+            const int found_better_mv =
+                update_mvs_and_sad(thissad, &this_mv, mv_cost_params, &bestsad,
+                                   &raw_bestsad, best_mv,
+                                   /*second_best_mv=*/NULL);
+            if (found_better_mv) best_site = i;
           }
         } else {
           for (i = 0; i < num_candidates[s]; i++) {
@@ -697,7 +731,11 @@ static int pattern_search(
               continue;
             thissad = get_mvpred_sad(
                 ms_params, src, get_buf_from_fullmv(ref, &this_mv), ref_stride);
-            CHECK_BETTER
+            const int found_better_mv =
+                update_mvs_and_sad(thissad, &this_mv, mv_cost_params, &bestsad,
+                                   &raw_bestsad, best_mv,
+                                   /*second_best_mv=*/NULL);
+            if (found_better_mv) best_site = i;
           }
         }
 
@@ -725,7 +763,11 @@ static int pattern_search(
             };
             thissad = get_mvpred_sad(
                 ms_params, src, get_buf_from_fullmv(ref, &this_mv), ref_stride);
-            CHECK_BETTER
+            const int found_better_mv =
+                update_mvs_and_sad(thissad, &this_mv, mv_cost_params, &bestsad,
+                                   &raw_bestsad, best_mv,
+                                   /*second_best_mv=*/NULL);
+            if (found_better_mv) best_site = i;
           }
         } else {
           for (i = 0; i < PATTERN_CANDIDATES_REF; i++) {
@@ -737,7 +779,11 @@ static int pattern_search(
               continue;
             thissad = get_mvpred_sad(
                 ms_params, src, get_buf_from_fullmv(ref, &this_mv), ref_stride);
-            CHECK_BETTER
+            const int found_better_mv =
+                update_mvs_and_sad(thissad, &this_mv, mv_cost_params, &bestsad,
+                                   &raw_bestsad, best_mv,
+                                   /*second_best_mv=*/NULL);
+            if (found_better_mv) best_site = i;
           }
         }
 
@@ -760,7 +806,11 @@ static int pattern_search(
                                          bc + candidates[s][i].col };
             cost_list[i + 1] = thissad = get_mvpred_sad(
                 ms_params, src, get_buf_from_fullmv(ref, &this_mv), ref_stride);
-            CHECK_BETTER
+            const int found_better_mv =
+                update_mvs_and_sad(thissad, &this_mv, mv_cost_params, &bestsad,
+                                   &raw_bestsad, best_mv,
+                                   /*second_best_mv=*/NULL);
+            if (found_better_mv) best_site = i;
           }
         } else {
           for (i = 0; i < num_candidates[s]; i++) {
@@ -770,7 +820,11 @@ static int pattern_search(
               continue;
             cost_list[i + 1] = thissad = get_mvpred_sad(
                 ms_params, src, get_buf_from_fullmv(ref, &this_mv), ref_stride);
-            CHECK_BETTER
+            const int found_better_mv =
+                update_mvs_and_sad(thissad, &this_mv, mv_cost_params, &bestsad,
+                                   &raw_bestsad, best_mv,
+                                   /*second_best_mv=*/NULL);
+            if (found_better_mv) best_site = i;
           }
         }
 
@@ -798,7 +852,11 @@ static int pattern_search(
             };
             cost_list[next_chkpts_indices[i] + 1] = thissad = get_mvpred_sad(
                 ms_params, src, get_buf_from_fullmv(ref, &this_mv), ref_stride);
-            CHECK_BETTER
+            const int found_better_mv =
+                update_mvs_and_sad(thissad, &this_mv, mv_cost_params, &bestsad,
+                                   &raw_bestsad, best_mv,
+                                   /*second_best_mv=*/NULL);
+            if (found_better_mv) best_site = i;
           }
         } else {
           for (i = 0; i < PATTERN_CANDIDATES_REF; i++) {
@@ -812,7 +870,11 @@ static int pattern_search(
             }
             cost_list[next_chkpts_indices[i] + 1] = thissad = get_mvpred_sad(
                 ms_params, src, get_buf_from_fullmv(ref, &this_mv), ref_stride);
-            CHECK_BETTER
+            const int found_better_mv =
+                update_mvs_and_sad(thissad, &this_mv, mv_cost_params, &bestsad,
+                                   &raw_bestsad, best_mv,
+                                   /*second_best_mv=*/NULL);
+            if (found_better_mv) best_site = i;
           }
         }
 
@@ -847,7 +909,6 @@ static int pattern_search(
   const int var_cost = get_mvpred_var_cost(ms_params, best_mv);
   return var_cost;
 }
-#undef CHECK_BETTER
 
 // For the following foo_search, the input arguments are:
 // x: The struct used to hold a bunch of random configs.
@@ -1187,7 +1248,7 @@ static int exhaustive_mesh_search(FULLPEL_MV start_mv,
   unsigned int best_sad = INT_MAX;
   int r, c, i;
   int start_col, end_col, start_row, end_row;
-  int col_step = (step > 1) ? step : 4;
+  const int col_step = (step > 1) ? step : 4;
 
   assert(step >= 1);
 
@@ -1208,16 +1269,8 @@ static int exhaustive_mesh_search(FULLPEL_MV start_mv,
         const FULLPEL_MV mv = { start_mv.row + r, start_mv.col + c };
         unsigned int sad = get_mvpred_sad(
             ms_params, src, get_buf_from_fullmv(ref, &mv), ref_stride);
-        if (sad < best_sad) {
-          sad += mvsad_err_cost_(&mv, mv_cost_params);
-          if (sad < best_sad) {
-            best_sad = sad;
-            if (second_best_mv) {
-              *second_best_mv = *best_mv;
-            }
-            *best_mv = mv;
-          }
-        }
+        update_mvs_and_sad(sad, &mv, mv_cost_params, &best_sad,
+                           /*raw_best_sad=*/NULL, best_mv, second_best_mv);
       } else {
         // 4 sads in a single call if we are checking every location
         if (c + 3 <= end_col) {
@@ -1232,15 +1285,9 @@ static int exhaustive_mesh_search(FULLPEL_MV start_mv,
           for (i = 0; i < 4; ++i) {
             if (sads[i] < best_sad) {
               const FULLPEL_MV mv = { start_mv.row + r, start_mv.col + c + i };
-              const unsigned int sad =
-                  sads[i] + mvsad_err_cost_(&mv, mv_cost_params);
-              if (sad < best_sad) {
-                best_sad = sad;
-                if (second_best_mv) {
-                  *second_best_mv = *best_mv;
-                }
-                *best_mv = mv;
-              }
+              update_mvs_and_sad(sads[i], &mv, mv_cost_params, &best_sad,
+                                 /*raw_best_sad=*/NULL, best_mv,
+                                 second_best_mv);
             }
           }
         } else {
@@ -1248,16 +1295,8 @@ static int exhaustive_mesh_search(FULLPEL_MV start_mv,
             const FULLPEL_MV mv = { start_mv.row + r, start_mv.col + c + i };
             unsigned int sad = get_mvpred_sad(
                 ms_params, src, get_buf_from_fullmv(ref, &mv), ref_stride);
-            if (sad < best_sad) {
-              sad += mvsad_err_cost_(&mv, mv_cost_params);
-              if (sad < best_sad) {
-                best_sad = sad;
-                if (second_best_mv) {
-                  *second_best_mv = *best_mv;
-                }
-                *best_mv = mv;
-              }
-            }
+            update_mvs_and_sad(sad, &mv, mv_cost_params, &best_sad,
+                               /*raw_best_sad=*/NULL, best_mv, second_best_mv);
           }
         }
       }
