@@ -60,7 +60,6 @@ class OverallTest(cros_test_lib.MockTempDirTestCase):
     self.cg_mock = self.StartPatcher(CrosGenMock())
     self.PatchObject(sudo.SudoKeepAlive, '_IdentifyTTY', return_value='unknown')
 
-  @cros_test_lib.pytestmark_redirected_stdin_error
   def testTarballGeneration(self):
     """End-to-end test of tarball generation."""
     with mock.patch.object(cros_build_lib, 'IsInsideChroot'):

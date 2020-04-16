@@ -52,7 +52,6 @@ try:
   pytestmark_legacy_slow = pytest.mark.legacy_slow
   pytestmark_network_test = pytest.mark.network_test
   pytestmark_output_test = pytest.mark.output_test
-  pytestmark_redirected_stdin_error = pytest.mark.redirected_stdin_error
   pytestmark_requires_portage = pytest.mark.requires_portage
   pytestmark_sigterm = pytest.mark.sigterm
   pytestmark_skip = pytest.mark.skip
@@ -68,7 +67,6 @@ except (ImportError, AttributeError):
   pytestmark_leaks_process = null_decorator
   pytestmark_network_test = null_decorator
   pytestmark_output_test = null_decorator
-  pytestmark_redirected_stdin_error = null_decorator
   pytestmark_requires_portage = null_decorator
   pytestmark_sigterm = null_decorator
   pytestmark_skip = null_decorator
