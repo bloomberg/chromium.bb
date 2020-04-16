@@ -14,8 +14,7 @@ import time
 
 from chromite.lib import cros_test_lib
 
-pytestmark = [cros_test_lib.pytestmark_inside_only,
-              cros_test_lib.pytestmark_requires_portage]
+pytestmark = [cros_test_lib.pytestmark_inside_only]
 
 try:
   import pytest  # pylint: disable=import-error
