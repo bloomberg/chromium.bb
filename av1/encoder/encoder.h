@@ -152,6 +152,7 @@ enum {
 // The first REF_FRAMES + 1 buffers are reserved.
 // tpl_data->tpl_frame starts after REF_FRAMES + 1
 #define MAX_LENGTH_TPL_FRAME_STATS (MAX_TPL_FRAME_IDX + REF_FRAMES + 1)
+#define MAX_TPL_EXTEND (MAX_LAG_BUFFERS - MAX_GF_INTERVAL)
 
 typedef struct TplDepStats {
   int64_t intra_cost;

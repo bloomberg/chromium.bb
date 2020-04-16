@@ -899,9 +899,8 @@ static AOM_INLINE void init_gop_frames_for_tpl(
   if (cur_frame_idx == 0) return;
 
   int extend_frame_count = 0;
-  int extend_frame_length =
-      AOMMIN(cpi->rc.baseline_gf_interval,
-             cpi->rc.frames_to_key - cpi->rc.baseline_gf_interval);
+  int extend_frame_length = AOMMIN(
+      MAX_TPL_EXTEND, cpi->rc.frames_to_key - cpi->rc.baseline_gf_interval);
   int frame_display_index = cpi->rc.baseline_gf_interval + 1;
 
   for (;
