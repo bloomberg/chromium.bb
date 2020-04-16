@@ -1819,12 +1819,14 @@ def main(argv=None):
 
   options = parser.parse_args(argv)
 
+  log_level = logging.ERROR
   if options.verbose >= 2:
-    logging.basicConfig(level=logging.DEBUG)
+    log_level = logging.DEBUG
   elif options.verbose:
-    logging.basicConfig(level=logging.INFO)
-  else:
-    logging.basicConfig(level=logging.ERROR)
+    log_level = logging.INFO
+  log_format = ('[%(levelname).1s%(asctime)s %(process)d %(thread)d '
+                '%(filename)s] %(message)s')
+  logging.basicConfig(format=log_format, level=log_level)
 
   if options.description_file:
     options.description = gclient_utils.FileRead(options.description_file)
