@@ -49,6 +49,7 @@
 
 #include "common/dwarf_line_to_module.h"
 #include "common/unordered.h"
+#include "google_breakpad/common/breakpad_types.h"
 
 namespace google_breakpad {
 
@@ -696,7 +697,7 @@ dwarf2reader::DIEHandler *DwarfCUToModule::NamedScopeHandler::FindChildHandler(
 void DwarfCUToModule::WarningReporter::CUHeading() {
   if (printed_cu_header_)
     return;
-  fprintf(stderr, "%s: in compilation unit '%s' (offset 0x%llx):\n",
+  fprintf(stderr, "%s: in compilation unit '%s' (offset 0x%" PRIx64 "):\n",
           filename_.c_str(), cu_name_.c_str(), cu_offset_);
   printed_cu_header_ = true;
 }
@@ -704,18 +705,18 @@ void DwarfCUToModule::WarningReporter::CUHeading() {
 void DwarfCUToModule::WarningReporter::UnknownSpecification(uint64_t offset,
                                                             uint64_t target) {
   CUHeading();
-  fprintf(stderr, "%s: the DIE at offset 0x%llx has a DW_AT_specification"
-          " attribute referring to the DIE at offset 0x%llx, which was not"
-          " marked as a declaration\n",
+  fprintf(stderr, "%s: the DIE at offset 0x%" PRIx64 " has a "
+          "DW_AT_specification attribute referring to the DIE at offset 0x%"
+          PRIx64 ", which was not marked as a declaration\n",
           filename_.c_str(), offset, target);
 }
 
 void DwarfCUToModule::WarningReporter::UnknownAbstractOrigin(uint64_t offset,
                                                              uint64_t target) {
   CUHeading();
-  fprintf(stderr, "%s: the DIE at offset 0x%llx has a DW_AT_abstract_origin"
-          " attribute referring to the DIE at offset 0x%llx, which was not"
-          " marked as an inline\n",
+  fprintf(stderr, "%s: the DIE at offset 0x%" PRIx64 " has a "
+          "DW_AT_abstract_origin attribute referring to the DIE at offset 0x%"
+          PRIx64 ", which was not marked as an inline\n",
           filename_.c_str(), offset, target);
 }
 
@@ -762,7 +763,7 @@ void DwarfCUToModule::WarningReporter::UncoveredLine(const Module::Line &line) {
 
 void DwarfCUToModule::WarningReporter::UnnamedFunction(uint64_t offset) {
   CUHeading();
-  fprintf(stderr, "%s: warning: function at offset 0x%llx has no name\n",
+  fprintf(stderr, "%s: warning: function at offset 0x%" PRIx64 " has no name\n",
           filename_.c_str(), offset);
 }
 
@@ -775,16 +776,16 @@ void DwarfCUToModule::WarningReporter::DemangleError(const string &input) {
 void DwarfCUToModule::WarningReporter::UnhandledInterCUReference(
     uint64_t offset, uint64_t target) {
   CUHeading();
-  fprintf(stderr, "%s: warning: the DIE at offset 0x%llx has a "
+  fprintf(stderr, "%s: warning: the DIE at offset 0x%" PRIx64 " has a "
                   "DW_FORM_ref_addr attribute with an inter-CU reference to "
-                  "0x%llx, but inter-CU reference handling is turned off.\n",
-                  filename_.c_str(), offset, target);
+                  "0x%" PRIx64 ", but inter-CU reference handling is turned "
+                  " off.\n", filename_.c_str(), offset, target);
 }
 
 void DwarfCUToModule::WarningReporter::MalformedRangeList(uint64_t offset) {
   CUHeading();
-  fprintf(stderr, "%s: warning: the range list at offset 0x%llx falls out of "
-                  "the .debug_ranges section.\n",
+  fprintf(stderr, "%s: warning: the range list at offset 0x%" PRIx64 " falls "
+                  " out of the .debug_ranges section.\n",
                   filename_.c_str(), offset);
 }
 
