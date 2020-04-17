@@ -48,10 +48,21 @@ typedef void (*cfl_store_inter_block_visitor_fn_t)(AV1_COMMON *const cm,
 
 typedef struct ThreadData {
   DECLARE_ALIGNED(32, MACROBLOCKD, xd);
+
+  // Coding block buffer for the current superblock.
+  // Used only for single-threaded decoding and multi-threaded decoding with
+  // row_mt == 1 cases.
+  // See also: similar buffer in 'AV1Decoder'.
   CB_BUFFER cb_buffer_base;
+
   aom_reader *bit_reader;
+
+  // Motion compensation buffer used to get a prediction buffer with extended
+  // borders. One buffer for each of the two possible references.
   uint8_t *mc_buf[2];
+  // Allocated size of 'mc_buf'.
   int32_t mc_buf_size;
+  // If true, the pointers in 'mc_buf' were converted from highbd pointers.
   int mc_buf_use_highbd;  // Boolean: whether the byte pointers stored in
                           // mc_buf were converted from highbd pointers.
 
@@ -228,11 +239,24 @@ typedef struct AV1Decoder {
   int tile_count_minus_1;
   uint32_t coded_tile_data_size;
   unsigned int ext_tile_debug;  // for ext-tile software debug & testing
+
+  // Decoder has 3 modes of operation:
+  // (1) Single-threaded decoding.
+  // (2) Multi-threaded decoding with each tile decoded in parallel.
+  // (3) In addition to (2), each thread decodes 1 superblock row in parallel.
+  // row_mt = 1 triggers mode (3) above, while row_mt = 0, will trigger mode (1)
+  // or (2) depending on 'max_threads'.
   unsigned int row_mt;
+
   EXTERNAL_REFERENCES ext_refs;
   YV12_BUFFER_CONFIG tile_list_outbuf;
 
+  // Coding block buffer for the current frame.
+  // Allocated and used only for multi-threaded decoding with 'row_mt == 0'.
+  // See also: similar buffer in 'ThreadData' struct.
   CB_BUFFER *cb_buffer_base;
+  // Allocated size of 'cb_buffer_base'. Currently same as the number of
+  // superblocks in the coded frame.
   int cb_buffer_alloc_size;
 
   int allocated_row_mt_sync_rows;
