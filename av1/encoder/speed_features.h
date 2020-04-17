@@ -301,6 +301,9 @@ typedef struct TPL_SPEED_FEATURES {
 
   // When to stop subpel search.
   SUBPEL_FORCE_STOP subpel_force_stop;
+
+  // Prune starting mvs in TPL based on sad scores.
+  int prune_starting_mv;
 } TPL_SPEED_FEATURES;
 
 typedef struct GLOBAL_MOTION_SPEED_FEATURES {
