@@ -205,6 +205,11 @@ int av1_get_palette_color_index_context(const uint8_t *color_map, int stride,
                                         int r, int c, int palette_size,
                                         uint8_t *color_order, int *color_idx);
 
+// A faster version of av1_get_palette_color_index_context used by the encoder
+// exploiting the fact that the encoder does not need to maintain a color order.
+int av1_fast_palette_color_index_context(const uint8_t *color_map, int stride,
+                                         int r, int c, int *color_idx);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

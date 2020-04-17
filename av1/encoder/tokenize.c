@@ -39,7 +39,6 @@ static int cost_and_tokenize_map(Av1ColorMapParam *param, TokenExtra **t,
   const int n = param->n_colors;
   const int palette_size_idx = n - PALETTE_MIN_SIZE;
   int this_rate = 0;
-  uint8_t color_order[PALETTE_MAX_SIZE];
 
   (void)plane;
   (void)counts;
@@ -48,8 +47,8 @@ static int cost_and_tokenize_map(Av1ColorMapParam *param, TokenExtra **t,
     for (int j = AOMMIN(k, cols - 1); j >= AOMMAX(0, k - rows + 1); --j) {
       int i = k - j;
       int color_new_idx;
-      const int color_ctx = av1_get_palette_color_index_context(
-          color_map, plane_block_width, i, j, n, color_order, &color_new_idx);
+      const int color_ctx = av1_fast_palette_color_index_context(
+          color_map, plane_block_width, i, j, &color_new_idx);
       assert(color_new_idx >= 0 && color_new_idx < n);
       if (calc_rate) {
         this_rate += (*color_cost)[palette_size_idx][color_ctx][color_new_idx];
