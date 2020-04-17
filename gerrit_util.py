@@ -44,10 +44,12 @@ else:
   from io import StringIO
 
 LOGGER = logging.getLogger()
-# With a starting sleep time of 1.5 seconds, 2^n exponential backoff, and seven
-# total tries, the sleep time between the first and last tries will be 94.5 sec.
-TRY_LIMIT = 3
-
+# With a starting sleep time of 10.0 seconds, x <= [1.8-2.2]x backoff, and five
+# total tries, the sleep time between the first and last tries will be ~7 min.
+TRY_LIMIT = 5
+SLEEP_TIME = 10.0
+MAX_BACKOFF = 2.2
+MIN_BACKOFF = 1.8
 
 # Controls the transport protocol used to communicate with Gerrit.
 # This is parameterized primarily to enable GerritTestCase.
@@ -302,7 +304,7 @@ class GceAuthenticator(Authenticator):
 
   @staticmethod
   def _get(url, **kwargs):
-    next_delay_sec = 1
+    next_delay_sec = 1.0
     for i in range(TRY_LIMIT):
       p = urllib.parse.urlparse(url)
       if p.scheme not in ('http', 'https'):
@@ -323,7 +325,7 @@ class GceAuthenticator(Authenticator):
         LOGGER.info('Will retry in %d seconds (%d more times)...',
                     next_delay_sec, TRY_LIMIT - i - 1)
         time_sleep(next_delay_sec)
-        next_delay_sec *= 2
+        next_delay_sec *= random.uniform(MIN_BACKOFF, MAX_BACKOFF)
     return None, None
 
   @classmethod
@@ -418,7 +420,7 @@ def ReadHttpResponse(conn, accept_statuses=frozenset([200])):
                      Common additions include 204, 400, and 404.
   Returns: A string buffer containing the connection's reply.
   """
-  sleep_time = 1.5
+  sleep_time = SLEEP_TIME
   for idx in range(TRY_LIMIT):
     before_response = time.time()
     response, contents = conn.request(**conn.req_params)
@@ -434,9 +436,10 @@ def ReadHttpResponse(conn, accept_statuses=frozenset([200])):
     # If response.status is an accepted status,
     # or response.status < 500 then the result is final; break retry loop.
     # If the response is 404/409 it might be because of replication lag,
-    # so keep trying anyway.
+    # so keep trying anyway. If it is 429, it is generally ok to retry after
+    # a backoff.
     if (response.status in accept_statuses
-        or response.status < 500 and response.status not in [404, 409]):
+        or response.status < 500 and response.status not in [404, 409, 429]):
       LOGGER.debug('got response %d for %s %s', response.status,
                    conn.req_params['method'], conn.req_params['uri'])
       # If 404 was in accept_statuses, then it's expected that the file might
@@ -459,7 +462,7 @@ def ReadHttpResponse(conn, accept_statuses=frozenset([200])):
       LOGGER.info('Will retry in %d seconds (%d more times)...',
                   sleep_time, TRY_LIMIT - idx - 1)
       time_sleep(sleep_time)
-      sleep_time = sleep_time * 2
+      sleep_time *= random.uniform(MIN_BACKOFF, MAX_BACKOFF)
   # end of retries loop
 
   if response.status in accept_statuses:

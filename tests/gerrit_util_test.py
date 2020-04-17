@@ -202,8 +202,8 @@ class GceAuthenticatorTest(unittest.TestCase):
   def testIsGce_500(self):
     httplib2.Http().request.return_value = (mock.Mock(status=500), None)
     self.assertFalse(self.GceAuthenticator.is_gce())
-    self.assertEqual(
-        [mock.call(1), mock.call(2)], gerrit_util.time_sleep.mock_calls)
+    last_call = gerrit_util.time_sleep.mock_calls[-1]
+    self.assertLessEqual(last_call, mock.call(43.0))
 
   def testIsGce_FailsThenSucceeds(self):
     response = mock.Mock(status=200)
@@ -363,17 +363,23 @@ class GerritUtilTest(unittest.TestCase):
 
     self.assertEqual(404, cm.exception.http_status)
 
-  def testReadHttpResponse_ServerError(self):
+  def readHttpResponse_ServerErrorHelper(self, status):
     conn = mock.Mock(req_params={'uri': 'uri', 'method': 'method'})
-    conn.request.return_value = (mock.Mock(status=500), b'')
+    conn.request.return_value = (mock.Mock(status=status), b'')
 
     with self.assertRaises(gerrit_util.GerritError) as cm:
       gerrit_util.ReadHttpResponse(conn)
 
-    self.assertEqual(500, cm.exception.http_status)
+    self.assertEqual(status, cm.exception.http_status)
     self.assertEqual(gerrit_util.TRY_LIMIT, len(conn.request.mock_calls))
-    self.assertEqual(
-        [mock.call(1.5), mock.call(3)], gerrit_util.time_sleep.mock_calls)
+    last_call = gerrit_util.time_sleep.mock_calls[-1]
+    self.assertLessEqual(last_call, mock.call(422.0))
+
+  def testReadHttpResponse_ServerError(self):
+    self.readHttpResponse_ServerErrorHelper(status=404)
+    self.readHttpResponse_ServerErrorHelper(status=409)
+    self.readHttpResponse_ServerErrorHelper(status=429)
+    self.readHttpResponse_ServerErrorHelper(status=500)
 
   def testReadHttpResponse_ServerErrorAndSuccess(self):
     conn = mock.Mock(req_params={'uri': 'uri', 'method': 'method'})
@@ -384,7 +390,7 @@ class GerritUtilTest(unittest.TestCase):
 
     self.assertEqual('content✔', gerrit_util.ReadHttpResponse(conn).getvalue())
     self.assertEqual(2, len(conn.request.mock_calls))
-    gerrit_util.time_sleep.assert_called_once_with(1.5)
+    gerrit_util.time_sleep.assert_called_once_with(10.0)
 
   def testReadHttpResponse_Expected404(self):
     conn = mock.Mock()
