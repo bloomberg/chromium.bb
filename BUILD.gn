@@ -5,7 +5,7 @@
 # Custom GN integration for VulkanMemoryAllocator.
 
 # This could be set via build_overrides if necessary
-vulkan_memory_allocator_vulkan_dep = "../../src/third_party/volk"
+vulkan_memory_allocator_vulkan_dep = "../../src/libANGLE/renderer/vulkan:angle_vulkan_headers"
 
 config("vulkan_memory_allocator_config") {
   include_dirs = [ "src" ]
