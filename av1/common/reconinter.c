@@ -722,6 +722,54 @@ void av1_build_one_inter_predictor(
   }
 }
 
+static void dist_wtd_comp_weight_assign(const AV1_COMMON *cm,
+                                        const MB_MODE_INFO *mbmi, int order_idx,
+                                        int *fwd_offset, int *bck_offset,
+                                        int *use_dist_wtd_comp_avg,
+                                        int is_compound) {
+  assert(fwd_offset != NULL && bck_offset != NULL);
+  if (!is_compound || mbmi->compound_idx) {
+    *use_dist_wtd_comp_avg = 0;
+    return;
+  }
+
+  *use_dist_wtd_comp_avg = 1;
+  const RefCntBuffer *const bck_buf = get_ref_frame_buf(cm, mbmi->ref_frame[0]);
+  const RefCntBuffer *const fwd_buf = get_ref_frame_buf(cm, mbmi->ref_frame[1]);
+  const int cur_frame_index = cm->cur_frame->order_hint;
+  int bck_frame_index = 0, fwd_frame_index = 0;
+
+  if (bck_buf != NULL) bck_frame_index = bck_buf->order_hint;
+  if (fwd_buf != NULL) fwd_frame_index = fwd_buf->order_hint;
+
+  int d0 = clamp(abs(get_relative_dist(&cm->seq_params.order_hint_info,
+                                       fwd_frame_index, cur_frame_index)),
+                 0, MAX_FRAME_DISTANCE);
+  int d1 = clamp(abs(get_relative_dist(&cm->seq_params.order_hint_info,
+                                       cur_frame_index, bck_frame_index)),
+                 0, MAX_FRAME_DISTANCE);
+
+  const int order = d0 <= d1;
+
+  if (d0 == 0 || d1 == 0) {
+    *fwd_offset = quant_dist_lookup_table[order_idx][3][order];
+    *bck_offset = quant_dist_lookup_table[order_idx][3][1 - order];
+    return;
+  }
+
+  int i;
+  for (i = 0; i < 3; ++i) {
+    int c0 = quant_dist_weight[i][order];
+    int c1 = quant_dist_weight[i][!order];
+    int d0_c0 = d0 * c0;
+    int d1_c1 = d1 * c1;
+    if ((d0 > d1 && d0_c0 < d1_c1) || (d0 <= d1 && d0_c0 > d1_c1)) break;
+  }
+
+  *fwd_offset = quant_dist_lookup_table[order_idx][i][order];
+  *bck_offset = quant_dist_lookup_table[order_idx][i][1 - order];
+}
+
 // True if the following hold:
 //  1. Not intrabc and not build_for_obmc
 //  2. A U or V plane
@@ -875,7 +923,7 @@ static void build_inter_predictors_8x8_and_bigger(
     inter_pred_params.conv_params = get_conv_params_no_round(
         ref, plane, xd->tmp_conv_dst, MAX_SB_SIZE, is_compound, xd->bd);
 
-    av1_dist_wtd_comp_weight_assign(
+    dist_wtd_comp_weight_assign(
         cm, mi, 0, &inter_pred_params.conv_params.fwd_offset,
         &inter_pred_params.conv_params.bck_offset,
         &inter_pred_params.conv_params.use_dist_wtd_comp_avg, is_compound);
@@ -909,55 +957,6 @@ void av1_build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                           calc_subpel_params_func);
   }
 }
-
-void av1_dist_wtd_comp_weight_assign(const AV1_COMMON *cm,
-                                     const MB_MODE_INFO *mbmi, int order_idx,
-                                     int *fwd_offset, int *bck_offset,
-                                     int *use_dist_wtd_comp_avg,
-                                     int is_compound) {
-  assert(fwd_offset != NULL && bck_offset != NULL);
-  if (!is_compound || mbmi->compound_idx) {
-    *use_dist_wtd_comp_avg = 0;
-    return;
-  }
-
-  *use_dist_wtd_comp_avg = 1;
-  const RefCntBuffer *const bck_buf = get_ref_frame_buf(cm, mbmi->ref_frame[0]);
-  const RefCntBuffer *const fwd_buf = get_ref_frame_buf(cm, mbmi->ref_frame[1]);
-  const int cur_frame_index = cm->cur_frame->order_hint;
-  int bck_frame_index = 0, fwd_frame_index = 0;
-
-  if (bck_buf != NULL) bck_frame_index = bck_buf->order_hint;
-  if (fwd_buf != NULL) fwd_frame_index = fwd_buf->order_hint;
-
-  int d0 = clamp(abs(get_relative_dist(&cm->seq_params.order_hint_info,
-                                       fwd_frame_index, cur_frame_index)),
-                 0, MAX_FRAME_DISTANCE);
-  int d1 = clamp(abs(get_relative_dist(&cm->seq_params.order_hint_info,
-                                       cur_frame_index, bck_frame_index)),
-                 0, MAX_FRAME_DISTANCE);
-
-  const int order = d0 <= d1;
-
-  if (d0 == 0 || d1 == 0) {
-    *fwd_offset = quant_dist_lookup_table[order_idx][3][order];
-    *bck_offset = quant_dist_lookup_table[order_idx][3][1 - order];
-    return;
-  }
-
-  int i;
-  for (i = 0; i < 3; ++i) {
-    int c0 = quant_dist_weight[i][order];
-    int c1 = quant_dist_weight[i][!order];
-    int d0_c0 = d0 * c0;
-    int d1_c1 = d1 * c1;
-    if ((d0 > d1 && d0_c0 < d1_c1) || (d0 <= d1 && d0_c0 > d1_c1)) break;
-  }
-
-  *fwd_offset = quant_dist_lookup_table[order_idx][i][order];
-  *bck_offset = quant_dist_lookup_table[order_idx][i][1 - order];
-}
-
 void av1_setup_dst_planes(struct macroblockd_plane *planes, BLOCK_SIZE bsize,
                           const YV12_BUFFER_CONFIG *src, int mi_row, int mi_col,
                           const int plane_start, const int plane_end) {

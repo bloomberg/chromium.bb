@@ -451,11 +451,6 @@ void av1_joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
     av1_enc_build_one_inter_predictor(second_pred, pw, &cur_mv[!id].as_mv,
                                       &inter_pred_params);
 
-    const int order_idx = id != 0;
-    av1_dist_wtd_comp_weight_assign(
-        cm, mbmi, order_idx, &xd->jcp_param.fwd_offset,
-        &xd->jcp_param.bck_offset, &xd->jcp_param.use_dist_wtd_comp_avg, 1);
-
     // Do full-pixel compound motion search on the current reference frame.
     if (id) xd->plane[plane].pre[0] = ref_yv12[id];
 
@@ -677,10 +672,6 @@ static AOM_INLINE void build_second_inter_pred(const AV1_COMP *cpi,
   // Get the prediction block from the 'other' reference frame.
   av1_enc_build_one_inter_predictor(second_pred, pw, other_mv,
                                     &inter_pred_params);
-
-  av1_dist_wtd_comp_weight_assign(cm, mbmi, 0, &xd->jcp_param.fwd_offset,
-                                  &xd->jcp_param.bck_offset,
-                                  &xd->jcp_param.use_dist_wtd_comp_avg, 1);
 }
 
 // Wrapper for av1_compound_single_motion_search, for the common case

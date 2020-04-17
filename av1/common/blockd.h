@@ -670,9 +670,6 @@ typedef struct macroblockd {
   // CFL (chroma from luma) related parameters.
   CFL_CTX cfl;
 
-  // TODO(urvang): Move to encoder.
-  DIST_WTD_COMP_PARAMS jcp_param;
-
   // TODO(urvang): Move to decoder.
   uint16_t cb_offset[MAX_MB_PLANE];
   // TODO(urvang): Move to decoder.
