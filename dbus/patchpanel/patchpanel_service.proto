@@ -197,16 +197,23 @@ message ConnectNamespaceRequest {
   bool allow_user_traffic = 3;
 }
 
-// Response to a ConnectNamespaceRequest.
-// |ifname| and |ipv4_subnet| are empty if the operation failed.
+// Response to a ConnectNamespaceRequest. If the operation failed then all
+// fields are left set to their default value (empty string or 0).
 message ConnectNamespaceResponse {
-  // Name of the veth interface moved into the client namespace.
-  string ifname = 1;
-
   // The subnet allocated to the client namespace.
-  IPv4Subnet ipv4_subnet = 2;
+  IPv4Subnet ipv4_subnet = 1;
+
+  // Name of the veth interface created in the client namespace.
+  string peer_ifname = 2;
 
   // The IPv4 address in network order assigned to the interface inside the
   // client namespace.
-  uint32 ipv4_address = 3;
+  uint32 peer_ipv4_address = 3;
+
+  // Name of the veth interface created in the host namespace.
+  string host_ifname = 4;
+
+  // The IPv4 address in network order assigned to the interface in the host
+  // namespace.
+  uint32 host_ipv4_address = 5;
 }
