@@ -79,7 +79,40 @@ const char kSetParametersFunction[] = "SetParameters";
 const char kSendPacketFunction[] = "SendPacket";
 const char kUpdateConnectionStateFunction[] = "UpdateConnectionState";
 
+// Manager property names.
+const char kActiveProfileProperty[] = "ActiveProfile";
+const char kAlwaysOnVpnPackageProperty[] = "AlwaysOnVpnPackage";
+const char kArpGatewayProperty[] = "ArpGateway";
+const char kAvailableTechnologiesProperty[] = "AvailableTechnologies";
+const char kCheckPortalListProperty[] = "CheckPortalList";
+const char kClaimedDevicesProperty[] = "ClaimedDevices";
+const char kConnectedTechnologiesProperty[] = "ConnectedTechnologies";
+const char kConnectionStateProperty[] = "ConnectionState";
+const char kDefaultServiceProperty[] = "DefaultService";
+const char kDefaultTechnologyProperty[] = "DefaultTechnology";
+const char kDevicesProperty[] = "Devices";
+const char kDhcpPropertyHostnameProperty[] = "DHCPProperty.Hostname";
+const char kDhcpPropertyVendorClassProperty[] = "DHCPProperty.VendorClass";
+const char kDisableWiFiVHTProperty[] = "DisableWiFiVHT";
+const char kEnabledTechnologiesProperty[] = "EnabledTechnologies";
+const char kIgnoredDNSSearchPathsProperty[] = "IgnoredDNSSearchPaths";
+const char kLinkMonitorTechnologiesProperty[] = "LinkMonitorTechnologies";
+const char kNoAutoConnectTechnologiesProperty[] = "NoAutoConnectTechnologies";
+const char kOfflineModeProperty[] = "OfflineMode";
+const char kPortalFallbackUrlsStringProperty[] = "PortalFallbackUrlsString";
+const char kPortalHttpUrlProperty[] = "PortalHttpUrl";
+const char kPortalHttpsUrlProperty[] = "PortalHttpsUrl";
+const char kProfilesProperty[] = "Profiles";
+const char kProhibitedTechnologiesProperty[] = "ProhibitedTechnologies";
+const char kServiceCompleteListProperty[] = "ServiceCompleteList";
+const char kServiceWatchListProperty[] = "ServiceWatchList";
+const char kServicesProperty[] = "Services";
+const char kUninitializedTechnologiesProperty[] = "UninitializedTechnologies";
+const char kWakeOnLanEnabledProperty[] = "WakeOnLanEnabled";
+const char kWifiGlobalFTEnabledProperty[] = "WiFi.GlobalFTEnabled";
+
 // Flimflam Service property names.
+const char kCountryProperty[] = "Country";
 const char kSecurityProperty[] = "Security";
 const char kPriorityProperty[] = "Priority";
 const char kPassphraseProperty[] = "Passphrase";
@@ -170,30 +203,11 @@ const char kCellularApnProperty[] = "Cellular.APN";
 const char kCellularLastGoodApnProperty[] = "Cellular.LastGoodAPN";
 const char kCellularApnListProperty[] = "Cellular.APNList";
 
-// Flimflam Manager property names.
-const char kProfilesProperty[] = "Profiles";
-const char kServicesProperty[] = "Services";
-const char kServiceWatchListProperty[] = "ServiceWatchList";
-const char kAvailableTechnologiesProperty[] = "AvailableTechnologies";
-const char kEnabledTechnologiesProperty[] = "EnabledTechnologies";
-const char kConnectedTechnologiesProperty[] = "ConnectedTechnologies";
-const char kDefaultTechnologyProperty[] = "DefaultTechnology";
-const char kOfflineModeProperty[] = "OfflineMode";
-const char kActiveProfileProperty[] = "ActiveProfile";
-const char kDevicesProperty[] = "Devices";
-const char kCheckPortalListProperty[] = "CheckPortalList";
-const char kArpGatewayProperty[] = "ArpGateway";
-const char kCountryProperty[] = "Country";
-const char kPortalHttpUrlProperty[] = "PortalHttpUrl";
-const char kPortalHttpsUrlProperty[] = "PortalHttpsUrl";
-const char kPortalFallbackUrlsStringProperty[] = "PortalFallbackUrlsString";
-const char kConnectionStateProperty[] = "ConnectionState";
-const char kClaimedDevicesProperty[] = "ClaimedDevices";
-
 // Flimflam Profile property names.
 const char kEntriesProperty[] = "Entries";
 
 // Flimflam Device property names.
+const char kWakeOnWiFiFeaturesEnabledProperty[] = "WakeOnWiFiFeaturesEnabled";
 const char kScanningProperty[] = "Scanning";
 const char kPoweredProperty[] = "Powered";
 const char kScanIntervalProperty[] = "ScanInterval";
@@ -593,24 +607,6 @@ const char kTypeUnknown[] = "unknown";
 const char kErrorEapAuthenticationFailed[] = "eap-authentication-failed";
 const char kErrorEapLocalTlsFailed[] = "eap-local-tls-failed";
 const char kErrorEapRemoteTlsFailed[] = "eap-remote-tls-failed";
-
-// Manager property names.
-const char kAlwaysOnVpnPackageProperty[] = "AlwaysOnVpnPackage";
-const char kDefaultServiceProperty[] = "DefaultService";
-const char kDhcpPropertyHostnameProperty[] = "DHCPProperty.Hostname";
-const char kDhcpPropertyVendorClassProperty[] = "DHCPProperty.VendorClass";
-const char kDisableWiFiVHTProperty[] = "DisableWiFiVHT";
-const char kIgnoredDNSSearchPathsProperty[] = "IgnoredDNSSearchPaths";
-const char kLinkMonitorTechnologiesProperty[] = "LinkMonitorTechnologies";
-const char kNoAutoConnectTechnologiesProperty[] = "NoAutoConnectTechnologies";
-const char kProhibitedTechnologiesProperty[] = "ProhibitedTechnologies";
-const char kServiceCompleteListProperty[] = "ServiceCompleteList";
-const char kShortDNSTimeoutTechnologiesProperty[] =
-    "ShortDNSTimeoutTechnologies";
-const char kUninitializedTechnologiesProperty[] = "UninitializedTechnologies";
-const char kWakeOnLanEnabledProperty[] = "WakeOnLanEnabled";
-const char kWakeOnWiFiFeaturesEnabledProperty[] = "WakeOnWiFiFeaturesEnabled";
-const char kWifiGlobalFTEnabledProperty[] = "WiFi.GlobalFTEnabled";
 
 // Service property names.
 const char kActivationTypeProperty[] = "Cellular.ActivationType";
