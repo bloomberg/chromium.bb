@@ -5218,8 +5218,9 @@ static AOM_INLINE void encode_tiles(AV1_COMP *cpi) {
   const int tile_rows = cm->tiles.rows;
   int tile_col, tile_row;
 
-  if (cpi->tile_data == NULL || cpi->allocated_tiles < tile_cols * tile_rows)
-    av1_alloc_tile_data(cpi);
+  assert(IMPLIES(cpi->tile_data == NULL,
+                 cpi->allocated_tiles < tile_cols * tile_rows));
+  if (cpi->allocated_tiles < tile_cols * tile_rows) av1_alloc_tile_data(cpi);
 
   av1_init_tile_data(cpi);
 

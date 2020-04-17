@@ -35,17 +35,13 @@ void av1_row_mt_sync_read_dummy(AV1EncRowMultiThreadSync *row_mt_sync, int r,
 void av1_row_mt_sync_write_dummy(AV1EncRowMultiThreadSync *row_mt_sync, int r,
                                  int c, int cols);
 
-// Allocate memory for row based multi-threading synchronization.
-void av1_row_mt_sync_mem_alloc(AV1EncRowMultiThreadSync *row_mt_sync,
-                               struct AV1Common *cm, int rows);
-// Free row based multi-threading synchronization memory.
-void av1_row_mt_sync_mem_dealloc(AV1EncRowMultiThreadSync *row_mt_sync);
-
 void av1_encode_tiles_mt(struct AV1_COMP *cpi);
 void av1_encode_tiles_row_mt(struct AV1_COMP *cpi);
 
 void av1_accumulate_frame_counts(struct FRAME_COUNTS *acc_counts,
                                  const struct FRAME_COUNTS *counts);
+
+void av1_row_mt_mem_dealloc(AV1_COMP *cpi);
 
 #ifdef __cplusplus
 }  // extern "C"
