@@ -48,7 +48,6 @@ try:
   pytest_skip = pytest.skip
   pytestmark_config_skew_test = pytest.mark.config_skew_test
   pytestmark_inside_only = pytest.mark.inside_only
-  pytestmark_leaks_process = pytest.mark.leaks_process
   pytestmark_legacy_slow = pytest.mark.legacy_slow
   pytestmark_network_test = pytest.mark.network_test
   pytestmark_sigterm = pytest.mark.sigterm
@@ -62,7 +61,6 @@ except (ImportError, AttributeError):
   pytestmark_config_skew_test = null_decorator
   pytestmark_inside_only = null_decorator
   pytestmark_legacy_slow = null_decorator
-  pytestmark_leaks_process = null_decorator
   pytestmark_network_test = null_decorator
   pytestmark_sigterm = null_decorator
   pytestmark_skip = null_decorator

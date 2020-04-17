@@ -13,6 +13,8 @@ import optparse  # pylint: disable=deprecated-module
 import os
 import sys
 
+import pytest  # pylint: disable=import-error
+
 from chromite.cbuildbot import cbuildbot_run
 from chromite.lib import cgroups
 from chromite.cbuildbot import commands
@@ -351,6 +353,7 @@ class InterfaceTest(cros_test_lib.MockTestCase, cros_test_lib.LoggingTestCase):
     self.assertNotEqual(options.chrome_root, None)
 
 
+@pytest.mark.usefixtures('singleton_manager')
 class FullInterfaceTest(cros_test_lib.MockTempDirTestCase):
   """Tests that run the cbuildbot.main() function directly.
 
@@ -398,7 +401,6 @@ class FullInterfaceTest(cros_test_lib.MockTempDirTestCase):
     finally:
       cros_build_lib.STRICT_SUDO = False
 
-  @cros_test_lib.pytestmark_leaks_process
   def testNullArgsStripped(self):
     """Test that null args are stripped out and don't cause error."""
     self.assertMain(['-r', self.buildroot, '', '',
