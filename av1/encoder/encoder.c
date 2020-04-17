@@ -831,8 +831,8 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
   cpi->tpl_sb_rdmult_scaling_factors = NULL;
 
 #if CONFIG_TUNE_VMAF
-  aom_free(cpi->vmaf_rdmult_scaling_factors);
-  cpi->vmaf_rdmult_scaling_factors = NULL;
+  aom_free(cpi->vmaf_info.rdmult_scaling_factors);
+  cpi->vmaf_info.rdmult_scaling_factors = NULL;
 #endif
 
   aom_free(cpi->td.mb.above_pred_buf);
@@ -3234,10 +3234,10 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf, BufferPool *const pool,
     const int h = mi_size_high[bsize];
     const int num_cols = (mi_params->mi_cols + w - 1) / w;
     const int num_rows = (mi_params->mi_rows + h - 1) / h;
-    CHECK_MEM_ERROR(cm, cpi->vmaf_rdmult_scaling_factors,
+    CHECK_MEM_ERROR(cm, cpi->vmaf_info.rdmult_scaling_factors,
                     aom_calloc(num_rows * num_cols,
-                               sizeof(*cpi->vmaf_rdmult_scaling_factors)));
-    cpi->last_frame_unsharp_amount = 0.0;
+                               sizeof(*cpi->vmaf_info.rdmult_scaling_factors)));
+    cpi->vmaf_info.last_frame_unsharp_amount = 0.0;
   }
 #endif
 

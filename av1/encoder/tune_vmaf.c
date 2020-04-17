@@ -257,8 +257,9 @@ void av1_vmaf_frame_preprocessing(AV1_COMP *const cpi,
   aom_free_frame_buffer(&source_extended);
 
   const double best_frame_unsharp_amount = find_best_frame_unsharp_amount(
-      cpi, source, &blurred, cpi->last_frame_unsharp_amount, 0.05, 20, 1.01);
-  cpi->last_frame_unsharp_amount = best_frame_unsharp_amount;
+      cpi, source, &blurred, cpi->vmaf_info.last_frame_unsharp_amount, 0.05, 20,
+      1.01);
+  cpi->vmaf_info.last_frame_unsharp_amount = best_frame_unsharp_amount;
 
   unsharp(cpi, source, &blurred, source, best_frame_unsharp_amount);
   aom_free_frame_buffer(&blurred);
@@ -288,8 +289,9 @@ void av1_vmaf_blk_preprocessing(AV1_COMP *const cpi,
   aom_free_frame_buffer(&source_extended);
 
   const double best_frame_unsharp_amount = find_best_frame_unsharp_amount(
-      cpi, source, &blurred, cpi->last_frame_unsharp_amount, 0.05, 20, 1.01);
-  cpi->last_frame_unsharp_amount = best_frame_unsharp_amount;
+      cpi, source, &blurred, cpi->vmaf_info.last_frame_unsharp_amount, 0.05, 20,
+      1.01);
+  cpi->vmaf_info.last_frame_unsharp_amount = best_frame_unsharp_amount;
 
   const int block_size = BLOCK_64X64;
   const int block_w = mi_size_wide[block_size] * 4;
@@ -581,7 +583,7 @@ void av1_set_mb_vmaf_rdmult_scaling(AV1_COMP *cpi) {
 
       // Normalize it with a data fitted model.
       weight = 6.0 * (1.0 - exp(-0.05 * weight)) + 0.8;
-      cpi->vmaf_rdmult_scaling_factors[index] = weight;
+      cpi->vmaf_info.rdmult_scaling_factors[index] = weight;
     }
   }
 
@@ -613,7 +615,7 @@ void av1_set_vmaf_rdmult(const AV1_COMP *const cpi, MACROBLOCK *const x,
     for (col = mi_col / num_mi_h;
          col < num_cols && col < mi_col / num_mi_h + num_bcols; ++col) {
       const int index = row * num_cols + col;
-      geom_mean_of_scale += log(cpi->vmaf_rdmult_scaling_factors[index]);
+      geom_mean_of_scale += log(cpi->vmaf_info.rdmult_scaling_factors[index]);
       num_of_mi += 1.0;
     }
   }
@@ -732,9 +734,9 @@ int av1_get_vmaf_base_qindex(const AV1_COMP *const cpi, int current_qindex) {
   }
   const int bit_depth = cpi->td.mb.e_mbd.bd;
   const double approx_sse =
-      cpi->last_frame_ysse /
+      cpi->vmaf_info.last_frame_ysse /
       (double)((1 << (bit_depth - 8)) * (1 << (bit_depth - 8)));
-  const double approx_dvmaf = kBaselineVmaf - cpi->last_frame_vmaf;
+  const double approx_dvmaf = kBaselineVmaf - cpi->vmaf_info.last_frame_vmaf;
   const double sse_threshold =
       0.01 * cpi->source->y_width * cpi->source->y_height;
   const double vmaf_threshold = 0.01;
@@ -785,10 +787,11 @@ void av1_update_vmaf_curve(AV1_COMP *cpi, YV12_BUFFER_CONFIG *source,
                            YV12_BUFFER_CONFIG *recon) {
   const int bit_depth = cpi->td.mb.e_mbd.bd;
   aom_calc_vmaf(cpi->oxcf.vmaf_model_path, source, recon, bit_depth,
-                &cpi->last_frame_vmaf);
+                &cpi->vmaf_info.last_frame_vmaf);
   if (bit_depth > 8) {
-    cpi->last_frame_ysse = (double)aom_highbd_get_y_sse(source, recon);
+    cpi->vmaf_info.last_frame_ysse =
+        (double)aom_highbd_get_y_sse(source, recon);
   } else {
-    cpi->last_frame_ysse = (double)aom_get_y_sse(source, recon);
+    cpi->vmaf_info.last_frame_ysse = (double)aom_get_y_sse(source, recon);
   }
 }

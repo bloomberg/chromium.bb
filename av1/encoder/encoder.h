@@ -49,6 +49,10 @@
 #if CONFIG_DENOISE
 #include "aom_dsp/noise_model.h"
 #endif
+#if CONFIG_TUNE_VMAF
+#include "aom_dsp/vmaf.h"
+#endif
+
 #include "aom/internal/aom_codec_internal.h"
 #include "aom_util/aom_thread.h"
 
@@ -1379,10 +1383,8 @@ typedef struct AV1_COMP {
   double *ssim_rdmult_scaling_factors;
 
 #if CONFIG_TUNE_VMAF
-  double *vmaf_rdmult_scaling_factors;
-  double last_frame_ysse;
-  double last_frame_vmaf;
-  double last_frame_unsharp_amount;
+  // Parameters for VMAF tuning.
+  TuneVMAFInfo vmaf_info;
 #endif
 
   int use_svc;

@@ -14,6 +14,22 @@
 
 #include "aom_scale/yv12config.h"
 
+typedef struct {
+  // Stores the scaling factors for rdmult when tuning for VMAF.
+  // rdmult_scaling_factors[row * num_cols + col] stores the scaling factors for
+  // 64x64 block at (row, col).
+  double *rdmult_scaling_factors;
+
+  // Stores the luma sse of the last frame.
+  double last_frame_ysse;
+
+  // Stores the VMAF of the last frame.
+  double last_frame_vmaf;
+
+  // Stores the filter strength of the last frame.
+  double last_frame_unsharp_amount;
+} TuneVMAFInfo;
+
 void aom_calc_vmaf(const char *model_path, const YV12_BUFFER_CONFIG *source,
                    const YV12_BUFFER_CONFIG *distorted, int bit_depth,
                    double *vmaf);
