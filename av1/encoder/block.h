@@ -175,8 +175,8 @@ typedef struct {
   RD_STATS rd_stats_uv;
   uint8_t blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE];
   uint8_t tx_type_map[MAX_MIB_SIZE * MAX_MIB_SIZE];
-  uint8_t skip;
-  uint8_t disable_skip;
+  uint8_t skip_txfm;
+  uint8_t disable_skip_txfm;
   uint8_t early_skipped;
 } SimpleRDState;
 
@@ -323,12 +323,15 @@ struct macroblock {
   uint8_t blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE];
   uint8_t tx_type_map[MAX_MIB_SIZE * MAX_MIB_SIZE];
 
-  // Force the coding block to skip transform and quantization.
-  int force_skip;
-  int skip_cost[SKIP_CONTEXTS][2];
+  // Forces the coding block to skip transform and quantization.
+  int skip_txfm;
+  int skip_txfm_cost[SKIP_CONTEXTS][2];
 
+  // Skip mode tries to use the closest forward and backward references for
+  // inter prediction. Skip here means to skip transmitting the reference
+  // frames, not to be confused with skip_txfm.
   int skip_mode;  // 0: off; 1: on
-  int skip_mode_cost[SKIP_CONTEXTS][2];
+  int skip_mode_cost[SKIP_MODE_CONTEXTS][2];
 
   LV_MAP_COEFF_COST coeff_costs[TX_SIZES][PLANE_TYPES];
   LV_MAP_EOB_COST eob_costs[7][2];

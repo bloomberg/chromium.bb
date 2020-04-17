@@ -63,7 +63,7 @@ void av1_print_modes_and_motion_vectors(AV1_COMMON *cm, const char *file) {
   for (int mi_row = 0; mi_row < rows; mi_row++) {
     fprintf(mvs, "S ");
     for (int mi_col = 0; mi_col < cols; mi_col++) {
-      fprintf(mvs, "%2d ", mi[0]->skip);
+      fprintf(mvs, "%2d ", mi[0]->skip_txfm);
       mi++;
     }
     fprintf(mvs, "\n");

@@ -572,9 +572,9 @@ int main(int argc, const char **argv) {
   /* Skip flag */
   cts_each_dim[0] = SKIP_CONTEXTS;
   cts_each_dim[1] = 2;
-  optimize_cdf_table(&fc.skip[0][0], probsfile, 2, cts_each_dim,
+  optimize_cdf_table(&fc.skip_txfm[0][0], probsfile, 2, cts_each_dim,
                      "static const aom_cdf_prob "
-                     "default_skip_cdfs[SKIP_CONTEXTS][CDF_SIZE(2)]");
+                     "default_skip_txfm_cdfs[SKIP_CONTEXTS][CDF_SIZE(2)]");
 
   /* Skip mode flag */
   cts_each_dim[0] = SKIP_MODE_CONTEXTS;

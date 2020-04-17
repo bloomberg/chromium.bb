@@ -507,7 +507,7 @@ static AOM_INLINE void reset_tx_size(MACROBLOCK *x, MB_MODE_INFO *mbmi,
            bw * sizeof(xd->tx_type_map[0]));
   }
   av1_zero(x->blk_skip);
-  x->force_skip = 0;
+  x->skip_txfm = 0;
 }
 
 // This function will copy the best reference mode information from
@@ -555,7 +555,7 @@ static AOM_INLINE void update_state(const AV1_COMP *const cpi, ThreadData *td,
 
   memcpy(x->blk_skip, ctx->blk_skip, sizeof(x->blk_skip[0]) * ctx->num_4x4_blk);
 
-  x->force_skip = ctx->rd_stats.skip;
+  x->skip_txfm = ctx->rd_stats.skip_txfm;
 
   xd->tx_type_map = ctx->tx_type_map;
   xd->tx_type_map_stride = mi_size_wide[bsize];
@@ -588,7 +588,7 @@ static AOM_INLINE void update_state(const AV1_COMP *const cpi, ThreadData *td,
     if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ) {
       av1_cyclic_refresh_update_segment(cpi, mi_addr, mi_row, mi_col, bsize,
                                         ctx->rd_stats.rate, ctx->rd_stats.dist,
-                                        x->force_skip);
+                                        x->skip_txfm);
     }
     if (mi_addr->uv_mode == UV_CFL_PRED && !is_cfl_allowed(xd))
       mi_addr->uv_mode = UV_DC_PRED;
@@ -727,7 +727,7 @@ static AOM_INLINE void pick_sb_modes(AV1_COMP *const cpi,
                                      int pick_mode_type) {
   if (best_rd.rdcost < 0) {
     ctx->rd_stats.rdcost = INT64_MAX;
-    ctx->rd_stats.skip = 0;
+    ctx->rd_stats.skip_txfm = 0;
     av1_invalid_rd_stats(rd_cost);
     return;
   }
@@ -782,7 +782,7 @@ static AOM_INLINE void pick_sb_modes(AV1_COMP *const cpi,
 
   ctx->skippable = 0;
   // Set to zero to make sure we do not use the previous encoded frame stats
-  mbmi->skip = 0;
+  mbmi->skip_txfm = 0;
   // Reset skip mode flag.
   mbmi->skip_mode = 0;
 
@@ -1102,11 +1102,11 @@ static AOM_INLINE void update_stats(const AV1_COMMON *const cm,
   }
 
   if (!mbmi->skip_mode && !seg_ref_active) {
-    const int skip_ctx = av1_get_skip_context(xd);
+    const int skip_ctx = av1_get_skip_txfm_context(xd);
 #if CONFIG_ENTROPY_STATS
-    td->counts->skip[skip_ctx][mbmi->skip]++;
+    td->counts->skip_txfm[skip_ctx][mbmi->skip_txfm]++;
 #endif
-    update_cdf(fc->skip_cdfs[skip_ctx], mbmi->skip, 2);
+    update_cdf(fc->skip_txfm_cdfs[skip_ctx], mbmi->skip_txfm, 2);
   }
 
 #if CONFIG_ENTROPY_STATS
@@ -1116,7 +1116,7 @@ static AOM_INLINE void update_stats(const AV1_COMMON *const cm,
       ((xd->mi_col & (cm->seq_params.mib_size - 1)) == 0);
   const DeltaQInfo *const delta_q_info = &cm->delta_q_info;
   if (delta_q_info->delta_q_present_flag &&
-      (bsize != cm->seq_params.sb_size || !mbmi->skip) &&
+      (bsize != cm->seq_params.sb_size || !mbmi->skip_txfm) &&
       super_block_upper_left) {
     const int dq =
         (mbmi->current_qindex - xd->current_qindex) / delta_q_info->delta_q_res;
@@ -1583,7 +1583,7 @@ static AOM_INLINE void encode_b(const AV1_COMP *const cpi,
   if (!dry_run) {
     const AV1_COMMON *const cm = &cpi->common;
     x->cb_offset += block_size_wide[bsize] * block_size_high[bsize];
-    if (bsize == cpi->common.seq_params.sb_size && mbmi->skip == 1 &&
+    if (bsize == cpi->common.seq_params.sb_size && mbmi->skip_txfm == 1 &&
         cm->delta_q_info.delta_lf_present_flag) {
       const int frame_lf_count =
           av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
@@ -1605,7 +1605,7 @@ static AOM_INLINE void encode_b(const AV1_COMP *const cpi,
         ((mi_col & (cm->seq_params.mib_size - 1)) == 0);
     const DeltaQInfo *const delta_q_info = &cm->delta_q_info;
     if (delta_q_info->delta_q_present_flag &&
-        (bsize != cm->seq_params.sb_size || !mbmi->skip) &&
+        (bsize != cm->seq_params.sb_size || !mbmi->skip_txfm) &&
         super_block_upper_left) {
       xd->current_qindex = mbmi->current_qindex;
       if (delta_q_info->delta_lf_present_flag) {
@@ -2040,7 +2040,7 @@ static AOM_INLINE void rd_use_partition(
       break;
     case PARTITION_SPLIT:
       if (cpi->sf.part_sf.adjust_var_based_rd_partitioning == 1 &&
-          none_rdc.rate < INT_MAX && none_rdc.skip == 1) {
+          none_rdc.rate < INT_MAX && none_rdc.skip_txfm == 1) {
         av1_invalid_rd_stats(&last_part_rdc);
         break;
       }
@@ -2378,7 +2378,7 @@ static AOM_INLINE void nonrd_use_partition(AV1_COMP *cpi, ThreadData *td,
         none_rdc.rdcost = RDCOST(x->rdmult, none_rdc.rate, none_rdc.dist);
         restore_context(x, &x_ctx, mi_row, mi_col, bsize, 3);
         if (cpi->sf.rt_sf.nonrd_check_partition_merge_mode != 2 ||
-            none_rdc.skip != 1 || pc_tree->none->mic.mode == NEWMV) {
+            none_rdc.skip_txfm != 1 || pc_tree->none->mic.mode == NEWMV) {
           av1_init_rd_stats(&split_rdc);
           for (int i = 0; i < 4; i++) {
             RD_STATS block_rdc;
@@ -4416,7 +4416,7 @@ static AOM_INLINE void avg_cdf_symbols(FRAME_CONTEXT *ctx_left,
   AVERAGE_CDF(ctx_left->compound_index_cdf, ctx_tr->compound_index_cdf, 2);
   AVERAGE_CDF(ctx_left->comp_group_idx_cdf, ctx_tr->comp_group_idx_cdf, 2);
   AVERAGE_CDF(ctx_left->skip_mode_cdfs, ctx_tr->skip_mode_cdfs, 2);
-  AVERAGE_CDF(ctx_left->skip_cdfs, ctx_tr->skip_cdfs, 2);
+  AVERAGE_CDF(ctx_left->skip_txfm_cdfs, ctx_tr->skip_txfm_cdfs, 2);
   AVERAGE_CDF(ctx_left->intra_inter_cdf, ctx_tr->intra_inter_cdf, 2);
   avg_nmv(&ctx_left->nmvc, &ctx_tr->nmvc, wt_left, wt_tr);
   avg_nmv(&ctx_left->ndvc, &ctx_tr->ndvc, wt_left, wt_tr);
@@ -6442,7 +6442,7 @@ static AOM_INLINE void encode_superblock(const AV1_COMP *const cpi,
   const int mi_col = xd->mi_col;
   if (!is_inter) {
     xd->cfl.store_y = store_cfl_required(cm, xd);
-    mbmi->skip = 1;
+    mbmi->skip_txfm = 1;
     for (int plane = 0; plane < num_planes; ++plane) {
       av1_encode_intra_block_plane(cpi, x, bsize, plane, dry_run,
                                    cpi->optimize_seg_arr[mbmi->segment_id]);
@@ -6453,7 +6453,7 @@ static AOM_INLINE void encode_superblock(const AV1_COMP *const cpi,
     // write_segment_id().
     if (!cpi->common.seg.segid_preskip && cpi->common.seg.update_map &&
         cpi->enc_seg.has_lossless_segment)
-      mbmi->skip = 0;
+      mbmi->skip_txfm = 0;
 
     xd->cfl.store_y = 0;
     if (av1_allow_palette(cm->features.allow_screen_content_tools, bsize)) {
@@ -6522,7 +6522,7 @@ static AOM_INLINE void encode_superblock(const AV1_COMP *const cpi,
     if (av1_allow_intrabc(cm) && is_intrabc_block(mbmi)) td->intrabc_used = 1;
     if (x->tx_mode_search_type == TX_MODE_SELECT &&
         !xd->lossless[mbmi->segment_id] && mbmi->sb_type > BLOCK_4X4 &&
-        !(is_inter && (mbmi->skip || seg_skip))) {
+        !(is_inter && (mbmi->skip_txfm || seg_skip))) {
       if (is_inter) {
         tx_partition_count_update(cm, x, bsize, td->counts,
                                   tile_data->allow_update_cdf);
@@ -6570,7 +6570,7 @@ static AOM_INLINE void encode_superblock(const AV1_COMP *const cpi,
 
   if (x->tx_mode_search_type == TX_MODE_SELECT &&
       block_signals_txsize(mbmi->sb_type) && is_inter &&
-      !(mbmi->skip || seg_skip) && !xd->lossless[mbmi->segment_id]) {
+      !(mbmi->skip_txfm || seg_skip) && !xd->lossless[mbmi->segment_id]) {
     if (dry_run) tx_partition_set_contexts(cm, xd, bsize);
   } else {
     TX_SIZE tx_size = mbmi->tx_size;
@@ -6586,7 +6586,7 @@ static AOM_INLINE void encode_superblock(const AV1_COMP *const cpi,
     }
     mbmi->tx_size = tx_size;
     set_txfm_ctxs(tx_size, xd->width, xd->height,
-                  (mbmi->skip || seg_skip) && is_inter_block(mbmi), xd);
+                  (mbmi->skip_txfm || seg_skip) && is_inter_block(mbmi), xd);
   }
 
   if (is_inter_block(mbmi) && !xd->is_chroma_ref && is_cfl_allowed(xd)) {

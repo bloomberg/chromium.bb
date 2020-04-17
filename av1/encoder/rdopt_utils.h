@@ -619,14 +619,15 @@ static INLINE void store_winner_mode_stats(
   // Update rd stats required for inter frame
   if (!frame_is_intra_only(cm) && rd_cost && rd_cost_y && rd_cost_uv) {
     const MACROBLOCKD *xd = &x->e_mbd;
-    const int skip_ctx = av1_get_skip_context(xd);
+    const int skip_ctx = av1_get_skip_txfm_context(xd);
     const int is_intra_mode = av1_mode_defs[mode_index].mode < INTRA_MODE_END;
-    const int skip = mbmi->skip && !is_intra_mode;
+    const int skip_txfm = mbmi->skip_txfm && !is_intra_mode;
 
     winner_mode_stats[mode_idx].rd_cost = *rd_cost;
     if (txfm_search_done) {
       winner_mode_stats[mode_idx].rate_y =
-          rd_cost_y->rate + x->skip_cost[skip_ctx][rd_cost->skip || skip];
+          rd_cost_y->rate +
+          x->skip_txfm_cost[skip_ctx][rd_cost->skip_txfm || skip_txfm];
       winner_mode_stats[mode_idx].rate_uv = rd_cost_uv->rate;
     }
   }

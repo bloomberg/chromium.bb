@@ -2026,7 +2026,7 @@ static void update_tx_type_count(const AV1_COMP *cpi, const AV1_COMMON *cm,
   }
 
   if (get_ext_tx_types(tx_size, is_inter, reduced_tx_set_used) > 1 &&
-      cm->quant_params.base_qindex > 0 && !mbmi->skip &&
+      cm->quant_params.base_qindex > 0 && !mbmi->skip_txfm &&
       !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
     const int eset = get_ext_tx_set(tx_size, is_inter, reduced_tx_set_used);
     if (eset > 0) {
@@ -2230,7 +2230,7 @@ void av1_update_txb_context(const AV1_COMP *cpi, ThreadData *td,
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
   struct tokenize_b_args arg = { cpi, td, 0, allow_update_cdf, dry_run };
-  if (mbmi->skip) {
+  if (mbmi->skip_txfm) {
     av1_reset_entropy_context(xd, bsize, num_planes);
     return;
   }

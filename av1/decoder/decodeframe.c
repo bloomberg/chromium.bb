@@ -159,7 +159,7 @@ static AOM_INLINE void read_coeffs_tx_intra_block(
     const AV1_COMMON *const cm, MACROBLOCKD *const xd, aom_reader *const r,
     const int plane, const int row, const int col, const TX_SIZE tx_size) {
   MB_MODE_INFO *mbmi = xd->mi[0];
-  if (!mbmi->skip) {
+  if (!mbmi->skip_txfm) {
 #if TXCOEFF_TIMER
     struct aom_usec_timer timer;
     aom_usec_timer_start(&timer);
@@ -211,7 +211,7 @@ static AOM_INLINE void predict_and_reconstruct_intra_block(
 
   av1_predict_intra_block_facade(cm, xd, plane, col, row, tx_size);
 
-  if (!mbmi->skip) {
+  if (!mbmi->skip_txfm) {
     struct macroblockd_plane *const pd = &xd->plane[plane];
     eob_info *eob_data = pd->eob_data + xd->txb_offset[plane];
     if (eob_data->eob) {
@@ -925,7 +925,7 @@ static AOM_INLINE void decode_token_recon_block(AV1Decoder *const pbi,
   } else {
     td->predict_inter_block_visit(cm, xd, bsize);
     // Reconstruction
-    if (!mbmi->skip) {
+    if (!mbmi->skip_txfm) {
       int eobtotal = 0;
 
       const int max_blocks_wide = max_block_wide(xd, bsize, 0);
@@ -1140,7 +1140,7 @@ static AOM_INLINE void parse_decode_block(AV1Decoder *const pbi,
   MB_MODE_INFO *mbmi = xd->mi[0];
   int inter_block_tx = is_inter_block(mbmi) || is_intrabc_block(mbmi);
   if (cm->features.tx_mode == TX_MODE_SELECT && block_signals_txsize(bsize) &&
-      !mbmi->skip && inter_block_tx && !xd->lossless[mbmi->segment_id]) {
+      !mbmi->skip_txfm && inter_block_tx && !xd->lossless[mbmi->segment_id]) {
     const TX_SIZE max_tx_size = max_txsize_rect_lookup[bsize];
     const int bh = tx_size_high_unit[max_tx_size];
     const int bw = tx_size_wide_unit[max_tx_size];
@@ -1155,12 +1155,12 @@ static AOM_INLINE void parse_decode_block(AV1Decoder *const pbi,
 #endif
                            idy, idx, r);
   } else {
-    mbmi->tx_size =
-        read_tx_size(xd, cm->features.tx_mode, inter_block_tx, !mbmi->skip, r);
+    mbmi->tx_size = read_tx_size(xd, cm->features.tx_mode, inter_block_tx,
+                                 !mbmi->skip_txfm, r);
     if (inter_block_tx)
       memset(mbmi->inter_tx_size, mbmi->tx_size, sizeof(mbmi->inter_tx_size));
     set_txfm_ctxs(mbmi->tx_size, xd->width, xd->height,
-                  mbmi->skip && is_inter_block(mbmi), xd);
+                  mbmi->skip_txfm && is_inter_block(mbmi), xd);
 #if CONFIG_LPF_MASK
     const int w = mi_size_wide[bsize];
     const int h = mi_size_high[bsize];
@@ -1210,7 +1210,7 @@ static AOM_INLINE void parse_decode_block(AV1Decoder *const pbi,
       }
     }
   }
-  if (mbmi->skip) av1_reset_entropy_context(xd, bsize, num_planes);
+  if (mbmi->skip_txfm) av1_reset_entropy_context(xd, bsize, num_planes);
 
   decode_token_recon_block(pbi, td, r, bsize);
 }

@@ -193,7 +193,7 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td,
   MB_MODE_INFO *const mbmi = xd->mi[0];
   struct tokenize_b_args arg = { cpi, td, 0, allow_update_cdf, dry_run };
 
-  if (mbmi->skip) {
+  if (mbmi->skip_txfm) {
     av1_reset_entropy_context(xd, bsize, num_planes);
     return;
   }

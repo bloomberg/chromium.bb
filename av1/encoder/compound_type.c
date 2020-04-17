@@ -488,12 +488,12 @@ static int64_t estimate_yrd_for_sb(const AV1_COMP *const cpi, BLOCK_SIZE bs,
                            max_txsize_rect_lookup[bs], FTXS_NONE, skip_trellis);
   x->rd_model = FULL_TXFM_RD;
   if (rd != INT64_MAX) {
-    const int skip_ctx = av1_get_skip_context(xd);
-    if (rd_stats->skip) {
-      const int s1 = x->skip_cost[skip_ctx][1];
+    const int skip_ctx = av1_get_skip_txfm_context(xd);
+    if (rd_stats->skip_txfm) {
+      const int s1 = x->skip_txfm_cost[skip_ctx][1];
       rd_stats->rate = s1;
     } else {
-      const int s0 = x->skip_cost[skip_ctx][0];
+      const int s0 = x->skip_txfm_cost[skip_ctx][0];
       rd_stats->rate += s0;
     }
   }

@@ -218,11 +218,11 @@ static int write_skip(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   if (segfeature_active(&cm->seg, segment_id, SEG_LVL_SKIP)) {
     return 1;
   } else {
-    const int skip = mi->skip;
-    const int ctx = av1_get_skip_context(xd);
+    const int skip_txfm = mi->skip_txfm;
+    const int ctx = av1_get_skip_txfm_context(xd);
     FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-    aom_write_symbol(w, skip, ec_ctx->skip_cdfs[ctx], 2);
-    return skip;
+    aom_write_symbol(w, skip_txfm, ec_ctx->skip_txfm_cdfs[ctx], 2);
+    return skip_txfm;
   }
 }
 
@@ -439,9 +439,12 @@ int av1_neg_interleave(int x, int ref, int max) {
   }
 }
 
-static AOM_INLINE void write_segment_id(
-    AV1_COMP *cpi, const MB_MODE_INFO *const mbmi, aom_writer *w,
-    const struct segmentation *seg, struct segmentation_probs *segp, int skip) {
+static AOM_INLINE void write_segment_id(AV1_COMP *cpi,
+                                        const MB_MODE_INFO *const mbmi,
+                                        aom_writer *w,
+                                        const struct segmentation *seg,
+                                        struct segmentation_probs *segp,
+                                        int skip_txfm) {
   if (!seg->enabled || !seg->update_map) return;
 
   AV1_COMMON *const cm = &cpi->common;
@@ -451,8 +454,8 @@ static AOM_INLINE void write_segment_id(
   const int mi_row = xd->mi_row;
   const int mi_col = xd->mi_col;
 
-  if (skip) {
-    // Still need to transmit tx size for intra blocks even if skip is
+  if (skip_txfm) {
+    // Still need to transmit tx size for intra blocks even if skip_txfm is
     // true. Changing segment_id may make the tx size become invalid, e.g
     // changing from lossless to lossy.
     assert(is_inter_block(mbmi) || !cpi->enc_seg.has_lossless_segment);
@@ -796,7 +799,7 @@ void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
   if (get_ext_tx_types(tx_size, is_inter, features->reduced_tx_set_used) > 1 &&
       ((!cm->seg.enabled && cm->quant_params.base_qindex > 0) ||
        (cm->seg.enabled && xd->qindex[mbmi->segment_id] > 0)) &&
-      !mbmi->skip &&
+      !mbmi->skip_txfm &&
       !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
     FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
     const TX_SIZE square_tx_size = txsize_sqr_map[tx_size];
@@ -1094,7 +1097,7 @@ static AOM_INLINE void pack_inter_mode_mvs(AV1_COMP *cpi, aom_writer *w) {
 
   write_skip_mode(cm, xd, segment_id, mbmi, w);
 
-  assert(IMPLIES(mbmi->skip_mode, mbmi->skip));
+  assert(IMPLIES(mbmi->skip_mode, mbmi->skip_txfm));
   const int skip =
       mbmi->skip_mode ? 1 : write_skip(cm, xd, segment_id, mbmi, w);
 
@@ -1433,7 +1436,7 @@ static AOM_INLINE void write_tokens_b(AV1_COMP *cpi, aom_writer *w,
   MB_MODE_INFO *const mbmi = xd->mi[0];
   const BLOCK_SIZE bsize = mbmi->sb_type;
 
-  assert(!mbmi->skip);
+  assert(!mbmi->skip_txfm);
 
   const int is_inter = is_inter_block(mbmi);
   if (!is_inter) {
@@ -1528,10 +1531,10 @@ static AOM_INLINE void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
   }
 
   const int is_inter_tx = is_inter_block(mbmi);
-  const int skip = mbmi->skip;
+  const int skip_txfm = mbmi->skip_txfm;
   const int segment_id = mbmi->segment_id;
   if (cm->features.tx_mode == TX_MODE_SELECT && block_signals_txsize(bsize) &&
-      !(is_inter_tx && skip) && !xd->lossless[segment_id]) {
+      !(is_inter_tx && skip_txfm) && !xd->lossless[segment_id]) {
     if (is_inter_tx) {  // This implies skip flag is 0.
       const TX_SIZE max_tx_size = get_vartx_max_txsize(xd, bsize, 0);
       const int txbh = tx_size_high_unit[max_tx_size];
@@ -1548,11 +1551,11 @@ static AOM_INLINE void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
       set_txfm_ctxs(mbmi->tx_size, xd->width, xd->height, 0, xd);
     }
   } else {
-    set_txfm_ctxs(mbmi->tx_size, xd->width, xd->height, skip && is_inter_tx,
-                  xd);
+    set_txfm_ctxs(mbmi->tx_size, xd->width, xd->height,
+                  skip_txfm && is_inter_tx, xd);
   }
 
-  if (!mbmi->skip) {
+  if (!mbmi->skip_txfm) {
     write_tokens_b(cpi, w, tok, tok_end);
   }
 }

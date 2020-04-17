@@ -104,7 +104,7 @@ static INLINE void av1_init_rd_stats(RD_STATS *rd_stats) {
   rd_stats->dist = 0;
   rd_stats->rdcost = 0;
   rd_stats->sse = 0;
-  rd_stats->skip = 1;
+  rd_stats->skip_txfm = 1;
   rd_stats->zero_rate = 0;
 #if CONFIG_RD_DEBUG
   // This may run into problems when monochrome video is
@@ -129,7 +129,7 @@ static INLINE void av1_invalid_rd_stats(RD_STATS *rd_stats) {
   rd_stats->dist = INT64_MAX;
   rd_stats->rdcost = INT64_MAX;
   rd_stats->sse = INT64_MAX;
-  rd_stats->skip = 0;
+  rd_stats->skip_txfm = 0;
   rd_stats->zero_rate = 0;
 #if CONFIG_RD_DEBUG
   // This may run into problems when monochrome video is
@@ -155,7 +155,7 @@ static INLINE void av1_merge_rd_stats(RD_STATS *rd_stats_dst,
     rd_stats_dst->zero_rate = rd_stats_src->zero_rate;
   rd_stats_dst->dist += rd_stats_src->dist;
   rd_stats_dst->sse += rd_stats_src->sse;
-  rd_stats_dst->skip &= rd_stats_src->skip;
+  rd_stats_dst->skip_txfm &= rd_stats_src->skip_txfm;
 #if CONFIG_RD_DEBUG
   // This may run into problems when monochrome video is
   // encoded, as there will only be 1 plane
@@ -178,13 +178,13 @@ static INLINE void av1_merge_rd_stats(RD_STATS *rd_stats_dst,
 }
 
 static INLINE void av1_accumulate_rd_stats(RD_STATS *rd_stats, int64_t dist,
-                                           int rate, int skip, int64_t sse,
+                                           int rate, int skip_txfm, int64_t sse,
                                            int zero_rate) {
   assert(rd_stats->rate != INT_MAX && rate != INT_MAX);
   rd_stats->rate += rate;
   if (!rd_stats->zero_rate) rd_stats->zero_rate = zero_rate;
   rd_stats->dist += dist;
-  rd_stats->skip &= skip;
+  rd_stats->skip_txfm &= skip_txfm;
   rd_stats->sse += sse;
 }
 

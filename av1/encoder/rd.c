@@ -92,14 +92,14 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
     av1_cost_tokens_from_cdf(x->partition_cost[i], fc->partition_cdf[i], NULL);
 
   if (cm->current_frame.skip_mode_info.skip_mode_flag) {
-    for (i = 0; i < SKIP_CONTEXTS; ++i) {
+    for (i = 0; i < SKIP_MODE_CONTEXTS; ++i) {
       av1_cost_tokens_from_cdf(x->skip_mode_cost[i], fc->skip_mode_cdfs[i],
                                NULL);
     }
   }
 
   for (i = 0; i < SKIP_CONTEXTS; ++i) {
-    av1_cost_tokens_from_cdf(x->skip_cost[i], fc->skip_cdfs[i], NULL);
+    av1_cost_tokens_from_cdf(x->skip_txfm_cost[i], fc->skip_txfm_cdfs[i], NULL);
   }
 
   for (i = 0; i < KF_MODE_CONTEXTS; ++i)

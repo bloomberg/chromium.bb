@@ -311,7 +311,7 @@ static int sb_all_skip(const CommonModeInfoParams *const mi_params, int mi_row,
   MB_MODE_INFO **mbmi = mi_params->mi_grid_base + mi_row * stride + mi_col;
   for (int r = 0; r < maxr; ++r, mbmi += stride) {
     for (int c = 0; c < maxc; ++c) {
-      if (!mbmi[c]->skip) return 0;
+      if (!mbmi[c]->skip_txfm) return 0;
     }
   }
   return 1;

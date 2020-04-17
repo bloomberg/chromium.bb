@@ -600,12 +600,12 @@ void av1_encode_sb(const struct AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
   assert(bsize < BLOCK_SIZES_ALL);
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *mbmi = xd->mi[0];
-  mbmi->skip = 1;
-  if (x->force_skip) return;
+  mbmi->skip_txfm = 1;
+  if (x->skip_txfm) return;
 
   struct optimize_ctx ctx;
   struct encode_b_args arg = {
-    cpi,  x,    &ctx,    &mbmi->skip,
+    cpi,  x,    &ctx,    &mbmi->skip_txfm,
     NULL, NULL, dry_run, cpi->optimize_seg_arr[mbmi->segment_id]
   };
   const AV1_COMMON *const cm = &cpi->common;
@@ -790,7 +790,7 @@ void av1_encode_intra_block_plane(const struct AV1_COMP *cpi, MACROBLOCK *x,
   const int ss_y = pd->subsampling_y;
   ENTROPY_CONTEXT ta[MAX_MIB_SIZE] = { 0 };
   ENTROPY_CONTEXT tl[MAX_MIB_SIZE] = { 0 };
-  struct encode_b_args arg = { cpi, x,  NULL,    &(xd->mi[0]->skip),
+  struct encode_b_args arg = { cpi, x,  NULL,    &(xd->mi[0]->skip_txfm),
                                ta,  tl, dry_run, enable_optimize_b };
   const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, ss_x, ss_y);
   if (enable_optimize_b) {

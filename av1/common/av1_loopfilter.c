@@ -202,7 +202,7 @@ static TX_SIZE get_transform_size(const MACROBLOCKD *const xd,
           : av1_get_max_uv_txsize(mbmi->sb_type, plane_ptr->subsampling_x,
                                   plane_ptr->subsampling_y);
   assert(tx_size < TX_SIZES_ALL);
-  if ((plane == AOM_PLANE_Y) && is_inter_block(mbmi) && !mbmi->skip) {
+  if ((plane == AOM_PLANE_Y) && is_inter_block(mbmi) && !mbmi->skip_txfm) {
     const BLOCK_SIZE sb_type = mbmi->sb_type;
     const int blk_row = mi_row & (mi_size_high[sb_type] - 1);
     const int blk_col = mi_col & (mi_size_wide[sb_type] - 1);
@@ -279,7 +279,7 @@ static TX_SIZE set_lpf_parameters(
     {
       const uint32_t curr_level =
           av1_get_filter_level(cm, &cm->lf_info, edge_dir, plane, mbmi);
-      const int curr_skipped = mbmi->skip && is_inter_block(mbmi);
+      const int curr_skipped = mbmi->skip_txfm && is_inter_block(mbmi);
       uint32_t level = curr_level;
       if (coord) {
         {
@@ -295,7 +295,8 @@ static TX_SIZE set_lpf_parameters(
           const uint32_t pv_lvl =
               av1_get_filter_level(cm, &cm->lf_info, edge_dir, plane, mi_prev);
 
-          const int pv_skip = mi_prev->skip && is_inter_block(mi_prev);
+          const int pv_skip_txfm =
+              mi_prev->skip_txfm && is_inter_block(mi_prev);
           const BLOCK_SIZE bsize =
               get_plane_block_size(mbmi->sb_type, plane_ptr->subsampling_x,
                                    plane_ptr->subsampling_y);
@@ -307,7 +308,7 @@ static TX_SIZE set_lpf_parameters(
           // if the current and the previous blocks are skipped,
           // deblock the edge if the edge belongs to a PU's edge only.
           if ((curr_level || pv_lvl) &&
-              (!pv_skip || !curr_skipped || pu_edge)) {
+              (!pv_skip_txfm || !curr_skipped || pu_edge)) {
             const TX_SIZE min_ts = AOMMIN(ts, pv_ts);
             if (TX_4X4 >= min_ts) {
               params->filter_length = 4;

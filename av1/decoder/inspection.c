@@ -101,7 +101,7 @@ int ifd_inspect(insp_frame_data *fd, void *decoder, int skip_not_transform) {
       // Block Size
       mi->sb_type = mbmi->sb_type;
       // Skip Flag
-      mi->skip = mbmi->skip;
+      mi->skip = mbmi->skip_txfm;
       mi->filter[0] = av1_extract_interp_filter(mbmi->interp_filters, 0);
       mi->filter[1] = av1_extract_interp_filter(mbmi->interp_filters, 1);
       mi->dual_filter_type = mi->filter[0] * 3 + mi->filter[1];

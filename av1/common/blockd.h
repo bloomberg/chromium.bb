@@ -188,7 +188,7 @@ typedef struct RD_STATS {
   // rate/dist.
   int64_t rdcost;
   int64_t sse;
-  int skip;  // sse should equal to dist when skip == 1
+  int skip_txfm;  // sse should equal to dist when skip_txfm == 1
   int zero_rate;
 #if CONFIG_RD_DEBUG
   int txb_coeff_cost[MAX_MB_PLANE];
@@ -242,7 +242,7 @@ typedef struct MB_MODE_INFO {
   PARTITION_TYPE partition;
   MV_REFERENCE_FRAME ref_frame[2];
   FILTER_INTRA_MODE_INFO filter_intra_mode_info;
-  int8_t skip;
+  int8_t skip_txfm;
   uint8_t inter_tx_size[INTER_TX_SIZE_BUF_LEN];
   TX_SIZE tx_size;
   int8_t delta_lf_from_base;

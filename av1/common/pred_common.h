@@ -169,12 +169,12 @@ static INLINE int av1_get_skip_mode_context(const MACROBLOCKD *xd) {
   return above_skip_mode + left_skip_mode;
 }
 
-static INLINE int av1_get_skip_context(const MACROBLOCKD *xd) {
+static INLINE int av1_get_skip_txfm_context(const MACROBLOCKD *xd) {
   const MB_MODE_INFO *const above_mi = xd->above_mbmi;
   const MB_MODE_INFO *const left_mi = xd->left_mbmi;
-  const int above_skip = above_mi ? above_mi->skip : 0;
-  const int left_skip = left_mi ? left_mi->skip : 0;
-  return above_skip + left_skip;
+  const int above_skip_txfm = above_mi ? above_mi->skip_txfm : 0;
+  const int left_skip_txfm = left_mi ? left_mi->skip_txfm : 0;
+  return above_skip_txfm + left_skip_txfm;
 }
 
 int av1_get_pred_context_switchable_interp(const MACROBLOCKD *xd, int dir);
@@ -208,8 +208,8 @@ static INLINE aom_cdf_prob *av1_get_reference_mode_cdf(const MACROBLOCKD *xd) {
   return xd->tile_ctx->comp_inter_cdf[av1_get_reference_mode_context(xd)];
 }
 
-static INLINE aom_cdf_prob *av1_get_skip_cdf(const MACROBLOCKD *xd) {
-  return xd->tile_ctx->skip_cdfs[av1_get_skip_context(xd)];
+static INLINE aom_cdf_prob *av1_get_skip_txfm_cdf(const MACROBLOCKD *xd) {
+  return xd->tile_ctx->skip_txfm_cdfs[av1_get_skip_txfm_context(xd)];
 }
 
 int av1_get_comp_reference_type_context(const MACROBLOCKD *xd);

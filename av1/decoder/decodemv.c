@@ -37,7 +37,7 @@ static PREDICTION_MODE read_intra_mode(aom_reader *r, aom_cdf_prob *cdf) {
 }
 
 static void read_cdef(AV1_COMMON *cm, aom_reader *r, MACROBLOCKD *const xd) {
-  const int skip = xd->mi[0]->skip;
+  const int skip_txfm = xd->mi[0]->skip_txfm;
   if (cm->features.coded_lossless) return;
   if (cm->features.allow_intrabc) {
     assert(cm->cdef_info.cdef_bits == 0);
@@ -66,7 +66,7 @@ static void read_cdef(AV1_COMMON *cm, aom_reader *r, MACROBLOCKD *const xd) {
                         : 0;
 
   // Read CDEF strength from the first non-skip coding block in this CDEF unit.
-  if (!xd->cdef_transmitted[index] && !skip) {
+  if (!xd->cdef_transmitted[index] && !skip_txfm) {
     // CDEF strength for this CDEF unit needs to be read into the MB_MODE_INFO
     // of the 1st block in this CDEF unit.
     const int first_block_mask = ~(cdef_size - 1);
@@ -90,7 +90,7 @@ static int read_delta_qindex(AV1_COMMON *cm, const MACROBLOCKD *xd,
   const int read_delta_q_flag = (b_col == 0 && b_row == 0);
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
 
-  if ((bsize != cm->seq_params.sb_size || mbmi->skip == 0) &&
+  if ((bsize != cm->seq_params.sb_size || mbmi->skip_txfm == 0) &&
       read_delta_q_flag) {
     abs = aom_read_symbol(r, ec_ctx->delta_q_cdf, DELTA_Q_PROBS + 1, ACCT_STR);
     const int smallval = (abs < DELTA_Q_SMALL);
@@ -121,7 +121,7 @@ static int read_delta_lflevel(const AV1_COMMON *const cm, aom_reader *r,
   const int b_row = mi_row & (cm->seq_params.mib_size - 1);
   const int read_delta_lf_flag = (b_col == 0 && b_row == 0);
 
-  if ((bsize != cm->seq_params.sb_size || mbmi->skip == 0) &&
+  if ((bsize != cm->seq_params.sb_size || mbmi->skip_txfm == 0) &&
       read_delta_lf_flag) {
     int abs = aom_read_symbol(r, cdf, DELTA_LF_PROBS + 1, ACCT_STR);
     const int smallval = (abs < DELTA_LF_SMALL);
@@ -386,7 +386,7 @@ static int read_inter_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   if (preskip) {
     if (!seg->segid_preskip) return 0;
   } else {
-    if (mbmi->skip) {
+    if (mbmi->skip_txfm) {
       if (seg->temporal_update) {
         mbmi->seg_id_predicted = 0;
       }
@@ -439,15 +439,16 @@ static int read_skip_mode(AV1_COMMON *cm, const MACROBLOCKD *xd, int segment_id,
   return skip_mode;
 }
 
-static int read_skip(AV1_COMMON *cm, const MACROBLOCKD *xd, int segment_id,
-                     aom_reader *r) {
+static int read_skip_txfm(AV1_COMMON *cm, const MACROBLOCKD *xd, int segment_id,
+                          aom_reader *r) {
   if (segfeature_active(&cm->seg, segment_id, SEG_LVL_SKIP)) {
     return 1;
   } else {
-    const int ctx = av1_get_skip_context(xd);
+    const int ctx = av1_get_skip_txfm_context(xd);
     FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-    const int skip = aom_read_symbol(r, ec_ctx->skip_cdfs[ctx], 2, ACCT_STR);
-    return skip;
+    const int skip_txfm =
+        aom_read_symbol(r, ec_ctx->skip_txfm_cdfs[ctx], 2, ACCT_STR);
+    return skip_txfm;
   }
 }
 
@@ -626,7 +627,8 @@ void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd, int blk_row,
   *tx_type = DCT_DCT;
 
   // No need to read transform type if block is skipped.
-  if (mbmi->skip || segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP))
+  if (mbmi->skip_txfm ||
+      segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP))
     return;
 
   // No need to read transform type for lossless mode(qindex==0).
@@ -776,10 +778,10 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
   if (seg->segid_preskip)
     mbmi->segment_id = read_intra_segment_id(cm, xd, bsize, r, 0);
 
-  mbmi->skip = read_skip(cm, xd, mbmi->segment_id, r);
+  mbmi->skip_txfm = read_skip_txfm(cm, xd, mbmi->segment_id, r);
 
   if (!seg->segid_preskip)
-    mbmi->segment_id = read_intra_segment_id(cm, xd, bsize, r, mbmi->skip);
+    mbmi->segment_id = read_intra_segment_id(cm, xd, bsize, r, mbmi->skip_txfm);
 
   read_cdef(cm, r, xd);
 
@@ -1512,9 +1514,9 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
   mbmi->skip_mode = read_skip_mode(cm, xd, mbmi->segment_id, r);
 
   if (mbmi->skip_mode)
-    mbmi->skip = 1;
+    mbmi->skip_txfm = 1;
   else
-    mbmi->skip = read_skip(cm, xd, mbmi->segment_id, r);
+    mbmi->skip_txfm = read_skip_txfm(cm, xd, mbmi->segment_id, r);
 
   if (!cm->seg.segid_preskip)
     mbmi->segment_id = read_inter_segment_id(cm, xd, 0, r);

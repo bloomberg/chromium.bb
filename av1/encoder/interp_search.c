@@ -148,8 +148,8 @@ static INLINE void interp_model_rd_eval(
                      ? MODELRD_LEGACY
                      : MODELRD_TYPE_INTERP_FILTER](
       cpi, bsize, x, xd, plane_from, plane_to, &tmp_rd_stats.rate,
-      &tmp_rd_stats.dist, &tmp_rd_stats.skip, &tmp_rd_stats.sse, NULL, NULL,
-      NULL);
+      &tmp_rd_stats.dist, &tmp_rd_stats.skip_txfm, &tmp_rd_stats.sse, NULL,
+      NULL, NULL);
 
   av1_merge_rd_stats(rd_stats, &tmp_rd_stats);
 }
@@ -189,12 +189,12 @@ static INLINE int64_t interpolation_filter_rd(
   assert((rd_stats_luma->rate >= 0) && (rd_stats->rate >= 0));
   assert((rd_stats_luma->dist >= 0) && (rd_stats->dist >= 0));
   assert((rd_stats_luma->sse >= 0) && (rd_stats->sse >= 0));
-  assert((rd_stats_luma->skip == 0) || (rd_stats_luma->skip == 1));
-  assert((rd_stats->skip == 0) || (rd_stats->skip == 1));
+  assert((rd_stats_luma->skip_txfm == 0) || (rd_stats_luma->skip_txfm == 1));
+  assert((rd_stats->skip_txfm == 0) || (rd_stats->skip_txfm == 1));
   assert((skip_pred >= 0) &&
          (skip_pred <= interp_search_flags->default_interp_skip_flags));
 
-  // When skip pred is equal to default_interp_skip_flags,
+  // When skip_txfm pred is equal to default_interp_skip_flags,
   // skip both luma and chroma MC.
   // For mono-chrome images:
   // num_planes = 1 and cpi->default_interp_skip_flags = 1,

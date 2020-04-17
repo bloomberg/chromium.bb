@@ -793,7 +793,7 @@ static const aom_cdf_prob
       { AOM_CDF2(28165) }, { AOM_CDF2(22401) }, { AOM_CDF2(16088) }
     };
 
-static const aom_cdf_prob default_skip_cdfs[SKIP_CONTEXTS][CDF_SIZE(2)] = {
+static const aom_cdf_prob default_skip_txfm_cdfs[SKIP_CONTEXTS][CDF_SIZE(2)] = {
   { AOM_CDF2(31671) }, { AOM_CDF2(16515) }, { AOM_CDF2(4576) }
 };
 
@@ -1127,7 +1127,7 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->intra_ext_tx_cdf, default_intra_ext_tx_cdf);
   av1_copy(fc->inter_ext_tx_cdf, default_inter_ext_tx_cdf);
   av1_copy(fc->skip_mode_cdfs, default_skip_mode_cdfs);
-  av1_copy(fc->skip_cdfs, default_skip_cdfs);
+  av1_copy(fc->skip_txfm_cdfs, default_skip_txfm_cdfs);
   av1_copy(fc->intra_inter_cdf, default_intra_inter_cdf);
   for (int i = 0; i < SPATIAL_PREDICTION_PROBS; i++)
     av1_copy(fc->seg.spatial_pred_seg_cdf[i],
