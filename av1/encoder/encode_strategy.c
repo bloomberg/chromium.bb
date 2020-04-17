@@ -927,11 +927,12 @@ static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
     aom_remove_metadata_from_frame_buffer(frame_input->source);
     aom_copy_metadata_to_frame_buffer(frame_input->source,
                                       source_kf_buffer->metadata);
+  }
 
-    if (oxcf->enable_tpl_model && oxcf->lag_in_frames > 0 &&
-        frame_params->show_frame) {
-      av1_tpl_setup_stats(cpi, 0, frame_params, frame_input);
-    }
+  if (frame_params->frame_type == KEY_FRAME && !is_stat_generation_stage(cpi) &&
+      oxcf->enable_tpl_model && oxcf->lag_in_frames > 0 &&
+      frame_params->show_frame) {
+    av1_tpl_setup_stats(cpi, 0, frame_params, frame_input);
   }
 
   if (av1_encode(cpi, dest, frame_input, frame_params, frame_results) !=
