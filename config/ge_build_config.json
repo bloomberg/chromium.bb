@@ -1094,18 +1094,6 @@
       ]
     },
     {
-      "name": "rammus-arc-r",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": false,
-          "board_group": "",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "reks",
       "configs": [
         {
@@ -4553,6 +4541,31 @@
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
           "board_id": 365,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "name": "rammus-arc-r",
+      "reference_board_name": "rammus-arc-r",
+      "arch": "X86_INTERNAL",
+      "builder": "RELEASE",
+      "experimental": true,
+      "models": [
+        {
+          "board_name": "rammus-arc-r",
+          "name": "leona",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 445,
+          "is_active": true
+        },
+        {
+          "board_name": "rammus-arc-r",
+          "name": "shyvana",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 445,
           "is_active": true
         }
       ]
