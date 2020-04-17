@@ -792,7 +792,8 @@ class PaygenPayload(object):
         self._GenerateSignerResultsError(
             'Received %d metadata signatures, only one supported.',
             len(metadata_signatures))
-      metadata_signature = base64.b64encode(metadata_signatures[0])
+      metadata_signature = base64.b64encode(
+          metadata_signatures[0]).decode('utf-8')
       if metadata_signature != props_map['metadata_signature']:
         raise Error('Calculated metadata signature (%s) and the signature in'
                     ' the payload (%s) do not match.' %
