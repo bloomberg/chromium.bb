@@ -57,6 +57,7 @@ enum {
 
 typedef struct macroblock_plane {
   DECLARE_ALIGNED(32, int16_t, src_diff[MAX_SB_SQUARE]);
+  tran_low_t *dqcoeff;
   tran_low_t *qcoeff;
   tran_low_t *coeff;
   uint16_t *eobs;

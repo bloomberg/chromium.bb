@@ -938,14 +938,11 @@ static INLINE void av1_init_above_context(CommonContexts *above_contexts,
   xd->above_txfm_context = above_contexts->txfm[tile_row];
 }
 
-static INLINE void av1_init_macroblockd(AV1_COMMON *cm, MACROBLOCKD *xd,
-                                        tran_low_t *dqcoeff) {
+static INLINE void av1_init_macroblockd(AV1_COMMON *cm, MACROBLOCKD *xd) {
   const int num_planes = av1_num_planes(cm);
   const CommonQuantParams *const quant_params = &cm->quant_params;
 
   for (int i = 0; i < num_planes; ++i) {
-    xd->plane[i].dqcoeff = dqcoeff;
-
     if (xd->plane[i].plane_type == PLANE_TYPE_Y) {
       memcpy(xd->plane[i].seg_dequant_QTX, quant_params->y_dequant_QTX,
              sizeof(quant_params->y_dequant_QTX));

@@ -1056,19 +1056,21 @@ static AOM_INLINE void PrintPredictionUnitStats(const AV1_COMP *const cpi,
 #endif  // CONFIG_COLLECT_RD_STATS >= 2
 #endif  // CONFIG_COLLECT_RD_STATS
 
-static AOM_INLINE void inverse_transform_block_facade(MACROBLOCKD *xd,
+static AOM_INLINE void inverse_transform_block_facade(MACROBLOCK *const x,
                                                       int plane, int block,
                                                       int blk_row, int blk_col,
                                                       int eob,
                                                       int reduced_tx_set) {
   if (!eob) return;
-
-  struct macroblockd_plane *const pd = &xd->plane[plane];
-  tran_low_t *dqcoeff = pd->dqcoeff + BLOCK_OFFSET(block);
+  struct macroblock_plane *const p = &x->plane[plane];
+  MACROBLOCKD *const xd = &x->e_mbd;
+  tran_low_t *dqcoeff = p->dqcoeff + BLOCK_OFFSET(block);
   const PLANE_TYPE plane_type = get_plane_type(plane);
   const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
   const TX_TYPE tx_type = av1_get_tx_type(xd, plane_type, blk_row, blk_col,
                                           tx_size, reduced_tx_set);
+
+  struct macroblockd_plane *const pd = &xd->plane[plane];
   const int dst_stride = pd->dst.stride;
   uint8_t *dst = &pd->dst.buf[(blk_row * dst_stride + blk_col) << MI_SIZE_LOG2];
   av1_inverse_transform_block(xd, dqcoeff, plane, tx_type, tx_size, dst,
@@ -1110,7 +1112,7 @@ static INLINE void recon_intra(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       }
     }
 
-    inverse_transform_block_facade(xd, plane, block, blk_row, blk_col,
+    inverse_transform_block_facade(x, plane, block, blk_row, blk_col,
                                    x->plane[plane].eobs[block],
                                    cm->features.reduced_tx_set_used);
 
@@ -1181,7 +1183,6 @@ static INLINE int64_t dist_block_px_domain(const AV1_COMP *cpi, MACROBLOCK *x,
                                            TX_SIZE tx_size) {
   MACROBLOCKD *const xd = &x->e_mbd;
   const struct macroblock_plane *const p = &x->plane[plane];
-  const struct macroblockd_plane *const pd = &xd->plane[plane];
   const uint16_t eob = p->eobs[block];
   const BLOCK_SIZE tx_bsize = txsize_to_bsize[tx_size];
   const int bsw = block_size_wide[tx_bsize];
@@ -1193,7 +1194,7 @@ static INLINE int64_t dist_block_px_domain(const AV1_COMP *cpi, MACROBLOCK *x,
   const int dst_idx = (blk_row * dst_stride + blk_col) << MI_SIZE_LOG2;
   const uint8_t *src = &x->plane[plane].src.buf[src_idx];
   const uint8_t *dst = &xd->plane[plane].dst.buf[dst_idx];
-  const tran_low_t *dqcoeff = pd->dqcoeff + BLOCK_OFFSET(block);
+  const tran_low_t *dqcoeff = p->dqcoeff + BLOCK_OFFSET(block);
 
   assert(cpi != NULL);
   assert(tx_size_wide_log2[0] == tx_size_high_log2[0]);
@@ -1312,9 +1313,7 @@ static INLINE void sort_rd(int64_t rds[], int txk[], int len) {
 static INLINE void dist_block_tx_domain(MACROBLOCK *x, int plane, int block,
                                         TX_SIZE tx_size, int64_t *out_dist,
                                         int64_t *out_sse) {
-  MACROBLOCKD *const xd = &x->e_mbd;
   const struct macroblock_plane *const p = &x->plane[plane];
-  const struct macroblockd_plane *const pd = &xd->plane[plane];
   // Transform domain distortion computation is more efficient as it does
   // not involve an inverse transform, but it is less accurate.
   const int buffer_length = av1_get_max_eob(tx_size);
@@ -1324,16 +1323,16 @@ static INLINE void dist_block_tx_domain(MACROBLOCK *x, int plane, int block,
   int shift = (MAX_TX_SCALE - av1_get_tx_scale(tx_size)) * 2;
   const int block_offset = BLOCK_OFFSET(block);
   tran_low_t *const coeff = p->coeff + block_offset;
-  tran_low_t *const dqcoeff = pd->dqcoeff + block_offset;
+  tran_low_t *const dqcoeff = p->dqcoeff + block_offset;
 #if CONFIG_AV1_HIGHBITDEPTH
+  MACROBLOCKD *const xd = &x->e_mbd;
   if (is_cur_buf_hbd(xd))
     *out_dist = av1_highbd_block_error(coeff, dqcoeff, buffer_length, &this_sse,
                                        xd->bd);
   else
-    *out_dist = av1_block_error(coeff, dqcoeff, buffer_length, &this_sse);
-#else
-  *out_dist = av1_block_error(coeff, dqcoeff, buffer_length, &this_sse);
 #endif
+    *out_dist = av1_block_error(coeff, dqcoeff, buffer_length, &this_sse);
+
   *out_dist = RIGHT_SIGNED_SHIFT(*out_dist, shift);
   *out_sse = RIGHT_SIGNED_SHIFT(this_sse, shift);
 }
@@ -2092,7 +2091,6 @@ static void search_tx_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
                            int64_t ref_best_rd, RD_STATS *best_rd_stats) {
   const AV1_COMMON *cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
-  struct macroblockd_plane *const pd = &xd->plane[plane];
   MB_MODE_INFO *mbmi = xd->mi[0];
   int64_t best_rd = INT64_MAX;
   uint16_t best_eob = 0;
@@ -2101,7 +2099,8 @@ static void search_tx_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   // The buffer used to swap dqcoeff in macroblockd_plane so we can keep dqcoeff
   // of the best tx_type
   DECLARE_ALIGNED(32, tran_low_t, this_dqcoeff[MAX_SB_SQUARE]);
-  tran_low_t *orig_dqcoeff = pd->dqcoeff;
+  struct macroblock_plane *const p = &x->plane[plane];
+  tran_low_t *orig_dqcoeff = p->dqcoeff;
   tran_low_t *best_dqcoeff = this_dqcoeff;
   const int tx_type_map_idx =
       plane ? 0 : blk_row * xd->tx_type_map_stride + blk_col;
@@ -2144,7 +2143,7 @@ static void search_tx_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       update_txk_array(xd, blk_row, blk_col, tx_size, best_tx_type);
       recon_intra(cpi, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                   txb_ctx, skip_trellis, best_tx_type, 1, &rate_cost, best_eob);
-      pd->dqcoeff = orig_dqcoeff;
+      p->dqcoeff = orig_dqcoeff;
       return;
     }
   }
@@ -2312,8 +2311,8 @@ static void search_tx_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       best_eob = x->plane[plane].eobs[block];
       // Swap dqcoeff buffers
       tran_low_t *const tmp_dqcoeff = best_dqcoeff;
-      best_dqcoeff = pd->dqcoeff;
-      pd->dqcoeff = tmp_dqcoeff;
+      best_dqcoeff = p->dqcoeff;
+      p->dqcoeff = tmp_dqcoeff;
     }
 
 #if CONFIG_COLLECT_RD_STATS == 1
@@ -2382,7 +2381,7 @@ static void search_tx_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   // Point dqcoeff to the quantized coefficients corresponding to the best
   // transform type, then we can skip transform and quantization, e.g. in the
   // final pixel domain distortion calculation and recon_intra().
-  pd->dqcoeff = best_dqcoeff;
+  p->dqcoeff = best_dqcoeff;
 
   if (calc_pixel_domain_distortion_final && best_eob) {
     best_rd_stats->dist = dist_block_px_domain(
@@ -2406,7 +2405,7 @@ static void search_tx_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   // can use them for prediction.
   recon_intra(cpi, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
               txb_ctx, skip_trellis, best_tx_type, 0, &rate_cost, best_eob);
-  pd->dqcoeff = orig_dqcoeff;
+  p->dqcoeff = orig_dqcoeff;
 }
 
 // Pick transform type for a luma transform block of tx_size. Note this function

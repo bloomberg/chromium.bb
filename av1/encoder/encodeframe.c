@@ -597,7 +597,7 @@ static AOM_INLINE void update_state(const AV1_COMP *const cpi, ThreadData *td,
   for (i = 0; i < num_planes; ++i) {
     p[i].coeff = ctx->coeff[i];
     p[i].qcoeff = ctx->qcoeff[i];
-    pd[i].dqcoeff = ctx->dqcoeff[i];
+    p[i].dqcoeff = ctx->dqcoeff[i];
     p[i].eobs = ctx->eobs[i];
     p[i].txb_entropy_ctx = ctx->txb_entropy_ctx[i];
   }
@@ -773,7 +773,7 @@ static AOM_INLINE void pick_sb_modes(AV1_COMP *const cpi,
   for (i = 0; i < num_planes; ++i) {
     p[i].coeff = ctx->coeff[i];
     p[i].qcoeff = ctx->qcoeff[i];
-    pd[i].dqcoeff = ctx->dqcoeff[i];
+    p[i].dqcoeff = ctx->dqcoeff[i];
     p[i].eobs = ctx->eobs[i];
     p[i].txb_entropy_ctx = ctx->txb_entropy_ctx[i];
   }

@@ -1212,7 +1212,7 @@ static void update_frame_size(AV1_COMP *cpi) {
   }
   av1_init_mi_buffers(&cm->mi_params);
 
-  av1_init_macroblockd(cm, xd, NULL);
+  av1_init_macroblockd(cm, xd);
 
   if (!is_stat_generation_stage(cpi))
     alloc_context_buffers_ext(cm, &cpi->mbmi_ext_info);

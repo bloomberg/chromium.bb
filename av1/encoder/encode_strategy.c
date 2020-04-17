@@ -901,7 +901,7 @@ static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
     MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
     av1_init_mi_buffers(&cm->mi_params);
     setup_mi(cpi, frame_input->source);
-    av1_init_macroblockd(cm, xd, NULL);
+    av1_init_macroblockd(cm, xd);
     memset(
         cpi->mbmi_ext_info.frame_base, 0,
         cpi->mbmi_ext_info.alloc_size * sizeof(*cpi->mbmi_ext_info.frame_base));

@@ -776,11 +776,11 @@ static void block_yrd(AV1_COMP *cpi, MACROBLOCK *x, int mi_row, int mi_col,
 #if CONFIG_AV1_HIGHBITDEPTH
         tran_low_t *const coeff = p->coeff + block_offset;
         tran_low_t *const qcoeff = p->qcoeff + block_offset;
-        tran_low_t *const dqcoeff = pd->dqcoeff + block_offset;
+        tran_low_t *const dqcoeff = p->dqcoeff + block_offset;
 #else
         int16_t *const low_coeff = (int16_t *)p->coeff + block_offset;
         int16_t *const low_qcoeff = (int16_t *)p->qcoeff + block_offset;
-        int16_t *const low_dqcoeff = (int16_t *)pd->dqcoeff + block_offset;
+        int16_t *const low_dqcoeff = (int16_t *)p->dqcoeff + block_offset;
 #endif
         uint16_t *const eob = &p->eobs[block];
         const int diff_stride = bw;
@@ -858,7 +858,7 @@ static void block_yrd(AV1_COMP *cpi, MACROBLOCK *x, int mi_row, int mi_col,
         int64_t dummy;
         tran_low_t *const coeff = p->coeff + block_offset;
         tran_low_t *const qcoeff = p->qcoeff + block_offset;
-        tran_low_t *const dqcoeff = pd->dqcoeff + block_offset;
+        tran_low_t *const dqcoeff = p->dqcoeff + block_offset;
 
         if (*eob == 1)
           this_rdc->rate += (int)abs(qcoeff[0]);
@@ -870,7 +870,7 @@ static void block_yrd(AV1_COMP *cpi, MACROBLOCK *x, int mi_row, int mi_col,
 #else
         int16_t *const low_coeff = (int16_t *)p->coeff + block_offset;
         int16_t *const low_qcoeff = (int16_t *)p->qcoeff + block_offset;
-        int16_t *const low_dqcoeff = (int16_t *)pd->dqcoeff + block_offset;
+        int16_t *const low_dqcoeff = (int16_t *)p->dqcoeff + block_offset;
 
         if (*eob == 1)
           this_rdc->rate += (int)abs(low_qcoeff[0]);

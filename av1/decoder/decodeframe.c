@@ -2819,7 +2819,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
         td->bit_reader->accounting = NULL;
       }
 #endif
-      av1_init_macroblockd(cm, &td->xd, NULL);
+      av1_init_macroblockd(cm, &td->xd);
       av1_init_above_context(&cm->above_contexts, av1_num_planes(cm), row,
                              &td->xd);
 
@@ -2891,7 +2891,7 @@ static AOM_INLINE void tile_worker_hook_init(
     td->bit_reader->accounting = NULL;
   }
 #endif
-  av1_init_macroblockd(cm, &td->xd, NULL);
+  av1_init_macroblockd(cm, &td->xd);
   td->xd.error_info = &thread_data->error_info;
   av1_init_above_context(&cm->above_contexts, av1_num_planes(cm), tile_row,
                          &td->xd);
@@ -3247,7 +3247,7 @@ static int row_mt_worker_hook(void *arg1, void *arg2) {
     TileInfo tile_info = tile_data->tile_info;
 
     av1_tile_init(&td->xd.tile, cm, tile_row, tile_col);
-    av1_init_macroblockd(cm, &td->xd, NULL);
+    av1_init_macroblockd(cm, &td->xd);
     td->xd.error_info = &thread_data->error_info;
 
     decode_tile_sb_row(pbi, td, tile_info, mi_row);

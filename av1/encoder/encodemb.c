@@ -133,11 +133,9 @@ const int DROPOUT_MULTIPLIER_Q_BASE = 32;  // Base Q to compute multiplier.
 
 void av1_dropout_qcoeff(MACROBLOCK *mb, int plane, int block, TX_SIZE tx_size,
                         TX_TYPE tx_type, int qindex) {
-  MACROBLOCKD *const xd = &mb->e_mbd;
   const struct macroblock_plane *const p = &mb->plane[plane];
-  const struct macroblockd_plane *const pd = &xd->plane[plane];
   tran_low_t *const qcoeff = p->qcoeff + BLOCK_OFFSET(block);
-  tran_low_t *const dqcoeff = pd->dqcoeff + BLOCK_OFFSET(block);
+  tran_low_t *const dqcoeff = p->dqcoeff + BLOCK_OFFSET(block);
   const int tx_width = tx_size_wide[tx_size];
   const int tx_height = tx_size_high[tx_size];
   const int max_eob = av1_get_max_eob(tx_size);
@@ -265,15 +263,13 @@ static AV1_QUANT_FACADE quant_func_list[AV1_XFORM_QUANT_TYPES] = {
 void av1_xform_quant(MACROBLOCK *x, int plane, int block, int blk_row,
                      int blk_col, BLOCK_SIZE plane_bsize, TxfmParam *txfm_param,
                      QUANT_PARAM *qparam) {
-  MACROBLOCKD *const xd = &x->e_mbd;
   const struct macroblock_plane *const p = &x->plane[plane];
-  const struct macroblockd_plane *const pd = &xd->plane[plane];
   const SCAN_ORDER *const scan_order =
       get_scan(txfm_param->tx_size, txfm_param->tx_type);
   const int block_offset = BLOCK_OFFSET(block);
   tran_low_t *const coeff = p->coeff + block_offset;
   tran_low_t *const qcoeff = p->qcoeff + block_offset;
-  tran_low_t *const dqcoeff = pd->dqcoeff + block_offset;
+  tran_low_t *const dqcoeff = p->dqcoeff + block_offset;
   uint16_t *const eob = &p->eobs[block];
   const int diff_stride = block_size_wide[plane_bsize];
 
@@ -358,7 +354,7 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   MB_MODE_INFO *mbmi = xd->mi[0];
   struct macroblock_plane *const p = &x->plane[plane];
   struct macroblockd_plane *const pd = &xd->plane[plane];
-  tran_low_t *const dqcoeff = pd->dqcoeff + BLOCK_OFFSET(block);
+  tran_low_t *const dqcoeff = p->dqcoeff + BLOCK_OFFSET(block);
   uint8_t *dst;
   ENTROPY_CONTEXT *a, *l;
   int dummy_rate_cost = 0;
@@ -565,7 +561,7 @@ static void encode_block_pass1(int plane, int block, int blk_row, int blk_col,
   MACROBLOCKD *const xd = &x->e_mbd;
   struct macroblock_plane *const p = &x->plane[plane];
   struct macroblockd_plane *const pd = &xd->plane[plane];
-  tran_low_t *const dqcoeff = pd->dqcoeff + BLOCK_OFFSET(block);
+  tran_low_t *const dqcoeff = p->dqcoeff + BLOCK_OFFSET(block);
 
   uint8_t *dst;
   dst = &pd->dst.buf[(blk_row * pd->dst.stride + blk_col) << MI_SIZE_LOG2];
@@ -683,7 +679,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   MACROBLOCKD *const xd = &x->e_mbd;
   struct macroblock_plane *const p = &x->plane[plane];
   struct macroblockd_plane *const pd = &xd->plane[plane];
-  tran_low_t *dqcoeff = pd->dqcoeff + BLOCK_OFFSET(block);
+  tran_low_t *dqcoeff = p->dqcoeff + BLOCK_OFFSET(block);
   PLANE_TYPE plane_type = get_plane_type(plane);
   uint16_t *eob = &p->eobs[block];
   const int dst_stride = pd->dst.stride;

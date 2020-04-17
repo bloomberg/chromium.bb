@@ -390,8 +390,6 @@ typedef struct {
 } CB_BUFFER;
 
 typedef struct macroblockd_plane {
-  // TODO(urvang): Possibly used on encoder side only.
-  tran_low_t *dqcoeff;
   // Pointer to 'dqcoeff' inside 'td->cb_buffer_base' or 'pbi->cb_buffer_base'
   // with appropriate offset for the current superblock.
   tran_low_t *dqcoeff_block;

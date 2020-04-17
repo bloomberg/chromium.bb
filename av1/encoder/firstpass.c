@@ -936,7 +936,7 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
     x->plane[i].qcoeff = ctx->qcoeff[i];
     x->plane[i].eobs = ctx->eobs[i];
     x->plane[i].txb_entropy_ctx = ctx->txb_entropy_ctx[i];
-    xd->plane[i].dqcoeff = ctx->dqcoeff[i];
+    x->plane[i].dqcoeff = ctx->dqcoeff[i];
   }
 
   av1_init_mv_probs(cm);
