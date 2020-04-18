@@ -1102,7 +1102,8 @@ def ExecuteReproduceCommand(options):
   # Check presence of "-fsanitize=memory" in CFLAGS.
   if options.build_type == BuildType.MSAN:
     cmd = ['portageq-%s' % options.board, 'envvar', 'CFLAGS']
-    cflags = cros_build_lib.run(cmd, capture_output=True).output.splitlines()
+    cflags = cros_build_lib.run(
+        cmd, capture_output=True, encoding='utf-8').stdout.splitlines()
     check_string = '-fsanitize=memory'
     if not any(check_string in s for s in cflags):
       logging.error(
