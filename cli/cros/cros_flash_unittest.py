@@ -78,6 +78,7 @@ class CrosFlashTest(cros_test_lib.MockTempDirTestCase,
     # `cros flash` default options. Must match the configuration in AddParser().
     expected_kwargs = {
         'board': None,
+        'version': 'latest',
         'install': False,
         'src_image_to_delta': None,
         'rootfs_update': True,

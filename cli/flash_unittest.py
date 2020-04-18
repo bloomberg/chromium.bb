@@ -155,9 +155,9 @@ class RemoteDeviceUpdaterTest(cros_test_lib.MockTempDirTestCase):
 
       # Call to download full_payload and stateful. No other calls.
       mock_xbuddy.assert_has_calls(
-          [mock.call('/path/to/image/full_payload', mock.ANY,
+          [mock.call('/path/to/image/full_payload', mock.ANY, mock.ANY,
                      static_dir=flash.DEVSERVER_STATIC_DIR, silent=True),
-           mock.call('/path/to/image/stateful', mock.ANY,
+           mock.call('/path/to/image/stateful', mock.ANY, mock.ANY,
                      static_dir=flash.DEVSERVER_STATIC_DIR, silent=True)])
       self.assertEqual(mock_xbuddy.call_count, 2)
 
@@ -174,9 +174,9 @@ class RemoteDeviceUpdaterTest(cros_test_lib.MockTempDirTestCase):
 
       # Call to download full_payload and image. No other calls.
       mock_xbuddy.assert_has_calls(
-          [mock.call('/path/to/image/full_payload', mock.ANY,
+          [mock.call('/path/to/image/full_payload', mock.ANY, mock.ANY,
                      static_dir=flash.DEVSERVER_STATIC_DIR, silent=True),
-           mock.call('/path/to/image', mock.ANY,
+           mock.call('/path/to/image', mock.ANY, mock.ANY,
                      static_dir=flash.DEVSERVER_STATIC_DIR)])
       self.assertEqual(mock_xbuddy.call_count, 2)
 
@@ -294,7 +294,7 @@ class UsbImagerOperationTest(cros_test_lib.RunCommandTestCase):
     """Test that flash.UsbImagerOperation is called when log level <= NOTICE."""
     expected_cmd = ['dd', 'if=foo', 'of=bar', 'bs=4M', 'iflag=fullblock',
                     'oflag=direct', 'conv=fdatasync']
-    usb_imager = flash.USBImager('dummy_device', 'board', 'foo')
+    usb_imager = flash.USBImager('dummy_device', 'board', 'foo', 'latest')
     run_mock = self.PatchObject(flash.UsbImagerOperation, 'Run')
     self.PatchObject(logging.Logger, 'getEffectiveLevel',
                      return_value=logging.NOTICE)
@@ -309,7 +309,7 @@ class UsbImagerOperationTest(cros_test_lib.RunCommandTestCase):
     """Test that sudo_run is called when log level > NOTICE."""
     expected_cmd = ['dd', 'if=foo', 'of=bar', 'bs=4M', 'iflag=fullblock',
                     'oflag=direct', 'conv=fdatasync']
-    usb_imager = flash.USBImager('dummy_device', 'board', 'foo')
+    usb_imager = flash.USBImager('dummy_device', 'board', 'foo', 'latest')
     run_mock = self.PatchObject(cros_build_lib, 'sudo_run')
     self.PatchObject(logging.Logger, 'getEffectiveLevel',
                      return_value=logging.WARNING)

@@ -15,10 +15,12 @@ import subprocess
 import sys
 import tempfile
 
-from chromite.lib import constants
+from chromite.cli.cros import cros_chrome_sdk
+
 from chromite.lib import auto_updater
 from chromite.lib import auto_updater_transfer
 from chromite.lib import commandline
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import dev_server_wrapper as ds_wrapper
@@ -38,6 +40,17 @@ assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 DEVSERVER_STATIC_DIR = path_util.FromChrootPath(
     os.path.join(constants.CHROOT_SOURCE_ROOT, 'devserver', 'static'))
+
+
+def GetDefaultBoard():
+  """Look up default board.
+
+  In a chrome checkout, return $SDK_BOARD. In a chromeos checkout,
+  return the contents of .default_board.
+  """
+  if path_util.DetermineCheckout().type == path_util.CHECKOUT_TYPE_GCLIENT:
+    return os.environ.get(cros_chrome_sdk.SDKFetcher.SDK_BOARD_ENV)
+  return cros_build_lib.GetDefaultBoard()
 
 
 class UsbImagerOperation(operation.ProgressBarOperation):
@@ -144,12 +157,13 @@ class FlashError(Exception):
 class USBImager(object):
   """Copy image to the target removable device."""
 
-  def __init__(self, device, board, image, debug=False, install=False,
-               yes=False):
-    """Initalizes USBImager."""
+  def __init__(self, device, board, image, version, debug=False,
+               install=False, yes=False):
+    """Initializes USBImager."""
     self.device = device
-    self.board = board if board else cros_build_lib.GetDefaultBoard()
+    self.board = board if board else GetDefaultBoard()
     self.image = image
+    self.version = version
     self.debug = debug
     self.debug_level = logging.DEBUG if debug else logging.INFO
     self.install = install
@@ -276,7 +290,8 @@ class USBImager(object):
     else:
       # Translate the xbuddy path to get the exact image to use.
       translated_path, _ = ds_wrapper.GetImagePathWithXbuddy(
-          self.image, self.board, static_dir=DEVSERVER_STATIC_DIR)
+          self.image, self.board, version=self.version,
+          static_dir=DEVSERVER_STATIC_DIR)
       image_path = ds_wrapper.TranslatedPathToLocalPath(
           translated_path, DEVSERVER_STATIC_DIR)
 
@@ -356,7 +371,7 @@ class RemoteDeviceUpdater(object):
                board=None, src_image_to_delta=None, wipe=True, debug=False,
                yes=False, force=False, ssh_private_key=None, ping=True,
                disable_verification=False, send_payload_in_parallel=False,
-               experimental_au=False):
+               experimental_au=False, version=None):
     """Initializes RemoteDeviceUpdater"""
     if not stateful_update and not rootfs_update:
       raise ValueError('No update operation to perform; either stateful or'
@@ -381,6 +396,7 @@ class RemoteDeviceUpdater(object):
     self.force = force
     self.send_payload_in_parallel = send_payload_in_parallel
     self.experimental_au = experimental_au
+    self.version = version
 
   def Cleanup(self):
     """Cleans up the temporary directory."""
@@ -432,10 +448,11 @@ class RemoteDeviceUpdater(object):
       payload_dir = self.tempdir
     else:
       # Assuming it is an xbuddy path.
-      self.board = cros_build_lib.GetBoard(device_board=device.board,
-                                           override_board=self.board,
-                                           force=self.yes,
-                                           strict=True)
+      self.board = cros_build_lib.GetBoard(
+          device_board=device.board or GetDefaultBoard(),
+          override_board=self.board,
+          force=self.yes,
+          strict=True)
       if not self.force and self.board != device.board:
         # If a board was specified, it must be compatible with the device.
         raise FlashError('Device (%s) is incompatible with board %s' %
@@ -450,13 +467,14 @@ class RemoteDeviceUpdater(object):
       try:
         translated_path, _ = ds_wrapper.GetImagePathWithXbuddy(
             os.path.join(self.image, artifact_info.FULL_PAYLOAD), self.board,
-            static_dir=DEVSERVER_STATIC_DIR, silent=True)
+            version=self.version, static_dir=DEVSERVER_STATIC_DIR, silent=True)
         payload_dir = os.path.dirname(
             ds_wrapper.TranslatedPathToLocalPath(translated_path,
                                                  DEVSERVER_STATIC_DIR))
         ds_wrapper.GetImagePathWithXbuddy(
             os.path.join(self.image, artifact_info.STATEFUL_PAYLOAD),
-            self.board, static_dir=DEVSERVER_STATIC_DIR, silent=True)
+            self.board, version=self.version, static_dir=DEVSERVER_STATIC_DIR,
+            silent=True)
         fetch_image = False
       except (ds_wrapper.ImagePathError, ds_wrapper.ArtifactDownloadError):
         logging.info('Could not find full_payload or stateful for "%s"',
@@ -466,7 +484,8 @@ class RemoteDeviceUpdater(object):
       # We didn't find the full_payload, attempt to download the image.
       if fetch_image:
         translated_path, _ = ds_wrapper.GetImagePathWithXbuddy(
-            self.image, self.board, static_dir=DEVSERVER_STATIC_DIR)
+            self.image, self.board, version=self.version,
+            static_dir=DEVSERVER_STATIC_DIR)
         image_path = ds_wrapper.TranslatedPathToLocalPath(
             translated_path, DEVSERVER_STATIC_DIR)
         payload_dir = os.path.join(os.path.dirname(image_path), 'payloads')
@@ -545,7 +564,7 @@ def Flash(device, image, board=None, install=False, src_image_to_delta=None,
           reboot=True, wipe=True, ssh_private_key=None, ping=True,
           disable_rootfs_verification=False, clear_cache=False, yes=False,
           force=False, debug=False, send_payload_in_parallel=False,
-          experimental_au=False):
+          experimental_au=False, version=None):
   """Flashes a device, USB drive, or file with an image.
 
   This provides functionality common to `cros flash` and `brillo flash`
@@ -577,6 +596,7 @@ def Flash(device, image, board=None, install=False, src_image_to_delta=None,
         up transmissions for long haul between endpoints.
     experimental_au: Use the experimental features auto updater. It should be
         deprecated once crbug.com/872441 is fixed.
+    version: Default version.
 
   Raises:
     FlashError: An unrecoverable error occured.
@@ -601,6 +621,8 @@ def Flash(device, image, board=None, install=False, src_image_to_delta=None,
     if not cros_build_lib.IsInsideChroot():
       raise ValueError('--install can only be used inside the chroot')
 
+  # The user may not have specified a source image, use version as the default.
+  image = image or version
   if not device or device.scheme == commandline.DEVICE_SCHEME_SSH:
     if device:
       hostname, port = device.hostname, device.port
@@ -625,7 +647,8 @@ def Flash(device, image, board=None, install=False, src_image_to_delta=None,
         ping=ping,
         disable_verification=disable_rootfs_verification,
         send_payload_in_parallel=send_payload_in_parallel,
-        experimental_au=experimental_au)
+        experimental_au=experimental_au,
+        version=version)
     updater.Run()
   elif device.scheme == commandline.DEVICE_SCHEME_USB:
     path = osutils.ExpandPath(device.path) if device.path else ''
@@ -633,6 +656,7 @@ def Flash(device, image, board=None, install=False, src_image_to_delta=None,
     imager = USBImager(path,
                        board,
                        image,
+                       version,
                        debug=debug,
                        install=install,
                        yes=yes)
@@ -642,6 +666,7 @@ def Flash(device, image, board=None, install=False, src_image_to_delta=None,
     imager = FileImager(device.path,
                         board,
                         image,
+                        version,
                         debug=debug,
                         yes=yes)
     imager.Run()

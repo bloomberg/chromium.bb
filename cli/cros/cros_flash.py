@@ -11,9 +11,11 @@ import sys
 
 from chromite.cli import command
 from chromite.cli import flash
+from chromite.cli.cros import cros_chrome_sdk
 from chromite.lib import commandline
 from chromite.lib import cros_logging as logging
 from chromite.lib import dev_server_wrapper
+from chromite.lib import path_util
 
 
 assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
@@ -70,6 +72,9 @@ Examples:
   https://dev.chromium.org/chromium-os/build/cros-flash
 """
 
+  # Override base class property to use cache related commandline options.
+  use_caching_options = True
+
   @classmethod
   def AddParser(cls, parser):
     """Add parser arguments."""
@@ -85,7 +90,6 @@ Examples:
     parser.add_argument(
         'image',
         nargs='?',
-        default='latest',
         help='A local path or an xbuddy path: '
         'xbuddy://{local|remote}/board/version/{image_type} image_type '
         "can be: 'test', 'dev', 'base', 'recovery', or 'signed'. Note any "
@@ -155,6 +159,24 @@ Examples:
         '--install', default=False, action='store_true',
         help='Install to the USB device using the base disk layout.')
 
+  def _GetDefaultVersion(self):
+    """Get default full SDK version.
+
+    For non-chrome, use 'latest'. For chrome, look up the
+    full version in the misc cache.
+    """
+    if path_util.DetermineCheckout().type != path_util.CHECKOUT_TYPE_GCLIENT:
+      return 'latest'
+
+    board = self.options.board or flash.GetDefaultBoard()
+    if not board:
+      raise flash.FlashError('Must specify board.')
+
+    full_version = cros_chrome_sdk.SDKFetcher.GetCachedFullVersion(
+        self.options.cache_dir or path_util.GetCacheDir(), board) or 'latest'
+    logging.debug('Using default version %s', full_version)
+    return full_version
+
   def Run(self):
     """Perform the cros flash command."""
     self.options.Freeze()
@@ -164,6 +186,7 @@ Examples:
           self.options.device,
           self.options.image,
           board=self.options.board,
+          version=self._GetDefaultVersion(),
           install=self.options.install,
           src_image_to_delta=self.options.src_image_to_delta,
           rootfs_update=self.options.rootfs_update,

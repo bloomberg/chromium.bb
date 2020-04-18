@@ -242,6 +242,65 @@ class SDKFetcher(object):
     return version
 
   @classmethod
+  def _LookupMiscCache(cls, cache_dir, key):
+    """Looks up an item in the misc cache.
+
+    This should be used when inspecting an SDK that's already been initialized
+    elsewhere.
+
+    Args:
+      cache_dir: The toplevel cache dir to search in.
+      key: Key of item in the cache.
+
+    Returns:
+      Value of the item, or None if the item is missing.
+    """
+    misc_cache_path = os.path.join(cache_dir, COMMAND_NAME, cls.MISC_CACHE)
+    misc_cache = cache.DiskCache(misc_cache_path)
+    with misc_cache.Lookup(key) as ref:
+      if ref.Exists(lock=True):
+        return osutils.ReadFile(ref.path).strip()
+    return None
+
+  @classmethod
+  def GetSDKVersion(cls, cache_dir, board):
+    """Looks up the SDK version.
+
+    Look at the environment variable, and then the misc cache.
+
+    Args:
+      cache_dir: The toplevel cache dir to search in.
+      board: The board to search for.
+
+    Returns:
+      SDK version string, if found.
+    """
+    sdk_version = os.environ.get(cls.SDK_VERSION_ENV)
+    if sdk_version:
+      return sdk_version
+
+    assert board
+    return cls._LookupMiscCache(cache_dir, (board, 'latest'))
+
+  @classmethod
+  def GetCachedFullVersion(cls, cache_dir, board):
+    """Get full version from the misc cache.
+
+    Args:
+      cache_dir: The toplevel cache dir to search in.
+      board: The board to search for.
+
+    Returns:
+      Full version from the misc cache, if found.
+    """
+    assert board
+    sdk_version = cls.GetSDKVersion(cache_dir, board)
+    if not sdk_version:
+      return None
+
+    return cls._LookupMiscCache(cache_dir, ('full-version', board, sdk_version))
+
+  @classmethod
   def GetCachePath(cls, key, cache_dir, board):
     """Gets the path to an item in the cache.
 
@@ -260,18 +319,9 @@ class SDKFetcher(object):
     if board is None:
       return None
 
-    # Get the version by looking at the env var if we're in the SDK shell, and
-    # failing that, look at the misc cache.
-    sdk_version = os.environ.get(cls.SDK_VERSION_ENV)
+    sdk_version = cls.GetSDKVersion(cache_dir, board)
     if not sdk_version:
-      misc_cache_path = os.path.join(
-          cache_dir, COMMAND_NAME, cls.MISC_CACHE)
-      misc_cache = cache.DiskCache(misc_cache_path)
-      with misc_cache.Lookup((board, 'latest')) as ref:
-        if ref.Exists(lock=True):
-          sdk_version = osutils.ReadFile(ref.path).strip()
-      if not sdk_version:
-        return None
+      return None
 
     # Look up the cache entry in the symlink cache.
     symlink_cache_path = os.path.join(
