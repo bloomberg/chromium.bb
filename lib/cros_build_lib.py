@@ -1457,11 +1457,6 @@ class MasterPidContextManager(object):
     raise NotImplementedError(self, '_exit')
 
 
-@contextlib.contextmanager
-def NoOpContextManager():
-  yield
-
-
 class ContextManagerStack(object):
   """Context manager that is designed to safely allow nesting and stacking.
 
