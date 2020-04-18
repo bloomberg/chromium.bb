@@ -37,8 +37,9 @@ class VirtualEnvTest(cros_test_lib.TestCase):
   def testInsideVenv(self):
     """Test that we are inside a virtualenv."""
     # pylint: disable=protected-access
-    self.assertTrue(virtualenv_wrapper._IsInsideVenv(os.environ))
-
+    self.assertTrue(
+        (hasattr(sys, 'real_prefix') or
+         (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix)))
 
   def testVenvMarkers(self):
     """Test that the virtualenv marker functions work."""

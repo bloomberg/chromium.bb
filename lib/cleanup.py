@@ -66,6 +66,7 @@ class EnforcedCleanupSection(cros_build_lib.MasterPidContextManager):
         yield
       finally:
         self._KillWatchdog()
+        os.waitpid(pid, 0)
       return
 
     # Get ourselves a new process group; note that we do not reparent
