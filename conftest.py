@@ -17,6 +17,7 @@ import multiprocessing
 import pytest  # pylint: disable=import-error
 
 from chromite.lib import cidb
+from chromite.lib import parallel
 
 
 @pytest.fixture(scope='class', autouse=True)
@@ -47,6 +48,19 @@ def assert_no_zombies():
   if children:
     pytest.fail('Test has %s active child processes after tearDown: %s' %
                 (len(children), children))
+
+
+@pytest.fixture
+def singleton_manager(monkeypatch):
+  """Force tests to use a singleton Manager and automatically clean it up."""
+  m = parallel.Manager()
+
+  def our_manager():
+    return m
+
+  monkeypatch.setattr(parallel, 'Manager', our_manager)
+  yield
+  m.shutdown()
 
 
 @pytest.fixture
