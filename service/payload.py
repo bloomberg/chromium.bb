@@ -8,7 +8,6 @@
 from __future__ import print_function
 
 from copy import deepcopy
-import sys
 
 from chromite.lib import chroot_util
 from chromite.lib.paygen import gspaths
@@ -16,9 +15,6 @@ from chromite.lib.paygen import paygen_payload_lib
 
 from chromite.api.gen.chromiumos import common_pb2
 from chromite.api.gen.chromite.api import payload_pb2
-
-
-assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class Error(Exception):

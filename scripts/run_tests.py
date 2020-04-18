@@ -100,7 +100,6 @@ SPECIAL_TESTS = {
     'scripts/gconv_strip_unittest': INSIDE,
     'scripts/merge_logs_unittest': INSIDE,
     'scripts/test_image_unittest': INSIDE,
-    'service/dependency_unittest': INSIDE,
 
     # These require 3rd party modules that are in the chroot.
     'cli/cros/cros_bisect_unittest': INSIDE,

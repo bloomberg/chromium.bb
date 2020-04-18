@@ -8,7 +8,6 @@
 from __future__ import print_function
 
 import os
-import sys
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -18,9 +17,6 @@ from chromite.lib import portage_util
 from chromite.lib import sysroot_lib
 from chromite.lib import workon_helper
 from chromite.utils import metrics
-
-
-assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class Error(Exception):

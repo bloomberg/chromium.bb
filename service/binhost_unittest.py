@@ -8,7 +8,6 @@
 from __future__ import print_function
 
 import os
-import sys
 
 import mock
 
@@ -22,9 +21,6 @@ from chromite.lib import parallel
 from chromite.lib import portage_util
 from chromite.lib import sysroot_lib
 from chromite.service import binhost
-
-
-assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class GetPrebuiltAclArgsTest(cros_test_lib.MockTempDirTestCase):

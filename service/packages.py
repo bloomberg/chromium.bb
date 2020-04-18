@@ -34,9 +34,6 @@ if cros_build_lib.IsInsideChroot():
   from chromite.service import dependency
 
 
-assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
-
-
 # Registered handlers for uprevving versioned packages.
 _UPREV_FUNCS = {}
 
