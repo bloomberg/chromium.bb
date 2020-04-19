@@ -21,6 +21,7 @@ emerge-veyron_minnie-cheets =chromeos-base/android-container-2559197-r1
 
 from __future__ import print_function
 
+import base64
 import filecmp
 import hashlib
 import glob
@@ -30,7 +31,7 @@ import shutil
 import tempfile
 import time
 import subprocess
-import base64
+import sys
 
 from chromite.lib import constants
 from chromite.lib import commandline
@@ -40,6 +41,9 @@ from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import portage_util
 from chromite.scripts import cros_mark_as_stable
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # Dir where all the action happens.

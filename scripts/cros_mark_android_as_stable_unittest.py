@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import os
 import re
+import sys
 
 import mock
 from six.moves import zip as izip
@@ -26,6 +27,9 @@ from chromite.lib import portage_util
 from chromite.scripts import cros_mark_android_as_stable
 
 pytestmark = cros_test_lib.pytestmark_inside_only
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
