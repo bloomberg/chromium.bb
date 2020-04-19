@@ -15,6 +15,7 @@ import json
 import os
 import re
 import shutil
+import sys
 
 from chromite.cbuildbot import afdo
 from chromite.lib import alerts
@@ -28,6 +29,9 @@ from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import portage_util
 from chromite.lib import timeout_util
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class PrepareForBuildReturn(object):

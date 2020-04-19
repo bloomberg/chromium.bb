@@ -16,6 +16,7 @@ import json
 import os
 import re
 import shutil
+import sys
 import time
 
 import mock
@@ -36,6 +37,10 @@ from chromite.lib import timeout_util
 from chromite.lib import toolchain_util
 
 # pylint: disable=protected-access
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 _input_artifact = collections.namedtuple('_input_artifact',
                                          ['name', 'gs_locations'])
