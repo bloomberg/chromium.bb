@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import sys
 import time
 
 import mock
@@ -21,6 +22,9 @@ from chromite.lib import osutils
 from chromite.lib import cros_build_lib
 
 # pylint: disable=protected-access
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class RepositoryTests(cros_test_lib.RunCommandTestCase):
