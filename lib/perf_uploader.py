@@ -25,6 +25,7 @@ import math
 import os
 import re
 import string
+import sys
 
 from six.moves import http_client as httplib
 from six.moves import urllib
@@ -32,6 +33,9 @@ from six.moves import urllib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import retry_util
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # Clearly mark perf values coming from chromite by default.
