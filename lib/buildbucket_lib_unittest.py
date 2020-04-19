@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import json
+import sys
 
 import mock
 
@@ -16,6 +17,9 @@ from chromite.lib import buildbucket_lib
 from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import metadata_lib
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class BuildbucketClientTest(cros_test_lib.MockTestCase):
