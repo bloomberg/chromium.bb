@@ -94,7 +94,6 @@ SPECIAL_TESTS = {
     'scripts/cros_oobe_autoconfig_unittest': SKIP, # https://crbug.com/1000761
     'scripts/cros_install_debug_syms_unittest': INSIDE,
     'scripts/cros_mark_as_stable_unittest': INSIDE,
-    'scripts/cros_mark_chrome_as_stable_unittest': INSIDE,
     'scripts/cros_run_unit_tests_unittest': INSIDE,
     'scripts/dep_tracker_unittest': INSIDE,
     'scripts/gconv_strip_unittest': INSIDE,
