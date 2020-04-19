@@ -17,11 +17,16 @@ import glob
 import json
 import os
 import re
+import sys
 
 from chromite.lib import constants, cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import (failures_lib, git, gs, osutils, path_util,
                           timeout_util)
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 # AFDO-specific constants.
 AFDO_SUFFIX = '.afdo'
