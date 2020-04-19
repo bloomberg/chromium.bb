@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import sys
 
 import mock
 
@@ -18,6 +19,9 @@ from chromite.lib import parallel
 from chromite.lib import uprev_lib
 from chromite.lib.build_target_lib import BuildTarget
 from chromite.lib.chroot_lib import Chroot
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class ChromeVersionTest(cros_test_lib.TestCase):
