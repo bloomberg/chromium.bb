@@ -13,7 +13,6 @@ import os
 
 import mock
 
-from chromite.cbuildbot import repository
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
@@ -664,10 +663,10 @@ class ManifestCheckoutTest(cros_test_lib.TempDirTestCase):
                ['fetch', '-f', '-u', local_manifests,
                 'refs/remotes/origin/*:refs/heads/*'])
     git.RunGit(temp_manifests, ['branch', '-D', 'default'])
-    repo = repository.RepoRepository(
-        temp_manifests, self.tempdir,
-        repo_url='file://%s' % local_repo, repo_branch='default')
-    repo.Initialize()
+    cros_build_lib.run([
+        'repo', 'init', '-u', temp_manifests,
+        '--repo-branch', 'default', '--repo-url', 'file://%s' % local_repo,
+    ], cwd=self.tempdir)
 
     self.active_manifest = os.path.realpath(
         os.path.join(self.tempdir, '.repo', 'manifest.xml'))
