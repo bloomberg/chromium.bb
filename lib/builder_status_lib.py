@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import collections
 import pickle
+import sys
 
 from chromite.lib import buildbucket_lib
 from chromite.lib import build_failure_message
@@ -18,6 +19,9 @@ from chromite.lib import cros_collections
 from chromite.lib import cros_logging as logging
 from chromite.lib import failure_message_lib
 from chromite.lib import metrics
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 BUILD_STATUS_URL = (
