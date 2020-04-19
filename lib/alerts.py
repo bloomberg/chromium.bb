@@ -42,6 +42,9 @@ except (RuntimeError, ImportError) as e:
   oauth_client_fileio = None
 
 
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
 class MailServer(object):
   """Base class for servers."""
 
