@@ -15,6 +15,7 @@ import hashlib
 import os
 import struct
 import subprocess
+import sys
 
 import mock
 
@@ -37,6 +38,9 @@ from chromite.lib import sysroot_lib
 from chromite.scripts import pushimage
 
 from chromite.service import artifacts as artifacts_service
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class RunBuildScriptTest(cros_test_lib.RunCommandTempDirTestCase):

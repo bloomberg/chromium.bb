@@ -55,6 +55,9 @@ from chromite.scripts import pushimage
 from chromite.service import artifacts as artifacts_service
 
 
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
 _PACKAGE_FILE = '%(buildroot)s/src/scripts/cbuildbot_package.list'
 CHROME_KEYWORDS_FILE = ('/build/%(board)s/etc/portage/package.keywords/chrome')
 CHROME_UNMASK_FILE = ('/build/%(board)s/etc/portage/package.unmask/chrome')
