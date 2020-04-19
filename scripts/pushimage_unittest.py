@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import collections
 import os
+import sys
 
 import mock
 
@@ -20,6 +21,9 @@ from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.lib import signing
 from chromite.scripts import pushimage
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # Use our local copy of insns for testing as the main one is not available in
