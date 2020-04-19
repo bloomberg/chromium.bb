@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import sys
 import tempfile
 
 import mock
@@ -22,6 +23,9 @@ from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import timeout_util
 from chromite.lib.buildstore import FakeBuildStore, BuildIdentifier
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 FAKE_VERSION = """

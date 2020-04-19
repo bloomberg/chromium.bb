@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import collections
 import datetime
+import sys
 
 from chromite.lib import buildbucket_lib
 from chromite.lib import builder_status_lib
@@ -16,6 +17,9 @@ from chromite.lib import build_requests
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import metrics
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # TODO(nxia): Rename this module to slave_status, since this module is for
