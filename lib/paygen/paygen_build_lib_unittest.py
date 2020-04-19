@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import json
 import os
+import sys
 import tarfile
 
 import mock
@@ -28,6 +29,9 @@ from chromite.lib.paygen import test_params
 
 # We access a lot of protected members during testing.
 # pylint: disable=protected-access
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class BasePaygenBuildLibTest(cros_test_lib.MockTestCase):
