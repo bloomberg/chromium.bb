@@ -10,6 +10,7 @@ from __future__ import print_function
 import json
 import os
 import stat
+import sys
 
 from google.protobuf.field_mask_pb2 import FieldMask
 from chromite.api.gen.config.replication_config_pb2 import (
@@ -20,6 +21,10 @@ from chromite.api.gen.config.replication_config_pb2 import (
 from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import replication_lib
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 D = cros_test_lib.Directory
 
