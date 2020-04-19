@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import json
+import sys
 
 from chromite.lib import cros_logging as logging
 from chromite.lib import iter_utils
@@ -19,6 +20,9 @@ try:
 except ImportError:
   from gcloud import datastore  # pylint: disable=import-error
   import gcloud  # pylint: disable=import-error
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 _BATCH_CHUNK_SIZE = 500
