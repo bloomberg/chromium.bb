@@ -233,6 +233,10 @@ loonix_boards = frozenset([
     'wooten',
 ])
 
+reven_boards = frozenset([
+    'reven',
+])
+
 wshwos_boards = frozenset([
     'littlejoe',
     'viking',
@@ -255,7 +259,7 @@ termina_boards = frozenset([
 ])
 
 nofactory_boards = (
-    lakitu_boards | termina_boards | lassen_boards | frozenset([
+    lakitu_boards | termina_boards | lassen_boards | reven_boards | frozenset([
         'x30evb',
     ])
 )
@@ -269,7 +273,7 @@ noimagetest_boards = (lakitu_boards | loonix_boards | termina_boards
 
 nohwqual_boards = (lakitu_boards | lassen_boards | loonix_boards
                    | termina_boards | beaglebone_boards | wshwos_boards
-                   | dustbuster_boards)
+                   | dustbuster_boards | reven_boards)
 
 norootfs_verification_boards = frozenset([
     'kumo',
