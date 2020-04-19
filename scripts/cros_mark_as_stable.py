@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import sys
 
 from chromite.lib import constants
 from chromite.lib import commandline
@@ -20,6 +21,10 @@ from chromite.lib import portage_util
 from chromite.lib import repo_util
 
 from chromite.cbuildbot import manifest_version
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 # Commit message subject for uprevving Portage packages.
 GIT_COMMIT_SUBJECT = 'Marking set of ebuilds as stable'

@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import sys
 
 import mock
 
@@ -24,6 +25,9 @@ from chromite.lib import repo_util
 from chromite.scripts import cros_mark_as_stable
 
 pytestmark = cros_test_lib.pytestmark_inside_only
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class RunGitMock(partial_mock.PartialCmdMock):
