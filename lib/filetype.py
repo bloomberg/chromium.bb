@@ -41,6 +41,9 @@ except ImportError:
   import magic  # pylint: disable=import-error
 
 
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
 # The buffer size we would use to read files from the disk.
 FILE_BUFFER_SIZE = 32 * 1024
 

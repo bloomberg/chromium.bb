@@ -82,7 +82,6 @@ SPECIAL_TESTS = {
     'lib/androidbuild_unittest': INSIDE,
     'lib/chroot_util_unittest': INSIDE,
     'lib/cros_test_lib_unittest': INSIDE,
-    'lib/filetype_unittest': INSIDE,
     'lib/operation_unittest': INSIDE,
     'lib/upgrade_table_unittest': INSIDE,
     'lib/vm_unittest': INSIDE,

@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import os
 import stat
+import sys
 
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
@@ -16,6 +17,9 @@ from chromite.lib import filetype
 from chromite.lib import unittest_lib
 
 pytestmark = cros_test_lib.pytestmark_inside_only
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class SplitShebangTest(cros_test_lib.TestCase):
