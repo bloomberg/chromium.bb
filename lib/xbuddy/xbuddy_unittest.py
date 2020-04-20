@@ -85,7 +85,7 @@ class xBuddyTest(cros_test_lib.TestCase):
     with mock.patch.object(gs.GSContext, 'Cat', return_value='v') as cat_mock:
       self.assertEqual(self.mock_xb._LookupOfficial('b', suffix='-s'), 'b-s/v')
       cat_mock.assert_called_with(
-          'gs://chromeos-image-archive/b-s/LATEST-master')
+          'gs://chromeos-image-archive/b-s/LATEST-master', encoding='utf-8')
 
   @mock.patch.object(xbuddy.XBuddy, '_GetLatestVersionFromGsDir',
                      side_effect=['4100.68.0', 'R28-4100.68.0'])

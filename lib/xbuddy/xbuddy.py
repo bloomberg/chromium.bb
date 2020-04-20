@@ -350,7 +350,7 @@ class XBuddy(object):
                     'board': board,
                     'suffix': suffix})
     # Full release + version is in the LATEST file.
-    version = self._ctx.Cat(latest_addr)
+    version = self._ctx.Cat(latest_addr, encoding='utf-8')
 
     return devserver_constants.IMAGE_DIR % {'board':board,
                                             'suffix':suffix,
