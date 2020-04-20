@@ -1448,15 +1448,12 @@ class PrepareForBuildHandler(_CommonPrepareBundle):
       # Artifact already created.
       logging.info('Found %s.', path)
       return PrepareForBuildReturn.POINTLESS
-
-    # No changes are needed in any ebuild, use flags take care of everything.
-
-    # We need this build.
     logging.info('No UnverifiedChromeLlvmOrderfile found.')
     return PrepareForBuildReturn.NEEDED
 
   def _PrepareVerifiedChromeLlvmOrderfile(self):
     """Prepare to verify an unvetted ordering file."""
+    ret = PrepareForBuildReturn.NEEDED
     # We will look for the input artifact in the given path, but we only check
     # for the vetted artifact in the first location given.
     locations = self.input_artifacts.get('UnverifiedChromeLlvmOrderfile',
@@ -1474,7 +1471,7 @@ class PrepareForBuildHandler(_CommonPrepareBundle):
     if self.gs_context.Exists(vetted_path):
       # The latest unverified ordering file has already been verified.
       logging.info('Pointless build: "%s" exists.', vetted_path)
-      return PrepareForBuildReturn.POINTLESS
+      ret = PrepareForBuildReturn.POINTLESS
 
     # If we don't have an SDK, then we cannot update the manifest.
     if self.chroot:
@@ -1486,7 +1483,7 @@ class PrepareForBuildHandler(_CommonPrepareBundle):
           uprev=True)
     else:
       logging.info('No chroot: not patching ebuild.')
-    return PrepareForBuildReturn.NEEDED
+    return ret
 
   def _PrepareChromeClangWarningsFile(self):
     # We always build this artifact.
@@ -1537,7 +1534,7 @@ class PrepareForBuildHandler(_CommonPrepareBundle):
   def _PrepareUnverifiedChromeBenchmarkAfdoFile(self):
     """Prepare to build an Unverified Chrome benchmark AFDO file."""
     ret = self._UnverifiedAfdoFileExists()
-    if ret == PrepareForBuildReturn.NEEDED and self.chroot:
+    if self.chroot:
       # Fetch the CHROME_DEBUG_BINARY and UNVERIFIED_CHROME_BENCHMARK_PERF_FILE
       # artifacts and unpack them for the Bundle call.
       workdir_full = self.chroot.full_path(self._AfdoTmpPath())
@@ -1588,6 +1585,7 @@ class PrepareForBuildHandler(_CommonPrepareBundle):
 
   def _PrepareVerifiedKernelCwpAfdoFile(self):
     """Prepare to verify the kernel CWP AFDO artifact."""
+    ret = PrepareForBuildReturn.NEEDED
     kernel_version = self.profile_info.get('kernel_version')
     if not kernel_version:
       raise PrepareForBuildHandlerError(
@@ -1608,7 +1606,7 @@ class PrepareForBuildHandler(_CommonPrepareBundle):
     if self.gs_context.Exists(published_path):
       # The verified artifact is already present: we are done.
       logging.info('Pointless build: "%s" exists.', published_path)
-      return PrepareForBuildReturn.POINTLESS
+      ret = PrepareForBuildReturn.POINTLESS
 
     afdo_dir, afdo_name = os.path.split(
         afdo_path.replace(KERNEL_AFDO_COMPRESSION_SUFFIX, ''))
@@ -1621,7 +1619,7 @@ class PrepareForBuildHandler(_CommonPrepareBundle):
     if age > KERNEL_ALLOWED_STALE_DAYS:
       logging.info('Found an expired afdo for kernel %s: %s, skip.',
                    kernel_version, afdo_name)
-      return PrepareForBuildReturn.POINTLESS
+      ret = PrepareForBuildReturn.POINTLESS
 
     if age > KERNEL_WARN_STALE_DAYS:
       _WarnSheriffAboutKernelProfileExpiration(kernel_version, afdo_name)
@@ -1635,9 +1633,7 @@ class PrepareForBuildHandler(_CommonPrepareBundle):
                                   'AFDO_LOCATION': afdo_dir
                               },
           uprev=True)
-    else:
-      logging.info('No chroot: not patching ebuild.')
-    return PrepareForBuildReturn.NEEDED
+    return ret
 
   def _PrepareUnverifiedChromeCwpAfdoFile(self):
     """Unused: CWP is from elsewhere."""
@@ -1654,6 +1650,7 @@ class PrepareForBuildHandler(_CommonPrepareBundle):
 
     See also "chrome_afdo" code elsewhere in this file.
     """
+    ret = PrepareForBuildReturn.NEEDED
     profile = self.profile_info.get('chrome_cwp_profile')
     if not profile:
       raise PrepareForBuildHandlerError('Could not find profile name.')
@@ -1683,7 +1680,7 @@ class PrepareForBuildHandler(_CommonPrepareBundle):
     if self.gs_context.Exists(published_path):
       # The verified artifact is already present: we are done.
       logging.info('Pointless build: "%s" exists.', published_path)
-      return PrepareForBuildReturn.POINTLESS
+      ret = PrepareForBuildReturn.POINTLESS
 
     # If we don't have an SDK, then we cannot update the manifest.
     if self.chroot:
@@ -1696,9 +1693,7 @@ class PrepareForBuildHandler(_CommonPrepareBundle):
           self._GetEbuildInfo(constants.CHROME_PN),
           {'UNVETTED_AFDO_FILE': self.chroot.chroot_path(afdo_profile)},
           uprev=True)
-    else:
-      logging.info('No chroot: not patching ebuild.')
-    return PrepareForBuildReturn.NEEDED
+    return ret
 
   def _CreateReleaseChromeAFDO(self, cwp_url, bench_url, output_dir,
                                merged_name):

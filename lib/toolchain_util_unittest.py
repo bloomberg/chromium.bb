@@ -436,7 +436,8 @@ class PrepareForBuildHandlerTest(PrepareBundleTest):
                      self.obj.Prepare())
     self.gs_context.Exists.assert_called_once_with(
         'gs://path/to/vetted/%s.xz' % self.orderfile_name)
-    self.patch_ebuild.assert_not_called()
+    # The ebuild is still updated.
+    self.patch_ebuild.assert_called_once()
 
   def testPrepareVerifiedChromeLlvmOrderfileMissing(self):
     """Test that PrepareVerfiedChromeLlvmOrderfile works when NEEDED."""
@@ -473,6 +474,7 @@ class PrepareForBuildHandlerTest(PrepareBundleTest):
                   'chromeos-chrome-amd64-78.0.3893.0.perf.data.bz2'),
     ]
     self.assertEqual(expected, self.gs_context.Exists.call_args_list)
+    # There is no need to patch the ebuild.
     self.patch_ebuild.assert_not_called()
 
 
