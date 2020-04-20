@@ -197,8 +197,8 @@ def rebase_branch(branch, parent, start_hash):
         else:
           print("Here's what git-rebase (squashed) had to say:")
           print()
-          print(squash_ret.stdout)
-          print(squash_ret.stderr)
+          print(squash_ret.stdout.decode('utf-8'))
+          print(squash_ret.stderr.decode('utf-8'))
           print(textwrap.dedent("""\
           Squashing failed. You probably have a real merge conflict.
 
