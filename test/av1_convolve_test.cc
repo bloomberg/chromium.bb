@@ -31,10 +31,10 @@ namespace {
 //
 // Also note that the test suites must be named with the architecture, e.g.,
 // C, C_X, AVX2_X, ... The test suite that runs on Jenkins sometimes runs tests
-// that cannot deal with intrinsics (e.g., the Valgrind tests) and will disable
-// tests using a filter like --gtest_filter=-:SSE4_1.*. If the test suites are
-// not named this way, the testing infrastructure will not selectively filter
-// them properly.
+// that cannot deal with intrinsics (e.g., the Valgrind tests on 32-bit x86
+// binaries) and will disable tests using a filter like
+// --gtest_filter=-:SSE4_1.*. If the test suites are not named this way, the
+// testing infrastructure will not selectively filter them properly.
 class BlockSize {
  public:
   BlockSize(int w, int h) : width_(w), height_(h) {}
@@ -67,7 +67,7 @@ class TestParam {
 
   const BlockSize &Block() const { return block_; }
   int BitDepth() const { return bd_; }
-  const T TestFunction() const { return test_func_; }
+  T TestFunction() const { return test_func_; }
 
   bool operator==(const TestParam &other) const {
     return Block() == other.Block() && BitDepth() == other.BitDepth() &&
@@ -127,11 +127,15 @@ template <typename T>
 class AV1ConvolveParametersTest : public ::testing::Test {};
 
 TEST_F(AV1ConvolveParametersTest, GetLowbdTestParams) {
-  auto v = GetLowbdTestParams(nullptr);
+  auto v = GetLowbdTestParams(av1_convolve_x_sr_c);
   ASSERT_EQ(27U, v.size());
   for (const auto &p : v) {
     ASSERT_EQ(8, p.BitDepth());
-    ASSERT_EQ(nullptr, p.TestFunction());
+    // Needed (instead of ASSERT_EQ(...) since gtest does not
+    // have built in printing for arbitrary functions, which
+    // causes a compilation error.
+    bool same_fn = av1_convolve_x_sr_c == p.TestFunction();
+    ASSERT_TRUE(same_fn);
   }
 }
 
@@ -148,13 +152,14 @@ template <typename T>
 }
 
 TEST_F(AV1ConvolveParametersTest, GetHighbdTestParams) {
-  auto v = GetHighbdTestParams(nullptr);
+  auto v = GetHighbdTestParams(av1_highbd_convolve_x_sr_c);
   ASSERT_EQ(54U, v.size());
   int num_10 = 0;
   int num_12 = 0;
   for (const auto &p : v) {
     ASSERT_TRUE(p.BitDepth() == 10 || p.BitDepth() == 12);
-    ASSERT_EQ(nullptr, p.TestFunction());
+    bool same_fn = av1_highbd_convolve_x_sr_c == p.TestFunction();
+    ASSERT_TRUE(same_fn);
     if (p.BitDepth() == 10) {
       ++num_10;
     } else {
@@ -348,21 +353,21 @@ class AV1ConvolveXTest : public AV1ConvolveTest<convolve_x_func> {
 };
 
 TEST_P(AV1ConvolveXTest, RunTest) { RunTest(); }
-INSTANTIATE_TEST_SUITE_P(C_X, AV1ConvolveXTest,
+INSTANTIATE_TEST_SUITE_P(C, AV1ConvolveXTest,
                          BuildLowbdParams(av1_convolve_x_sr_c));
 
 #if HAVE_SSE2
-INSTANTIATE_TEST_SUITE_P(SSE2_X, AV1ConvolveXTest,
+INSTANTIATE_TEST_SUITE_P(SSE2, AV1ConvolveXTest,
                          BuildLowbdParams(av1_convolve_x_sr_sse2));
 #endif
 
 #if HAVE_AVX2
-INSTANTIATE_TEST_SUITE_P(AVX2_X, AV1ConvolveXTest,
+INSTANTIATE_TEST_SUITE_P(AVX2, AV1ConvolveXTest,
                          BuildLowbdParams(av1_convolve_x_sr_avx2));
 #endif
 
 #if HAVE_NEON
-INSTANTIATE_TEST_SUITE_P(NEON_X, AV1ConvolveXTest,
+INSTANTIATE_TEST_SUITE_P(NEON, AV1ConvolveXTest,
                          BuildLowbdParams(av1_convolve_x_sr_neon));
 #endif
 
@@ -413,16 +418,16 @@ class AV1ConvolveXHighbdTest : public AV1ConvolveTest<highbd_convolve_x_func> {
 
 TEST_P(AV1ConvolveXHighbdTest, RunTest) { RunTest(); }
 
-INSTANTIATE_TEST_SUITE_P(C_X, AV1ConvolveXHighbdTest,
+INSTANTIATE_TEST_SUITE_P(C, AV1ConvolveXHighbdTest,
                          BuildHighbdParams(av1_highbd_convolve_x_sr_c));
 
 #if HAVE_SSSE3
-INSTANTIATE_TEST_SUITE_P(SSSE3_X, AV1ConvolveXHighbdTest,
+INSTANTIATE_TEST_SUITE_P(SSSE3, AV1ConvolveXHighbdTest,
                          BuildHighbdParams(av1_highbd_convolve_x_sr_ssse3));
 #endif
 
 #if HAVE_AVX2
-INSTANTIATE_TEST_SUITE_P(AVX2_X, AV1ConvolveXHighbdTest,
+INSTANTIATE_TEST_SUITE_P(AVX2, AV1ConvolveXHighbdTest,
                          BuildHighbdParams(av1_highbd_convolve_x_sr_avx2));
 #endif
 
@@ -468,21 +473,21 @@ class AV1ConvolveYTest : public AV1ConvolveTest<convolve_y_func> {
 
 TEST_P(AV1ConvolveYTest, RunTest) { RunTest(); }
 
-INSTANTIATE_TEST_SUITE_P(C_Y, AV1ConvolveYTest,
+INSTANTIATE_TEST_SUITE_P(C, AV1ConvolveYTest,
                          BuildLowbdParams(av1_convolve_y_sr_c));
 
 #if HAVE_SSE2
-INSTANTIATE_TEST_SUITE_P(SSE2_Y, AV1ConvolveYTest,
+INSTANTIATE_TEST_SUITE_P(SSE2, AV1ConvolveYTest,
                          BuildLowbdParams(av1_convolve_y_sr_sse2));
 #endif
 
 #if HAVE_AVX2
-INSTANTIATE_TEST_SUITE_P(AVX2_Y, AV1ConvolveYTest,
+INSTANTIATE_TEST_SUITE_P(AVX2, AV1ConvolveYTest,
                          BuildLowbdParams(av1_convolve_y_sr_avx2));
 #endif
 
 #if HAVE_NEON
-INSTANTIATE_TEST_SUITE_P(NEON_Y, AV1ConvolveYTest,
+INSTANTIATE_TEST_SUITE_P(NEON, AV1ConvolveYTest,
                          BuildLowbdParams(av1_convolve_y_sr_neon));
 #endif
 
@@ -527,16 +532,16 @@ class AV1ConvolveYHighbdTest : public AV1ConvolveTest<highbd_convolve_y_func> {
 
 TEST_P(AV1ConvolveYHighbdTest, RunTest) { RunTest(); }
 
-INSTANTIATE_TEST_SUITE_P(C_Y, AV1ConvolveYHighbdTest,
+INSTANTIATE_TEST_SUITE_P(C, AV1ConvolveYHighbdTest,
                          BuildHighbdParams(av1_highbd_convolve_y_sr_c));
 
 #if HAVE_SSSE3
-INSTANTIATE_TEST_SUITE_P(SSSE3_Y, AV1ConvolveYHighbdTest,
+INSTANTIATE_TEST_SUITE_P(SSSE3, AV1ConvolveYHighbdTest,
                          BuildHighbdParams(av1_highbd_convolve_y_sr_ssse3));
 #endif
 
 #if HAVE_AVX2
-INSTANTIATE_TEST_SUITE_P(AVX2_Y, AV1ConvolveYHighbdTest,
+INSTANTIATE_TEST_SUITE_P(AVX2, AV1ConvolveYHighbdTest,
                          BuildHighbdParams(av1_highbd_convolve_y_sr_avx2));
 #endif
 
@@ -567,31 +572,31 @@ class AV1ConvolveCopyTest : public AV1ConvolveTest<convolve_copy_func> {
 // newer AV1 test framework.
 TEST_P(AV1ConvolveCopyTest, RunTest) { RunTest(); }
 
-INSTANTIATE_TEST_SUITE_P(C_COPY, AV1ConvolveCopyTest,
+INSTANTIATE_TEST_SUITE_P(C, AV1ConvolveCopyTest,
                          BuildLowbdParams(aom_convolve_copy_c));
 
 #if HAVE_SSE2
-INSTANTIATE_TEST_SUITE_P(SSE2_COPY, AV1ConvolveCopyTest,
+INSTANTIATE_TEST_SUITE_P(SSE2, AV1ConvolveCopyTest,
                          BuildLowbdParams(aom_convolve_copy_sse2));
 #endif
 
 #if HAVE_AVX2
-INSTANTIATE_TEST_SUITE_P(AVX2_COPY, AV1ConvolveCopyTest,
+INSTANTIATE_TEST_SUITE_P(AVX2, AV1ConvolveCopyTest,
                          BuildLowbdParams(aom_convolve_copy_avx2));
 #endif
 
 #if HAVE_NEON
-INSTANTIATE_TEST_SUITE_P(NEON_COPY, AV1ConvolveCopyTest,
+INSTANTIATE_TEST_SUITE_P(NEON, AV1ConvolveCopyTest,
                          BuildLowbdParams(aom_convolve_copy_neon));
 #endif
 
 #if HAVE_MSA
-INSTANTIATE_TEST_SUITE_P(MSA_COPY, AV1ConvolveCopyTest,
+INSTANTIATE_TEST_SUITE_P(MSA, AV1ConvolveCopyTest,
                          BuildLowbdParams(aom_convolve_copy_msa));
 #endif
 
 #if HAVE_DSPR2
-INSTANTIATE_TEST_SUITE_P(DSPR2_COPY, AV1ConvolveCopyTest,
+INSTANTIATE_TEST_SUITE_P(DSPR2, AV1ConvolveCopyTest,
                          BuildLowbdParams(aom_convolve_copy_dspr2));
 #endif
 
@@ -622,16 +627,16 @@ class AV1ConvolveCopyHighbdTest
 
 TEST_P(AV1ConvolveCopyHighbdTest, RunTest) { RunTest(); }
 
-INSTANTIATE_TEST_SUITE_P(C_COPY, AV1ConvolveCopyHighbdTest,
+INSTANTIATE_TEST_SUITE_P(C, AV1ConvolveCopyHighbdTest,
                          BuildHighbdParams(aom_highbd_convolve_copy_c));
 
 #if HAVE_SSE2
-INSTANTIATE_TEST_SUITE_P(SSE2_COPY, AV1ConvolveCopyHighbdTest,
+INSTANTIATE_TEST_SUITE_P(SSE2, AV1ConvolveCopyHighbdTest,
                          BuildHighbdParams(aom_highbd_convolve_copy_sse2));
 #endif
 
 #if HAVE_AVX2
-INSTANTIATE_TEST_SUITE_P(AVX2_COPY, AV1ConvolveCopyHighbdTest,
+INSTANTIATE_TEST_SUITE_P(AVX2, AV1ConvolveCopyHighbdTest,
                          BuildHighbdParams(aom_highbd_convolve_copy_avx2));
 #endif
 
@@ -688,21 +693,21 @@ class AV1Convolve2DTest : public AV1ConvolveTest<convolve_2d_func> {
 
 TEST_P(AV1Convolve2DTest, RunTest) { RunTest(); }
 
-INSTANTIATE_TEST_SUITE_P(C_2D, AV1Convolve2DTest,
+INSTANTIATE_TEST_SUITE_P(C, AV1Convolve2DTest,
                          BuildLowbdParams(av1_convolve_2d_sr_c));
 
 #if HAVE_SSE2
-INSTANTIATE_TEST_SUITE_P(SSE2_2D, AV1Convolve2DTest,
+INSTANTIATE_TEST_SUITE_P(SSE2, AV1Convolve2DTest,
                          BuildLowbdParams(av1_convolve_2d_sr_sse2));
 #endif
 
 #if HAVE_AVX2
-INSTANTIATE_TEST_SUITE_P(AVX2_2D, AV1Convolve2DTest,
+INSTANTIATE_TEST_SUITE_P(AVX2, AV1Convolve2DTest,
                          BuildLowbdParams(av1_convolve_2d_sr_avx2));
 #endif
 
 #if HAVE_NEON
-INSTANTIATE_TEST_SUITE_P(NEON_2D, AV1Convolve2DTest,
+INSTANTIATE_TEST_SUITE_P(NEON, AV1Convolve2DTest,
                          BuildLowbdParams(av1_convolve_2d_sr_neon));
 #endif
 
@@ -762,16 +767,16 @@ class AV1Convolve2DHighbdTest
 
 TEST_P(AV1Convolve2DHighbdTest, RunTest) { RunTest(); }
 
-INSTANTIATE_TEST_SUITE_P(C_2D, AV1Convolve2DHighbdTest,
+INSTANTIATE_TEST_SUITE_P(C, AV1Convolve2DHighbdTest,
                          BuildHighbdParams(av1_highbd_convolve_2d_sr_c));
 
 #if HAVE_SSSE3
-INSTANTIATE_TEST_SUITE_P(SSSE3_2D, AV1Convolve2DHighbdTest,
+INSTANTIATE_TEST_SUITE_P(SSSE3, AV1Convolve2DHighbdTest,
                          BuildHighbdParams(av1_highbd_convolve_2d_sr_ssse3));
 #endif
 
 #if HAVE_AVX2
-INSTANTIATE_TEST_SUITE_P(AVX2_2D, AV1Convolve2DHighbdTest,
+INSTANTIATE_TEST_SUITE_P(AVX2, AV1Convolve2DHighbdTest,
                          BuildHighbdParams(av1_highbd_convolve_2d_sr_avx2));
 #endif
 
@@ -813,11 +818,12 @@ template <typename T>
 }
 
 TEST_F(AV1ConvolveParametersTest, GetLowbdLumaTestParams) {
-  auto v = GetLowbdLumaTestParams(nullptr);
+  auto v = GetLowbdLumaTestParams(av1_dist_wtd_convolve_x_c);
   ASSERT_EQ(22U, v.size());
   for (const auto &e : v) {
     ASSERT_EQ(8, e.BitDepth());
-    ASSERT_EQ(nullptr, e.TestFunction());
+    bool same_fn = av1_dist_wtd_convolve_x_c == e.TestFunction();
+    ASSERT_TRUE(same_fn);
   }
 }
 
@@ -828,13 +834,14 @@ std::vector<TestParam<T>> GetHighbdLumaTestParams(T test_func) {
 }
 
 TEST_F(AV1ConvolveParametersTest, GetHighbdLumaTestParams) {
-  auto v = GetHighbdLumaTestParams(nullptr);
+  auto v = GetHighbdLumaTestParams(av1_highbd_dist_wtd_convolve_x_c);
   ASSERT_EQ(44U, v.size());
   int num_10 = 0;
   int num_12 = 0;
   for (const auto &e : v) {
     ASSERT_TRUE(10 == e.BitDepth() || 12 == e.BitDepth());
-    ASSERT_EQ(nullptr, e.TestFunction());
+    bool same_fn = av1_highbd_dist_wtd_convolve_x_c == e.TestFunction();
+    ASSERT_TRUE(same_fn);
     if (e.BitDepth() == 10) {
       ++num_10;
     } else {
@@ -972,21 +979,21 @@ class AV1ConvolveXCompoundTest : public AV1ConvolveTest<convolve_x_func> {
 
 TEST_P(AV1ConvolveXCompoundTest, RunTest) { RunTest(); }
 
-INSTANTIATE_TEST_SUITE_P(C_X, AV1ConvolveXCompoundTest,
+INSTANTIATE_TEST_SUITE_P(C, AV1ConvolveXCompoundTest,
                          BuildLowbdLumaParams(av1_dist_wtd_convolve_x_c));
 
 #if HAVE_SSE2
-INSTANTIATE_TEST_SUITE_P(SSE2_X, AV1ConvolveXCompoundTest,
+INSTANTIATE_TEST_SUITE_P(SSE2, AV1ConvolveXCompoundTest,
                          BuildLowbdLumaParams(av1_dist_wtd_convolve_x_sse2));
 #endif
 
 #if HAVE_AVX2
-INSTANTIATE_TEST_SUITE_P(AVX2_X, AV1ConvolveXCompoundTest,
+INSTANTIATE_TEST_SUITE_P(AVX2, AV1ConvolveXCompoundTest,
                          BuildLowbdLumaParams(av1_dist_wtd_convolve_x_avx2));
 #endif
 
 #if HAVE_NEON
-INSTANTIATE_TEST_SUITE_P(NEON_X, AV1ConvolveXCompoundTest,
+INSTANTIATE_TEST_SUITE_P(NEON, AV1ConvolveXCompoundTest,
                          BuildLowbdLumaParams(av1_dist_wtd_convolve_x_neon));
 #endif
 
@@ -1063,18 +1070,18 @@ class AV1ConvolveXHighbdCompoundTest
 TEST_P(AV1ConvolveXHighbdCompoundTest, RunTest) { RunTest(); }
 
 INSTANTIATE_TEST_SUITE_P(
-    C_X, AV1ConvolveXHighbdCompoundTest,
+    C, AV1ConvolveXHighbdCompoundTest,
     BuildHighbdLumaParams(av1_highbd_dist_wtd_convolve_x_c));
 
 #if HAVE_SSE4_1
 INSTANTIATE_TEST_SUITE_P(
-    SSE4_1_X, AV1ConvolveXHighbdCompoundTest,
+    SSE4_1, AV1ConvolveXHighbdCompoundTest,
     BuildHighbdLumaParams(av1_highbd_dist_wtd_convolve_x_sse4_1));
 #endif
 
 #if HAVE_AVX2
 INSTANTIATE_TEST_SUITE_P(
-    AVX2_X, AV1ConvolveXHighbdCompoundTest,
+    AVX2, AV1ConvolveXHighbdCompoundTest,
     BuildHighbdLumaParams(av1_highbd_dist_wtd_convolve_x_avx2));
 #endif
 
@@ -1100,21 +1107,21 @@ class AV1ConvolveYCompoundTest : public AV1ConvolveXCompoundTest {
 
 TEST_P(AV1ConvolveYCompoundTest, RunTest) { RunTest(); }
 
-INSTANTIATE_TEST_SUITE_P(C_Y, AV1ConvolveYCompoundTest,
+INSTANTIATE_TEST_SUITE_P(C, AV1ConvolveYCompoundTest,
                          BuildLowbdLumaParams(av1_dist_wtd_convolve_y_c));
 
 #if HAVE_SSE2
-INSTANTIATE_TEST_SUITE_P(SSE2_Y, AV1ConvolveYCompoundTest,
+INSTANTIATE_TEST_SUITE_P(SSE2, AV1ConvolveYCompoundTest,
                          BuildLowbdLumaParams(av1_dist_wtd_convolve_y_sse2));
 #endif
 
 #if HAVE_AVX2
-INSTANTIATE_TEST_SUITE_P(AVX2_Y, AV1ConvolveYCompoundTest,
+INSTANTIATE_TEST_SUITE_P(AVX2, AV1ConvolveYCompoundTest,
                          BuildLowbdLumaParams(av1_dist_wtd_convolve_y_avx2));
 #endif
 
 #if HAVE_NEON
-INSTANTIATE_TEST_SUITE_P(NEON_Y, AV1ConvolveYCompoundTest,
+INSTANTIATE_TEST_SUITE_P(NEON, AV1ConvolveYCompoundTest,
                          BuildLowbdLumaParams(av1_dist_wtd_convolve_y_neon));
 #endif
 
@@ -1137,18 +1144,18 @@ class AV1ConvolveYHighbdCompoundTest : public AV1ConvolveXHighbdCompoundTest {
 TEST_P(AV1ConvolveYHighbdCompoundTest, RunTest) { RunTest(); }
 
 INSTANTIATE_TEST_SUITE_P(
-    C_Y, AV1ConvolveYHighbdCompoundTest,
+    C, AV1ConvolveYHighbdCompoundTest,
     BuildHighbdLumaParams(av1_highbd_dist_wtd_convolve_y_c));
 
 #if HAVE_SSE4_1
 INSTANTIATE_TEST_SUITE_P(
-    SSE4_1_Y, AV1ConvolveYHighbdCompoundTest,
+    SSE4_1, AV1ConvolveYHighbdCompoundTest,
     BuildHighbdLumaParams(av1_highbd_dist_wtd_convolve_y_sse4_1));
 #endif
 
 #if HAVE_AVX2
 INSTANTIATE_TEST_SUITE_P(
-    AVX2_Y, AV1ConvolveYHighbdCompoundTest,
+    AVX2, AV1ConvolveYHighbdCompoundTest,
     BuildHighbdLumaParams(av1_highbd_dist_wtd_convolve_y_avx2));
 #endif
 
@@ -1211,24 +1218,24 @@ class AV1Convolve2DCopyCompoundTest
 
 TEST_P(AV1Convolve2DCopyCompoundTest, RunTest) { RunTest(); }
 
-INSTANTIATE_TEST_SUITE_P(C_COPY, AV1Convolve2DCopyCompoundTest,
+INSTANTIATE_TEST_SUITE_P(C, AV1Convolve2DCopyCompoundTest,
                          BuildLowbdLumaParams(av1_dist_wtd_convolve_2d_copy_c));
 
 #if HAVE_SSE2
 INSTANTIATE_TEST_SUITE_P(
-    SSE2_COPY, AV1Convolve2DCopyCompoundTest,
+    SSE2, AV1Convolve2DCopyCompoundTest,
     BuildLowbdLumaParams(av1_dist_wtd_convolve_2d_copy_sse2));
 #endif
 
 #if HAVE_AVX2
 INSTANTIATE_TEST_SUITE_P(
-    AVX2_COPY, AV1Convolve2DCopyCompoundTest,
+    AVX2, AV1Convolve2DCopyCompoundTest,
     BuildLowbdLumaParams(av1_dist_wtd_convolve_2d_copy_avx2));
 #endif
 
 #if HAVE_NEON
 INSTANTIATE_TEST_SUITE_P(
-    NEON_COPY, AV1Convolve2DCopyCompoundTest,
+    NEON, AV1Convolve2DCopyCompoundTest,
     BuildLowbdLumaParams(av1_dist_wtd_convolve_2d_copy_neon));
 #endif
 
@@ -1297,18 +1304,18 @@ class AV1Convolve2DCopyHighbdCompoundTest
 TEST_P(AV1Convolve2DCopyHighbdCompoundTest, RunTest) { RunTest(); }
 
 INSTANTIATE_TEST_SUITE_P(
-    C_COPY, AV1Convolve2DCopyHighbdCompoundTest,
+    C, AV1Convolve2DCopyHighbdCompoundTest,
     BuildHighbdLumaParams(av1_highbd_dist_wtd_convolve_2d_copy_c));
 
 #if HAVE_SSE4_1
 INSTANTIATE_TEST_SUITE_P(
-    SSE4_1_COPY, AV1Convolve2DCopyHighbdCompoundTest,
+    SSE4_1, AV1Convolve2DCopyHighbdCompoundTest,
     BuildHighbdLumaParams(av1_highbd_dist_wtd_convolve_2d_copy_sse4_1));
 #endif
 
 #if HAVE_AVX2
 INSTANTIATE_TEST_SUITE_P(
-    AVX2_COPY, AV1Convolve2DCopyHighbdCompoundTest,
+    AVX2, AV1Convolve2DCopyHighbdCompoundTest,
     BuildHighbdLumaParams(av1_highbd_dist_wtd_convolve_2d_copy_avx2));
 #endif
 
@@ -1388,26 +1395,26 @@ class AV1Convolve2DCompoundTest : public AV1ConvolveTest<convolve_2d_func> {
 
 TEST_P(AV1Convolve2DCompoundTest, RunTest) { RunTest(); }
 
-INSTANTIATE_TEST_SUITE_P(C_2D, AV1Convolve2DCompoundTest,
+INSTANTIATE_TEST_SUITE_P(C, AV1Convolve2DCompoundTest,
                          BuildLowbdLumaParams(av1_dist_wtd_convolve_2d_c));
 
 #if HAVE_SSE2
-INSTANTIATE_TEST_SUITE_P(SSE2_2D, AV1Convolve2DCompoundTest,
+INSTANTIATE_TEST_SUITE_P(SSE2, AV1Convolve2DCompoundTest,
                          BuildLowbdLumaParams(av1_dist_wtd_convolve_2d_sse2));
 #endif
 
 #if HAVE_SSSE3
-INSTANTIATE_TEST_SUITE_P(SSSE3_2D, AV1Convolve2DCompoundTest,
+INSTANTIATE_TEST_SUITE_P(SSSE3, AV1Convolve2DCompoundTest,
                          BuildLowbdLumaParams(av1_dist_wtd_convolve_2d_ssse3));
 #endif
 
 #if HAVE_AVX2
-INSTANTIATE_TEST_SUITE_P(AVX2_2D, AV1Convolve2DCompoundTest,
+INSTANTIATE_TEST_SUITE_P(AVX2, AV1Convolve2DCompoundTest,
                          BuildLowbdLumaParams(av1_dist_wtd_convolve_2d_avx2));
 #endif
 
 #if HAVE_NEON
-INSTANTIATE_TEST_SUITE_P(NEON_2D, AV1Convolve2DCompoundTest,
+INSTANTIATE_TEST_SUITE_P(NEON, AV1Convolve2DCompoundTest,
                          BuildLowbdLumaParams(av1_dist_wtd_convolve_2d_neon));
 #endif
 
@@ -1488,18 +1495,18 @@ class AV1Convolve2DHighbdCompoundTest
 TEST_P(AV1Convolve2DHighbdCompoundTest, RunTest) { RunTest(); }
 
 INSTANTIATE_TEST_SUITE_P(
-    C_2D, AV1Convolve2DHighbdCompoundTest,
+    C, AV1Convolve2DHighbdCompoundTest,
     BuildHighbdLumaParams(av1_highbd_dist_wtd_convolve_2d_c));
 
 #if HAVE_SSE4_1
 INSTANTIATE_TEST_SUITE_P(
-    SSE4_1_2D, AV1Convolve2DHighbdCompoundTest,
+    SSE4_1, AV1Convolve2DHighbdCompoundTest,
     BuildHighbdLumaParams(av1_highbd_dist_wtd_convolve_2d_sse4_1));
 #endif
 
 #if HAVE_AVX2
 INSTANTIATE_TEST_SUITE_P(
-    AVX2_2D, AV1Convolve2DHighbdCompoundTest,
+    AVX2, AV1Convolve2DHighbdCompoundTest,
     BuildHighbdLumaParams(av1_highbd_dist_wtd_convolve_2d_avx2));
 #endif
 
