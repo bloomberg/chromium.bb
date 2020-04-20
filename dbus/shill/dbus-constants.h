@@ -82,34 +82,40 @@ const char kUpdateConnectionStateFunction[] = "UpdateConnectionState";
 // Manager property names.
 const char kActiveProfileProperty[] = "ActiveProfile";
 const char kAlwaysOnVpnPackageProperty[] = "AlwaysOnVpnPackage";
-const char kArpGatewayProperty[] = "ArpGateway";
 const char kAvailableTechnologiesProperty[] = "AvailableTechnologies";
-const char kCheckPortalListProperty[] = "CheckPortalList";
 const char kClaimedDevicesProperty[] = "ClaimedDevices";
 const char kConnectedTechnologiesProperty[] = "ConnectedTechnologies";
 const char kConnectionStateProperty[] = "ConnectionState";
 const char kDefaultServiceProperty[] = "DefaultService";
 const char kDefaultTechnologyProperty[] = "DefaultTechnology";
 const char kDevicesProperty[] = "Devices";
-const char kDhcpPropertyHostnameProperty[] = "DHCPProperty.Hostname";
-const char kDhcpPropertyVendorClassProperty[] = "DHCPProperty.VendorClass";
 const char kDisableWiFiVHTProperty[] = "DisableWiFiVHT";
 const char kEnabledTechnologiesProperty[] = "EnabledTechnologies";
-const char kIgnoredDNSSearchPathsProperty[] = "IgnoredDNSSearchPaths";
-const char kLinkMonitorTechnologiesProperty[] = "LinkMonitorTechnologies";
-const char kNoAutoConnectTechnologiesProperty[] = "NoAutoConnectTechnologies";
-const char kOfflineModeProperty[] = "OfflineMode";
 const char kPortalFallbackUrlsStringProperty[] = "PortalFallbackUrlsString";
 const char kPortalHttpUrlProperty[] = "PortalHttpUrl";
 const char kPortalHttpsUrlProperty[] = "PortalHttpsUrl";
 const char kProfilesProperty[] = "Profiles";
-const char kProhibitedTechnologiesProperty[] = "ProhibitedTechnologies";
 const char kServiceCompleteListProperty[] = "ServiceCompleteList";
 const char kServiceWatchListProperty[] = "ServiceWatchList";
-const char kServicesProperty[] = "Services";
+const char kServicesProperty[] = "Services";  // Also used for Profile.
 const char kUninitializedTechnologiesProperty[] = "UninitializedTechnologies";
 const char kWakeOnLanEnabledProperty[] = "WakeOnLanEnabled";
 const char kWifiGlobalFTEnabledProperty[] = "WiFi.GlobalFTEnabled";
+
+// Manager and DefaultProfile property names (the Manager properties that are
+// persisted by a DefaultProfile; these are always read-only for
+// DefaultProfile).
+const char kArpGatewayProperty[] = "ArpGateway";
+const char kCheckPortalListProperty[] = "CheckPortalList";
+const char kIgnoredDNSSearchPathsProperty[] = "IgnoredDNSSearchPaths";
+const char kLinkMonitorTechnologiesProperty[] = "LinkMonitorTechnologies";
+const char kNoAutoConnectTechnologiesProperty[] = "NoAutoConnectTechnologies";
+const char kOfflineModeProperty[] = "OfflineMode";
+const char kProhibitedTechnologiesProperty[] = "ProhibitedTechnologies";
+
+// DHCP property names for both Manager and Service.
+const char kDhcpPropertyHostnameProperty[] = "DHCPProperty.Hostname";
+const char kDhcpPropertyVendorClassProperty[] = "DHCPProperty.VendorClass";
 
 // Base Service property names.
 const char kAutoConnectProperty[] = "AutoConnect";
@@ -129,7 +135,7 @@ const char kIsConnectedProperty[] = "IsConnected";
 const char kLinkMonitorDisableProperty[] = "LinkMonitorDisable";
 const char kManagedCredentialsProperty[] = "ManagedCredentials";
 const char kMeteredProperty[] = "Metered";
-const char kNameProperty[] = "Name";
+const char kNameProperty[] = "Name";  // Also used for Device and Profile.
 const char kPassphraseRequiredProperty[] = "PassphraseRequired";
 const char kPortalDetectionFailedPhaseProperty[] = "PortalDetectionFailedPhase";
 const char kPortalDetectionFailedStatusProperty[] =
@@ -288,58 +294,110 @@ const char kConfigurationNameProperty[] = "ConfigurationName";
 const char kExtensionNameProperty[] = "ExtensionName";
 const char kObjectPathSuffixProperty[] = "ObjectPathSuffix";
 
+// IPConfig property names.
+const char kAcceptedHostnameProperty[] = "AcceptedHostname";
+// kAddressProperty: Defined below for Device.
+const char kBroadcastProperty[] = "Broadcast";
+const char kDhcpv6AddressesProperty[] = "Dhcpv6Addresses";
+const char kDhcpv6DelegatedPrefixesProperty[] = "Dhcpv6DelegatedPrefixes";
+const char kDomainNameProperty[] = "DomainName";
+const char kExcludedRoutesProperty[] = "ExcludedRoutes";
+const char kGatewayProperty[] = "Gateway";
+const char kIncludedRoutesProperty[] = "IncludedRoutes";
+const char kLeaseDurationSecondsProperty[] = "LeaseDurationSeconds";
+const char kMethodProperty[] = "Method";
+const char kMtuProperty[] = "Mtu";
+const char kNameServersProperty[] = "NameServers";
+const char kPeerAddressProperty[] = "PeerAddress";
+const char kPrefixlenProperty[] = "Prefixlen";
+const char kSearchDomainsProperty[] = "SearchDomains";
+const char kVendorEncapsulatedOptionsProperty[] = "VendorEncapsulatedOptions";
+const char kWebProxyAutoDiscoveryUrlProperty[] = "WebProxyAutoDiscoveryUrl";
+const char kiSNSOptionDataProperty[] = "iSNSOptionData";  // For RFC 4174.
+
+// DHCPv6 IPConfig property names.
+const char kDhcpv6AddressProperty[] = "Address";
+const char kDhcpv6LengthProperty[] = "Length";
+const char kDhcpv6LeaseDurationSecondsProperty[] = "LeaseDurationSeconds";
+const char kDhcpv6PreferredLeaseDurationSecondsProperty[] =
+    "PreferredLeaseDurationSeconds";
+
+// Base Device property names.
+const char kAddressProperty[] = "Address";  // Also used for IPConfig.
+const char kIPConfigsProperty[] = "IPConfigs";
+const char kInterfaceProperty[] = "Interface";  // Network interface name.
+const char kLinkMonitorResponseTimeProperty[] = "LinkMonitorResponseTime";
+// kNameProperty: Defined above for Service.
+const char kPoweredProperty[] = "Powered";
+const char kReceiveByteCountProperty[] = "ReceiveByteCount";
+const char kScanIntervalProperty[] =
+    "ScanInterval";                           // For both Cellular and WiFi.
+const char kScanningProperty[] = "Scanning";  // For both Cellular and WiFi.
+const char kSelectedServiceProperty[] = "SelectedService";
+const char kTransmitByteCountProperty[] = "TransmitByteCount";
+
+// Cellular Device property names.
+const char kCellularAllowRoamingProperty[] = "Cellular.AllowRoaming";
+const char kCarrierProperty[] = "Cellular.Carrier";
+const char kDeviceIdProperty[] = "Cellular.DeviceID";
+const char kEquipmentIdProperty[] = "Cellular.EquipmentID";
+const char kEsnProperty[] = "Cellular.ESN";
+const char kFirmwareRevisionProperty[] = "Cellular.FirmwareRevision";
+const char kFoundNetworksProperty[] = "Cellular.FoundNetworks";
+const char kHardwareRevisionProperty[] = "Cellular.HardwareRevision";
+const char kHomeProviderProperty[] = "Cellular.HomeProvider";
+const char kIccidProperty[] = "Cellular.ICCID";
+const char kImeiProperty[] = "Cellular.IMEI";
+const char kImsiProperty[] = "Cellular.IMSI";
+const char kManufacturerProperty[] = "Cellular.Manufacturer";
+const char kMdnProperty[] = "Cellular.MDN";
+const char kMeidProperty[] = "Cellular.MEID";
+const char kModelIdProperty[] = "Cellular.ModelID";
+const char kMinProperty[] = "Cellular.MIN";
+const char kProviderRequiresRoamingProperty[] =
+    "Cellular.ProviderRequiresRoaming";
+const char kSelectedNetworkProperty[] = "Cellular.SelectedNetwork";
+const char kSIMPresentProperty[] = "Cellular.SIMPresent";
+const char kSupportNetworkScanProperty[] = "Cellular.SupportNetworkScan";
+const char kDBusObjectProperty[] = "DBus.Object";
+const char kDBusServiceProperty[] = "DBus.Service";
+
+// Ethernet Device property names.
+const char kEapAuthenticationCompletedProperty[] = "EapAuthenticationCompleted";
+const char kEapAuthenticatorDetectedProperty[] = "EapAuthenticatorDetected";
+const char kDeviceBusTypeProperty[] = "Ethernet.DeviceBusType";
+const char kLinkUpProperty[] = "Ethernet.LinkUp";
+const char kPPPoEProperty[] = "Ethernet.PPPoE";
+const char kUsbEthernetMacAddressSourceProperty[] =
+    "Ethernet.UsbEthernetMacAddressSource";
+
+// WiFi Device property names.
+const char kBgscanMethodProperty[] = "BgscanMethod";
+const char kBgscanShortIntervalProperty[] = "BgscanShortInterval";
+const char kBgscanSignalThresholdProperty[] = "BgscanSignalThreshold";
+const char kForceWakeToScanTimerProperty[] = "ForceWakeToScanTimer";
+const char kLinkStatisticsProperty[] = "LinkStatistics";
+const char kMacAddressRandomizationEnabledProperty[] =
+    "MACAddressRandomizationEnabled";
+const char kMacAddressRandomizationSupportedProperty[] =
+    "MACAddressRandomizationSupported";
+const char kNetDetectScanPeriodSecondsProperty[] = "NetDetectScanPeriodSeconds";
+const char kWakeOnWiFiFeaturesEnabledProperty[] = "WakeOnWiFiFeaturesEnabled";
+const char kWakeToScanPeriodSecondsProperty[] = "WakeToScanPeriodSeconds";
+const char kWifiSupportedFrequenciesProperty[] = "WiFi.SupportedFrequencies";
+
+// Profile property names.
+const char kEntriesProperty[] = "Entries";
+// kNameProperty: Defined above for Service.
+// kServicesProperty: Defined above for Manager.
+const char kUserHashProperty[] = "UserHash";
+
 // WiFi Service VendorInformation dictionary keys.
 const char kVendorOUIListProperty[] = "OUIList";
 const char kVendorWPSDeviceNameProperty[] = "DeviceName";
 const char kVendorWPSManufacturerProperty[] = "Manufacturer";
 const char kVendorWPSModelNameProperty[] = "ModelName";
 const char kVendorWPSModelNumberProperty[] = "ModelNumber";
-
-// Flimflam Profile property names.
-const char kEntriesProperty[] = "Entries";
-
-// Flimflam Device property names.
-const char kWakeOnWiFiFeaturesEnabledProperty[] = "WakeOnWiFiFeaturesEnabled";
-const char kScanningProperty[] = "Scanning";
-const char kPoweredProperty[] = "Powered";
-const char kScanIntervalProperty[] = "ScanInterval";
-const char kBgscanMethodProperty[] = "BgscanMethod";
-const char kBgscanShortIntervalProperty[] = "BgscanShortInterval";
-const char kDBusObjectProperty[] = "DBus.Object";
-const char kDBusServiceProperty[] = "DBus.Service";
-const char kBgscanSignalThresholdProperty[] = "BgscanSignalThreshold";
-const char kWakeToScanPeriodSecondsProperty[] = "WakeToScanPeriodSeconds";
-const char kNetDetectScanPeriodSecondsProperty[] = "NetDetectScanPeriodSeconds";
-const char kForceWakeToScanTimerProperty[] = "ForceWakeToScanTimer";
-// The name of the network interface, ie. wlan0, eth0, etc.
-const char kInterfaceProperty[] = "Interface";
-const char kSelectedServiceProperty[] = "SelectedService";
-const char kIPConfigsProperty[] = "IPConfigs";
-const char kMacAddressRandomizationSupportedProperty[] =
-    "MACAddressRandomizationSupported";
-const char kMacAddressRandomizationEnabledProperty[] =
-    "MACAddressRandomizationEnabled";
-
-// Flimflam Cellular Device property names.
-const char kCarrierProperty[] = "Cellular.Carrier";
-const char kCellularAllowRoamingProperty[] = "Cellular.AllowRoaming";
-const char kHomeProviderProperty[] = "Cellular.HomeProvider";
-const char kMeidProperty[] = "Cellular.MEID";
-const char kImeiProperty[] = "Cellular.IMEI";
-const char kIccidProperty[] = "Cellular.ICCID";
-const char kImsiProperty[] = "Cellular.IMSI";
-const char kEsnProperty[] = "Cellular.ESN";
-const char kMdnProperty[] = "Cellular.MDN";
-const char kMinProperty[] = "Cellular.MIN";
-const char kModelIdProperty[] = "Cellular.ModelID";
-const char kEquipmentIdProperty[] = "Cellular.EquipmentID";
-const char kManufacturerProperty[] = "Cellular.Manufacturer";
-const char kFirmwareRevisionProperty[] = "Cellular.FirmwareRevision";
-const char kHardwareRevisionProperty[] = "Cellular.HardwareRevision";
-const char kDeviceIdProperty[] = "Cellular.DeviceID";
-const char kSelectedNetworkProperty[] = "Cellular.SelectedNetwork";
-const char kSupportNetworkScanProperty[] = "Cellular.SupportNetworkScan";
-const char kFoundNetworksProperty[] = "Cellular.FoundNetworks";
 
 // Flimflam state options.
 const char kStateIdle[] = "idle";
@@ -496,40 +554,6 @@ const char kOpenVPNCompressLzo[] = "lzo";
 const char kTechnologyFamilyCdma[] = "CDMA";
 const char kTechnologyFamilyGsm[] = "GSM";
 
-// IPConfig property names.
-const char kMethodProperty[] = "Method";
-const char kAddressProperty[] = "Address";
-const char kMtuProperty[] = "Mtu";
-const char kPrefixlenProperty[] = "Prefixlen";
-const char kBroadcastProperty[] = "Broadcast";
-const char kPeerAddressProperty[] = "PeerAddress";
-const char kGatewayProperty[] = "Gateway";
-const char kDomainNameProperty[] = "DomainName";
-const char kAcceptedHostnameProperty[] = "AcceptedHostname";
-const char kNameServersProperty[] = "NameServers";
-const char kSearchDomainsProperty[] = "SearchDomains";
-const char kDhcpv6AddressesProperty[] = "Dhcpv6Addresses";
-const char kDhcpv6DelegatedPrefixesProperty[] = "Dhcpv6DelegatedPrefixes";
-const char kLeaseDurationSecondsProperty[] = "LeaseDurationSeconds";
-const char kVendorEncapsulatedOptionsProperty[] = "VendorEncapsulatedOptions";
-const char kWebProxyAutoDiscoveryUrlProperty[] = "WebProxyAutoDiscoveryUrl";
-// DHCP Option for iSNS (RFC 4174)
-const char kiSNSOptionDataProperty[] = "iSNSOptionData";
-const char kIncludedRoutesProperty[] = "IncludedRoutes";
-const char kExcludedRoutesProperty[] = "ExcludedRoutes";
-
-// These constants are deprecated in favor of kDhcpv6DelegatedPrefixesProperty.
-// TODO(tjennison): Remove when shill no longer uses them b/26778228
-const char kDelegatedPrefixProperty[] = "DelegatedPrefix";
-const char kDelegatedPrefixLengthProperty[] = "DelegatedPrefixLength";
-
-// IPConfig DHCPv6 address/prefix property names.
-const char kDhcpv6AddressProperty[] = "Address";
-const char kDhcpv6LengthProperty[] = "Length";
-const char kDhcpv6LeaseDurationSecondsProperty[] = "LeaseDurationSeconds";
-const char kDhcpv6PreferredLeaseDurationSecondsProperty[] =
-    "PreferredLeaseDurationSeconds";
-
 // IPConfig type options.
 const char kTypeIPv4[] = "ipv4";
 const char kTypeIPv6[] = "ipv6";
@@ -617,22 +641,6 @@ const char kUnknownString[] = "UNKNOWN";
 const char kDeviceBusTypePci[] = "pci";
 const char kDeviceBusTypeUsb[] = "usb";
 
-// Device property names.
-const char kEapAuthenticationCompletedProperty[] = "EapAuthenticationCompleted";
-const char kEapAuthenticatorDetectedProperty[] = "EapAuthenticatorDetected";
-const char kLinkMonitorResponseTimeProperty[] = "LinkMonitorResponseTime";
-const char kLinkUpProperty[] = "Ethernet.LinkUp";
-const char kProviderRequiresRoamingProperty[] =
-    "Cellular.ProviderRequiresRoaming";
-const char kPPPoEProperty[] = "Ethernet.PPPoE";
-const char kReceiveByteCountProperty[] = "ReceiveByteCount";
-const char kSIMPresentProperty[] = "Cellular.SIMPresent";
-const char kTransmitByteCountProperty[] = "TransmitByteCount";
-const char kWifiSupportedFrequenciesProperty[] = "WiFi.SupportedFrequencies";
-const char kDeviceBusTypeProperty[] = "Ethernet.DeviceBusType";
-const char kUsbEthernetMacAddressSourceProperty[] =
-    "Ethernet.UsbEthernetMacAddressSource";
-
 // Technology types (augments "Flimflam type options" above).
 const char kTypeEthernetEap[] = "etherneteap";
 const char kTypeTunnel[] = "tunnel";
@@ -652,16 +660,12 @@ const char kEapSubjectAlternativeNameMatchTypeEmail[] = "EMAIL";
 const char kEapSubjectAlternativeNameMatchTypeDNS[] = "DNS";
 const char kEapSubjectAlternativeNameMatchTypeURI[] = "URI";
 
-// Profile property names.
-const char kUserHashProperty[] = "UserHash";
-
 // Service Tethering property values.
 const char kTetheringNotDetectedState[] = "NotDetected";
 const char kTetheringSuspectedState[] = "Suspected";
 const char kTetheringConfirmedState[] = "Confirmed";
 
-// WiFi Device link property names.
-const char kLinkStatisticsProperty[] = "LinkStatistics";
+// WiFi Device kLinkStatisticsProperty sub-property names.
 const char kAverageReceiveSignalDbmProperty[] = "AverageReceiveSignalDbm";
 const char kInactiveTimeMillisecondsProperty[] = "InactiveTimeMilliseconds";
 const char kLastReceiveSignalDbmProperty[] = "LastReceiveSignalDbm";
