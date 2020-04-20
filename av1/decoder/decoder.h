@@ -33,21 +33,48 @@
 extern "C" {
 #endif
 
+// Contains coding block data required by the decoder, which includes:
+// - Coding block info that is common between encoder and decoder.
+// - Other coding block info only needed by the decoder.
+// Contract this with a similar struct MACROBLOCK on encoder side.
+// This data is also common between ThreadData and AV1Decoder structs.
+typedef struct DecoderCodingBlock {
+  // Coding block info that is common between encoder and decoder.
+  DECLARE_ALIGNED(32, MACROBLOCKD, xd);
+  // True if the at least one of the coding blocks decoded was corrupted.
+  int corrupted;
+  // Pointer to 'mc_buf' inside 'pbi->td' (single-threaded decoding) or
+  // 'pbi->thread_data[i].td' (multi-threaded decoding).
+  uint8_t *mc_buf[2];
+  // Pointer to 'dqcoeff' inside 'td->cb_buffer_base' or 'pbi->cb_buffer_base'
+  // with appropriate offset for the current superblock, for each plane.
+  tran_low_t *dqcoeff_block[MAX_MB_PLANE];
+  // cb_offset[p] is the offset into the dqcoeff_block[p] for the current coding
+  // block, for each plane 'p'.
+  uint16_t cb_offset[MAX_MB_PLANE];
+  // Pointer to 'eob_data' inside 'td->cb_buffer_base' or 'pbi->cb_buffer_base'
+  // with appropriate offset for the current superblock, for each plane.
+  eob_info *eob_data[MAX_MB_PLANE];
+  // txb_offset[p] is the offset into the eob_data[p] for the current coding
+  // block, for each plane 'p'.
+  uint16_t txb_offset[MAX_MB_PLANE];
+} DecoderCodingBlock;
+
 typedef void (*decode_block_visitor_fn_t)(const AV1_COMMON *const cm,
-                                          MACROBLOCKD *const xd,
+                                          DecoderCodingBlock *dcb,
                                           aom_reader *const r, const int plane,
                                           const int row, const int col,
                                           const TX_SIZE tx_size);
 
 typedef void (*predict_inter_block_visitor_fn_t)(AV1_COMMON *const cm,
-                                                 MACROBLOCKD *const xd,
+                                                 DecoderCodingBlock *dcb,
                                                  BLOCK_SIZE bsize);
 
 typedef void (*cfl_store_inter_block_visitor_fn_t)(AV1_COMMON *const cm,
                                                    MACROBLOCKD *const xd);
 
 typedef struct ThreadData {
-  DECLARE_ALIGNED(32, MACROBLOCKD, xd);
+  DecoderCodingBlock dcb;
 
   // Coding block buffer for the current superblock.
   // Used only for single-threaded decoding and multi-threaded decoding with
@@ -167,7 +194,7 @@ typedef struct AV1DecTileMTData {
 } AV1DecTileMT;
 
 typedef struct AV1Decoder {
-  DECLARE_ALIGNED(32, MACROBLOCKD, mb);
+  DecoderCodingBlock dcb;
 
   DECLARE_ALIGNED(32, AV1_COMMON, common);
 

@@ -705,12 +705,12 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
 void av1_build_one_inter_predictor(
     uint8_t *dst, int dst_stride, const MV *const src_mv,
     InterPredParams *inter_pred_params, MACROBLOCKD *xd, int mi_x, int mi_y,
-    int ref, CalcSubpelParamsFunc calc_subpel_params_func) {
+    int ref, uint8_t **mc_buf, CalcSubpelParamsFunc calc_subpel_params_func) {
   SubpelParams subpel_params;
   uint8_t *src;
   int src_stride;
-  calc_subpel_params_func(src_mv, inter_pred_params, xd, mi_x, mi_y, ref, &src,
-                          &subpel_params, &src_stride);
+  calc_subpel_params_func(src_mv, inter_pred_params, xd, mi_x, mi_y, ref,
+                          mc_buf, &src, &subpel_params, &src_stride);
 
   if (inter_pred_params->comp_mode == UNIFORM_SINGLE ||
       inter_pred_params->comp_mode == UNIFORM_COMP) {
@@ -809,7 +809,7 @@ static bool is_sub8x8_inter(const MACROBLOCKD *xd, int plane, BLOCK_SIZE bsize,
 
 static void build_inter_predictors_sub8x8(
     const AV1_COMMON *cm, MACROBLOCKD *xd, int plane, const MB_MODE_INFO *mi,
-    int bw, int bh, int mi_x, int mi_y,
+    int bw, int bh, int mi_x, int mi_y, uint8_t **mc_buf,
     CalcSubpelParamsFunc calc_subpel_params_func) {
   const BLOCK_SIZE bsize = mi->sb_type;
   struct macroblockd_plane *const pd = &xd->plane[plane];
@@ -871,7 +871,7 @@ static void build_inter_predictors_sub8x8(
 
       av1_build_one_inter_predictor(dst, dst_buf->stride, &mv,
                                     &inter_pred_params, xd, mi_x + x, mi_y + y,
-                                    ref, calc_subpel_params_func);
+                                    ref, mc_buf, calc_subpel_params_func);
 
       ++col;
     }
@@ -881,7 +881,7 @@ static void build_inter_predictors_sub8x8(
 
 static void build_inter_predictors_8x8_and_bigger(
     const AV1_COMMON *cm, MACROBLOCKD *xd, int plane, const MB_MODE_INFO *mi,
-    int build_for_obmc, int bw, int bh, int mi_x, int mi_y,
+    int build_for_obmc, int bw, int bh, int mi_x, int mi_y, uint8_t **mc_buf,
     CalcSubpelParamsFunc calc_subpel_params_func) {
   const int is_compound = has_second_ref(mi);
   const int is_intrabc = is_intrabc_block(mi);
@@ -938,22 +938,23 @@ static void build_inter_predictors_8x8_and_bigger(
     }
 
     av1_build_one_inter_predictor(dst, dst_buf->stride, &mv, &inter_pred_params,
-                                  xd, mi_x, mi_y, ref, calc_subpel_params_func);
+                                  xd, mi_x, mi_y, ref, mc_buf,
+                                  calc_subpel_params_func);
   }
 }
 
 void av1_build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                 int plane, const MB_MODE_INFO *mi,
                                 int build_for_obmc, int bw, int bh, int mi_x,
-                                int mi_y,
+                                int mi_y, uint8_t **mc_buf,
                                 CalcSubpelParamsFunc calc_subpel_params_func) {
   if (is_sub8x8_inter(xd, plane, mi->sb_type, is_intrabc_block(mi),
                       build_for_obmc)) {
-    build_inter_predictors_sub8x8(cm, xd, plane, mi, bw, bh, mi_x, mi_y,
+    build_inter_predictors_sub8x8(cm, xd, plane, mi, bw, bh, mi_x, mi_y, mc_buf,
                                   calc_subpel_params_func);
   } else {
     build_inter_predictors_8x8_and_bigger(cm, xd, plane, mi, build_for_obmc, bw,
-                                          bh, mi_x, mi_y,
+                                          bh, mi_x, mi_y, mc_buf,
                                           calc_subpel_params_func);
   }
 }

@@ -390,12 +390,6 @@ typedef struct {
 } CB_BUFFER;
 
 typedef struct macroblockd_plane {
-  // Pointer to 'dqcoeff' inside 'td->cb_buffer_base' or 'pbi->cb_buffer_base'
-  // with appropriate offset for the current superblock.
-  tran_low_t *dqcoeff_block;
-  // Pointer to 'eob_data' inside 'td->cb_buffer_base' or 'pbi->cb_buffer_base'
-  // with appropriate offset for the current superblock.
-  eob_info *eob_data;
   PLANE_TYPE plane_type;
   int subsampling_x;
   int subsampling_y;
@@ -619,8 +613,6 @@ typedef struct macroblockd {
 
   int qindex[MAX_SEGMENTS];
   int lossless[MAX_SEGMENTS];
-  // TODO(urvang): Move to decoder.
-  int corrupted;
   // Same as cm->features.cur_frame_force_integer_mv.
   int cur_frame_force_integer_mv;
   // Pointer to cm->error.
@@ -668,23 +660,8 @@ typedef struct macroblockd {
   // Mask for this block used for compound prediction.
   DECLARE_ALIGNED(16, uint8_t, seg_mask[2 * MAX_SB_SQUARE]);
 
-  // TODO(urvang): Move to decoder.
-  // Pointer to 'mc_buf' inside 'pbi->td' (single-threaded decoding) or
-  // 'pbi->thread_data[i].td' (multi-threaded decoding).
-  uint8_t *mc_buf[2];
-
   // CFL (chroma from luma) related parameters.
   CFL_CTX cfl;
-
-  // TODO(urvang): Move to decoder.
-  // cb_offset[p] is the offset into the plane[p].dqcoeff_block for the current
-  // coding block, for each plane 'p'.
-  uint16_t cb_offset[MAX_MB_PLANE];
-
-  // TODO(urvang): Move to decoder.
-  // txb_offset[p] is the offset into the plane[p].eob_data for the current
-  // coding block, for each plane 'p'.
-  uint16_t txb_offset[MAX_MB_PLANE];
 
   // Offset to plane[p].color_index_map.
   // Currently:

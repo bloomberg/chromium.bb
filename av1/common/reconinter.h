@@ -88,6 +88,7 @@ struct build_prediction_ctxt {
   int *tmp_height;
   int *tmp_stride;
   int mb_to_far_edge;
+  void *dcb;  // Decoder-only coding block.
 };
 
 typedef enum InterPredMode {
@@ -246,19 +247,19 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
 typedef void (*CalcSubpelParamsFunc)(const MV *const src_mv,
                                      InterPredParams *const inter_pred_params,
                                      MACROBLOCKD *xd, int mi_x, int mi_y,
-                                     int ref, uint8_t **pre,
+                                     int ref, uint8_t **mc_buf, uint8_t **pre,
                                      SubpelParams *subpel_params,
                                      int *src_stride);
 
 void av1_build_one_inter_predictor(
     uint8_t *dst, int dst_stride, const MV *const src_mv,
     InterPredParams *inter_pred_params, MACROBLOCKD *xd, int mi_x, int mi_y,
-    int ref, CalcSubpelParamsFunc calc_subpel_params_func);
+    int ref, uint8_t **mc_buf, CalcSubpelParamsFunc calc_subpel_params_func);
 
 void av1_build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                 int plane, const MB_MODE_INFO *mi,
                                 int build_for_obmc, int bw, int bh, int mi_x,
-                                int mi_y,
+                                int mi_y, uint8_t **mc_buf,
                                 CalcSubpelParamsFunc calc_subpel_params_func);
 
 // TODO(jkoleszar): yet another mv clamping function :-(

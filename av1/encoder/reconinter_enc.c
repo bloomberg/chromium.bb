@@ -31,7 +31,8 @@
 static void enc_calc_subpel_params(const MV *const src_mv,
                                    InterPredParams *const inter_pred_params,
                                    MACROBLOCKD *xd, int mi_x, int mi_y, int ref,
-                                   uint8_t **pre, SubpelParams *subpel_params,
+                                   uint8_t **mc_buf, uint8_t **pre,
+                                   SubpelParams *subpel_params,
                                    int *src_stride) {
   // These are part of the function signature to use this function through a
   // function pointer. See typedef of 'CalcSubpelParamsFunc'.
@@ -39,6 +40,7 @@ static void enc_calc_subpel_params(const MV *const src_mv,
   (void)mi_x;
   (void)mi_y;
   (void)ref;
+  (void)mc_buf;
 
   const struct scale_factors *sf = inter_pred_params->scale_factors;
 
@@ -73,16 +75,17 @@ static void enc_calc_subpel_params(const MV *const src_mv,
 void av1_enc_build_one_inter_predictor(uint8_t *dst, int dst_stride,
                                        const MV *src_mv,
                                        InterPredParams *inter_pred_params) {
-  av1_build_one_inter_predictor(dst, dst_stride, src_mv, inter_pred_params,
-                                NULL /* xd */, 0 /* mi_x */, 0 /* mi_y */,
-                                0 /* ref */, enc_calc_subpel_params);
+  av1_build_one_inter_predictor(
+      dst, dst_stride, src_mv, inter_pred_params, NULL /* xd */, 0 /* mi_x */,
+      0 /* mi_y */, 0 /* ref */, NULL /* mc_buf */, enc_calc_subpel_params);
 }
 
 static void enc_build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                        int plane, const MB_MODE_INFO *mi,
                                        int bw, int bh, int mi_x, int mi_y) {
   av1_build_inter_predictors(cm, xd, plane, mi, 0 /* build_for_obmc */, bw, bh,
-                             mi_x, mi_y, enc_calc_subpel_params);
+                             mi_x, mi_y, NULL /* mc_buf */,
+                             enc_calc_subpel_params);
 }
 
 void av1_enc_build_inter_predictor_y(MACROBLOCKD *xd, int mi_row, int mi_col) {
@@ -221,9 +224,9 @@ void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                          int tmp_height[MAX_MB_PLANE],
                                          int tmp_stride[MAX_MB_PLANE]) {
   if (!xd->up_available) return;
-  struct build_prediction_ctxt ctxt = { cm,         tmp_buf,
-                                        tmp_width,  tmp_height,
-                                        tmp_stride, xd->mb_to_right_edge };
+  struct build_prediction_ctxt ctxt = {
+    cm, tmp_buf, tmp_width, tmp_height, tmp_stride, xd->mb_to_right_edge, NULL
+  };
   BLOCK_SIZE bsize = xd->mi[0]->sb_type;
   foreach_overlappable_nb_above(cm, xd,
                                 max_neighbor_obmc[mi_size_wide_log2[bsize]],
@@ -236,9 +239,9 @@ void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                         int tmp_height[MAX_MB_PLANE],
                                         int tmp_stride[MAX_MB_PLANE]) {
   if (!xd->left_available) return;
-  struct build_prediction_ctxt ctxt = { cm,         tmp_buf,
-                                        tmp_width,  tmp_height,
-                                        tmp_stride, xd->mb_to_bottom_edge };
+  struct build_prediction_ctxt ctxt = {
+    cm, tmp_buf, tmp_width, tmp_height, tmp_stride, xd->mb_to_bottom_edge, NULL
+  };
   BLOCK_SIZE bsize = xd->mi[0]->sb_type;
   foreach_overlappable_nb_left(cm, xd,
                                max_neighbor_obmc[mi_size_high_log2[bsize]],

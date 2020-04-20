@@ -1263,7 +1263,7 @@ static void dec_dump_logs(AV1_COMMON *cm, MB_MODE_INFO *const mbmi, int mi_row,
 #endif  // DEC_MISMATCH_DEBUG
 
 static void read_inter_block_mode_info(AV1Decoder *const pbi,
-                                       MACROBLOCKD *const xd,
+                                       DecoderCodingBlock *dcb,
                                        MB_MODE_INFO *const mbmi,
                                        aom_reader *r) {
   AV1_COMMON *const cm = &pbi->common;
@@ -1274,6 +1274,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   int_mv ref_mvs[MODE_CTX_REF_FRAMES][MAX_MV_REF_CANDIDATES] = { { { 0 } } };
   int16_t inter_mode_ctx[MODE_CTX_REF_FRAMES];
   int pts[SAMPLES_ARRAY_SIZE], pts_inref[SAMPLES_ARRAY_SIZE];
+  MACROBLOCKD *const xd = &dcb->xd;
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
 
   mbmi->uv_mode = UV_DC_PRED;
@@ -1369,7 +1370,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   const int mv_corrupted_flag =
       !assign_mv(cm, xd, mbmi->mode, mbmi->ref_frame, mbmi->mv, ref_mv,
                  nearestmv, nearmv, is_compound, allow_hp, r);
-  aom_merge_corrupted_flag(&xd->corrupted, mv_corrupted_flag);
+  aom_merge_corrupted_flag(&dcb->corrupted, mv_corrupted_flag);
 
   mbmi->use_wedge_interintra = 0;
   if (cm->seq_params.enable_interintra_compound && !mbmi->skip_mode &&
@@ -1502,8 +1503,9 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 }
 
 static void read_inter_frame_mode_info(AV1Decoder *const pbi,
-                                       MACROBLOCKD *const xd, aom_reader *r) {
+                                       DecoderCodingBlock *dcb, aom_reader *r) {
   AV1_COMMON *const cm = &pbi->common;
+  MACROBLOCKD *const xd = &dcb->xd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
   int inter_block = 1;
 
@@ -1536,7 +1538,7 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
       xd->left_txfm_context_buffer + (xd->mi_row & MAX_MIB_MASK);
 
   if (inter_block)
-    read_inter_block_mode_info(pbi, xd, mbmi, r);
+    read_inter_block_mode_info(pbi, dcb, mbmi, r);
   else
     read_intra_block_mode_info(cm, xd, mbmi, r);
 }
@@ -1559,9 +1561,10 @@ static void intra_copy_frame_mvs(AV1_COMMON *const cm, int mi_row, int mi_col,
   }
 }
 
-void av1_read_mode_info(AV1Decoder *const pbi, MACROBLOCKD *xd, aom_reader *r,
-                        int x_mis, int y_mis) {
+void av1_read_mode_info(AV1Decoder *const pbi, DecoderCodingBlock *dcb,
+                        aom_reader *r, int x_mis, int y_mis) {
   AV1_COMMON *const cm = &pbi->common;
+  MACROBLOCKD *const xd = &dcb->xd;
   MB_MODE_INFO *const mi = xd->mi[0];
   mi->use_intrabc = 0;
 
@@ -1570,7 +1573,7 @@ void av1_read_mode_info(AV1Decoder *const pbi, MACROBLOCKD *xd, aom_reader *r,
     if (pbi->common.seq_params.order_hint_info.enable_ref_frame_mvs)
       intra_copy_frame_mvs(cm, xd->mi_row, xd->mi_col, x_mis, y_mis);
   } else {
-    read_inter_frame_mode_info(pbi, xd, r);
+    read_inter_frame_mode_info(pbi, dcb, r);
     if (pbi->common.seq_params.order_hint_info.enable_ref_frame_mvs)
       av1_copy_frame_mvs(cm, mi, xd->mi_row, xd->mi_col, x_mis, y_mis);
   }
