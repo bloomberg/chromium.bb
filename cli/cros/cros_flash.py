@@ -135,6 +135,9 @@ Examples:
         '--clobber-stateful', action='store_true', default=False,
         help='Clobber stateful partition when performing update.')
     update.add_argument(
+        '--restore-stateful', action='store_false', dest='rootfs_update',
+        help='Restore the stateful partition. Same as --no-rootfs-update.')
+    update.add_argument(
         '--private-key', type='path', default=None,
         help='SSH identify file (private key).')
     update.add_argument(
