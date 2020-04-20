@@ -3347,7 +3347,7 @@ def BranchScheduleConfig():
   RELEASE_SCHEDULES = [
       '0 6 * * *',
       '0 5 * * *',
-      '0 7 * * 1,3',
+      '0 7 * * 2,4',
   ]
 
   PFQ_SCHEDULE = [
