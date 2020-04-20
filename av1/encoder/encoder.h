@@ -1300,11 +1300,6 @@ typedef struct AV1_COMP {
   // size i.
   aom_variance_fn_ptr_t fn_ptr[BLOCK_SIZES_ALL];
 
-#if CONFIG_INTERNAL_STATS
-  uint64_t time_receive_data;
-  uint64_t time_compress_data;
-#endif
-
   // Number of show frames encoded in current gf_group.
   int num_gf_group_show_frames;
 
@@ -1325,6 +1320,9 @@ typedef struct AV1_COMP {
   int show_existing_alt_ref;
 
 #if CONFIG_INTERNAL_STATS
+  uint64_t time_receive_data;
+  uint64_t time_compress_data;
+
   unsigned int mode_chosen_counts[MAX_MODES];
 
   int count;
