@@ -216,8 +216,13 @@ constexpr char kValueUpdatedSignal[] = "ValueUpdated";
 // Possible keys for option dict used in ReadValue, WriteValue and
 // PrepareWriteValue.
 constexpr char kOptionOffset[] = "offset";
+constexpr char kOptionType[] = "type";
 constexpr char kOptionDevice[] = "device";
 constexpr char kOptionHasSubsequentWrite[] = "has-subsequent-write";
+
+// Possible values for type option of WriteValue method.
+constexpr char kTypeCommand[] = "command";
+constexpr char kTypeRequest[] = "request";
 
 // Bluetooth GATT Characteristic properties.
 constexpr char kUUIDProperty[] = "UUID";
