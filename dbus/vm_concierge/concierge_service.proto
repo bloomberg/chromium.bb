@@ -383,6 +383,8 @@ enum StorageLocation {
   STORAGE_CRYPTOHOME_PLUGINVM = 1;
 }
 
+// Any changes here must be reflected in the CrostiniDiskImageStatus enum in
+// Chrome's enums.xml.
 enum DiskImageStatus {
   // Unknown status.
   DISK_STATUS_UNKNOWN = 0;
