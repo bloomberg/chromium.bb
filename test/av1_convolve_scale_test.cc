@@ -104,7 +104,6 @@ void TestFilter::set(NTaps ntaps, bool backwards) {
   params_.filter_ptr = &coeffs_[0];
   params_.taps = n;
   // These are ignored by the functions being tested. Set them to whatever.
-  params_.subpel_shifts = SUBPEL_SHIFTS;
   params_.interp_filter = EIGHTTAP_REGULAR;
 }
 

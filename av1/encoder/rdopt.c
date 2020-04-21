@@ -5437,7 +5437,6 @@ void av1_gaussian_blur(const uint8_t *src, int src_stride, int w, int h,
   ConvolveParams conv_params = get_conv_params(0, 0, bd);
   InterpFilterParams filter = { .filter_ptr = gauss_filter,
                                 .taps = 8,
-                                .subpel_shifts = 0,
                                 .interp_filter = EIGHTTAP_REGULAR };
   // Requirements from the vector-optimized implementations.
   assert(h % 4 == 0);
