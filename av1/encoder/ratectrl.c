@@ -1974,17 +1974,17 @@ int av1_calc_iframe_target_size_one_pass_cbr(const AV1_COMP *cpi) {
   return av1_rc_clamp_iframe_target_size(cpi, target);
 }
 
+// Specify the reference prediction structure, for 1 layer nonrd mode.
+// Current structue is to use 3 references (LAST, GOLDEN, ALTREF),
+// where ALT_REF always behind current by lag_alt frames, and GOLDEN is
+// either updated on LAST with period baseline_gf_interval (fixed slot)
+// or always behind current by lag_gld (gld_fixed_slot = 0, lag_gld <= 7).
 static void set_reference_structure_one_pass_rt(AV1_COMP *cpi, int gf_update) {
   AV1_COMMON *const cm = &cpi->common;
   ExternalFlags *const ext_flags = &cpi->ext_flags;
   ExtRefreshFrameFlagsInfo *const ext_refresh_frame_flags =
       &ext_flags->refresh_frame;
   SVC *const svc = &cpi->svc;
-  // Specify the reference prediction structure, for 1 layer nonrd mode.
-  // Current structue is to use 3 references (LAST, GOLDEN, ALTREF),
-  // where ALT_REF always behind current by lag_alt frames, and GOLDEN is
-  // either updated on LAST with period baseline_gf_interval (fixed slot)
-  // or always behind current by lag_gld (gld_fixed_slot = 0, lag_gld <= 7).
   const int gld_fixed_slot = 1;
   const unsigned int lag_alt = 4;
   int last_idx = 0;
@@ -2033,12 +2033,9 @@ static void set_reference_structure_one_pass_rt(AV1_COMP *cpi, int gf_update) {
   }
 }
 
-#define DEFAULT_KF_BOOST_RT 2300
-#define DEFAULT_GF_BOOST_RT 2000
-
 // Compute average source sad (temporal sad: between current source and
 // previous source) over a subset of superblocks. Use this is detect big changes
-// in content and allow rate control to react.
+// in content and set the high_source_sad flag.
 static void av1_scene_detection_onepass(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   RATE_CONTROL *const rc = &cpi->rc;
@@ -2136,51 +2133,25 @@ static void av1_scene_detection_onepass(AV1_COMP *cpi) {
   }
 }
 
-void av1_get_one_pass_rt_params(AV1_COMP *cpi,
-                                EncodeFrameParams *const frame_params,
-                                unsigned int frame_flags) {
+#define DEFAULT_KF_BOOST_RT 2300
+#define DEFAULT_GF_BOOST_RT 2000
+
+// Set the GF baseline interval and return update flag.
+static int set_gf_interval_update_onepass_rt(AV1_COMP *cpi,
+                                             FRAME_TYPE frame_type) {
   RATE_CONTROL *const rc = &cpi->rc;
-  AV1_COMMON *const cm = &cpi->common;
   GF_GROUP *const gf_group = &cpi->gf_group;
   ResizePendingParams *const resize_pending_params =
       &cpi->resize_pending_params;
   int gf_update = 0;
-  int target;
   const int resize_pending =
       (resize_pending_params->width && resize_pending_params->height &&
-       (cm->width != resize_pending_params->width ||
-        cm->height != resize_pending_params->height));
-  // Turn this on to explicitly set the reference structure rather than
-  // relying on internal/default structure.
-  const int set_reference_structure = 1;
-  if (cpi->use_svc) {
-    av1_update_temporal_layer_framerate(cpi);
-    av1_restore_layer_context(cpi);
-  }
-  if ((!cpi->use_svc && rc->frames_to_key == 0) ||
-      (cpi->use_svc && cpi->svc.spatial_layer_id == 0 &&
-       cpi->svc.current_superframe % cpi->oxcf.key_freq == 0) ||
-      (frame_flags & FRAMEFLAGS_KEY)) {
-    frame_params->frame_type = KEY_FRAME;
-    rc->this_key_frame_forced =
-        cm->current_frame.frame_number != 0 && rc->frames_to_key == 0;
-    rc->frames_to_key = cpi->oxcf.key_freq;
-    rc->kf_boost = DEFAULT_KF_BOOST_RT;
-    rc->source_alt_ref_active = 0;
-    gf_group->update_type[gf_group->index] = KF_UPDATE;
-    if (cpi->use_svc && cm->current_frame.frame_number > 0)
-      av1_svc_reset_temporal_layers(cpi, 1);
-  } else {
-    frame_params->frame_type = INTER_FRAME;
-    gf_group->update_type[gf_group->index] = LF_UPDATE;
-  }
-
-  if (!cpi->use_svc && cm->show_frame && cpi->sf.rt_sf.check_scene_detection)
-    av1_scene_detection_onepass(cpi);
-
+       (cpi->common.width != resize_pending_params->width ||
+        cpi->common.height != resize_pending_params->height));
   // GF update based on frames_till_gf_update_due, also
-  // force upddate on resize pending frame.
-  if ((resize_pending || rc->frames_till_gf_update_due == 0) &&
+  // force upddate on resize pending frame or for scene change.
+  if ((resize_pending || rc->high_source_sad ||
+       rc->frames_till_gf_update_due == 0) &&
       cpi->svc.temporal_layer_id == 0 && cpi->svc.spatial_layer_id == 0) {
     if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ)
       av1_cyclic_refresh_set_golden_update(cpi);
@@ -2193,7 +2164,7 @@ void av1_get_one_pass_rt_params(AV1_COMP *cpi,
         (rc->baseline_gf_interval >= rc->frames_to_key) ? 1 : 0;
     rc->frames_till_gf_update_due = rc->baseline_gf_interval;
     gf_group->index = 0;
-    // SVC does not use GF as periodid boost.
+    // SVC does not use GF as periodic boost.
     // TODO(marpan): Find better way to disable this for SVC.
     if (cpi->use_svc) {
       SVC *const svc = &cpi->svc;
@@ -2214,9 +2185,56 @@ void av1_get_one_pass_rt_params(AV1_COMP *cpi,
     }
     gf_group->size = rc->baseline_gf_interval;
     gf_group->update_type[0] =
-        (frame_params->frame_type == KEY_FRAME) ? KF_UPDATE : GF_UPDATE;
+        (frame_type == KEY_FRAME) ? KF_UPDATE : GF_UPDATE;
     gf_update = 1;
   }
+  return gf_update;
+}
+
+// For 1 pass real-time mode: set the frame_type, check for
+// scene change and GF update, and set the target frame size.
+// For 1 layer (non-SVC) this will also set the reference structure
+// (GF and ALT reference/refresh); for SVC some update/resets are done
+// (update_temporal_layer_framerate and restore_layer_context).
+void av1_get_one_pass_rt_params(AV1_COMP *cpi,
+                                EncodeFrameParams *const frame_params,
+                                unsigned int frame_flags) {
+  RATE_CONTROL *const rc = &cpi->rc;
+  AV1_COMMON *const cm = &cpi->common;
+  GF_GROUP *const gf_group = &cpi->gf_group;
+  int gf_update = 0;
+  int target;
+  // Turn this on to explicitly set the reference structure rather than
+  // relying on internal/default structure.
+  const int set_reference_structure = 1;
+  if (cpi->use_svc) {
+    av1_update_temporal_layer_framerate(cpi);
+    av1_restore_layer_context(cpi);
+  }
+  // Set frame type.
+  if ((!cpi->use_svc && rc->frames_to_key == 0) ||
+      (cpi->use_svc && cpi->svc.spatial_layer_id == 0 &&
+       cpi->svc.current_superframe % cpi->oxcf.key_freq == 0) ||
+      (frame_flags & FRAMEFLAGS_KEY)) {
+    frame_params->frame_type = KEY_FRAME;
+    rc->this_key_frame_forced =
+        cm->current_frame.frame_number != 0 && rc->frames_to_key == 0;
+    rc->frames_to_key = cpi->oxcf.key_freq;
+    rc->kf_boost = DEFAULT_KF_BOOST_RT;
+    rc->source_alt_ref_active = 0;
+    gf_group->update_type[gf_group->index] = KF_UPDATE;
+    if (cpi->use_svc && cm->current_frame.frame_number > 0)
+      av1_svc_reset_temporal_layers(cpi, 1);
+  } else {
+    frame_params->frame_type = INTER_FRAME;
+    gf_group->update_type[gf_group->index] = LF_UPDATE;
+  }
+  // Check for scene change, for non-SVC for now.
+  if (!cpi->use_svc && cpi->sf.rt_sf.check_scene_detection)
+    av1_scene_detection_onepass(cpi);
+  // Set the GF interval and update flag.
+  gf_update = set_gf_interval_update_onepass_rt(cpi, frame_params->frame_type);
+  // Set target size.
   if (cpi->oxcf.rc_mode == AOM_CBR) {
     if (frame_params->frame_type == KEY_FRAME) {
       target = av1_calc_iframe_target_size_one_pass_cbr(cpi);
@@ -2234,6 +2252,7 @@ void av1_get_one_pass_rt_params(AV1_COMP *cpi,
   }
   av1_rc_set_frame_target(cpi, target, cm->width, cm->height);
   rc->base_frame_target = target;
+  // Set reference strucutre for 1 layer.
   if (set_reference_structure && cpi->oxcf.speed >= 6 &&
       cm->number_spatial_layers == 1 && cm->number_temporal_layers == 1)
     set_reference_structure_one_pass_rt(cpi, gf_update);
