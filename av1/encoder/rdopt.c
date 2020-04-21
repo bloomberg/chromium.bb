@@ -4603,8 +4603,10 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   if (do_pruning && sf->intra_sf.skip_intra_in_interframe) {
     // Only consider full SB.
     int len = tpl_blocks_in_sb(cm->seq_params.sb_size);
-    if (len == x->valid_cost_b) {
+    SuperBlockEnc *sb_enc = &x->sb_enc;
+    if (sb_enc->tpl_data_count == len) {
       const BLOCK_SIZE tpl_bsize = convert_length_to_bsize(MC_FLOW_BSIZE_1D);
+      const int tpl_stride = sb_enc->tpl_stride;
       const int tplw = mi_size_wide[tpl_bsize];
       const int tplh = mi_size_high[tpl_bsize];
       const int nw = mi_size_wide[bsize] / tplw;
@@ -4612,12 +4614,12 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       if (nw >= 1 && nh >= 1) {
         const int of_h = mi_row % mi_size_high[cm->seq_params.sb_size];
         const int of_w = mi_col % mi_size_wide[cm->seq_params.sb_size];
-        const int start = of_h / tplh * x->cost_stride + of_w / tplw;
+        const int start = of_h / tplh * tpl_stride + of_w / tplw;
 
         for (int k = 0; k < nh; k++) {
           for (int l = 0; l < nw; l++) {
-            inter_cost += x->inter_cost_b[start + k * x->cost_stride + l];
-            intra_cost += x->intra_cost_b[start + k * x->cost_stride + l];
+            inter_cost += sb_enc->tpl_inter_cost[start + k * tpl_stride + l];
+            intra_cost += sb_enc->tpl_intra_cost[start + k * tpl_stride + l];
           }
         }
         inter_cost /= nw * nh;

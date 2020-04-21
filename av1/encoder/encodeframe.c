@@ -4070,16 +4070,16 @@ static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int analysis_type,
   return rdmult;
 }
 
-static int get_tpl_stats_b(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
-                           int mi_col, int64_t *intra_cost_b,
-                           int64_t *inter_cost_b,
-                           int_mv mv_b[][INTER_REFS_PER_FRAME], int *stride) {
-  if (!cpi->oxcf.enable_tpl_model) return 0;
-  if (cpi->superres_mode != AOM_SUPERRES_NONE) return 0;
-  if (cpi->common.current_frame.frame_type == KEY_FRAME) return 0;
+static void get_tpl_stats_sb(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
+                             int mi_col, SuperBlockEnc *sb_enc) {
+  sb_enc->tpl_data_count = 0;
+
+  if (!cpi->oxcf.enable_tpl_model) return;
+  if (cpi->superres_mode != AOM_SUPERRES_NONE) return;
+  if (cpi->common.current_frame.frame_type == KEY_FRAME) return;
   const FRAME_UPDATE_TYPE update_type = get_frame_update_type(&cpi->gf_group);
   if (update_type == INTNL_OVERLAY_UPDATE || update_type == OVERLAY_UPDATE)
-    return 0;
+    return;
   assert(IMPLIES(cpi->gf_group.size > 0,
                  cpi->gf_group.index < cpi->gf_group.size));
 
@@ -4092,8 +4092,8 @@ static int get_tpl_stats_b(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
   const int mi_wide = mi_size_wide[bsize];
   const int mi_high = mi_size_high[bsize];
 
-  if (tpl_frame->is_valid == 0) return 0;
-  if (gf_group_index >= MAX_TPL_FRAME_IDX) return 0;
+  if (tpl_frame->is_valid == 0) return;
+  if (gf_group_index >= MAX_TPL_FRAME_IDX) return;
 
   int mi_count = 0;
   int count = 0;
@@ -4113,16 +4113,16 @@ static int get_tpl_stats_b(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
 
   // Stride is only based on SB size, and we fill in values for every 16x16
   // block in a SB.
-  *stride = (mi_col_end_sr - mi_col_sr) / step;
+  sb_enc->tpl_stride = (mi_col_end_sr - mi_col_sr) / step;
 
   for (int row = mi_row; row < mi_row + mi_high; row += step) {
     for (int col = mi_col_sr; col < mi_col_end_sr; col += step) {
       // Handle partial SB, so that no invalid values are used later.
       if (row >= cm->mi_params.mi_rows || col >= mi_cols_sr) {
-        inter_cost_b[count] = INT64_MAX;
-        intra_cost_b[count] = INT64_MAX;
+        sb_enc->tpl_inter_cost[count] = INT64_MAX;
+        sb_enc->tpl_intra_cost[count] = INT64_MAX;
         for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
-          mv_b[count][i].as_int = INVALID_MV;
+          sb_enc->tpl_mv[count][i].as_int = INVALID_MV;
         }
         count++;
         continue;
@@ -4130,15 +4130,15 @@ static int get_tpl_stats_b(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
 
       TplDepStats *this_stats = &tpl_stats[av1_tpl_ptr_pos(
           row, col, tpl_stride, tpl_data->tpl_stats_block_mis_log2)];
-      inter_cost_b[count] = this_stats->inter_cost;
-      intra_cost_b[count] = this_stats->intra_cost;
-      memcpy(mv_b[count], this_stats->mv, sizeof(this_stats->mv));
+      sb_enc->tpl_inter_cost[count] = this_stats->inter_cost;
+      sb_enc->tpl_intra_cost[count] = this_stats->intra_cost;
+      memcpy(sb_enc->tpl_mv[count], this_stats->mv, sizeof(this_stats->mv));
       mi_count++;
       count++;
     }
   }
 
-  return mi_count;
+  sb_enc->tpl_data_count = mi_count;
 }
 
 // analysis_type 0: Use mc_dep_cost and intra_cost
@@ -4871,10 +4871,9 @@ static AOM_INLINE void encode_rd_sb(AV1_COMP *cpi, ThreadData *td,
                      &dummy_rate, &dummy_dist, 1, pc_root);
     av1_free_pc_tree_recursive(pc_root, num_planes, 0, 0);
   } else {
+    SuperBlockEnc *sb_enc = &x->sb_enc;
     // No stats for overlay frames. Exclude key frame.
-    x->valid_cost_b =
-        get_tpl_stats_b(cpi, sb_size, mi_row, mi_col, x->intra_cost_b,
-                        x->inter_cost_b, x->mv_b, &x->cost_stride);
+    get_tpl_stats_sb(cpi, sb_size, mi_row, mi_col, sb_enc);
 
     reset_simple_motion_tree_partition(sms_root, sb_size);
 
@@ -4923,7 +4922,7 @@ static AOM_INLINE void encode_rd_sb(AV1_COMP *cpi, ThreadData *td,
                         pc_root_p1, sms_root, NULL, SB_WET_PASS, NULL);
     }
     // Reset to 0 so that it wouldn't be used elsewhere mistakenly.
-    x->valid_cost_b = 0;
+    sb_enc->tpl_data_count = 0;
 #if CONFIG_COLLECT_COMPONENT_TIMING
     end_timing(cpi, rd_pick_partition_time);
 #endif

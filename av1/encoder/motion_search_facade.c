@@ -142,7 +142,8 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   if (!cpi->sf.mv_sf.full_pixel_search_level &&
       mbmi->motion_mode == SIMPLE_TRANSLATION) {
-    if (x->valid_cost_b) {
+    SuperBlockEnc *sb_enc = &x->sb_enc;
+    if (sb_enc->tpl_data_count) {
       const BLOCK_SIZE tpl_bsize = convert_length_to_bsize(MC_FLOW_BSIZE_1D);
       const int tplw = mi_size_wide[tpl_bsize];
       const int tplh = mi_size_high[tpl_bsize];
@@ -152,7 +153,7 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
       if (nw >= 1 && nh >= 1) {
         const int of_h = mi_row % mi_size_high[cm->seq_params.sb_size];
         const int of_w = mi_col % mi_size_wide[cm->seq_params.sb_size];
-        const int start = of_h / tplh * x->cost_stride + of_w / tplw;
+        const int start = of_h / tplh * sb_enc->tpl_stride + of_w / tplw;
         int valid = 1;
 
         // Assign large weight to start_mv, so it is always tested.
@@ -160,8 +161,8 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
 
         for (int k = 0; k < nh; k++) {
           for (int l = 0; l < nw; l++) {
-            const int_mv mv =
-                x->mv_b[start + k * x->cost_stride + l][ref - LAST_FRAME];
+            const int_mv mv = sb_enc->tpl_mv[start + k * sb_enc->tpl_stride + l]
+                                            [ref - LAST_FRAME];
             if (mv.as_int == INVALID_MV) {
               valid = 0;
               break;

@@ -32,6 +32,20 @@ extern "C" {
 #define MAX_MC_FLOW_BLK_IN_SB (MAX_SB_SIZE / MC_FLOW_BSIZE_1D)
 #define MAX_WINNER_MODE_COUNT_INTRA 3
 #define MAX_WINNER_MODE_COUNT_INTER 1
+
+// SuperblockEnc stores superblock level information used by the encoder for
+// more efficient encoding.
+typedef struct {
+  // Below are information gathered from tpl_model used to speed up the encoding
+  // process.
+  int tpl_data_count;
+  int64_t tpl_inter_cost[MAX_MC_FLOW_BLK_IN_SB * MAX_MC_FLOW_BLK_IN_SB];
+  int64_t tpl_intra_cost[MAX_MC_FLOW_BLK_IN_SB * MAX_MC_FLOW_BLK_IN_SB];
+  int_mv tpl_mv[MAX_MC_FLOW_BLK_IN_SB * MAX_MC_FLOW_BLK_IN_SB]
+               [INTER_REFS_PER_FRAME];
+  int tpl_stride;
+} SuperBlockEnc;
+
 typedef struct {
   MB_MODE_INFO mbmi;
   RD_STATS rd_cost;
@@ -467,15 +481,11 @@ struct macroblock {
   // (normal/winner mode)
   unsigned int predict_skip_level;
 
-  // Copy out this SB's TPL block stats.
-  int valid_cost_b;
-  int64_t inter_cost_b[MAX_MC_FLOW_BLK_IN_SB * MAX_MC_FLOW_BLK_IN_SB];
-  int64_t intra_cost_b[MAX_MC_FLOW_BLK_IN_SB * MAX_MC_FLOW_BLK_IN_SB];
-  int_mv mv_b[MAX_MC_FLOW_BLK_IN_SB * MAX_MC_FLOW_BLK_IN_SB]
-             [INTER_REFS_PER_FRAME];
-  int cost_stride;
-
   uint8_t search_ref_frame[REF_FRAMES];
+
+  // The information on a whole superblock level.
+  // TODO(chiyotsai@google.com): Refactor this out of macroblock
+  SuperBlockEnc sb_enc;
 
 #if CONFIG_AV1_HIGHBITDEPTH
   void (*fwd_txfm4x4)(const int16_t *input, tran_low_t *output, int stride);
