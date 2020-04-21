@@ -1151,11 +1151,14 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
 #if CONFIG_REALTIME_ONLY
   av1_get_one_pass_rt_params(cpi, &frame_params, *frame_flags);
 #else
-  if (has_no_stats_stage(cpi) && oxcf->mode == REALTIME &&
-      oxcf->lag_in_frames == 0)
+  const int use_one_pass_rt_params = has_no_stats_stage(cpi) &&
+                                     oxcf->mode == REALTIME &&
+                                     oxcf->lag_in_frames == 0;
+  if (use_one_pass_rt_params) {
     av1_get_one_pass_rt_params(cpi, &frame_params, *frame_flags);
-  else if (!is_stat_generation_stage(cpi))
+  } else if (!is_stat_generation_stage(cpi)) {
     av1_get_second_pass_params(cpi, &frame_params, &frame_input, *frame_flags);
+  }
 #endif
   FRAME_UPDATE_TYPE frame_update_type = get_frame_update_type(gf_group);
 

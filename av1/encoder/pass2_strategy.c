@@ -2529,13 +2529,6 @@ void av1_get_second_pass_params(AV1_COMP *cpi,
   RATE_CONTROL *const rc = &cpi->rc;
   TWO_PASS *const twopass = &cpi->twopass;
   GF_GROUP *const gf_group = &cpi->gf_group;
-  AV1_COMMON *cm = &cpi->common;
-
-  if (frame_is_intra_only(cm)) {
-    FeatureFlags *const features = &cm->features;
-    av1_set_screen_content_options(cpi, features);
-    cpi->is_screen_content_type = features->allow_screen_content_tools;
-  }
 
   if (is_stat_consumption_stage(cpi) && !twopass->stats_in) return;
 
