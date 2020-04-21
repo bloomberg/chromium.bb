@@ -465,8 +465,7 @@ class DevServerWrapper(multiprocessing.Process):
     cmd = [self.devserver_bin,
            '--pidfile', path_resolver.ToChroot(self._pid_file),
            '--logfile', path_resolver.ToChroot(self.log_file),
-           '--port=%d' % port,
-           '--critical_update']
+           '--port=%d' % port]
 
     if not self.port:
       cmd.append('--portfile=%s' % path_resolver.ToChroot(self.port_file))
