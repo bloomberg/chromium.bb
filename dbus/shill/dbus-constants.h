@@ -327,7 +327,7 @@ const char kAddressProperty[] = "Address";  // Also used for IPConfig.
 const char kIPConfigsProperty[] = "IPConfigs";
 const char kInterfaceProperty[] = "Interface";  // Network interface name.
 const char kLinkMonitorResponseTimeProperty[] = "LinkMonitorResponseTime";
-// kNameProperty: Defined above for Service.
+// kNameProperty: Defined above for Service. DEPRECATED (crbug.com/1011136).
 const char kPoweredProperty[] = "Powered";
 const char kReceiveByteCountProperty[] = "ReceiveByteCount";
 const char kScanIntervalProperty[] =
