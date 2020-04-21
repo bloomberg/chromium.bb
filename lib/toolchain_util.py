@@ -602,7 +602,7 @@ def _RedactAFDOProfile(input_path, output_path):
 
   # Call the redaction script.
   redacted_temp = input_path + '.redacted.temp'
-  with open(input_to_text_temp) as f:
+  with open(input_to_text_temp, 'rb') as f:
     cros_build_lib.run(
         ['redact_textual_afdo_profile'],
         input=f,
@@ -1421,6 +1421,273 @@ class _CommonPrepareBundle(object):
     except ProfilesNameHelperError:
       return None
 
+  def _CreateReleaseChromeAFDO(self, cwp_url, bench_url, output_dir,
+                               merged_name):
+    """Create an AFDO profile to be used in release Chrome.
+
+    This means we want to merge the CWP and benchmark AFDO profiles into
+    one, and redact all ICF symbols.
+
+    Args:
+      cwp_url: Full (GS) path to the discovered CWP file to use.
+      bench_url: Full (GS) path to the verified benchmark profile.
+      output_dir: A directory to store the created artifact.  Must be inside of
+          the chroot.
+      merged_name: Basename for the merged profile.
+
+    Returns:
+      Full path to a generated release AFDO profile.
+    """
+    # Download the compressed profiles from GS.
+    cwp_compressed = os.path.join(output_dir, os.path.basename(cwp_url))
+    bench_compressed = os.path.join(output_dir, os.path.basename(bench_url))
+    self.gs_context.Copy(cwp_url, cwp_compressed)
+    self.gs_context.Copy(bench_url, bench_compressed)
+
+    # Decompress the files.
+    cwp_local = os.path.splitext(cwp_compressed)[0]
+    bench_local = os.path.splitext(bench_compressed)[0]
+    cros_build_lib.UncompressFile(cwp_compressed, cwp_local)
+    cros_build_lib.UncompressFile(bench_compressed, bench_local)
+
+    # Merge profiles.
+    merge_weights = [(cwp_local, RELEASE_CWP_MERGE_WEIGHT),
+                     (bench_local, RELEASE_BENCHMARK_MERGE_WEIGHT)]
+    merged_path = os.path.join(output_dir, merged_name)
+    self._MergeAFDOProfiles(merge_weights, merged_path)
+
+    # Redact profiles.
+    redacted_path = merged_path + '-redacted.afdo'
+    self._ProcessAFDOProfile(
+        merged_path, redacted_path, redact=True, remove=True, compbinary=True)
+
+    return redacted_path
+
+  def _MergeAFDOProfiles(self,
+                         profile_list,
+                         output_profile,
+                         use_compbinary=False):
+    """Merges the given profile list.
+
+    This is ultimately derived from afdo.py, but runs OUTSIDE of the chroot.
+    It converts paths to chroot-relative paths, and runs llvm-profdata in the
+    chroot.
+
+    Args:
+      profile_list: a list of (profile_path, profile_weight).
+        Profile_weight is an int that tells us how to weight the profile
+        relative to everything else.
+      output_profile: where to store the result profile.
+      use_compbinary: whether to use the new compressed binary AFDO profile
+        format.
+    """
+    if not profile_list:
+      raise ValueError('Need profiles to merge')
+
+    # A regular llvm-profdata command looks like:
+    # llvm-profdata merge [-sample] -output=/path/to/output input1 [...]
+    #
+    # Alternatively, we can specify inputs by `-weighted-input=A,file`, where A
+    # is a multiplier of the sample counts in the profile.
+    merge_command = [
+        'llvm-profdata',
+        'merge',
+        '-sample',
+        '-output=' + self.chroot.chroot_path(output_profile),
+    ] + [
+        '-weighted-input=%d,%s' % (weight, self.chroot.chroot_path(name))
+        for name, weight in profile_list
+    ]
+
+    # Here only because this was copied from afdo.py
+    if use_compbinary:
+      merge_command.append('-compbinary')
+    cros_build_lib.run(merge_command, enter_chroot=True, print_cmd=True)
+
+  def _ProcessAFDOProfile(self,
+                          input_path,
+                          output_path,
+                          redact=False,
+                          remove=False,
+                          compbinary=False):
+    """Process the AFDO profile with different editings.
+
+    In this function, we will convert an AFDO profile into textual version,
+    do the editings and convert it back.
+
+    This function runs outside of the chroot, and enters the chroot.
+
+    Args:
+      input_path: Full path (outside chroot) to input AFDO profile.
+      output_path: Full path (outside chroot) to output AFDO profile.
+      redact: Redact ICF'ed symbols from AFDO profiles.
+        ICF can cause inflation on AFDO sampling results, so we want to remove
+        them from AFDO profiles used for Chrome.
+        See http://crbug.com/916024 for more details.
+      remove: Remove indirect call targets from the given profile.
+      compbinary: Whether to convert the final profile into compbinary type.
+    """
+    profdata_command_base = ['llvm-profdata', 'merge', '-sample']
+    # Convert the compbinary profiles to text profiles.
+    input_to_text_temp = input_path + '.text.temp'
+    cmd_to_text = profdata_command_base + [
+        '-text',
+        self.chroot.chroot_path(input_path), '-output',
+        self.chroot.chroot_path(input_to_text_temp)
+    ]
+    cros_build_lib.run(cmd_to_text, enter_chroot=True, print_cmd=True)
+
+    current_input_file = input_to_text_temp
+    if redact:
+      # Call the redaction script.
+      redacted_temp = input_path + '.redacted.temp'
+      with open(current_input_file, 'rb') as f:
+        cros_build_lib.run(['redact_textual_afdo_profile'],
+                           input=f,
+                           stdout=redacted_temp,
+                           enter_chroot=True,
+                           print_cmd=True)
+      current_input_file = redacted_temp
+
+    if remove:
+      # Call the remove indirect call script
+      removed_temp = input_path + '.removed.temp'
+      cros_build_lib.run(
+          [
+              'remove_indirect_calls',
+              '--input=' + self.chroot.chroot_path(current_input_file),
+              '--output=' + self.chroot.chroot_path(removed_temp),
+          ],
+          enter_chroot=True,
+          print_cmd=True,
+      )
+      current_input_file = removed_temp
+
+    # Convert the profiles back to binary profiles.
+    cmd_to_binary = profdata_command_base + [
+        self.chroot.chroot_path(current_input_file),
+        '-output',
+        self.chroot.chroot_path(output_path),
+    ]
+    if compbinary:
+      # Using `compbinary` profiles saves us hundreds of MB of RAM per
+      # compilation, since it allows profiles to be lazily loaded.
+      cmd_to_binary += '-compbinary'
+    cros_build_lib.run(cmd_to_binary, enter_chroot=True, print_cmd=True)
+
+  def _CreateAndUploadMergedAFDOProfile(self,
+                                        unmerged_name,
+                                        output_dir,
+                                        recent_to_merge=5,
+                                        max_age_days=14):
+    """Create a merged AFDO profile from recent AFDO profiles and upload it.
+
+    Args:
+      unmerged_name: name of the AFDO profile we've just uploaded. No profiles
+        whose names are lexicographically ordered after this are candidates for
+        selection.
+      output_dir: Path to location to store merged profiles for uploading.
+      recent_to_merge: The maximum number of profiles to merge
+      max_age_days: Don't merge profiles older than max_age_days days old.
+
+    Returns:
+      The name of a merged profile if the AFDO profile is a candidate for
+      merging and ready to be merged and uploaded. Otherwise, None.
+    """
+    merged_suffix = '-merged'
+    profile_suffix = AFDO_SUFFIX + BZ2_COMPRESSION_SUFFIX
+    benchmark_url = self.input_artifacts.get(
+        'UnverifiedChromeBenchmarkAfdoFile', [BENCHMARK_AFDO_GS_URL])[0]
+    benchmark_listing = self.gs_context.List(
+        os.path.join(benchmark_url, '*' + profile_suffix), details=True)
+
+    if not benchmark_listing:
+      raise RuntimeError(
+          'GS URL %s has no valid benchmark profiles' %
+          (self.input_artifacts.get('UnverifiedChromeBenchmarkAfdoFile',
+                                    [BENCHMARK_AFDO_GS_URL])[0]))
+    unmerged_version = _ParseBenchmarkProfileName(unmerged_name)
+
+    def _GetOrderedMergeableProfiles(benchmark_listing):
+      """Returns a list of mergeable profiles ordered by increasing version."""
+      profile_versions = [(_ParseBenchmarkProfileName(os.path.basename(x.url)),
+                           x) for x in benchmark_listing]
+      # Exclude merged profiles, because merging merged profiles into merged
+      # profiles is likely bad.
+      candidates = sorted(
+          (version, x)
+          for version, x in profile_versions
+          if unmerged_version >= version and not version.is_merged)
+      return [x for _, x in candidates]
+
+    benchmark_profiles = _GetOrderedMergeableProfiles(benchmark_listing)
+    if not benchmark_profiles:
+      logging.warning('Skipping merged profile creation: no merge candidates '
+                      'found')
+      return None
+
+    base_time = benchmark_profiles[-1].creation_time
+    time_cutoff = base_time - datetime.timedelta(days=max_age_days)
+    merge_candidates = [
+        p for p in benchmark_profiles if p.creation_time >= time_cutoff
+    ]
+
+    merge_candidates = merge_candidates[-recent_to_merge:]
+
+    # This should never happen, but be sure we're not merging a profile into
+    # itself anyway. It's really easy for that to silently slip through, and can
+    # lead to overrepresentation of a single profile, which just causes more
+    # noise.
+    assert len(set(p.url for p in merge_candidates)) == len(merge_candidates)
+
+    # Merging a profile into itself is pointless.
+    if len(merge_candidates) == 1:
+      logging.warning('Skipping merged profile creation: we only have a single '
+                      'merge candidate.')
+      return None
+
+    afdo_files = []
+    for candidate in merge_candidates:
+      # It would be slightly less complex to just name these off as
+      # profile-1.afdo, profile-2.afdo, ... but the logs are more readable if we
+      # keep the basename from gs://.
+      candidate_name = os.path.basename(candidate.url)
+      candidate_uncompressed = candidate_name[:-len(BZ2_COMPRESSION_SUFFIX)]
+
+      copy_from = candidate.url
+      copy_to = os.path.join(output_dir, candidate_name)
+      copy_to_uncompressed = os.path.join(output_dir, candidate_uncompressed)
+
+      self.gs_context.Copy(copy_from, copy_to)
+      cros_build_lib.UncompressFile(copy_to, copy_to_uncompressed)
+      afdo_files.append(copy_to_uncompressed)
+
+    afdo_basename = os.path.basename(afdo_files[-1])
+    assert afdo_basename.endswith(AFDO_SUFFIX)
+    afdo_basename = afdo_basename[:-len(AFDO_SUFFIX)]
+
+    raw_merged_basename = 'raw-' + afdo_basename + merged_suffix + AFDO_SUFFIX
+    raw_merged_output_path = os.path.join(output_dir, raw_merged_basename)
+
+    # Weight all profiles equally.
+    self._MergeAFDOProfiles([(profile, 1) for profile in afdo_files],
+                            raw_merged_output_path)
+
+    profile_to_upload_basename = afdo_basename + merged_suffix + AFDO_SUFFIX
+    profile_to_upload_path = os.path.join(output_dir,
+                                          profile_to_upload_basename)
+
+    # Remove indirect calls
+    self._ProcessAFDOProfile(
+        raw_merged_output_path,
+        profile_to_upload_path,
+        redact=False,
+        remove=True,
+        compbinary=False)
+
+    result_basename = os.path.basename(profile_to_upload_path)
+    return result_basename
+
 
 class PrepareForBuildHandler(_CommonPrepareBundle):
   """Methods for updating ebuilds for toolchain artifacts."""
@@ -1695,144 +1962,6 @@ class PrepareForBuildHandler(_CommonPrepareBundle):
           uprev=True)
     return ret
 
-  def _CreateReleaseChromeAFDO(self, cwp_url, bench_url, output_dir,
-                               merged_name):
-    """Create an AFDO profile to be used in release Chrome.
-
-    This means we want to merge the CWP and benchmark AFDO profiles into
-    one, and redact all ICF symbols.
-
-    Args:
-      cwp_url: Full (GS) path to the discovered CWP file to use.
-      bench_url: Full (GS) path to the verified benchmark profile.
-      output_dir: A directory to store the created artifact.  Must be inside of
-          the chroot.
-      merged_name: Basename for the merged profile.
-
-    Returns:
-      Full path to a generated release AFDO profile.
-    """
-    # Download the compressed profiles from GS.
-    cwp_compressed = os.path.join(output_dir, os.path.basename(cwp_url))
-    bench_compressed = os.path.join(output_dir, os.path.basename(bench_url))
-    self.gs_context.Copy(cwp_url, cwp_compressed)
-    self.gs_context.Copy(bench_url, bench_compressed)
-
-    # Decompress the files.
-    cwp_local = os.path.splitext(cwp_compressed)[0]
-    bench_local = os.path.splitext(bench_compressed)[0]
-    cros_build_lib.UncompressFile(cwp_compressed, cwp_local)
-    cros_build_lib.UncompressFile(bench_compressed, bench_local)
-
-    # Merge profiles.
-    merge_weights = [(cwp_local, RELEASE_CWP_MERGE_WEIGHT),
-                     (bench_local, RELEASE_BENCHMARK_MERGE_WEIGHT)]
-    merged_path = os.path.join(output_dir, merged_name)
-    self._MergeAFDOProfiles(merge_weights, merged_path)
-
-    # Redact profiles.
-    redacted_path = merged_path + '-redacted.afdo'
-    self._RedactAFDOProfile(merged_path, redacted_path)
-
-    return redacted_path
-
-  def _MergeAFDOProfiles(self,
-                         profile_list,
-                         output_profile,
-                         use_compbinary=False):
-    """Merges the given profile list.
-
-    This is ultimately derived from afdo.py, but runs OUTSIDE of the chroot.
-    It converts paths to chroot-relative paths, and runs llvm-profdata in the
-    chroot.
-
-    Args:
-      profile_list: a list of (profile_path, profile_weight).
-        Profile_weight is an int that tells us how to weight the profile
-        relative to everything else.
-      output_profile: where to store the result profile.
-      use_compbinary: whether to use the new compressed binary AFDO profile
-        format.
-    """
-    if not profile_list:
-      raise ValueError('Need profiles to merge')
-
-    # A regular llvm-profdata command looks like:
-    # llvm-profdata merge [-sample] -output=/path/to/output input1 [...]
-    #
-    # Alternatively, we can specify inputs by `-weighted-input=A,file`, where A
-    # is a multiplier of the sample counts in the profile.
-    merge_command = [
-        'llvm-profdata',
-        'merge',
-        '-sample',
-        '-output=' + self.chroot.chroot_path(output_profile),
-    ] + [
-        '-weighted-input=%d,%s' % (weight, self.chroot.chroot_path(name))
-        for name, weight in profile_list
-    ]
-
-    # Here only because this was copied from afdo.py
-    if use_compbinary:
-      merge_command.append('-compbinary')
-    cros_build_lib.run(merge_command, enter_chroot=True, print_cmd=True)
-
-  def _RedactAFDOProfile(self, input_path, output_path):
-    """Redact ICF'ed symbols from AFDO profiles.
-
-    ICF can cause inflation on AFDO sampling results, so we want to remove
-    them from AFDO profiles used for Chrome.
-    See http://crbug.com/916024 for more details.
-
-    This function runs OUTSIDE of the chroot, and enters the chroot.
-
-    Args:
-      input_path: Full path to input AFDO profile.
-      output_path: Full path to output AFDO profile.
-    """
-
-    profdata_command_base = ['llvm-profdata', 'merge', '-sample']
-    # Convert the compbinary profiles to text profiles.
-    input_to_text_temp = input_path + '.text.temp'
-    cmd_to_text = profdata_command_base + [
-        '-text',
-        self.chroot.chroot_path(input_path), '-output',
-        self.chroot.chroot_path(input_to_text_temp)
-    ]
-    cros_build_lib.run(cmd_to_text, enter_chroot=True, print_cmd=True)
-
-    # Call the redaction script.
-    redacted_temp = input_path + '.redacted.temp'
-    with open(input_to_text_temp) as f:
-      cros_build_lib.run(['redact_textual_afdo_profile'],
-                         input=f,
-                         stdout=redacted_temp,
-                         enter_chroot=True,
-                         print_cmd=True)
-
-    # Call the remove indirect call script
-    removed_temp = input_path + '.removed.temp'
-    cros_build_lib.run(
-        [
-            'remove_indirect_calls',
-            '--input=' + self.chroot.chroot_path(redacted_temp),
-            '--output=' + self.chroot.chroot_path(removed_temp),
-        ],
-        enter_chroot=True,
-        print_cmd=True,
-    )
-
-    # Convert the profiles back to compbinary profiles.
-    # Using `compbinary` profiles saves us hundreds of MB of RAM per
-    # compilation, since it allows profiles to be lazily loaded.
-    cmd_to_compbinary = profdata_command_base + [
-        '-compbinary',
-        self.chroot.chroot_path(removed_temp),
-        '-output',
-        self.chroot.chroot_path(output_path),
-    ]
-    cros_build_lib.run(cmd_to_compbinary, enter_chroot=True, print_cmd=True)
-
 
 class BundleArtifactHandler(_CommonPrepareBundle):
   """Methods for updating ebuilds for toolchain artifacts."""
@@ -2022,6 +2151,23 @@ class BundleArtifactHandler(_CommonPrepareBundle):
                          enter_chroot=True,
                          print_cmd=True)
     files.append(afdo_path)
+
+    # Merge recent benchmark profiles for Android/Linux use
+    output_dir_full = self.chroot.full_path(self._AfdoTmpPath())
+    merged_profile = self._CreateAndUploadMergedAFDOProfile(
+        afdo_name, output_dir_full)
+    merged_profile_inside = self._AfdoTmpPath(
+        os.path.basename(merged_profile))
+    merged_profile_compressed = os.path.join(
+        self.output_dir,
+        os.path.basename(merged_profile) + BZ2_COMPRESSION_SUFFIX)
+
+    with open(merged_profile_compressed, 'wb') as f:
+      cros_build_lib.run(['bzip2', '-c', merged_profile_inside],
+                         stdout=f,
+                         enter_chroot=True,
+                         print_cmd=True)
+    files.append(merged_profile_compressed)
 
     return files
 

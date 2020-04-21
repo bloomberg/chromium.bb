@@ -594,6 +594,309 @@ class BundleArtifactHandlerTest(PrepareBundleTest):
     self.assertEqual([output], self.obj.Bundle())
 
 
+class CreateAndUploadMergedAFDOProfileTest(PrepBundLatestAFDOArtifactTest):
+  """Test CreateAndUploadMergedAFDOProfile and related functions.
+
+  These tests are mostly coming from cbuildbot/afdo_unittest.py, and are
+  written to adapt to recipe functions. When legacy builders are removed,
+  those tests can be safely preserved by this one.
+  """
+
+  @staticmethod
+  def _benchmark_afdo_profile_name(major=0,
+                                   minor=0,
+                                   build=0,
+                                   patch=0,
+                                   rev=1,
+                                   merged_suffix=False,
+                                   compression_suffix=True):
+    suffix = '-merged' if merged_suffix else ''
+    result = 'chromeos-chrome-amd64-%d.%d.%d.%d_rc-r%d%s' % (
+        major, minor, build, patch, rev, suffix)
+    result += toolchain_util.AFDO_SUFFIX
+    if compression_suffix:
+      result += toolchain_util.BZ2_COMPRESSION_SUFFIX
+    return result
+
+  def setUp(self):
+    self.benchmark_url = 'gs://path/to/unvetted'
+    self.obj.input_artifacts = {
+        'UnverifiedChromeBenchmarkAfdoFile': [self.benchmark_url],
+    }
+    self.obj.chroot = self.chroot
+    self.output_dir = os.path.join(self.chroot.path, 'tmp', 'output_dir')
+    self.output_dir_inchroot = self.chroot.chroot_path(self.output_dir)
+
+  def runCreateAndUploadMergedAFDOProfileOnce(self, **kwargs):
+    if 'unmerged_name' not in kwargs:
+      # Match everything.
+      kwargs['unmerged_name'] = self._benchmark_afdo_profile_name(major=9999)
+
+    if 'output_dir' not in kwargs:
+      kwargs['output_dir'] = self.output_dir
+    Mocks = collections.namedtuple('Mocks', [
+        'gs_context',
+        'find_artifact',
+        'run_command',
+        'uncompress_file',
+        'compress_file',
+        'process_afdo_profile',
+    ])
+
+    def MockList(*_args, **_kwargs):
+      files = [
+          self._benchmark_afdo_profile_name(major=10, build=9),
+          self._benchmark_afdo_profile_name(major=10, build=10),
+          self._benchmark_afdo_profile_name(
+              major=10, build=10, merged_suffix=True),
+          self._benchmark_afdo_profile_name(major=10, build=11),
+          self._benchmark_afdo_profile_name(major=10, build=12),
+          self._benchmark_afdo_profile_name(major=10, build=13),
+          self._benchmark_afdo_profile_name(
+              major=10, build=13, merged_suffix=True),
+          self._benchmark_afdo_profile_name(major=10, build=13, patch=1),
+          self._benchmark_afdo_profile_name(major=10, build=13, patch=2),
+          self._benchmark_afdo_profile_name(
+              major=10, build=13, patch=2, merged_suffix=True),
+          self._benchmark_afdo_profile_name(major=11, build=14),
+          self._benchmark_afdo_profile_name(
+              major=11, build=14, merged_suffix=True),
+          self._benchmark_afdo_profile_name(major=11, build=15),
+      ]
+
+      results = []
+      for i, name in enumerate(files):
+        url = os.path.join(self.benchmark_url, name)
+        now = datetime.datetime(year=1990, month=1, day=1 + i)
+        results.append(self.MockListResult(url=url, creation_time=now))
+      return results
+
+    self.gs_context.List = MockList
+    run_command = self.PatchObject(cros_build_lib, 'run')
+    uncompress_file = self.PatchObject(cros_build_lib, 'UncompressFile')
+    compress_file = self.PatchObject(cros_build_lib, 'CompressFile')
+    process_afdo_profile = self.PatchObject(self.obj, '_ProcessAFDOProfile')
+    merged_name = self.obj._CreateAndUploadMergedAFDOProfile(**kwargs)
+    return merged_name, Mocks(
+        gs_context=self.gs_context,
+        find_artifact=MockList,
+        run_command=run_command,
+        uncompress_file=uncompress_file,
+        compress_file=compress_file,
+        process_afdo_profile=process_afdo_profile,
+    )
+
+  def testCreateAndUploadMergedAFDOProfileMergesBranchProfiles(self):
+    unmerged_name = self._benchmark_afdo_profile_name(
+        major=10, build=13, patch=99)
+
+    merged_name, mocks = self.runCreateAndUploadMergedAFDOProfileOnce(
+        recent_to_merge=5, unmerged_name=unmerged_name)
+    self.assertIsNotNone(merged_name)
+
+    def _afdo_name(major, build, patch=0, merged_suffix=False):
+      return self._benchmark_afdo_profile_name(
+          major=major,
+          build=build,
+          patch=patch,
+          merged_suffix=merged_suffix,
+          compression_suffix=False)
+
+    expected_unordered_args = [
+        '-output=' + os.path.join(
+            self.output_dir_inchroot, 'raw-' + _afdo_name(
+                major=10, build=13, patch=2, merged_suffix=True))
+    ] + [
+        '-weighted-input=1,' + os.path.join(self.output_dir_inchroot, s)
+        for s in [
+            _afdo_name(major=10, build=11),
+            _afdo_name(major=10, build=12),
+            _afdo_name(major=10, build=13),
+            _afdo_name(major=10, build=13, patch=1),
+            _afdo_name(major=10, build=13, patch=2)
+        ]
+    ]
+
+    # Note that these should all be in-chroot names.
+    expected_ordered_args = ['llvm-profdata', 'merge', '-sample']
+
+    args = mocks.run_command.call_args[0][0]
+    ordered_args = args[:len(expected_ordered_args)]
+    self.assertEqual(ordered_args, expected_ordered_args)
+
+    unordered_args = args[len(expected_ordered_args):]
+    self.assertCountEqual(unordered_args, expected_unordered_args)
+    self.assertEqual(mocks.gs_context.Copy.call_count, 5)
+
+  def testCreateAndUploadMergedAFDOProfileRemovesIndirectCallTargets(self):
+    unmerged_name = self._benchmark_afdo_profile_name(
+        major=10, build=13, patch=99)
+
+    merged_name, mocks = \
+        self.runCreateAndUploadMergedAFDOProfileOnce(
+            recent_to_merge=2,
+            unmerged_name=unmerged_name)
+    self.assertIsNotNone(merged_name)
+
+    def _afdo_name(major, build, patch=0, merged_suffix=False):
+      return self._benchmark_afdo_profile_name(
+          major=major,
+          build=build,
+          patch=patch,
+          merged_suffix=merged_suffix,
+          compression_suffix=False)
+
+    merge_output_name = 'raw-' + _afdo_name(
+        major=10, build=13, patch=2, merged_suffix=True)
+    self.assertNotEqual(merged_name, merge_output_name)
+
+    expected_unordered_args = [
+        '-output=' + os.path.join(self.output_dir_inchroot, merge_output_name),
+        '-weighted-input=1,' + os.path.join(
+            self.output_dir_inchroot, _afdo_name(major=10, build=13, patch=1)),
+        '-weighted-input=1,' + os.path.join(
+            self.output_dir_inchroot, _afdo_name(major=10, build=13, patch=2)),
+    ]
+
+    # Note that these should all be in-chroot names.
+    expected_ordered_args = ['llvm-profdata', 'merge', '-sample']
+    args = mocks.run_command.call_args[0][0]
+    ordered_args = args[:len(expected_ordered_args)]
+    self.assertEqual(ordered_args, expected_ordered_args)
+
+    unordered_args = args[len(expected_ordered_args):]
+    self.assertCountEqual(unordered_args, expected_unordered_args)
+
+    mocks.process_afdo_profile.assert_called_once_with(
+        os.path.join(self.output_dir, merge_output_name),
+        os.path.join(self.output_dir, merged_name),
+        redact=False,
+        remove=True,
+        compbinary=False,
+    )
+
+  def testCreateAndUploadMergedAFDOProfileWorksInTheHappyCase(self):
+    merged_name, mocks = \
+        self.runCreateAndUploadMergedAFDOProfileOnce(recent_to_merge=5)
+    self.assertIsNotNone(merged_name)
+
+    # Note that we always return the *basename*
+    self.assertEqual(
+        merged_name,
+        self._benchmark_afdo_profile_name(
+            major=11, build=15, merged_suffix=True, compression_suffix=False))
+
+    mocks.run_command.assert_called_once()
+
+    # Note that these should all be in-chroot names.
+    expected_ordered_args = ['llvm-profdata', 'merge', '-sample']
+
+    def _afdo_name(major, build, patch=0, merged_suffix=False):
+      return self._benchmark_afdo_profile_name(
+          major=major,
+          build=build,
+          patch=patch,
+          merged_suffix=merged_suffix,
+          compression_suffix=False)
+
+    input_afdo_names = [
+        _afdo_name(major=10, build=13),
+        _afdo_name(major=10, build=13, patch=1),
+        _afdo_name(major=10, build=13, patch=2),
+        _afdo_name(major=11, build=14),
+        _afdo_name(major=11, build=15),
+    ]
+
+    output_afdo_name = _afdo_name(major=11, build=15, merged_suffix=True)
+    expected_unordered_args = [
+        '-output=' + os.path.join(self.output_dir_inchroot,
+                                  'raw-' + output_afdo_name)
+    ] + [
+        '-weighted-input=1,' + os.path.join(self.output_dir_inchroot, n)
+        for n in input_afdo_names
+    ]
+
+    args = mocks.run_command.call_args[0][0]
+    ordered_args = args[:len(expected_ordered_args)]
+    self.assertEqual(ordered_args, expected_ordered_args)
+
+    unordered_args = args[len(expected_ordered_args):]
+    self.assertCountEqual(unordered_args, expected_unordered_args)
+    self.assertEqual(mocks.gs_context.Copy.call_count, 5)
+
+    self.assertEqual(mocks.uncompress_file.call_count, 5)
+
+    def call_for(name):
+      basis = os.path.join(self.output_dir, name)
+      return mock.call(basis + toolchain_util.BZ2_COMPRESSION_SUFFIX, basis)
+
+    mocks.uncompress_file.assert_has_calls(
+        any_order=True, calls=[call_for(n) for n in input_afdo_names])
+
+  def testMergeIsOKIfWeFindFewerProfilesThanWeWant(self):
+    merged_name, mocks = \
+        self.runCreateAndUploadMergedAFDOProfileOnce(recent_to_merge=1000,
+                                                     max_age_days=1000)
+    self.assertIsNotNone(merged_name)
+    self.assertEqual(mocks.gs_context.Copy.call_count, 9)
+
+  def testNoFilesAfterUnmergedNameAreIncluded(self):
+    max_name = self._benchmark_afdo_profile_name(major=10, build=11)
+    merged_name, mocks = \
+        self.runCreateAndUploadMergedAFDOProfileOnce(unmerged_name=max_name)
+    self.assertIsNotNone(merged_name)
+
+    self.assertEqual(
+        self._benchmark_afdo_profile_name(
+            major=10, build=11, merged_suffix=True, compression_suffix=False),
+        merged_name)
+
+    def _afdo_name(major, build, merged_suffix=False):
+      return self._benchmark_afdo_profile_name(
+          major=major,
+          build=build,
+          merged_suffix=merged_suffix,
+          compression_suffix=False)
+
+    # Note that these should all be in-chroot names.
+    expected_ordered_args = ['llvm-profdata', 'merge', '-sample']
+    expected_unordered_args = [
+        '-output=' + os.path.join(
+            self.output_dir_inchroot,
+            'raw-' + _afdo_name(major=10, build=11, merged_suffix=True)),
+    ] + [
+        '-weighted-input=1,' + os.path.join(self.output_dir_inchroot, s)
+        for s in [
+            _afdo_name(major=10, build=9),
+            _afdo_name(major=10, build=10),
+            _afdo_name(major=10, build=11)
+        ]
+    ]
+
+    args = mocks.run_command.call_args[0][0]
+    ordered_args = args[:len(expected_ordered_args)]
+    self.assertEqual(ordered_args, expected_ordered_args)
+
+    unordered_args = args[len(expected_ordered_args):]
+    self.assertCountEqual(unordered_args, expected_unordered_args)
+
+    self.assertEqual(mocks.gs_context.Copy.call_count, 3)
+    self.assertEqual(mocks.uncompress_file.call_count, 3)
+
+  def testMergeDoesntHappenIfNoProfilesAreMerged(self):
+    runs = [
+        self.runCreateAndUploadMergedAFDOProfileOnce(recent_to_merge=1),
+        self.runCreateAndUploadMergedAFDOProfileOnce(max_age_days=0),
+    ]
+
+    for merged_name, mocks in runs:
+      self.assertIsNone(merged_name)
+      self.gs_context.Copy.assert_not_called()
+      mocks.run_command.assert_not_called()
+      mocks.uncompress_file.assert_not_called()
+      mocks.compress_file.assert_not_called()
+
+
 class FindEbuildPathTest(cros_test_lib.MockTempDirTestCase):
   """Test top-level function _FindEbuildPath()."""
 
