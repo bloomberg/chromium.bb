@@ -620,11 +620,11 @@ static int update_mvs_and_sad(const unsigned int this_sad, const FULLPEL_MV *mv,
 // passed into this function
 static int pattern_search(
     FULLPEL_MV start_mv, const FULLPEL_MOTION_SEARCH_PARAMS *ms_params,
-    const int search_param, const int do_init_search,
+    const int search_step, const int do_init_search,
     const int num_candidates[MAX_PATTERN_SCALES],
     const MV candidates[MAX_PATTERN_SCALES][MAX_PATTERN_CANDIDATES],
     int *cost_list, FULLPEL_MV *best_mv) {
-  static const int search_param_to_steps[MAX_MVSEARCH_STEPS] = {
+  static const int search_steps[MAX_MVSEARCH_STEPS] = {
     10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0,
   };
   int i, s, t;
@@ -638,8 +638,8 @@ static int pattern_search(
   int thissad;
   int k = -1;
   const MV_COST_PARAMS *mv_cost_params = &ms_params->mv_cost_params;
-  assert(search_param < MAX_MVSEARCH_STEPS);
-  int best_init_s = search_param_to_steps[search_param];
+  assert(search_step < MAX_MVSEARCH_STEPS);
+  int best_init_s = search_steps[search_step];
   // adjust ref_mv to make sure it is within MV range
   clamp_fullmv(&start_mv, &ms_params->mv_limits);
   br = start_mv.row;
@@ -912,22 +912,19 @@ static int pattern_search(
 }
 
 // For the following foo_search, the input arguments are:
-// x: The struct used to hold a bunch of random configs.
 // start_mv: where we are starting our motion search
-// search_param: how many steps to skip in our motion search. For example,
+// ms_params: a collection of motion search parameters
+// search_step: how many steps to skip in our motion search. For example,
 //   a value 3 suggests that 3 search steps have already taken place prior to
 //   this function call, so we jump directly to step 4 of the search process
-// sad_per_bit: a multiplier used to convert rate to sad cost
 // do_init_search: if on, do an initial search of all possible scales around the
 //   start_mv, and then pick the best scale.
 // cond_list: used to hold the cost around the best full mv so we can use it to
 //   speed up subpel search later.
-// vfp: a function pointer to the simd function so we can compute the cost
-//   efficiently
-// ref_mv: the reference mv used to compute the mv cost
+// best_mv: the best mv found in the motion search
 static int hex_search(const FULLPEL_MV start_mv,
                       const FULLPEL_MOTION_SEARCH_PARAMS *ms_params,
-                      const int search_param, const int do_init_search,
+                      const int search_step, const int do_init_search,
                       int *cost_list, FULLPEL_MV *best_mv) {
   // First scale has 8-closest points, the rest have 6 points in hex shape
   // at increasing scales
@@ -956,13 +953,13 @@ static int hex_search(const FULLPEL_MV start_mv,
       { -512, 1024 }, { -1024, 0 } },
   };
   /* clang-format on */
-  return pattern_search(start_mv, ms_params, search_param, do_init_search,
+  return pattern_search(start_mv, ms_params, search_step, do_init_search,
                         hex_num_candidates, hex_candidates, cost_list, best_mv);
 }
 
 static int bigdia_search(const FULLPEL_MV start_mv,
                          const FULLPEL_MOTION_SEARCH_PARAMS *ms_params,
-                         const int search_param, const int do_init_search,
+                         const int search_step, const int do_init_search,
                          int *cost_list, FULLPEL_MV *best_mv) {
   // First scale has 4-closest points, the rest have 8 points in diamond
   // shape at increasing scales
@@ -996,14 +993,14 @@ static int bigdia_search(const FULLPEL_MV start_mv,
           { 512, 512 }, { 0, 1024 }, { -512, 512 }, { -1024, 0 } },
       };
   /* clang-format on */
-  return pattern_search(start_mv, ms_params, search_param, do_init_search,
+  return pattern_search(start_mv, ms_params, search_step, do_init_search,
                         bigdia_num_candidates, bigdia_candidates, cost_list,
                         best_mv);
 }
 
 static int square_search(const FULLPEL_MV start_mv,
                          const FULLPEL_MOTION_SEARCH_PARAMS *ms_params,
-                         const int search_param, const int do_init_search,
+                         const int search_step, const int do_init_search,
                          int *cost_list, FULLPEL_MV *best_mv) {
   // All scales have 8 closest points in square shape
   static const int square_num_candidates[MAX_PATTERN_SCALES] = {
@@ -1037,32 +1034,32 @@ static int square_search(const FULLPEL_MV start_mv,
           { 1024, 1024 }, { 0, 1024 }, { -1024, 1024 }, { -1024, 0 } },
       };
   /* clang-format on */
-  return pattern_search(start_mv, ms_params, search_param, do_init_search,
+  return pattern_search(start_mv, ms_params, search_step, do_init_search,
                         square_num_candidates, square_candidates, cost_list,
                         best_mv);
 }
 
 static int fast_hex_search(const FULLPEL_MV start_mv,
                            const FULLPEL_MOTION_SEARCH_PARAMS *ms_params,
-                           const int search_param, const int do_init_search,
+                           const int search_step, const int do_init_search,
                            int *cost_list, FULLPEL_MV *best_mv) {
   return hex_search(start_mv, ms_params,
-                    AOMMAX(MAX_MVSEARCH_STEPS - 2, search_param),
-                    do_init_search, cost_list, best_mv);
+                    AOMMAX(MAX_MVSEARCH_STEPS - 2, search_step), do_init_search,
+                    cost_list, best_mv);
 }
 
 static int fast_dia_search(const FULLPEL_MV start_mv,
                            const FULLPEL_MOTION_SEARCH_PARAMS *ms_params,
-                           const int search_param, const int do_init_search,
+                           const int search_step, const int do_init_search,
                            int *cost_list, FULLPEL_MV *best_mv) {
   return bigdia_search(start_mv, ms_params,
-                       AOMMAX(MAX_MVSEARCH_STEPS - 2, search_param),
+                       AOMMAX(MAX_MVSEARCH_STEPS - 2, search_step),
                        do_init_search, cost_list, best_mv);
 }
 
 static int diamond_search_sad(FULLPEL_MV start_mv,
                               const FULLPEL_MOTION_SEARCH_PARAMS *ms_params,
-                              const int search_param, int *num00,
+                              const int search_step, int *num00,
                               FULLPEL_MV *best_mv, FULLPEL_MV *second_best_mv) {
   const struct buf_2d *const src = ms_params->ms_buffers.src;
   const struct buf_2d *const ref = ms_params->ms_buffers.ref;
@@ -1083,9 +1080,9 @@ static int diamond_search_sad(FULLPEL_MV start_mv,
 
   clamp_fullmv(&start_mv, &ms_params->mv_limits);
 
-  // search_param determines the length of the initial step and hence the number
+  // search_step determines the length of the initial step and hence the number
   // of iterations.
-  const int tot_steps = cfg->ss_count - search_param;
+  const int tot_steps = cfg->ss_count - search_step;
 
   *num00 = 0;
   *best_mv = start_mv;
@@ -1888,7 +1885,7 @@ static int obmc_refining_search_sad(
 
 static int obmc_diamond_search_sad(
     const FULLPEL_MOTION_SEARCH_PARAMS *ms_params, FULLPEL_MV start_mv,
-    FULLPEL_MV *best_mv, int search_param, int *num00) {
+    FULLPEL_MV *best_mv, int search_step, int *num00) {
   const aom_variance_fn_ptr_t *fn_ptr = ms_params->vfp;
   const search_site_config *cfg = ms_params->search_sites;
   const MV_COST_PARAMS *mv_cost_params = &ms_params->mv_cost_params;
@@ -1896,12 +1893,12 @@ static int obmc_diamond_search_sad(
   const int32_t *wsrc = ms_buffers->wsrc;
   const int32_t *mask = ms_buffers->obmc_mask;
   const struct buf_2d *const ref_buf = ms_buffers->ref;
-  // search_param determines the length of the initial step and hence the number
+  // search_step determines the length of the initial step and hence the number
   // of iterations
   // 0 = initial step (MAX_FIRST_STEP) pel : 1 = (MAX_FIRST_STEP/2) pel, 2 =
   // (MAX_FIRST_STEP/4) pel... etc.
 
-  const int tot_steps = MAX_MVSEARCH_STEPS - 1 - search_param;
+  const int tot_steps = MAX_MVSEARCH_STEPS - 1 - search_step;
   const uint8_t *best_address, *init_ref;
   int best_sad = INT_MAX;
   int best_site = 0;

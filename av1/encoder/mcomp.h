@@ -70,12 +70,14 @@ enum {
 } UENUM1BYTE(MV_COST_TYPE);
 
 typedef struct {
+  // The reference mv used to compute the mv cost
   const MV *ref_mv;
   FULLPEL_MV full_ref_mv;
   MV_COST_TYPE mv_cost_type;
   const int *mvjcost;
   const int *mvcost[2];
   int error_per_bit;
+  // A multiplier used to convert rate to sad cost
   int sad_per_bit;
 } MV_COST_PARAMS;
 
@@ -140,6 +142,7 @@ enum {
 // during the search
 typedef struct {
   BLOCK_SIZE bsize;
+  // A function pointer to the simd function for fast computation
   const aom_variance_fn_ptr_t *vfp;
 
   MSBuffers ms_buffers;
