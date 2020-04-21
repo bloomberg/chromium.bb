@@ -209,6 +209,22 @@ typedef struct TplParams {
 
   // Pointer to tpl_stats_buffer.
   TplDepFrame *tpl_frame;
+
+  // Scale factors for the current frame.
+  struct scale_factors sf;
+
+  // GF group index of the current frame.
+  int frame_idx;
+
+  // Array of pointers to the frame buffers holding the source frame.
+  // src_ref_frame[i] stores the pointer to the source frame of the ith
+  // reference frame type.
+  const YV12_BUFFER_CONFIG *src_ref_frame[INTER_REFS_PER_FRAME];
+
+  // Array of pointers to the frame buffers holding the tpl reconstructed frame.
+  // ref_frame[i] stores the pointer to the tpl reconstructed frame of the ith
+  // reference frame type.
+  const YV12_BUFFER_CONFIG *ref_frame[INTER_REFS_PER_FRAME];
 } TplParams;
 
 typedef enum {

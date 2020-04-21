@@ -702,52 +702,49 @@ static AOM_INLINE void tpl_model_store(TplDepStats *tpl_stats_ptr, int mi_row,
   }
 }
 
-static AOM_INLINE void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx,
-                                         int pframe_qindex) {
-  const GF_GROUP *gf_group = &cpi->gf_group;
-  if (frame_idx == gf_group->size) return;
+// Reset the ref and source frame pointers of tpl_data.
+static AOM_INLINE void tpl_reset_src_ref_frames(TplParams *tpl_data) {
+  for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
+    tpl_data->ref_frame[i] = NULL;
+    tpl_data->src_ref_frame[i] = NULL;
+  }
+}
+
+// Initialize the mc_flow parameters used in computing tpl data.
+static AOM_INLINE void init_mc_flow_dispenser(AV1_COMP *cpi, int frame_idx,
+                                              int pframe_qindex) {
   TplParams *const tpl_data = &cpi->tpl_data;
   TplDepFrame *tpl_frame = &tpl_data->tpl_frame[frame_idx];
   const YV12_BUFFER_CONFIG *this_frame = tpl_frame->gf_picture;
-  const YV12_BUFFER_CONFIG *ref_frame[7] = { NULL, NULL, NULL, NULL,
-                                             NULL, NULL, NULL };
   const YV12_BUFFER_CONFIG *ref_frames_ordered[INTER_REFS_PER_FRAME];
   int ref_frame_flags;
-  const YV12_BUFFER_CONFIG *src_frame[7] = { NULL, NULL, NULL, NULL,
-                                             NULL, NULL, NULL };
-
   AV1_COMMON *cm = &cpi->common;
-  const CommonModeInfoParams *const mi_params = &cm->mi_params;
-  struct scale_factors sf;
   int rdmult, idx;
   ThreadData *td = &cpi->td;
   MACROBLOCK *x = &td->mb;
   MACROBLOCKD *xd = &x->e_mbd;
-  int mi_row, mi_col;
-  const BLOCK_SIZE bsize = convert_length_to_bsize(MC_FLOW_BSIZE_1D);
+  tpl_data->frame_idx = frame_idx;
+  tpl_reset_src_ref_frames(tpl_data);
   av1_tile_init(&xd->tile, cm, 0, 0);
-
-  const TX_SIZE tx_size = max_txsize_lookup[bsize];
-  const int mi_height = mi_size_high[bsize];
-  const int mi_width = mi_size_wide[bsize];
 
   // Setup scaling factor
   av1_setup_scale_factors_for_frame(
-      &sf, this_frame->y_crop_width, this_frame->y_crop_height,
+      &tpl_data->sf, this_frame->y_crop_width, this_frame->y_crop_height,
       this_frame->y_crop_width, this_frame->y_crop_height);
 
   xd->cur_buf = this_frame;
 
   for (idx = 0; idx < INTER_REFS_PER_FRAME; ++idx) {
-    ref_frame[idx] =
+    tpl_data->ref_frame[idx] =
         tpl_data->tpl_frame[tpl_frame->ref_map_index[idx]].rec_picture;
-    src_frame[idx] =
+    tpl_data->src_ref_frame[idx] =
         tpl_data->tpl_frame[tpl_frame->ref_map_index[idx]].gf_picture;
   }
 
   // Store the reference frames based on priority order
   for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
-    ref_frames_ordered[i] = ref_frame[ref_frame_priority_order[i] - 1];
+    ref_frames_ordered[i] =
+        tpl_data->ref_frame[ref_frame_priority_order[i] - 1];
   }
 
   // Work out which reference frame slots may be used.
@@ -759,7 +756,7 @@ static AOM_INLINE void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx,
   // Prune reference frames
   for (idx = 0; idx < INTER_REFS_PER_FRAME; ++idx) {
     if ((ref_frame_flags & (1 << idx)) == 0) {
-      ref_frame[idx] = NULL;
+      tpl_data->ref_frame[idx] = NULL;
     }
   }
 
@@ -769,7 +766,7 @@ static AOM_INLINE void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx,
   MB_MODE_INFO *mbmi_ptr = &mbmi;
   xd->mi = &mbmi_ptr;
 
-  xd->block_ref_scale_factors[0] = &sf;
+  xd->block_ref_scale_factors[0] = &tpl_data->sf;
 
   const int base_qindex = pframe_qindex;
   // Get rd multiplier set up.
@@ -786,15 +783,28 @@ static AOM_INLINE void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx,
 
   tpl_frame->base_rdmult =
       av1_compute_rd_mult_based_on_qindex(cpi, pframe_qindex) / 6;
+}
 
-  for (mi_row = 0; mi_row < mi_params->mi_rows; mi_row += mi_height) {
+static AOM_INLINE void mc_flow_dispenser(AV1_COMP *cpi) {
+  AV1_COMMON *cm = &cpi->common;
+  TplParams *const tpl_data = &cpi->tpl_data;
+  TplDepFrame *tpl_frame = &tpl_data->tpl_frame[tpl_data->frame_idx];
+  const CommonModeInfoParams *const mi_params = &cm->mi_params;
+  ThreadData *td = &cpi->td;
+  MACROBLOCK *x = &td->mb;
+  MACROBLOCKD *xd = &x->e_mbd;
+  const BLOCK_SIZE bsize = convert_length_to_bsize(MC_FLOW_BSIZE_1D);
+  const TX_SIZE tx_size = max_txsize_lookup[bsize];
+  const int mi_height = mi_size_high[bsize];
+  const int mi_width = mi_size_wide[bsize];
+  for (int mi_row = 0; mi_row < mi_params->mi_rows; mi_row += mi_height) {
     // Motion estimation row boundary
     av1_set_mv_row_limits(mi_params, &x->mv_limits, mi_row, mi_height,
                           cpi->oxcf.border_in_pixels);
     xd->mb_to_top_edge = -GET_MV_SUBPEL(mi_row * MI_SIZE);
     xd->mb_to_bottom_edge =
         GET_MV_SUBPEL((mi_params->mi_rows - mi_height - mi_row) * MI_SIZE);
-    for (mi_col = 0; mi_col < mi_params->mi_cols; mi_col += mi_width) {
+    for (int mi_col = 0; mi_col < mi_params->mi_cols; mi_col += mi_width) {
       TplDepStats tpl_stats;
 
       // Motion estimation column boundary
@@ -803,8 +813,9 @@ static AOM_INLINE void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx,
       xd->mb_to_left_edge = -GET_MV_SUBPEL(mi_col * MI_SIZE);
       xd->mb_to_right_edge =
           GET_MV_SUBPEL(mi_params->mi_cols - mi_width - mi_col);
-      mode_estimation(cpi, x, xd, &sf, frame_idx, mi_row, mi_col, bsize,
-                      tx_size, ref_frame, src_frame, &tpl_stats);
+      mode_estimation(cpi, x, xd, &tpl_data->sf, tpl_data->frame_idx, mi_row,
+                      mi_col, bsize, tx_size, tpl_data->ref_frame,
+                      tpl_data->src_ref_frame, &tpl_stats);
 
       // Motion flow dependency dispenser.
       tpl_model_store(tpl_frame->tpl_stats_ptr, mi_row, mi_col, bsize,
@@ -1053,7 +1064,9 @@ int av1_tpl_setup_stats(AV1_COMP *cpi, int gop_eval,
         gf_group->update_type[frame_idx] == OVERLAY_UPDATE)
       continue;
 
-    mc_flow_dispenser(cpi, frame_idx, pframe_qindex);
+    if (gf_group->size == frame_idx) continue;
+    init_mc_flow_dispenser(cpi, frame_idx, pframe_qindex);
+    mc_flow_dispenser(cpi);
 
     aom_extend_frame_borders(tpl_data->tpl_frame[frame_idx].rec_picture,
                              av1_num_planes(cm));
