@@ -928,6 +928,11 @@ typedef struct {
 } GlobalMotionInfo;
 
 typedef struct {
+  // Tracks the frame dimensions (width and height) using which:
+  //  a) Frame buffers (like altref and util frame buffers) were allocated
+  //  b) Motion estimation related initializations were done
+  // This structure is helpful to reallocate / reinitialize the above when there
+  // is a change in frame dimensions.
   int width;
   int height;
 } InitialDimensions;
@@ -1055,23 +1060,24 @@ typedef struct {
   // Frame refresh flags set by the external interface.
   ExtRefreshFrameFlagsInfo refresh_frame;
 
-  // Flag to enable the updation of frame contexts at the end of a frame decode.
+  // Flag to enable the update of frame contexts at the end of a frame decode.
   bool refresh_frame_context;
 
-  // Flag to indicate that updation of refresh_frame_context from external
+  // Flag to indicate that update of refresh_frame_context from external
   // interface is pending.
   bool refresh_frame_context_pending;
 
   // Flag to enable temporal MV prediction.
   bool use_ref_frame_mvs;
 
-  // Flag to code the frame as error-resilient.
+  // Indicates whether the current frame is to be coded as error resilient.
   bool use_error_resilient;
 
-  // Flag to code the frame as s-frame.
+  // Indicates whether the current frame is to be coded as s-frame.
   bool use_s_frame;
 
-  // Flag to set the frame's primary_ref_frame to PRIMARY_REF_NONE.
+  // Indicates whether the current frame's primary_ref_frame is set to
+  // PRIMARY_REF_NONE.
   bool use_primary_ref_none;
 } ExternalFlags;
 
@@ -1365,11 +1371,7 @@ typedef struct AV1_COMP {
   // Stores the frame parameters during encoder initialization.
   FRAME_INFO frame_info;
 
-  // Tracks the frame dimensions(width and height) using which:
-  //  a) Frame buffers(like altref and util frame buffers) were allocated
-  //  b) ME related initializations were done
-  // This structure is helpful to reallocate / reinitialize above when there is
-  // a change in frame dimensions.
+  // Structure to store the dimensions of current frame.
   InitialDimensions initial_dimensions;
 
   // Number of MBs in the full-size frame; to be used to
