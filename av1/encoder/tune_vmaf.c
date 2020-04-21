@@ -60,7 +60,10 @@ static AOM_INLINE void unsharp(const AV1_COMP *const cpi,
                                const YV12_BUFFER_CONFIG *blurred,
                                const YV12_BUFFER_CONFIG *dst, double amount) {
   const int bit_depth = cpi->td.mb.e_mbd.bd;
-  if (bit_depth > 8) {
+  if (cpi->common.seq_params.use_highbitdepth) {
+    assert(source->flags & YV12_FLAG_HIGHBITDEPTH);
+    assert(blurred->flags & YV12_FLAG_HIGHBITDEPTH);
+    assert(dst->flags & YV12_FLAG_HIGHBITDEPTH);
     highbd_unsharp_rect(CONVERT_TO_SHORTPTR(source->y_buffer), source->y_stride,
                         CONVERT_TO_SHORTPTR(blurred->y_buffer),
                         blurred->y_stride, CONVERT_TO_SHORTPTR(dst->y_buffer),
@@ -103,7 +106,7 @@ static AOM_INLINE void gaussian_blur(const int bit_depth,
       uint8_t *dst_buf =
           dst->y_buffer + row_offset_y * dst->y_stride + col_offset_y;
 
-      if (bit_depth > 8) {
+      if (source->flags & YV12_FLAG_HIGHBITDEPTH) {
         av1_highbd_convolve_2d_sr(
             CONVERT_TO_SHORTPTR(src_buf), source->y_stride,
             CONVERT_TO_SHORTPTR(dst_buf), dst->y_stride, block_w, block_h,
@@ -139,7 +142,8 @@ static double frame_average_variance(const AV1_COMP *const cpi,
       buf.buf = (uint8_t *)y_buffer + row_offset_y * y_stride + col_offset_y;
       buf.stride = y_stride;
 
-      if (bit_depth > 8) {
+      if (cpi->common.seq_params.use_highbitdepth) {
+        assert(frame->flags & YV12_FLAG_HIGHBITDEPTH);
         var += av1_high_get_sby_perpixel_variance(cpi, &buf, block_size,
                                                   bit_depth);
       } else {
@@ -321,7 +325,9 @@ void av1_vmaf_blk_preprocessing(AV1_COMP *const cpi,
       const int block_height = AOMMIN(height - row_offset_y, block_h);
       const int index = col + row * num_cols;
 
-      if (bit_depth > 8) {
+      if (cm->seq_params.use_highbitdepth) {
+        assert(source->flags & YV12_FLAG_HIGHBITDEPTH);
+        assert(blurred.flags & YV12_FLAG_HIGHBITDEPTH);
         uint16_t *frame_src_buf = CONVERT_TO_SHORTPTR(source->y_buffer) +
                                   row_offset_y * source->y_stride +
                                   col_offset_y;
@@ -388,7 +394,9 @@ void av1_vmaf_blk_preprocessing(AV1_COMP *const cpi,
       const int block_height = AOMMIN(source->y_height - row_offset_y, block_h);
       const int index = col + row * num_cols;
 
-      if (bit_depth > 8) {
+      if (cm->seq_params.use_highbitdepth) {
+        assert(source->flags & YV12_FLAG_HIGHBITDEPTH);
+        assert(blurred.flags & YV12_FLAG_HIGHBITDEPTH);
         uint16_t *src_buf = CONVERT_TO_SHORTPTR(source->y_buffer) +
                             row_offset_y * source->y_stride + col_offset_y;
         uint16_t *blurred_buf = CONVERT_TO_SHORTPTR(blurred.y_buffer) +
@@ -446,17 +454,17 @@ static int update_frame(float *ref_data, float *main_data, float *temp_data,
     float *ref, *main;
     ref = ref_data + i * stride;
     main = main_data + i * stride;
-    if (bit_depth == 8) {
-      uint8_t *src;
-      src = source->y_buffer + i * source->y_stride;
-      for (int j = 0; j < width; ++j) {
-        ref[j] = main[j] = (float)src[j];
-      }
-    } else {
+    if (source->flags & YV12_FLAG_HIGHBITDEPTH) {
       uint16_t *src;
       src = CONVERT_TO_SHORTPTR(source->y_buffer) + i * source->y_stride;
       for (int j = 0; j < width; ++j) {
         ref[j] = main[j] = scale_factor * (float)src[j];
+      }
+    } else {
+      uint8_t *src;
+      src = source->y_buffer + i * source->y_stride;
+      for (int j = 0; j < width; ++j) {
+        ref[j] = main[j] = (float)src[j];
       }
     }
   }
@@ -468,22 +476,22 @@ static int update_frame(float *ref_data, float *main_data, float *temp_data,
     const int block_height = AOMMIN(height - row_offset, block_h);
 
     float *main_buf = main_data + col_offset + row_offset * stride;
-    if (bit_depth == 8) {
-      uint8_t *blurred_buf =
-          blurred->y_buffer + row_offset * blurred->y_stride + col_offset;
-      for (int i = 0; i < block_height; ++i) {
-        for (int j = 0; j < block_width; ++j) {
-          main_buf[j] = (float)blurred_buf[j];
-        }
-        main_buf += stride;
-        blurred_buf += blurred->y_stride;
-      }
-    } else {
+    if (source->flags & YV12_FLAG_HIGHBITDEPTH) {
       uint16_t *blurred_buf = CONVERT_TO_SHORTPTR(blurred->y_buffer) +
                               row_offset * blurred->y_stride + col_offset;
       for (int i = 0; i < block_height; ++i) {
         for (int j = 0; j < block_width; ++j) {
           main_buf[j] = scale_factor * (float)blurred_buf[j];
+        }
+        main_buf += stride;
+        blurred_buf += blurred->y_stride;
+      }
+    } else {
+      uint8_t *blurred_buf =
+          blurred->y_buffer + row_offset * blurred->y_stride + col_offset;
+      for (int i = 0; i < block_height; ++i) {
+        for (int j = 0; j < block_width; ++j) {
+          main_buf[j] = (float)blurred_buf[j];
         }
         main_buf += stride;
         blurred_buf += blurred->y_stride;
@@ -692,7 +700,9 @@ static AOM_INLINE double calc_vmaf_motion_score(
   if (next) gaussian_blur(bit_depth, next, &blurred_next);
 
   double motion1, motion2 = 65536.0;
-  if (bit_depth > 8) {
+  if (cm->seq_params.use_highbitdepth) {
+    assert(blurred_cur.flags & YV12_FLAG_HIGHBITDEPTH);
+    assert(blurred_last.flags & YV12_FLAG_HIGHBITDEPTH);
     const float scale_factor = 1.0f / (float)(1 << (bit_depth - 8));
     motion1 = highbd_image_sad_c(CONVERT_TO_SHORTPTR(blurred_cur.y_buffer),
                                  blurred_cur.y_stride,
@@ -700,6 +710,7 @@ static AOM_INLINE double calc_vmaf_motion_score(
                                  blurred_last.y_stride, y_width, y_height) *
               scale_factor;
     if (next) {
+      assert(blurred_next.flags & YV12_FLAG_HIGHBITDEPTH);
       motion2 = highbd_image_sad_c(CONVERT_TO_SHORTPTR(blurred_cur.y_buffer),
                                    blurred_cur.y_stride,
                                    CONVERT_TO_SHORTPTR(blurred_next.y_buffer),
@@ -788,7 +799,9 @@ void av1_update_vmaf_curve(AV1_COMP *cpi, YV12_BUFFER_CONFIG *source,
   const int bit_depth = cpi->td.mb.e_mbd.bd;
   aom_calc_vmaf(cpi->oxcf.vmaf_model_path, source, recon, bit_depth,
                 &cpi->vmaf_info.last_frame_vmaf);
-  if (bit_depth > 8) {
+  if (cpi->common.seq_params.use_highbitdepth) {
+    assert(source->flags & YV12_FLAG_HIGHBITDEPTH);
+    assert(recon->flags & YV12_FLAG_HIGHBITDEPTH);
     cpi->vmaf_info.last_frame_ysse =
         (double)aom_highbd_get_y_sse(source, recon);
   } else {

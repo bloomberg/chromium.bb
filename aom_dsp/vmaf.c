@@ -44,7 +44,7 @@ static int read_frame(float *ref_data, float *main_data, float *temp_data,
     assert(width == frames->distorted->y_width);
     assert(height == frames->distorted->y_height);
 
-    if (frames->bit_depth > 8) {
+    if (frames->source->flags & YV12_FLAG_HIGHBITDEPTH) {
       const float scale_factor = 1.0f / (float)(1 << (frames->bit_depth - 8));
       uint16_t *ref_ptr = CONVERT_TO_SHORTPTR(frames->source->y_buffer);
       uint16_t *main_ptr = CONVERT_TO_SHORTPTR(frames->distorted->y_buffer);
