@@ -755,7 +755,12 @@ class ChromeSDKCommand(command.CliCommand):
   def AddParser(cls, parser):
     super(ChromeSDKCommand, cls).AddParser(parser)
     parser.add_argument(
-        '--board', required=True, help='The board SDK to use.')
+        '--board', required=False, help='The board SDK to use.')
+    parser.add_argument(
+        '--boards', required=False,
+        help='Colon-separated list of boards to fetch SDKs for. Implies '
+             '--no-shell since a shell is tied to a single board. Used to '
+             'quickly setup cache and build dirs for multiple boards at once.')
     parser.add_argument(
         '--build-label', default='Release',
         help='The label for this build. Used as a subdirectory name under '
@@ -1327,6 +1332,13 @@ class ChromeSDKCommand(command.CliCommand):
 
   def Run(self):
     """Perform the command."""
+    if bool(self.options.board) == bool(self.options.boards):
+      cros_build_lib.Die('Must specify either one of --board or --boards.')
+
+    if self.options.boards and self.options.use_shell:
+      cros_build_lib.Die(
+          'Must specify --no-shell when preparing multiple boards.')
+
     if os.environ.get(SDKFetcher.SDK_VERSION_ENV) is not None:
       cros_build_lib.Die('Already in an SDK shell.')
 
@@ -1342,11 +1354,20 @@ class ChromeSDKCommand(command.CliCommand):
     if self.options.cfi and not self.options.thinlto:
       cros_build_lib.Die('CFI requires ThinLTO.')
 
+    if self.options.board:
+      return self._RunOnceForBoard(self.options.board)
+    else:
+      self.options.boards = self.options.boards.split(':')
+      for board in self.options.boards:
+        self._RunOnceForBoard(board)
+
+  def _RunOnceForBoard(self, board):
+    """Internal implementation of Run() above for a single board."""
     self.silent = bool(self.options.cmd)
     # Lazy initialize because SDKFetcher creates a GSContext() object in its
     # constructor, which may block on user input.
     self.sdk = SDKFetcher(
-        self.options.cache_dir, self.options.board,
+        self.options.cache_dir, board,
         clear_cache=self.options.clear_sdk_cache,
         chrome_src=self.options.chrome_src,
         sdk_path=self.options.sdk_path,
@@ -1377,7 +1398,7 @@ class ChromeSDKCommand(command.CliCommand):
     with self.sdk.Prepare(components, version=prepare_version,
                           target_tc=self.options.target_tc,
                           toolchain_url=self.options.toolchain_url) as ctx:
-      env = self._SetupEnvironment(self.options.board, ctx, self.options,
+      env = self._SetupEnvironment(board, ctx, self.options,
                                    goma_dir=goma_dir, goma_port=goma_port)
       if not self.options.use_shell:
         return 0

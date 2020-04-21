@@ -132,6 +132,7 @@ class SDKFetcherMock(partial_mock.PartialMock):
 }"""
 
   BOARD = 'eve'
+  BOARDS = ['amd64-generic', 'arm-generic']
   VERSION = '4567.8.9'
 
   def __init__(self, external_mocks=None):
@@ -218,9 +219,17 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
       'CXXFLAGS': '-O2',
   }
 
-  def SetupCommandMock(self, extra_args=None, default_cache_dir=False):
-    cmd_args = ['--board', SDKFetcherMock.BOARD, '--chrome-src',
-                self.chrome_src_dir, 'true']
+  def SetupCommandMock(self, many_boards=False, extra_args=None,
+                       default_cache_dir=False):
+
+    cmd_args = ['--chrome-src', self.chrome_src_dir, 'true']
+    if many_boards:
+      cmd_args += ['--boards', ':'.join(SDKFetcherMock.BOARDS), '--no-shell']
+      # --no-shell drops gni files in //build/args/chromeos/.
+      osutils.SafeMakedirs(
+          os.path.join(self.chrome_root, 'src', 'build', 'args', 'chromeos'))
+    else:
+      cmd_args += ['--board', SDKFetcherMock.BOARD]
     if extra_args:
       cmd_args.extend(extra_args)
 
@@ -270,6 +279,11 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
     with cros_test_lib.LoggingCapturer() as logs:
       self.cmd_mock.inst.Run()
       self.AssertLogsContain(logs, 'Goma:', inverted=True)
+
+  def testManyBoards(self):
+    """Test a runthrough when multiple boards are specified via --boards."""
+    self.SetupCommandMock(many_boards=True)
+    self.cmd_mock.inst.Run()
 
   def testErrorCodePassthrough(self):
     """Test that error codes are passed through."""
