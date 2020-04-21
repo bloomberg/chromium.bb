@@ -4236,28 +4236,30 @@ static void init_motion_estimation(AV1_COMP *cpi) {
   int fpf_y_stride = cm->cur_frame != NULL ? cm->cur_frame->buf.y_stride
                                            : cpi->scaled_source.y_stride;
 
-  // Update if ss_cfg is uninitialized or the current frame has a new stride
+  // Update if search_site_cfg is uninitialized or the current frame has a new
+  // stride
   const int should_update =
-      !mv_search_params->ss_cfg[SS_CFG_SRC].stride ||
-      !mv_search_params->ss_cfg[SS_CFG_LOOKAHEAD].stride ||
-      (y_stride != mv_search_params->ss_cfg[SS_CFG_SRC].stride);
+      !mv_search_params->search_site_cfg[SS_CFG_SRC].stride ||
+      !mv_search_params->search_site_cfg[SS_CFG_LOOKAHEAD].stride ||
+      (y_stride != mv_search_params->search_site_cfg[SS_CFG_SRC].stride);
 
   if (!should_update) {
     return;
   }
 
   if (cpi->sf.mv_sf.search_method == DIAMOND) {
-    av1_init_dsmotion_compensation(&mv_search_params->ss_cfg[SS_CFG_SRC],
-                                   y_stride);
-    av1_init_dsmotion_compensation(&mv_search_params->ss_cfg[SS_CFG_LOOKAHEAD],
-                                   y_stride_src);
+    av1_init_dsmotion_compensation(
+        &mv_search_params->search_site_cfg[SS_CFG_SRC], y_stride);
+    av1_init_dsmotion_compensation(
+        &mv_search_params->search_site_cfg[SS_CFG_LOOKAHEAD], y_stride_src);
   } else {
-    av1_init3smotion_compensation(&mv_search_params->ss_cfg[SS_CFG_SRC],
-                                  y_stride);
-    av1_init3smotion_compensation(&mv_search_params->ss_cfg[SS_CFG_LOOKAHEAD],
-                                  y_stride_src);
+    av1_init3smotion_compensation(
+        &mv_search_params->search_site_cfg[SS_CFG_SRC], y_stride);
+    av1_init3smotion_compensation(
+        &mv_search_params->search_site_cfg[SS_CFG_LOOKAHEAD], y_stride_src);
   }
-  av1_init_motion_fpf(&mv_search_params->ss_cfg[SS_CFG_FPF], fpf_y_stride);
+  av1_init_motion_fpf(&mv_search_params->search_site_cfg[SS_CFG_FPF],
+                      fpf_y_stride);
 }
 
 #define COUPLED_CHROMA_FROM_LUMA_RESTORATION 0

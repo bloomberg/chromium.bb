@@ -154,7 +154,7 @@ static int combined_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
     center_mv = tmp_mv->as_mv;
 
   const search_site_config *src_search_sites =
-      &cpi->mv_search_params.ss_cfg[SS_CFG_SRC];
+      &cpi->mv_search_params.search_site_cfg[SS_CFG_SRC];
   FULLPEL_MOTION_SEARCH_PARAMS full_ms_params;
   av1_make_default_fullpel_ms_params(&full_ms_params, cpi, x, bsize, &center_mv,
                                      src_search_sites,

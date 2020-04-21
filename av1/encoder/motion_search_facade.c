@@ -198,14 +198,15 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   // Further reduce the search range.
   if (search_range < INT_MAX) {
-    const search_site_config *ss_cfg = &mv_search_params->ss_cfg[SS_CFG_SRC];
-    // Max step_param is ss_cfg->num_search_steps.
+    const search_site_config *search_site_cfg =
+        &mv_search_params->search_site_cfg[SS_CFG_SRC];
+    // Max step_param is search_site_cfg->num_search_steps.
     if (search_range < 1) {
-      step_param = ss_cfg->num_search_steps;
+      step_param = search_site_cfg->num_search_steps;
     } else {
-      while (ss_cfg->radius[ss_cfg->num_search_steps - step_param - 1] >
-                 (search_range << 1) &&
-             ss_cfg->num_search_steps - step_param - 1 > 0)
+      while (search_site_cfg->radius[search_site_cfg->num_search_steps -
+                                     step_param - 1] > (search_range << 1) &&
+             search_site_cfg->num_search_steps - step_param - 1 > 0)
         step_param++;
     }
   }
@@ -217,7 +218,7 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
   // Allow more mesh searches for screen content type on the ARF.
   const int fine_search_interval = use_fine_search_interval(cpi);
   const search_site_config *src_search_sites =
-      &mv_search_params->ss_cfg[SS_CFG_SRC];
+      &mv_search_params->search_site_cfg[SS_CFG_SRC];
   FULLPEL_MOTION_SEARCH_PARAMS full_ms_params;
   av1_make_default_fullpel_ms_params(&full_ms_params, cpi, x, bsize, &ref_mv,
                                      src_search_sites, fine_search_interval);
@@ -782,7 +783,7 @@ int_mv av1_simple_motion_search(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
   const MV ref_mv = kZeroMv;
   const int step_param = cpi->mv_search_params.mv_step_param;
   const search_site_config *src_search_sites =
-      &cpi->mv_search_params.ss_cfg[SS_CFG_SRC];
+      &cpi->mv_search_params.search_site_cfg[SS_CFG_SRC];
   int cost_list[5];
   const int ref_idx = 0;
   int var;

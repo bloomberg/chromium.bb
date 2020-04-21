@@ -224,7 +224,7 @@ static AOM_INLINE void first_pass_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
   const int step_param = 3 + sr;
 
   const search_site_config *first_pass_search_sites =
-      &cpi->mv_search_params.ss_cfg[SS_CFG_FPF];
+      &cpi->mv_search_params.search_site_cfg[SS_CFG_FPF];
   FULLPEL_MOTION_SEARCH_PARAMS ms_params;
   av1_make_default_fullpel_ms_params(&ms_params, cpi, x, bsize, ref_mv,
                                      first_pass_search_sites,

@@ -978,11 +978,10 @@ typedef struct {
   //                  av1_return_min_sub_pixel_mv
   fractional_mv_step_fp *find_fractional_mv_step;
   // Search site configuration for full-pel MV search.
-  // ss_cfg[SS_CFG_SRC]: Used in tpl, rd/non-rd inter mode loop, simple motion
-  // search.
-  // ss_cfg[SS_CFG_LOOKAHEAD]: Used in intraBC, temporal filter
-  // ss_cfg[SS_CFG_FPF]: Used during first pass and lookahead
-  search_site_config ss_cfg[SS_CFG_TOTAL];
+  // search_site_cfg[SS_CFG_SRC]: Used in tpl, rd/non-rd inter mode loop, simple
+  // motion search. search_site_cfg[SS_CFG_LOOKAHEAD]: Used in intraBC, temporal
+  // filter search_site_cfg[SS_CFG_FPF]: Used during first pass and lookahead
+  search_site_config search_site_cfg[SS_CFG_TOTAL];
 } MotionVectorSearchParams;
 
 typedef struct {

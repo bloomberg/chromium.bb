@@ -2703,7 +2703,7 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
 
   FULLPEL_MOTION_SEARCH_PARAMS fullms_params;
   const search_site_config *lookahead_search_sites =
-      &cpi->mv_search_params.ss_cfg[SS_CFG_LOOKAHEAD];
+      &cpi->mv_search_params.search_site_cfg[SS_CFG_LOOKAHEAD];
   av1_make_default_fullpel_ms_params(&fullms_params, cpi, x, bsize,
                                      &dv_ref.as_mv, lookahead_search_sites,
                                      /*fine_search_interval=*/0);

@@ -143,15 +143,17 @@ static uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
   step_param = tpl_sf->reduce_first_step_size;
   step_param = AOMMIN(step_param, MAX_MVSEARCH_STEPS - 2);
 
-  search_site_config *ss_cfg = &cpi->mv_search_params.ss_cfg[SS_CFG_SRC];
-  if (ss_cfg->stride != stride_ref)
-    ss_cfg = &cpi->mv_search_params.ss_cfg[SS_CFG_LOOKAHEAD];
+  search_site_config *search_site_cfg =
+      &cpi->mv_search_params.search_site_cfg[SS_CFG_SRC];
+  if (search_site_cfg->stride != stride_ref)
+    search_site_cfg = &cpi->mv_search_params.search_site_cfg[SS_CFG_LOOKAHEAD];
 
-  assert(ss_cfg->stride == stride_ref);
+  assert(search_site_cfg->stride == stride_ref);
 
   FULLPEL_MOTION_SEARCH_PARAMS full_ms_params;
   av1_make_default_fullpel_ms_params(&full_ms_params, cpi, x, bsize, &center_mv,
-                                     ss_cfg, /*fine_search_interval=*/0);
+                                     search_site_cfg,
+                                     /*fine_search_interval=*/0);
 
   av1_full_pixel_search(start_mv, &full_ms_params, step_param,
                         cond_cost_list(cpi, cost_list), &best_mv->as_fullmv,

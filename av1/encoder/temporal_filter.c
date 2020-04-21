@@ -95,8 +95,8 @@ static void tf_motion_search(AV1_COMP *cpi,
   // Parameters used for motion search.
   FULLPEL_MOTION_SEARCH_PARAMS full_ms_params;
   SUBPEL_MOTION_SEARCH_PARAMS ms_params;
-  const search_site_config ss_cfg =
-      cpi->mv_search_params.ss_cfg[SS_CFG_LOOKAHEAD];
+  const search_site_config search_site_cfg =
+      cpi->mv_search_params.search_site_cfg[SS_CFG_LOOKAHEAD];
   const SEARCH_METHODS full_search_method = NSTEP;
   const int step_param = av1_init_search_range(
       AOMMAX(frame_to_filter->y_crop_width, frame_to_filter->y_crop_height));
@@ -128,7 +128,7 @@ static void tf_motion_search(AV1_COMP *cpi,
   MV block_mv = kZeroMv;
 
   av1_make_default_fullpel_ms_params(&full_ms_params, cpi, mb, block_size,
-                                     &baseline_mv, &ss_cfg,
+                                     &baseline_mv, &search_site_cfg,
                                      /*fine_search_interval=*/0);
   full_ms_params.run_mesh_search = 1;
   full_ms_params.search_method = full_search_method;
@@ -180,7 +180,8 @@ static void tf_motion_search(AV1_COMP *cpi,
         mbd->plane[0].pre[0].buf = ref_frame->y_buffer + y_offset + offset;
 
         av1_make_default_fullpel_ms_params(&full_ms_params, cpi, mb,
-                                           subblock_size, &baseline_mv, &ss_cfg,
+                                           subblock_size, &baseline_mv,
+                                           &search_site_cfg,
                                            /*fine_search_interval=*/0);
         full_ms_params.run_mesh_search = 1;
         full_ms_params.search_method = full_search_method;
