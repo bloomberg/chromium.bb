@@ -199,13 +199,13 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
   // Further reduce the search range.
   if (search_range < INT_MAX) {
     const search_site_config *ss_cfg = &mv_search_params->ss_cfg[SS_CFG_SRC];
-    // MAx step_param is ss_cfg->ss_count.
+    // Max step_param is ss_cfg->num_search_steps.
     if (search_range < 1) {
-      step_param = ss_cfg->ss_count;
+      step_param = ss_cfg->num_search_steps;
     } else {
-      while (ss_cfg->radius[ss_cfg->ss_count - step_param - 1] >
+      while (ss_cfg->radius[ss_cfg->num_search_steps - step_param - 1] >
                  (search_range << 1) &&
-             ss_cfg->ss_count - step_param - 1 > 0)
+             ss_cfg->num_search_steps - step_param - 1 > 0)
         step_param++;
     }
   }

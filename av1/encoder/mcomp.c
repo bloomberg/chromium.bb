@@ -275,17 +275,17 @@ static INLINE int mvsad_err_cost_(const FULLPEL_MV *mv,
 #define PATTERN_CANDIDATES_REF 3  // number of refinement candidates
 
 void av1_init_dsmotion_compensation(search_site_config *cfg, int stride) {
-  int ss_count = 0;
+  int num_search_steps = 0;
   int stage_index = MAX_MVSEARCH_STEPS - 1;
 
-  cfg->ss[stage_index][0].mv.col = cfg->ss[stage_index][0].mv.row = 0;
-  cfg->ss[stage_index][0].offset = 0;
+  cfg->site[stage_index][0].mv.col = cfg->site[stage_index][0].mv.row = 0;
+  cfg->site[stage_index][0].offset = 0;
   cfg->stride = stride;
 
   for (int radius = MAX_FIRST_STEP; radius > 0; radius /= 2) {
     int num_search_pts = 8;
 
-    const FULLPEL_MV ss_mvs[13] = {
+    const FULLPEL_MV search_site_mvs[13] = {
       { 0, 0 },           { -radius, 0 },      { radius, 0 },
       { 0, -radius },     { 0, radius },       { -radius, -radius },
       { radius, radius }, { -radius, radius }, { radius, -radius },
@@ -293,24 +293,24 @@ void av1_init_dsmotion_compensation(search_site_config *cfg, int stride) {
 
     int i;
     for (i = 0; i <= num_search_pts; ++i) {
-      search_site *const ss = &cfg->ss[stage_index][i];
-      ss->mv = ss_mvs[i];
-      ss->offset = get_offset_from_fullmv(&ss->mv, stride);
+      search_site *const site = &cfg->site[stage_index][i];
+      site->mv = search_site_mvs[i];
+      site->offset = get_offset_from_fullmv(&site->mv, stride);
     }
     cfg->searches_per_step[stage_index] = num_search_pts;
     cfg->radius[stage_index] = radius;
     --stage_index;
-    ++ss_count;
+    ++num_search_steps;
   }
-  cfg->ss_count = ss_count;
+  cfg->num_search_steps = num_search_steps;
 }
 
 void av1_init_motion_fpf(search_site_config *cfg, int stride) {
-  int ss_count = 0;
+  int num_search_steps = 0;
   int stage_index = MAX_MVSEARCH_STEPS - 1;
 
-  cfg->ss[stage_index][0].mv.col = cfg->ss[stage_index][0].mv.row = 0;
-  cfg->ss[stage_index][0].offset = 0;
+  cfg->site[stage_index][0].mv.col = cfg->site[stage_index][0].mv.row = 0;
+  cfg->site[stage_index][0].offset = 0;
   cfg->stride = stride;
 
   for (int radius = MAX_FIRST_STEP; radius > 0; radius /= 2) {
@@ -319,7 +319,7 @@ void av1_init_motion_fpf(search_site_config *cfg, int stride) {
     int num_search_pts = 12;
     if (radius == 1) num_search_pts = 8;
 
-    const FULLPEL_MV ss_mvs[13] = {
+    const FULLPEL_MV search_site_mvs[13] = {
       { 0, 0 },
       { -radius, 0 },
       { radius, 0 },
@@ -337,20 +337,20 @@ void av1_init_motion_fpf(search_site_config *cfg, int stride) {
 
     int i;
     for (i = 0; i <= num_search_pts; ++i) {
-      search_site *const ss = &cfg->ss[stage_index][i];
-      ss->mv = ss_mvs[i];
-      ss->offset = get_offset_from_fullmv(&ss->mv, stride);
+      search_site *const site = &cfg->site[stage_index][i];
+      site->mv = search_site_mvs[i];
+      site->offset = get_offset_from_fullmv(&site->mv, stride);
     }
     cfg->searches_per_step[stage_index] = num_search_pts;
     cfg->radius[stage_index] = radius;
     --stage_index;
-    ++ss_count;
+    ++num_search_steps;
   }
-  cfg->ss_count = ss_count;
+  cfg->num_search_steps = num_search_steps;
 }
 
 void av1_init3smotion_compensation(search_site_config *cfg, int stride) {
-  int ss_count = 0;
+  int num_search_steps = 0;
   int stage_index = 0;
   cfg->stride = stride;
   int radius = 1;
@@ -361,7 +361,7 @@ void av1_init3smotion_compensation(search_site_config *cfg, int stride) {
       tan_radius = radius;
       num_search_pts = 8;
     }
-    const FULLPEL_MV ss_mvs[13] = {
+    const FULLPEL_MV search_site_mvs[13] = {
       { 0, 0 },
       { -radius, 0 },
       { radius, 0 },
@@ -378,17 +378,17 @@ void av1_init3smotion_compensation(search_site_config *cfg, int stride) {
     };
 
     for (int i = 0; i <= num_search_pts; ++i) {
-      search_site *const ss = &cfg->ss[stage_index][i];
-      ss->mv = ss_mvs[i];
-      ss->offset = get_offset_from_fullmv(&ss->mv, stride);
+      search_site *const site = &cfg->site[stage_index][i];
+      site->mv = search_site_mvs[i];
+      site->offset = get_offset_from_fullmv(&site->mv, stride);
     }
     cfg->searches_per_step[stage_index] = num_search_pts;
     cfg->radius[stage_index] = radius;
-    ++ss_count;
+    ++num_search_steps;
     if (stage_index < 12)
       radius = (int)AOMMAX((radius * 1.5 + 0.5), radius + 1);
   }
-  cfg->ss_count = ss_count;
+  cfg->num_search_steps = num_search_steps;
 }
 
 // Checks whether the mv is within range of the mv_limits
@@ -1082,7 +1082,7 @@ static int diamond_search_sad(FULLPEL_MV start_mv,
 
   // search_step determines the length of the initial step and hence the number
   // of iterations.
-  const int tot_steps = cfg->ss_count - search_step;
+  const int tot_steps = cfg->num_search_steps - search_step;
 
   *num00 = 0;
   *best_mv = start_mv;
@@ -1094,16 +1094,16 @@ static int diamond_search_sad(FULLPEL_MV start_mv,
 
   int next_step_size = tot_steps > 2 ? cfg->radius[tot_steps - 2] : 1;
   for (int step = tot_steps - 1; step >= 0; --step) {
-    const search_site *ss = cfg->ss[step];
+    const search_site *site = cfg->site[step];
     best_site = 0;
     if (step > 0) next_step_size = cfg->radius[step - 1];
 
     int all_in = 1, j;
     // Trap illegal vectors
-    all_in &= best_mv->row + ss[1].mv.row >= ms_params->mv_limits.row_min;
-    all_in &= best_mv->row + ss[2].mv.row <= ms_params->mv_limits.row_max;
-    all_in &= best_mv->col + ss[3].mv.col >= ms_params->mv_limits.col_min;
-    all_in &= best_mv->col + ss[4].mv.col <= ms_params->mv_limits.col_max;
+    all_in &= best_mv->row + site[1].mv.row >= ms_params->mv_limits.row_min;
+    all_in &= best_mv->row + site[2].mv.row <= ms_params->mv_limits.row_max;
+    all_in &= best_mv->col + site[3].mv.col >= ms_params->mv_limits.col_min;
+    all_in &= best_mv->col + site[4].mv.col <= ms_params->mv_limits.col_max;
 
     // TODO(anyone): Implement 4 points search for msdf&sdaf
     if (all_in && !mask && !second_pred) {
@@ -1114,13 +1114,13 @@ static int diamond_search_sad(FULLPEL_MV start_mv,
         unsigned int sads[4];
 
         for (j = 0; j < 4; j++)
-          block_offset[j] = ss[idx + j].offset + best_address;
+          block_offset[j] = site[idx + j].offset + best_address;
 
         vfp->sdx4df(src_buf, src_stride, block_offset, ref_stride, sads);
         for (j = 0; j < 4; j++) {
           if (sads[j] < bestsad) {
-            const FULLPEL_MV this_mv = { best_mv->row + ss[idx + j].mv.row,
-                                         best_mv->col + ss[idx + j].mv.col };
+            const FULLPEL_MV this_mv = { best_mv->row + site[idx + j].mv.row,
+                                         best_mv->col + site[idx + j].mv.col };
             unsigned int thissad =
                 sads[j] + mvsad_err_cost_(&this_mv, mv_cost_params);
             if (thissad < bestsad) {
@@ -1132,11 +1132,11 @@ static int diamond_search_sad(FULLPEL_MV start_mv,
       }
     } else {
       for (int idx = 1; idx <= cfg->searches_per_step[step]; idx++) {
-        const FULLPEL_MV this_mv = { best_mv->row + ss[idx].mv.row,
-                                     best_mv->col + ss[idx].mv.col };
+        const FULLPEL_MV this_mv = { best_mv->row + site[idx].mv.row,
+                                     best_mv->col + site[idx].mv.col };
 
         if (av1_is_fullmv_in_range(&ms_params->mv_limits, this_mv)) {
-          const uint8_t *const check_here = ss[idx].offset + best_address;
+          const uint8_t *const check_here = site[idx].offset + best_address;
           unsigned int thissad;
 
           thissad =
@@ -1157,9 +1157,9 @@ static int diamond_search_sad(FULLPEL_MV start_mv,
       if (second_best_mv) {
         *second_best_mv = *best_mv;
       }
-      best_mv->row += ss[best_site].mv.row;
-      best_mv->col += ss[best_site].mv.col;
-      best_address += ss[best_site].offset;
+      best_mv->row += site[best_site].mv.row;
+      best_mv->col += site[best_site].mv.col;
+      best_address += site[best_site].offset;
       is_off_center = 1;
     }
 
@@ -1195,7 +1195,7 @@ static int full_pixel_diamond(const FULLPEL_MV start_mv,
 
   // If there won't be more n-step search, check to see if refining search is
   // needed.
-  const int further_steps = cfg->ss_count - 1 - step_param;
+  const int further_steps = cfg->num_search_steps - 1 - step_param;
   while (n < further_steps) {
     ++n;
 
@@ -1914,13 +1914,13 @@ static int obmc_diamond_search_sad(
              mvsad_err_cost_(best_mv, mv_cost_params);
 
   for (step = tot_steps; step >= 0; --step) {
-    const search_site *const ss = cfg->ss[step];
+    const search_site *const site = cfg->site[step];
     best_site = 0;
     for (int idx = 1; idx <= cfg->searches_per_step[step]; ++idx) {
-      const FULLPEL_MV mv = { best_mv->row + ss[idx].mv.row,
-                              best_mv->col + ss[idx].mv.col };
+      const FULLPEL_MV mv = { best_mv->row + site[idx].mv.row,
+                              best_mv->col + site[idx].mv.col };
       if (av1_is_fullmv_in_range(&ms_params->mv_limits, mv)) {
-        int sad = fn_ptr->osdf(best_address + ss[idx].offset, ref_buf->stride,
+        int sad = fn_ptr->osdf(best_address + site[idx].offset, ref_buf->stride,
                                wsrc, mask);
         if (sad < best_sad) {
           sad += mvsad_err_cost_(&mv, mv_cost_params);
@@ -1934,9 +1934,9 @@ static int obmc_diamond_search_sad(
     }
 
     if (best_site != 0) {
-      best_mv->row += ss[best_site].mv.row;
-      best_mv->col += ss[best_site].mv.col;
-      best_address += ss[best_site].offset;
+      best_mv->row += site[best_site].mv.row;
+      best_mv->col += site[best_site].mv.col;
+      best_address += site[best_site].offset;
     } else if (best_address == init_ref) {
       (*num00)++;
     }
@@ -1957,7 +1957,7 @@ static int obmc_full_pixel_diamond(
 
   // If there won't be more n-step search, check to see if refining search is
   // needed.
-  const int further_steps = cfg->ss_count - 1 - step_param;
+  const int further_steps = cfg->num_search_steps - 1 - step_param;
   if (n > further_steps) do_refine = 0;
 
   while (n < further_steps) {
