@@ -501,8 +501,10 @@ typedef struct macroblockd {
   // Similar logic applies for chroma blocks that cover 2 or 3 luma blocks.
   bool is_chroma_ref;
 
+  // Info specific to each plane.
   struct macroblockd_plane plane[MAX_MB_PLANE];
 
+  // Tile related info.
   TileInfo tile;
 
   // Appropriate offset inside cm->mi_params.mi_grid_base based on current
@@ -553,6 +555,10 @@ typedef struct macroblockd {
   // These are pointers into 'cm->ref_scale_factors'.
   const struct scale_factors *block_ref_scale_factors[2];
 
+  // On encoder side: points to cpi->source, which is the buffer containing
+  // the current *source* frame (maybe filtered).
+  // On decoder side: points to cm->cur_frame->buf, which is the buffer into
+  // which current frame is being *decoded*.
   const YV12_BUFFER_CONFIG *cur_buf;
 
   // Entropy contexts for the above blocks.
@@ -601,26 +607,40 @@ typedef struct macroblockd {
   uint8_t ref_mv_count[MODE_CTX_REF_FRAMES];
   CANDIDATE_MV ref_mv_stack[MODE_CTX_REF_FRAMES][MAX_REF_MV_STACK_SIZE];
   uint16_t weight[MODE_CTX_REF_FRAMES][MAX_REF_MV_STACK_SIZE];
-  uint8_t is_sec_rect;
+
+  // True if this is the last vertical rectangular block in a VERTICAL or
+  // VERTICAL_4 partition.
+  bool is_last_vertical_rect;
+  // True if this is the 1st horizontal rectangular block in a HORIZONTAL or
+  // HORIZONTAL_4 partition.
+  bool is_first_horizontal_rect;
 
   // Counts of each reference frame in the above and left neighboring blocks.
   // NOTE: Take into account both single and comp references.
   uint8_t neighbors_ref_counts[REF_FRAMES];
 
+  // Current CDFs of all the symbols for the current tile.
   FRAME_CONTEXT *tile_ctx;
+
   // Bit depth: copied from cm->seq_params.bit_depth for convenience.
   int bd;
 
+  // Quantizer index for each segment (base qindex + delta for each segment).
   int qindex[MAX_SEGMENTS];
+  // lossless[s] is true if segment 's' is coded losslessly.
   int lossless[MAX_SEGMENTS];
-  // Same as cm->features.cur_frame_force_integer_mv.
-  int cur_frame_force_integer_mv;
-  // Pointer to cm->error.
-  struct aom_internal_error_info *error_info;
-  // Same as cm->global_motion.
-  const WarpedMotionParams *global_motion;
   int delta_qindex;
   int current_qindex;
+
+  // Same as cm->features.cur_frame_force_integer_mv.
+  int cur_frame_force_integer_mv;
+
+  // Pointer to cm->error.
+  struct aom_internal_error_info *error_info;
+
+  // Same as cm->global_motion.
+  const WarpedMotionParams *global_motion;
+
   // Since actual frame level loop filtering level value is not available
   // at the beginning of the tile (only available during actual filtering)
   // at encoder side.we record the delta_lf (against the frame level loop

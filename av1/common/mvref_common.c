@@ -285,15 +285,17 @@ static int has_top_right(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     bs <<= 1;
   }
 
-  // The left hand of two vertical rectangles always has a top right (as the
-  // block above will have been decoded)
-  if (xd->width < xd->height)
-    if (!xd->is_sec_rect) has_tr = 1;
+  // In a VERTICAL or VERTICAL_4 partition, all partition before the last one
+  // always have a top right (as the block above will have been decoded).
+  if (xd->width < xd->height) {
+    if (!xd->is_last_vertical_rect) has_tr = 1;
+  }
 
-  // The bottom of two horizontal rectangles never has a top right (as the block
-  // to the right won't have been decoded)
-  if (xd->width > xd->height)
-    if (xd->is_sec_rect) has_tr = 0;
+  // In a HORIZONTAL or HORIZONTAL_4 partition, partitions after the first one
+  // never have a top right (as the block to the right won't have been decoded).
+  if (xd->width > xd->height) {
+    if (!xd->is_first_horizontal_rect) has_tr = 0;
+  }
 
   // The bottom left square of a Vertical A (in the old format) does
   // not have a top right as it is decoded before the right hand
