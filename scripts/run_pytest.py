@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import argparse
 import os
 import sys
 
@@ -16,10 +17,17 @@ from chromite.lib import cgroups
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import gs
+from chromite.lib import cros_logging as logging
 from chromite.lib import namespaces
 
 
 def main(argv):
+  parser = get_parser()
+  opts, pytest_args = parser.parse_known_args()
+  if opts.quick:
+    if not cros_build_lib.IsInsideChroot():
+      logging.warn('Running tests from inside the chroot will start up faster.')
+
   ensure_chroot_exists()
   re_execute_inside_chroot(argv)
 
@@ -27,9 +35,18 @@ def main(argv):
   # we run tests. This is a partial workaround for crbug.com/468838.
   gs.GSContext.GetDefaultGSUtilBin()
 
-  re_execute_with_namespace([sys.argv[0]] + argv)
+  if opts.quick:
+    logging.info('Skipping test namespacing due to --quickstart.')
+    # Default to running in a single process under --quickstart. User args can
+    # still override this.
+    pytest_args = ['-n', '0'] + pytest_args
+  else:
+    # Namespacing is enabled by default because tests may break each other or
+    # interfere with parts of the running system if not isolated in a namespace.
+    # Disabling namespaces is not recommended for general use.
+    re_execute_with_namespace([sys.argv[0]] + argv)
 
-  sys.exit(pytest.main(argv))
+  sys.exit(pytest.main(pytest_args))
 
 
 def re_execute_with_namespace(argv, network=False):
@@ -73,3 +90,20 @@ def ensure_chroot_exists():
   chroot = os.path.join(constants.SOURCE_ROOT, constants.DEFAULT_CHROOT_DIR)
   if not os.path.exists(chroot) and not cros_build_lib.IsInsideChroot():
     cros_build_lib.run(['cros_sdk', '--create'])
+
+
+def get_parser():
+  """Build the parser for command line arguments."""
+  parser = argparse.ArgumentParser(
+      description=__doc__,
+      epilog='To see the help output for pytest, run `pytest --help` inside '
+      'the chroot.',
+  )
+  parser.add_argument(
+      '--quickstart',
+      dest='quick',
+      action='store_true',
+      help='Skip normal test sandboxing and namespacing for faster start up '
+      'time.',
+  )
+  return parser
