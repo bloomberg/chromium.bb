@@ -599,9 +599,9 @@ INSTANTIATE_TEST_SUITE_P(DSPR2_COPY, AV1ConvolveCopyTest,
 ///////////////////////////////////////////////////////////////
 // Single reference convolve-copy functions (high bit-depth)
 ///////////////////////////////////////////////////////////////
-typedef void (*highbd_convolve_copy_func)(const uint16_t *src, int src_stride,
-                                          uint16_t *dst, int dst_stride, int w,
-                                          int h);
+typedef void (*highbd_convolve_copy_func)(const uint16_t *src,
+                                          ptrdiff_t src_stride, uint16_t *dst,
+                                          ptrdiff_t dst_stride, int w, int h);
 
 class AV1ConvolveCopyHighbdTest
     : public AV1ConvolveTest<highbd_convolve_copy_func> {
@@ -612,8 +612,8 @@ class AV1ConvolveCopyHighbdTest
     const int height = block.Height();
     const uint16_t *input = FirstRandomInput16(GetParam());
     DECLARE_ALIGNED(32, uint16_t, reference[MAX_SB_SQUARE]);
-    av1_highbd_convolve_2d_copy_sr(input, width, reference, kOutputStride,
-                                   width, height);
+    aom_highbd_convolve_copy(input, width, reference, kOutputStride, width,
+                             height);
     DECLARE_ALIGNED(32, uint16_t, test[MAX_SB_SQUARE]);
     GetParam().TestFunction()(input, width, test, kOutputStride, width, height);
     AssertOutputBufferEq(reference, test, width, height);
@@ -623,18 +623,16 @@ class AV1ConvolveCopyHighbdTest
 TEST_P(AV1ConvolveCopyHighbdTest, RunTest) { RunTest(); }
 
 INSTANTIATE_TEST_SUITE_P(C_COPY, AV1ConvolveCopyHighbdTest,
-                         BuildHighbdParams(av1_highbd_convolve_2d_copy_sr_c));
+                         BuildHighbdParams(aom_highbd_convolve_copy_c));
 
 #if HAVE_SSE2
-INSTANTIATE_TEST_SUITE_P(
-    SSE2_COPY, AV1ConvolveCopyHighbdTest,
-    BuildHighbdParams(av1_highbd_convolve_2d_copy_sr_sse2));
+INSTANTIATE_TEST_SUITE_P(SSE2_COPY, AV1ConvolveCopyHighbdTest,
+                         BuildHighbdParams(aom_highbd_convolve_copy_sse2));
 #endif
 
 #if HAVE_AVX2
-INSTANTIATE_TEST_SUITE_P(
-    AVX2_COPY, AV1ConvolveCopyHighbdTest,
-    BuildHighbdParams(av1_highbd_convolve_2d_copy_sr_avx2));
+INSTANTIATE_TEST_SUITE_P(AVX2_COPY, AV1ConvolveCopyHighbdTest,
+                         BuildHighbdParams(aom_highbd_convolve_copy_avx2));
 #endif
 
 #endif  // CONFIG_AV1_HIGHBITDEPTH

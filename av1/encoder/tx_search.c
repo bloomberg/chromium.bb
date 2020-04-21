@@ -1205,9 +1205,8 @@ static INLINE int64_t dist_block_px_domain(const AV1_COMP *cpi, MACROBLOCK *x,
 #if CONFIG_AV1_HIGHBITDEPTH
   if (is_cur_buf_hbd(xd)) {
     recon = CONVERT_TO_BYTEPTR(recon16);
-    av1_highbd_convolve_2d_copy_sr(CONVERT_TO_SHORTPTR(dst), dst_stride,
-                                   CONVERT_TO_SHORTPTR(recon), MAX_TX_SIZE, bsw,
-                                   bsh);
+    aom_highbd_convolve_copy(CONVERT_TO_SHORTPTR(dst), dst_stride,
+                             CONVERT_TO_SHORTPTR(recon), MAX_TX_SIZE, bsw, bsh);
   } else {
     recon = (uint8_t *)recon16;
     aom_convolve_copy(dst, dst_stride, recon, MAX_TX_SIZE, bsw, bsh);

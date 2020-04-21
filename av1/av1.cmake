@@ -244,7 +244,6 @@ list(APPEND AOM_AV1_COMMON_INTRIN_SSE2
             "${AOM_ROOT}/av1/common/x86/cfl_sse2.c"
             "${AOM_ROOT}/av1/common/x86/convolve_2d_sse2.c"
             "${AOM_ROOT}/av1/common/x86/convolve_sse2.c"
-            "${AOM_ROOT}/av1/common/x86/highbd_convolve_2d_sse2.c"
             "${AOM_ROOT}/av1/common/x86/jnt_convolve_sse2.c"
             "${AOM_ROOT}/av1/common/x86/wiener_convolve_sse2.c"
             "${AOM_ROOT}/av1/common/x86/av1_txfm_sse2.h"

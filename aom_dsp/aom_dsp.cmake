@@ -48,7 +48,6 @@ list(APPEND AOM_DSP_COMMON_SOURCES
             "${AOM_ROOT}/aom_dsp/avg.c")
 
 list(APPEND AOM_DSP_COMMON_ASM_SSE2
-            "${AOM_ROOT}/aom_dsp/x86/aom_convolve_copy_sse2.asm"
             "${AOM_ROOT}/aom_dsp/x86/aom_high_subpixel_8t_sse2.asm"
             "${AOM_ROOT}/aom_dsp/x86/aom_high_subpixel_bilinear_sse2.asm"
             "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_8t_sse2.asm"

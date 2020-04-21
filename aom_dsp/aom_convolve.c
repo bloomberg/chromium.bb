@@ -207,22 +207,11 @@ void aom_highbd_convolve8_vert_c(const uint8_t *src, ptrdiff_t src_stride,
                        y_step_q4, w, h, bd);
 }
 
-void aom_highbd_convolve_copy_c(const uint8_t *src8, ptrdiff_t src_stride,
-                                uint8_t *dst8, ptrdiff_t dst_stride,
-                                const int16_t *filter_x, int filter_x_stride,
-                                const int16_t *filter_y, int filter_y_stride,
-                                int w, int h, int bd) {
-  int r;
-  uint16_t *src = CONVERT_TO_SHORTPTR(src8);
-  uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);
-  (void)filter_x;
-  (void)filter_y;
-  (void)filter_x_stride;
-  (void)filter_y_stride;
-  (void)bd;
-
-  for (r = h; r > 0; --r) {
-    memcpy(dst, src, w * sizeof(uint16_t));
+void aom_highbd_convolve_copy_c(const uint16_t *src, ptrdiff_t src_stride,
+                                uint16_t *dst, ptrdiff_t dst_stride, int w,
+                                int h) {
+  for (int y = 0; y < h; ++y) {
+    memmove(dst, src, w * sizeof(src[0]));
     src += src_stride;
     dst += dst_stride;
   }

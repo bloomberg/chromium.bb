@@ -605,14 +605,6 @@ void av1_convolve_2d_facade(const uint8_t *src, int src_stride, uint8_t *dst,
 }
 
 #if CONFIG_AV1_HIGHBITDEPTH
-void av1_highbd_convolve_2d_copy_sr_c(const uint16_t *src, int src_stride,
-                                      uint16_t *dst, int dst_stride, int w,
-                                      int h) {
-  for (int y = 0; y < h; ++y) {
-    memmove(dst + y * dst_stride, src + y * src_stride, w * sizeof(src[0]));
-  }
-}
-
 void av1_highbd_convolve_x_sr_c(const uint16_t *src, int src_stride,
                                 uint16_t *dst, int dst_stride, int w, int h,
                                 const InterpFilterParams *filter_params_x,
@@ -1034,7 +1026,7 @@ static void highbd_convolve_2d_facade_single(
   const bool need_x = subpel_x_qn != 0;
   const bool need_y = subpel_y_qn != 0;
   if (!need_x && !need_y) {
-    av1_highbd_convolve_2d_copy_sr(src, src_stride, dst, dst_stride, w, h);
+    aom_highbd_convolve_copy(src, src_stride, dst, dst_stride, w, h);
   } else if (need_x && !need_y) {
     av1_highbd_convolve_x_sr(src, src_stride, dst, dst_stride, w, h,
                              filter_params_x, subpel_x_qn, conv_params, bd);
