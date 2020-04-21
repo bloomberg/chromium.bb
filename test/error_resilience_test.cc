@@ -134,6 +134,7 @@ class ErrorResilienceTestLarge
     encoder->Control(AV1E_SET_S_FRAME_MODE, 0);
     if (s_nframes_ > 0 &&
         (cfg_.g_pass == AOM_RC_LAST_PASS || cfg_.g_pass == AOM_RC_ONE_PASS)) {
+      if (video->frame() == 0) encoder->Control(AOME_SET_ENABLEAUTOALTREF, 0);
       for (unsigned int i = 0; i < s_nframes_; ++i) {
         if (s_frames_[i] == video->frame()) {
           std::cout << "             Encoding S frame: " << s_frames_[i]
