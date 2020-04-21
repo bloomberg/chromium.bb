@@ -1310,6 +1310,7 @@ INSTANTIATE_TEST_SUITE_P(C, SADx4AvgTest, ::testing::ValuesIn(x4d_avg_c_tests));
 // ARM functions
 #if HAVE_NEON
 const SadMxNParam neon_tests[] = {
+  make_tuple(128, 128, &aom_sad128x128_neon, -1),
   make_tuple(64, 64, &aom_sad64x64_neon, -1),
   make_tuple(32, 32, &aom_sad32x32_neon, -1),
   make_tuple(16, 16, &aom_sad16x16_neon, -1),

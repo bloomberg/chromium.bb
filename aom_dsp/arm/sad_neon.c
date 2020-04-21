@@ -164,6 +164,77 @@ unsigned int aom_sad64x64_neon(const uint8_t *src, int src_stride,
   return horizontal_long_add_16x8(vec_accum_lo, vec_accum_hi);
 }
 
+unsigned int aom_sad128x128_neon(const uint8_t *src, int src_stride,
+                                 const uint8_t *ref, int ref_stride) {
+  uint16x8_t vec_accum_lo, vec_accum_hi;
+  uint32x4_t vec_accum_32lo = vdupq_n_u32(0);
+  uint32x4_t vec_accum_32hi = vdupq_n_u32(0);
+  uint16x8_t tmp;
+  for (int i = 0; i < 128; ++i) {
+    const uint8x16_t vec_src_00 = vld1q_u8(src);
+    const uint8x16_t vec_src_16 = vld1q_u8(src + 16);
+    const uint8x16_t vec_src_32 = vld1q_u8(src + 32);
+    const uint8x16_t vec_src_48 = vld1q_u8(src + 48);
+    const uint8x16_t vec_src_64 = vld1q_u8(src + 64);
+    const uint8x16_t vec_src_80 = vld1q_u8(src + 80);
+    const uint8x16_t vec_src_96 = vld1q_u8(src + 96);
+    const uint8x16_t vec_src_112 = vld1q_u8(src + 112);
+    const uint8x16_t vec_ref_00 = vld1q_u8(ref);
+    const uint8x16_t vec_ref_16 = vld1q_u8(ref + 16);
+    const uint8x16_t vec_ref_32 = vld1q_u8(ref + 32);
+    const uint8x16_t vec_ref_48 = vld1q_u8(ref + 48);
+    const uint8x16_t vec_ref_64 = vld1q_u8(ref + 64);
+    const uint8x16_t vec_ref_80 = vld1q_u8(ref + 80);
+    const uint8x16_t vec_ref_96 = vld1q_u8(ref + 96);
+    const uint8x16_t vec_ref_112 = vld1q_u8(ref + 112);
+    src += src_stride;
+    ref += ref_stride;
+    vec_accum_lo = vdupq_n_u16(0);
+    vec_accum_hi = vdupq_n_u16(0);
+    vec_accum_lo = vabal_u8(vec_accum_lo, vget_low_u8(vec_src_00),
+                            vget_low_u8(vec_ref_00));
+    vec_accum_hi = vabal_u8(vec_accum_hi, vget_high_u8(vec_src_00),
+                            vget_high_u8(vec_ref_00));
+    vec_accum_lo = vabal_u8(vec_accum_lo, vget_low_u8(vec_src_16),
+                            vget_low_u8(vec_ref_16));
+    vec_accum_hi = vabal_u8(vec_accum_hi, vget_high_u8(vec_src_16),
+                            vget_high_u8(vec_ref_16));
+    vec_accum_lo = vabal_u8(vec_accum_lo, vget_low_u8(vec_src_32),
+                            vget_low_u8(vec_ref_32));
+    vec_accum_hi = vabal_u8(vec_accum_hi, vget_high_u8(vec_src_32),
+                            vget_high_u8(vec_ref_32));
+    vec_accum_lo = vabal_u8(vec_accum_lo, vget_low_u8(vec_src_48),
+                            vget_low_u8(vec_ref_48));
+    vec_accum_hi = vabal_u8(vec_accum_hi, vget_high_u8(vec_src_48),
+                            vget_high_u8(vec_ref_48));
+    vec_accum_lo = vabal_u8(vec_accum_lo, vget_low_u8(vec_src_64),
+                            vget_low_u8(vec_ref_64));
+    vec_accum_hi = vabal_u8(vec_accum_hi, vget_high_u8(vec_src_64),
+                            vget_high_u8(vec_ref_64));
+    vec_accum_lo = vabal_u8(vec_accum_lo, vget_low_u8(vec_src_80),
+                            vget_low_u8(vec_ref_80));
+    vec_accum_hi = vabal_u8(vec_accum_hi, vget_high_u8(vec_src_80),
+                            vget_high_u8(vec_ref_80));
+    vec_accum_lo = vabal_u8(vec_accum_lo, vget_low_u8(vec_src_96),
+                            vget_low_u8(vec_ref_96));
+    vec_accum_hi = vabal_u8(vec_accum_hi, vget_high_u8(vec_src_96),
+                            vget_high_u8(vec_ref_96));
+    vec_accum_lo = vabal_u8(vec_accum_lo, vget_low_u8(vec_src_112),
+                            vget_low_u8(vec_ref_112));
+    vec_accum_hi = vabal_u8(vec_accum_hi, vget_high_u8(vec_src_112),
+                            vget_high_u8(vec_ref_112));
+
+    tmp = vaddq_u16(vec_accum_lo, vec_accum_hi);
+    vec_accum_32lo = vaddw_u16(vec_accum_32lo, vget_low_u16(tmp));
+    vec_accum_32hi = vaddw_u16(vec_accum_32hi, vget_high_u16(tmp));
+  }
+  const uint32x4_t a = vaddq_u32(vec_accum_32lo, vec_accum_32hi);
+  const uint64x2_t b = vpaddlq_u32(a);
+  const uint32x2_t c = vadd_u32(vreinterpret_u32_u64(vget_low_u64(b)),
+                                vreinterpret_u32_u64(vget_high_u64(b)));
+  return vget_lane_u32(c, 0);
+}
+
 unsigned int aom_sad32x32_neon(const uint8_t *src, int src_stride,
                                const uint8_t *ref, int ref_stride) {
   int i;
