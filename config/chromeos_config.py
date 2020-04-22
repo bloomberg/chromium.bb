@@ -2826,6 +2826,13 @@ def ApplyCustomOverrides(site_config):
           'hw_tests_disabled_bug': 'https://crbug.com/1043198',
       },
 
+      # reven board does not exist in the lab.
+      'reven-release': {
+          'hw_tests': [],
+          'hw_tests_override': [],
+          'hw_tests_disabled_bug': 'https://crbug.com/1066311',
+      },
+
       # --- end from here ---
 
       # Enable distributed ThinLTO (crbug/877722) only on nocturne for now.
