@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "discovery/common/config.h"
 #include "discovery/mdns/public/mdns_constants.h"
 #include "util/logging.h"
 
@@ -26,6 +27,17 @@ bool TryParseDnsType(uint16_t to_parse, DnsType* type) {
 }
 
 }  // namespace
+
+MdnsReader::MdnsReader(const Config& config,
+                       const uint8_t* buffer,
+                       size_t length)
+    : BigEndianReader(buffer, length),
+      kMaximumAllowedRdataSize(
+          static_cast<size_t>(config.maximum_valid_rdata_size)) {
+  // TODO(rwkeane): Validate |maximum_valid_rdata_size| > MaxWireSize() for
+  // rdata types A, AAAA, SRV, PTR.
+  OSP_DCHECK_GT(config.maximum_valid_rdata_size, 0);
+}
 
 bool MdnsReader::Read(TxtRecordRdata::Entry* out) {
   Cursor cursor(this);
@@ -118,6 +130,10 @@ bool MdnsReader::Read(RawRecordRdata* out) {
   Cursor cursor(this);
   uint16_t record_length;
   if (Read(&record_length)) {
+    if (record_length > kMaximumAllowedRdataSize) {
+      return false;
+    }
+
     std::vector<uint8_t> buffer(record_length);
     if (Read(buffer.size(), buffer.data())) {
       ErrorOr<RawRecordRdata> rdata =
@@ -200,6 +216,9 @@ bool MdnsReader::Read(TxtRecordRdata* out) {
   if (!Read(&record_length)) {
     return false;
   }
+  if (record_length > kMaximumAllowedRdataSize) {
+    return false;
+  }
   std::vector<TxtRecordRdata::Entry> texts;
   while (cursor.delta() < sizeof(record_length) + record_length) {
     TxtRecordRdata::Entry entry;
@@ -231,6 +250,9 @@ bool MdnsReader::Read(NsecRecordRdata* out) {
   uint16_t record_length;
   DomainName next_record_name;
   if (!Read(&record_length) || !Read(&next_record_name)) {
+    return false;
+  }
+  if (record_length > kMaximumAllowedRdataSize) {
     return false;
   }
 

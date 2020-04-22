@@ -34,7 +34,8 @@ MdnsServiceImpl::MdnsServiceImpl(
     Config::NetworkInfo::AddressFamilies supported_address_types)
     : task_runner_(task_runner),
       now_function_(now_function),
-      reporting_client_(reporting_client) {
+      reporting_client_(reporting_client),
+      receiver_(config) {
   OSP_DCHECK(task_runner_);
   OSP_DCHECK(reporting_client_);
   OSP_DCHECK(supported_address_types);

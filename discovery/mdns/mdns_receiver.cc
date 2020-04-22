@@ -12,7 +12,7 @@ namespace discovery {
 
 MdnsReceiver::ResponseClient::~ResponseClient() = default;
 
-MdnsReceiver::MdnsReceiver() = default;
+MdnsReceiver::MdnsReceiver(Config config) : config_(std::move(config)) {}
 
 MdnsReceiver::~MdnsReceiver() {
   if (state_ == State::kRunning) {
@@ -63,7 +63,7 @@ void MdnsReceiver::OnRead(UdpSocket* socket,
   UdpPacket packet = std::move(packet_or_error.value());
 
   TRACE_SCOPED(TraceCategory::kMdns, "MdnsReceiver::OnRead");
-  MdnsReader reader(packet.data(), packet.size());
+  MdnsReader reader(config_, packet.data(), packet.size());
   MdnsMessage message;
   if (!reader.Read(&message)) {
     return;

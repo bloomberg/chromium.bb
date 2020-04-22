@@ -13,9 +13,12 @@
 namespace openscreen {
 namespace discovery {
 
+struct Config;
+
 class MdnsReader : public BigEndianReader {
  public:
-  using BigEndianReader::BigEndianReader;
+  MdnsReader(const Config& config, const uint8_t* buffer, size_t length);
+
   using BigEndianReader::Read;
 
   // The following methods return true if the method was able to successfully
@@ -77,6 +80,9 @@ class MdnsReader : public BigEndianReader {
     }
     return false;
   }
+
+  // Maximum allowed size for the rdata in any received record.
+  const size_t kMaximumAllowedRdataSize;
 };
 
 }  // namespace discovery

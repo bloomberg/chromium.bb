@@ -6,6 +6,7 @@
 #include <memory>
 #include <utility>
 
+#include "discovery/common/config.h"
 #include "discovery/mdns/mdns_probe_manager.h"
 #include "discovery/mdns/mdns_querier.h"
 #include "discovery/mdns/mdns_random.h"
@@ -45,7 +46,8 @@ class MdnsProbeTests : public testing::Test {
       : clock_(Clock::now()),
         task_runner_(&clock_),
         socket_(&task_runner_),
-        sender_(&socket_) {
+        sender_(&socket_),
+        receiver_(config_) {
     EXPECT_EQ(task_runner_.delayed_task_count(), 0);
     probe_ = CreateProbe();
     EXPECT_EQ(task_runner_.delayed_task_count(), 1);
@@ -72,6 +74,7 @@ class MdnsProbeTests : public testing::Test {
     probe_->OnMessageReceived(message);
   }
 
+  Config config_;
   FakeClock clock_;
   FakeTaskRunner task_runner_;
   FakeUdpSocket socket_;

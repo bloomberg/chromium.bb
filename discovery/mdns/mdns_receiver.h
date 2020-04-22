@@ -7,6 +7,7 @@
 
 #include <functional>
 
+#include "discovery/common/config.h"
 #include "platform/api/udp_socket.h"
 #include "platform/base/error.h"
 #include "platform/base/udp_packet.h"
@@ -28,7 +29,7 @@ class MdnsReceiver {
   // MdnsReceiver does not own |socket| and |delegate|
   // and expects that the lifetime of these objects exceeds the lifetime of
   // MdnsReceiver.
-  MdnsReceiver();
+  explicit MdnsReceiver(Config config);
   MdnsReceiver(const MdnsReceiver& other) = delete;
   MdnsReceiver(MdnsReceiver&& other) noexcept = delete;
   MdnsReceiver& operator=(const MdnsReceiver& other) = delete;
@@ -60,6 +61,8 @@ class MdnsReceiver {
   State state_ = State::kStopped;
 
   std::vector<ResponseClient*> response_clients_;
+
+  Config config_;
 };
 
 }  // namespace discovery

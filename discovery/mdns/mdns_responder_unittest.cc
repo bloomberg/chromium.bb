@@ -127,6 +127,7 @@ class MdnsResponderTest : public testing::Test {
         task_runner_(&clock_),
         socket_(&task_runner_),
         sender_(&socket_),
+        receiver_(config_),
         responder_(&record_handler_,
                    &probe_manager_,
                    &sender_,

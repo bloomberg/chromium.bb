@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "discovery/common/config.h"
 #include "discovery/mdns/mdns_records.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -43,9 +44,10 @@ TEST(MdnsReceiverTest, ReceiveQuery) {
   };
   // clang-format on
 
+  Config config;
   FakeUdpSocket socket;
   MockMdnsReceiverDelegate delegate;
-  MdnsReceiver receiver;
+  MdnsReceiver receiver(config);
   receiver.SetQueryCallback(
       [&delegate](const MdnsMessage& message, const IPEndpoint& endpoint) {
         delegate.OnMessageReceived(message);
@@ -97,9 +99,10 @@ TEST(MdnsReceiverTest, ReceiveResponse) {
   };
   // clang-format on
 
+  Config config;
   FakeUdpSocket socket;
   MockMdnsReceiverDelegate delegate;
-  MdnsReceiver receiver;
+  MdnsReceiver receiver(config);
   receiver.AddResponseCallback(&delegate);
   receiver.Start();
 

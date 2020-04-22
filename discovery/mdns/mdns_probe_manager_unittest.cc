@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "discovery/common/config.h"
 #include "discovery/mdns/mdns_probe.h"
 #include "discovery/mdns/mdns_querier.h"
 #include "discovery/mdns/mdns_random.h"
@@ -102,6 +103,7 @@ class MdnsProbeManagerTests : public testing::Test {
         task_runner_(&clock_),
         socket_(&task_runner_),
         sender_(&socket_),
+        receiver_(config_),
         manager_(&sender_,
                  &receiver_,
                  &random_,
@@ -168,6 +170,7 @@ class MdnsProbeManagerTests : public testing::Test {
     return ongoing_probe;
   }
 
+  Config config_;
   FakeClock clock_;
   FakeTaskRunner task_runner_;
   FakeUdpSocket socket_;

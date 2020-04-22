@@ -28,12 +28,17 @@ struct Config {
   };
 
   /*****************************************
-   * Networking Settings
+   * Common Settings
    *****************************************/
 
   // Interfaces on which services should be published, and on which discovery
   // should listen for announced service instances.
   std::vector<NetworkInfo> network_info;
+
+  // Maximum allowed size in bytes for the rdata in an incoming record. All
+  // received records with rdata size exceeding this size will be dropped.
+  // The default value is taken from RFC 6763 section 6.2.
+  int maximum_valid_rdata_size = 1300;
 
   /*****************************************
    * Publisher Settings
