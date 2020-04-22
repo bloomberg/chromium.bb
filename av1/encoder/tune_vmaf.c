@@ -93,7 +93,6 @@ static AOM_INLINE void gaussian_blur(const int bit_depth,
   ConvolveParams conv_params = get_conv_params(0, 0, bit_depth);
   InterpFilterParams filter = { .filter_ptr = gauss_filter,
                                 .taps = 8,
-                                .subpel_shifts = 0,
                                 .interp_filter = EIGHTTAP_REGULAR };
 
   for (row = 0; row < num_rows; ++row) {

@@ -5542,9 +5542,11 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
     if (cpi->sf.rt_sf.overshoot_detection_cbr == FAST_DETECTION_MAXQ &&
         cpi->rc.high_source_sad) {
       if (av1_encodedframe_overshoot(cpi, &q)) {
-        av1_set_quantizer(cpi, q);
+        av1_set_quantizer(cm, cpi->oxcf.qm_minlevel, cpi->oxcf.qm_maxlevel, q);
         av1_set_speed_features_qindex_dependent(cpi, cpi->oxcf.speed);
-        if (cpi->oxcf.deltaq_mode != NO_DELTA_Q) av1_init_quantizer(cpi);
+        if (cpi->oxcf.deltaq_mode != NO_DELTA_Q)
+          av1_init_quantizer(&cpi->enc_quant_dequant_params, &cm->quant_params,
+                             cm->seq_params.bit_depth);
         av1_set_variance_partition_thresholds(cpi, q, 0);
       }
     }
