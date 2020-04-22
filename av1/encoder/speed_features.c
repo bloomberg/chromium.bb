@@ -126,8 +126,9 @@ static BLOCK_SIZE dim_to_size(int dim) {
 static void set_good_speed_feature_framesize_dependent(
     const AV1_COMP *const cpi, SPEED_FEATURES *const sf, int speed) {
   const AV1_COMMON *const cm = &cpi->common;
-  const int is_720p_or_larger = AOMMIN(cm->width, cm->height) >= 720;
   const int is_480p_or_larger = AOMMIN(cm->width, cm->height) >= 480;
+  const int is_720p_or_larger = AOMMIN(cm->width, cm->height) >= 720;
+  const int is_1080p_or_larger = AOMMIN(cm->width, cm->height) >= 1080;
   const int is_4k_or_larger = AOMMIN(cm->width, cm->height) >= 2160;
 
   if (is_480p_or_larger) {
@@ -234,6 +235,12 @@ static void set_good_speed_feature_framesize_dependent(
       sf->inter_sf.prune_warped_prob_thresh = 16;
     } else if (is_480p_or_larger) {
       sf->inter_sf.prune_warped_prob_thresh = 8;
+    }
+  }
+
+  if (speed >= 6) {
+    if (is_1080p_or_larger) {
+      sf->part_sf.default_min_partition_size = BLOCK_8X8;
     }
   }
 }
