@@ -23,6 +23,6 @@ IF "%GCLIENT_PY3%" == "1" (
   :: Explicitly run on Python 2
   call vpython "%~dp0gclient.py" %*
 ) ELSE (
-  :: Run on Python 2, allows default to be flipped.
-  call vpython "%~dp0gclient.py" %*
+  :: Run on Python 3, allows default to be flipped.
+  call vpython3 "%~dp0gclient.py" %*
 )

@@ -16,6 +16,6 @@ IF "%GCLIENT_PY3%" == "1" (
   :: Explicitly run on Python 2
   call vpython "%~dp0\roll_dep.py" %*
 ) ELSE (
-  :: Run on Python 2, allows default to be flipped.
-  call vpython "%~dp0\roll_dep.py" %*
+  :: Run on Python 3, allows default to be flipped.
+  call vpython3 "%~dp0\roll_dep.py" %*
 )
