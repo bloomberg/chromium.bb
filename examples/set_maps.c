@@ -126,7 +126,6 @@ int main(int argc, char **argv) {
   aom_codec_err_t res;
   AvxVideoInfo info;
   AvxVideoWriter *writer = NULL;
-  const AvxInterface *encoder = NULL;
   const int fps = 2;  // TODO(dkovalev) add command line argument
   const double bits_per_pixel_per_frame = 0.067;
 
@@ -135,12 +134,12 @@ int main(int argc, char **argv) {
 
   memset(&info, 0, sizeof(info));
 
-  encoder = get_aom_encoder_by_name(argv[1]);
+  aom_codec_iface_t *encoder = get_aom_encoder_by_short_name(argv[1]);
   if (encoder == NULL) {
     die("Unsupported codec.");
   }
   assert(encoder != NULL);
-  info.codec_fourcc = encoder->fourcc;
+  info.codec_fourcc = get_fourcc_by_aom_encoder(encoder);
   info.frame_width = (int)strtol(argv[2], NULL, 0);
   info.frame_height = (int)strtol(argv[3], NULL, 0);
   info.time_base.numerator = 1;
@@ -156,9 +155,9 @@ int main(int argc, char **argv) {
     die("Failed to allocate image.");
   }
 
-  printf("Using %s\n", aom_codec_iface_name(encoder->codec_interface()));
+  printf("Using %s\n", aom_codec_iface_name(encoder));
 
-  res = aom_codec_enc_config_default(encoder->codec_interface(), &cfg, 0);
+  res = aom_codec_enc_config_default(encoder, &cfg, 0);
   if (res) die_codec(&codec, "Failed to get default codec config.");
 
   cfg.g_w = info.frame_width;
@@ -175,7 +174,7 @@ int main(int argc, char **argv) {
   if (!(infile = fopen(argv[4], "rb")))
     die("Failed to open %s for reading.", argv[4]);
 
-  if (aom_codec_enc_init(&codec, encoder->codec_interface(), &cfg, 0))
+  if (aom_codec_enc_init(&codec, encoder, &cfg, 0))
     die_codec(&codec, "Failed to initialize encoder");
 
   if (aom_codec_control(&codec, AOME_SET_CPUUSED, 2))

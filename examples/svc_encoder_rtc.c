@@ -550,7 +550,6 @@ static int set_layer_pattern(int layering_mode, int superframe_cnt,
 
 int main(int argc, char **argv) {
   AvxVideoWriter *outfile[AOM_MAX_LAYERS] = { NULL };
-  aom_codec_ctx_t codec;
   aom_codec_enc_cfg_t cfg;
   int frame_cnt = 0;
   aom_image_t raw;
@@ -569,7 +568,6 @@ int main(int argc, char **argv) {
   aom_svc_layer_id_t layer_id;
   aom_svc_params_t svc_params;
   aom_svc_ref_frame_config_t ref_frame_config;
-  const AvxInterface *encoder = NULL;
   struct AvxInputContext input_ctx;
   struct RateControlMetrics rc;
   int64_t cx_time = 0;
@@ -605,7 +603,7 @@ int main(int argc, char **argv) {
         argv[0]);
   }
 
-  encoder = get_aom_encoder_by_name(argv[3]);
+  aom_codec_iface_t *encoder = get_aom_encoder_by_short_name(argv[3]);
 
   width = (unsigned int)strtoul(argv[4], NULL, 0);
   height = (unsigned int)strtoul(argv[5], NULL, 0);
@@ -636,7 +634,7 @@ int main(int argc, char **argv) {
   }
 
   // Populate encoder configuration.
-  res = aom_codec_enc_config_default(encoder->codec_interface(), &cfg, 0);
+  res = aom_codec_enc_config_default(encoder, &cfg, 0);
   if (res) {
     printf("Failed to get config: %s\n", aom_codec_err_to_string(res));
     return EXIT_FAILURE;
@@ -722,7 +720,7 @@ int main(int argc, char **argv) {
       i = sl * ts_number_layers + tl;
       char file_name[PATH_MAX];
       AvxVideoInfo info;
-      info.codec_fourcc = encoder->fourcc;
+      info.codec_fourcc = get_fourcc_by_aom_encoder(encoder);
       info.frame_width = cfg.g_w;
       info.frame_height = cfg.g_h;
       info.time_base.numerator = cfg.g_timebase.num;
@@ -736,7 +734,8 @@ int main(int argc, char **argv) {
   }
 
   // Initialize codec.
-  if (aom_codec_enc_init(&codec, encoder->codec_interface(), &cfg, 0))
+  aom_codec_ctx_t codec;
+  if (aom_codec_enc_init(&codec, encoder, &cfg, 0))
     die_codec(&codec, "Failed to initialize encoder");
 
   aom_codec_control(&codec, AOME_SET_CPUUSED, speed);

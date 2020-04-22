@@ -156,9 +156,7 @@ static void img_write_to_file(const aom_image_t *img, FILE *file,
 
 int main(int argc, char **argv) {
   FILE *outfile = NULL;
-  aom_codec_ctx_t codec;
   AvxVideoReader *reader = NULL;
-  const AvxInterface *decoder = NULL;
   const AvxVideoInfo *info = NULL;
   int num_references;
   aom_img_fmt_t ref_fmt = 0;
@@ -189,13 +187,15 @@ int main(int argc, char **argv) {
 
   info = aom_video_reader_get_info(reader);
 
+  aom_codec_iface_t *decoder;
   if (info->codec_fourcc == LST_FOURCC)
     decoder = get_aom_decoder_by_fourcc(AV1_FOURCC);
   else
     die("Unknown input codec.");
-  printf("Using %s\n", aom_codec_iface_name(decoder->codec_interface()));
+  printf("Using %s\n", aom_codec_iface_name(decoder));
 
-  if (aom_codec_dec_init(&codec, decoder->codec_interface(), NULL, 0))
+  aom_codec_ctx_t codec;
+  if (aom_codec_dec_init(&codec, decoder, NULL, 0))
     die_codec(&codec, "Failed to initialize decoder.");
 
   if (aom_codec_control(&codec, AV1D_SET_IS_ANNEXB, info->is_annexb)) {

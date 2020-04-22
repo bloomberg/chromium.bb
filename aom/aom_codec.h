@@ -9,6 +9,57 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+///////////////////////////////////////////////////////////////////////////////
+// Internal implementation details
+///////////////////////////////////////////////////////////////////////////////
+//
+// There are two levels of interfaces used to access the AOM codec: the
+// the aom_codec_iface and the aom_codec_ctx.
+//
+// 1. aom_codec_iface_t
+//    (Related files: aom/aom_codec.h, aom/src/aom_codec.c,
+//    aom/internal/aom_codec_internal.h, av1/av1_cx_iface.c,
+//    av1/av1_dx_iface.c)
+//
+// Used to initialize the codec context, which contains the configuration for
+// for modifying the encoder/decoder during run-time. See the other
+// documentation in this header file for more details. For the most part,
+// users will call helper functions, such as aom_codec_iface_name,
+// aom_codec_get_caps, etc., to interact with it.
+//
+// The main purpose of the aom_codec_iface_t is to provide a way to generate
+// a default codec config, find out what capabilities the implementation has,
+// and create an aom_codec_ctx_t (which is actually used to interact with the
+// codec).
+//
+// Note that the implementations for the AV1 algorithm are located in
+// av1/av1_cx_iface.c and av1/av1_dx_iface.c
+//
+//
+// 2. aom_codec_ctx_t
+//  (Related files: aom/aom_codec.h, av1/av1_cx_iface.c, av1/av1_dx_iface.c,
+//   aom/aomcx.h, aom/aomdx.h, aom/src/aom_encoder.c, aom/src/aom_decoder.c)
+//
+// The actual interface between user code and the codec. It stores the name
+// of the codec, a pointer back to the aom_codec_iface_t that initialized it,
+// initialization flags, a config for either encoder or the decoder, and a
+// pointer to internal data.
+//
+// The codec is configured / queried through calls to aom_codec_control,
+// which takes a control code (listed in aomcx.h and aomdx.h) and a parameter.
+// In the case of "getter" control codes, the parameter is modified to have
+// the requested value; in the case of "setter" control codes, the codec's
+// configuration is changed based on the parameter. Note that a aom_codec_err_t
+// is returned, which indicates if the operation was successful or not.
+//
+// Note that for the encoder, the aom_codec_alg_priv_t points to the
+// the aom_codec_alg_priv structure in av1/av1_cx_iface.c, and for the decoder,
+// the struct in av1/av1_dx_iface.c. Variables such as AV1_COMP cpi are stored
+// here and also used in the core algorithm.
+//
+// At the end, aom_codec_destroy should be called for each initialized
+// aom_codec_ctx_t.
+
 /*!\defgroup codec Common Algorithm Interface
  * This abstraction allows applications to easily support multiple video
  * formats with minimal code duplication. This section describes the interface

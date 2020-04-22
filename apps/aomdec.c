@@ -170,9 +170,9 @@ static void show_help(FILE *fout, int shorthelp) {
   fprintf(fout, "\nIncluded decoders:\n\n");
 
   for (int i = 0; i < get_aom_decoder_count(); ++i) {
-    const AvxInterface *const decoder = get_aom_decoder_by_index(i);
-    fprintf(fout, "    %-6s - %s\n", decoder->name,
-            aom_codec_iface_name(decoder->codec_interface()));
+    const aom_codec_iface_t *decoder = get_aom_decoder_by_index(i);
+    fprintf(fout, "    %-6s - %s\n", get_short_name_by_aom_decoder(decoder),
+            aom_codec_iface_name(decoder));
   }
 }
 
@@ -258,11 +258,10 @@ static int file_is_raw(struct AvxInputContext *input) {
 
     if (mem_get_le32(buf) < 256 * 1024 * 1024) {
       for (i = 0; i < get_aom_decoder_count(); ++i) {
-        const AvxInterface *const decoder = get_aom_decoder_by_index(i);
-        if (!aom_codec_peek_stream_info(decoder->codec_interface(), buf + 4,
-                                        32 - 4, &si)) {
+        const aom_codec_iface_t *decoder = get_aom_decoder_by_index(i);
+        if (!aom_codec_peek_stream_info(decoder, buf + 4, 32 - 4, &si)) {
           is_raw = 1;
-          input->fourcc = decoder->fourcc;
+          input->fourcc = get_fourcc_by_aom_decoder(decoder);
           input->width = si.w;
           input->height = si.h;
           input->framerate.numerator = 30;
@@ -440,8 +439,6 @@ static int main_loop(int argc, const char **argv_) {
   int stop_after = 0, postproc = 0, summary = 0, quiet = 1;
   int arg_skip = 0;
   int keep_going = 0;
-  const AvxInterface *interface = NULL;
-  const AvxInterface *fourcc_interface = NULL;
   uint64_t dx_time = 0;
   struct arg arg;
   char **argv, **argi, **argj;
@@ -494,6 +491,7 @@ static int main_loop(int argc, const char **argv_) {
   exec_name = argv_[0];
   argv = argv_dup(argc - 1, argv_ + 1);
 
+  aom_codec_iface_t *interface = NULL;
   for (argi = argj = argv; (*argj = *argi); argi += arg.argv_step) {
     memset(&arg, 0, sizeof(arg));
     arg.argv_step = 1;
@@ -502,7 +500,7 @@ static int main_loop(int argc, const char **argv_) {
       show_help(stdout, 0);
       exit(EXIT_SUCCESS);
     } else if (arg_match(&arg, &codecarg, argi)) {
-      interface = get_aom_decoder_by_name(arg.val);
+      interface = get_aom_decoder_by_short_name(arg.val);
       if (!interface)
         die("Error: Unrecognized argument (%s) to --codec\n", arg.val);
     } else if (arg_match(&arg, &looparg, argi)) {
@@ -664,21 +662,22 @@ static int main_loop(int argc, const char **argv_) {
 #endif
   }
 
-  fourcc_interface = get_aom_decoder_by_fourcc(aom_input_ctx.fourcc);
+  aom_codec_iface_t *fourcc_interface =
+      get_aom_decoder_by_fourcc(aom_input_ctx.fourcc);
 
   if (is_ivf && !fourcc_interface)
     fatal("Unsupported fourcc: %x\n", aom_input_ctx.fourcc);
 
   if (interface && fourcc_interface && interface != fourcc_interface)
-    warn("Header indicates codec: %s\n", fourcc_interface->name);
+    warn("Header indicates codec: %s\n",
+         aom_codec_iface_name(fourcc_interface));
   else
     interface = fourcc_interface;
 
   if (!interface) interface = get_aom_decoder_by_index(0);
 
   dec_flags = (postproc ? AOM_CODEC_USE_POSTPROC : 0);
-  if (aom_codec_dec_init(&decoder, interface->codec_interface(), &cfg,
-                         dec_flags)) {
+  if (aom_codec_dec_init(&decoder, interface, &cfg, dec_flags)) {
     fprintf(stderr, "Failed to initialize decoder: %s\n",
             aom_codec_error(&decoder));
     goto fail2;

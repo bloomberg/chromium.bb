@@ -39,7 +39,6 @@ class AV1Decoder {
 
   AvxVideoReader *reader;
   const AvxVideoInfo *info;
-  const AvxInterface *decoder;
 
   insp_frame_data frame_data;
 
@@ -92,8 +91,8 @@ bool AV1Decoder::open(const wxString &path) {
     fprintf(stderr, "Unknown input codec.");
     return false;
   }
-  printf("Using %s\n", aom_codec_iface_name(decoder->codec_interface()));
-  if (aom_codec_dec_init(&codec, decoder->codec_interface(), NULL, 0)) {
+  printf("Using %s\n", aom_codec_iface_name(decoder));
+  if (aom_codec_dec_init(&codec, decoder, NULL, 0)) {
     fprintf(stderr, "Failed to initialize decoder.");
     return false;
   }
