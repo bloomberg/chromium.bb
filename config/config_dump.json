@@ -689,23 +689,6 @@
                 "{\n    \"max_retries\": 5,\n    \"retry\": false,\n    \"test_suite\": null,\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 5400,\n    \"use_ctest\": true,\n    \"warn_only\": false\n}"
             ]
         },
-        "qt_android_pfq": {
-            "_template": "qt_android_pfq",
-            "android_import_branch": "git_qt-arc-dev",
-            "android_package": "android-container-qt",
-            "android_rev": "latest_release",
-            "build_type": "android",
-            "description": "Preflight Android Uprev & Build (internal)",
-            "display_label": "qt_android_pfq",
-            "internal": true,
-            "luci_builder": "PFQ",
-            "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-            "manifest_version": true,
-            "overlays": "both",
-            "sync_chrome": true,
-            "uprev": false,
-            "vm_tests": []
-        },
         "release": {
             "_template": "release",
             "archive_build_debug": true,
@@ -23317,26 +23300,6 @@
             "kevin-pi-android-pfq-tryjob",
             "reef-pi-android-pfq-tryjob"
         ],
-        "uprev": true
-    },
-    "master-qt-android-pfq": {
-        "_template": "qt_android_pfq",
-        "boards": [],
-        "master": true,
-        "push_overlays": "both",
-        "schedule": "with 150m interval",
-        "slave_configs": []
-    },
-    "master-qt-android-pfq-tryjob": {
-        "_template": "qt_android_pfq",
-        "boards": [],
-        "debug": true,
-        "debug_cidb": true,
-        "display_label": "tryjob",
-        "luci_builder": "Try",
-        "master": true,
-        "push_overlays": "both",
-        "slave_configs": [],
         "uprev": true
     },
     "master-release": {

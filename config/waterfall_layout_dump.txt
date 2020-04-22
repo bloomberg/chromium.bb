@@ -228,9 +228,6 @@
     kevin-pi-android-pfq
     reef-pi-android-pfq
 
-== qt_android_pfq ==
-  master-qt-android-pfq
-
 == release ==
   master-lakitu-release
   master-release
@@ -1425,7 +1422,6 @@
     grunt-pi-android-pfq-tryjob
     kevin-pi-android-pfq-tryjob
     reef-pi-android-pfq-tryjob
-  master-qt-android-pfq-tryjob
   master-release-tryjob
     amd64-generic-cheets-release-tryjob
     arkham-release-tryjob
