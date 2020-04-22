@@ -1416,8 +1416,9 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   _vmrvc_no_hwtest_boards = frozenset([])
   _vmrvc_no_hwtest_experimental_boards = frozenset([])
   _vmrvc_hwtest_boards = frozenset([
-      'eve-arc-r',
       'hatch-arc-r',
+      'kukui-arc-r',
+      'rammus-arc-r',
   ])
   _vmrvc_hwtest_experimental_boards = frozenset([])
   _vmrvc_vmtest_boards = frozenset([])

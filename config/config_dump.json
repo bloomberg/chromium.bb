@@ -10327,45 +10327,6 @@
             "chrome_internal"
         ]
     },
-    "eve-arc-r-vmrvc-android-pfq": {
-        "_template": "vmrvc_android_pfq",
-        "boards": [
-            "eve-arc-r"
-        ],
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"enable_skylab\": true,\n    \"file_bugs\": true,\n    \"max_retries\": 5,\n    \"minimum_duts\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"quota\",\n    \"priority\": \"Build\",\n    \"quota_account\": \"pfq\",\n    \"retry\": true,\n    \"suite\": \"sanity\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"enable_skylab\": true,\n    \"file_bugs\": true,\n    \"max_retries\": 5,\n    \"minimum_duts\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"quota\",\n    \"priority\": \"PFQ\",\n    \"quota_account\": \"pfq\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 3,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"enable_skylab\": true,\n    \"file_bugs\": true,\n    \"max_retries\": 5,\n    \"minimum_duts\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"quota\",\n    \"priority\": \"PFQ\",\n    \"quota_account\": \"pfq\",\n    \"retry\": true,\n    \"suite\": \"bvt-tast-android-pfq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
-        ],
-        "hw_tests_override": [
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"enable_skylab\": true,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"quota_account\": \"pfq\",\n    \"retry\": true,\n    \"suite\": \"sanity\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"enable_skylab\": true,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"quota_account\": \"pfq\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 3,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"enable_skylab\": true,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"quota_account\": \"pfq\",\n    \"retry\": true,\n    \"suite\": \"bvt-tast-android-pfq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
-        ],
-        "manifest": "official.xml",
-        "useflags": [
-            "chrome_internal"
-        ]
-    },
-    "eve-arc-r-vmrvc-android-pfq-tryjob": {
-        "_template": "vmrvc_android_pfq",
-        "boards": [
-            "eve-arc-r"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"enable_skylab\": true,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"quota_account\": \"pfq\",\n    \"retry\": true,\n    \"suite\": \"sanity\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"enable_skylab\": true,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"quota_account\": \"pfq\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 3,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"enable_skylab\": true,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"quota_account\": \"pfq\",\n    \"retry\": true,\n    \"suite\": \"bvt-tast-android-pfq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
-        ],
-        "luci_builder": "Try",
-        "manifest": "official.xml",
-        "uprev": true,
-        "useflags": [
-            "chrome_internal"
-        ]
-    },
     "eve-arcvm-mesa-virgl-next-full": {
         "_template": "full",
         "boards": [
@@ -20077,6 +20038,45 @@
             "chrome_internal"
         ]
     },
+    "kukui-arc-r-vmrvc-android-pfq": {
+        "_template": "vmrvc_android_pfq",
+        "boards": [
+            "kukui-arc-r"
+        ],
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"enable_skylab\": true,\n    \"file_bugs\": true,\n    \"max_retries\": 5,\n    \"minimum_duts\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"quota\",\n    \"priority\": \"Build\",\n    \"quota_account\": \"pfq\",\n    \"retry\": true,\n    \"suite\": \"sanity\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"enable_skylab\": true,\n    \"file_bugs\": true,\n    \"max_retries\": 5,\n    \"minimum_duts\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"quota\",\n    \"priority\": \"PFQ\",\n    \"quota_account\": \"pfq\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 3,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"enable_skylab\": true,\n    \"file_bugs\": true,\n    \"max_retries\": 5,\n    \"minimum_duts\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"quota\",\n    \"priority\": \"PFQ\",\n    \"quota_account\": \"pfq\",\n    \"retry\": true,\n    \"suite\": \"bvt-tast-android-pfq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
+        ],
+        "hw_tests_override": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"enable_skylab\": true,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"quota_account\": \"pfq\",\n    \"retry\": true,\n    \"suite\": \"sanity\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"enable_skylab\": true,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"quota_account\": \"pfq\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 3,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"enable_skylab\": true,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"quota_account\": \"pfq\",\n    \"retry\": true,\n    \"suite\": \"bvt-tast-android-pfq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
+        ],
+        "manifest": "official.xml",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "kukui-arc-r-vmrvc-android-pfq-tryjob": {
+        "_template": "vmrvc_android_pfq",
+        "boards": [
+            "kukui-arc-r"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"enable_skylab\": true,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"quota_account\": \"pfq\",\n    \"retry\": true,\n    \"suite\": \"sanity\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"enable_skylab\": true,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"quota_account\": \"pfq\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 3,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"enable_skylab\": true,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"quota_account\": \"pfq\",\n    \"retry\": true,\n    \"suite\": \"bvt-tast-android-pfq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
+        ],
+        "luci_builder": "Try",
+        "manifest": "official.xml",
+        "uprev": true,
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
     "kukui-factory-kukui-12587.B-factorybranch": {
         "_template": "factorybranch",
         "boards": [
@@ -23797,8 +23797,9 @@
         "push_overlays": "both",
         "schedule": "with 60m interval",
         "slave_configs": [
-            "eve-arc-r-vmrvc-android-pfq",
-            "hatch-arc-r-vmrvc-android-pfq"
+            "hatch-arc-r-vmrvc-android-pfq",
+            "kukui-arc-r-vmrvc-android-pfq",
+            "rammus-arc-r-vmrvc-android-pfq"
         ]
     },
     "master-vmrvc-android-pfq-tryjob": {
@@ -23811,8 +23812,9 @@
         "master": true,
         "push_overlays": "both",
         "slave_configs": [
-            "eve-arc-r-vmrvc-android-pfq-tryjob",
-            "hatch-arc-r-vmrvc-android-pfq-tryjob"
+            "hatch-arc-r-vmrvc-android-pfq-tryjob",
+            "kukui-arc-r-vmrvc-android-pfq-tryjob",
+            "rammus-arc-r-vmrvc-android-pfq-tryjob"
         ],
         "uprev": true
     },
@@ -27566,6 +27568,37 @@
         ],
         "hw_tests_override": null,
         "luci_builder": "Try"
+    },
+    "rammus-arc-r-vmrvc-android-pfq": {
+        "_template": "vmrvc_android_pfq",
+        "boards": [
+            "rammus-arc-r"
+        ],
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"enable_skylab\": true,\n    \"file_bugs\": true,\n    \"max_retries\": 5,\n    \"minimum_duts\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"quota\",\n    \"priority\": \"Build\",\n    \"quota_account\": \"pfq\",\n    \"retry\": true,\n    \"suite\": \"sanity\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"enable_skylab\": true,\n    \"file_bugs\": true,\n    \"max_retries\": 5,\n    \"minimum_duts\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"quota\",\n    \"priority\": \"PFQ\",\n    \"quota_account\": \"pfq\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 3,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"enable_skylab\": true,\n    \"file_bugs\": true,\n    \"max_retries\": 5,\n    \"minimum_duts\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"quota\",\n    \"priority\": \"PFQ\",\n    \"quota_account\": \"pfq\",\n    \"retry\": true,\n    \"suite\": \"bvt-tast-android-pfq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
+        ],
+        "hw_tests_override": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"enable_skylab\": true,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"quota_account\": \"pfq\",\n    \"retry\": true,\n    \"suite\": \"sanity\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"enable_skylab\": true,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"quota_account\": \"pfq\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 3,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"enable_skylab\": true,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"quota_account\": \"pfq\",\n    \"retry\": true,\n    \"suite\": \"bvt-tast-android-pfq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
+        ]
+    },
+    "rammus-arc-r-vmrvc-android-pfq-tryjob": {
+        "_template": "vmrvc_android_pfq",
+        "boards": [
+            "rammus-arc-r"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"enable_skylab\": true,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"quota_account\": \"pfq\",\n    \"retry\": true,\n    \"suite\": \"sanity\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"enable_skylab\": true,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"quota_account\": \"pfq\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 3,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"enable_skylab\": true,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"quota_account\": \"pfq\",\n    \"retry\": true,\n    \"suite\": \"bvt-tast-android-pfq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
+        ],
+        "luci_builder": "Try",
+        "uprev": true
     },
     "rammus-factory-rammus-11289.B-factorybranch": {
         "_template": "factorybranch",

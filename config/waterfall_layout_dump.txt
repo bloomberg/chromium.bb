@@ -439,8 +439,9 @@
 
 == vmrvc_android_pfq ==
   master-vmrvc-android-pfq
-    eve-arc-r-vmrvc-android-pfq
     hatch-arc-r-vmrvc-android-pfq
+    kukui-arc-r-vmrvc-android-pfq
+    rammus-arc-r-vmrvc-android-pfq
 
 == tryjob ==
   amd64-generic-asan-tryjob
@@ -816,7 +817,6 @@
   eve-arc-r-payloads-tryjob
   eve-arc-r-release-tryjob
   eve-arc-r-unittest-stress
-  eve-arc-r-vmrvc-android-pfq-tryjob
   eve-arcvm-mesa-virgl-next-full-tryjob
   eve-arcvm-mesa-virgl-next-llvm-next-toolchain-tryjob
   eve-arcvm-mesa-virgl-next-llvm-toolchain-tryjob
@@ -1308,6 +1308,7 @@
   kukui-arc-r-payloads-tryjob
   kukui-arc-r-release-tryjob
   kukui-arc-r-unittest-stress
+  kukui-arc-r-vmrvc-android-pfq-tryjob
   kukui-factory-kukui-12587.B-factorybranch-tryjob
   kukui-full-tryjob
   kukui-llvm-next-toolchain-tryjob
@@ -1601,8 +1602,9 @@
     eve-arcvm-mesa-virgl-next-vmpi-android-pfq-tryjob
     kukui-vmpi-android-pfq-tryjob
   master-vmrvc-android-pfq-tryjob
-    eve-arc-r-vmrvc-android-pfq-tryjob
     hatch-arc-r-vmrvc-android-pfq-tryjob
+    kukui-arc-r-vmrvc-android-pfq-tryjob
+    rammus-arc-r-vmrvc-android-pfq-tryjob
   mistral-factory-mistral-12361.B-factorybranch-tryjob
   mistral-full-tryjob
   mistral-llvm-next-toolchain-tryjob
@@ -1757,6 +1759,7 @@
   rammus-arc-r-llvm-toolchain-tryjob
   rammus-arc-r-release-tryjob
   rammus-arc-r-unittest-stress
+  rammus-arc-r-vmrvc-android-pfq-tryjob
   rammus-factory-rammus-11289.B-factorybranch-tryjob
   rammus-full-tryjob
   rammus-llvm-next-toolchain-tryjob
