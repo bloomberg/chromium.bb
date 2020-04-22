@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "cast/common/channel/proto/cast_channel.pb.h"
+
 namespace openscreen {
 namespace cast {
 

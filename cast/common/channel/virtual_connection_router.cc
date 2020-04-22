@@ -5,7 +5,6 @@
 #include "cast/common/channel/virtual_connection_router.h"
 
 #include "cast/common/channel/cast_message_handler.h"
-#include "cast/common/channel/cast_socket.h"
 #include "cast/common/channel/message_util.h"
 #include "cast/common/channel/proto/cast_channel.pb.h"
 #include "cast/common/channel/virtual_connection_manager.h"

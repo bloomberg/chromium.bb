@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cast/common/channel/cast_socket.h"
+#include "cast/common/public/cast_socket.h"
 
 #include "cast/common/channel/message_framer.h"
+#include "cast/common/channel/proto/cast_channel.pb.h"
 #include "util/logging.h"
 
 namespace openscreen {

@@ -10,8 +10,8 @@
 #include <memory>
 #include <string>
 
-#include "cast/common/channel/cast_socket.h"
 #include "cast/common/channel/proto/cast_channel.pb.h"
+#include "cast/common/public/cast_socket.h"
 
 namespace openscreen {
 namespace cast {

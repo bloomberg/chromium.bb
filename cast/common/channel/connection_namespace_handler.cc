@@ -7,12 +7,12 @@
 #include <type_traits>
 
 #include "absl/types/optional.h"
-#include "cast/common/channel/cast_socket.h"
 #include "cast/common/channel/message_util.h"
 #include "cast/common/channel/proto/cast_channel.pb.h"
 #include "cast/common/channel/virtual_connection.h"
 #include "cast/common/channel/virtual_connection_manager.h"
 #include "cast/common/channel/virtual_connection_router.h"
+#include "cast/common/public/cast_socket.h"
 #include "util/json/json_serialization.h"
 #include "util/json/json_value.h"
 #include "util/logging.h"

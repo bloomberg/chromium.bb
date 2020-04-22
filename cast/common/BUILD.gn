@@ -34,7 +34,6 @@ source_set("certificate") {
 source_set("channel") {
   sources = [
     "channel/cast_socket.cc",
-    "channel/cast_socket.h",
     "channel/connection_namespace_handler.cc",
     "channel/connection_namespace_handler.h",
     "channel/message_framer.cc",
@@ -48,6 +47,7 @@ source_set("channel") {
     "channel/virtual_connection_manager.h",
     "channel/virtual_connection_router.cc",
     "channel/virtual_connection_router.h",
+    "public/cast_socket.h",
   ]
 
   deps = [

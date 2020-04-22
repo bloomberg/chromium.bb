@@ -5,12 +5,12 @@
 #include <stdio.h>
 
 #include "cast/common/certificate/testing/test_helpers.h"
-#include "cast/common/channel/cast_socket.h"
 #include "cast/common/channel/proto/cast_channel.pb.h"
 #include "cast/common/channel/testing/fake_cast_socket.h"
 #include "cast/common/channel/testing/mock_socket_error_handler.h"
 #include "cast/common/channel/virtual_connection_manager.h"
 #include "cast/common/channel/virtual_connection_router.h"
+#include "cast/common/public/cast_socket.h"
 #include "cast/receiver/channel/device_auth_namespace_handler.h"
 #include "cast/receiver/channel/testing/device_auth_test_helpers.h"
 #include "cast/sender/channel/cast_auth_util.h"

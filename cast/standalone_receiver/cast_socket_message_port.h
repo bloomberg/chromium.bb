@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "cast/common/channel/cast_socket.h"
+#include "cast/common/public/cast_socket.h"
 #include "cast/streaming/receiver_session.h"
 
 namespace openscreen {

@@ -7,9 +7,9 @@
 #include <random>
 
 #include "absl/strings/str_cat.h"
-#include "cast/common/channel/cast_socket.h"
 #include "cast/common/channel/virtual_connection_manager.h"
 #include "cast/common/channel/virtual_connection_router.h"
+#include "cast/common/public/cast_socket.h"
 #include "cast/common/public/service_info.h"
 #include "util/json/json_serialization.h"
 #include "util/logging.h"

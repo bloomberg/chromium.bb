@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CAST_SENDER_CHANNEL_SENDER_SOCKET_FACTORY_H_
-#define CAST_SENDER_CHANNEL_SENDER_SOCKET_FACTORY_H_
+#ifndef CAST_SENDER_PUBLIC_SENDER_SOCKET_FACTORY_H_
+#define CAST_SENDER_PUBLIC_SENDER_SOCKET_FACTORY_H_
 
 #include <openssl/x509.h>
 
@@ -11,9 +11,7 @@
 #include <utility>
 #include <vector>
 
-#include "cast/common/channel/cast_socket.h"
-#include "cast/common/channel/proto/cast_channel.pb.h"
-#include "cast/sender/channel/cast_auth_util.h"
+#include "cast/common/public/cast_socket.h"
 #include "platform/api/task_runner.h"
 #include "platform/api/tls_connection_factory.h"
 #include "platform/base/ip_address.h"
@@ -21,6 +19,8 @@
 
 namespace openscreen {
 namespace cast {
+
+class AuthContext;
 
 class SenderSocketFactory final : public TlsConnectionFactory::Client,
                                   public CastSocket::Client {
@@ -82,7 +82,7 @@ class SenderSocketFactory final : public TlsConnectionFactory::Client,
     DeviceMediaPolicy media_policy;
     SerialDeletePtr<CastSocket> socket;
     CastSocket::Client* client;
-    AuthContext auth_context;
+    std::unique_ptr<AuthContext> auth_context;
     bssl::UniquePtr<X509> peer_cert;
   };
 
@@ -107,4 +107,4 @@ class SenderSocketFactory final : public TlsConnectionFactory::Client,
 }  // namespace cast
 }  // namespace openscreen
 
-#endif  // CAST_SENDER_CHANNEL_SENDER_SOCKET_FACTORY_H_
+#endif  // CAST_SENDER_PUBLIC_SENDER_SOCKET_FACTORY_H_

@@ -2,15 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CAST_COMMON_CHANNEL_CAST_SOCKET_H_
-#define CAST_COMMON_CHANNEL_CAST_SOCKET_H_
+#ifndef CAST_COMMON_PUBLIC_CAST_SOCKET_H_
+#define CAST_COMMON_PUBLIC_CAST_SOCKET_H_
 
 #include <array>
 #include <memory>
 #include <vector>
 
-#include "cast/common/channel/proto/cast_channel.pb.h"
 #include "platform/api/tls_connection.h"
+
+namespace cast {
+namespace channel {
+class CastMessage;
+}  // namespace channel
+}  // namespace cast
 
 namespace openscreen {
 namespace cast {
@@ -72,4 +77,4 @@ class CastSocket : public TlsConnection::Client {
 }  // namespace cast
 }  // namespace openscreen
 
-#endif  // CAST_COMMON_CHANNEL_CAST_SOCKET_H_
+#endif  // CAST_COMMON_PUBLIC_CAST_SOCKET_H_

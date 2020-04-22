@@ -9,7 +9,7 @@ source_set("channel") {
     "channel/message_util.cc",
     "channel/message_util.h",
     "channel/receiver_socket_factory.cc",
-    "channel/receiver_socket_factory.h",
+    "public/receiver_socket_factory.h",
   ]
 
   public_deps = [

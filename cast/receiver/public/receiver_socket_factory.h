@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CAST_RECEIVER_CHANNEL_RECEIVER_SOCKET_FACTORY_H_
-#define CAST_RECEIVER_CHANNEL_RECEIVER_SOCKET_FACTORY_H_
+#ifndef CAST_RECEIVER_PUBLIC_RECEIVER_SOCKET_FACTORY_H_
+#define CAST_RECEIVER_PUBLIC_RECEIVER_SOCKET_FACTORY_H_
 
 #include <vector>
 
-#include "cast/common/channel/cast_socket.h"
+#include "cast/common/public/cast_socket.h"
 #include "platform/api/tls_connection_factory.h"
 #include "platform/base/ip_address.h"
 
@@ -48,4 +48,4 @@ class ReceiverSocketFactory final : public TlsConnectionFactory::Client {
 }  // namespace cast
 }  // namespace openscreen
 
-#endif  // CAST_RECEIVER_CHANNEL_RECEIVER_SOCKET_FACTORY_H_
+#endif  // CAST_RECEIVER_PUBLIC_RECEIVER_SOCKET_FACTORY_H_

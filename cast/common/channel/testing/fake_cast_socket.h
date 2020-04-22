@@ -7,8 +7,8 @@
 
 #include <memory>
 
-#include "cast/common/channel/cast_socket.h"
 #include "cast/common/channel/proto/cast_channel.pb.h"
+#include "cast/common/public/cast_socket.h"
 #include "gmock/gmock.h"
 #include "platform/test/mock_tls_connection.h"
 
