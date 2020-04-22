@@ -24,11 +24,16 @@ static void AdjustedFontDescriptionForBoldItalic(FontDescription& fontDescriptio
 {
     if (fontName.EndsWith(" Italic")) {
         fontDescription.SetStyle(ItalicSlopeValue());
-        fontName = fontName.Substring(0, fontName.length() - 7);
+        if (fontName.Find("Prop Unicode") == WTF::kNotFound) {
+          fontName = fontName.Substring(0, fontName.length() - 7);
+        }
     }
+
     if (fontName.EndsWith(" Bold")) {
-        fontDescription.SetWeight(BoldWeightValue());
+      fontDescription.SetWeight(BoldWeightValue());
+      if (fontName.Find("Prop Unicode") == WTF::kNotFound) {
         fontName = fontName.Substring(0, fontName.length() - 5);
+      }
     }
 }
 
