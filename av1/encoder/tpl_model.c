@@ -788,10 +788,37 @@ static AOM_INLINE void init_mc_flow_dispenser(AV1_COMP *cpi, int frame_idx,
       av1_compute_rd_mult_based_on_qindex(cpi, pframe_qindex) / 6;
 }
 
-static AOM_INLINE void mc_flow_dispenser(AV1_COMP *cpi) {
-  AV1_COMMON *cm = &cpi->common;
+// This function stores the motion estimation dependencies of all the blocks in
+// a row
+static AOM_INLINE void mc_flow_dispenser_row(AV1_COMP *cpi, MACROBLOCK *x,
+                                             int mi_row, const BLOCK_SIZE bsize,
+                                             const TX_SIZE tx_size) {
+  AV1_COMMON *const cm = &cpi->common;
+  const CommonModeInfoParams *const mi_params = &cm->mi_params;
+  const int mi_width = mi_size_wide[bsize];
   TplParams *const tpl_data = &cpi->tpl_data;
   TplDepFrame *tpl_frame = &tpl_data->tpl_frame[tpl_data->frame_idx];
+  MACROBLOCKD *xd = &x->e_mbd;
+  for (int mi_col = 0; mi_col < mi_params->mi_cols; mi_col += mi_width) {
+    TplDepStats tpl_stats;
+
+    // Motion estimation column boundary
+    av1_set_mv_col_limits(mi_params, &x->mv_limits, mi_col, mi_width,
+                          cpi->oxcf.border_in_pixels);
+    xd->mb_to_left_edge = -GET_MV_SUBPEL(mi_col * MI_SIZE);
+    xd->mb_to_right_edge =
+        GET_MV_SUBPEL(mi_params->mi_cols - mi_width - mi_col);
+    mode_estimation(cpi, x, mi_row, mi_col, bsize, tx_size, &tpl_stats);
+
+    // Motion flow dependency dispenser.
+    tpl_model_store(tpl_frame->tpl_stats_ptr, mi_row, mi_col, bsize,
+                    tpl_frame->stride, &tpl_stats,
+                    tpl_data->tpl_stats_block_mis_log2);
+  }
+}
+
+static AOM_INLINE void mc_flow_dispenser(AV1_COMP *cpi) {
+  AV1_COMMON *cm = &cpi->common;
   const CommonModeInfoParams *const mi_params = &cm->mi_params;
   ThreadData *td = &cpi->td;
   MACROBLOCK *x = &td->mb;
@@ -799,7 +826,6 @@ static AOM_INLINE void mc_flow_dispenser(AV1_COMP *cpi) {
   const BLOCK_SIZE bsize = convert_length_to_bsize(MC_FLOW_BSIZE_1D);
   const TX_SIZE tx_size = max_txsize_lookup[bsize];
   const int mi_height = mi_size_high[bsize];
-  const int mi_width = mi_size_wide[bsize];
   for (int mi_row = 0; mi_row < mi_params->mi_rows; mi_row += mi_height) {
     // Motion estimation row boundary
     av1_set_mv_row_limits(mi_params, &x->mv_limits, mi_row, mi_height,
@@ -807,22 +833,7 @@ static AOM_INLINE void mc_flow_dispenser(AV1_COMP *cpi) {
     xd->mb_to_top_edge = -GET_MV_SUBPEL(mi_row * MI_SIZE);
     xd->mb_to_bottom_edge =
         GET_MV_SUBPEL((mi_params->mi_rows - mi_height - mi_row) * MI_SIZE);
-    for (int mi_col = 0; mi_col < mi_params->mi_cols; mi_col += mi_width) {
-      TplDepStats tpl_stats;
-
-      // Motion estimation column boundary
-      av1_set_mv_col_limits(mi_params, &x->mv_limits, mi_col, mi_width,
-                            cpi->oxcf.border_in_pixels);
-      xd->mb_to_left_edge = -GET_MV_SUBPEL(mi_col * MI_SIZE);
-      xd->mb_to_right_edge =
-          GET_MV_SUBPEL(mi_params->mi_cols - mi_width - mi_col);
-      mode_estimation(cpi, x, mi_row, mi_col, bsize, tx_size, &tpl_stats);
-
-      // Motion flow dependency dispenser.
-      tpl_model_store(tpl_frame->tpl_stats_ptr, mi_row, mi_col, bsize,
-                      tpl_frame->stride, &tpl_stats,
-                      tpl_data->tpl_stats_block_mis_log2);
-    }
+    mc_flow_dispenser_row(cpi, x, mi_row, bsize, tx_size);
   }
 }
 
