@@ -818,9 +818,7 @@ static int adjust_boost_bits_for_target_level(const AV1_COMP *const cpi,
   return bits_assigned;
 }
 
-// Compile time switch on alternate algorithm to allocate bits in ARF groups
-// #define ALT_ARF_ALLOCATION
-#ifdef ALT_ARF_ALLOCATION
+// Allocate bits to each frame in a GF / ARF group
 double layer_fraction[MAX_ARF_LAYERS + 1] = { 1.0,  0.70, 0.55, 0.60,
                                               0.60, 1.0,  1.0 };
 static void allocate_gf_group_bits(GF_GROUP *gf_group, RATE_CONTROL *const rc,
@@ -858,7 +856,6 @@ static void allocate_gf_group_bits(GF_GROUP *gf_group, RATE_CONTROL *const rc,
   for (int idx = frame_index; idx < gf_group_size; ++idx) {
     if ((gf_group->update_type[idx] == ARF_UPDATE) ||
         (gf_group->update_type[idx] == INTNL_ARF_UPDATE)) {
-      // max_arf_layer = AOMMAX(max_arf_layer, gf_group->layer_depth[idx]);
       layer_frames[gf_group->layer_depth[idx]]++;
     }
   }
@@ -895,85 +892,6 @@ static void allocate_gf_group_bits(GF_GROUP *gf_group, RATE_CONTROL *const rc,
   // simplify logics in reference frame management.
   gf_group->bit_allocation[gf_group_size] = 0;
 }
-#else
-static void allocate_gf_group_bits(GF_GROUP *gf_group, RATE_CONTROL *const rc,
-                                   int64_t gf_group_bits, int gf_arf_bits,
-                                   int key_frame, int use_arf) {
-  int64_t total_group_bits = gf_group_bits;
-
-  // For key frames the frame target rate is already set and it
-  // is also the golden frame.
-  // === [frame_index == 0] ===
-  int frame_index = 0;
-  if (!key_frame) {
-    if (rc->source_alt_ref_active)
-      gf_group->bit_allocation[frame_index] = 0;
-    else
-      gf_group->bit_allocation[frame_index] = gf_arf_bits;
-  }
-
-  // Deduct the boost bits for arf (or gf if it is not a key frame)
-  // from the group total.
-  if (use_arf || !key_frame) total_group_bits -= gf_arf_bits;
-
-  frame_index++;
-
-  // Store the bits to spend on the ARF if there is one.
-  // === [frame_index == 1] ===
-  if (use_arf) {
-    gf_group->bit_allocation[frame_index] = gf_arf_bits;
-    ++frame_index;
-  }
-
-  const int gf_group_size = gf_group->size;
-  int arf_depth_bits[MAX_ARF_LAYERS + 1] = { 0 };
-  int arf_depth_count[MAX_ARF_LAYERS + 1] = { 0 };
-  int arf_depth_boost[MAX_ARF_LAYERS + 1] = { 0 };
-  int total_arfs = 0;
-  int total_overlays = rc->source_alt_ref_active;
-
-  for (int idx = 0; idx < gf_group_size; ++idx) {
-    if (gf_group->update_type[idx] == ARF_UPDATE ||
-        gf_group->update_type[idx] == INTNL_ARF_UPDATE ||
-        gf_group->update_type[idx] == LF_UPDATE) {
-      arf_depth_boost[gf_group->layer_depth[idx]] += gf_group->arf_boost[idx];
-      ++arf_depth_count[gf_group->layer_depth[idx]];
-    }
-  }
-
-  for (int idx = 2; idx <= MAX_ARF_LAYERS; ++idx) {
-    arf_depth_bits[idx] =
-        calculate_boost_bits(rc->baseline_gf_interval - total_arfs -
-                                 total_overlays - arf_depth_count[idx],
-                             arf_depth_boost[idx], total_group_bits);
-    total_group_bits -= arf_depth_bits[idx];
-    total_arfs += arf_depth_count[idx];
-  }
-
-  for (int idx = frame_index; idx < gf_group_size; ++idx) {
-    switch (gf_group->update_type[idx]) {
-      case ARF_UPDATE:
-      case INTNL_ARF_UPDATE:
-      case LF_UPDATE:
-        gf_group->bit_allocation[idx] =
-            (int)(((int64_t)arf_depth_bits[gf_group->layer_depth[idx]] *
-                   gf_group->arf_boost[idx]) /
-                  arf_depth_boost[gf_group->layer_depth[idx]]);
-        break;
-      case INTNL_OVERLAY_UPDATE:
-      case OVERLAY_UPDATE:
-      default: gf_group->bit_allocation[idx] = 0; break;
-    }
-  }
-
-  // Set the frame following the current GOP to 0 bit allocation. For ARF
-  // groups, this next frame will be overlay frame, which is the first frame
-  // in the next GOP. For GF group, next GOP will overwrite the rate allocation.
-  // Setting this frame to use 0 bit (of out the current GOP budget) will
-  // simplify logics in reference frame management.
-  gf_group->bit_allocation[gf_group_size] = 0;
-}
-#endif
 
 // Returns true if KF group and GF group both are almost completely static.
 static INLINE int is_almost_static(double gf_zero_motion, int kf_zero_motion) {
