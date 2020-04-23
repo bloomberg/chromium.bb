@@ -634,7 +634,8 @@ class InputApi(object):
   def AffectedFiles(self, include_deletes=True, file_filter=None):
     """Same as input_api.change.AffectedFiles() except only lists files
     (and optionally directories) in the same directory as the current presubmit
-    script, or subdirectories thereof.
+    script, or subdirectories thereof. Note that files are listed using the OS
+    path separator, so backslashes are used as separators on Windows.
     """
     dir_with_slash = normpath('%s/' % self.PresubmitLocalPath())
     if len(dir_with_slash) == 1:
