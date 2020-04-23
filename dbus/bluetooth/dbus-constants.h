@@ -32,6 +32,7 @@ constexpr char kLEConnectionParameterMaximumConnectionInterval[] =
     "MaximumConnectionInterval";
 }  // namespace bluetooth_plugin_device
 
+// https://chromium.googlesource.com/chromiumos/third_party/bluez/+/refs/heads/master/doc/adapter-api.txt
 namespace bluetooth_adapter {
 // Bluetooth Adapter service identifiers.
 constexpr char kBluetoothAdapterServiceName[] = "org.bluez";
@@ -83,6 +84,7 @@ constexpr char kDiscoveryFilterParameterPathloss[] = "Pathloss";
 constexpr char kDiscoveryFilterParameterTransport[] = "Transport";
 }  // namespace bluetooth_adapter
 
+// https://chromium.googlesource.com/chromiumos/third_party/bluez/+/refs/heads/master/doc/agent-api.txt
 namespace bluetooth_agent_manager {
 // Bluetooth Agent Manager service indentifiers
 constexpr char kBluetoothAgentManagerServiceName[] = "org.bluez";
@@ -107,6 +109,7 @@ constexpr char kErrorAlreadyExists[] = "org.bluez.Error.AlreadyExists";
 constexpr char kErrorDoesNotExist[] = "org.bluez.Error.DoesNotExist";
 }  // namespace bluetooth_agent_manager
 
+// https://chromium.googlesource.com/chromiumos/third_party/bluez/+/refs/heads/master/doc/agent-api.txt
 namespace bluetooth_agent {
 // Bluetooth Agent service indentifiers
 constexpr char kBluetoothAgentInterface[] = "org.bluez.Agent1";
@@ -127,6 +130,7 @@ constexpr char kErrorRejected[] = "org.bluez.Error.Rejected";
 constexpr char kErrorCanceled[] = "org.bluez.Error.Canceled";
 }  // namespace bluetooth_agent
 
+// https://chromium.googlesource.com/chromiumos/third_party/bluez/+/refs/heads/master/doc/device-api.txt
 namespace bluetooth_device {
 // Bluetooth Device service identifiers.
 constexpr char kBluetoothDeviceServiceName[] = "org.bluez";
@@ -191,6 +195,7 @@ constexpr char kErrorConnectionAttemptFailed[] =
     "org.bluez.Error.ConnectionAttemptFailed";
 }  // namespace bluetooth_device
 
+// https://chromium.googlesource.com/chromiumos/third_party/bluez/+/refs/heads/master/doc/gatt-api.txt
 namespace bluetooth_gatt_characteristic {
 // Bluetooth GATT Characteristic service identifiers. The service name is used
 // only for characteristic objects hosted by bluetoothd.
@@ -260,6 +265,7 @@ constexpr char kErrorNotPermitted[] = "org.bluez.Error.NotPermitted";
 constexpr char kErrorNotSupported[] = "org.bluez.Error.NotSupported";
 }  // namespace bluetooth_gatt_characteristic
 
+// https://chromium.googlesource.com/chromiumos/third_party/bluez/+/refs/heads/master/doc/gatt-api.txt
 namespace bluetooth_gatt_descriptor {
 // Bluetooth GATT Descriptor service identifiers. The service name is used
 // only for descriptor objects hosted by bluetoothd.
@@ -299,6 +305,7 @@ constexpr char kErrorNotPermitted[] = "org.bluez.Error.NotPermitted";
 constexpr char kErrorNotSupported[] = "org.bluez.Error.NotSupported";
 }  // namespace bluetooth_gatt_descriptor
 
+// https://chromium.googlesource.com/chromiumos/third_party/bluez/+/refs/heads/master/doc/gatt-api.txt
 namespace bluetooth_gatt_manager {
 // Bluetooth GATT Manager service identifiers.
 constexpr char kBluetoothGattManagerServiceName[] = "org.bluez";
@@ -316,6 +323,7 @@ constexpr char kErrorAlreadyExists[] = "org.bluez.Error.AlreadyExists";
 constexpr char kErrorDoesNotExist[] = "org.bluez.Error.DoesNotExist";
 }  // namespace bluetooth_gatt_manager
 
+// https://chromium.googlesource.com/chromiumos/third_party/bluez/+/refs/heads/master/doc/gatt-api.txt
 namespace bluetooth_gatt_service {
 // Bluetooth GATT Service service identifiers. The service name is used
 // only for service objects hosted by bluetoothd.
@@ -340,6 +348,7 @@ constexpr char kErrorNotSupported[] = "org.bluez.Error.NotSupported";
 constexpr char kErrorNotPermitted[] = "org.bluez.Error.NotPermitted";
 }  // namespace bluetooth_gatt_service
 
+// https://chromium.googlesource.com/chromiumos/third_party/bluez/+/refs/heads/master/doc/input-api.txt
 namespace bluetooth_input {
 // Bluetooth Input service identifiers.
 constexpr char kBluetoothInputServiceName[] = "org.bluez";
@@ -355,6 +364,7 @@ constexpr char kDeviceReconnectModeProperty[] = "device";
 constexpr char kAnyReconnectModeProperty[] = "any";
 }  // namespace bluetooth_input
 
+// https://chromium.googlesource.com/chromiumos/third_party/bluez/+/refs/heads/master/doc/media-api.txt
 namespace bluetooth_media {
 // Bluetooth Media service identifiers
 constexpr char kBluetoothMediaServiceName[] = "org.bluez";
@@ -372,6 +382,7 @@ constexpr char kErrorInvalidArguments[] = "org.bluez.Error.InvalidArguments";
 constexpr char kErrorNotSupported[] = "org.bluez.Error.NotSupported";
 }  // namespace bluetooth_media
 
+// https://chromium.googlesource.com/chromiumos/third_party/bluez/+/refs/heads/master/doc/media-api.txt
 namespace bluetooth_media_endpoint {
 // Bluetooth Media Endpoint service identifiers
 constexpr char kBluetoothMediaEndpointServiceName[] = "org.bluez";
@@ -384,6 +395,7 @@ constexpr char kClearConfiguration[] = "ClearConfiguration";
 constexpr char kRelease[] = "Release";
 }  // namespace bluetooth_media_endpoint
 
+// https://chromium.googlesource.com/chromiumos/third_party/bluez/+/refs/heads/master/doc/media-api.txt
 namespace bluetooth_media_transport {
 // Bluetooth Media Transport service identifiers
 constexpr char kBluetoothMediaTransportServiceName[] = "org.bluez";
@@ -433,6 +445,7 @@ constexpr char kNewblueObjectManagerServiceName[] = "org.chromium.Newblue";
 constexpr char kNewblueObjectManagerServicePath[] = "/";
 }  // namespace newblue_object_manager
 
+// https://chromium.googlesource.com/chromiumos/third_party/bluez/+/refs/heads/master/doc/profile-api.txt
 namespace bluetooth_profile_manager {
 // Bluetooth Profile Manager service identifiers.
 constexpr char kBluetoothProfileManagerServiceName[] = "org.bluez";
@@ -467,6 +480,7 @@ constexpr char kErrorAlreadyExists[] = "org.bluez.Error.AlreadyExists";
 constexpr char kErrorDoesNotExist[] = "org.bluez.Error.DoesNotExist";
 }  // namespace bluetooth_profile_manager
 
+// https://chromium.googlesource.com/chromiumos/third_party/bluez/+/refs/heads/master/doc/profile-api.txt
 namespace bluetooth_profile {
 // Bluetooth Profile service identifiers.
 constexpr char kBluetoothProfileInterface[] = "org.bluez.Profile1";
@@ -486,6 +500,7 @@ constexpr char kErrorRejected[] = "org.bluez.Error.Rejected";
 constexpr char kErrorCanceled[] = "org.bluez.Error.Canceled";
 }  // namespace bluetooth_profile
 
+// https://chromium.googlesource.com/chromiumos/third_party/bluez/+/refs/heads/master/doc/advertising-api.txt
 namespace bluetooth_advertisement {
 // Bluetooth LE Advertisement service identifiers.
 constexpr char kBluetoothAdvertisementServiceName[] = "org.bluez";
@@ -508,6 +523,7 @@ constexpr char kTypeBroadcast[] = "broadcast";
 constexpr char kTypePeripheral[] = "peripheral";
 }  // namespace bluetooth_advertisement
 
+// https://chromium.googlesource.com/chromiumos/third_party/bluez/+/refs/heads/master/doc/advertising-api.txt
 namespace bluetooth_advertising_manager {
 // Bluetooth LE Advertising Manager service identifiers.
 constexpr char kBluetoothAdvertisingManagerServiceName[] = "org.bluez";
