@@ -2162,16 +2162,50 @@ static int define_kf_interval(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
 
   return frames_to_key;
 }
+static double get_kf_group_avg_error(TWO_PASS *twopass,
+                                     const FIRSTPASS_STATS *first_frame,
+                                     const FIRSTPASS_STATS *start_position,
+                                     int frames_to_key) {
+  FIRSTPASS_STATS cur_frame = *first_frame;
+  int num_frames, i;
+  double kf_group_avg_error = 0.0;
 
-static int64_t get_kf_group_bits(AV1_COMP *cpi, double kf_group_err) {
+  reset_fpf_position(twopass, start_position);
+
+  for (i = 0; i < frames_to_key; ++i) {
+    kf_group_avg_error += cur_frame.coded_error;
+    if (EOF == input_stats(twopass, &cur_frame)) break;
+  }
+  num_frames = i + 1;
+  num_frames = AOMMIN(num_frames, frames_to_key);
+  kf_group_avg_error = kf_group_avg_error / num_frames;
+
+  return (kf_group_avg_error);
+}
+
+static int64_t get_kf_group_bits(AV1_COMP *cpi, double kf_group_err,
+                                 double kf_group_avg_error) {
   RATE_CONTROL *const rc = &cpi->rc;
   TWO_PASS *const twopass = &cpi->twopass;
   int64_t kf_group_bits;
-  if (cpi->lap_enabled)
+  if (cpi->lap_enabled) {
     kf_group_bits = (int64_t)(rc->frames_to_key * rc->avg_frame_bandwidth);
-  else
+    if (cpi->oxcf.vbr_corpus_complexity_lap) {
+      const int num_mbs = (cpi->oxcf.resize_mode != RESIZE_NONE)
+                              ? cpi->initial_mbs
+                              : cpi->common.mi_params.MBs;
+
+      double vbr_corpus_complexity_lap =
+          cpi->oxcf.vbr_corpus_complexity_lap / 10.0;
+      /* Get the average corpus complexity of the frame */
+      vbr_corpus_complexity_lap = vbr_corpus_complexity_lap * num_mbs;
+      kf_group_bits = (int64_t)(
+          kf_group_bits * (kf_group_avg_error / vbr_corpus_complexity_lap));
+    }
+  } else {
     kf_group_bits = (int64_t)(twopass->bits_left *
                               (kf_group_err / twopass->modified_error_left));
+  }
 
   return kf_group_bits;
 }
@@ -2322,6 +2356,7 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   double kf_mod_err = 0.0;
   double kf_group_err = 0.0;
   double sr_accumulator = 0.0;
+  double kf_group_avg_error = 0.0;
   int frames_to_key;
   // Is this a forced key frame by interval.
   rc->this_key_frame_forced = rc->next_key_frame_forced;
@@ -2387,9 +2422,15 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
     // Maximum number of bits allocated to the key frame group.
     int64_t max_grp_bits;
 
+    if (cpi->oxcf.vbr_corpus_complexity_lap) {
+      kf_group_avg_error = get_kf_group_avg_error(
+          twopass, &first_frame, start_position, rc->frames_to_key);
+    }
+
     // Default allocation based on bits left and relative
     // complexity of the section.
-    twopass->kf_group_bits = get_kf_group_bits(cpi, kf_group_err);
+    twopass->kf_group_bits =
+        get_kf_group_bits(cpi, kf_group_err, kf_group_avg_error);
     // Clip based on maximum per frame rate defined by the user.
     max_grp_bits = (int64_t)max_bits * (int64_t)rc->frames_to_key;
     if (twopass->kf_group_bits > max_grp_bits)

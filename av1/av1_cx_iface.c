@@ -138,6 +138,7 @@ struct av1_extracfg {
   int use_inter_dct_only;
   int use_intra_default_tx_only;
   int quant_b_adapt;
+  unsigned int vbr_corpus_complexity_lap;
   AV1_LEVEL target_seq_level_idx[MAX_NUM_OPERATING_POINTS];
   // Bit mask to specify which tier each of the 32 possible operating points
   // conforms to.
@@ -258,6 +259,7 @@ static struct av1_extracfg default_extra_cfg = {
   0,  // use_inter_dct_only
   0,  // use_intra_default_tx_only
   0,  // quant_b_adapt
+  0,  // vbr_corpus_complexity_lap
   {
       SEQ_LEVEL_MAX, SEQ_LEVEL_MAX, SEQ_LEVEL_MAX, SEQ_LEVEL_MAX, SEQ_LEVEL_MAX,
       SEQ_LEVEL_MAX, SEQ_LEVEL_MAX, SEQ_LEVEL_MAX, SEQ_LEVEL_MAX, SEQ_LEVEL_MAX,
@@ -510,6 +512,16 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
   RANGE_CHECK(extra_cfg, matrix_coefficients, AOM_CICP_MC_IDENTITY,
               AOM_CICP_MC_ICTCP);
   RANGE_CHECK(extra_cfg, color_range, 0, 1);
+
+  /* Average corpus complexity is supported only in the case of single pass
+   * VBR*/
+  if (cfg->g_pass == AOM_RC_ONE_PASS && cfg->rc_end_usage == AOM_VBR)
+    RANGE_CHECK_HI(extra_cfg, vbr_corpus_complexity_lap,
+                   MAX_VBR_CORPUS_COMPLEXITY);
+  else if (extra_cfg->vbr_corpus_complexity_lap != 0)
+    ERROR(
+        "VBR corpus complexity is supported only in the case of single pass "
+        "VBR mode.");
 
 #if !CONFIG_TUNE_VMAF
   if (extra_cfg->tuning == AOM_TUNE_VMAF_WITH_PREPROCESSING ||
@@ -1010,6 +1022,8 @@ static aom_codec_err_t set_encoder_config(AV1EncoderConfig *oxcf,
 
   oxcf->use_fixed_qp_offsets =
       cfg->use_fixed_qp_offsets && (oxcf->rc_mode == AOM_Q);
+  oxcf->vbr_corpus_complexity_lap = extra_cfg->vbr_corpus_complexity_lap;
+
   for (int i = 0; i < FIXED_QP_OFFSET_COUNT; ++i) {
     if (oxcf->use_fixed_qp_offsets) {
       if (cfg->fixed_qp_offsets[i] >= 0) {  // user-provided qp offset
@@ -1652,6 +1666,13 @@ static aom_codec_err_t ctrl_set_quant_b_adapt(aom_codec_alg_priv_t *ctx,
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
+static aom_codec_err_t ctrl_set_vbr_corpus_complexity_lap(
+    aom_codec_alg_priv_t *ctx, va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.vbr_corpus_complexity_lap =
+      CAST(AV1E_SET_VBR_CORPUS_COMPLEXITY_LAP, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
 static aom_codec_err_t ctrl_set_coeff_cost_upd_freq(aom_codec_alg_priv_t *ctx,
                                                     va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
@@ -2758,6 +2779,7 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_SVC_LAYER_ID, ctrl_set_layer_id },
   { AV1E_SET_SVC_PARAMS, ctrl_set_svc_params },
   { AV1E_SET_SVC_REF_FRAME_CONFIG, ctrl_set_svc_ref_frame_config },
+  { AV1E_SET_VBR_CORPUS_COMPLEXITY_LAP, ctrl_set_vbr_corpus_complexity_lap },
   { AV1E_ENABLE_SB_MULTIPASS_UNIT_TEST, ctrl_enable_sb_multipass_unit_test },
 
   // Getters

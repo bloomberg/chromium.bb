@@ -814,6 +814,11 @@ static const arg_def_t fixed_qp_offsets =
             "specified (default), offsets are adaptively chosen by the "
             "encoder.");
 
+static const arg_def_t vbr_corpus_complexity_lap = ARG_DEF(
+    NULL, "vbr-corpus-complexity-lap", 1,
+    "Set average corpus complexity per mb for single pass VBR using lap. "
+    "(0..10000), default is 0");
+
 static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &auto_altref,
                                        &sharpness,
@@ -909,6 +914,7 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &target_seq_level_idx,
                                        &set_tier_mask,
                                        &set_min_cr,
+                                       &vbr_corpus_complexity_lap,
                                        &bitdeptharg,
                                        &inbitdeptharg,
                                        &input_chroma_subsampling_x,
@@ -1015,6 +1021,7 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_TARGET_SEQ_LEVEL_IDX,
                                         AV1E_SET_TIER_MASK,
                                         AV1E_SET_MIN_CR,
+                                        AV1E_SET_VBR_CORPUS_COMPLEXITY_LAP,
 #if CONFIG_TUNE_VMAF
                                         AV1E_SET_VMAF_MODEL_PATH,
 #endif

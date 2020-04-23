@@ -1209,6 +1209,10 @@ enum aome_enc_control_id {
   /*!\brief Control to select minimum height for the GF group pyramid structure
    * (valid values: 0 - 4) */
   AV1E_SET_GF_MIN_PYRAMID_HEIGHT = 156,
+
+  /*!\brief Control to set average complexity of the corpus in the case of
+   * single pass vbr based on LAP*/
+  AV1E_SET_VBR_CORPUS_COMPLEXITY_LAP = 157,
 };
 
 /*!\brief aom 1-D scaling mode
@@ -1701,6 +1705,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_SVC_REF_FRAME_CONFIG, aom_svc_ref_frame_config_t *)
 
 AOM_CTRL_USE_TYPE(AV1E_ENABLE_SB_MULTIPASS_UNIT_TEST, unsigned int)
 #define AOM_CTRL_AV1E_ENABLE_SB_MULTIPASS_UNIT_TEST
+
+AOM_CTRL_USE_TYPE(AV1E_SET_VBR_CORPUS_COMPLEXITY_LAP, unsigned int)
+#define AOM_CTRL_AV1E_SET_VBR_CORPUS_COMPLEXITY_LAP
 
 /*!\endcond */
 /*! @} - end defgroup aom_encoder */
