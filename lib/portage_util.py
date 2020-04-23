@@ -2212,12 +2212,15 @@ def HasPrebuilt(atom, board=None, extra_env=None):
   # Emerge args: binpkg only, no deps, pretend, quiet. --binpkg-respect-use is
   # disabled by default when you use -K, so turn it back on.
   cmd = [emerge, '-gKOpq', '--binpkg-respect-use=y', '=%s' % best.cpf]
+  logging.debug('Checking %s for %s.', board or 'sdk', best.cpf)
   result = cros_build_lib.run(
       cmd,
+      print_cmd=True,
       enter_chroot=True,
       extra_env=extra_env,
       check=False,
-      quiet=True)
+      debug_level=logging.DEBUG)
+
   return not result.returncode
 
 
