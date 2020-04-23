@@ -44,6 +44,7 @@ URL_PREFIX = 'https://storage.googleapis.com'
 URL_PATH = 'openscreen-sysroots'
 
 VALID_ARCHS = ('arm', 'arm64')
+VALID_PLATFORMS = ('stretch', 'sid')
 
 
 class Error(Exception):
@@ -135,6 +136,9 @@ def parse_args(args):
         'arch',
         help='Sysroot architecture: %s' % ', '.join(VALID_ARCHS))
     p.add_argument(
+        'platform',
+        help='Sysroot platform: %s' % ', '.join(VALID_PLATFORMS))
+    p.add_argument(
         '--print-hash', action="store_true",
         help='Print the hash of the sysroot for the specified arch.')
 
@@ -146,13 +150,11 @@ def main(args):
         print('Unsupported platform. Only Linux and Mac OS X are supported.')
         return 1
 
-    # Currently, we only support linking against the sid sysroot image.
-    PLATFORM = 'sid'
     parsed_args = parse_args(args)
     if parsed_args.print_hash:
-        print(GetSysrootDict(PLATFORM, parsed_args.arch)['Sha1Sum'])
+        print(GetSysrootDict(parsed_args.platform, parsed_args.arch)['Sha1Sum'])
 
-    InstallSysroot(PLATFORM, parsed_args.arch)
+    InstallSysroot(parsed_args.platform, parsed_args.arch)
     return 0
 
 

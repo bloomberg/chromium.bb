@@ -12,20 +12,28 @@ declare_args() {
   target_sysroot_dir = "../"
 
   use_sysroot = current_cpu == "arm" || current_cpu == "arm64"
+
+  sysroot_platform = "sid"
 }
 
 if (use_sysroot) {
+  assert(sysroot_platform == "sid" || sysroot_platform == "stretch")
   assert(current_cpu == "arm" || current_cpu == "arm64")
 
   # By default build against a sysroot image downloaded from Cloud Storage
   # during gclient runhooks.
-  sysroot = "${target_sysroot_dir}/debian_sid_${current_cpu}-sysroot"
+  sysroot =
+      "${target_sysroot_dir}/debian_${sysroot_platform}_${current_cpu}-sysroot"
   _script_arch = current_cpu
 
   if (exec_script("//build/scripts/dir_exists.py",
                   [ rebase_path(sysroot) ],
                   "string") != "True") {
     print("Missing or outdated sysroot for $current_cpu, downloading latest...")
-    exec_script("//build/scripts/install-sysroot.py", [ "$current_cpu" ])
+    exec_script("//build/scripts/install-sysroot.py",
+                [
+                  "$current_cpu",
+                  "$sysroot_platform",
+                ])
   }
 }

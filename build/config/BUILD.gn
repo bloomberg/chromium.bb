@@ -233,6 +233,7 @@ config("sysroot_runtime_libraries") {
                        [
                          "--print-hash",
                          "$current_cpu",
+                         "$sysroot_platform",
                        ],
                        "trim string",
                        [ "//build/scripts/sysroots.json" ])
