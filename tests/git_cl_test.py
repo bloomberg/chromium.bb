@@ -858,9 +858,6 @@ class TestGitCl(unittest.TestCase):
 
     final_description = final_description or post_amend_description.strip()
 
-    date_format = ('03/16/17 20:00:41'
-                   if sys.platform == 'win32' and sys.version_info.major == 2
-                   else 'Thu Mar 16 20:00:41 2017')
     trace_name = os.path.join('TRACES_DIR', '20170316T200041.000000')
 
     # Trace-related calls
@@ -877,7 +874,7 @@ class TestGitCl(unittest.TestCase):
                 '1000\n'
                 '0\n'
                 '%(trace_name)s' % {
-                    'date': date_format,
+                    'date': '2017-03-16T20:00:41.000000',
                     'short_hostname': short_hostname,
                     'change_id': change_id,
                     'description': final_description,
