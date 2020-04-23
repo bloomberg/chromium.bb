@@ -673,10 +673,6 @@ def AndroidTemplates(site_config):
       site_config.templates.default_hw_tests_override,
   )
 
-  site_config.templates.mst_android_pfq.apply(
-      site_config.templates.default_hw_tests_override,
-  )
-
   site_config.templates.pi_android_pfq.apply(
       site_config.templates.default_hw_tests_override,
   )

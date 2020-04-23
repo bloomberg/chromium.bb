@@ -941,7 +941,6 @@ CHROME_GARDENER_REVIEW_EMAIL = 'chrome-os-gardeners@google.com'
 # Useful config targets.
 CANARY_MASTER = 'master-release'
 PFQ_MASTER = 'master-chromium-pfq'
-MST_ANDROID_PFQ_MASTER = 'master-mst-android-pfq'
 VMMST_ANDROID_PFQ_MASTER = 'master-vmmst-android-pfq'
 PI_ANDROID_PFQ_MASTER = 'master-pi-android-pfq'
 VMPI_ANDROID_PFQ_MASTER = 'master-vmpi-android-pfq'

@@ -233,14 +233,14 @@ class MockPatch(mock.MagicMock):
 class MasterSlaveLKGMSyncTest(generic_stages_unittest.StageTestCase):
   """Unit tests for MasterSlaveLKGMSyncStage"""
 
-  BOT_ID = constants.MST_ANDROID_PFQ_MASTER
+  BOT_ID = constants.VMMST_ANDROID_PFQ_MASTER
 
   def setUp(self):
     """Setup"""
     self.source_repo = 'ssh://source/repo'
     self.manifest_version_url = 'fake manifest url'
     self.branch = 'master'
-    self.build_name = 'master-mst-android-pfq'
+    self.build_name = 'master-vmmst-android-pfq'
     self.incr_type = 'branch'
     self.next_version = 'next_version'
     self.sync_stage = None

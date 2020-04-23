@@ -215,9 +215,6 @@
   betty-asan
   betty-vmtest-informational
 
-== mst_android_pfq ==
-  master-mst-android-pfq
-
 == pi_android_pfq ==
   master-pi-android-pfq
     betty-pi-arc-pi-android-pfq
@@ -1409,7 +1406,6 @@
     chell-incremental-tryjob
     lakitu-incremental-tryjob
   master-lakitu-release-tryjob
-  master-mst-android-pfq-tryjob
   master-pi-android-pfq-tryjob
     betty-pi-arc-pi-android-pfq-tryjob
     caroline-pi-android-pfq-tryjob

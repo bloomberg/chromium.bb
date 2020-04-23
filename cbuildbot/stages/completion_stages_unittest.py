@@ -231,7 +231,7 @@ class CanaryCompletionStageTest(generic_stages_unittest.AbstractStageTestCase):
 class PublishUprevChangesStageTest(
     generic_stages_unittest.AbstractStageTestCase):
   """Tests for the PublishUprevChanges stage."""
-  BOT_ID = 'master-mst-android-pfq'
+  BOT_ID = 'master-vmmst-android-pfq'
 
   def setUp(self):
     self.PatchObject(completion_stages.PublishUprevChangesStage,
