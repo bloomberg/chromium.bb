@@ -1426,29 +1426,7 @@ static int64_t motion_mode_rd(
 
     // If we are searching newmv and the mv is the same as refmv, skip the
     // current mode
-    if (this_mode == NEW_NEWMV) {
-      const int_mv ref_mv_0 = av1_get_ref_mv(x, 0);
-      const int_mv ref_mv_1 = av1_get_ref_mv(x, 1);
-      if (mbmi->mv[0].as_int == ref_mv_0.as_int ||
-          mbmi->mv[1].as_int == ref_mv_1.as_int) {
-        continue;
-      }
-    } else if (this_mode == NEAREST_NEWMV || this_mode == NEAR_NEWMV) {
-      const int_mv ref_mv_1 = av1_get_ref_mv(x, 1);
-      if (mbmi->mv[1].as_int == ref_mv_1.as_int) {
-        continue;
-      }
-    } else if (this_mode == NEW_NEARESTMV || this_mode == NEW_NEARMV) {
-      const int_mv ref_mv_0 = av1_get_ref_mv(x, 0);
-      if (mbmi->mv[0].as_int == ref_mv_0.as_int) {
-        continue;
-      }
-    } else if (this_mode == NEWMV) {
-      const int_mv ref_mv_0 = av1_get_ref_mv(x, 0);
-      if (mbmi->mv[0].as_int == ref_mv_0.as_int) {
-        continue;
-      }
-    }
+    if (!av1_check_newmv_joint_nonzero(cm, x)) continue;
 
     x->skip_txfm = 0;
     rd_stats->dist = 0;
@@ -1608,7 +1586,7 @@ static int64_t motion_mode_rd(
   }
   mbmi->ref_frame[1] = ref_frame_1;
   *rate_mv = best_rate_mv;
-  if (best_rd == INT64_MAX) {
+  if (best_rd == INT64_MAX || !av1_check_newmv_joint_nonzero(cm, x)) {
     av1_invalid_rd_stats(rd_stats);
     restore_dst_buf(xd, *orig_dst, num_planes);
     return INT64_MAX;
@@ -2582,6 +2560,8 @@ static int64_t handle_inter_mode(
 #if CONFIG_COLLECT_COMPONENT_TIMING
     end_timing(cpi, motion_mode_rd_time);
 #endif
+    assert(
+        IMPLIES(!av1_check_newmv_joint_nonzero(cm, x), ret_val == INT64_MAX));
 
     mode_info[ref_mv_idx].mv.as_int = mbmi->mv[0].as_int;
     mode_info[ref_mv_idx].rate_mv = rate_mv;

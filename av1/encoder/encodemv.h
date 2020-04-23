@@ -69,6 +69,37 @@ static INLINE MV_CLASS_TYPE av1_get_mv_class(int z, int *offset) {
   return c;
 }
 
+static INLINE int av1_check_newmv_joint_nonzero(const AV1_COMMON *cm,
+                                                MACROBLOCK *const x) {
+  (void)cm;
+  MACROBLOCKD *xd = &x->e_mbd;
+  MB_MODE_INFO *mbmi = xd->mi[0];
+  const PREDICTION_MODE this_mode = mbmi->mode;
+  if (this_mode == NEW_NEWMV) {
+    const int_mv ref_mv_0 = av1_get_ref_mv(x, 0);
+    const int_mv ref_mv_1 = av1_get_ref_mv(x, 1);
+    if (mbmi->mv[0].as_int == ref_mv_0.as_int ||
+        mbmi->mv[1].as_int == ref_mv_1.as_int) {
+      return 0;
+    }
+  } else if (this_mode == NEAREST_NEWMV || this_mode == NEAR_NEWMV) {
+    const int_mv ref_mv_1 = av1_get_ref_mv(x, 1);
+    if (mbmi->mv[1].as_int == ref_mv_1.as_int) {
+      return 0;
+    }
+  } else if (this_mode == NEW_NEARESTMV || this_mode == NEW_NEARMV) {
+    const int_mv ref_mv_0 = av1_get_ref_mv(x, 0);
+    if (mbmi->mv[0].as_int == ref_mv_0.as_int) {
+      return 0;
+    }
+  } else if (this_mode == NEWMV) {
+    const int_mv ref_mv_0 = av1_get_ref_mv(x, 0);
+    if (mbmi->mv[0].as_int == ref_mv_0.as_int) {
+      return 0;
+    }
+  }
+  return 1;
+}
 #ifdef __cplusplus
 }  // extern "C"
 #endif
