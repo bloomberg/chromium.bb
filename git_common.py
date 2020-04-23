@@ -662,7 +662,8 @@ def rebase(parent, start, branch, abort=False):
   except subprocess2.CalledProcessError as cpe:
     if abort:
       run_with_retcode('rebase', '--abort')  # ignore failure
-    return RebaseRet(False, cpe.stdout, cpe.stderr)
+    return RebaseRet(False, cpe.stdout.decode('utf-8', 'replace'),
+                     cpe.stderr.decode('utf-8', 'replace'))
 
 
 def remove_merge_base(branch):
@@ -766,7 +767,7 @@ def run_stream_with_retcode(*cmd, **kwargs):
     retcode = proc.wait()
     if retcode != 0:
       raise subprocess2.CalledProcessError(retcode, cmd, os.getcwd(),
-                                           None, None)
+                                           b'', b'')
 
 
 def run_with_stderr(*cmd, **kwargs):
