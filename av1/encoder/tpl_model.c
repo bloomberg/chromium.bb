@@ -203,18 +203,18 @@ static int is_alike_mv(int_mv candidate_mv, center_mv_t *center_mvs,
   return 0;
 }
 
-static AOM_INLINE void mode_estimation(
-    AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd, struct scale_factors *sf,
-    int frame_idx, int mi_row, int mi_col, BLOCK_SIZE bsize, TX_SIZE tx_size,
-    const YV12_BUFFER_CONFIG *ref_frame[],
-    const YV12_BUFFER_CONFIG *src_ref_frame[], TplDepStats *tpl_stats) {
+static AOM_INLINE void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
+                                       int mi_col, BLOCK_SIZE bsize,
+                                       TX_SIZE tx_size,
+                                       TplDepStats *tpl_stats) {
   AV1_COMMON *cm = &cpi->common;
   const GF_GROUP *gf_group = &cpi->gf_group;
 
   (void)gf_group;
 
+  MACROBLOCKD *xd = &x->e_mbd;
   TplParams *tpl_data = &cpi->tpl_data;
-  TplDepFrame *tpl_frame = &tpl_data->tpl_frame[frame_idx];
+  TplDepFrame *tpl_frame = &tpl_data->tpl_frame[tpl_data->frame_idx];
   const uint8_t block_mis_log2 = tpl_data->tpl_stats_block_mis_log2;
 
   const int bw = 4 << mi_size_wide_log2[bsize];
@@ -315,12 +315,13 @@ static AOM_INLINE void mode_estimation(
   best_mv.as_int = INVALID_MV;
 
   for (rf_idx = 0; rf_idx < INTER_REFS_PER_FRAME; ++rf_idx) {
-    if (ref_frame[rf_idx] == NULL || src_ref_frame[rf_idx] == NULL) {
+    if (tpl_data->ref_frame[rf_idx] == NULL ||
+        tpl_data->src_ref_frame[rf_idx] == NULL) {
       tpl_stats->mv[rf_idx].as_int = INVALID_MV;
       continue;
     }
 
-    const YV12_BUFFER_CONFIG *ref_frame_ptr = src_ref_frame[rf_idx];
+    const YV12_BUFFER_CONFIG *ref_frame_ptr = tpl_data->src_ref_frame[rf_idx];
     int ref_mb_offset =
         mi_row * MI_SIZE * ref_frame_ptr->y_stride + mi_col * MI_SIZE;
     uint8_t *ref_mb = ref_frame_ptr->y_buffer + ref_mb_offset;
@@ -405,7 +406,7 @@ static AOM_INLINE void mode_estimation(
     InterPredParams inter_pred_params;
     av1_init_inter_params(&inter_pred_params, bw, bh, mi_row * MI_SIZE,
                           mi_col * MI_SIZE, 0, 0, xd->bd, is_cur_buf_hbd(xd), 0,
-                          sf, &ref_buf, kernel);
+                          &tpl_data->sf, &ref_buf, kernel);
     inter_pred_params.conv_params = get_conv_params(0, 0, xd->bd);
 
     av1_enc_build_one_inter_predictor(predictor, bw, &best_rfidx_mv.as_mv,
@@ -440,7 +441,7 @@ static AOM_INLINE void mode_estimation(
   }
 
   best_intra_cost = AOMMAX(best_intra_cost, 1);
-  if (frame_idx == 0) {
+  if (tpl_data->frame_idx == 0) {
     best_inter_cost = 0;
   } else {
     best_inter_cost = AOMMIN(best_intra_cost, best_inter_cost);
@@ -452,7 +453,7 @@ static AOM_INLINE void mode_estimation(
 
   // Final encode
   if (is_inter_mode(best_mode)) {
-    const YV12_BUFFER_CONFIG *ref_frame_ptr = ref_frame[best_rf_idx];
+    const YV12_BUFFER_CONFIG *ref_frame_ptr = tpl_data->ref_frame[best_rf_idx];
 
     InterPredParams inter_pred_params;
     struct buf_2d ref_buf = { NULL, ref_frame_ptr->y_buffer,
@@ -460,7 +461,7 @@ static AOM_INLINE void mode_estimation(
                               ref_frame_ptr->y_stride };
     av1_init_inter_params(&inter_pred_params, bw, bh, mi_row * MI_SIZE,
                           mi_col * MI_SIZE, 0, 0, xd->bd, is_cur_buf_hbd(xd), 0,
-                          sf, &ref_buf, kernel);
+                          &tpl_data->sf, &ref_buf, kernel);
     inter_pred_params.conv_params = get_conv_params(0, 0, xd->bd);
 
     av1_enc_build_one_inter_predictor(dst_buffer, dst_buffer_stride,
@@ -815,9 +816,7 @@ static AOM_INLINE void mc_flow_dispenser(AV1_COMP *cpi) {
       xd->mb_to_left_edge = -GET_MV_SUBPEL(mi_col * MI_SIZE);
       xd->mb_to_right_edge =
           GET_MV_SUBPEL(mi_params->mi_cols - mi_width - mi_col);
-      mode_estimation(cpi, x, xd, &tpl_data->sf, tpl_data->frame_idx, mi_row,
-                      mi_col, bsize, tx_size, tpl_data->ref_frame,
-                      tpl_data->src_ref_frame, &tpl_stats);
+      mode_estimation(cpi, x, mi_row, mi_col, bsize, tx_size, &tpl_stats);
 
       // Motion flow dependency dispenser.
       tpl_model_store(tpl_frame->tpl_stats_ptr, mi_row, mi_col, bsize,
