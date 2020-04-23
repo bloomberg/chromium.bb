@@ -3087,10 +3087,22 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf, BufferPool *const pool,
 
   av1_rc_init(&cpi->oxcf, oxcf->pass, &cpi->rc);
 
-  cpi->rc.enable_scenecut_detection = 1;
-  if (cpi->lap_enabled &&
-      (num_lap_buffers < (MAX_GF_LENGTH_LAP + SCENE_CUT_KEY_TEST_INTERVAL + 1)))
-    cpi->rc.enable_scenecut_detection = 0;
+  // For two pass and lag_in_frames > 33 in LAP.
+  cpi->rc.enable_scenecut_detection = ENABLE_SCENECUT_MODE_2;
+  if (cpi->lap_enabled) {
+    if ((num_lap_buffers <
+         (MAX_GF_LENGTH_LAP + SCENE_CUT_KEY_TEST_INTERVAL + 1)) &&
+        num_lap_buffers >= (MAX_GF_LENGTH_LAP + 3)) {
+      /*
+       * For lag in frames >= 19 and <33, enable scenecut
+       * with limited future frame prediction.
+       */
+      cpi->rc.enable_scenecut_detection = ENABLE_SCENECUT_MODE_1;
+    } else if (num_lap_buffers < (MAX_GF_LENGTH_LAP + 3)) {
+      // Disable scenecut when lag_in_frames < 19.
+      cpi->rc.enable_scenecut_detection = DISABLE_SCENECUT;
+    }
+  }
   init_frame_info(&cpi->frame_info, cm);
 
   cm->current_frame.frame_number = 0;

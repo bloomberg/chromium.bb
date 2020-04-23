@@ -143,6 +143,12 @@ enum {
   SS_CFG_TOTAL = 3
 } UENUM1BYTE(SS_CFG_OFFSET);
 
+enum {
+  DISABLE_SCENECUT,        // For LAP, lag_in_frames < 19
+  ENABLE_SCENECUT_MODE_1,  // For LAP, lag_in_frames >=19 and < 33
+  ENABLE_SCENECUT_MODE_2   // For twopass and LAP - lag_in_frames >=33
+} UENUM1BYTE(SCENECUT_MODE);
+
 // TODO(jingning): This needs to be cleaned up next.
 
 // TPL stats buffers are prepared for every frame in the GOP,
