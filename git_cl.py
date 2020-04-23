@@ -4926,7 +4926,7 @@ def CMDformat(parser, args):
       if not yapf_style:
         yapf_style = 'pep8'
 
-      cmd = [yapf_tool, '--style', yapf_style, f]
+      cmd = [yapf_tool, '--parallel', '--style', yapf_style, f]
 
       has_formattable_lines = False
       if not opts.full:
