@@ -598,6 +598,123 @@ static AOM_INLINE void chroma_check(AV1_COMP *cpi, MACROBLOCK *x,
   }
 }
 
+void fill_variance_tree_leaves(AV1_COMP *cpi, MACROBLOCK *x, VP128x128 *vt,
+                               VP16x16 *vt2, unsigned char *force_split,
+                               int avg_16x16[][4], int maxvar_16x16[][4],
+                               int minvar_16x16[][4],
+                               int *variance4x4downsample, int64_t *thresholds,
+                               uint8_t *src, int src_stride, const uint8_t *dst,
+                               int dst_stride) {
+  AV1_COMMON *cm = &cpi->common;
+  MACROBLOCKD *xd = &x->e_mbd;
+  const int is_key_frame = frame_is_intra_only(cm);
+  const int is_small_sb = (cm->seq_params.sb_size == BLOCK_64X64);
+  const int num_64x64_blocks = is_small_sb ? 1 : 4;
+  // TODO(kyslov) Bring back compute_minmax_variance with content type detection
+  const int compute_minmax_variance = 0;
+  const int segment_id = xd->mi[0]->segment_id;
+  int pixels_wide = 128, pixels_high = 128;
+
+  if (is_small_sb) {
+    pixels_wide = 64;
+    pixels_high = 64;
+  }
+  if (xd->mb_to_right_edge < 0) pixels_wide += (xd->mb_to_right_edge >> 3);
+  if (xd->mb_to_bottom_edge < 0) pixels_high += (xd->mb_to_bottom_edge >> 3);
+  for (int m = 0; m < num_64x64_blocks; m++) {
+    const int x64_idx = ((m & 1) << 6);
+    const int y64_idx = ((m >> 1) << 6);
+    const int m2 = m << 2;
+    force_split[m + 1] = 0;
+
+    for (int i = 0; i < 4; i++) {
+      const int x32_idx = x64_idx + ((i & 1) << 5);
+      const int y32_idx = y64_idx + ((i >> 1) << 5);
+      const int i2 = (m2 + i) << 2;
+      force_split[5 + m2 + i] = 0;
+      avg_16x16[m][i] = 0;
+      maxvar_16x16[m][i] = 0;
+      minvar_16x16[m][i] = INT_MAX;
+      for (int j = 0; j < 4; j++) {
+        const int x16_idx = x32_idx + ((j & 1) << 4);
+        const int y16_idx = y32_idx + ((j >> 1) << 4);
+        const int split_index = 21 + i2 + j;
+        VP16x16 *vst = &vt->split[m].split[i].split[j];
+        force_split[split_index] = 0;
+        variance4x4downsample[i2 + j] = 0;
+        if (!is_key_frame) {
+          fill_variance_8x8avg(src, src_stride, dst, dst_stride, x16_idx,
+                               y16_idx, vst,
+#if CONFIG_AV1_HIGHBITDEPTH
+                               xd->cur_buf->flags,
+#endif
+                               pixels_wide, pixels_high, is_key_frame);
+          fill_variance_tree(&vt->split[m].split[i].split[j], BLOCK_16X16);
+          get_variance(&vt->split[m].split[i].split[j].part_variances.none);
+          avg_16x16[m][i] +=
+              vt->split[m].split[i].split[j].part_variances.none.variance;
+          if (vt->split[m].split[i].split[j].part_variances.none.variance <
+              minvar_16x16[m][i])
+            minvar_16x16[m][i] =
+                vt->split[m].split[i].split[j].part_variances.none.variance;
+          if (vt->split[m].split[i].split[j].part_variances.none.variance >
+              maxvar_16x16[m][i])
+            maxvar_16x16[m][i] =
+                vt->split[m].split[i].split[j].part_variances.none.variance;
+          if (vt->split[m].split[i].split[j].part_variances.none.variance >
+              thresholds[3]) {
+            // 16X16 variance is above threshold for split, so force split to
+            // 8x8 for this 16x16 block (this also forces splits for upper
+            // levels).
+            force_split[split_index] = 1;
+            force_split[5 + m2 + i] = 1;
+            force_split[m + 1] = 1;
+            force_split[0] = 1;
+          } else if (!cyclic_refresh_segment_id_boosted(segment_id) &&
+                     compute_minmax_variance &&
+                     vt->split[m]
+                             .split[i]
+                             .split[j]
+                             .part_variances.none.variance > thresholds[2]) {
+            // We have some nominal amount of 16x16 variance (based on average),
+            // compute the minmax over the 8x8 sub-blocks, and if above
+            // threshold, force split to 8x8 block for this 16x16 block.
+            int minmax = compute_minmax_8x8(src, src_stride, dst, dst_stride,
+                                            x16_idx, y16_idx,
+#if CONFIG_AV1_HIGHBITDEPTH
+                                            xd->cur_buf->flags,
+#endif
+                                            pixels_wide, pixels_high);
+            int thresh_minmax = (int)cpi->vbp_info.threshold_minmax;
+            if (minmax > thresh_minmax) {
+              force_split[split_index] = 1;
+              force_split[5 + m2 + i] = 1;
+              force_split[m + 1] = 1;
+              force_split[0] = 1;
+            }
+          }
+        }
+        if (is_key_frame) {
+          force_split[split_index] = 0;
+          // Go down to 4x4 down-sampling for variance.
+          variance4x4downsample[i2 + j] = 1;
+          for (int k = 0; k < 4; k++) {
+            int x8_idx = x16_idx + ((k & 1) << 3);
+            int y8_idx = y16_idx + ((k >> 1) << 3);
+            VP8x8 *vst2 = is_key_frame ? &vst->split[k] : &vt2[i2 + j].split[k];
+            fill_variance_4x4avg(src, src_stride, dst, dst_stride, x8_idx,
+                                 y8_idx, vst2,
+#if CONFIG_AV1_HIGHBITDEPTH
+                                 xd->cur_buf->flags,
+#endif
+                                 pixels_wide, pixels_high, is_key_frame);
+          }
+        }
+      }
+    }
+  }
+}
+
 // This function chooses partitioning based on the variance between source and
 // reconstructed last, where variance is computed for down-sampled inputs.
 // TODO(kyslov): lot of things. Bring back noise estimation, brush up partition
@@ -629,10 +746,7 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
   const uint8_t *d;
   int sp;
   int dp;
-  // TODO(kyslov) Bring back compute_minmax_variance with content type detection
-  int compute_minmax_variance = 0;
-  int is_key_frame = frame_is_intra_only(cm);
-  int pixels_wide = 128, pixels_high = 128;
+  const int is_key_frame = frame_is_intra_only(cm);
   assert(cm->seq_params.sb_size == BLOCK_64X64 ||
          cm->seq_params.sb_size == BLOCK_128X128);
   const int is_small_sb = (cm->seq_params.sb_size == BLOCK_64X64);
@@ -655,10 +769,8 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
 
   const int low_res = (cm->width <= 352 && cm->height <= 288);
   int variance4x4downsample[64];
-  int segment_id;
   const int num_planes = av1_num_planes(cm);
-
-  segment_id = xd->mi[0]->segment_id;
+  const int segment_id = xd->mi[0]->segment_id;
 
   if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ && cm->seg.enabled &&
       cyclic_refresh_segment_id_boosted(segment_id) &&
@@ -670,16 +782,8 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
                        content_state);
   }
 
-  if (is_small_sb) {
-    pixels_wide = 64;
-    pixels_high = 64;
-  }
-
   // For non keyframes, disable 4x4 average for low resolution when speed = 8
   threshold_4x4avg = INT64_MAX;
-
-  if (xd->mb_to_right_edge < 0) pixels_wide += (xd->mb_to_right_edge >> 3);
-  if (xd->mb_to_bottom_edge < 0) pixels_high += (xd->mb_to_bottom_edge >> 3);
 
   s = x->plane[0].src.buf;
   sp = x->plane[0].src.stride;
@@ -765,100 +869,15 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
     CHECK_MEM_ERROR(cm, vt2, aom_malloc(sizeof(*vt2)));
   // Fill in the entire tree of 8x8 (or 4x4 under some conditions) variances
   // for splits.
-  for (m = 0; m < num_64x64_blocks; m++) {
-    const int x64_idx = ((m & 1) << 6);
-    const int y64_idx = ((m >> 1) << 6);
-    const int m2 = m << 2;
-    force_split[m + 1] = 0;
-    max_var_32x32[m] = 0;
-    min_var_32x32[m] = INT_MAX;
-    for (i = 0; i < 4; i++) {
-      const int x32_idx = x64_idx + ((i & 1) << 5);
-      const int y32_idx = y64_idx + ((i >> 1) << 5);
-      const int i2 = (m2 + i) << 2;
-      force_split[5 + m2 + i] = 0;
-      avg_16x16[m][i] = 0;
-      maxvar_16x16[m][i] = 0;
-      minvar_16x16[m][i] = INT_MAX;
-      for (j = 0; j < 4; j++) {
-        const int x16_idx = x32_idx + ((j & 1) << 4);
-        const int y16_idx = y32_idx + ((j >> 1) << 4);
-        const int split_index = 21 + i2 + j;
-        VP16x16 *vst = &vt->split[m].split[i].split[j];
-        force_split[split_index] = 0;
-        variance4x4downsample[i2 + j] = 0;
-        if (!is_key_frame) {
-          fill_variance_8x8avg(s, sp, d, dp, x16_idx, y16_idx, vst,
-#if CONFIG_AV1_HIGHBITDEPTH
-                               xd->cur_buf->flags,
-#endif
-                               pixels_wide, pixels_high, is_key_frame);
-          fill_variance_tree(&vt->split[m].split[i].split[j], BLOCK_16X16);
-          get_variance(&vt->split[m].split[i].split[j].part_variances.none);
-          avg_16x16[m][i] +=
-              vt->split[m].split[i].split[j].part_variances.none.variance;
-          if (vt->split[m].split[i].split[j].part_variances.none.variance <
-              minvar_16x16[m][i])
-            minvar_16x16[m][i] =
-                vt->split[m].split[i].split[j].part_variances.none.variance;
-          if (vt->split[m].split[i].split[j].part_variances.none.variance >
-              maxvar_16x16[m][i])
-            maxvar_16x16[m][i] =
-                vt->split[m].split[i].split[j].part_variances.none.variance;
-          if (vt->split[m].split[i].split[j].part_variances.none.variance >
-              thresholds[3]) {
-            // 16X16 variance is above threshold for split, so force split to
-            // 8x8 for this 16x16 block (this also forces splits for upper
-            // levels).
-            force_split[split_index] = 1;
-            force_split[5 + m2 + i] = 1;
-            force_split[m + 1] = 1;
-            force_split[0] = 1;
-          } else if (compute_minmax_variance &&
-                     vt->split[m]
-                             .split[i]
-                             .split[j]
-                             .part_variances.none.variance > thresholds[2] &&
-                     !cyclic_refresh_segment_id_boosted(segment_id)) {
-            // We have some nominal amount of 16x16 variance (based on average),
-            // compute the minmax over the 8x8 sub-blocks, and if above
-            // threshold, force split to 8x8 block for this 16x16 block.
-            int minmax = compute_minmax_8x8(s, sp, d, dp, x16_idx, y16_idx,
-#if CONFIG_AV1_HIGHBITDEPTH
-                                            xd->cur_buf->flags,
-#endif
-                                            pixels_wide, pixels_high);
-            int thresh_minmax = (int)cpi->vbp_info.threshold_minmax;
-            if (minmax > thresh_minmax) {
-              force_split[split_index] = 1;
-              force_split[5 + m2 + i] = 1;
-              force_split[m + 1] = 1;
-              force_split[0] = 1;
-            }
-          }
-        }
-        if (is_key_frame) {
-          force_split[split_index] = 0;
-          // Go down to 4x4 down-sampling for variance.
-          variance4x4downsample[i2 + j] = 1;
-          for (k = 0; k < 4; k++) {
-            int x8_idx = x16_idx + ((k & 1) << 3);
-            int y8_idx = y16_idx + ((k >> 1) << 3);
-            VP8x8 *vst2 = is_key_frame ? &vst->split[k] : &vt2[i2 + j].split[k];
-            fill_variance_4x4avg(s, sp, d, dp, x8_idx, y8_idx, vst2,
-#if CONFIG_AV1_HIGHBITDEPTH
-                                 xd->cur_buf->flags,
-#endif
-                                 pixels_wide, pixels_high, is_key_frame);
-          }
-        }
-      }
-    }
-  }
+  fill_variance_tree_leaves(cpi, x, vt, vt2, force_split, avg_16x16,
+                            maxvar_16x16, minvar_16x16, variance4x4downsample,
+                            thresholds, s, sp, d, dp);
 
   // Fill the rest of the variance tree by summing split partition values.
   for (m = 0; m < num_64x64_blocks; ++m) {
     avg_32x32 = 0;
+    max_var_32x32[m] = 0;
+    min_var_32x32[m] = INT_MAX;
     const int m2 = m << 2;
     for (i = 0; i < 4; i++) {
       const int i2 = (m2 + i) << 2;
