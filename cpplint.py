@@ -188,6 +188,7 @@ _ERROR_CATEGORIES = [
     'build/header_guard',
     'build/include',
     'build/include_alpha',
+    'build/include_directory',
     'build/include_order',
     'build/include_what_you_use',
     'build/namespaces',
@@ -424,8 +425,8 @@ _TYPES = re.compile(
     r')$')
 
 
-# These headers are excluded from [build/include] and [build/include_order]
-# checks:
+# These headers are excluded from [build/include], [build/include_directory],
+# and [build/include_order] checks:
 # - Anything not following google file name conventions (containing an
 #   uppercase character, such as Python.h or nsStringAPI.h, for example).
 # - Lua headers.
@@ -4412,7 +4413,7 @@ def CheckIncludeLine(filename, clean_lines, linenum, include_state, error):
   # naming convention but not the include convention.
   match = Match(r'#include\s*"([^/]+\.h)"', line)
   if match and not _THIRD_PARTY_HEADERS_PATTERN.match(match.group(1)):
-    error(filename, linenum, 'build/include', 4,
+    error(filename, linenum, 'build/include_directory', 4,
           'Include the directory when naming .h files')
 
   # we shouldn't include a file more than once. actually, there are a
