@@ -1286,18 +1286,6 @@
       ]
     },
     {
-      "name": "trogdor",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": true,
-          "board_group": "",
-          "arch": "UNKNOWN"
-        }
-      ]
-    },
-    {
       "name": "ultima",
       "configs": [
         {
@@ -4852,6 +4840,31 @@
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
           "board_id": 311,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "name": "trogdor",
+      "reference_board_name": "trogdor",
+      "arch": "UNKNOWN",
+      "builder": "RELEASE",
+      "experimental": true,
+      "models": [
+        {
+          "board_name": "trogdor",
+          "name": "lazor",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 418,
+          "is_active": true
+        },
+        {
+          "board_name": "trogdor",
+          "name": "trogdor",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 418,
           "is_active": true
         }
       ]
