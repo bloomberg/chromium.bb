@@ -11,8 +11,11 @@ const char kSystemProxyServicePath[] = "/org/chromium/SystemProxy";
 const char kSystemProxyServiceName[] = "org.chromium.SystemProxy";
 
 // Methods
+const char kSetAuthenticationDetailsMethod[] = "SetAuthenticationDetails";
+// TODO(acostinas, crbug.com/1076377) Remove deprecated
+// SetSystemTrafficCredentials call. Please use SetAuthenticationDetails.
 const char kSetSystemTrafficCredentialsMethod[] = "SetSystemTrafficCredentials";
 const char kShutDownMethod[] = "ShutDown";
-
+const char kWorkerActiveSignal[] = "WorkerActiveSignal";
 }  // namespace system_proxy
 #endif  // SYSTEM_API_DBUS_SYSTEM_PROXY_DBUS_CONSTANTS_H_
