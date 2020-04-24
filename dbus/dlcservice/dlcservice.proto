@@ -56,8 +56,7 @@ message DlcState {
   enum State {
     NOT_INSTALLED = 0;
     INSTALLING = 1;
-    MOUNTABLE = 2;
-    INSTALLED = 3;
+    INSTALLED = 2;
   }
   State state = 1;
 }
