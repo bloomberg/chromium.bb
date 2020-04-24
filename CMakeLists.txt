@@ -9,6 +9,18 @@
 # can obtain it at www.aomedia.org/license/patent.
 #
 cmake_minimum_required(VERSION 3.5)
+
+set(AOM_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
+set(AOM_CONFIG_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+if("${AOM_ROOT}" STREQUAL "${AOM_CONFIG_DIR}")
+  message(
+    FATAL_ERROR "Building from within the aom source tree is not supported.\n"
+                "Hint: Run these commands\n"
+                "$ rm -rf CMakeCache.txt CMakeFiles\n"
+                "$ mkdir -p ../aom_build\n" "$ cd ../aom_build\n"
+                "And re-run CMake from the aom_build directory.")
+endif()
+
 project(AOM C CXX)
 
 if(NOT EMSCRIPTEN)
@@ -18,18 +30,6 @@ if(NOT EMSCRIPTEN)
         CACHE STRING "Build type: Debug, Release, RelWithDebInfo or MinSizeRel"
               FORCE)
   endif()
-endif()
-
-set(AOM_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
-set(AOM_CONFIG_DIR "${CMAKE_CURRENT_BINARY_DIR}")
-
-if("${AOM_ROOT}" STREQUAL "${AOM_CONFIG_DIR}")
-  message(
-    FATAL_ERROR "Building from within the aom source tree is not supported.\n"
-                "Hint: Run these commands\n"
-                "$ rm -rf CMakeCache.txt CMakeFiles\n"
-                "$ mkdir -p ../aom_build\n" "$ cd ../aom_build\n"
-                "And re-run CMake from the aom_build directory.")
 endif()
 
 include("${AOM_ROOT}/build/cmake/aom_configure.cmake")
