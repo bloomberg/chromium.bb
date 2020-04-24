@@ -328,6 +328,9 @@ message KeyInfo {
   // with a random challenge.  The SignedPublicKeyAndChallenge specification is
   // here: https://developer.mozilla.org/en-US/docs/HTML/Element/keygen.
   optional bytes signed_public_key_and_challenge = 5;
+  // The identifier of the customer, as defined by the Google Admin SDK at
+  // https://developers.google.com/admin-sdk/directory/v1/guides/manage-customers
+  optional string customer_id = 6;
 }
 
 enum KeyProfile {
