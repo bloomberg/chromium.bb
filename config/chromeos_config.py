@@ -2592,12 +2592,6 @@ def ApplyCustomOverrides(site_config):
           'hw_tests_disabled_bug': 'https://crbug.com/998427',
       },
 
-      'betty-arc64-release': {
-          'hw_tests': [],
-          'hw_tests_override': [],
-          'hw_tests_disabled_bug': 'https://crbug.com/1000717',
-      },
-
       'betty-pi-arc-release': {
           'hw_tests': [],
           'hw_tests_override': [],

@@ -564,12 +564,6 @@
   betty-arc-r-payloads-tryjob
   betty-arc-r-release-tryjob
   betty-arc-r-unittest-stress
-  betty-arc64-full-tryjob
-  betty-arc64-llvm-next-toolchain-tryjob
-  betty-arc64-llvm-toolchain-tryjob
-  betty-arc64-payloads-tryjob
-  betty-arc64-release-tryjob
-  betty-arc64-unittest-stress
   betty-arcmaster-full-tryjob
   betty-arcmaster-llvm-next-toolchain-tryjob
   betty-arcmaster-llvm-toolchain-tryjob
