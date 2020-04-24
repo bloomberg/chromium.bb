@@ -25,13 +25,6 @@ extern "C" {
 // Block size used in temporal filtering.
 #define TF_BLOCK_SIZE BLOCK_32X32
 
-// Threshold for passing down searched motion vector from previous frame to the
-// next frame in the temporal sequence.
-#define TF_PASS_DOWN_MV_THRESHOLD 12
-
-// Window size for temporal filtering.
-#define TF_WINDOW_LENGTH 5
-
 // Hyper-parameters used to compute filtering weight. These hyper-parameters can
 // be tuned for a better performance.
 // 1. Weight factor used to balance the weighted-average between window error
@@ -54,8 +47,11 @@ extern "C" {
 //    i.e., smaller than this threshold), we will adjust the filtering weight
 //    based on the strength value.
 #define TF_STRENGTH_THRESHOLD 4
-// 5. A scale factor to raise the filtering weight from `double` type with range
-//    [0, 1] to `int` type with range [0, 1000].
+
+// Window size for temporal filtering.
+#define TF_WINDOW_LENGTH 5
+// A scale factor used in temporal filtering to raise the filter weight from
+// `double` with range [0, 1] to `int` with range [0, 1000].
 #define TF_WEIGHT_SCALE 1000
 
 #define NOISE_ESTIMATION_EDGE_THRESHOLD 50

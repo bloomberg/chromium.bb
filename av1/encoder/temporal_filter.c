@@ -219,7 +219,8 @@ static void tf_motion_search(AV1_COMP *cpi,
                                subblock_mses);
 
   // Do not pass down the reference motion vector if error is too large.
-  if (block_mse > (TF_PASS_DOWN_MV_THRESHOLD << (mbd->bd - 8))) {
+  const int thresh = (min_frame_size >= 720) ? 12 : 3;
+  if (block_mse > (thresh << (mbd->bd - 8))) {
     *ref_mv = kZeroMv;
   }
 }
