@@ -575,7 +575,7 @@ typedef struct macroblockd {
   // Partition contexts for the above blocks.
   // above_partition_context[i] corresponds to above partition context for ith
   // mi column of this *frame*, wrt current 'mi_row'.
-  // These are pointers into 'cm->above_contexts.partition'.
+  // This is a pointer into 'cm->above_contexts.partition'.
   PARTITION_CONTEXT *above_partition_context;
   // Partition contexts for the left blocks.
   // left_partition_context[i] corresponds to left partition context for ith
@@ -584,13 +584,19 @@ typedef struct macroblockd {
   PARTITION_CONTEXT left_partition_context[MAX_MIB_SIZE];
 
   // Transform contexts for the above blocks.
-  // TODO(urvang): Indexed two different ways from cm->above_contexts.txfm in
-  // code currently. Need to make it consistent / document why.
+  // above_txfm_context[i] corresponds to above transform context for ith mi col
+  // from the current position (mi row and mi column) for this *frame*.
+  // This is a pointer into 'cm->above_contexts.txfm'.
   TXFM_CONTEXT *above_txfm_context;
   // Transform contexts for the left blocks.
+  // left_txfm_context[i] corresponds to left transform context for ith mi row
+  // from the current position (mi_row and mi_col) for this *superblock*.
+  // This is a pointer into 'left_txfm_context_buffer'.
   TXFM_CONTEXT *left_txfm_context;
-  // TODO(urvang): 'left_txfm_context' points to 'left_txfm_context_buffer'.
-  // Can we remove this indirection?
+  // left_txfm_context_buffer[i] is the left transform context for ith mi_row
+  // in this *superblock*.
+  // Behaves like an internal actual buffer which 'left_txt_context' points to,
+  // and never accessed directly except to fill in initial default values.
   TXFM_CONTEXT left_txfm_context_buffer[MAX_MIB_SIZE];
 
   // Default values for the two restoration filters for each plane.
