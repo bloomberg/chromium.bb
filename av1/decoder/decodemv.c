@@ -193,13 +193,14 @@ static PREDICTION_MODE read_inter_mode(FRAME_CONTEXT *ec_ctx, aom_reader *r,
     return NEARMV;
 }
 
-static void read_drl_idx(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
+static void read_drl_idx(FRAME_CONTEXT *ec_ctx, DecoderCodingBlock *dcb,
                          MB_MODE_INFO *mbmi, aom_reader *r) {
+  MACROBLOCKD *const xd = &dcb->xd;
   uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
   mbmi->ref_mv_idx = 0;
   if (mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV) {
     for (int idx = 0; idx < 2; ++idx) {
-      if (xd->ref_mv_count[ref_frame_type] > idx + 1) {
+      if (dcb->ref_mv_count[ref_frame_type] > idx + 1) {
         uint8_t drl_ctx = av1_drl_ctx(xd->weight[ref_frame_type], idx);
         int drl_idx = aom_read_symbol(r, ec_ctx->drl_cdf[drl_ctx], 2, ACCT_STR);
         mbmi->ref_mv_idx = idx + drl_idx;
@@ -212,7 +213,7 @@ static void read_drl_idx(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
     // TODO(jingning): Unify the two syntax decoding loops after the NEARESTMV
     // mode is factored in.
     for (int idx = 1; idx < 3; ++idx) {
-      if (xd->ref_mv_count[ref_frame_type] > idx + 1) {
+      if (dcb->ref_mv_count[ref_frame_type] > idx + 1) {
         uint8_t drl_ctx = av1_drl_ctx(xd->weight[ref_frame_type], idx);
         int drl_idx = aom_read_symbol(r, ec_ctx->drl_cdf[drl_ctx], 2, ACCT_STR);
         mbmi->ref_mv_idx = idx + drl_idx - 1;
@@ -686,8 +687,9 @@ static INLINE int assign_dv(AV1_COMMON *cm, MACROBLOCKD *xd, int_mv *mv,
   return valid;
 }
 
-static void read_intrabc_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
+static void read_intrabc_info(AV1_COMMON *const cm, DecoderCodingBlock *dcb,
                               aom_reader *r) {
+  MACROBLOCKD *const xd = &dcb->xd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   mbmi->use_intrabc = aom_read_symbol(r, ec_ctx->intrabc_cdf, 2, ACCT_STR);
@@ -701,7 +703,7 @@ static void read_intrabc_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
     int16_t inter_mode_ctx[MODE_CTX_REF_FRAMES];
     int_mv ref_mvs[INTRA_FRAME + 1][MAX_MV_REF_CANDIDATES];
 
-    av1_find_mv_refs(cm, xd, mbmi, INTRA_FRAME, xd->ref_mv_count,
+    av1_find_mv_refs(cm, xd, mbmi, INTRA_FRAME, dcb->ref_mv_count,
                      xd->ref_mv_stack, xd->weight, ref_mvs, /*global_mvs=*/NULL,
                      inter_mode_ctx);
 
@@ -766,7 +768,8 @@ static void read_delta_q_params(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 }
 
 static void read_intra_frame_mode_info(AV1_COMMON *const cm,
-                                       MACROBLOCKD *const xd, aom_reader *r) {
+                                       DecoderCodingBlock *dcb, aom_reader *r) {
+  MACROBLOCKD *const xd = &dcb->xd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
   const MB_MODE_INFO *above_mi = xd->above_mbmi;
   const MB_MODE_INFO *left_mi = xd->left_mbmi;
@@ -802,7 +805,7 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
       xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
 
   if (av1_allow_intrabc(cm)) {
-    read_intrabc_info(cm, xd, r);
+    read_intrabc_info(cm, dcb, r);
     if (is_intrabc_block(mbmi)) return;
   }
 
@@ -1287,7 +1290,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   const int is_compound = has_second_ref(mbmi);
 
   const MV_REFERENCE_FRAME ref_frame = av1_ref_frame_type(mbmi->ref_frame);
-  av1_find_mv_refs(cm, xd, mbmi, ref_frame, xd->ref_mv_count, xd->ref_mv_stack,
+  av1_find_mv_refs(cm, xd, mbmi, ref_frame, dcb->ref_mv_count, xd->ref_mv_stack,
                    xd->weight, ref_mvs, /*global_mvs=*/NULL, inter_mode_ctx);
 
   mbmi->ref_mv_idx = 0;
@@ -1308,7 +1311,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
         mbmi->mode = read_inter_mode(ec_ctx, r, mode_ctx);
       if (mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV ||
           have_nearmv_in_inter_mode(mbmi->mode))
-        read_drl_idx(ec_ctx, xd, mbmi, r);
+        read_drl_idx(ec_ctx, dcb, mbmi, r);
     }
   }
 
@@ -1360,7 +1363,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
       ref_mv[1] = xd->ref_mv_stack[ref_frame][ref_mv_idx].comp_mv;
   } else {
     if (mbmi->mode == NEWMV) {
-      if (xd->ref_mv_count[ref_frame] > 1)
+      if (dcb->ref_mv_count[ref_frame] > 1)
         ref_mv[0] = xd->ref_mv_stack[ref_frame][mbmi->ref_mv_idx].this_mv;
     }
   }
@@ -1569,12 +1572,12 @@ void av1_read_mode_info(AV1Decoder *const pbi, DecoderCodingBlock *dcb,
   mi->use_intrabc = 0;
 
   if (frame_is_intra_only(cm)) {
-    read_intra_frame_mode_info(cm, xd, r);
-    if (pbi->common.seq_params.order_hint_info.enable_ref_frame_mvs)
+    read_intra_frame_mode_info(cm, dcb, r);
+    if (cm->seq_params.order_hint_info.enable_ref_frame_mvs)
       intra_copy_frame_mvs(cm, xd->mi_row, xd->mi_col, x_mis, y_mis);
   } else {
     read_inter_frame_mode_info(pbi, dcb, r);
-    if (pbi->common.seq_params.order_hint_info.enable_ref_frame_mvs)
+    if (cm->seq_params.order_hint_info.enable_ref_frame_mvs)
       av1_copy_frame_mvs(cm, mi, xd->mi_row, xd->mi_col, x_mis, y_mis);
   }
 }

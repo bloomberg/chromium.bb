@@ -604,8 +604,14 @@ typedef struct macroblockd {
   uint8_t width;
   uint8_t height;
 
-  uint8_t ref_mv_count[MODE_CTX_REF_FRAMES];
+  // Contains the motion vector candidates found during motion vector prediction
+  // process. ref_mv_stack[i] contains the candidates for ith type of
+  // reference frame (single/compound). The actual number of candidates found in
+  // ref_mv_stack[i] is stored in either dcb->ref_mv_count[i] (decoder side)
+  // or mbmi_ext->ref_mv_count[i] (encoder side).
   CANDIDATE_MV ref_mv_stack[MODE_CTX_REF_FRAMES][MAX_REF_MV_STACK_SIZE];
+  // weight[i][j] is the weight for ref_mv_stack[i][j] and used to compute the
+  // DRL (dynamic reference list) mode contexts.
   uint16_t weight[MODE_CTX_REF_FRAMES][MAX_REF_MV_STACK_SIZE];
 
   // True if this is the last vertical rectangular block in a VERTICAL or

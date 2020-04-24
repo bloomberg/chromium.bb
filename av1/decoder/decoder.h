@@ -58,6 +58,9 @@ typedef struct DecoderCodingBlock {
   // txb_offset[p] is the offset into the eob_data[p] for the current coding
   // block, for each plane 'p'.
   uint16_t txb_offset[MAX_MB_PLANE];
+  // ref_mv_count[i] specifies the number of number of motion vector candidates
+  // in xd->ref_mv_stack[i].
+  uint8_t ref_mv_count[MODE_CTX_REF_FRAMES];
 } DecoderCodingBlock;
 
 typedef void (*decode_block_visitor_fn_t)(const AV1_COMMON *const cm,
