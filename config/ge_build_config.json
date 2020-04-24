@@ -158,6 +158,18 @@
       ]
     },
     {
+      "name": "betty",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": false,
+          "leader_board": true,
+          "board_group": "vm builds",
+          "arch": "X86_INTERNAL"
+        }
+      ]
+    },
+    {
       "name": "betty-arc-r",
       "configs": [
         {

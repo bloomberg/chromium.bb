@@ -252,6 +252,7 @@
     betty-kernelnext-release
     betty-pi-arc-release
     betty-qt-arc-release
+    betty-release
     bob-release
     bubs-release
     buddy-cfm-release
@@ -1445,6 +1446,7 @@
     betty-kernelnext-release-tryjob
     betty-pi-arc-release-tryjob
     betty-qt-arc-release-tryjob
+    betty-release-tryjob
     bob-release-tryjob
     bubs-release-tryjob
     buddy-cfm-release-tryjob
