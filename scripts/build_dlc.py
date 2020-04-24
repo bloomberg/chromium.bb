@@ -13,6 +13,7 @@ import math
 import os
 import re
 import shutil
+import sys
 
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
@@ -20,6 +21,8 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 
 from chromite.scripts import cros_set_lsb_release
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 DLC_META_DIR = 'opt/google/dlc/'
 DLC_TMP_META_DIR = 'meta'

@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import json
 import os
+import sys
 
 import mock
 
@@ -17,6 +18,9 @@ from chromite.lib import partial_mock
 
 from chromite.scripts import build_dlc
 from chromite.scripts import cros_set_lsb_release
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 _FS_TYPE_SQUASHFS = 'squashfs'
 _FS_TYPE_EXT4 = 'ext4'
