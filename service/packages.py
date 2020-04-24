@@ -162,8 +162,7 @@ def uprev_android(tracking_branch,
                   android_build_branch,
                   chroot,
                   build_targets=None,
-                  android_version=None,
-                  android_gts_build_branch=None):
+                  android_version=None):
   """Returns the portage atom for the revved Android ebuild - see man emerge."""
   command = [
       'cros_mark_android_as_stable',
@@ -175,8 +174,6 @@ def uprev_android(tracking_branch,
     command.append('--boards=%s' % ':'.join(bt.name for bt in build_targets))
   if android_version:
     command.append('--force_version=%s' % android_version)
-  if android_gts_build_branch:
-    command.append('--android_gts_build_branch=%s' % android_gts_build_branch)
 
   result = cros_build_lib.run(
       command,

@@ -10,13 +10,12 @@ caller could then use this atom with emerge to build the newly uprevved version
 of Android e.g.
 
 ./cros_mark_android_as_stable \
-    --android_package=android-container \
-    --android_build_branch=git_mnc-dr-arc-dev \
-    --android_gts_build_branch=git_mnc-dev
+    --android_build_branch=git_pi-arc \
+    --android_package=android-container-pi
 
-Returns chromeos-base/android-container-2559197
+Returns chromeos-base/android-container-pi-6417892-r1
 
-emerge-veyron_minnie-cheets =chromeos-base/android-container-2559197-r1
+emerge-eve =chromeos-base/android-container-pi-6417892-r1
 """
 
 from __future__ import print_function
@@ -601,9 +600,6 @@ def GetParser():
                       required=True,
                       help='Android branch to import from. '
                            'Ex: git_mnc-dr-arc-dev')
-  parser.add_argument('--android_gts_build_branch',
-                      help='Android GTS branch to copy artifacts from. '
-                           'Ex: git_mnc-dev')
   parser.add_argument('--android_package',
                       default=constants.ANDROID_PACKAGE_NAME)
   parser.add_argument('--arc_bucket_url',
@@ -641,13 +637,6 @@ def main(argv):
                                      options.arc_bucket_url, acls,
                                      build_targets,
                                      options.force_version)
-
-  # Mirror GTS.
-  if options.android_gts_build_branch:
-    MirrorArtifacts(options.android_bucket_url,
-                    options.android_gts_build_branch,
-                    options.arc_bucket_url, acls,
-                    constants.ANDROID_GTS_BUILD_TARGETS)
 
   stable_candidate = portage_util.BestEBuild(stable_ebuilds)
 

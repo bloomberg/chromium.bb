@@ -287,10 +287,6 @@ ANDROID_VMMST_BUILD_BRANCH = 'git_master-arc-dev'
 assert ANDROID_VMMST_BUILD_BRANCH == ANDROID_MST_BUILD_BRANCH
 assert ANDROID_VMRVC_BUILD_BRANCH == ANDROID_RVC_BUILD_BRANCH
 
-ANDROID_GTS_BUILD_TARGETS = {
-    # "gts_arm64" is the build maintained by GMS team.
-    'XTS': ('linux-gts_arm64', r'\.zip$'),
-}
 ANDROID_MST_BUILD_TARGETS = {
     # For XkbToKcmConverter, see the comment in ANDROID_PI_BUILD_TARGETS.
     'ARM': ('linux-cheets_arm-user', r'(\.zip|/XkbToKcmConverter)$'),

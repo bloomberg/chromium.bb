@@ -7,7 +7,6 @@
         "afdo_update_chrome_ebuild": false,
         "afdo_update_kernel_ebuild": false,
         "afdo_use": true,
-        "android_gts_build_branch": null,
         "android_import_branch": null,
         "android_package": null,
         "android_rev": null,

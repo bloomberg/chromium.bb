@@ -86,7 +86,6 @@ class MarkStableTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
   def testCallsCommandCorrectly(self):
     """Test that commands.MarkAndroidAsStable is called correctly."""
     self.input_proto.android_version = 'android-version'
-    self.input_proto.android_gts_build_branch = 'gts-branch'
     self.uprev.return_value = 'cat/android-1.2.3'
     atom = common_pb2.PackageInfo()
     atom.category = 'cat'
@@ -99,8 +98,7 @@ class MarkStableTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
         android_build_branch=self.input_proto.android_build_branch,
         chroot=mock.ANY,
         build_targets=self.build_targets,
-        android_version=self.input_proto.android_version,
-        android_gts_build_branch=self.input_proto.android_gts_build_branch)
+        android_version=self.input_proto.android_version)
     self.assertEqual(self.response.android_atom, atom)
     self.assertEqual(self.response.status,
                      android_pb2.MARK_STABLE_STATUS_SUCCESS)
@@ -108,7 +106,6 @@ class MarkStableTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
   def testHandlesEarlyExit(self):
     """Test that early exit is handled correctly."""
     self.input_proto.android_version = 'android-version'
-    self.input_proto.android_gts_build_branch = 'gts-branch'
     self.uprev.return_value = ''
     android.MarkStable(self.input_proto, self.response, self.api_config)
     self.uprev.assert_called_once_with(
@@ -117,15 +114,13 @@ class MarkStableTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
         android_build_branch=self.input_proto.android_build_branch,
         chroot=mock.ANY,
         build_targets=self.build_targets,
-        android_version=self.input_proto.android_version,
-        android_gts_build_branch=self.input_proto.android_gts_build_branch)
+        android_version=self.input_proto.android_version)
     self.assertEqual(self.response.status,
                      android_pb2.MARK_STABLE_STATUS_EARLY_EXIT)
 
   def testHandlesPinnedUprevError(self):
     """Test that pinned error is handled correctly."""
     self.input_proto.android_version = 'android-version'
-    self.input_proto.android_gts_build_branch = 'gts-branch'
     self.uprev.side_effect = packages.AndroidIsPinnedUprevError('pin/xx-1.1')
     atom = common_pb2.PackageInfo()
     atom.category = 'pin'
@@ -138,8 +133,7 @@ class MarkStableTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
         android_build_branch=self.input_proto.android_build_branch,
         chroot=mock.ANY,
         build_targets=self.build_targets,
-        android_version=self.input_proto.android_version,
-        android_gts_build_branch=self.input_proto.android_gts_build_branch)
+        android_version=self.input_proto.android_version)
     self.assertEqual(self.response.android_atom, atom)
     self.assertEqual(self.response.status,
                      android_pb2.MARK_STABLE_STATUS_PINNED)

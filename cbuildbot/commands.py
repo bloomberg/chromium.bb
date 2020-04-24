@@ -2033,8 +2033,7 @@ def MarkAndroidAsStable(buildroot,
                         android_package,
                         android_build_branch,
                         boards=None,
-                        android_version=None,
-                        android_gts_build_branch=None):
+                        android_version=None):
   """Returns the portage atom for the revved Android ebuild - see man emerge."""
   input_msg = android_pb2.MarkStableRequest()
   input_msg.tracking_branch = tracking_branch
@@ -2042,8 +2041,6 @@ def MarkAndroidAsStable(buildroot,
   input_msg.android_build_branch = android_build_branch
   if android_version:
     input_msg.android_version = android_version
-  if android_gts_build_branch:
-    input_msg.android_gts_build_branch = android_gts_build_branch
   if boards:
     for board in boards:
       input_msg.build_targets.add().name = board

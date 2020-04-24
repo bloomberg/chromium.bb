@@ -1973,7 +1973,6 @@ class MarkAndroidAsStableTest(cros_test_lib.RunCommandTempDirTestCase):
     android_build_branch = 'refs/build'
     boards = ['foo', 'bar']
     android_version = '1.0'
-    android_gts_build_branch = 'refs/gts-build'
 
     # Write out the mock response.
     response_package = {'category': 'android', 'package_name': 'android',
@@ -1985,8 +1984,7 @@ class MarkAndroidAsStableTest(cros_test_lib.RunCommandTempDirTestCase):
 
     new_atom = commands.MarkAndroidAsStable(
         buildroot, tracking_branch, android_package, android_build_branch,
-        boards=boards, android_version=android_version,
-        android_gts_build_branch=android_gts_build_branch)
+        boards=boards, android_version=android_version)
 
     # Make sure the atom is rebuilt correctly from the package info.
     self.assertEqual('android/android-1.0-r2', new_atom)
@@ -1996,7 +1994,6 @@ class MarkAndroidAsStableTest(cros_test_lib.RunCommandTempDirTestCase):
         'packageName': android_package,
         'androidBuildBranch': android_build_branch,
         'androidVersion': android_version,
-        'androidGtsBuildBranch': android_gts_build_branch,
         'buildTargets': [{'name': 'foo'}, {'name': 'bar'}],
     }
     call_patch.assert_called_with(
