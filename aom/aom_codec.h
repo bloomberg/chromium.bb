@@ -320,31 +320,27 @@ typedef enum aom_superblock_size {
 /*!\brief Return the version information (as an integer)
  *
  * Returns a packed encoding of the library version number. This will only
- * include
- * the major.minor.patch component of the version number. Note that this encoded
- * value should be accessed through the macros provided, as the encoding may
- * change
- * in the future.
+ * include the major.minor.patch component of the version number. Note that this
+ * encoded value should be accessed through the macros provided, as the encoding
+ * may change in the future.
  *
  */
 int aom_codec_version(void);
 
-/*!\brief Return the version major number */
+/*!\brief Return the major version number */
 #define aom_codec_version_major() ((aom_codec_version() >> 16) & 0xff)
 
-/*!\brief Return the version minor number */
+/*!\brief Return the minor version number */
 #define aom_codec_version_minor() ((aom_codec_version() >> 8) & 0xff)
 
-/*!\brief Return the version patch number */
+/*!\brief Return the patch version number */
 #define aom_codec_version_patch() ((aom_codec_version() >> 0) & 0xff)
 
 /*!\brief Return the version information (as a string)
  *
  * Returns a printable string containing the full library version number. This
- * may
- * contain additional text following the three digit version number, as to
- * indicate
- * release candidates, prerelease versions, etc.
+ * may contain additional text following the three digit version number, as to
+ * indicate release candidates, prerelease versions, etc.
  *
  */
 const char *aom_codec_version_str(void);
@@ -352,8 +348,7 @@ const char *aom_codec_version_str(void);
 /*!\brief Return the version information (as a string)
  *
  * Returns a printable "extra string". This is the component of the string
- * returned
- * by aom_codec_version_str() following the three digit version number.
+ * returned by aom_codec_version_str() following the three digit version number.
  *
  */
 const char *aom_codec_version_extra_str(void);
