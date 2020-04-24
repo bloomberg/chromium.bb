@@ -249,9 +249,8 @@ static int search_new_mv(AV1_COMP *cpi, MACROBLOCK *x,
 static INLINE void find_predictors(
     AV1_COMP *cpi, MACROBLOCK *x, MV_REFERENCE_FRAME ref_frame,
     int_mv frame_mv[MB_MODE_COUNT][REF_FRAMES], int *ref_frame_skip_mask,
-    const int flag_list[4], TileDataEnc *tile_data,
-    struct buf_2d yv12_mb[8][MAX_MB_PLANE], BLOCK_SIZE bsize,
-    int force_skip_low_temp_var) {
+    TileDataEnc *tile_data, struct buf_2d yv12_mb[8][MAX_MB_PLANE],
+    BLOCK_SIZE bsize, int force_skip_low_temp_var) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
@@ -263,7 +262,7 @@ static INLINE void find_predictors(
   x->pred_mv_sad[ref_frame] = INT_MAX;
   frame_mv[NEWMV][ref_frame].as_int = INVALID_MV;
   // TODO(kyslov) this needs various further optimizations. to be continued..
-  if ((cpi->ref_frame_flags & flag_list[ref_frame]) && (yv12 != NULL)) {
+  if (yv12 != NULL) {
     const struct scale_factors *const sf =
         get_ref_scale_factors_const(cm, ref_frame);
     av1_setup_pred_block(xd, yv12_mb[ref_frame], yv12, sf, sf, num_planes);
@@ -1474,6 +1473,63 @@ void av1_pick_intra_mode(AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *rd_cost,
 #endif  // CONFIG_INTERNAL_STATS
 }
 
+static AOM_INLINE int is_same_gf_and_last_scale(AV1_COMMON *cm) {
+  struct scale_factors *const sf_last = get_ref_scale_factors(cm, LAST_FRAME);
+  struct scale_factors *const sf_golden =
+      get_ref_scale_factors(cm, GOLDEN_FRAME);
+  return ((sf_last->x_scale_fp == sf_golden->x_scale_fp) &&
+          (sf_last->y_scale_fp == sf_golden->y_scale_fp));
+}
+
+static AOM_INLINE void get_ref_frame_use_mask(AV1_COMP *cpi, MACROBLOCK *x,
+                                              MB_MODE_INFO *mi, int mi_row,
+                                              int mi_col, int bsize,
+                                              int use_ref_frame[],
+                                              int *force_skip_low_temp_var) {
+  AV1_COMMON *const cm = &cpi->common;
+  const struct segmentation *const seg = &cm->seg;
+  const int gf_temporal_ref = is_same_gf_and_last_scale(cm);
+  const int is_small_sb = (cm->seq_params.sb_size == BLOCK_64X64);
+
+  int use_alt_ref_frame = cpi->sf.rt_sf.use_nonrd_altref_frame;
+  int use_golden_ref_frame = 1;
+
+  use_ref_frame[LAST_FRAME] = 1;  // we never skip LAST
+
+  if (cpi->rc.frames_since_golden == 0 && gf_temporal_ref) {
+    use_golden_ref_frame = 0;
+  }
+
+  if (cpi->sf.rt_sf.short_circuit_low_temp_var &&
+      x->nonrd_prune_ref_frame_search) {
+    if (is_small_sb)
+      *force_skip_low_temp_var = get_force_skip_low_temp_var_small_sb(
+          &x->variance_low[0], mi_row, mi_col, bsize);
+    else
+      *force_skip_low_temp_var = get_force_skip_low_temp_var(
+          &x->variance_low[0], mi_row, mi_col, bsize);
+    // If force_skip_low_temp_var is set, skip golden reference.
+    if (*force_skip_low_temp_var) {
+      use_golden_ref_frame = 0;
+      use_alt_ref_frame = 0;
+    }
+  }
+
+  if (segfeature_active(seg, mi->segment_id, SEG_LVL_REF_FRAME) &&
+      get_segdata(seg, mi->segment_id, SEG_LVL_REF_FRAME) == GOLDEN_FRAME) {
+    use_golden_ref_frame = 1;
+    use_alt_ref_frame = 0;
+  }
+
+  use_alt_ref_frame =
+      cpi->ref_frame_flags & AOM_ALT_FLAG ? use_alt_ref_frame : 0;
+  use_golden_ref_frame =
+      cpi->ref_frame_flags & AOM_GOLD_FLAG ? use_golden_ref_frame : 0;
+
+  use_ref_frame[ALTREF_FRAME] = use_alt_ref_frame;
+  use_ref_frame[GOLDEN_FRAME] = use_golden_ref_frame;
+}
+
 void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                                   MACROBLOCK *x, RD_STATS *rd_cost,
                                   BLOCK_SIZE bsize, PICK_MODE_CONTEXT *ctx,
@@ -1489,17 +1545,15 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   static mode_search_stat ms_stat;
 #endif
   MV_REFERENCE_FRAME ref_frame;
-  MV_REFERENCE_FRAME usable_ref_frame, second_ref_frame;
   int_mv frame_mv[MB_MODE_COUNT][REF_FRAMES];
   uint8_t mode_checked[MB_MODE_COUNT][REF_FRAMES];
-  struct buf_2d yv12_mb[8][MAX_MB_PLANE];
-  static const int flag_list[8] = { 0, AOM_LAST_FLAG, 0, 0, AOM_GOLD_FLAG, 0,
-                                    0, AOM_ALT_FLAG };
+  struct buf_2d yv12_mb[REF_FRAMES][MAX_MB_PLANE];
   RD_STATS this_rdc, best_rdc;
   // var_y and sse_y are saved to be used in skipping checking
   unsigned int sse_y = UINT_MAX;
   unsigned int var_y = UINT_MAX;
-  const int *const rd_threshes = cpi->rd.threshes[mi->segment_id][bsize];
+  const unsigned char segment_id = mi->segment_id;
+  const int *const rd_threshes = cpi->rd.threshes[segment_id][bsize];
   const int *const rd_thresh_freq_fact = x->thresh_freq_fact[bsize];
   InterpFilter filter_ref;
   int ref_frame_skip_mask = 0;
@@ -1508,13 +1562,10 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   unsigned int ref_costs_single[REF_FRAMES],
       ref_costs_comp[REF_FRAMES][REF_FRAMES];
   int force_skip_low_temp_var = 0;
-  int skip_ref_find_pred[8] = { 0 };
+  int use_ref_frame_mask[REF_FRAMES] = { 0 };
   unsigned int sse_zeromv_norm = UINT_MAX;
   const unsigned int thresh_skip_golden = 500;
-  int gf_temporal_ref = 0;
-  const struct segmentation *const seg = &cm->seg;
   int num_inter_modes = RT_INTER_MODES;
-  unsigned char segment_id = mi->segment_id;
   PRED_BUFFER tmp[4];
   DECLARE_ALIGNED(16, uint8_t, pred_buf[3 * 128 * 128]);
   PRED_BUFFER *this_mode_pred = NULL;
@@ -1546,17 +1597,6 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
   // TODO(kyslov) Move this to Speed Features
   inter_mode_mask[BLOCK_128X128] = INTER_NEAREST_NEAR;
-
-  struct scale_factors *const sf_last = get_ref_scale_factors(cm, LAST_FRAME);
-  struct scale_factors *const sf_golden =
-      get_ref_scale_factors(cm, GOLDEN_FRAME);
-  gf_temporal_ref = 1;
-  // For temporal long term prediction, check that the golden reference
-  // is same scale as last reference, otherwise disable.
-  if ((sf_last->x_scale_fp != sf_golden->x_scale_fp) ||
-      (sf_last->y_scale_fp != sf_golden->y_scale_fp)) {
-    gf_temporal_ref = 0;
-  }
 
   av1_collect_neighbors_ref_counts(xd);
 
@@ -1592,50 +1632,17 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   mi->ref_frame[0] = NONE_FRAME;
   mi->ref_frame[1] = NONE_FRAME;
 
-  usable_ref_frame =
-      cpi->sf.rt_sf.use_nonrd_altref_frame ? ALTREF_FRAME : GOLDEN_FRAME;
-
-  if (cpi->rc.frames_since_golden == 0 && gf_temporal_ref) {
-    skip_ref_find_pred[GOLDEN_FRAME] = 1;
-    if (!cpi->sf.rt_sf.use_nonrd_altref_frame) usable_ref_frame = LAST_FRAME;
-  }
-
   const int mi_row = xd->mi_row;
   const int mi_col = xd->mi_col;
-  const int is_small_sb = (cm->seq_params.sb_size == BLOCK_64X64);
-  if (cpi->sf.rt_sf.short_circuit_low_temp_var &&
-      x->nonrd_prune_ref_frame_search) {
-    if (is_small_sb)
-      force_skip_low_temp_var = get_force_skip_low_temp_var_small_sb(
-          &x->variance_low[0], mi_row, mi_col, bsize);
-    else
-      force_skip_low_temp_var = get_force_skip_low_temp_var(
-          &x->variance_low[0], mi_row, mi_col, bsize);
-    // If force_skip_low_temp_var is set, skip golden reference.
-    if (force_skip_low_temp_var) {
-      usable_ref_frame = LAST_FRAME;
-    }
-  }
 
-  // If the segment reference frame feature is enabled and it's set to GOLDEN
-  // reference, then make sure we don't skip checking GOLDEN, this is to
-  // prevent possibility of not picking any mode.
-  if (segfeature_active(seg, mi->segment_id, SEG_LVL_REF_FRAME) &&
-      get_segdata(seg, mi->segment_id, SEG_LVL_REF_FRAME) == GOLDEN_FRAME) {
-    usable_ref_frame = GOLDEN_FRAME;
-    skip_ref_find_pred[GOLDEN_FRAME] = 0;
-  }
+  get_ref_frame_use_mask(cpi, x, mi, mi_row, mi_col, bsize, use_ref_frame_mask,
+                         &force_skip_low_temp_var);
 
   for (MV_REFERENCE_FRAME ref_frame_iter = LAST_FRAME;
-       ref_frame_iter <= usable_ref_frame; ++ref_frame_iter) {
-    // Skip find_predictor if the reference frame is not in the
-    // ref_frame_flags (i.e., not used as a reference for this frame).
-    skip_ref_find_pred[ref_frame_iter] =
-        !(cpi->ref_frame_flags & flag_list[ref_frame_iter]);
-    if (!skip_ref_find_pred[ref_frame_iter]) {
+       ref_frame_iter <= ALTREF_FRAME; ++ref_frame_iter) {
+    if (use_ref_frame_mask[ref_frame_iter]) {
       find_predictors(cpi, x, ref_frame_iter, frame_mv, &ref_frame_skip_mask,
-                      flag_list, tile_data, yv12_mb, bsize,
-                      force_skip_low_temp_var);
+                      tile_data, yv12_mb, bsize, force_skip_low_temp_var);
     }
   }
 
@@ -1682,6 +1689,8 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   }
 
   for (int idx = 0; idx < num_inter_modes; ++idx) {
+    const struct segmentation *const seg = &cm->seg;
+
     int rate_mv = 0;
     int mode_rd_thresh;
     int mode_index;
@@ -1693,7 +1702,6 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     int force_mv_inter_layer = 0;
     PREDICTION_MODE this_mode;
     MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
-    second_ref_frame = NONE_FRAME;
 
     this_mode = ref_mode_set[idx].pred_mode;
     ref_frame = ref_mode_set[idx].ref_frame;
@@ -1705,8 +1713,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     mi->mode = this_mode;
     mi->ref_frame[0] = ref_frame;
 
-    if (ref_frame > usable_ref_frame) continue;
-    if (skip_ref_find_pred[ref_frame]) continue;
+    if (!use_ref_frame_mask[ref_frame]) continue;
 
     // Skip non-zero motion for SVC if skip_nonzeromv_ref is set.
     if (cpi->use_svc && frame_mv[this_mode][ref_frame].as_int != 0) {
@@ -1718,15 +1725,13 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
     // If the segment reference frame feature is enabled then do nothing if the
     // current ref frame is not allowed.
-    if (segfeature_active(seg, mi->segment_id, SEG_LVL_REF_FRAME) &&
-        get_segdata(seg, mi->segment_id, SEG_LVL_REF_FRAME) != (int)ref_frame)
+    if (segfeature_active(seg, segment_id, SEG_LVL_REF_FRAME) &&
+        get_segdata(seg, segment_id, SEG_LVL_REF_FRAME) != (int)ref_frame)
       continue;
 
     if (ref_frame != LAST_FRAME && cpi->oxcf.rc_mode == AOM_CBR &&
         sse_zeromv_norm < thresh_skip_golden && this_mode == NEWMV)
       continue;
-
-    if (!(cpi->ref_frame_flags & flag_list[ref_frame])) continue;
 
     if (!(inter_mode_mask[bsize] & (1 << this_mode))) continue;
 
@@ -1760,7 +1765,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     // Disable this drop out case if the ref frame segment level feature is
     // enabled for this segment. This is to prevent the possibility that we
     // end up unable to pick any mode.
-    if (!segfeature_active(seg, mi->segment_id, SEG_LVL_REF_FRAME)) {
+    if (!segfeature_active(seg, segment_id, SEG_LVL_REF_FRAME)) {
       // Check for skipping GOLDEN and ALTREF based pred_mv_sad.
       if (cpi->sf.rt_sf.nonrd_prune_ref_frame_search > 0 &&
           x->pred_mv_sad[ref_frame] != INT_MAX && ref_frame != LAST_FRAME) {
@@ -1776,8 +1781,8 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     }
 
     mi->ref_frame[0] = ref_frame;
-    mi->ref_frame[1] = second_ref_frame;
-    set_ref_ptrs(cm, xd, ref_frame, second_ref_frame);
+    mi->ref_frame[1] = NONE_FRAME;
+    set_ref_ptrs(cm, xd, ref_frame, NONE_FRAME);
 
     mode_index = mode_idx[ref_frame][INTER_OFFSET(this_mode)];
     mode_rd_thresh = best_pickmode.best_mode_skip_txfm
@@ -1797,8 +1802,8 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       if (frame_mv[this_mode][ref_frame].as_int != 0) continue;
 
     if (this_mode == NEWMV && !force_mv_inter_layer) {
-      if (search_new_mv(cpi, x, frame_mv, ref_frame, gf_temporal_ref, bsize,
-                        mi_row, mi_col, best_pred_sad, &rate_mv, &best_rdc))
+      if (search_new_mv(cpi, x, frame_mv, ref_frame, 1, bsize, mi_row, mi_col,
+                        best_pred_sad, &rate_mv, &best_rdc))
         continue;
     }
 
@@ -1942,7 +1947,6 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       best_pickmode.best_tx_size = mi->tx_size;
       best_pickmode.best_ref_frame = ref_frame;
       best_pickmode.best_mode_skip_txfm = this_rdc.skip_txfm;
-      best_pickmode.best_second_ref_frame = second_ref_frame;
       if (reuse_inter_pred) {
         free_pred_buffer(best_pickmode.best_pred);
         best_pickmode.best_pred = this_mode_pred;
@@ -1963,7 +1967,6 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   mi->ref_frame[0] = best_pickmode.best_ref_frame;
   mi->mv[0].as_int =
       frame_mv[best_pickmode.best_mode][best_pickmode.best_ref_frame].as_int;
-  mi->ref_frame[1] = best_pickmode.best_second_ref_frame;
   x->skip_txfm = best_rdc.skip_txfm;
 
   // Perform intra prediction search, if the best SAD is above a certain
@@ -2086,7 +2089,6 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
         best_pickmode.best_mode = this_mode;
         best_pickmode.best_intra_tx_size = mi->tx_size;
         best_pickmode.best_ref_frame = INTRA_FRAME;
-        best_pickmode.best_second_ref_frame = NONE_FRAME;
         mi->uv_mode = this_mode;
         mi->mv[0].as_int = INVALID_MV;
         mi->mv[1].as_int = INVALID_MV;
@@ -2104,7 +2106,6 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   pd->dst = orig_dst;
   mi->mode = best_pickmode.best_mode;
   mi->ref_frame[0] = best_pickmode.best_ref_frame;
-  mi->ref_frame[1] = best_pickmode.best_second_ref_frame;
 
   if (!is_inter_block(mi)) {
     mi->interp_filters = av1_broadcast_interp_filter(SWITCHABLE_FILTERS);
@@ -2128,7 +2129,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                                 intra_mode_list[i]);
       }
     } else {
-      for (ref_frame = LAST_FRAME; ref_frame <= usable_ref_frame; ++ref_frame) {
+      for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
         PREDICTION_MODE this_mode;
         if (best_pickmode.best_ref_frame != ref_frame) continue;
         for (this_mode = NEARESTMV; this_mode <= NEWMV; ++this_mode) {
