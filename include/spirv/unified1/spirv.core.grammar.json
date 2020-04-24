@@ -10131,7 +10131,8 @@
         {
           "enumerant" : "ShaderCallKHR",
           "value" : 6,
-          "capabilities" : [ "RayTracingProvisionalKHR" ]
+          "capabilities" : [ "RayTracingProvisionalKHR" ],
+          "version" : "None"
         }
       ]
     },
