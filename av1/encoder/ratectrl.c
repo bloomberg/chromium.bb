@@ -1662,7 +1662,7 @@ void av1_rc_postencode_update(AV1_COMP *cpi, uint64_t bytes_used) {
   rc->total_target_vs_actual = rc->total_actual_bits - rc->total_target_bits;
 
   if (is_altref_enabled(cpi) && refresh_frame_flags->alt_ref_frame &&
-      (current_frame->frame_type != KEY_FRAME))
+      (current_frame->frame_type != KEY_FRAME && !frame_is_sframe(cm)))
     // Update the alternate reference frame stats as appropriate.
     update_alt_ref_frame_stats(cpi);
   else

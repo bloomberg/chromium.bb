@@ -6298,6 +6298,15 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 
   cpi->last_frame_type = current_frame->frame_type;
 
+  if (frame_is_sframe(cm)) {
+    GF_GROUP *gf_group = &cpi->gf_group;
+    RATE_CONTROL *const rc = &cpi->rc;
+    // S frame will wipe out any previously encoded altref so we cannot place
+    // an overlay frame
+    gf_group->update_type[gf_group->size] = GF_UPDATE;
+    rc->source_alt_ref_active = 0;
+  }
+
   if (encode_show_existing_frame(cm)) {
     finalize_encoded_frame(cpi);
     // Build the bitstream
