@@ -28,13 +28,15 @@
  *     </pre>
  *
  * An application instantiates a specific decoder instance by using
- * aom_codec_init() and a pointer to the algorithm's interface structure:
+ * aom_codec_dec_init() and a pointer to the algorithm's interface structure:
  *     <pre>
  *     my_app.c:
  *       extern aom_codec_iface_t my_codec;
  *       {
  *           aom_codec_ctx_t algo;
- *           res = aom_codec_init(&algo, &my_codec);
+ *           int threads = 4;
+ *           aom_codec_dec_cfg_t cfg = { threads, 0, 0, 1 };
+ *           res = aom_codec_dec_init(&algo, &my_codec, &cfg, 0);
  *       }
  *     </pre>
  *

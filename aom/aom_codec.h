@@ -23,13 +23,16 @@
  * video codec algorithm.
  *
  * An application instantiates a specific codec instance by using
- * aom_codec_init() and a pointer to the algorithm's interface structure:
+ * aom_codec_dec_init() or aom_codec_enc_init() and a pointer to the
+ * algorithm's interface structure:
  *     <pre>
  *     my_app.c:
  *       extern aom_codec_iface_t my_codec;
  *       {
  *           aom_codec_ctx_t algo;
- *           res = aom_codec_init(&algo, &my_codec);
+ *           int threads = 4;
+ *           aom_codec_dec_cfg_t cfg = { threads, 0, 0, 1 };
+ *           res = aom_codec_dec_init(&algo, &my_codec, &cfg, 0);
  *       }
  *     </pre>
  *
@@ -187,7 +190,7 @@ typedef int64_t aom_codec_pts_t;
  * functions used with this structure:
  *   - aom_codec_iface_name: get the name of the codec
  *   - aom_codec_get_caps: returns the capabilities of the codec (see
- *     aom_encoder.h for more details)
+ *     aom_decoder.h and aom_encoder.h for more details)
  *   - aom_codec_enc_config_default: generate the default config to use
  *     when initializing the encoder
  *   - aom_codec_dec_init, aom_codec_enc_init: initialize the codec context
