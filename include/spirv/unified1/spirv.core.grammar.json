@@ -7479,57 +7479,68 @@
         {
           "enumerant" : "NoneKHR",
           "value" : "0x0000",
-          "capabilities" : [ "RayQueryProvisionalKHR","RayTracingProvisionalKHR" ]
+          "capabilities" : [ "RayQueryProvisionalKHR","RayTracingProvisionalKHR" ],
+          "version" : "None"
         },
         {
           "enumerant" : "OpaqueKHR",
           "value" : "0x0001",
-          "capabilities" : [ "RayQueryProvisionalKHR","RayTracingProvisionalKHR" ]
+          "capabilities" : [ "RayQueryProvisionalKHR","RayTracingProvisionalKHR" ],
+          "version" : "None"
         },
         {
           "enumerant" : "NoOpaqueKHR",
           "value" : "0x0002",
-          "capabilities" : [ "RayQueryProvisionalKHR","RayTracingProvisionalKHR" ]
+          "capabilities" : [ "RayQueryProvisionalKHR","RayTracingProvisionalKHR" ],
+          "version" : "None"
         },
         {
           "enumerant" : "TerminateOnFirstHitKHR",
           "value" : "0x0004",
-          "capabilities" : [ "RayQueryProvisionalKHR","RayTracingProvisionalKHR" ]
+          "capabilities" : [ "RayQueryProvisionalKHR","RayTracingProvisionalKHR" ],
+          "version" : "None"
         },
         {
           "enumerant" : "SkipClosestHitShaderKHR",
           "value" : "0x0008",
-          "capabilities" : [ "RayQueryProvisionalKHR","RayTracingProvisionalKHR" ]
+          "capabilities" : [ "RayQueryProvisionalKHR","RayTracingProvisionalKHR" ],
+          "version" : "None"
         },
         {
           "enumerant" : "CullBackFacingTrianglesKHR",
           "value" : "0x0010",
-          "capabilities" : [ "RayQueryProvisionalKHR","RayTracingProvisionalKHR" ]
+          "capabilities" : [ "RayQueryProvisionalKHR","RayTracingProvisionalKHR" ],
+          "version" : "None"
         },
         {
           "enumerant" : "CullFrontFacingTrianglesKHR",
           "value" : "0x0020",
-          "capabilities" : [ "RayQueryProvisionalKHR","RayTracingProvisionalKHR" ]
+          "capabilities" : [ "RayQueryProvisionalKHR","RayTracingProvisionalKHR" ],
+          "version" : "None"
         },
         {
           "enumerant" : "CullOpaqueKHR",
           "value" : "0x0040",
-          "capabilities" : [ "RayQueryProvisionalKHR","RayTracingProvisionalKHR" ]
+          "capabilities" : [ "RayQueryProvisionalKHR","RayTracingProvisionalKHR" ],
+          "version" : "None"
         },
         {
           "enumerant" : "CullNoOpaqueKHR",
           "value" : "0x0080",
-          "capabilities" : [ "RayQueryProvisionalKHR","RayTracingProvisionalKHR" ]
+          "capabilities" : [ "RayQueryProvisionalKHR","RayTracingProvisionalKHR" ],
+          "version" : "None"
         },
         {
           "enumerant" : "SkipTrianglesKHR",
           "value" : "0x0100",
-          "capabilities" : [ "RayTraversalPrimitiveCullingProvisionalKHR" ]
+          "capabilities" : [ "RayTraversalPrimitiveCullingProvisionalKHR" ],
+          "version" : "None"
         },
         {
           "enumerant" : "SkipAABBsKHR",
           "value" : "0x0200",
-          "capabilities" : [ "RayTraversalPrimitiveCullingProvisionalKHR" ]
+          "capabilities" : [ "RayTraversalPrimitiveCullingProvisionalKHR" ],
+          "version" : "None"
         }
       ]
     },
@@ -11173,12 +11184,14 @@
         {
           "enumerant" : "RayQueryCandidateIntersectionKHR",
           "value" : 0,
-          "capabilities" : [ "RayQueryProvisionalKHR" ]
+          "capabilities" : [ "RayQueryProvisionalKHR" ],
+          "version" : "None"
         },
         {
           "enumerant" : "RayQueryCommittedIntersectionKHR",
           "value" : 1,
-          "capabilities" : [ "RayQueryProvisionalKHR" ]
+          "capabilities" : [ "RayQueryProvisionalKHR" ],
+          "version" : "None"
         }
       ]
     },
@@ -11189,17 +11202,20 @@
         {
           "enumerant" : "RayQueryCommittedIntersectionNoneKHR",
           "value" : 0,
-          "capabilities" : [ "RayQueryProvisionalKHR" ]
+          "capabilities" : [ "RayQueryProvisionalKHR" ],
+          "version" : "None"
         },
         {
           "enumerant" : "RayQueryCommittedIntersectionTriangleKHR",
           "value" : 1,
-          "capabilities" : [ "RayQueryProvisionalKHR" ]
+          "capabilities" : [ "RayQueryProvisionalKHR" ],
+          "version" : "None"
         },
         {
           "enumerant" : "RayQueryCommittedIntersectionGeneratedKHR",
           "value" : 2,
-          "capabilities" : [ "RayQueryProvisionalKHR" ]
+          "capabilities" : [ "RayQueryProvisionalKHR" ],
+          "version" : "None"
         }
       ]
     },
@@ -11210,12 +11226,14 @@
         {
           "enumerant" : "RayQueryCandidateIntersectionTriangleKHR",
           "value" : 0,
-          "capabilities" : [ "RayQueryProvisionalKHR" ]
+          "capabilities" : [ "RayQueryProvisionalKHR" ],
+          "version" : "None"
         },
         {
           "enumerant" : "RayQueryCandidateIntersectionAABBKHR",
           "value" : 1,
-          "capabilities" : [ "RayQueryProvisionalKHR" ]
+          "capabilities" : [ "RayQueryProvisionalKHR" ],
+          "version" : "None"
         }
       ]
     },
