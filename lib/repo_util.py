@@ -11,6 +11,7 @@ import collections
 import contextlib
 import os
 import re
+import sys
 
 import six
 
@@ -19,6 +20,9 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import repo_manifest
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # Match `repo` error: "error: project <name> not found"
