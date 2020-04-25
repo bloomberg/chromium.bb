@@ -13,6 +13,9 @@ import sys
 from xml.etree import cElementTree as ElementTree
 
 
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
 # The ElementTree.tostring method is a bit of a mess.  Under Python 2, it
 # returns a string, but Python 3 returns bytes (even though its name says
 # "to string").  In order to get a string, encoding='unicode' is required

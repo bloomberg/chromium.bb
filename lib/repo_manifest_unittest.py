@@ -10,6 +10,7 @@ from __future__ import print_function
 import io
 import os
 import pickle
+import sys
 
 # TODO(vapier): Use ElementTree directly once we're Python 3-only.
 from xml.etree import cElementTree as ElementTree
@@ -17,6 +18,9 @@ from xml.etree import cElementTree as ElementTree
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import repo_manifest
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 MANIFEST_OUTER_XML = """<?xml version="1.0" encoding="UTF-8"?>
