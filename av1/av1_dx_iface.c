@@ -1400,10 +1400,11 @@ static aom_codec_ctrl_fn_map_t decoder_ctrl_maps[] = {
   { -1, NULL },
 };
 
+// This data structure and function are exported in aom/aomdx.h
 #ifndef VERSION_STRING
 #define VERSION_STRING
 #endif
-CODEC_INTERFACE(aom_codec_av1_dx) = {
+aom_codec_iface_t aom_codec_av1_dx_algo = {
   "AOMedia Project AV1 Decoder" VERSION_STRING,
   AOM_CODEC_INTERNAL_ABI_VERSION,
   AOM_CODEC_CAP_DECODER |
@@ -1431,3 +1432,5 @@ CODEC_INTERFACE(aom_codec_av1_dx) = {
       NULL   // aom_codec_enc_mr_get_mem_loc_fn_t
   }
 };
+
+aom_codec_iface_t *aom_codec_av1_dx(void) { return &aom_codec_av1_dx_algo; }

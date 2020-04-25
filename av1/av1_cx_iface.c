@@ -309,7 +309,7 @@ struct aom_codec_alg_priv {
 };
 
 static INLINE int gcd(int64_t a, int b) {
-  int remainder;  // remainder
+  int remainder;
   while (b > 0) {
     remainder = (int)(a % b);
     a = b;
@@ -2919,10 +2919,11 @@ static const aom_codec_enc_cfg_t encoder_usage_cfg[] = {
   },
 };
 
+// This data structure and function are exported in aom/aomcx.h
 #ifndef VERSION_STRING
 #define VERSION_STRING
 #endif
-CODEC_INTERFACE(aom_codec_av1_cx) = {
+aom_codec_iface_t aom_codec_av1_cx_algo = {
   "AOMedia Project AV1 Encoder" VERSION_STRING,
   AOM_CODEC_INTERNAL_ABI_VERSION,
   AOM_CODEC_CAP_HIGHBITDEPTH | AOM_CODEC_CAP_ENCODER |
@@ -2950,3 +2951,5 @@ CODEC_INTERFACE(aom_codec_av1_cx) = {
       NULL                         // aom_codec_enc_mr_get_mem_loc_fn_t
   }
 };
+
+aom_codec_iface_t *aom_codec_av1_cx(void) { return &aom_codec_av1_cx_algo; }
