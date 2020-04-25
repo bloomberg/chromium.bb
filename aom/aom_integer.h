@@ -36,8 +36,6 @@
 #include <stdint.h>
 #include <inttypes.h>
 
-#define NELEMENTS(x) (int)(sizeof(x) / sizeof(x[0]))
-
 #if defined(__cplusplus)
 extern "C" {
 #endif  // __cplusplus
