@@ -13,6 +13,7 @@ import numbers
 import os
 import signal
 import subprocess
+import sys
 import time
 
 from chromite.lib import cros_build_lib
@@ -21,6 +22,9 @@ from chromite.lib import osutils
 from chromite.lib import signals
 from chromite.lib import sudo
 from chromite.utils import memoize
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # Rough hierarchy sketch:

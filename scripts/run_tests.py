@@ -84,9 +84,6 @@ SPECIAL_TESTS = {
     'lib/xbuddy/common_util_unittest': INSIDE,
     'lib/xbuddy/downloader_unittest': INSIDE,
     'lib/xbuddy/xbuddy_unittest': INSIDE,
-
-    # Tests that need to run outside the chroot.
-    'lib/cgroups_unittest': OUTSIDE,
 }
 
 SLOW_TESTS = {
@@ -95,9 +92,6 @@ SLOW_TESTS = {
     'lib/gce_unittest': SKIP,
     'lib/gerrit_unittest': SKIP,
     'lib/patch_unittest': SKIP,
-
-    # cgroups_unittest runs cros_sdk a lot, so is slow.
-    'lib/cgroups_unittest': SKIP,
 }
 
 
