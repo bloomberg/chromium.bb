@@ -8,11 +8,15 @@
 from __future__ import print_function
 
 import json
+import sys
 
 from six.moves import StringIO
 
 from chromite.lib import cros_event
 from chromite.lib import cros_test_lib
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class EventIdGeneratorTest(cros_test_lib.TestCase):
