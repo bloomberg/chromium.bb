@@ -12,12 +12,16 @@ import getpass
 import gzip
 import json
 import os
+import sys
 import time
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import goma_lib
 from chromite.lib import osutils
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class TestLogsArchiver(cros_test_lib.MockTempDirTestCase):
