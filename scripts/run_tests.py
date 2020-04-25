@@ -73,32 +73,14 @@ SKIP = 'skip'
 # List all exceptions, with a token describing what's odd here.
 SPECIAL_TESTS = {
     # Tests that need to run inside the chroot.
-    'api/controller/dependency_unittest': INSIDE,
-    'cli/cros/cros_chroot_unittest': INSIDE,
-    'cli/cros/cros_debug_unittest': INSIDE,
     'cli/cros/lint_unittest': INSIDE,
-    'cli/deploy_unittest': INSIDE,
     'lib/alerts_unittest': INSIDE,
     'lib/androidbuild_unittest': INSIDE,
     'lib/chroot_util_unittest': INSIDE,
     'lib/cros_test_lib_unittest': INSIDE,
     'lib/operation_unittest': INSIDE,
-    'lib/upgrade_table_unittest': INSIDE,
-    'lib/vm_unittest': INSIDE,
-    'scripts/cros_extract_deps_unittest': INSIDE,
-    'scripts/cros_generate_update_payload_unittest': INSIDE,
-    'scripts/cros_oobe_autoconfig_unittest': SKIP, # https://crbug.com/1000761
-    'scripts/cros_install_debug_syms_unittest': INSIDE,
-    'scripts/cros_run_unit_tests_unittest': INSIDE,
-    'scripts/dep_tracker_unittest': INSIDE,
-    'scripts/gconv_strip_unittest': INSIDE,
-    'scripts/merge_logs_unittest': INSIDE,
-    'scripts/test_image_unittest': INSIDE,
 
     # These require 3rd party modules that are in the chroot.
-    'cli/cros/cros_bisect_unittest': INSIDE,
-    'cli/cros/cros_flash_unittest': INSIDE,
-    'cli/cros/cros_stage_unittest': INSIDE,
     'lib/dev_server_wrapper_unittest': INSIDE,
     'lib/xbuddy/build_artifact_unittest': INSIDE,
     'lib/xbuddy/common_util_unittest': INSIDE,
@@ -107,17 +89,6 @@ SPECIAL_TESTS = {
 
     # Tests that need to run outside the chroot.
     'lib/cgroups_unittest': OUTSIDE,
-
-    # The proto compile unittest requires network access to install protoc
-    # with CIPD. Since ebuilds have no network access and our tests are run
-    # through the chromite ebuild on builders, this is a problem. The test
-    # can be run manually, but it primarily exists to be a presubmit check
-    # anyway, so it not running for run_tests is fine.
-    'api/proto_compiled_unittest': SKIP,
-
-    # Tests that take >2 minutes to run.  All the slow tests are
-    # disabled atm though ...
-    # 'scripts/cros_portage_upgrade_unittest': SKIP,
 }
 
 SLOW_TESTS = {
@@ -129,10 +100,6 @@ SLOW_TESTS = {
 
     # cgroups_unittest runs cros_sdk a lot, so is slow.
     'lib/cgroups_unittest': SKIP,
-    # cros_sdk_unittest runs cros_sdk a lot, so is slow.
-    'scripts/cros_sdk_unittest': SKIP,
-    # This test involves lots of git operations, which are very slow.
-    'cli/cros/cros_branch_unittest': SKIP,
 }
 
 
