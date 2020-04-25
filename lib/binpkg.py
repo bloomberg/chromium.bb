@@ -16,6 +16,7 @@ import io
 import math
 import operator
 import os
+import sys
 import tempfile
 import time
 
@@ -26,6 +27,9 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import parallel
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 TWO_WEEKS = 60 * 60 * 24 * 7 * 2
