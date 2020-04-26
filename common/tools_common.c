@@ -152,17 +152,17 @@ aom_codec_iface_t *get_aom_encoder_by_index(int i) {
 
 aom_codec_iface_t *get_aom_encoder_by_short_name(const char *name) {
   for (int i = 0; i < get_aom_encoder_count(); ++i) {
-    const struct CodecInfo info = aom_encoders[i];
-    if (strcmp(info.short_name, name) == 0) return info.interface();
+    const struct CodecInfo *info = &aom_encoders[i];
+    if (strcmp(info->short_name, name) == 0) return info->interface();
   }
   return NULL;
 }
 
 uint32_t get_fourcc_by_aom_encoder(aom_codec_iface_t *iface) {
   for (int i = 0; i < get_aom_encoder_count(); ++i) {
-    const struct CodecInfo info = aom_encoders[i];
-    if (info.interface() == iface) {
-      return info.fourcc;
+    const struct CodecInfo *info = &aom_encoders[i];
+    if (info->interface() == iface) {
+      return info->fourcc;
     }
   }
   return 0;
@@ -170,9 +170,9 @@ uint32_t get_fourcc_by_aom_encoder(aom_codec_iface_t *iface) {
 
 const char *get_short_name_by_aom_encoder(aom_codec_iface_t *iface) {
   for (int i = 0; i < get_aom_encoder_count(); ++i) {
-    const struct CodecInfo info = aom_encoders[i];
-    if (info.interface() == iface) {
-      return info.short_name;
+    const struct CodecInfo *info = &aom_encoders[i];
+    if (info->interface() == iface) {
+      return info->short_name;
     }
   }
   return NULL;
@@ -196,25 +196,25 @@ aom_codec_iface_t *get_aom_decoder_by_index(int i) {
 
 aom_codec_iface_t *get_aom_decoder_by_short_name(const char *name) {
   for (int i = 0; i < get_aom_decoder_count(); ++i) {
-    const struct CodecInfo info = aom_decoders[i];
-    if (strcmp(info.short_name, name) == 0) return info.interface();
+    const struct CodecInfo *info = &aom_decoders[i];
+    if (strcmp(info->short_name, name) == 0) return info->interface();
   }
   return NULL;
 }
 
 aom_codec_iface_t *get_aom_decoder_by_fourcc(uint32_t fourcc) {
   for (int i = 0; i < get_aom_decoder_count(); ++i) {
-    const struct CodecInfo info = aom_decoders[i];
-    if (info.fourcc == fourcc) return info.interface();
+    const struct CodecInfo *info = &aom_decoders[i];
+    if (info->fourcc == fourcc) return info->interface();
   }
   return NULL;
 }
 
 const char *get_short_name_by_aom_decoder(aom_codec_iface_t *iface) {
   for (int i = 0; i < get_aom_decoder_count(); ++i) {
-    const struct CodecInfo info = aom_decoders[i];
-    if (info.interface() == iface) {
-      return info.short_name;
+    const struct CodecInfo *info = &aom_decoders[i];
+    if (info->interface() == iface) {
+      return info->short_name;
     }
   }
   return NULL;
@@ -222,9 +222,9 @@ const char *get_short_name_by_aom_decoder(aom_codec_iface_t *iface) {
 
 uint32_t get_fourcc_by_aom_decoder(aom_codec_iface_t *iface) {
   for (int i = 0; i < get_aom_decoder_count(); ++i) {
-    const struct CodecInfo info = aom_decoders[i];
-    if (info.interface() == iface) {
-      return info.fourcc;
+    const struct CodecInfo *info = &aom_decoders[i];
+    if (info->interface() == iface) {
+      return info->fourcc;
     }
   }
   return 0;
