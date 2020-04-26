@@ -55,6 +55,8 @@ extern "C" {
 #define AOM_CODEC_CAP_PUT_SLICE 0x10000 /**< Will issue put_slice callbacks */
 #define AOM_CODEC_CAP_PUT_FRAME 0x20000 /**< Will issue put_frame callbacks */
 #define AOM_CODEC_CAP_POSTPROC 0x40000  /**< Can postprocess decoded frame */
+/*!brief Can support external frame buffers */
+#define AOM_CODEC_CAP_EXTERNAL_FRAME_BUFFER 0x200000
 
 /*! \brief Initialization-time Feature Enabling
  *
@@ -63,9 +65,6 @@ extern "C" {
  *
  *  The available flags are specified by AOM_CODEC_USE_* defines.
  */
-/*!brief Can support external frame buffers */
-#define AOM_CODEC_CAP_EXTERNAL_FRAME_BUFFER 0x200000
-
 #define AOM_CODEC_USE_POSTPROC 0x10000 /**< Postprocess decoded frame */
 
 /*!\brief Stream properties
@@ -304,9 +303,6 @@ aom_codec_err_t aom_codec_register_put_slice_cb(aom_codec_ctx_t *ctx,
  * that advertise the AOM_CODEC_CAP_EXTERNAL_FRAME_BUFFER capability.
  * Calling this function for codecs that don't advertise this capability
  * will result in an error code being returned, usually AOM_CODEC_INCAPABLE.
- *
- * \note
- * Currently this only works with AV1.
  * @{
  */
 
