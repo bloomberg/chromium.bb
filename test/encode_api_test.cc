@@ -9,11 +9,12 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include <cstdlib>
+
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 #include "config/aom_config.h"
 
-#include "test/util.h"
 #include "aom/aomcx.h"
 #include "aom/aom_encoder.h"
 
