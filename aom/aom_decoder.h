@@ -42,7 +42,7 @@ extern "C" {
  * fields to structures
  */
 #define AOM_DECODER_ABI_VERSION \
-  (4 + AOM_CODEC_ABI_VERSION) /**<\hideinitializer*/
+  (5 + AOM_CODEC_ABI_VERSION) /**<\hideinitializer*/
 
 /*! \brief Decoder capabilities bitfield
  *
@@ -52,9 +52,7 @@ extern "C" {
  *
  *  The available flags are specified by AOM_CODEC_CAP_* defines.
  */
-#define AOM_CODEC_CAP_PUT_SLICE 0x10000 /**< Will issue put_slice callbacks */
-#define AOM_CODEC_CAP_PUT_FRAME 0x20000 /**< Will issue put_frame callbacks */
-#define AOM_CODEC_CAP_POSTPROC 0x40000  /**< Can postprocess decoded frame */
+#define AOM_CODEC_CAP_POSTPROC 0x40000 /**< Can postprocess decoded frame */
 /*!brief Can support external frame buffers */
 #define AOM_CODEC_CAP_EXTERNAL_FRAME_BUFFER 0x200000
 
@@ -177,16 +175,12 @@ aom_codec_err_t aom_codec_get_stream_info(aom_codec_ctx_t *ctx,
 
 /*!\brief Decode data
  *
- * Processes a buffer of coded data. If the processing results in a new
- * decoded frame becoming available, put_slice and put_frame callbacks may be
- * invoked, as appropriate. Encoded data \ref MUST be passed in DTS (decode
- * time stamp) order. Frames produced will always be in PTS (presentation
- * time stamp) order.
+ * Processes a buffer of coded data. Encoded data \ref MUST be passed in DTS
+ * (decode time stamp) order. Frames produced will always be in PTS
+ * (presentation time stamp) order.
  *
  * \param[in] ctx          Pointer to this instance's context
- * \param[in] data         Pointer to this block of new coded data. If
- *                         NULL, the put_frame callback is invoked for
- *                         the previously decoded frame.
+ * \param[in] data         Pointer to this block of new coded data.
  * \param[in] data_sz      Size of the coded data, in bytes.
  * \param[in] user_priv    Application specific data to associate with
  *                         this frame.
@@ -216,86 +210,6 @@ aom_codec_err_t aom_codec_decode(aom_codec_ctx_t *ctx, const uint8_t *data,
  *         produced will always be in PTS (presentation time stamp) order.
  */
 aom_image_t *aom_codec_get_frame(aom_codec_ctx_t *ctx, aom_codec_iter_t *iter);
-
-/*!\defgroup cap_put_frame Frame-Based Decoding Functions
- *
- * The following function is required to be implemented for all decoders
- * that advertise the AOM_CODEC_CAP_PUT_FRAME capability. Calling this
- * function for codecs that don't advertise this capability will result in
- * an error code being returned, usually AOM_CODEC_INCAPABLE.
- * @{
- */
-
-/*!\brief put frame callback prototype
- *
- * This callback is invoked by the decoder to notify the application of
- * the availability of decoded image data.
- */
-typedef void (*aom_codec_put_frame_cb_fn_t)(void *user_priv,
-                                            const aom_image_t *img);
-
-/*!\brief Register for notification of frame completion.
- *
- * Registers a given function to be called when a decoded frame is
- * available.
- *
- * \param[in] ctx          Pointer to this instance's context
- * \param[in] cb           Pointer to the callback function
- * \param[in] user_priv    User's private data
- *
- * \retval #AOM_CODEC_OK
- *     Callback successfully registered.
- * \retval #AOM_CODEC_ERROR
- *     Decoder context not initialized.
- * \retval #AOM_CODEC_INCAPABLE
- *     Algorithm not capable of posting frame completion.
- */
-aom_codec_err_t aom_codec_register_put_frame_cb(aom_codec_ctx_t *ctx,
-                                                aom_codec_put_frame_cb_fn_t cb,
-                                                void *user_priv);
-
-/*!@} - end defgroup cap_put_frame */
-
-/*!\defgroup cap_put_slice Slice-Based Decoding Functions
- *
- * The following function is required to be implemented for all decoders
- * that advertise the AOM_CODEC_CAP_PUT_SLICE capability. Calling this
- * function for codecs that don't advertise this capability will result in
- * an error code being returned, usually AOM_CODEC_INCAPABLE.
- * @{
- */
-
-/*!\brief put slice callback prototype
- *
- * This callback is invoked by the decoder to notify the application of
- * the availability of partially decoded image data.
- */
-typedef void (*aom_codec_put_slice_cb_fn_t)(void *user_priv,
-                                            const aom_image_t *img,
-                                            const aom_image_rect_t *valid,
-                                            const aom_image_rect_t *update);
-
-/*!\brief Register for notification of slice completion.
- *
- * Registers a given function to be called when a decoded slice is
- * available.
- *
- * \param[in] ctx          Pointer to this instance's context
- * \param[in] cb           Pointer to the callback function
- * \param[in] user_priv    User's private data
- *
- * \retval #AOM_CODEC_OK
- *     Callback successfully registered.
- * \retval #AOM_CODEC_ERROR
- *     Decoder context not initialized.
- * \retval #AOM_CODEC_INCAPABLE
- *     Algorithm not capable of posting slice completion.
- */
-aom_codec_err_t aom_codec_register_put_slice_cb(aom_codec_ctx_t *ctx,
-                                                aom_codec_put_slice_cb_fn_t cb,
-                                                void *user_priv);
-
-/*!@} - end defgroup cap_put_slice*/
 
 /*!\defgroup cap_external_frame_buffer External Frame Buffer Functions
  *

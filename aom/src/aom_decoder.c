@@ -120,46 +120,6 @@ aom_image_t *aom_codec_get_frame(aom_codec_ctx_t *ctx, aom_codec_iter_t *iter) {
   return img;
 }
 
-aom_codec_err_t aom_codec_register_put_frame_cb(aom_codec_ctx_t *ctx,
-                                                aom_codec_put_frame_cb_fn_t cb,
-                                                void *user_priv) {
-  aom_codec_err_t res;
-
-  if (!ctx || !cb)
-    res = AOM_CODEC_INVALID_PARAM;
-  else if (!ctx->iface || !ctx->priv)
-    res = AOM_CODEC_ERROR;
-  else if (!(ctx->iface->caps & AOM_CODEC_CAP_PUT_FRAME))
-    res = AOM_CODEC_INCAPABLE;
-  else {
-    ctx->priv->dec.put_frame_cb.u.put_frame = cb;
-    ctx->priv->dec.put_frame_cb.user_priv = user_priv;
-    res = AOM_CODEC_OK;
-  }
-
-  return SAVE_STATUS(ctx, res);
-}
-
-aom_codec_err_t aom_codec_register_put_slice_cb(aom_codec_ctx_t *ctx,
-                                                aom_codec_put_slice_cb_fn_t cb,
-                                                void *user_priv) {
-  aom_codec_err_t res;
-
-  if (!ctx || !cb)
-    res = AOM_CODEC_INVALID_PARAM;
-  else if (!ctx->iface || !ctx->priv)
-    res = AOM_CODEC_ERROR;
-  else if (!(ctx->iface->caps & AOM_CODEC_CAP_PUT_SLICE))
-    res = AOM_CODEC_INCAPABLE;
-  else {
-    ctx->priv->dec.put_slice_cb.u.put_slice = cb;
-    ctx->priv->dec.put_slice_cb.user_priv = user_priv;
-    res = AOM_CODEC_OK;
-  }
-
-  return SAVE_STATUS(ctx, res);
-}
-
 aom_codec_err_t aom_codec_set_frame_buffer_functions(
     aom_codec_ctx_t *ctx, aom_get_frame_buffer_cb_fn_t cb_get,
     aom_release_frame_buffer_cb_fn_t cb_release, void *cb_priv) {

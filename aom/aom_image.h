@@ -30,7 +30,7 @@ extern "C" {
  * types, removing or reassigning enums, adding/removing/rearranging
  * fields to structures
  */
-#define AOM_IMAGE_ABI_VERSION (8) /**<\hideinitializer*/
+#define AOM_IMAGE_ABI_VERSION (9) /**<\hideinitializer*/
 
 #define AOM_IMG_FMT_PLANAR 0x100  /**< Image is a planar format. */
 #define AOM_IMG_FMT_UV_FLIP 0x200 /**< V plane precedes U in memory. */
@@ -223,14 +223,6 @@ typedef struct aom_image {
 
   void *fb_priv; /**< Frame buffer data associated with the image. */
 } aom_image_t;   /**< alias for struct aom_image */
-
-/**\brief Representation of a rectangle on a surface */
-typedef struct aom_image_rect {
-  unsigned int x;   /**< leftmost column */
-  unsigned int y;   /**< topmost row */
-  unsigned int w;   /**< width */
-  unsigned int h;   /**< height */
-} aom_image_rect_t; /**< alias for struct aom_image_rect */
 
 /*!\brief Open a descriptor, allocating storage for the underlying image
  *

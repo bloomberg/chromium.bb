@@ -61,7 +61,7 @@ extern "C" {
  * types, removing or reassigning enums, adding/removing/rearranging
  * fields to structures
  */
-#define AOM_CODEC_INTERNAL_ABI_VERSION (6) /**<\hideinitializer*/
+#define AOM_CODEC_INTERNAL_ABI_VERSION (7) /**<\hideinitializer*/
 
 typedef struct aom_codec_alg_priv aom_codec_alg_priv_t;
 
@@ -171,16 +171,12 @@ typedef const struct aom_codec_ctrl_fn_map {
 
 /*!\brief decode data function pointer prototype
  *
- * Processes a buffer of coded data. If the processing results in a new
- * decoded frame becoming available, put_slice and put_frame callbacks
- * are invoked as appropriate. This function is called by the generic
- * aom_codec_decode() wrapper function, so plugins implementing this
- * interface may trust the input parameters to be properly initialized.
+ * Processes a buffer of coded data. This function is called by the generic
+ * aom_codec_decode() wrapper function, so plugins implementing this interface
+ * may trust the input parameters to be properly initialized.
  *
  * \param[in] ctx          Pointer to this instance's context
- * \param[in] data         Pointer to this block of new coded data. If
- *                         NULL, the put_frame callback is invoked for
- *                         the previously decoded frame.
+ * \param[in] data         Pointer to this block of new coded data.
  * \param[in] data_sz      Size of the coded data, in bytes.
  *
  * \return Returns #AOM_CODEC_OK if the coded data was processed completely
@@ -292,15 +288,6 @@ struct aom_codec_iface {
   } enc;
 };
 
-/*!\brief Callback function pointer / user data pair storage */
-typedef struct aom_codec_priv_cb_pair {
-  union {
-    aom_codec_put_frame_cb_fn_t put_frame;
-    aom_codec_put_slice_cb_fn_t put_slice;
-  } u;
-  void *user_priv;
-} aom_codec_priv_cb_pair_t;
-
 /*!\brief Instance private storage
  *
  * This structure is allocated by the algorithm's init function. It can be
@@ -312,10 +299,6 @@ typedef struct aom_codec_priv_cb_pair {
 struct aom_codec_priv {
   const char *err_detail;
   aom_codec_flags_t init_flags;
-  struct {
-    aom_codec_priv_cb_pair_t put_frame_cb;
-    aom_codec_priv_cb_pair_t put_slice_cb;
-  } dec;
   struct {
     aom_fixed_buf_t cx_data_dst_buf;
     unsigned int cx_data_pad_before;
