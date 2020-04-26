@@ -170,7 +170,7 @@ static void show_help(FILE *fout, int shorthelp) {
   fprintf(fout, "\nIncluded decoders:\n\n");
 
   for (int i = 0; i < get_aom_decoder_count(); ++i) {
-    const aom_codec_iface_t *decoder = get_aom_decoder_by_index(i);
+    aom_codec_iface_t *decoder = get_aom_decoder_by_index(i);
     fprintf(fout, "    %-6s - %s\n", get_short_name_by_aom_decoder(decoder),
             aom_codec_iface_name(decoder));
   }
@@ -258,7 +258,7 @@ static int file_is_raw(struct AvxInputContext *input) {
 
     if (mem_get_le32(buf) < 256 * 1024 * 1024) {
       for (i = 0; i < get_aom_decoder_count(); ++i) {
-        const aom_codec_iface_t *decoder = get_aom_decoder_by_index(i);
+        aom_codec_iface_t *decoder = get_aom_decoder_by_index(i);
         if (!aom_codec_peek_stream_info(decoder, buf + 4, 32 - 4, &si)) {
           is_raw = 1;
           input->fourcc = get_fourcc_by_aom_decoder(decoder);

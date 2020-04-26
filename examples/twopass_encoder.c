@@ -117,7 +117,7 @@ static int encode_frame(aom_codec_ctx_t *ctx, const aom_image_t *img,
 }
 
 static aom_fixed_buf_t pass0(aom_image_t *raw, FILE *infile,
-                             const aom_codec_iface_t *encoder,
+                             aom_codec_iface_t *encoder,
                              const aom_codec_enc_cfg_t *cfg, int limit) {
   aom_codec_ctx_t codec;
   int frame_count = 0;
@@ -143,8 +143,8 @@ static aom_fixed_buf_t pass0(aom_image_t *raw, FILE *infile,
 }
 
 static void pass1(aom_image_t *raw, FILE *infile, const char *outfile_name,
-                  const aom_codec_iface_t *encoder,
-                  const aom_codec_enc_cfg_t *cfg, int limit) {
+                  aom_codec_iface_t *encoder, const aom_codec_enc_cfg_t *cfg,
+                  int limit) {
   AvxVideoInfo info = { get_fourcc_by_aom_encoder(encoder),
                         cfg->g_w,
                         cfg->g_h,

@@ -146,17 +146,17 @@ void usage_exit(void) AOM_NO_RETURN;
 // functions provide different ways to lookup / iterate through them.
 // The return result may be NULL to indicate no codec was found.
 int get_aom_encoder_count();
-const aom_codec_iface_t *get_aom_encoder_by_index(int i);
-const aom_codec_iface_t *get_aom_encoder_by_short_name(const char *name);
+aom_codec_iface_t *get_aom_encoder_by_index(int i);
+aom_codec_iface_t *get_aom_encoder_by_short_name(const char *name);
 // If the interface is unknown, returns NULL.
 const char *get_short_name_by_aom_encoder(aom_codec_iface_t *encoder);
 // If the interface is unknown, returns 0.
 uint32_t get_fourcc_by_aom_encoder(aom_codec_iface_t *iface);
 
 int get_aom_decoder_count();
-const aom_codec_iface_t *get_aom_decoder_by_index(int i);
-const aom_codec_iface_t *get_aom_decoder_by_short_name(const char *name);
-const aom_codec_iface_t *get_aom_decoder_by_fourcc(uint32_t fourcc);
+aom_codec_iface_t *get_aom_decoder_by_index(int i);
+aom_codec_iface_t *get_aom_decoder_by_short_name(const char *name);
+aom_codec_iface_t *get_aom_decoder_by_fourcc(uint32_t fourcc);
 const char *get_short_name_by_aom_decoder(aom_codec_iface_t *decoder);
 // If the interface is unknown, returns 0.
 uint32_t get_fourcc_by_aom_decoder(aom_codec_iface_t *iface);

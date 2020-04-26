@@ -33,7 +33,7 @@ typedef enum {
 
 /* Configuration elements common to all streams. */
 struct AvxEncoderConfig {
-  const aom_codec_iface_t *codec;
+  aom_codec_iface_t *codec;
   int passes;
   int pass;
   unsigned int usage;

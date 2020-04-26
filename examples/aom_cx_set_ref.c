@@ -300,7 +300,7 @@ int main(int argc, char **argv) {
     die_codec(&ecodec, "Failed to set enable auto alt ref");
 
   if (test_decode) {
-    const aom_codec_iface_t *decoder = get_aom_decoder_by_short_name(codec_arg);
+    aom_codec_iface_t *decoder = get_aom_decoder_by_short_name(codec_arg);
     if (aom_codec_dec_init(&dcodec, decoder, NULL, 0))
       die_codec(&dcodec, "Failed to initialize decoder.");
   }

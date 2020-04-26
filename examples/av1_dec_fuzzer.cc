@@ -34,7 +34,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     return 0;
   }
 
-  const aom_codec_iface_t *codec_interface = aom_codec_av1_dx();
+  aom_codec_iface_t *codec_interface = aom_codec_av1_dx();
   aom_codec_ctx_t codec;
   // Set thread count in the range [1, 64].
   const unsigned int threads = (data[IVF_FILE_HDR_SZ] & 0x3f) + 1;

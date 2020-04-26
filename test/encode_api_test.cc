@@ -20,7 +20,7 @@
 namespace {
 
 TEST(EncodeAPI, InvalidParams) {
-  static const aom_codec_iface_t *kCodecs[] = {
+  static aom_codec_iface_t *kCodecs[] = {
 #if CONFIG_AV1_ENCODER
     aom_codec_av1_cx(),
 #endif
@@ -43,7 +43,7 @@ TEST(EncodeAPI, InvalidParams) {
             aom_codec_enc_config_default(NULL, &cfg, 0));
   EXPECT_TRUE(aom_codec_error(NULL) != NULL);
 
-  for (const aom_codec_iface_t *iface : kCodecs) {
+  for (aom_codec_iface_t *iface : kCodecs) {
     SCOPED_TRACE(aom_codec_iface_name(iface));
     EXPECT_EQ(AOM_CODEC_INVALID_PARAM,
               aom_codec_enc_init(NULL, iface, NULL, 0));

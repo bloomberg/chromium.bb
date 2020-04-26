@@ -128,7 +128,7 @@ static void get_raw_image(aom_image_t **frame_to_encode, aom_image_t *raw,
 }
 
 static aom_fixed_buf_t pass0(aom_image_t *raw, FILE *infile,
-                             const aom_codec_iface_t *encoder,
+                             aom_codec_iface_t *encoder,
                              const aom_codec_enc_cfg_t *cfg, int lf_width,
                              int lf_height, int lf_blocksize, int flags,
                              aom_image_t *raw_shift) {
@@ -231,7 +231,7 @@ static aom_fixed_buf_t pass0(aom_image_t *raw, FILE *infile,
 }
 
 static void pass1(aom_image_t *raw, FILE *infile, const char *outfile_name,
-                  const aom_codec_iface_t *encoder, aom_codec_enc_cfg_t *cfg,
+                  aom_codec_iface_t *encoder, aom_codec_enc_cfg_t *cfg,
                   int lf_width, int lf_height, int lf_blocksize, int flags,
                   aom_image_t *raw_shift) {
   AvxVideoInfo info = { get_fourcc_by_aom_encoder(encoder),

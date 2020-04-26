@@ -1054,7 +1054,7 @@ static void show_help(FILE *fout, int shorthelp) {
 
   const int num_encoder = get_aom_encoder_count();
   for (int i = 0; i < num_encoder; ++i) {
-    const aom_codec_iface_t *encoder = get_aom_encoder_by_index(i);
+    aom_codec_iface_t *encoder = get_aom_encoder_by_index(i);
     const char *defstr = (i == (num_encoder - 1)) ? "(default)" : "";
     fprintf(fout, "    %-6s - %s %s\n", get_short_name_by_aom_encoder(encoder),
             aom_codec_iface_name(encoder), defstr);
@@ -1927,7 +1927,7 @@ static void initialize_encoder(struct stream_state *stream,
 
 #if CONFIG_AV1_DECODER
   if (global->test_decode != TEST_DECODE_OFF) {
-    const aom_codec_iface_t *decoder = get_aom_decoder_by_short_name(
+    aom_codec_iface_t *decoder = get_aom_decoder_by_short_name(
         get_short_name_by_aom_encoder(global->codec));
     aom_codec_dec_cfg_t cfg = { 0, 0, 0, !FORCE_HIGHBITDEPTH_DECODING };
     aom_codec_dec_init(&stream->decoder, decoder, &cfg, 0);

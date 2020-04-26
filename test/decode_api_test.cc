@@ -20,7 +20,7 @@
 namespace {
 
 TEST(DecodeAPI, InvalidParams) {
-  static const aom_codec_iface_t *kCodecs[] = {
+  static aom_codec_iface_t *kCodecs[] = {
 #if CONFIG_AV1_DECODER
     aom_codec_av1_dx(),
 #endif
@@ -39,7 +39,7 @@ TEST(DecodeAPI, InvalidParams) {
   EXPECT_EQ(AOM_CODEC_INVALID_PARAM, aom_codec_destroy(NULL));
   EXPECT_TRUE(aom_codec_error(NULL) != NULL);
 
-  for (const aom_codec_iface_t *iface : kCodecs) {
+  for (aom_codec_iface_t *iface : kCodecs) {
     EXPECT_EQ(AOM_CODEC_INVALID_PARAM,
               aom_codec_dec_init(NULL, iface, NULL, 0));
 
