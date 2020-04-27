@@ -31,6 +31,7 @@
 
 #include <assert.h>
 
+#include <algorithm>
 #include <string>
 
 #include "common/scoped_ptr.h"
@@ -128,8 +129,10 @@ ProcessResult MinidumpProcessor::Process(
     process_state->exception_record_.set_nested_exception_record_address(
         exception->exception()->exception_record.exception_record);
     process_state->exception_record_.set_address(process_state->crash_address_);
-    for (uint32_t i = 0;
-         i < exception->exception()->exception_record.number_parameters; i++) {
+    const uint32_t num_parameters =
+        std::min(exception->exception()->exception_record.number_parameters,
+                 MD_EXCEPTION_MAXIMUM_PARAMETERS);
+    for (uint32_t i = 0; i < num_parameters; ++i) {
       process_state->exception_record_.add_parameter(
           exception->exception()->exception_record.exception_information[i],
           // TODO(ivanpe): Populate description.
