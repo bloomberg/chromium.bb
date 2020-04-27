@@ -433,7 +433,9 @@ ARC_BUILDS_NEED_ARTIFACTS_RENAMED = {
 # All builds will have the same name without target prefix.
 # Emerge checksum failures will be workarounded by ebuild rename symbol (->).
 ARC_ARTIFACTS_RENAME_NOT_NEEDED = [
+    'push_to_device.zip',
     'sepolicy.zip',
+    'XkbToKcmConverter',
 ]
 
 GOB_COOKIE_PATH = os.path.expanduser('~/.git-credential-cache/cookie')
