@@ -787,7 +787,7 @@ class ChromiumOSUpdater(BaseUpdater):
 
     nebraska_hostlog_file = os.path.join(
         self.tempdir, 'devserver_hostlog_' + partial_filename)
-    nebraska.CollectRequestLogs(nebraska_hostlog_file)
+    nebraska.CollectRequestLogs(nebraska_hostlog_file, mode='scp')
 
   def _Reboot(self, error_stage, timeout=None):
     try:

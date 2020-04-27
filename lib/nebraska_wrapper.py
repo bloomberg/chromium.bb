@@ -271,11 +271,12 @@ class RemoteNebraskaWrapper(multiprocessing.Process):
       logging.error('Failed to copy nebraska logs from device, ignoring: %s',
                     str(err))
 
-  def CollectRequestLogs(self, target_log):
+  def CollectRequestLogs(self, target_log, mode='rsync'):
     """Copies the nebraska logs from the device.
 
     Args:
       target_log: The file to write the log to.
+      mode: Mode for copying files. Must be either 'rsync' or 'scp'.
     """
     if not self.is_alive():
       return
@@ -285,7 +286,8 @@ class RemoteNebraskaWrapper(multiprocessing.Process):
     try:
       self._RemoteCommand(
           ['curl', request_log_url, '-o', self.REQUEST_LOG_FILE_PATH])
-      self._device.CopyFromDevice(self.REQUEST_LOG_FILE_PATH, target_log)
+      self._device.CopyFromDevice(self.REQUEST_LOG_FILE_PATH, target_log,
+                                  mode=mode)
     except (remote_access.RemoteAccessException,
             cros_build_lib.RunCommandError) as err:
       logging.error('Failed to get requestlog from nebraska. ignoring: %s',
