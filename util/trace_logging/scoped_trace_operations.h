@@ -12,7 +12,6 @@
 #include <utility>
 #include <vector>
 
-#include "build/config/features.h"
 #include "platform/api/time.h"
 #include "platform/base/error.h"
 #include "platform/base/trace_logging_types.h"

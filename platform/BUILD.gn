@@ -83,6 +83,8 @@ if (!build_with_chromium) {
       "impl/tls_write_buffer.h",
     ]
 
+    public_configs = [ "//util:trace_logging_config" ]
+
     if (is_linux) {
       sources += [
         "impl/network_interface_linux.cc",

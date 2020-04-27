@@ -13,7 +13,6 @@
 #error "BUG: This file should not have been reached."
 #endif
 
-#include "build/config/features.h"
 #include "platform/api/trace_logging_platform.h"
 #include "platform/base/trace_logging_activation.h"
 #include "platform/base/trace_logging_types.h"

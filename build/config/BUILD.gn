@@ -4,6 +4,7 @@
 
 import("//build/config/arm.gni")
 import("//build/config/sysroot.gni")
+import("//build_overrides/build.gni")
 
 declare_args() {
   # Enable OSP_DCHECKs to be compiled in, even if it's not a debug build.

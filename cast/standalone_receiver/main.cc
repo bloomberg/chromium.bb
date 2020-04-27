@@ -6,6 +6,7 @@
 
 #include <array>
 #include <chrono>  // NOLINT
+#include <iostream>
 
 #include "cast/common/public/service_info.h"
 #include "cast/standalone_receiver/cast_agent.h"
@@ -114,22 +115,22 @@ void RunStandaloneReceiver(TaskRunnerImpl* task_runner,
 namespace {
 
 void LogUsage(const char* argv0) {
-  constexpr char kExecutableTag[] = "argv[0]";
-  constexpr char kUsageMessage[] = R"(
-    usage: argv[0] <options> <interface>
+  std::cerr << R"(
+usage: )" << argv0
+            << R"( <options> <interface>
 
-    options:
-      <interface>: Specify the network interface to bind to. The interface is
-          looked up from the system interface registry. This argument is
-          mandatory, as it must be known for publishing discovery.
+options:
+    interface
+        Specifies the network interface to bind to. The interface is
+        looked up from the system interface registry. This argument is
+        mandatory, as it must be known for publishing discovery.
 
-      -t, --tracing: Enable performance tracing logging.
+    -t, --tracing: Enable performance tracing logging.
 
-      -h, --help: Show this help message.
+    -v, --verbose: Enable verbose logging.
+
+    -h, --help: Show this help message.
   )";
-  std::string message = kUsageMessage;
-  message.replace(message.find(kExecutableTag), strlen(kExecutableTag), argv0);
-  OSP_LOG_INFO << message;
 }
 
 }  // namespace
@@ -144,27 +145,37 @@ int main(int argc, char* argv[]) {
   using openscreen::PlatformClientPosix;
   using openscreen::TaskRunnerImpl;
 
-  openscreen::SetLogLevel(openscreen::LogLevel::kInfo);
-
-  const struct option argument_options[] = {
+  // A note about modifying command line arguments: consider uniformity
+  // between all Open Screen executables. If it is a platform feature
+  // being exposed, consider if it applies to the standalone receiver,
+  // standalone sender, osp demo, and test_main argument options.
+  const struct option kArgumentOptions[] = {
       {"tracing", no_argument, nullptr, 't'},
+      {"verbose", no_argument, nullptr, 'v'},
       {"help", no_argument, nullptr, 'h'},
       {nullptr, 0, nullptr, 0}};
 
+  bool is_verbose = false;
   InterfaceInfo interface_info;
   std::unique_ptr<openscreen::TextTraceLoggingPlatform> trace_logger;
   int ch = -1;
-  while ((ch = getopt_long(argc, argv, "th", argument_options, nullptr)) !=
+  while ((ch = getopt_long(argc, argv, "tvh", kArgumentOptions, nullptr)) !=
          -1) {
     switch (ch) {
       case 't':
         trace_logger = std::make_unique<openscreen::TextTraceLoggingPlatform>();
+        break;
+      case 'v':
+        is_verbose = true;
         break;
       case 'h':
         LogUsage(argv[0]);
         return 1;
     }
   }
+  openscreen::SetLogLevel(is_verbose ? openscreen::LogLevel::kVerbose
+                                     : openscreen::LogLevel::kInfo);
+
   char* interface_argument = argv[optind];
   OSP_CHECK(interface_argument != nullptr)
       << "Missing mandatory argument: interface.";
@@ -176,6 +187,7 @@ int main(int argc, char* argv[]) {
       break;
     }
   }
+
   OSP_CHECK(!interface_info.name.empty()) << "Invalid interface specified.";
 
   auto* const task_runner = new TaskRunnerImpl(&Clock::now);

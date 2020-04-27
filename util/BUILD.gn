@@ -4,6 +4,19 @@
 
 import("//build_overrides/build.gni")
 
+declare_args() {
+  # Enables trace logging in build. This is true by default, unless
+  # we are built against Chrome--we have no way to link their platform
+  # implementation into our binaries so trace logging is not possible.
+  enable_trace_logging = !build_with_chromium
+}
+
+config("trace_logging_config") {
+  if (enable_trace_logging) {
+    defines = [ "ENABLE_TRACE_LOGGING" ]
+  }
+}
+
 source_set("util") {
   sources = [
     "alarm.cc",
@@ -59,7 +72,10 @@ source_set("util") {
     "../third_party/mozilla",
   ]
 
-  public_configs = [ "../build:openscreen_include_dirs" ]
+  public_configs = [
+    "../build:openscreen_include_dirs",
+    ":trace_logging_config",
+  ]
 }
 
 source_set("unittests") {
@@ -81,11 +97,16 @@ source_set("unittests") {
     "simple_fraction_unittest.cc",
     "stringprintf_unittest.cc",
     "trace_logging/scoped_trace_operations_unittest.cc",
-    "trace_logging_unittest.cc",
     "url_unittest.cc",
     "weak_ptr_unittest.cc",
     "yet_another_bit_vector_unittest.cc",
   ]
+
+  # The trace logging unittests depend on macros only defined
+  # when trace logging is enabled.
+  if (enable_trace_logging) {
+    sources += [ "trace_logging_unittest.cc" ]
+  }
 
   deps = [
     ":util",

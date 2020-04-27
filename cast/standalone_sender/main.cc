@@ -9,6 +9,7 @@
 #include <csignal>
 #include <cstdio>
 #include <cstring>
+#include <iostream>
 #include <sstream>
 
 #include "cast/streaming/constants.h"
@@ -336,64 +337,55 @@ IPEndpoint GetDefaultEndpoint() {
 }
 
 void LogUsage(const char* argv0) {
-  const char kUsageMessageFormat[] = R"(
-    usage: %s <options> <media_file>
+  std::cerr << R"(
+    usage:)" << argv0
+            << R"( <options> <media_file>
 
-      --remote=addr[:port]
+      -r, --remote=addr[:port]
            Specify the destination (e.g., 192.168.1.22:9999 or [::1]:12345).
 
-           Default if not set: %s
+           Default if not set: )"
+            << GetDefaultEndpoint() << R"(
 
-      --max-bitrate=N
+      -m, --max-bitrate=N
            Specifies the maximum bits per second for the media streams.
 
-           Default if not set: %d.
+           Default if not set: )"
+            << kDefaultMaxBitrate << R"(.
 
-      --android-hack:
+      -a, --android-hack:
            Use the wrong RTP payload types, for compatibility with older Android
            TV receivers.
 
-      --tracing: Enable performance tracing logging.
+      -t, --tracing: Enable performance tracing logging.
+
+      -v, --verbose: Enable verbose logging.
+
+      -h, --help: Show this help message.
   )";
-  // TODO(https://crbug.com/openscreen/122): absl::StreamFormat() would be much
-  // cleaner here. For example, all the code here could be replaced with:
-  //
-  // OSP_LOG_ERROR << absl::StreamFormat(kUsageMessageFormat, argv0,
-  //                                     absl::FromatStreamed(endpoint),
-  //                                     kDefaultMaxBitrate);
-  std::string endpoint;
-  {
-    std::ostringstream oss;
-    oss << GetDefaultEndpoint();
-    endpoint = oss.str();
-  }
-  const int formatted_length_with_nul =
-      snprintf(nullptr, 0, kUsageMessageFormat, argv0, endpoint.c_str(),
-               kDefaultMaxBitrate) +
-      1;
-  const std::unique_ptr<char[]> usage_cstr(new char[formatted_length_with_nul]);
-  snprintf(usage_cstr.get(), formatted_length_with_nul, kUsageMessageFormat,
-           argv0, endpoint.c_str(), kDefaultMaxBitrate);
-  OSP_LOG_ERROR << usage_cstr.get();
 }
 
 int StandaloneSenderMain(int argc, char* argv[]) {
-  SetLogLevel(LogLevel::kInfo);
-
-  const struct option argument_options[] = {
+  // A note about modifying command line arguments: consider uniformity
+  // between all Open Screen executables. If it is a platform feature
+  // being exposed, consider if it applies to the standalone receiver,
+  // standalone sender, osp demo, and test_main argument options.
+  const struct option kArgumentOptions[] = {
       {"remote", required_argument, nullptr, 'r'},
       {"max-bitrate", required_argument, nullptr, 'm'},
       {"android-hack", no_argument, nullptr, 'a'},
       {"tracing", no_argument, nullptr, 't'},
+      {"verbose", no_argument, nullptr, 'v'},
       {"help", no_argument, nullptr, 'h'},
       {nullptr, 0, nullptr, 0}};
 
+  bool is_verbose = false;
   IPEndpoint remote_endpoint = GetDefaultEndpoint();
   [[maybe_unused]] bool use_android_rtp_hack = false;
   [[maybe_unused]] int max_bitrate = kDefaultMaxBitrate;
   std::unique_ptr<TextTraceLoggingPlatform> trace_logger;
   int ch = -1;
-  while ((ch = getopt_long(argc, argv, "r:ath", argument_options, nullptr)) !=
+  while ((ch = getopt_long(argc, argv, "r:atvh", kArgumentOptions, nullptr)) !=
          -1) {
     switch (ch) {
       case 'r': {
@@ -427,12 +419,17 @@ int StandaloneSenderMain(int argc, char* argv[]) {
       case 't':
         trace_logger = std::make_unique<TextTraceLoggingPlatform>();
         break;
+      case 'v':
+        is_verbose = true;
+        break;
       case 'h':
         LogUsage(argv[0]);
         return 1;
     }
   }
 
+  openscreen::SetLogLevel(is_verbose ? openscreen::LogLevel::kVerbose
+                                     : openscreen::LogLevel::kInfo);
   // The last command line argument must be the path to the file.
   const char* path = nullptr;
   if (optind == (argc - 1)) {

@@ -113,8 +113,6 @@ class ReceiverSocketsClient final
 class CastSocketE2ETest : public ::testing::Test {
  public:
   void SetUp() override {
-    SetLogLevel(LogLevel::kInfo);
-
     PlatformClientPosix::Create(Clock::duration{50}, Clock::duration{50});
     task_runner_ = PlatformClientPosix::GetInstance()->GetTaskRunner();
 

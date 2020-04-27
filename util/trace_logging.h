@@ -5,7 +5,6 @@
 #ifndef UTIL_TRACE_LOGGING_H_
 #define UTIL_TRACE_LOGGING_H_
 
-#include "build/config/features.h"
 #include "platform/base/trace_logging_types.h"
 
 // All compile-time macros for tracing.

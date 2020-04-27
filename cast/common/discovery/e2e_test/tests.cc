@@ -17,7 +17,6 @@
 #include "platform/api/logging.h"
 #include "platform/api/udp_socket.h"
 #include "platform/base/interface_info.h"
-#include "platform/impl/logging.h"
 #include "platform/impl/network_interface.h"
 #include "platform/impl/platform_client_posix.h"
 #include "platform/impl/task_runner.h"
@@ -135,9 +134,6 @@ class DiscoveryE2ETest : public testing::Test {
   DiscoveryE2ETest() {
     // Sleep to let any packets clear off the network before further tests.
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
-
-    // Set log level so info logs go to stdout.
-    SetLogLevel(LogLevel::kInfo);
 
     PlatformClientPosix::Create(Clock::duration{50}, Clock::duration{50});
     task_runner_ = PlatformClientPosix::GetInstance()->GetTaskRunner();

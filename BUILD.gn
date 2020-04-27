@@ -85,8 +85,8 @@ source_set("openscreen_unittests_all") {
     "osp:unittests",
     "osp/msgs:unittests",
     "platform:unittests",
+    "test:test_main",
     "third_party/abseil",
-    "third_party/googletest:gtest_main",
     "util:unittests",
   ]
 
@@ -120,7 +120,7 @@ if (!build_with_chromium && is_posix) {
       "cast/common:discovery_e2e_test",
       "cast/test:e2e_tests",
       "cast/test:make_crl_tests($host_toolchain)",
-      "third_party/googletest:gtest_main",
+      "test:test_main",
     ]
   }
 

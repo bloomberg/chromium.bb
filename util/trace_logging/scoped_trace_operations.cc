@@ -5,7 +5,6 @@
 #include "util/trace_logging/scoped_trace_operations.h"
 
 #include "absl/types/optional.h"
-#include "build/config/features.h"
 #include "platform/api/trace_logging_platform.h"
 #include "platform/base/trace_logging_activation.h"
 #include "util/logging.h"
