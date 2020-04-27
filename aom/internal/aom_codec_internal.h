@@ -69,7 +69,7 @@ typedef struct aom_codec_priv_enc_mr_cfg aom_codec_priv_enc_mr_cfg_t;
 /*!\brief init function pointer prototype
  *
  * Performs algorithm-specific initialization of the decoder context. This
- * function is called by the generic aom_codec_init() wrapper function, so
+ * function is called by aom_codec_dec_init() and aom_codec_enc_init(), so
  * plugins implementing this interface may trust the input parameters to be
  * properly initialized.
  *
