@@ -1572,7 +1572,7 @@ class _CommonPrepareBundle(object):
     if compbinary:
       # Using `compbinary` profiles saves us hundreds of MB of RAM per
       # compilation, since it allows profiles to be lazily loaded.
-      cmd_to_binary += '-compbinary'
+      cmd_to_binary.append('-compbinary')
     cros_build_lib.run(cmd_to_binary, enter_chroot=True, print_cmd=True)
 
   def _CreateAndUploadMergedAFDOProfile(self,
