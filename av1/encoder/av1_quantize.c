@@ -667,11 +667,11 @@ void av1_init_plane_quantizers(const AV1_COMP *cpi, MACROBLOCK *x,
   const QUANTS *const quants = &cpi->enc_quant_dequant_params.quants;
   const Dequants *const dequants = &cpi->enc_quant_dequant_params.dequants;
 
-  const int current_qindex =
-      AOMMAX(0, AOMMIN(QINDEX_RANGE - 1,
-                       cm->delta_q_info.delta_q_present_flag
-                           ? quant_params->base_qindex + xd->delta_qindex
-                           : quant_params->base_qindex));
+  const int current_qindex = AOMMAX(
+      0,
+      AOMMIN(QINDEX_RANGE - 1, cm->delta_q_info.delta_q_present_flag
+                                   ? quant_params->base_qindex + x->delta_qindex
+                                   : quant_params->base_qindex));
   const int qindex = av1_get_qindex(&cm->seg, segment_id, current_qindex);
   const int rdmult =
       av1_compute_rd_mult(cpi, qindex + quant_params->y_dc_delta_q);

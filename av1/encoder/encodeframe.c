@@ -238,10 +238,11 @@ static BLOCK_SIZE get_rd_var_based_fixed_partition(AV1_COMP *cpi, MACROBLOCK *x,
     return BLOCK_8X8;
 }
 
-static int set_deltaq_rdmult(const AV1_COMP *const cpi, MACROBLOCKD *const xd) {
+static int set_deltaq_rdmult(const AV1_COMP *const cpi,
+                             const MACROBLOCK *const x) {
   const AV1_COMMON *const cm = &cpi->common;
   const CommonQuantParams *quant_params = &cm->quant_params;
-  return av1_compute_rd_mult(cpi, quant_params->base_qindex + xd->delta_qindex +
+  return av1_compute_rd_mult(cpi, quant_params->base_qindex + x->delta_qindex +
                                       quant_params->y_dc_delta_q);
 }
 
@@ -290,8 +291,7 @@ static int get_hier_tpl_rdmult(const AV1_COMP *const cpi, MACROBLOCK *const x,
                  cpi->gf_group.index < cpi->gf_group.size));
   const int tpl_idx = cpi->gf_group.index;
   const TplDepFrame *tpl_frame = &cpi->tpl_data.tpl_frame[tpl_idx];
-  MACROBLOCKD *const xd = &x->e_mbd;
-  const int deltaq_rdmult = set_deltaq_rdmult(cpi, xd);
+  const int deltaq_rdmult = set_deltaq_rdmult(cpi, x);
   if (tpl_frame->is_valid == 0) return deltaq_rdmult;
   if (!is_frame_tpl_eligible((AV1_COMP *)cpi)) return deltaq_rdmult;
   if (tpl_idx >= MAX_TPL_FRAME_IDX) return deltaq_rdmult;
@@ -324,7 +324,7 @@ static int get_hier_tpl_rdmult(const AV1_COMP *const cpi, MACROBLOCK *const x,
   av1_set_error_per_bit(&x->mv_cost_info, rdmult);
   aom_clear_system_state();
   if (bsize == cm->seq_params.sb_size) {
-    const int rdmult_sb = set_deltaq_rdmult(cpi, xd);
+    const int rdmult_sb = set_deltaq_rdmult(cpi, x);
     assert(rdmult_sb == rdmult);
     (void)rdmult_sb;
   }
@@ -4269,19 +4269,19 @@ static AOM_INLINE void setup_delta_q(AV1_COMP *const cpi, ThreadData *td,
   current_qindex = AOMMAX(current_qindex, MINQ + 1);
   assert(current_qindex > 0);
 
-  xd->delta_qindex = current_qindex - cm->quant_params.base_qindex;
+  x->delta_qindex = current_qindex - cm->quant_params.base_qindex;
   set_offsets(cpi, tile_info, x, mi_row, mi_col, sb_size);
   xd->mi[0]->current_qindex = current_qindex;
   av1_init_plane_quantizers(cpi, x, xd->mi[0]->segment_id);
 
   // keep track of any non-zero delta-q used
-  td->deltaq_used |= (xd->delta_qindex != 0);
+  td->deltaq_used |= (x->delta_qindex != 0);
 
   if (cpi->oxcf.deltalf_mode) {
     const int delta_lf_res = delta_q_info->delta_lf_res;
     const int lfmask = ~(delta_lf_res - 1);
     const int delta_lf_from_base =
-        ((xd->delta_qindex / 2 + delta_lf_res / 2) & lfmask);
+        ((x->delta_qindex / 2 + delta_lf_res / 2) & lfmask);
     const int8_t delta_lf =
         (int8_t)clamp(delta_lf_from_base, -MAX_LOOP_FILTER, MAX_LOOP_FILTER);
     const int frame_lf_count =

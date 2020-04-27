@@ -641,7 +641,6 @@ typedef struct macroblockd {
   int qindex[MAX_SEGMENTS];
   // lossless[s] is true if segment 's' is coded losslessly.
   int lossless[MAX_SEGMENTS];
-  int delta_qindex;
   int current_qindex;
 
   // Same as cm->features.cur_frame_force_integer_mv.

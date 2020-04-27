@@ -282,6 +282,11 @@ struct macroblock {
   int skip_block;
   int qindex;
 
+  // The difference between the frame-level base qindex and the qindex used for
+  // the current superblock. This is used to track whether a non-zero delta for
+  // qindex is used at least once in the current frame.
+  int delta_qindex;
+
   int rdmult;
   int mb_energy;
   int sb_energy_level;

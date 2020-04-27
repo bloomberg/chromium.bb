@@ -1239,12 +1239,11 @@ void av1_tpl_rdmult_setup_sb(AV1_COMP *cpi, MACROBLOCK *const x,
     }
   }
 
-  MACROBLOCKD *const xd = &x->e_mbd;
   const CommonQuantParams *quant_params = &cm->quant_params;
   const int orig_rdmult = av1_compute_rd_mult(
       cpi, quant_params->base_qindex + quant_params->y_dc_delta_q);
   const int new_rdmult =
-      av1_compute_rd_mult(cpi, quant_params->base_qindex + xd->delta_qindex +
+      av1_compute_rd_mult(cpi, quant_params->base_qindex + x->delta_qindex +
                                    quant_params->y_dc_delta_q);
   const double scaling_factor = (double)new_rdmult / (double)orig_rdmult;
 
