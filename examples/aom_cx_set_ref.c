@@ -265,7 +265,7 @@ int main(int argc, char **argv) {
   // Allocate memory with the border so that it can be used as a reference.
   if (!aom_img_alloc_with_border(&ext_ref, ref_fmt, info.frame_width,
                                  info.frame_height, 32, 8,
-                                 AOM_BORDER_IN_PIXELS)) {
+                                 AOM_DEC_BORDER_IN_PIXELS)) {
     die("Failed to allocate image.");
   }
 
