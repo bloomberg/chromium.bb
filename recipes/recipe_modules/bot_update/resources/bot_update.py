@@ -117,10 +117,15 @@ class PsPrinter(object):
     self.active = sys.platform.startswith('linux2')
     self.thread = None
 
-  @staticmethod
   def print_pstree():
     """Debugging function used to print "ps auxwwf" for stuck processes."""
+    # Add new line for cleaner output
+    print()
     subprocess.call(['ps', 'auxwwf'])
+
+    # Restart timer, we want to continue printing until the process is
+    # terminated.
+    self.poke()
 
   def poke(self):
     if self.active:
