@@ -47,7 +47,7 @@ aom_codec_err_t aom_codec_dec_init_ver(aom_codec_ctx_t *ctx,
     ctx->init_flags = flags;
     ctx->config.dec = cfg;
 
-    res = ctx->iface->init(ctx, NULL);
+    res = ctx->iface->init(ctx);
     if (res) {
       ctx->err_detail = ctx->priv ? ctx->priv->err_detail : NULL;
       aom_codec_destroy(ctx);

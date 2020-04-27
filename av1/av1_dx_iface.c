@@ -79,13 +79,10 @@ struct aom_codec_alg_priv {
 #endif
 };
 
-static aom_codec_err_t decoder_init(aom_codec_ctx_t *ctx,
-                                    aom_codec_priv_enc_mr_cfg_t *data) {
+static aom_codec_err_t decoder_init(aom_codec_ctx_t *ctx) {
   // This function only allocates space for the aom_codec_alg_priv_t
   // structure. More memory may be required at the time the stream
   // information becomes known.
-  (void)data;
-
   if (!ctx->priv) {
     aom_codec_alg_priv_t *const priv =
         (aom_codec_alg_priv_t *)aom_calloc(1, sizeof(*priv));
@@ -1428,8 +1425,7 @@ aom_codec_iface_t aom_codec_av1_dx_algo = {
       NULL,  // aom_codec_get_cx_data_fn_t
       NULL,  // aom_codec_enc_config_set_fn_t
       NULL,  // aom_codec_get_global_headers_fn_t
-      NULL,  // aom_codec_get_preview_frame_fn_t
-      NULL   // aom_codec_enc_mr_get_mem_loc_fn_t
+      NULL   // aom_codec_get_preview_frame_fn_t
   }
 };
 

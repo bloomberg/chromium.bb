@@ -61,10 +61,9 @@ extern "C" {
  * types, removing or reassigning enums, adding/removing/rearranging
  * fields to structures
  */
-#define AOM_CODEC_INTERNAL_ABI_VERSION (5) /**<\hideinitializer*/
+#define AOM_CODEC_INTERNAL_ABI_VERSION (6) /**<\hideinitializer*/
 
 typedef struct aom_codec_alg_priv aom_codec_alg_priv_t;
-typedef struct aom_codec_priv_enc_mr_cfg aom_codec_priv_enc_mr_cfg_t;
 
 /*!\brief init function pointer prototype
  *
@@ -79,8 +78,7 @@ typedef struct aom_codec_priv_enc_mr_cfg aom_codec_priv_enc_mr_cfg_t;
  * \retval #AOM_CODEC_MEM_ERROR
  *     Memory operation failed.
  */
-typedef aom_codec_err_t (*aom_codec_init_fn_t)(
-    aom_codec_ctx_t *ctx, aom_codec_priv_enc_mr_cfg_t *data);
+typedef aom_codec_err_t (*aom_codec_init_fn_t)(aom_codec_ctx_t *ctx);
 
 /*!\brief destroy function pointer prototype
  *
@@ -260,9 +258,6 @@ typedef aom_fixed_buf_t *(*aom_codec_get_global_headers_fn_t)(
 typedef aom_image_t *(*aom_codec_get_preview_frame_fn_t)(
     aom_codec_alg_priv_t *ctx);
 
-typedef aom_codec_err_t (*aom_codec_enc_mr_get_mem_loc_fn_t)(
-    const aom_codec_enc_cfg_t *cfg, void **mem_loc);
-
 /*!\brief Decoder algorithm interface interface
  *
  * All decoders \ref MUST expose a variable of this type.
@@ -294,8 +289,6 @@ struct aom_codec_iface {
         get_glob_hdrs; /**< \copydoc ::aom_codec_get_global_headers_fn_t */
     aom_codec_get_preview_frame_fn_t
         get_preview; /**< \copydoc ::aom_codec_get_preview_frame_fn_t */
-    aom_codec_enc_mr_get_mem_loc_fn_t
-        mr_get_mem_loc; /**< \copydoc ::aom_codec_enc_mr_get_mem_loc_fn_t */
   } enc;
 };
 
@@ -328,18 +321,7 @@ struct aom_codec_priv {
     unsigned int cx_data_pad_before;
     unsigned int cx_data_pad_after;
     aom_codec_cx_pkt_t cx_data_pkt;
-    unsigned int total_encoders;
   } enc;
-};
-
-/*
- * Multi-resolution encoding internal configuration
- */
-struct aom_codec_priv_enc_mr_cfg {
-  unsigned int mr_total_resolutions;
-  unsigned int mr_encoder_id;
-  struct aom_rational mr_down_sampling_factor;
-  void *mr_low_res_mode_info;
 };
 
 #undef AOM_CTRL_USE_TYPE
