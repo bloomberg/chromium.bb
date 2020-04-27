@@ -1892,13 +1892,15 @@ static int test_candidate_kf(TWO_PASS *twopass,
           II_IMPROVEMENT_THRESHOLD))))) {
     int i;
     const FIRSTPASS_STATS *start_pos = twopass->stats_in;
-    FIRSTPASS_STATS local_next_frame = *next_frame;
     double boost_score = 0.0;
     double old_boost_score = 0.0;
     double decay_accumulator = 1.0;
 
     // Examine how well the key frame predicts subsequent frames.
     for (i = 0; i < SCENE_CUT_KEY_TEST_INTERVAL; ++i) {
+      // Get the next frame details
+      FIRSTPASS_STATS local_next_frame;
+      if (EOF == input_stats(twopass, &local_next_frame)) break;
       double next_iiratio = (BOOST_FACTOR * local_next_frame.intra_error /
                              DOUBLE_DIVIDE_CHECK(local_next_frame.coded_error));
 
@@ -1924,9 +1926,6 @@ static int test_candidate_kf(TWO_PASS *twopass,
       }
 
       old_boost_score = boost_score;
-
-      // Get the next frame details
-      if (EOF == input_stats(twopass, &local_next_frame)) break;
     }
 
     // If there is tolerable prediction for at least the next 3 frames then
