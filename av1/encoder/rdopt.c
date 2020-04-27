@@ -3631,7 +3631,7 @@ static AOM_INLINE void init_inter_mode_search_state(
   }
   for (int ref_frame = 0; ref_frame < REF_FRAMES; ++ref_frame) {
     search_state->best_single_rd[ref_frame] = INT64_MAX;
-    search_state->best_single_mode[ref_frame] = THR_INVALID;
+    search_state->best_single_mode[ref_frame] = MB_MODE_COUNT;
   }
   av1_zero(search_state->single_state_cnt);
   av1_zero(search_state->single_state_modelled_cnt);
@@ -4090,7 +4090,8 @@ static INLINE void update_best_single_mode(InterModeSearchState *search_state,
 // Prune compound mode using best single mode for the same reference.
 static INLINE int skip_compound_using_best_single_mode_ref(
     const PREDICTION_MODE this_mode, const MV_REFERENCE_FRAME *ref_frames,
-    const PREDICTION_MODE *best_single_mode) {
+    const PREDICTION_MODE *best_single_mode,
+    int prune_comp_using_best_single_mode_ref) {
   // Exclude non-extended compound modes from pruning
   if (this_mode == NEAREST_NEARESTMV || this_mode == NEAR_NEARMV ||
       this_mode == NEW_NEWMV || this_mode == GLOBAL_GLOBALMV)
@@ -4110,7 +4111,12 @@ static INLINE int skip_compound_using_best_single_mode_ref(
   // - Ref frame corresponding to NEWMV is ALTREF_FRAME
   // - Avoid pruning this mode, if best single mode corresponding to ref frame
   //   ALTREF_FRAME is NEWMV
-  if (best_single_mode[ref_frames[newmv_dir]] == NEWMV) return 0;
+  const PREDICTION_MODE single_mode = best_single_mode[ref_frames[newmv_dir]];
+  if (single_mode == NEWMV) return 0;
+
+  // Avoid pruning the compound mode when best single mode is not available
+  if (prune_comp_using_best_single_mode_ref == 1)
+    if (single_mode == MB_MODE_COUNT) return 0;
   return 1;
 }
 
@@ -4372,7 +4378,8 @@ static int skip_inter_mode(AV1_COMP *cpi, MACROBLOCK *x, const BLOCK_SIZE bsize,
 
   if (sf->inter_sf.prune_comp_using_best_single_mode_ref && comp_pred) {
     if (skip_compound_using_best_single_mode_ref(
-            this_mode, ref_frames, args->search_state->best_single_mode))
+            this_mode, ref_frames, args->search_state->best_single_mode,
+            sf->inter_sf.prune_comp_using_best_single_mode_ref))
       return 1;
   }
 

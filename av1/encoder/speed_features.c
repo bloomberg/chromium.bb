@@ -523,6 +523,7 @@ static void set_good_speed_features_framesize_independent(
 
     sf->inter_sf.prune_inter_modes_based_on_tpl = boosted ? 0 : 2;
     sf->inter_sf.prune_compound_using_neighbors = 2;
+    sf->inter_sf.prune_comp_using_best_single_mode_ref = 1;
     sf->inter_sf.disable_smooth_interintra = 1;
 
     sf->interp_sf.cb_pred_filter_search = 1;
@@ -589,7 +590,7 @@ static void set_good_speed_features_framesize_independent(
         allow_screen_content_tools ? BLOCK_8X8 : BLOCK_16X16;
 
     sf->inter_sf.prune_inter_modes_based_on_tpl = boosted ? 0 : 3;
-    sf->inter_sf.prune_comp_using_best_single_mode_ref = 1;
+    sf->inter_sf.prune_comp_using_best_single_mode_ref = 2;
     sf->inter_sf.disable_interinter_wedge = 1;
     sf->inter_sf.disable_obmc = 1;
     sf->inter_sf.disable_onesided_comp = 1;
