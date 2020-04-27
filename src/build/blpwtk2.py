@@ -36,51 +36,35 @@
 #                                                       out/shared_release
 #                                                       out/static_release
 #                                                       out/static_release_md
-#                                                       out/static_buildmaster
-#                                                       out/static_buildmaster_md
 #
 # blpwtk2.py shared                         -- Generate out/shared_debug
 #                                                       out/shared_release
 #
 # blpwtk2.py static                         -- Generate out/static_release
 #                                                       out/static_release_md
-#                                                       out/static_buildmaster
-#                                                       out/static_buildmaster_md
 #
-# blpwtk2.py [shared] debug                 -- Generate out/shared_debug
+# blpwtk2.py debug                          -- Generate out/shared_debug
 #
 # blpwtk2.py release                        -- Generate out/shared_release
 #                                                       out/static_release
 #                                                       out/static_release_md
 #
-# blpwtk2.py buildmaster                    -- Generate out/static_buildmaster
-#                                                       out/static_buildmaster_md
-#
 # blpwtk2.py static_crt                     -- Generate out/shared_debug
 #                                                       out/shared_release
 #                                                       out/static_release
-#                                                       out/static_buildmaster
 #
 # blpwtk2.py dynamic_crt                    -- Generate out/shared_debug
 #                                                       out/shared_release
 #                                                       out/static_release_md
-#                                                       out/static_buildmaster_md
 #
 # blpwtk2.py shared release                 -- Generate out/shared_release
 #
 # blpwtk2.py static release                 -- Generate out/static_release
 #                                                       out/static_release_md
 #
-# blpwtk2.py static buildmaster             -- Generate out/static_buildmaster
-#                                                       out/static_buildmaster_md
-#
 # blpwtk2.py static release static_crt      -- Generate out/static_release
 #
-# blpwtk2.py static buildmaster static_crt  -- Generate out/static_buildmaster
-#
 # blpwtk2.py static release dynamic_crt     -- Generate out/static_release_md
-#
-# blpwtk2.py static buildmaster dynamic_crt -- Generate out/static_buildmaster_md
 #
 
 import os
@@ -125,17 +109,21 @@ def createBuildCmd(gn_cmds, gn_mode, gn_type, bb_version, crt_mode):
   if gn_type == 'debug':
     applyVariableToEnvironment('GN_DEFINES', 'is_debug', 'true')
     applyVariableToEnvironment('GN_DEFINES', 'is_official_build', 'false')
-  elif gn_type == 'buildmaster':
-    applyVariableToEnvironment('GN_DEFINES', 'is_debug', 'false')
-    applyVariableToEnvironment('GN_DEFINES', 'is_official_build', 'true')
-  else:
-    applyVariableToEnvironment('GN_DEFINES', 'is_debug', 'false')
-    applyVariableToEnvironment('GN_DEFINES', 'is_official_build', 'false')
 
-  if gn_mode == 'shared':
-    applyVariableToEnvironment('GN_DEFINES', 'is_component_build', 'true')
+    if gn_mode == 'shared':
+      applyVariableToEnvironment('GN_DEFINES', 'is_component_build', 'true')
+    else:
+      applyVariableToEnvironment('GN_DEFINES', 'is_component_build', 'false')
+
   else:
-    applyVariableToEnvironment('GN_DEFINES', 'is_component_build', 'false')
+    applyVariableToEnvironment('GN_DEFINES', 'is_debug', 'false')
+
+    if gn_mode == 'shared':
+      applyVariableToEnvironment('GN_DEFINES', 'is_component_build', 'true')
+      applyVariableToEnvironment('GN_DEFINES', 'is_official_build', 'false')
+    else:
+      applyVariableToEnvironment('GN_DEFINES', 'is_component_build', 'false')
+      applyVariableToEnvironment('GN_DEFINES', 'is_official_build', 'true')
 
   if crt_mode == 'static_crt':
     applyVariableToEnvironment('GN_DEFINES', 'use_dynamic_crt', 'false')
@@ -147,30 +135,12 @@ def createBuildCmd(gn_cmds, gn_mode, gn_type, bb_version, crt_mode):
   if bb_version:
     version = ' bb_version=\\\"' + bb_version + '\\\"'
 
-  if gn_mode == 'shared' and gn_type == 'debug':
-      gn_cmd = ' gen out/' + gn_mode + '_debug' + ' ' \
-               + '--args="' + os.environ['GN_DEFINES'] + version + '"'
-  elif gn_mode == 'shared' and gn_type == 'release':
-      gn_cmd = ' gen out/' + gn_mode + '_release' + ' ' \
-               + '--args="' + os.environ['GN_DEFINES'] + version + '"'
-#  elif gn_mode == 'static' and gn_type == 'debug' and crt_mode == 'static_crt':
-#      gn_cmd = ' gen out/' + gn_mode + '_debug' + ' ' \
-#               + '--args="' + os.environ['GN_DEFINES'] + version + '"'
-  elif gn_mode == 'static' and gn_type == 'release' and crt_mode == 'static_crt':
-      gn_cmd = ' gen out/' + gn_mode + '_release' + ' ' \
-               + '--args="' + os.environ['GN_DEFINES'] + version + '"'
-  elif gn_mode == 'static' and gn_type == 'buildmaster' and crt_mode == 'static_crt':
-      gn_cmd = ' gen out/' + gn_mode + '_buildmaster' + ' ' \
-               + '--args="' + os.environ['GN_DEFINES'] + version + '"'
-#  elif gn_mode == 'static' and gn_type == 'debug' and crt_mode == 'dynamic_crt':
-#      gn_cmd = ' gen out/' + gn_mode + '_debug_md' + ' ' \
-#               + '--args="' + os.environ['GN_DEFINES'] + version + '"'
-  elif gn_mode == 'static' and gn_type == 'release' and crt_mode == 'dynamic_crt':
-      gn_cmd = ' gen out/' + gn_mode + '_release_md' + ' ' \
-               + '--args="' + os.environ['GN_DEFINES'] + version + '"'
-  elif gn_mode == 'static' and gn_type == 'buildmaster' and crt_mode == 'dynamic_crt':
-      gn_cmd = ' gen out/' + gn_mode + '_buildmaster_md' + ' ' \
-               + '--args="' + os.environ['GN_DEFINES'] + version + '"'
+  if crt_mode == 'static_crt':
+    gn_cmd = ' gen out/' + gn_mode + '_' + gn_type + ' --args="' \
+             + os.environ['GN_DEFINES'] + version + '"'
+  else:
+    gn_cmd = ' gen out/' + gn_mode + '_' + gn_type + '_md --args="' \
+             + os.environ['GN_DEFINES'] + version + '"'
 
   gn_cmds.append(gn_cmd)
 
@@ -187,7 +157,7 @@ def parseArgs(argv):
       arg = argv[i]
       if arg == 'shared' or arg == 'static':
         gn_mode = arg
-      elif arg == 'debug' or arg == 'release' or arg == 'buildmaster':
+      elif arg == 'debug' or arg == 'release':
         gn_type = arg
       elif arg == 'dynamic_crt' or arg == 'static_crt':
         crt_mode = arg
@@ -226,11 +196,6 @@ def parseArgs(argv):
   if gn_type == 'debug' or not gn_type:
     if gn_mode == 'shared' or not gn_mode:
       createBuildCmd(gn_shared, 'shared', 'debug', bb_version, 'static_crt')
-#    if gn_mode == 'static' or not gn_mode:
-#      if crt_mode == 'static_crt' or not crt_mode:
-#        createBuildCmd(gn_static, 'static', 'debug', bb_version, 'static_crt')
-#      if crt_mode == 'dynamic_crt' or not crt_mode:
-#        createBuildCmd(gn_static, 'static', 'debug', bb_version, 'dynamic_crt')
 
   if gn_type == 'release' or not gn_type:
     if gn_mode == 'shared' or not gn_mode:
@@ -240,12 +205,6 @@ def parseArgs(argv):
         createBuildCmd(gn_static, 'static', 'release', bb_version, 'static_crt')
       if crt_mode == 'dynamic_crt' or not crt_mode:
         createBuildCmd(gn_static, 'static', 'release', bb_version, 'dynamic_crt')
-
-  if gn_type == 'buildmaster' or not gn_type:
-    if crt_mode == 'static_crt' or not crt_mode:
-      createBuildCmd(gn_static, 'static', 'buildmaster', bb_version, 'static_crt')
-    if crt_mode == 'dynamic_crt' or not crt_mode:
-      createBuildCmd(gn_static, 'static', 'buildmaster', bb_version, 'dynamic_crt')
 
   return gn_shared, gn_static, gn_type
 
@@ -273,7 +232,7 @@ def main(argv):
     if gn_type:
       print "Generating GN static %s build tree" % gn_type
     else:
-      print "Generating GN static release and buildmaster build trees"
+      print "Generating GN static release build trees"
   sys.stdout.flush()
   generateBuildTree(gn_static)
 
