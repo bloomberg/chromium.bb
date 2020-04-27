@@ -190,6 +190,13 @@ class Error {
   Error& operator=(Error&& other);
   bool operator==(const Error& other) const;
   bool operator!=(const Error& other) const;
+
+  // Special case comparison with codes. Without this case, comparisons will
+  // not work as expected, e.g.
+  // const Error foo(Error::Code::kItemNotFound, "Didn't find an item");
+  // foo == Error::Code::kItemNotFound is actually false.
+  bool operator==(Code code) const;
+  bool operator!=(Code code) const;
   bool ok() const { return code_ == Code::kNone; }
 
   Code code() const { return code_; }

@@ -36,6 +36,14 @@ bool Error::operator!=(const Error& other) const {
   return !(*this == other);
 }
 
+bool Error::operator==(Code code) const {
+  return code_ == code;
+}
+
+bool Error::operator!=(Code code) const {
+  return !(*this == code);
+}
+
 std::ostream& operator<<(std::ostream& os, const Error::Code& code) {
   switch (code) {
     case Error::Code::kNone:
