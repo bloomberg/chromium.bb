@@ -8,6 +8,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/views/views_export.h"
+#include <memory>
 
 namespace gfx {
 struct VectorIcon;
