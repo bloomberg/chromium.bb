@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands.h"
 
 #include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 namespace css_longhand {
