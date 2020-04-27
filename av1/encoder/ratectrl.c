@@ -2064,7 +2064,7 @@ static void av1_scene_detection_onepass(AV1_COMP *cpi) {
     const int num_mi_rows = cm->mi_params.mi_rows;
     int num_zero_temp_sad = 0;
     uint32_t min_thresh = 10000;
-    if (cpi->oxcf.content != AOM_CONTENT_SCREEN) min_thresh = 65000;
+    if (cpi->oxcf.content != AOM_CONTENT_SCREEN) min_thresh = 100000;
     const BLOCK_SIZE bsize = BLOCK_64X64;
     int full_sampling = (cm->width * cm->height < 640 * 360) ? 1 : 0;
     // Loop over sub-sample of frame, compute average sad over 64x64 blocks.
