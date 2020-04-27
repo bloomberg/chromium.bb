@@ -24,6 +24,7 @@ extern "C" {
 #define MAX_CORNERS 4096
 #define RANSAC_NUM_MOTIONS 1
 #define GM_REFINEMENT_COUNT 5
+#define MAX_DIRECTIONS 2
 
 typedef enum {
   GLOBAL_MOTION_FEATURE_BASED,
