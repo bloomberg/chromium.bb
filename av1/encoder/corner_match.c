@@ -141,20 +141,20 @@ static void improve_correspondence(unsigned char *frm, unsigned char *ref,
   }
 }
 
-int av1_determine_correspondence(unsigned char *frm, int *frm_corners,
-                                 int num_frm_corners, unsigned char *ref,
+int av1_determine_correspondence(unsigned char *src, int *src_corners,
+                                 int num_src_corners, unsigned char *ref,
                                  int *ref_corners, int num_ref_corners,
-                                 int width, int height, int frm_stride,
+                                 int width, int height, int src_stride,
                                  int ref_stride, int *correspondence_pts) {
   // TODO(sarahparker) Improve this to include 2-way match
   int i, j;
   Correspondence *correspondences = (Correspondence *)correspondence_pts;
   int num_correspondences = 0;
-  for (i = 0; i < num_frm_corners; ++i) {
+  for (i = 0; i < num_src_corners; ++i) {
     double best_match_ncc = 0.0;
     double template_norm;
     int best_match_j = -1;
-    if (!is_eligible_point(frm_corners[2 * i], frm_corners[2 * i + 1], width,
+    if (!is_eligible_point(src_corners[2 * i], src_corners[2 * i + 1], width,
                            height))
       continue;
     for (j = 0; j < num_ref_corners; ++j) {
@@ -162,12 +162,12 @@ int av1_determine_correspondence(unsigned char *frm, int *frm_corners,
       if (!is_eligible_point(ref_corners[2 * j], ref_corners[2 * j + 1], width,
                              height))
         continue;
-      if (!is_eligible_distance(frm_corners[2 * i], frm_corners[2 * i + 1],
+      if (!is_eligible_distance(src_corners[2 * i], src_corners[2 * i + 1],
                                 ref_corners[2 * j], ref_corners[2 * j + 1],
                                 width, height))
         continue;
       match_ncc = av1_compute_cross_correlation(
-          frm, frm_stride, frm_corners[2 * i], frm_corners[2 * i + 1], ref,
+          src, src_stride, src_corners[2 * i], src_corners[2 * i + 1], ref,
           ref_stride, ref_corners[2 * j], ref_corners[2 * j + 1]);
       if (match_ncc > best_match_ncc) {
         best_match_ncc = match_ncc;
@@ -177,18 +177,18 @@ int av1_determine_correspondence(unsigned char *frm, int *frm_corners,
     // Note: We want to test if the best correlation is >= THRESHOLD_NCC,
     // but need to account for the normalization in
     // av1_compute_cross_correlation.
-    template_norm = compute_variance(frm, frm_stride, frm_corners[2 * i],
-                                     frm_corners[2 * i + 1]);
+    template_norm = compute_variance(src, src_stride, src_corners[2 * i],
+                                     src_corners[2 * i + 1]);
     if (best_match_ncc > THRESHOLD_NCC * sqrt(template_norm)) {
-      correspondences[num_correspondences].x = frm_corners[2 * i];
-      correspondences[num_correspondences].y = frm_corners[2 * i + 1];
+      correspondences[num_correspondences].x = src_corners[2 * i];
+      correspondences[num_correspondences].y = src_corners[2 * i + 1];
       correspondences[num_correspondences].rx = ref_corners[2 * best_match_j];
       correspondences[num_correspondences].ry =
           ref_corners[2 * best_match_j + 1];
       num_correspondences++;
     }
   }
-  improve_correspondence(frm, ref, width, height, frm_stride, ref_stride,
+  improve_correspondence(src, ref, width, height, src_stride, ref_stride,
                          correspondences, num_correspondences);
   return num_correspondences;
 }

@@ -421,8 +421,8 @@ void av1_compute_feature_segmentation_map(uint8_t *segment_map, int width,
 }
 
 static int compute_global_motion_feature_based(
-    TransformationType type, unsigned char *frm_buffer, int frm_width,
-    int frm_height, int frm_stride, int *frm_corners, int num_frm_corners,
+    TransformationType type, unsigned char *src_buffer, int src_width,
+    int src_height, int src_stride, int *src_corners, int num_src_corners,
     YV12_BUFFER_CONFIG *ref, int bit_depth, int *num_inliers_by_motion,
     MotionModel *params_by_motion, int num_motions) {
   int i;
@@ -443,10 +443,10 @@ static int compute_global_motion_feature_based(
 
   // find correspondences between the two images
   correspondences =
-      (int *)malloc(num_frm_corners * 4 * sizeof(*correspondences));
+      (int *)malloc(num_src_corners * 4 * sizeof(*correspondences));
   num_correspondences = av1_determine_correspondence(
-      frm_buffer, (int *)frm_corners, num_frm_corners, ref_buffer,
-      (int *)ref_corners, num_ref_corners, frm_width, frm_height, frm_stride,
+      src_buffer, (int *)src_corners, num_src_corners, ref_buffer,
+      (int *)ref_corners, num_ref_corners, src_width, src_height, src_stride,
       ref->y_stride, correspondences);
 
   ransac(correspondences, num_correspondences, num_inliers_by_motion,
@@ -990,9 +990,9 @@ static int compute_global_motion_disflow_based(
 }
 
 int av1_compute_global_motion(TransformationType type,
-                              unsigned char *frm_buffer, int frm_width,
-                              int frm_height, int frm_stride, int *frm_corners,
-                              int num_frm_corners, YV12_BUFFER_CONFIG *ref,
+                              unsigned char *src_buffer, int src_width,
+                              int src_height, int src_stride, int *src_corners,
+                              int num_src_corners, YV12_BUFFER_CONFIG *ref,
                               int bit_depth,
                               GlobalMotionEstimationType gm_estimation_type,
                               int *num_inliers_by_motion,
@@ -1000,13 +1000,13 @@ int av1_compute_global_motion(TransformationType type,
   switch (gm_estimation_type) {
     case GLOBAL_MOTION_FEATURE_BASED:
       return compute_global_motion_feature_based(
-          type, frm_buffer, frm_width, frm_height, frm_stride, frm_corners,
-          num_frm_corners, ref, bit_depth, num_inliers_by_motion,
+          type, src_buffer, src_width, src_height, src_stride, src_corners,
+          num_src_corners, ref, bit_depth, num_inliers_by_motion,
           params_by_motion, num_motions);
     case GLOBAL_MOTION_DISFLOW_BASED:
       return compute_global_motion_disflow_based(
-          type, frm_buffer, frm_width, frm_height, frm_stride, frm_corners,
-          num_frm_corners, ref, bit_depth, num_inliers_by_motion,
+          type, src_buffer, src_width, src_height, src_stride, src_corners,
+          num_src_corners, ref, bit_depth, num_inliers_by_motion,
           params_by_motion, num_motions);
     default: assert(0 && "Unknown global motion estimation type");
   }

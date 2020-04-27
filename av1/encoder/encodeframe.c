@@ -5441,7 +5441,7 @@ static INLINE int64_t calc_erroradv_threshold(AV1_COMP *cpi,
 
 static void compute_global_motion_for_ref_frame(
     AV1_COMP *cpi, YV12_BUFFER_CONFIG *ref_buf[REF_FRAMES], int frame,
-    int *num_frm_corners, int *frm_corners, unsigned char *frm_buffer,
+    int num_src_corners, int *src_corners, unsigned char *src_buffer,
     MotionModel *params_by_motion, uint8_t *segment_map,
     const int segment_map_w, const int segment_map_h,
     const WarpedMotionParams *ref_params) {
@@ -5450,6 +5450,9 @@ static void compute_global_motion_for_ref_frame(
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   int i;
+  int src_width = cpi->source->y_width;
+  int src_height = cpi->source->y_height;
+  int src_stride = cpi->source->y_stride;
   // clang-format off
   static const double kIdentityParams[MAX_PARAMDIM - 1] = {
      0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0
@@ -5459,12 +5462,6 @@ static void compute_global_motion_for_ref_frame(
   const double *params_this_motion;
   int inliers_by_motion[RANSAC_NUM_MOTIONS];
   assert(ref_buf[frame] != NULL);
-  if (*num_frm_corners < 0) {
-    // compute interest points using FAST features
-    *num_frm_corners = av1_fast_corner_detect(
-        frm_buffer, cpi->source->y_width, cpi->source->y_height,
-        cpi->source->y_stride, frm_corners, MAX_CORNERS);
-  }
   TransformationType model;
 
   aom_clear_system_state();
@@ -5489,11 +5486,11 @@ static void compute_global_motion_for_ref_frame(
       params_by_motion[i].num_inliers = 0;
     }
 
-    av1_compute_global_motion(
-        model, frm_buffer, cpi->source->y_width, cpi->source->y_height,
-        cpi->source->y_stride, frm_corners, *num_frm_corners, ref_buf[frame],
-        cpi->common.seq_params.bit_depth, gm_estimation_type, inliers_by_motion,
-        params_by_motion, RANSAC_NUM_MOTIONS);
+    av1_compute_global_motion(model, src_buffer, src_width, src_height,
+                              src_stride, src_corners, num_src_corners,
+                              ref_buf[frame], cpi->common.seq_params.bit_depth,
+                              gm_estimation_type, inliers_by_motion,
+                              params_by_motion, RANSAC_NUM_MOTIONS);
     int64_t ref_frame_error = 0;
     for (i = 0; i < RANSAC_NUM_MOTIONS; ++i) {
       if (inliers_by_motion[i] == 0) continue;
@@ -5508,9 +5505,8 @@ static void compute_global_motion_for_ref_frame(
 
         ref_frame_error = av1_segmented_frame_error(
             is_cur_buf_hbd(xd), xd->bd, ref_buf[frame]->y_buffer,
-            ref_buf[frame]->y_stride, cpi->source->y_buffer,
-            cpi->source->y_width, cpi->source->y_height, cpi->source->y_stride,
-            segment_map, segment_map_w);
+            ref_buf[frame]->y_stride, cpi->source->y_buffer, src_width,
+            src_height, src_stride, segment_map, segment_map_w);
 
         int64_t erroradv_threshold =
             calc_erroradv_threshold(cpi, ref_frame_error);
@@ -5519,9 +5515,9 @@ static void compute_global_motion_for_ref_frame(
             &tmp_wm_params, tmp_wm_params.wmtype, is_cur_buf_hbd(xd), xd->bd,
             ref_buf[frame]->y_buffer, ref_buf[frame]->y_width,
             ref_buf[frame]->y_height, ref_buf[frame]->y_stride,
-            cpi->source->y_buffer, cpi->source->y_width, cpi->source->y_height,
-            cpi->source->y_stride, GM_REFINEMENT_COUNT, best_warp_error,
-            segment_map, segment_map_w, erroradv_threshold);
+            cpi->source->y_buffer, src_width, src_height, src_stride,
+            GM_REFINEMENT_COUNT, best_warp_error, segment_map, segment_map_w,
+            erroradv_threshold);
 
         if (warp_error < best_warp_error) {
           best_warp_error = warp_error;
@@ -5627,7 +5623,7 @@ static INLINE void update_valid_ref_frames_for_gm(
 
 static INLINE void compute_gm_for_valid_ref_frames(
     AV1_COMP *cpi, YV12_BUFFER_CONFIG *ref_buf[REF_FRAMES], int frame,
-    int *num_frm_corners, int *frm_corners, unsigned char *frm_buffer,
+    int num_src_corners, int *src_corners, unsigned char *src_buffer,
     MotionModel *params_by_motion, uint8_t *segment_map,
     const int segment_map_w, const int segment_map_h) {
   AV1_COMMON *const cm = &cpi->common;
@@ -5637,7 +5633,7 @@ static INLINE void compute_gm_for_valid_ref_frames(
                      : &default_warp_params;
 
   compute_global_motion_for_ref_frame(
-      cpi, ref_buf, frame, num_frm_corners, frm_corners, frm_buffer,
+      cpi, ref_buf, frame, num_src_corners, src_corners, src_buffer,
       params_by_motion, segment_map, segment_map_w, segment_map_h, ref_params);
 
   gm_info->params_cost[frame] =
@@ -5660,22 +5656,24 @@ static int compare_distance(const void *a, const void *b) {
 static INLINE void compute_global_motion_for_references(
     AV1_COMP *cpi, YV12_BUFFER_CONFIG *ref_buf[REF_FRAMES],
     FrameDistPair reference_frame[REF_FRAMES - 1], int num_ref_frames,
-    int *num_frm_corners, int *frm_corners, unsigned char *frm_buffer,
+    int num_src_corners, int *src_corners, unsigned char *src_buffer,
     MotionModel *params_by_motion, uint8_t *segment_map,
     const int segment_map_w, const int segment_map_h) {
+  // Computation of frame corners for the source frame will be done already.
+  assert(num_src_corners != -1);
   AV1_COMMON *const cm = &cpi->common;
   // Compute global motion w.r.t. reference frames starting from the nearest ref
-  // frame in a given direction
+  // frame in a given direction.
   for (int frame = 0; frame < num_ref_frames; frame++) {
     int ref_frame = reference_frame[frame].frame;
-    compute_gm_for_valid_ref_frames(cpi, ref_buf, ref_frame, num_frm_corners,
-                                    frm_corners, frm_buffer, params_by_motion,
+    compute_gm_for_valid_ref_frames(cpi, ref_buf, ref_frame, num_src_corners,
+                                    src_corners, src_buffer, params_by_motion,
                                     segment_map, segment_map_w, segment_map_h);
     // If global motion w.r.t. current ref frame is
     // INVALID/TRANSLATION/IDENTITY, skip the evaluation of global motion w.r.t
     // the remaining ref frames in that direction. The below exit is disabled
     // when ref frame distance w.r.t. current frame is zero. E.g.:
-    // source_alt_ref_frame w.r.t. ARF frames
+    // source_alt_ref_frame w.r.t. ARF frames.
     if (cpi->sf.gm_sf.prune_ref_frame_for_gm_search &&
         reference_frame[frame].distance != 0 &&
         cm->global_motion[ref_frame].wmtype != ROTZOOM)
@@ -5968,13 +5966,13 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
     MotionModel params_by_motion[RANSAC_NUM_MOTIONS];
     uint8_t *segment_map = NULL;
 
-    int num_frm_corners = -1;
-    int frm_corners[2 * MAX_CORNERS];
-    unsigned char *frm_buffer = cpi->source->y_buffer;
+    int num_src_corners = -1;
+    int src_corners[2 * MAX_CORNERS];
+    unsigned char *src_buffer = cpi->source->y_buffer;
     if (cpi->source->flags & YV12_FLAG_HIGHBITDEPTH) {
-      // The frame buffer is 16-bit, so we need to convert to 8 bits for the
-      // following code. We cache the result until the frame is released.
-      frm_buffer =
+      // The source buffer is 16-bit, so we need to convert to 8 bits for the
+      // following code. We cache the result until the source frame is released.
+      src_buffer =
           av1_downconvert_frame(cpi->source, cpi->common.seq_params.bit_depth);
     }
     const int segment_map_w =
@@ -5991,7 +5989,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
 
     int num_ref_frames[MAX_DIRECTIONS] = { 0 };
 
-    // Populate ref_buf for valid ref frames in global motion
+    // Populate ref_buf for valid ref frames in global motion.
     update_valid_ref_frames_for_gm(cpi, ref_buf, reference_frames,
                                    num_ref_frames);
 
@@ -6003,13 +6001,21 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
     qsort(reference_frames[1], num_ref_frames[1],
           sizeof(reference_frames[1][0]), compare_distance);
 
+    // If atleast one valid reference frame exists in past/future directions,
+    // compute interest points of source frame using FAST features.
+    if (num_ref_frames[0] > 0 || num_ref_frames[1] > 0) {
+      num_src_corners = av1_fast_corner_detect(
+          src_buffer, cpi->source->y_width, cpi->source->y_height,
+          cpi->source->y_stride, src_corners, MAX_CORNERS);
+    }
+
     // Compute global motion w.r.t. past reference frames and future reference
-    // frames
+    // frames.
     for (int dir = 0; dir < MAX_DIRECTIONS; dir++) {
       if (num_ref_frames[dir] > 0)
         compute_global_motion_for_references(
             cpi, ref_buf, reference_frames[dir], num_ref_frames[dir],
-            &num_frm_corners, frm_corners, frm_buffer, params_by_motion,
+            num_src_corners, src_corners, src_buffer, params_by_motion,
             segment_map, segment_map_w, segment_map_h);
     }
 
