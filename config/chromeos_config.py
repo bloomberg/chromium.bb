@@ -1564,6 +1564,7 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
           _vmrvc_hwtest_boards,
           board_configs,
           site_config.templates.vmrvc_android_pfq,
+          enable_skylab_hw_tests=True,
           hw_tests=hw_test_list.SharedPoolPFQ(),
       ) +
       site_config.AddForBoards(
@@ -1571,13 +1572,6 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
           _vmrvc_no_hwtest_boards,
           board_configs,
           site_config.templates.vmrvc_android_pfq,
-      ) +
-      site_config.AddForBoards(
-          'vmrvc-android-pfq',
-          _vmrvc_no_hwtest_experimental_boards,
-          board_configs,
-          site_config.templates.vmrvc_android_pfq,
-          important=False,
       ) +
       site_config.AddForBoards(
           'vmrvc-android-pfq',
