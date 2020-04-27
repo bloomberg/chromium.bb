@@ -314,8 +314,6 @@ def main(args):
     return rc
 
   if doMakeRelease:
-    applyVariableToEnvironment('GN_DEFINES', 'is_official_build', 'true')
-
     print("Building Release with static CRT...")
     if doMakeStaticCRT:
       sys.stdout.flush()
