@@ -196,7 +196,7 @@ av1_encode_available() {
 
 # Echoes "fast" encode params for use with aomenc.
 aomenc_encode_test_fast_params() {
-  echo "--cpu-used=1
+  echo "--cpu-used=2
         --limit=${AV1_ENCODE_TEST_FRAME_LIMIT}
         --lag-in-frames=0
         --test-decode=fatal"

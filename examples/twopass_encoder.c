@@ -52,6 +52,7 @@
 #include <string.h>
 
 #include "aom/aom_encoder.h"
+#include "aom/aomcx.h"
 #include "common/tools_common.h"
 #include "common/video_writer.h"
 
@@ -159,6 +160,9 @@ static void pass1(aom_image_t *raw, FILE *infile, const char *outfile_name,
 
   if (aom_codec_enc_init(&codec, encoder, cfg, 0))
     die_codec(&codec, "Failed to initialize encoder");
+
+  if (aom_codec_control(&codec, AOME_SET_CPUUSED, 2))
+    die_codec(&codec, "Failed to set cpu-used");
 
   // Encode frames.
   while (aom_img_read(raw, infile) && frame_count < limit) {
