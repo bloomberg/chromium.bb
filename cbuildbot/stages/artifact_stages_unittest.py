@@ -566,9 +566,10 @@ class CollectPGOProfilesStageTest(generic_stages_unittest.AbstractStageTestCase,
     self.assertEqual(actual_sha, self._VALID_CLANG_VERSION_SHA)
 
   def _MetadataMultiDispatch(self, equery_uses_fn, clang_version_fn):
-    def result(command, enter_chroot, stdout):
+    def result(command, enter_chroot, stdout, encoding):
       self.assertTrue(enter_chroot)
       self.assertTrue(stdout)
+      self.assertEqual('utf-8', encoding)
 
       if command == ['equery', '-C', '-N', 'uses', 'sys-devel/llvm']:
         output = equery_uses_fn()
