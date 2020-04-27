@@ -794,12 +794,19 @@ static AOM_INLINE void mc_flow_dispenser_row(AV1_COMP *cpi, MACROBLOCK *x,
                                              int mi_row, const BLOCK_SIZE bsize,
                                              const TX_SIZE tx_size) {
   AV1_COMMON *const cm = &cpi->common;
+  MultiThreadInfo *const mt_info = &cpi->mt_info;
+  AV1TplRowMultiThreadInfo *const tpl_row_mt = &mt_info->tpl_row_mt;
   const CommonModeInfoParams *const mi_params = &cm->mi_params;
   const int mi_width = mi_size_wide[bsize];
   TplParams *const tpl_data = &cpi->tpl_data;
   TplDepFrame *tpl_frame = &tpl_data->tpl_frame[tpl_data->frame_idx];
   MACROBLOCKD *xd = &x->e_mbd;
-  for (int mi_col = 0; mi_col < mi_params->mi_cols; mi_col += mi_width) {
+  const int mb_cols_in_tile = mi_params->mb_cols;
+  const int mb_row = (mi_row + 2) >> 2;
+  for (int mi_col = 0, mb_col_in_tile = 0; mi_col < mi_params->mi_cols;
+       mi_col += mi_width, mb_col_in_tile++) {
+    (*tpl_row_mt->sync_read_ptr)(&tpl_data->tpl_mt_sync, mb_row,
+                                 mb_col_in_tile);
     TplDepStats tpl_stats;
 
     // Motion estimation column boundary
@@ -814,6 +821,8 @@ static AOM_INLINE void mc_flow_dispenser_row(AV1_COMP *cpi, MACROBLOCK *x,
     tpl_model_store(tpl_frame->tpl_stats_ptr, mi_row, mi_col, bsize,
                     tpl_frame->stride, &tpl_stats,
                     tpl_data->tpl_stats_block_mis_log2);
+    (*tpl_row_mt->sync_write_ptr)(&tpl_data->tpl_mt_sync, mb_row,
+                                  mb_col_in_tile, mb_cols_in_tile);
   }
 }
 
@@ -1035,6 +1044,8 @@ int av1_tpl_setup_stats(AV1_COMP *cpi, int gop_eval,
                         const EncodeFrameParams *const frame_params,
                         const EncodeFrameInput *const frame_input) {
   AV1_COMMON *cm = &cpi->common;
+  MultiThreadInfo *const mt_info = &cpi->mt_info;
+  AV1TplRowMultiThreadInfo *const tpl_row_mt = &mt_info->tpl_row_mt;
   GF_GROUP *gf_group = &cpi->gf_group;
   int bottom_index, top_index;
   EncodeFrameParams this_frame_params = *frame_params;
@@ -1068,6 +1079,9 @@ int av1_tpl_setup_stats(AV1_COMP *cpi, int gop_eval,
   cpi->rc.base_layer_qp = pframe_qindex;
 
   init_tpl_stats(tpl_data);
+
+  tpl_row_mt->sync_read_ptr = av1_tpl_row_mt_sync_read_dummy;
+  tpl_row_mt->sync_write_ptr = av1_tpl_row_mt_sync_write_dummy;
 
   // Backward propagation from tpl_group_frames to 1.
   for (int frame_idx = gf_group->index; frame_idx < tpl_gf_group_frames;

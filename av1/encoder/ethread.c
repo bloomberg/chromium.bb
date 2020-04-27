@@ -14,6 +14,7 @@
 #include "av1/encoder/ethread.h"
 #include "av1/encoder/rdopt.h"
 #include "aom_dsp/aom_dsp_common.h"
+#include "av1/encoder/tpl_model.h"
 
 static AOM_INLINE void accumulate_rd_opt(ThreadData *td, ThreadData *td_t) {
   for (int i = 0; i < REFERENCE_MODES; i++)
@@ -793,4 +794,22 @@ void av1_encode_tiles_row_mt(AV1_COMP *cpi) {
   sync_enc_workers(&cpi->mt_info, cm, num_workers);
   if (cm->delta_q_info.delta_lf_present_flag) update_delta_lf_for_row_mt(cpi);
   accumulate_counters_enc_workers(cpi, num_workers);
+}
+
+void av1_tpl_row_mt_sync_read_dummy(AV1TplRowMultiThreadSync *const tpl_mt_sync,
+                                    const int r, int c) {
+  (void)tpl_mt_sync;
+  (void)r;
+  (void)c;
+  return;
+}
+
+void av1_tpl_row_mt_sync_write_dummy(
+    AV1TplRowMultiThreadSync *const tpl_mt_sync, const int r, int c,
+    const int cols) {
+  (void)tpl_mt_sync;
+  (void)r;
+  (void)c;
+  (void)cols;
+  return;
 }

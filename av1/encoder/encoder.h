@@ -41,6 +41,7 @@
 #include "av1/encoder/speed_features.h"
 #include "av1/encoder/svc_layercontext.h"
 #include "av1/encoder/tokenize.h"
+#include "av1/encoder/tpl_model.h"
 
 #if CONFIG_INTERNAL_STATS
 #include "aom_dsp/ssim.h"
@@ -225,6 +226,10 @@ typedef struct TplParams {
   // ref_frame[i] stores the pointer to the tpl reconstructed frame of the ith
   // reference frame type.
   const YV12_BUFFER_CONFIG *ref_frame[INTER_REFS_PER_FRAME];
+
+  // Parameters related to synchronization for top-right dependency in row based
+  // multi-threading of tpl
+  AV1TplRowMultiThreadSync tpl_mt_sync;
 } TplParams;
 
 typedef enum {
@@ -800,6 +805,9 @@ typedef struct {
 
   // Encoder row multi-threading data.
   AV1EncRowMultiThreadInfo enc_row_mt;
+
+  // Tpl row multi-threading data.
+  AV1TplRowMultiThreadInfo tpl_row_mt;
 
   // Loop Filter multi-threading object.
   AV1LfSync lf_row_sync;
@@ -1527,7 +1535,7 @@ typedef struct AV1_COMP {
   aom_superres_mode superres_mode;
 } AV1_COMP;
 
-typedef struct {
+typedef struct EncodeFrameInput {
   YV12_BUFFER_CONFIG *source;
   YV12_BUFFER_CONFIG *last_source;
   int64_t ts_duration;

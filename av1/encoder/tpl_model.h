@@ -16,6 +16,10 @@
 extern "C" {
 #endif
 
+struct AV1_COMP;
+struct EncodeFrameParams;
+struct EncodeFrameInput;
+
 static INLINE BLOCK_SIZE convert_length_to_bsize(int length) {
   switch (length) {
     case 64: return BLOCK_64X64;
@@ -29,16 +33,48 @@ static INLINE BLOCK_SIZE convert_length_to_bsize(int length) {
   }
 }
 
-int av1_tpl_setup_stats(AV1_COMP *cpi, int gop_eval,
-                        const EncodeFrameParams *const frame_params,
-                        const EncodeFrameInput *const frame_input);
+typedef struct AV1TplRowMultiThreadSync {
+#if CONFIG_MULTITHREAD
+  // Synchronization objects for top-right dependency.
+  pthread_mutex_t *mutex_;
+  pthread_cond_t *cond_;
+#endif
+  // Buffer to store the macroblock whose encoding is complete.
+  // num_finished_cols[i] stores the number of macroblocks which finished
+  // encoding in the ith macroblock row.
+  int *num_finished_cols;
+  // Number of extra macroblocks of the top row to be complete for encoding
+  // of the current macroblock to start. A value of 1 indicates top-right
+  // dependency.
+  int sync_range;
+  // Number of macroblock rows.
+  int rows;
+  // Number of threads processing the current tile.
+  int num_threads_working;
+} AV1TplRowMultiThreadSync;
+
+typedef struct AV1TplRowMultiThreadInfo {
+  // Row synchronization related function pointers.
+  void (*sync_read_ptr)(AV1TplRowMultiThreadSync *const tpl_mt_sync, int r,
+                        int c);
+  void (*sync_write_ptr)(AV1TplRowMultiThreadSync *const tpl_mt_sync, int r,
+                         int c, const int cols);
+} AV1TplRowMultiThreadInfo;
+
+int av1_tpl_setup_stats(struct AV1_COMP *cpi, int gop_eval,
+                        const struct EncodeFrameParams *const frame_params,
+                        const struct EncodeFrameInput *const frame_input);
 
 int av1_tpl_ptr_pos(int mi_row, int mi_col, int stride, uint8_t right_shift);
 
-void av1_tpl_rdmult_setup(AV1_COMP *cpi);
+void av1_tpl_rdmult_setup(struct AV1_COMP *cpi);
 
-void av1_tpl_rdmult_setup_sb(AV1_COMP *cpi, MACROBLOCK *const x,
+void av1_tpl_rdmult_setup_sb(struct AV1_COMP *cpi, MACROBLOCK *const x,
                              BLOCK_SIZE sb_size, int mi_row, int mi_col);
+void av1_tpl_row_mt_sync_read_dummy(AV1TplRowMultiThreadSync *const tpl_mt_sync,
+                                    int r, int c);
+void av1_tpl_row_mt_sync_write_dummy(
+    AV1TplRowMultiThreadSync *const tpl_mt_sync, int r, int c, const int cols);
 
 #ifdef __cplusplus
 }  // extern "C"
