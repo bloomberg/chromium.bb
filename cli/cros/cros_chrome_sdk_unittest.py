@@ -765,3 +765,36 @@ class PathVerifyTest(cros_test_lib.MockTempDirTestCase,
 
     for msg in ['managed Goma', 'default Chromite']:
       self.AssertLogsMatch(logs, msg)
+
+
+class ClearOldItemsTest(cros_test_lib.MockTempDirTestCase,
+                        cros_test_lib.LoggingTestCase):
+  """Tests SDKFetcher.ClearOldItems() behavior."""
+
+  def setUp(self):
+    """Sets up a temporary symlink & tarball cache."""
+    self.gs_mock = self.StartPatcher(gs_unittest.GSContextMock())
+    self.gs_mock.SetDefaultCmdResult()
+
+    self.sdk_fetcher = cros_chrome_sdk.SDKFetcher(self.tempdir, None)
+
+  def testBrokenSymlinkCleared(self):
+    """Adds a broken symlink and ensures it gets removed."""
+    osutils.Touch(os.path.join(self.tempdir, 'some-file'))
+    valid_link_ref = self.sdk_fetcher.symlink_cache.Lookup('some-valid-link')
+    with valid_link_ref:
+      self.sdk_fetcher._UpdateCacheSymlink(
+          valid_link_ref, os.path.join(self.tempdir, 'some-file'))
+
+    broken_link_ref = self.sdk_fetcher.symlink_cache.Lookup('some-broken-link')
+    with broken_link_ref:
+      self.sdk_fetcher._UpdateCacheSymlink(
+          broken_link_ref, '/some/invalid/file')
+
+    # Broken symlink should exist before the ClearOldItems() call, and be
+    # removed after.
+    self.assertTrue(valid_link_ref.Exists())
+    self.assertTrue(broken_link_ref.Exists())
+    cros_chrome_sdk.SDKFetcher.ClearOldItems(self.tempdir)
+    self.assertTrue(valid_link_ref.Exists())
+    self.assertFalse(broken_link_ref.Exists())

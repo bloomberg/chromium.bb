@@ -10,6 +10,7 @@ from __future__ import print_function
 import argparse
 import collections
 import contextlib
+import datetime
 import glob
 import json
 import os
@@ -324,6 +325,36 @@ class SDKFetcher(object):
       if ref.Exists():
         return ref.path
     return None
+
+  @classmethod
+  def ClearOldItems(cls, cache_dir, max_age_days=28):
+    """Removes old items from the tarball cache older than max_age_days.
+
+    Inspects the entire cache, not just a single board's items.
+
+    Args:
+      cache_dir: Location of the cache to be cleaned up.
+      max_age_days: Any item in the cache not created/modified within this
+        amount of time will be removed.
+    """
+    tarball_cache_path = os.path.join(
+        cache_dir, COMMAND_NAME, cls.TARBALL_CACHE)
+    tarball_cache = cache.TarballCache(tarball_cache_path)
+    tarball_cache.DeleteStale(datetime.timedelta(days=max_age_days))
+
+    # Now clean up any links in the symlink cache that are dangling due to the
+    # removal of items above.
+    symlink_cache_path = os.path.join(
+        cache_dir, COMMAND_NAME, cls.SYMLINK_CACHE)
+    symlink_cache = cache.DiskCache(symlink_cache_path)
+    removed_keys = set()
+    for key in symlink_cache.ListKeys():
+      link_path = symlink_cache.GetKeyPath(key)
+      if not os.path.exists(os.path.realpath(link_path)):
+        symlink_cache.Lookup(key).Remove()
+        removed_keys.add((key[0], key[1]))
+    for board, version in removed_keys:
+      logging.debug('Evicted SDK for %s-%s from the cache.', board, version)
 
   @memoize.Memoize
   def _GetSDKVersion(self, version):
@@ -1397,6 +1428,9 @@ class ChromeSDKCommand(command.CliCommand):
 
     if self.options.cfi and not self.options.thinlto:
       cros_build_lib.Die('CFI requires ThinLTO.')
+
+    # Remove old SDKs from the cache to avoid wasting disk space.
+    SDKFetcher.ClearOldItems(self.options.cache_dir)
 
     if self.options.board:
       return self._RunOnceForBoard(self.options.board)

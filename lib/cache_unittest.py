@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import datetime
 import os
 
 import mock
@@ -30,7 +31,7 @@ class CacheReferenceTest(cros_test_lib.TestCase):
   def setUp(self):
     # These are the funcs CacheReference expects the cache object to have.
     spec = (
-        '_GetKeyPath',
+        'GetKeyPath',
         '_Insert',
         '_InsertText',
         '_KeyExists',
@@ -39,6 +40,7 @@ class CacheReferenceTest(cros_test_lib.TestCase):
     )
     self.cache = mock.Mock(spec=spec)
     self.lock = mock.MagicMock()
+    self.lock.path = 'some/path'
     self.cache._LockForKey.return_value = self.lock
 
   def testContext(self):
@@ -57,12 +59,12 @@ class CacheReferenceTest(cros_test_lib.TestCase):
 
   def testPath(self):
     """Verify we get a file path for the ref."""
-    self.cache._GetKeyPath.return_value = '/foo/bar'
+    self.cache.GetKeyPath.return_value = '/foo/bar'
 
     ref = cache.CacheReference(self.cache, 'key')
     self.assertEqual(ref.path, '/foo/bar')
 
-    self.cache._GetKeyPath.assert_called_once_with('key')
+    self.cache.GetKeyPath.assert_called_once_with('key')
 
   def testLocking(self):
     """Verify Acquire & Release work as expected."""
@@ -187,6 +189,48 @@ class DiskCacheTest(CacheTestCase):
   testAssign = CacheTestCase._testAssign
   testAssignData = CacheTestCase._testAssignData
   testRemove = CacheTestCase._testRemove
+
+  def testListKeys(self):
+    """Verifies that ListKeys() returns any items present in the cache."""
+    osutils.Touch(os.path.join(self.tempdir, 'file1'))
+    cache.CacheReference(self.cache, ('key1',)).Assign(
+        os.path.join(self.tempdir, 'file1'))
+    osutils.Touch(os.path.join(self.tempdir, 'file2'))
+    cache.CacheReference(self.cache, ('key2',)).Assign(
+        os.path.join(self.tempdir, 'file2'))
+
+    keys = self.cache.ListKeys()
+    self.assertEqual(len(keys), 2)
+    self.assertIn(('key1',), keys)
+    self.assertIn(('key2',), keys)
+
+  def testDeleteStale(self):
+    """Ensures that DeleteStale removes a sufficiently old item in the cache."""
+    osutils.Touch(os.path.join(self.tempdir, 'file1'))
+    cache_ref = cache.CacheReference(self.cache, ('key1',))
+    cache_ref.Assign(os.path.join(self.tempdir, 'file1'))
+    now = datetime.datetime.now()
+
+    # 'Now' will be 10 days in the future, but max_age is 20 days. So no items
+    # should be deleted.
+    ten_days_ahead = now + datetime.timedelta(days=10)
+    with mock.patch('chromite.lib.cache.datetime') as mock_datetime:
+      mock_datetime.datetime.now.return_value = ten_days_ahead
+      mock_datetime.datetime.fromtimestamp.side_effect = (
+          datetime.datetime.fromtimestamp)
+      mock_datetime.timedelta = datetime.timedelta
+      self.cache.DeleteStale(datetime.timedelta(days=20))
+    self.assertTrue(cache_ref.Exists())
+
+    # Running it again 30 days in the future should delete everything.
+    thirty_days_ahead = now + datetime.timedelta(days=30)
+    with mock.patch('chromite.lib.cache.datetime') as mock_datetime:
+      mock_datetime.datetime.now.return_value = thirty_days_ahead
+      mock_datetime.datetime.fromtimestamp.side_effect = (
+          datetime.datetime.fromtimestamp)
+      mock_datetime.timedelta = datetime.timedelta
+      self.cache.DeleteStale(datetime.timedelta(days=20))
+    self.assertFalse(cache_ref.Exists())
 
 
 class RemoteCacheTest(CacheTestCase):
