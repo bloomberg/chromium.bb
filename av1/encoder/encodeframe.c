@@ -4504,7 +4504,7 @@ static AOM_INLINE void adjust_rdmult_tpl_model(AV1_COMP *cpi, MACROBLOCK *x,
 static void source_content_sb(AV1_COMP *cpi, MACROBLOCK *x, int shift) {
   unsigned int tmp_sse;
   unsigned int tmp_variance;
-  const BLOCK_SIZE bsize = BLOCK_64X64;
+  const BLOCK_SIZE bsize = cpi->common.seq_params.sb_size;
   uint8_t *src_y = cpi->source->y_buffer;
   int src_ystride = cpi->source->y_stride;
   uint8_t *last_src_y = cpi->last_source->y_buffer;
@@ -4541,7 +4541,7 @@ static AOM_INLINE void encode_nonrd_sb(AV1_COMP *cpi, ThreadData *td,
   MB_MODE_INFO **mi = cm->mi_params.mi_grid_base +
                       get_mi_grid_idx(&cm->mi_params, mi_row, mi_col);
   const BLOCK_SIZE sb_size = cm->seq_params.sb_size;
-  if (sf->rt_sf.source_metrics_sb_nonrd && sb_size == BLOCK_64X64 &&
+  if (sf->rt_sf.source_metrics_sb_nonrd &&
       cpi->svc.number_spatial_layers <= 1 &&
       cm->current_frame.frame_type != KEY_FRAME) {
     int shift = cpi->source->y_stride * (mi_row << 2) + (mi_col << 2);
