@@ -677,12 +677,48 @@ static AOM_INLINE void prepare_enc_workers(AV1_COMP *cpi, AVxWorkerHook hook,
   }
 }
 
+// Computes the number of workers for row multi-threading of encoding stage
+static AOM_INLINE int compute_num_enc_row_mt_workers(AV1_COMMON *const cm,
+                                                     int max_threads) {
+  TileInfo tile_info;
+  const int tile_cols = cm->tiles.cols;
+  const int tile_rows = cm->tiles.rows;
+  int total_num_threads_row_mt = 0;
+  for (int row = 0; row < tile_rows; row++) {
+    for (int col = 0; col < tile_cols; col++) {
+      av1_tile_init(&tile_info, cm, row, col);
+      const int num_sb_rows_in_tile = av1_get_sb_rows_in_tile(cm, tile_info);
+      const int num_sb_cols_in_tile = av1_get_sb_cols_in_tile(cm, tile_info);
+      total_num_threads_row_mt +=
+          AOMMIN((num_sb_cols_in_tile + 1) >> 1, num_sb_rows_in_tile);
+    }
+  }
+  return AOMMIN(max_threads, total_num_threads_row_mt);
+}
+
+// Computes the number of workers for tile multi-threading of encoding stage
+static AOM_INLINE int compute_num_enc_tile_mt_workers(AV1_COMMON *const cm,
+                                                      int max_threads) {
+  const int tile_cols = cm->tiles.cols;
+  const int tile_rows = cm->tiles.rows;
+  return AOMMIN(max_threads, tile_cols * tile_rows);
+}
+
+// Computes the number of workers for encoding stage (row/tile multi-threading)
+static AOM_INLINE int compute_num_enc_workers(AV1_COMP *cpi) {
+  if (cpi->oxcf.max_threads <= 1) return 1;
+  if (cpi->oxcf.row_mt && (cpi->oxcf.max_threads > 1))
+    return compute_num_enc_row_mt_workers(&cpi->common, cpi->oxcf.max_threads);
+  else
+    return compute_num_enc_tile_mt_workers(&cpi->common, cpi->oxcf.max_threads);
+}
+
 void av1_encode_tiles_mt(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   MultiThreadInfo *const mt_info = &cpi->mt_info;
   const int tile_cols = cm->tiles.cols;
   const int tile_rows = cm->tiles.rows;
-  int num_workers = AOMMIN(cpi->oxcf.max_threads, tile_cols * tile_rows);
+  int num_workers = compute_num_enc_workers(cpi);
 
   assert(IMPLIES(cpi->tile_data == NULL,
                  cpi->allocated_tiles < tile_cols * tile_rows));
@@ -713,6 +749,24 @@ void av1_accumulate_frame_counts(FRAME_COUNTS *acc_counts,
   for (unsigned int i = 0; i < n_counts; i++) acc[i] += cnt[i];
 }
 
+// Computes the maximum number of sb_rows for row multi-threading of encoding
+// stage
+static AOM_INLINE int compute_max_sb_rows(AV1_COMP *cpi) {
+  AV1_COMMON *const cm = &cpi->common;
+  const int tile_cols = cm->tiles.cols;
+  const int tile_rows = cm->tiles.rows;
+  int max_sb_rows = 0;
+  for (int row = 0; row < tile_rows; row++) {
+    for (int col = 0; col < tile_cols; col++) {
+      const int tile_index = row * cm->tiles.cols + col;
+      TileInfo tile_info = cpi->tile_data[tile_index].tile_info;
+      const int num_sb_rows_in_tile = av1_get_sb_rows_in_tile(cm, tile_info);
+      max_sb_rows = AOMMAX(max_sb_rows, num_sb_rows_in_tile);
+    }
+  }
+  return max_sb_rows;
+}
+
 void av1_encode_tiles_row_mt(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   MultiThreadInfo *const mt_info = &cpi->mt_info;
@@ -720,9 +774,14 @@ void av1_encode_tiles_row_mt(AV1_COMP *cpi) {
   const int tile_cols = cm->tiles.cols;
   const int tile_rows = cm->tiles.rows;
   int *thread_id_to_tile_id = enc_row_mt->thread_id_to_tile_id;
-  int num_workers = 0;
-  int total_num_threads_row_mt = 0;
   int max_sb_rows = 0;
+
+  // TODO(ravi.chaudhary@ittiam.com): Currently the percentage of
+  // post-processing stages in encoder is quiet low, so limiting the number of
+  // threads to the theoretical limit in row-mt does not have much impact on
+  // post-processing multi-threading stage. Need to revisit this when
+  // post-processing time starts shooting up.
+  int num_workers = compute_num_enc_workers(cpi);
 
   assert(IMPLIES(cpi->tile_data == NULL,
                  cpi->allocated_tiles < tile_cols * tile_rows));
@@ -733,24 +792,7 @@ void av1_encode_tiles_row_mt(AV1_COMP *cpi) {
 
   av1_init_tile_data(cpi);
 
-  for (int row = 0; row < tile_rows; row++) {
-    for (int col = 0; col < tile_cols; col++) {
-      int tile_index = row * cm->tiles.cols + col;
-      TileInfo tile_info = cpi->tile_data[tile_index].tile_info;
-      const int num_sb_rows_in_tile = av1_get_sb_rows_in_tile(cm, tile_info);
-      const int num_sb_cols_in_tile = av1_get_sb_cols_in_tile(cm, tile_info);
-      total_num_threads_row_mt +=
-          AOMMIN((num_sb_cols_in_tile + 1) >> 1, num_sb_rows_in_tile);
-      max_sb_rows = AOMMAX(max_sb_rows, num_sb_rows_in_tile);
-    }
-  }
-
-  // TODO(ravi.chaudhary@ittiam.com): Currently the percentage of
-  // post-processing stages in encoder is quiet low, so limiting the number of
-  // threads to the theoretical limit in row-mt does not have much impact on
-  // post-processing multi-threading stage. Need to revisit this when
-  // post-processing time starts shooting up.
-  num_workers = AOMMIN(cpi->oxcf.max_threads, total_num_threads_row_mt);
+  max_sb_rows = compute_max_sb_rows(cpi);
 
   if (enc_row_mt->allocated_tile_cols != tile_cols ||
       enc_row_mt->allocated_tile_rows != tile_rows ||
