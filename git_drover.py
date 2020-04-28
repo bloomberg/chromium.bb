@@ -321,7 +321,7 @@ class _Drover(object):
 
     try:
       rv = run(['git'] + args, shell=False, cwd=cwd, stderr=stderr)
-      if sys.version_info.major == 3:
+      if not interactive and sys.version_info.major == 3:
         return rv.decode('utf-8', 'ignore')
       return rv
     except (OSError, subprocess.CalledProcessError) as e:
