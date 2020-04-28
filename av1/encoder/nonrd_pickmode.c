@@ -197,13 +197,13 @@ static int combined_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
 static int search_new_mv(AV1_COMP *cpi, MACROBLOCK *x,
                          int_mv frame_mv[][REF_FRAMES],
                          MV_REFERENCE_FRAME ref_frame, int gf_temporal_ref,
-                         BLOCK_SIZE bsize, int mi_row, int mi_col,
-                         int best_pred_sad, int *rate_mv, RD_STATS *best_rdc) {
+                         BLOCK_SIZE bsize, int mi_row, int mi_col, int *rate_mv,
+                         RD_STATS *best_rdc) {
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mi = xd->mi[0];
   AV1_COMMON *cm = &cpi->common;
-  if (ref_frame > LAST_FRAME && gf_temporal_ref &&
-      cpi->oxcf.rc_mode == AOM_CBR) {
+  if (ref_frame > LAST_FRAME && cpi->oxcf.rc_mode == AOM_CBR &&
+      gf_temporal_ref) {
     int tmp_sad;
     int dis;
     int cost_list[5] = { INT_MAX, INT_MAX, INT_MAX, INT_MAX, INT_MAX };
@@ -215,7 +215,6 @@ static int search_new_mv(AV1_COMP *cpi, MACROBLOCK *x,
         &x->mbmi_ext->ref_mv_stack[ref_frame][0].this_mv.as_mv);
 
     if (tmp_sad > x->pred_mv_sad[LAST_FRAME]) return -1;
-    if (tmp_sad + (num_pels_log2_lookup[bsize] << 4) > best_pred_sad) return -1;
 
     frame_mv[NEWMV][ref_frame].as_int = mi->mv[0].as_int;
     int_mv best_mv = mi->mv[0];
@@ -1484,11 +1483,11 @@ static AOM_INLINE int is_same_gf_and_last_scale(AV1_COMMON *cm) {
 static AOM_INLINE void get_ref_frame_use_mask(AV1_COMP *cpi, MACROBLOCK *x,
                                               MB_MODE_INFO *mi, int mi_row,
                                               int mi_col, int bsize,
+                                              int gf_temporal_ref,
                                               int use_ref_frame[],
                                               int *force_skip_low_temp_var) {
   AV1_COMMON *const cm = &cpi->common;
   const struct segmentation *const seg = &cm->seg;
-  const int gf_temporal_ref = is_same_gf_and_last_scale(cm);
   const int is_small_sb = (cm->seq_params.sb_size == BLOCK_64X64);
 
   int use_alt_ref_frame = cpi->sf.rt_sf.use_nonrd_altref_frame;
@@ -1540,7 +1539,6 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   struct macroblockd_plane *const pd = &xd->plane[0];
 
   BEST_PICKMODE best_pickmode;
-  int inter_mode_mask[BLOCK_SIZES];
 #if COLLECT_PICK_MODE_STAT
   static mode_search_stat ms_stat;
 #endif
@@ -1557,7 +1555,6 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   const int *const rd_thresh_freq_fact = x->thresh_freq_fact[bsize];
   InterpFilter filter_ref;
   int ref_frame_skip_mask = 0;
-  int best_pred_sad = INT_MAX;
   int best_early_term = 0;
   unsigned int ref_costs_single[REF_FRAMES],
       ref_costs_comp[REF_FRAMES][REF_FRAMES];
@@ -1592,11 +1589,6 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   (void)best_rd_so_far;
 
   init_best_pickmode(&best_pickmode);
-
-  for (int i = 0; i < BLOCK_SIZES; ++i) inter_mode_mask[i] = INTER_ALL;
-
-  // TODO(kyslov) Move this to Speed Features
-  inter_mode_mask[BLOCK_128X128] = INTER_NEAREST_NEAR;
 
   av1_collect_neighbors_ref_counts(xd);
 
@@ -1635,8 +1627,10 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   const int mi_row = xd->mi_row;
   const int mi_col = xd->mi_col;
 
-  get_ref_frame_use_mask(cpi, x, mi, mi_row, mi_col, bsize, use_ref_frame_mask,
-                         &force_skip_low_temp_var);
+  const int gf_temporal_ref = is_same_gf_and_last_scale(cm);
+
+  get_ref_frame_use_mask(cpi, x, mi, mi_row, mi_col, bsize, gf_temporal_ref,
+                         use_ref_frame_mask, &force_skip_low_temp_var);
 
   for (MV_REFERENCE_FRAME ref_frame_iter = LAST_FRAME;
        ref_frame_iter <= ALTREF_FRAME; ++ref_frame_iter) {
@@ -1698,8 +1692,6 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     int is_skippable;
     int this_early_term = 0;
     int skip_this_mv = 0;
-    int comp_pred = 0;
-    int force_mv_inter_layer = 0;
     PREDICTION_MODE this_mode;
     MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
 
@@ -1733,7 +1725,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
         sse_zeromv_norm < thresh_skip_golden && this_mode == NEWMV)
       continue;
 
-    if (!(inter_mode_mask[bsize] & (1 << this_mode))) continue;
+    if (bsize == BLOCK_128X128 && this_mode == NEWMV) continue;
 
     // Skip testing non-LAST if this flag is set.
     if (x->nonrd_prune_ref_frame_search) {
@@ -1747,8 +1739,8 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     // Skip non-zeromv mode search for non-LAST frame if force_skip_low_temp_var
     // is set. If nearestmv for golden frame is 0, zeromv mode will be skipped
     // later.
-    if (!force_mv_inter_layer && force_skip_low_temp_var &&
-        ref_frame != LAST_FRAME && frame_mv[this_mode][ref_frame].as_int != 0) {
+    if (force_skip_low_temp_var && ref_frame != LAST_FRAME &&
+        frame_mv[this_mode][ref_frame].as_int != 0) {
       continue;
     }
 
@@ -1801,15 +1793,15 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                             rd_thresh_freq_fact[mode_index]))
       if (frame_mv[this_mode][ref_frame].as_int != 0) continue;
 
-    if (this_mode == NEWMV && !force_mv_inter_layer) {
-      if (search_new_mv(cpi, x, frame_mv, ref_frame, 1, bsize, mi_row, mi_col,
-                        best_pred_sad, &rate_mv, &best_rdc))
+    if (this_mode == NEWMV) {
+      if (search_new_mv(cpi, x, frame_mv, ref_frame, gf_temporal_ref, bsize,
+                        mi_row, mi_col, &rate_mv, &best_rdc))
         continue;
     }
 
     for (PREDICTION_MODE inter_mv_mode = NEARESTMV; inter_mv_mode <= NEWMV;
          inter_mv_mode++) {
-      if (inter_mv_mode == this_mode || comp_pred) continue;
+      if (inter_mv_mode == this_mode) continue;
       if (mode_checked[inter_mv_mode][ref_frame] &&
           frame_mv[this_mode][ref_frame].as_int ==
               frame_mv[inter_mv_mode][ref_frame].as_int) {
@@ -2129,13 +2121,10 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                                 intra_mode_list[i]);
       }
     } else {
-      for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
-        PREDICTION_MODE this_mode;
-        if (best_pickmode.best_ref_frame != ref_frame) continue;
-        for (this_mode = NEARESTMV; this_mode <= NEWMV; ++this_mode) {
-          update_thresh_freq_fact(cpi, x, bsize, ref_frame, best_mode_idx,
-                                  this_mode);
-        }
+      PREDICTION_MODE this_mode;
+      for (this_mode = NEARESTMV; this_mode <= NEWMV; ++this_mode) {
+        update_thresh_freq_fact(cpi, x, bsize, best_pickmode.best_ref_frame,
+                                best_mode_idx, this_mode);
       }
     }
   }
