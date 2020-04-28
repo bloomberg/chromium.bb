@@ -274,9 +274,9 @@ DEFAULT_CTS_APFE_GSURI = 'gs://chromeos-cts-apfe/'
 ANDROID_CONTAINER_PACKAGE_KEYWORD = 'android-container'
 ANDROID_VM_PACKAGE_KEYWORD = 'android-vm'
 
-ANDROID_INTERNAL_PATTERN = r'\.zip.internal$'
 ANDROID_BUCKET_URL = 'gs://android-build-chromeos/builds'
 ANDROID_MST_BUILD_BRANCH = 'git_master-arc-dev'
+# TODO(b/155088760): Remove once R80 PFQ is gone.
 ANDROID_NYC_BUILD_BRANCH = 'git_nyc-mr1-arc'
 ANDROID_PI_BUILD_BRANCH = 'git_pi-arc'
 ANDROID_QT_BUILD_BRANCH = 'git_qt-arc-dev'
@@ -296,22 +296,6 @@ ANDROID_MST_BUILD_TARGETS = {
     'ARM_USERDEBUG': ('linux-cheets_arm-userdebug', r'\.zip$'),
     'ARM64_USERDEBUG': ('linux-cheets_arm64-userdebug', r'\.zip$'),
     'X86_USERDEBUG': ('linux-cheets_x86-userdebug', r'\.zip$'),
-    'X86_64_USERDEBUG': ('linux-cheets_x86_64-userdebug', r'\.zip$'),
-}
-ANDROID_NYC_BUILD_TARGETS = {
-    # TODO(b/29509721): Workaround to roll adb with system image. We want to
-    # get rid of this.
-    'ARM': ('linux-cheets_arm-user', r'(\.zip|/adb)$'),
-    'X86': ('linux-cheets_x86-user', r'\.zip$'),
-    'X86_INTERNAL': ('linux-cheets_x86-user', ANDROID_INTERNAL_PATTERN),
-    'X86_USERDEBUG': ('linux-cheets_x86-userdebug', r'\.zip$'),
-    'AOSP_X86_USERDEBUG': ('linux-aosp_cheets_x86-userdebug', r'\.zip$'),
-    'SDK_TOOLS': ('linux-static_sdk_tools', r'/(aapt|adb|zipalign)$'),
-    'SDK_GOOGLE_X86_USERDEBUG': ('linux-sdk_google_cheets_x86-userdebug',
-                                 r'\.zip$'),
-    'SDK_GOOGLE_X86_64_USERDEBUG': ('linux-sdk_google_cheets_x86_64-userdebug',
-                                    r'\.zip$'),
-    'X86_64': ('linux-cheets_x86_64-user', r'\.zip$'),
     'X86_64_USERDEBUG': ('linux-cheets_x86_64-userdebug', r'\.zip$'),
 }
 ANDROID_PI_BUILD_TARGETS = {
@@ -399,14 +383,8 @@ ARC_BUCKET_ACLS = {
     'ARM64_USERDEBUG': 'googlestorage_acl_arm.txt',
     'X86_USERDEBUG': 'googlestorage_acl_x86.txt',
     'X86_64_USERDEBUG': 'googlestorage_acl_x86.txt',
-    'AOSP_ARM_USERDEBUG': 'googlestorage_acl_arm.txt',
-    'AOSP_X86_USERDEBUG': 'googlestorage_acl_x86.txt',
-    'AOSP_X86_64_USERDEBUG': 'googlestorage_acl_x86.txt',
     'SDK_GOOGLE_X86_USERDEBUG': 'googlestorage_acl_x86.txt',
     'SDK_GOOGLE_X86_64_USERDEBUG': 'googlestorage_acl_x86.txt',
-    'X86_INTERNAL': 'googlestorage_acl_internal.txt',
-    'SDK_TOOLS': 'googlestorage_acl_public.txt',
-    'XTS': 'googlestorage_acl_cts.txt',
 }
 ANDROID_SYMBOLS_URL_TEMPLATE = (
     ARC_BUCKET_URL +
@@ -424,9 +402,6 @@ ARC_BUILDS_NEED_ARTIFACTS_RENAMED = {
     'ARM64_USERDEBUG',
     'X86_USERDEBUG',
     'X86_64_USERDEBUG',
-    'AOSP_ARM_USERDEBUG',
-    'AOSP_X86_USERDEBUG',
-    'AOSP_X86_64_USERDEBUG',
     'SDK_GOOGLE_X86_USERDEBUG',
     'SDK_GOOGLE_X86_64_USERDEBUG',
 }

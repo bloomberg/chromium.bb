@@ -460,8 +460,6 @@ def MakeBuildTargetDict(package_name, build_branch):
     target_list = {
         constants.ANDROID_MST_BUILD_BRANCH:
         constants.ANDROID_MST_BUILD_TARGETS,
-        constants.ANDROID_NYC_BUILD_BRANCH:
-        constants.ANDROID_NYC_BUILD_TARGETS,
         constants.ANDROID_PI_BUILD_BRANCH:
         constants.ANDROID_PI_BUILD_TARGETS,
         constants.ANDROID_QT_BUILD_BRANCH:
