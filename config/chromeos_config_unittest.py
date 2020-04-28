@@ -54,12 +54,8 @@ class ConfigDumpTest(ChromeosConfigTestBase):
     old_dump = osutils.ReadFile(constants.CHROMEOS_CONFIG_FILE)
 
     if new_dump != old_dump:
-      if cros_test_lib.GlobalTestConfig.UPDATE_GENERATED_FILES:
-        osutils.WriteFile(constants.CHROMEOS_CONFIG_FILE, new_dump)
-      else:
-        self.fail('config_dump.json does not match the '
-                  'defined configs. Run '
-                  'config/chromeos_config_unittest --update')
+      self.fail('config_dump.json does not match the defined configs. Run '
+                'config/refresh_generated_files')
 
     # watefall_layout_dump.txt
     # We run this as a sep program to avoid the config cache.
@@ -70,12 +66,8 @@ class ConfigDumpTest(ChromeosConfigTestBase):
     old_dump = osutils.ReadFile(constants.WATERFALL_CONFIG_FILE)
 
     if new_dump != old_dump:
-      if cros_test_lib.GlobalTestConfig.UPDATE_GENERATED_FILES:
-        osutils.WriteFile(constants.WATERFALL_CONFIG_FILE, new_dump)
-      else:
-        self.fail('waterfall_layout_dump.txt does not match the '
-                  'defined configs. Run '
-                  'config/chromeos_config_unittest --update')
+      self.fail('waterfall_layout_dump.txt does not match the defined configs. '
+                'Run config/refresh_generated_files')
 
     # luci-scheduler.cfg
     # We run this as a sep program to avoid the config cache.
@@ -86,12 +78,8 @@ class ConfigDumpTest(ChromeosConfigTestBase):
     old_dump = osutils.ReadFile(constants.LUCI_SCHEDULER_CONFIG_FILE)
 
     if new_dump != old_dump:
-      if cros_test_lib.GlobalTestConfig.UPDATE_GENERATED_FILES:
-        osutils.WriteFile(constants.LUCI_SCHEDULER_CONFIG_FILE, new_dump)
-      else:
-        self.fail('luci-scheduler.cfg does not match the '
-                  'defined configs. Run '
-                  'config/chromeos_config_unittest --update')
+      self.fail('luci-scheduler.cfg does not match the defined configs. Run '
+                'config/refresh_generated_files')
 
   def testSaveLoadReload(self):
     """Make sure that loading and reloading the config is a no-op."""

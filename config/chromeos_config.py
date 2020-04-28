@@ -2221,7 +2221,7 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
     # branch for lakitu. This is typically only done on a branch after it is
     # out of ChromeOS support window.
     # To do this, set 'lakitu_lts_branch' to 'True' and re-run
-    # 'config/chromeos_config_unittest --update'.
+    # 'config/refresh_generated_files'.
     lakitu_lts_branch = False
     if lakitu_lts_branch and _IsLakituConfig(config):
       master = lakitu_master_config
@@ -3156,8 +3156,7 @@ def BranchScheduleConfig():
   #     https://github.com/luci/luci-go/blob/master/scheduler/
   #                        appengine/messages/config.proto
   #
-  # When updating this be sure to run
-  # `config/chromeos_config_unittest --update`
+  # When updating this be sure to run `config/refresh_generated_files`
   # or the change will fail chromite unittests.
   branch_builds = [
       # Add non release branch schedules here, if needed.
