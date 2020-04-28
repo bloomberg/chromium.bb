@@ -33,6 +33,11 @@ import os.path as path
 # How many bytes at a time to read from pipes.
 BUF_SIZE = 256
 
+# How many seconds of no stdout activity before process is considered stale. Can
+# be overridden via environmnet variable `STALE_PROCESS_DURATION`. If set to 0,
+# process won't be terminated.
+STALE_PROCESS_DURATION = 1200
+
 # Define a bunch of directory paths.
 # Relative to this script's filesystem path.
 THIS_DIR = path.dirname(path.abspath(__file__))
@@ -81,9 +86,6 @@ cache_dir = r%(cache_dir)s
 """
 
 
-# How many times to try before giving up.
-ATTEMPTS = 5
-
 GIT_CACHE_PATH = path.join(DEPOT_TOOLS_DIR, 'git_cache.py')
 GCLIENT_PATH = path.join(DEPOT_TOOLS_DIR, 'gclient.py')
 
@@ -111,7 +113,19 @@ OK = object()
 FAIL = object()
 
 
-class PsPrinter(object):
+class ProcessObservers(object):
+  """ProcessObservers allows monitoring of child process."""
+
+  def poke(self):
+    """poke is called when child process sent `BUF_SIZE` data to stdout."""
+    pass
+
+  def cancel(self):
+    """cancel is called once proc exists successfully."""
+    pass
+
+
+class PsPrinter(ProcessObservers):
   def __init__(self, interval=300):
     self.interval = interval
     self.active = sys.platform.startswith('linux2')
@@ -135,6 +149,30 @@ class PsPrinter(object):
 
   def cancel(self):
     if self.active and self.thread is not None:
+      self.thread.cancel()
+      self.thread = None
+
+
+class StaleProcess(ProcessObservers):
+  '''StaleProcess terminates process if there is no poke call in `interval`. '''
+
+  def __init__(self, interval, proc):
+    self.interval = interval
+    self.proc = proc
+    self.thread = None
+
+  def _terminate_process(self):
+    print('Terminating stale process...')
+    self.proc.terminate()
+
+  def poke(self):
+    self.cancel()
+    if self.interval > 0:
+      self.thread = threading.Timer(self.interval, self._terminate_process)
+      self.thread.start()
+
+  def cancel(self):
+    if self.thread is not None:
       self.thread.cancel()
       self.thread = None
 
@@ -165,12 +203,15 @@ def call(*args, **kwargs):  # pragma: no cover
   if stdin_data:
     proc.stdin.write(stdin_data)
     proc.stdin.close()
-  psprinter = PsPrinter()
+  stale_process_duration = env.get('STALE_PROCESS_DURATION',
+                                   STALE_PROCESS_DURATION)
+  observers = [PsPrinter(), StaleProcess(int(stale_process_duration), proc)]
   # This is here because passing 'sys.stdout' into stdout for proc will
   # produce out of order output.
   hanging_cr = False
   while True:
-    psprinter.poke()
+    for observer in observers:
+      observer.poke()
     buf = proc.stdout.read(BUF_SIZE)
     if not buf:
       break
@@ -185,7 +226,8 @@ def call(*args, **kwargs):  # pragma: no cover
   if hanging_cr:
     sys.stdout.write('\n')
     out.write('\n')
-  psprinter.cancel()
+  for observer in observers:
+    observer.cancel()
 
   code = proc.wait()
   elapsed_time = ((time.time() - start_time) / 60.0)
@@ -674,6 +716,7 @@ def _git_checkout(sln, sln_dir, revisions, refs, no_fetch_tags, git_cache_dir,
   if url == CHROMIUM_SRC_URL or url + '.git' == CHROMIUM_SRC_URL:
     # This is for performance investigation of `git fetch` in chromium/src.
     env = {
+        'GIT_CURL_VERBOSE': '1',
         'GIT_TRACE': 'true',
         'GIT_TRACE_PERFORMANCE': 'true',
     }
@@ -764,16 +807,6 @@ def _git_disable_gc(cwd):
   git('config', 'gc.auto', '0', cwd=cwd)
   git('config', 'gc.autodetach', '0', cwd=cwd)
   git('config', 'gc.autopacklimit', '0', cwd=cwd)
-
-
-def _download(url):
-  """Fetch url and return content, with retries for flake."""
-  for attempt in xrange(ATTEMPTS):
-    try:
-      return urllib2.urlopen(url).read()
-    except Exception:
-      if attempt == ATTEMPTS - 1:
-        raise
 
 
 def get_commit_position(git_path, revision='HEAD'):
