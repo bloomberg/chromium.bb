@@ -822,7 +822,7 @@ static void block_yrd(AV1_COMP *cpi, MACROBLOCK *x, int mi_row, int mi_col,
             break;
           default:
             assert(tx_size == TX_4X4);
-            x->fwd_txfm4x4(src_diff, low_coeff, diff_stride);
+            aom_fdct4x4_lp(src_diff, low_coeff, diff_stride);
             av1_quantize_lp(low_coeff, 4 * 4, p->round_fp_QTX, p->quant_fp_QTX,
                             low_qcoeff, low_dqcoeff, p->dequant_QTX, eob,
                             scan_order->scan);
