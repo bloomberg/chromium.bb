@@ -2189,7 +2189,7 @@ static int64_t get_kf_group_bits(AV1_COMP *cpi, double kf_group_err,
   TWO_PASS *const twopass = &cpi->twopass;
   int64_t kf_group_bits;
   if (cpi->lap_enabled) {
-    kf_group_bits = (int64_t)(rc->frames_to_key * rc->avg_frame_bandwidth);
+    kf_group_bits = (int64_t)rc->frames_to_key * rc->avg_frame_bandwidth;
     if (cpi->oxcf.vbr_corpus_complexity_lap) {
       const int num_mbs = (cpi->oxcf.resize_mode != RESIZE_NONE)
                               ? cpi->initial_mbs

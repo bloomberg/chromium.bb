@@ -1526,8 +1526,9 @@ void av1_rc_compute_frame_size_bounds(const AV1_COMP *cpi, int frame_target,
   } else {
     // For very small rate targets where the fractional adjustment
     // may be tiny make sure there is at least a minimum range.
-    const int tolerance =
-        AOMMAX(100, (cpi->sf.hl_sf.recode_tolerance * frame_target) / 100);
+    assert(cpi->sf.hl_sf.recode_tolerance <= 100);
+    const int tolerance = (int)AOMMAX(
+        100, ((int64_t)cpi->sf.hl_sf.recode_tolerance * frame_target) / 100);
     *frame_under_shoot_limit = AOMMAX(frame_target - tolerance, 0);
     *frame_over_shoot_limit =
         AOMMIN(frame_target + tolerance, cpi->rc.max_frame_bandwidth);
@@ -1837,11 +1838,11 @@ static void vbr_rate_correction(AV1_COMP *cpi, int *this_frame_target) {
           : 0;
   const int frame_window = AOMMIN(
       16, (int)(stats_count - (int)cpi->common.current_frame.frame_number));
-
+  assert(VBR_PCT_ADJUSTMENT_LIMIT <= 100);
   if (frame_window > 0) {
-    const int max_delta =
-        AOMMIN(abs((int)(vbr_bits_off_target / frame_window)),
-               (*this_frame_target * VBR_PCT_ADJUSTMENT_LIMIT) / 100);
+    const int max_delta = (int)AOMMIN(
+        abs((int)(vbr_bits_off_target / frame_window)),
+        ((int64_t)(*this_frame_target) * VBR_PCT_ADJUSTMENT_LIMIT) / 100);
 
     // vbr_bits_off_target > 0 means we have extra bits to spend
     // vbr_bits_off_target < 0 we are currently overshooting
