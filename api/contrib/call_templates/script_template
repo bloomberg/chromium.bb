@@ -11,6 +11,7 @@ ENDPOINT="chromite.api.%(SERVICE)s/%(METHOD)s"
 INPUT="./$(basename "${0}")_input.json"
 OUTPUT="./$(basename "${0}")_output.json"
 OUTPUT_BIN="./$(basename "${0}")_output.bin"
+CONFIG="./config.json"
 
 if [ ! -e "${INPUT}" ]; then
   echo "Input file not found: ${INPUT}."
@@ -19,7 +20,10 @@ fi;
 
 echo "" > "${OUTPUT}"
 echo "Running ${ENDPOINT}"
-../../../bin/build_api "${ENDPOINT}" --input-json "${INPUT}" --output-json "${OUTPUT}" --output-binary "${OUTPUT_BIN}"
+../../../bin/build_api "${ENDPOINT}" \
+  --input-json "${INPUT}" \
+  --output-json "${OUTPUT}" --output-binary "${OUTPUT_BIN}" \
+  --config-json "${CONFIG}"
 RESULT=$?
 
 echo "Completed ${ENDPOINT}"
