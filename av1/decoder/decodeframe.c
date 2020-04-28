@@ -1207,7 +1207,7 @@ static AOM_INLINE void parse_decode_block(AV1Decoder *const pbi,
   if (cm->delta_q_info.delta_q_present_flag) {
     for (int i = 0; i < MAX_SEGMENTS; i++) {
       const int current_qindex =
-          av1_get_qindex(&cm->seg, i, xd->current_qindex);
+          av1_get_qindex(&cm->seg, i, xd->current_base_qindex);
       const CommonQuantParams *const quant_params = &cm->quant_params;
       for (int j = 0; j < num_planes; ++j) {
         const int dc_delta_q = j == 0 ? quant_params->y_dc_delta_q
@@ -2827,7 +2827,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
       td->bit_reader = &tile_data->bit_reader;
       av1_zero(td->cb_buffer_base.dqcoeff);
       av1_tile_init(&td->dcb.xd.tile, cm, row, col);
-      td->dcb.xd.current_qindex = cm->quant_params.base_qindex;
+      td->dcb.xd.current_base_qindex = cm->quant_params.base_qindex;
       setup_bool_decoder(tile_bs_buf->data, data_end, tile_bs_buf->size,
                          &cm->error, td->bit_reader, allow_update_cdf);
 #if CONFIG_ACCOUNTING
@@ -2900,7 +2900,7 @@ static AOM_INLINE void tile_worker_hook_init(
 
   MACROBLOCKD *const xd = &td->dcb.xd;
   av1_tile_init(&xd->tile, cm, tile_row, tile_col);
-  xd->current_qindex = cm->quant_params.base_qindex;
+  xd->current_base_qindex = cm->quant_params.base_qindex;
   setup_bool_decoder(tile_buffer->data, thread_data->data_end,
                      tile_buffer->size, &thread_data->error_info,
                      td->bit_reader, allow_update_cdf);
@@ -4979,7 +4979,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   cm->delta_q_info.delta_q_present_flag =
       quant_params->base_qindex > 0 ? aom_rb_read_bit(rb) : 0;
   if (cm->delta_q_info.delta_q_present_flag) {
-    xd->current_qindex = quant_params->base_qindex;
+    xd->current_base_qindex = quant_params->base_qindex;
     cm->delta_q_info.delta_q_res = 1 << aom_rb_read_literal(rb, 2);
     if (!features->allow_intrabc)
       cm->delta_q_info.delta_lf_present_flag = aom_rb_read_bit(rb);

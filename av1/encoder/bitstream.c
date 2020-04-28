@@ -959,10 +959,10 @@ static AOM_INLINE void write_delta_q_params(AV1_COMP *cpi, int skip,
         super_block_upper_left) {
       assert(mbmi->current_qindex > 0);
       const int reduced_delta_qindex =
-          (mbmi->current_qindex - xd->current_qindex) /
+          (mbmi->current_qindex - xd->current_base_qindex) /
           delta_q_info->delta_q_res;
       write_delta_qindex(xd, reduced_delta_qindex, w);
-      xd->current_qindex = mbmi->current_qindex;
+      xd->current_base_qindex = mbmi->current_qindex;
       if (delta_q_info->delta_lf_present_flag) {
         if (delta_q_info->delta_lf_multi) {
           const int frame_lf_count =
@@ -1712,7 +1712,7 @@ static AOM_INLINE void write_modes(AV1_COMP *const cpi,
   av1_init_above_context(&cm->above_contexts, num_planes, tile->tile_row, xd);
 
   if (cpi->common.delta_q_info.delta_q_present_flag) {
-    xd->current_qindex = cpi->common.quant_params.base_qindex;
+    xd->current_base_qindex = cpi->common.quant_params.base_qindex;
     if (cpi->common.delta_q_info.delta_lf_present_flag) {
       av1_reset_loop_filter_delta(xd, num_planes);
     }
@@ -3080,7 +3080,7 @@ static AOM_INLINE void write_uncompressed_header_obu(
     aom_wb_write_bit(wb, delta_q_info->delta_q_present_flag);
     if (delta_q_info->delta_q_present_flag) {
       aom_wb_write_literal(wb, get_msb(delta_q_info->delta_q_res), 2);
-      xd->current_qindex = quant_params->base_qindex;
+      xd->current_base_qindex = quant_params->base_qindex;
       if (features->allow_intrabc)
         assert(delta_q_info->delta_lf_present_flag == 0);
       else

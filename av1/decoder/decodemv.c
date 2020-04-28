@@ -735,10 +735,10 @@ static void read_delta_q_params(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 
   if (delta_q_info->delta_q_present_flag) {
     MB_MODE_INFO *const mbmi = xd->mi[0];
-    xd->current_qindex +=
+    xd->current_base_qindex +=
         read_delta_qindex(cm, xd, r, mbmi) * delta_q_info->delta_q_res;
     /* Normative: Clamp to [1,MAXQ] to not interfere with lossless mode */
-    xd->current_qindex = clamp(xd->current_qindex, 1, MAXQ);
+    xd->current_base_qindex = clamp(xd->current_base_qindex, 1, MAXQ);
     FRAME_CONTEXT *const ec_ctx = xd->tile_ctx;
     if (delta_q_info->delta_lf_present_flag) {
       const int mi_row = xd->mi_row;
@@ -790,7 +790,7 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 
   read_delta_q_params(cm, xd, r);
 
-  mbmi->current_qindex = xd->current_qindex;
+  mbmi->current_qindex = xd->current_base_qindex;
 
   mbmi->ref_frame[0] = INTRA_FRAME;
   mbmi->ref_frame[1] = NONE_FRAME;
@@ -1533,7 +1533,7 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
   if (!mbmi->skip_mode)
     inter_block = read_is_inter_block(cm, xd, mbmi->segment_id, r);
 
-  mbmi->current_qindex = xd->current_qindex;
+  mbmi->current_qindex = xd->current_base_qindex;
 
   xd->above_txfm_context =
       cm->above_contexts.txfm[xd->tile.tile_row] + xd->mi_col;

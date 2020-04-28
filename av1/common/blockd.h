@@ -218,6 +218,7 @@ typedef struct MB_MODE_INFO {
   INTERINTER_COMPOUND_DATA interinter_comp;
   WarpedMotionParams wm_params;
   int_mv mv[2];
+  // q index for the current coding block.
   int current_qindex;
   // Only for INTER blocks
   int_interpfilters interp_filters;
@@ -641,7 +642,15 @@ typedef struct macroblockd {
   int qindex[MAX_SEGMENTS];
   // lossless[s] is true if segment 's' is coded losslessly.
   int lossless[MAX_SEGMENTS];
-  int current_qindex;
+  // Q index for the coding blocks in this superblock will be stored in
+  // mbmi->current_qindex. Now, when cm->delta_q_info.delta_q_present_flag is
+  // true, mbmi->current_qindex is computed by taking 'current_base_qindex' as
+  // the base, and adding any transmitted delta qindex on top of it.
+  // Precisely, this is the latest qindex used by the first coding block of a
+  // non-skip superblock in the current tile; OR
+  // same as cm->quant_params.base_qindex (if not explicitly set yet).
+  // Note: This is 'CurrentQIndex' in the AV1 spec.
+  int current_base_qindex;
 
   // Same as cm->features.cur_frame_force_integer_mv.
   int cur_frame_force_integer_mv;

@@ -1118,8 +1118,8 @@ static AOM_INLINE void update_stats(const AV1_COMMON *const cm,
   if (delta_q_info->delta_q_present_flag &&
       (bsize != cm->seq_params.sb_size || !mbmi->skip_txfm) &&
       super_block_upper_left) {
-    const int dq =
-        (mbmi->current_qindex - xd->current_qindex) / delta_q_info->delta_q_res;
+    const int dq = (mbmi->current_qindex - xd->current_base_qindex) /
+                   delta_q_info->delta_q_res;
     const int absdq = abs(dq);
     for (int i = 0; i < AOMMIN(absdq, DELTA_Q_SMALL); ++i) {
       td->counts->delta_q[i][1]++;
@@ -1607,7 +1607,7 @@ static AOM_INLINE void encode_b(const AV1_COMP *const cpi,
     if (delta_q_info->delta_q_present_flag &&
         (bsize != cm->seq_params.sb_size || !mbmi->skip_txfm) &&
         super_block_upper_left) {
-      xd->current_qindex = mbmi->current_qindex;
+      xd->current_base_qindex = mbmi->current_qindex;
       if (delta_q_info->delta_lf_present_flag) {
         if (delta_q_info->delta_lf_multi) {
           const int frame_lf_count =
@@ -4260,12 +4260,13 @@ static AOM_INLINE void setup_delta_q(AV1_COMP *const cpi, ThreadData *td,
 
   MACROBLOCKD *const xd = &x->e_mbd;
   const int sign_deltaq_index =
-      current_qindex - xd->current_qindex >= 0 ? 1 : -1;
+      current_qindex - xd->current_base_qindex >= 0 ? 1 : -1;
   const int deltaq_deadzone = delta_q_res / 4;
   const int qmask = ~(delta_q_res - 1);
-  int abs_deltaq_index = abs(current_qindex - xd->current_qindex);
+  int abs_deltaq_index = abs(current_qindex - xd->current_base_qindex);
   abs_deltaq_index = (abs_deltaq_index + deltaq_deadzone) & qmask;
-  current_qindex = xd->current_qindex + sign_deltaq_index * abs_deltaq_index;
+  current_qindex =
+      xd->current_base_qindex + sign_deltaq_index * abs_deltaq_index;
   current_qindex = AOMMAX(current_qindex, MINQ + 1);
   assert(current_qindex > 0);
 
@@ -5019,7 +5020,7 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
   // Reset delta for every tile
   if (mi_row == tile_info->mi_row_start || row_mt_enabled) {
     if (cm->delta_q_info.delta_q_present_flag)
-      xd->current_qindex = cm->quant_params.base_qindex;
+      xd->current_base_qindex = cm->quant_params.base_qindex;
     if (cm->delta_q_info.delta_lf_present_flag) {
       av1_reset_loop_filter_delta(xd, av1_num_planes(cm));
     }
