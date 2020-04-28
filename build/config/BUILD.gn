@@ -19,6 +19,9 @@ declare_args() {
   use_libfuzzer = false
 
   # Enables clang's source-based coverage (requires is_clang=true).
+  # NOTE: This will slow down the build and increase binary size
+  # significantly. For more details, see:
+  # https://chromium.googlesource.com/chromium/src/+/refs/heads/master/docs/clang_code_coverage_wrapper.md
   use_coverage = false
 }
 

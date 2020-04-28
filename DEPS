@@ -25,7 +25,10 @@ vars = {
 
   # Needed to download additional clang binaries for processing coverage data
   # (from binaries with GN arg `use_coverage=true`).
-  'checkout_clang_coverage_tools': False,
+  #
+  # TODO(issuetracker.google.com/155195126): Change this to False and update
+  # buildbot to call update.py instead.
+  'checkout_clang_coverage_tools': True,
 }
 
 deps = {
