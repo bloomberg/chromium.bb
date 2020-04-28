@@ -150,6 +150,7 @@ if ((is_android && current_cpu == "arm" && arm_use_neon) || (is_android && curre
     "libavutil/crc.c",
     "libavutil/dict.c",
     "libavutil/display.c",
+    "libavutil/dovi_meta.c",
     "libavutil/downmix_info.c",
     "libavutil/encryption_info.c",
     "libavutil/error.c",

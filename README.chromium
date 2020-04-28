@@ -3,7 +3,7 @@ URL: http://ffmpeg.org/
 License: LGPL 2.1
 License File: CREDITS.chromium
 Upstream Git: git://source.ffmpeg.org/ffmpeg.git
-Last Upstream Merge: acbd950ed297fded711481a4059a83b085f888ae, Feb 19 2020
+Last Upstream Merge: 1cc3851b60d9943eb5aca56a9f9d65456471e999, Apr 28 2020
 
 This file documents the layout of the Chromium copy of FFmpeg, some common
 tasks, and how to create the build files and related configurations.

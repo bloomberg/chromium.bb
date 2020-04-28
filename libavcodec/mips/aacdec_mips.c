@@ -431,6 +431,7 @@ static void update_ltp_mips(AACContext *ac, SingleChannelElement *sce)
     float_copy(sce->ltp_state + 1024, sce->ret, 1024);
     float_copy(sce->ltp_state + 2048, saved_ltp, 1024);
 }
+#endif /* 0 */
 #endif /* HAVE_MIPSFPU */
 #endif /* HAVE_INLINE_ASM */
 
@@ -442,6 +443,7 @@ void ff_aacdec_init_mips(AACContext *c)
     c->apply_ltp                   = apply_ltp_mips;
 #if 0 // Does not compile.
     c->update_ltp                  = update_ltp_mips;
+#endif /* 0 */
 #endif /* HAVE_MIPSFPU */
 #endif /* HAVE_INLINE_ASM */
 }

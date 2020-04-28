@@ -720,25 +720,6 @@ Affects:
     libavutil/avsscanf.c
 
 ------------------------------------------------------------------
-commit 7262141e8c14462f47e79ed6ba457321dea9cc5d
-Author: Dale Curtis <dalecurtis@chromium.org>
-Date:   Thu Feb 28 13:51:30 2019 -0800
-
-    Don't trigger errors for multiple id3 tags.
-
-    Such errors may make sense for specific formats, but general parsing
-    logic shouldn't be treating these as errors regardless of the error
-    recognition mode.
-
-    Fixes loading of the following wave when using -err_detect explode:
-    https://cs.chromium.org/chromium/src/third_party/blink/web_tests/external/wpt/webaudio/resources/4ch-440.wav
-
-    Signed-off-by: Dale Curtis <dalecurtis@chromium.org>
-
-Affects:
-    libavformat/utils.c
-
-------------------------------------------------------------------
 commit b62555c76193045c2e3643c626e8e8d7a8f4b93f
 Author: liberato@chromium.org <liberato@chromium.org>
 Date:   Mon Mar 4 14:01:22 2019 -0800
@@ -856,11 +837,12 @@ Affects:
     libavutil/log.h
 
 ------------------------------------------------------------------
-Basically reapplying commit 7262141e8c14462f47e79ed6ba457321dea9cc5d
+commit 89875d230f63fa5eb5dc17dfaebfcbe3dc95c0c4
+Author: Dale Curtis <dalecurtis@chromium.org>
+Date:   Tue Apr 28 15:36:52 2020 -0700
 
-    Don't trigger errors for multiple id3 tags.
-    Fixes loading of the following wave when using -err_detect explode:
-    https://cs.chromium.org/chromium/src/third_party/blink/web_tests/external/wpt/webaudio/resources/4ch-440.wav
+    Fix mismerge in MIPS code.
 
 Affects:
-    libavformat/utils.c
+    libavcodec/mips/aacdec_mips.c
+
