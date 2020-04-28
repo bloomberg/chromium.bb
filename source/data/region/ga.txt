@@ -308,7 +308,6 @@ ga{
         CI{"Côte d’Ivoire"}
         CZ{"Poblacht na Seice"}
         SZ{"an tSuasalainn"}
-        TL{"TL"}
     }
-    Version{"36"}
+    Version{"37"}
 }

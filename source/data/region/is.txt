@@ -298,17 +298,13 @@ is{
         ZZ{"Óþekkt svæði"}
     }
     Countries%short{
-        GB{"Bretland"}
         UN{"SÞ"}
         US{"BNA"}
     }
     Countries%variant{
         CD{"Kongó (Lýðstjórnarlýðveldið)"}
         CG{"Kongó (Lýðveldið)"}
-        CI{"Fílabeinsströndin"}
-        CZ{"Tékkland"}
-        SZ{"Svasíland"}
         TL{"Austur-Tímor"}
     }
-    Version{"36"}
+    Version{"37"}
 }

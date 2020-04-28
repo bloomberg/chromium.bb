@@ -261,5 +261,5 @@ smn{
         CD{"Kongo demokraattisâš täsiväldi"}
         CG{"Kongo täsiväldi"}
     }
-    Version{"36"}
+    Version{"37"}
 }

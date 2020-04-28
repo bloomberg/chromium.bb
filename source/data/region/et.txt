@@ -310,5 +310,5 @@ et{
         SZ{"eSwatini"}
         TL{"Timor-Leste"}
     }
-    Version{"36"}
+    Version{"37"}
 }

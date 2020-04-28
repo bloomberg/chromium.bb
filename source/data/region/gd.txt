@@ -309,5 +309,5 @@ gd{
         SZ{"Dùthaich nan Suasaidh"}
         TL{"Tìomor an Ear"}
     }
-    Version{"36"}
+    Version{"37"}
 }

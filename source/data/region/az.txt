@@ -308,7 +308,6 @@ az{
         CI{"Fil Dişi Sahili"}
         CZ{"Çex Respublikası"}
         SZ{"Svazilend"}
-        TL{"Şərqi Timor"}
     }
-    Version{"36"}
+    Version{"37"}
 }

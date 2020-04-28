@@ -301,5 +301,5 @@ hsb{
         CI{"Słonowinowy pobrjóh"}
         TL{"Wuchodny Timor"}
     }
-    Version{"36"}
+    Version{"37"}
 }

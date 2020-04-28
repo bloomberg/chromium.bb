@@ -1,5 +1,5 @@
 diff --git a/source/data/locales/ko.txt b/source/data/locales/ko.txt
-index 99974527..81a2abfc 100644
+index 6bbb88b4..af2bb6c6 100644
 --- a/source/data/locales/ko.txt
 +++ b/source/data/locales/ko.txt
 @@ -1483,7 +1483,7 @@ ko{
@@ -21,7 +21,7 @@ index 99974527..81a2abfc 100644
                  }
                  yMd{
 diff --git a/source/data/zone/ko.txt b/source/data/zone/ko.txt
-index d95d83f3..f14620d5 100644
+index b23a41dd..2e45aaea 100644
 --- a/source/data/zone/ko.txt
 +++ b/source/data/zone/ko.txt
 @@ -1330,24 +1330,24 @@ ko{

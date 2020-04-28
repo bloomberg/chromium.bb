@@ -872,7 +872,7 @@ static UBool extendICUData(UErrorCode *pErr)
                                                           /* Also handles a race through here before gHaveTriedToLoadCommonData is set. */
 
 #if MAP_IMPLEMENTATION==MAP_STDIO
-    umtx_unlock(extendICUDataMutex);
+    umtx_unlock(&extendICUDataMutex);
 #endif
     return didUpdate;               /* Return true if ICUData pointer was updated.   */
                                     /*   (Could potentially have been done by another thread racing */

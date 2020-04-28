@@ -1,8 +1,8 @@
 diff --git a/source/configure b/source/configure
-index 67d7f13e..c49c7efa 100755
+index 7b955e2b..98e62b3e 100755
 --- a/source/configure
 +++ b/source/configure
-@@ -9243,16 +9243,6 @@ else
+@@ -9255,16 +9255,6 @@ else
        echo "Not rebuilding data/rules.mk, assuming prebuilt data in data/in"
        touch data/rules.mk
      fi

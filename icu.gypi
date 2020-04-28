@@ -99,6 +99,7 @@
       'source/i18n/listformatter.cpp',
       'source/i18n/measfmt.cpp',
       'source/i18n/measunit.cpp',
+      'source/i18n/measunit_extra.cpp',
       'source/i18n/measure.cpp',
       'source/i18n/msgfmt.cpp',
       'source/i18n/name2uni.cpp',

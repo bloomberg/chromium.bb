@@ -298,16 +298,13 @@ to{
         ZZ{"Potu fonua taʻeʻiloa pe hala"}
     }
     Countries%short{
-        GB{"Pilitānia"}
         US{"ʻAmelika"}
     }
     Countries%variant{
         CD{"Kongo (LTK)"}
         CG{"Kongo (Lepupelika)"}
-        CI{"Matafonua ʻAivolī"}
         CZ{"Lepupelika Seki"}
         SZ{"Suasilani"}
-        TL{"Timoa fakahahake"}
     }
-    Version{"36"}
+    Version{"37"}
 }
