@@ -5565,11 +5565,6 @@ static void compute_global_motion_for_ref_frame(
   aom_clear_system_state();
 }
 
-typedef struct {
-  int distance;
-  MV_REFERENCE_FRAME frame;
-} FrameDistPair;
-
 static INLINE void update_valid_ref_frames_for_gm(
     AV1_COMP *cpi, YV12_BUFFER_CONFIG *ref_buf[REF_FRAMES],
     FrameDistPair reference_frames[MAX_DIRECTIONS][REF_FRAMES - 1],
@@ -5764,6 +5759,93 @@ static AOM_INLINE void dealloc_global_motion_data(MotionModel *params_by_motion,
   }
 }
 
+// Initializes parameters used for computing global motion.
+static AOM_INLINE void setup_global_motion_info_params(AV1_COMP *cpi) {
+  GlobalMotionInfo *const gm_info = &cpi->gm_info;
+  YV12_BUFFER_CONFIG *source = cpi->source;
+
+  gm_info->src_buffer = source->y_buffer;
+  if (source->flags & YV12_FLAG_HIGHBITDEPTH) {
+    // The source buffer is 16-bit, so we need to convert to 8 bits for the
+    // following code. We cache the result until the source frame is released.
+    gm_info->src_buffer =
+        av1_downconvert_frame(source, cpi->common.seq_params.bit_depth);
+  }
+
+  gm_info->segment_map_w =
+      (source->y_width + WARP_ERROR_BLOCK) >> WARP_ERROR_BLOCK_LOG;
+  gm_info->segment_map_h =
+      (source->y_height + WARP_ERROR_BLOCK) >> WARP_ERROR_BLOCK_LOG;
+
+  memset(gm_info->reference_frames, -1,
+         sizeof(gm_info->reference_frames[0][0]) * MAX_DIRECTIONS *
+             (REF_FRAMES - 1));
+  av1_zero(gm_info->num_ref_frames);
+
+  // Populate ref_buf for valid ref frames in global motion
+  update_valid_ref_frames_for_gm(cpi, gm_info->ref_buf,
+                                 gm_info->reference_frames,
+                                 gm_info->num_ref_frames);
+
+  // Sort the past and future ref frames in the ascending order of their
+  // distance from the current frame. reference_frames[0] => past direction
+  // and reference_frames[1] => future direction.
+  qsort(gm_info->reference_frames[0], gm_info->num_ref_frames[0],
+        sizeof(gm_info->reference_frames[0][0]), compare_distance);
+  qsort(gm_info->reference_frames[1], gm_info->num_ref_frames[1],
+        sizeof(gm_info->reference_frames[1][0]), compare_distance);
+
+  gm_info->num_src_corners = -1;
+  // If atleast one valid reference frame exists in past/future directions,
+  // compute interest points of source frame using FAST features.
+  if (gm_info->num_ref_frames[0] > 0 || gm_info->num_ref_frames[1] > 0) {
+    gm_info->num_src_corners = av1_fast_corner_detect(
+        gm_info->src_buffer, source->y_width, source->y_height,
+        source->y_stride, gm_info->src_corners, MAX_CORNERS);
+  }
+}
+
+// Computes global motion w.r.t. valid reference frames.
+static AOM_INLINE void global_motion_estimation(AV1_COMP *cpi) {
+  GlobalMotionInfo *const gm_info = &cpi->gm_info;
+  MotionModel params_by_motion[RANSAC_NUM_MOTIONS];
+  uint8_t *segment_map = NULL;
+
+  alloc_global_motion_data(params_by_motion, &segment_map,
+                           gm_info->segment_map_w, gm_info->segment_map_h);
+
+  // Compute global motion w.r.t. past reference frames and future reference
+  // frames
+  for (int dir = 0; dir < MAX_DIRECTIONS; dir++) {
+    if (gm_info->num_ref_frames[dir] > 0)
+      compute_global_motion_for_references(
+          cpi, gm_info->ref_buf, gm_info->reference_frames[dir],
+          gm_info->num_ref_frames[dir], gm_info->num_src_corners,
+          gm_info->src_corners, gm_info->src_buffer, params_by_motion,
+          segment_map, gm_info->segment_map_w, gm_info->segment_map_h);
+  }
+
+  dealloc_global_motion_data(params_by_motion, segment_map);
+}
+
+// Computes global motion of the source frame.
+static AOM_INLINE void compute_global_motion(AV1_COMP *cpi) {
+  AV1_COMMON *const cm = &cpi->common;
+  GlobalMotionInfo *const gm_info = &cpi->gm_info;
+
+  av1_zero(cpi->td.rd_counts.global_motion_used);
+  av1_zero(gm_info->params_cost);
+
+  if (cpi->common.current_frame.frame_type == INTER_FRAME && cpi->source &&
+      cpi->oxcf.enable_global_motion && !gm_info->search_done) {
+    setup_global_motion_info_params(cpi);
+    global_motion_estimation(cpi);
+    gm_info->search_done = 1;
+  }
+  memcpy(cm->cur_frame->global_motion, cm->global_motion,
+         sizeof(cm->cur_frame->global_motion));
+}
+
 static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
   ThreadData *const td = &cpi->td;
   MACROBLOCK *const x = &td->mb;
@@ -5772,7 +5854,6 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
   FeatureFlags *const features = &cm->features;
   MACROBLOCKD *const xd = &x->e_mbd;
   RD_COUNTS *const rdc = &cpi->td.rd_counts;
-  GlobalMotionInfo *const gm_info = &cpi->gm_info;
   FrameProbInfo *const frame_probs = &cpi->frame_probs;
   IntraBCHashInfo *const intrabc_hash_info = &x->intrabc_hash_info;
   MultiThreadInfo *const mt_info = &cpi->mt_info;
@@ -5953,73 +6034,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
 #if CONFIG_COLLECT_COMPONENT_TIMING
   start_timing(cpi, av1_compute_global_motion_time);
 #endif
-  av1_zero(rdc->global_motion_used);
-  av1_zero(gm_info->params_cost);
-  if (cpi->common.current_frame.frame_type == INTER_FRAME && cpi->source &&
-      cpi->oxcf.enable_global_motion && !gm_info->search_done) {
-    YV12_BUFFER_CONFIG *ref_buf[REF_FRAMES];
-    MotionModel params_by_motion[RANSAC_NUM_MOTIONS];
-    uint8_t *segment_map = NULL;
-
-    int num_src_corners = -1;
-    int src_corners[2 * MAX_CORNERS];
-    unsigned char *src_buffer = cpi->source->y_buffer;
-    if (cpi->source->flags & YV12_FLAG_HIGHBITDEPTH) {
-      // The source buffer is 16-bit, so we need to convert to 8 bits for the
-      // following code. We cache the result until the source frame is released.
-      src_buffer =
-          av1_downconvert_frame(cpi->source, cpi->common.seq_params.bit_depth);
-    }
-    const int segment_map_w =
-        (cpi->source->y_width + WARP_ERROR_BLOCK) >> WARP_ERROR_BLOCK_LOG;
-    const int segment_map_h =
-        (cpi->source->y_height + WARP_ERROR_BLOCK) >> WARP_ERROR_BLOCK_LOG;
-
-    alloc_global_motion_data(params_by_motion, &segment_map, segment_map_w,
-                             segment_map_h);
-
-    FrameDistPair reference_frames[MAX_DIRECTIONS][REF_FRAMES - 1];
-    memset(reference_frames, -1,
-           sizeof(reference_frames[0][0]) * MAX_DIRECTIONS * (REF_FRAMES - 1));
-
-    int num_ref_frames[MAX_DIRECTIONS] = { 0 };
-
-    // Populate ref_buf for valid ref frames in global motion.
-    update_valid_ref_frames_for_gm(cpi, ref_buf, reference_frames,
-                                   num_ref_frames);
-
-    // Sort the past and future ref frames in the ascending order of their
-    // distance from the current frame. reference_frames[0] => past direction
-    // and reference_frames[1] => future direction.
-    qsort(reference_frames[0], num_ref_frames[0],
-          sizeof(reference_frames[0][0]), compare_distance);
-    qsort(reference_frames[1], num_ref_frames[1],
-          sizeof(reference_frames[1][0]), compare_distance);
-
-    // If atleast one valid reference frame exists in past/future directions,
-    // compute interest points of source frame using FAST features.
-    if (num_ref_frames[0] > 0 || num_ref_frames[1] > 0) {
-      num_src_corners = av1_fast_corner_detect(
-          src_buffer, cpi->source->y_width, cpi->source->y_height,
-          cpi->source->y_stride, src_corners, MAX_CORNERS);
-    }
-
-    // Compute global motion w.r.t. past reference frames and future reference
-    // frames.
-    for (int dir = 0; dir < MAX_DIRECTIONS; dir++) {
-      if (num_ref_frames[dir] > 0)
-        compute_global_motion_for_references(
-            cpi, ref_buf, reference_frames[dir], num_ref_frames[dir],
-            num_src_corners, src_corners, src_buffer, params_by_motion,
-            segment_map, segment_map_w, segment_map_h);
-    }
-
-    dealloc_global_motion_data(params_by_motion, segment_map);
-
-    gm_info->search_done = 1;
-  }
-  memcpy(cm->cur_frame->global_motion, cm->global_motion,
-         REF_FRAMES * sizeof(WarpedMotionParams));
+  compute_global_motion(cpi);
 #if CONFIG_COLLECT_COMPONENT_TIMING
   end_timing(cpi, av1_compute_global_motion_time);
 #endif

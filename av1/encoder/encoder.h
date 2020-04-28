@@ -33,6 +33,7 @@
 #include "av1/encoder/context_tree.h"
 #include "av1/encoder/encodemb.h"
 #include "av1/encoder/firstpass.h"
+#include "av1/encoder/global_motion.h"
 #include "av1/encoder/level.h"
 #include "av1/encoder/lookahead.h"
 #include "av1/encoder/mcomp.h"
@@ -951,6 +952,37 @@ typedef struct {
 
   // Flag to indicate if global motion search needs to be rerun.
   bool search_done;
+
+  // Array of pointers to the frame buffers holding the reference frames.
+  // ref_buf[i] stores the pointer to the reference frame of the ith
+  // reference frame type.
+  YV12_BUFFER_CONFIG *ref_buf[REF_FRAMES];
+
+  // Pointer to the source frame buffer.
+  unsigned char *src_buffer;
+
+  // Holds the number of valid reference frames in past and future directions
+  // w.r.t. the current frame. num_ref_frames[i] stores the total number of
+  // valid reference frames in 'i' direction.
+  int num_ref_frames[MAX_DIRECTIONS];
+
+  // Array of structure which stores the valid reference frames in past and
+  // future directions and their corresponding distance from the source frame.
+  // reference_frames[i][j] holds the jth valid reference frame type in the
+  // direction 'i' and its temporal distance from the source frame .
+  FrameDistPair reference_frames[MAX_DIRECTIONS][REF_FRAMES - 1];
+
+  // The width and height for which segment map is allocated.
+  int segment_map_w;
+  int segment_map_h;
+
+  // Holds the total number of corner points detected in the source frame.
+  int num_src_corners;
+
+  // Holds the x and y co-ordinates of the corner points detected in the source
+  // frame. src_corners[i] holds the x co-ordinate and src_corners[i+1] holds
+  // the y co-ordinate of the ith corner point detected.
+  int src_corners[2 * MAX_CORNERS];
 } GlobalMotionInfo;
 
 typedef struct {

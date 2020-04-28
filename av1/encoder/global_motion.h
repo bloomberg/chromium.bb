@@ -39,6 +39,13 @@ typedef struct {
   int num_inliers;
 } MotionModel;
 
+// The structure holds a valid reference frame type and its temporal distance
+// from the source frame.
+typedef struct {
+  int distance;
+  MV_REFERENCE_FRAME frame;
+} FrameDistPair;
+
 void av1_convert_model_to_params(const double *params,
                                  WarpedMotionParams *model);
 
