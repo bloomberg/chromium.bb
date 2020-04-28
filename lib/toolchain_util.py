@@ -30,7 +30,6 @@ from chromite.lib import path_util
 from chromite.lib import portage_util
 from chromite.lib import timeout_util
 
-
 assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
@@ -1698,9 +1697,13 @@ class PrepareForBuildHandler(_CommonPrepareBundle):
 
   def __init__(self, artifact_name, chroot, sysroot_path, build_target,
                input_artifacts, profile_info):
-    super(PrepareForBuildHandler,
-          self).__init__(artifact_name, chroot, sysroot_path, build_target,
-                         input_artifacts, profile_info)
+    super(PrepareForBuildHandler, self).__init__(
+        artifact_name,
+        chroot,
+        sysroot_path,
+        build_target,
+        input_artifacts=input_artifacts,
+        profile_info=profile_info)
     self._prepare_func = getattr(self, '_Prepare' + artifact_name)
 
   def Prepare(self):
@@ -1973,7 +1976,11 @@ class BundleArtifactHandler(_CommonPrepareBundle):
   def __init__(self, artifact_name, chroot, sysroot_path, build_target,
                output_dir, profile_info):
     super(BundleArtifactHandler, self).__init__(
-        artifact_name, chroot, sysroot_path, build_target, profile_info)
+        artifact_name,
+        chroot,
+        sysroot_path,
+        build_target,
+        profile_info=profile_info)
     self._bundle_func = getattr(self, '_Bundle' + artifact_name)
     self.output_dir = output_dir
 
@@ -2160,8 +2167,7 @@ class BundleArtifactHandler(_CommonPrepareBundle):
     output_dir_full = self.chroot.full_path(self._AfdoTmpPath())
     merged_profile = self._CreateAndUploadMergedAFDOProfile(
         afdo_name, output_dir_full)
-    merged_profile_inside = self._AfdoTmpPath(
-        os.path.basename(merged_profile))
+    merged_profile_inside = self._AfdoTmpPath(os.path.basename(merged_profile))
     merged_profile_compressed = os.path.join(
         self.output_dir,
         os.path.basename(merged_profile) + BZ2_COMPRESSION_SUFFIX)
@@ -2240,9 +2246,13 @@ def PrepareForBuild(artifact_name, chroot, sysroot_path, build_target,
     PrepareForBuildReturn
   """
 
-  return PrepareForBuildHandler(artifact_name, chroot, sysroot_path,
-                                build_target, input_artifacts,
-                                profile_info).Prepare()
+  return PrepareForBuildHandler(
+      artifact_name,
+      chroot,
+      sysroot_path,
+      build_target,
+      input_artifacts=input_artifacts,
+      profile_info=profile_info).Prepare()
 
 
 def BundleArtifacts(name, chroot, sysroot_path, build_target, output_dir,
@@ -2263,8 +2273,13 @@ def BundleArtifacts(name, chroot, sysroot_path, build_target, output_dir,
   Returns:
     list of artifacts, relative to output_dir.
   """
-  return BundleArtifactHandler(name, chroot, sysroot_path, build_target,
-                               output_dir, profile_info).Bundle()
+  return BundleArtifactHandler(
+      name,
+      chroot,
+      sysroot_path,
+      build_target,
+      output_dir,
+      profile_info=profile_info).Bundle()
 
 
 # ###########################################################################
