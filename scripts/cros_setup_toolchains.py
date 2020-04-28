@@ -14,6 +14,7 @@ import json
 import os
 import re
 import shutil
+import sys
 
 from chromite.lib import constants
 from chromite.lib import commandline
@@ -33,6 +34,9 @@ if cros_build_lib.IsInsideChroot():
   # We'll check in main() if the operation needs portage.
   # pylint: disable=import-error
   import portage
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 EMERGE_CMD = os.path.join(constants.CHROMITE_BIN_DIR, 'parallel_emerge')
