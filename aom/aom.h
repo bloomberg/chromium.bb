@@ -45,7 +45,6 @@ extern "C" {
 enum aom_com_control_id {
   /*!\brief pass in an external frame into decoder to be used as reference frame
    */
-  AOM_SET_POSTPROC = 3, /**< set the decoder's post processing settings  */
   AOM_SET_DBG_COLOR_REF_FRAME =
       4, /**< set the reference frames to color for each macroblock */
   AOM_SET_DBG_COLOR_MB_MODES = 5, /**< set which macro block modes to color */
@@ -69,38 +68,6 @@ enum aom_com_control_id {
   AOM_DECODER_CTRL_ID_START = 256
 };
 
-/*!\brief post process flags
- *
- * The set of macros define AOM decoder post processing flags
- */
-enum aom_postproc_level {
-  AOM_NOFILTERING = 0,
-  AOM_DEBLOCK = 1 << 0,
-  AOM_DEMACROBLOCK = 1 << 1,
-  AOM_ADDNOISE = 1 << 2,
-  AOM_DEBUG_TXT_FRAME_INFO = 1 << 3, /**< print frame information */
-  AOM_DEBUG_TXT_MBLK_MODES =
-      1 << 4, /**< print macro block modes over each macro block */
-  AOM_DEBUG_TXT_DC_DIFF = 1 << 5,   /**< print dc diff for each macro block */
-  AOM_DEBUG_TXT_RATE_INFO = 1 << 6, /**< print video rate info (encoder only) */
-  AOM_MFQE = 1 << 10
-};
-
-/*!\brief post process flags
- *
- * This define a structure that describe the post processing settings. For
- * the best objective measure (using the PSNR metric) set post_proc_flag
- * to AOM_DEBLOCK and deblocking_level to 1.
- */
-
-typedef struct aom_postproc_cfg {
-  /*!\brief the types of post processing to be done, should be combination of
-   * "aom_postproc_level" */
-  int post_proc_flag;
-  int deblocking_level; /**< the strength of deblocking, valid range [0, 16] */
-  int noise_level; /**< the strength of additive noise, valid range [0, 16] */
-} aom_postproc_cfg_t;
-
 /*!\brief AV1 specific reference frame data struct
  *
  * Define the data struct to access av1 reference frames.
@@ -116,8 +83,6 @@ typedef struct av1_ref_frame {
  *
  * defines the data type for each of AOM decoder control function requires
  */
-AOM_CTRL_USE_TYPE(AOM_SET_POSTPROC, aom_postproc_cfg_t *)
-#define AOM_CTRL_AOM_SET_POSTPROC
 AOM_CTRL_USE_TYPE(AOM_SET_DBG_COLOR_REF_FRAME, int)
 #define AOM_CTRL_AOM_SET_DBG_COLOR_REF_FRAME
 AOM_CTRL_USE_TYPE(AOM_SET_DBG_COLOR_MB_MODES, int)

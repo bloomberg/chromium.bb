@@ -295,7 +295,6 @@ struct aom_codec_alg_priv {
   size_t pending_frame_sizes[8];
   aom_image_t preview_img;
   aom_enc_frame_flags_t next_frame_flags;
-  aom_postproc_cfg_t preview_ppcfg;
   aom_codec_pkt_list_decl(256) pkt_list;
   unsigned int fixed_kf_cntr;
   // BufferPool that holds all reference frames.
@@ -2412,13 +2411,6 @@ static aom_codec_err_t ctrl_copy_new_frame_image(aom_codec_alg_priv_t *ctx,
   }
 }
 
-static aom_codec_err_t ctrl_set_previewpp(aom_codec_alg_priv_t *ctx,
-                                          va_list args) {
-  (void)ctx;
-  (void)args;
-  return AOM_CODEC_INCAPABLE;
-}
-
 static aom_image_t *encoder_get_preview(aom_codec_alg_priv_t *ctx) {
   YV12_BUFFER_CONFIG sd;
 
@@ -2663,7 +2655,6 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
 
   // Setters
   { AV1_SET_REFERENCE, ctrl_set_reference },
-  { AOM_SET_POSTPROC, ctrl_set_previewpp },
   { AOME_SET_ROI_MAP, ctrl_set_roi_map },
   { AOME_SET_ACTIVEMAP, ctrl_set_active_map },
   { AOME_SET_SCALEMODE, ctrl_set_scale_mode },

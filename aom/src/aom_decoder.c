@@ -34,9 +34,6 @@ aom_codec_err_t aom_codec_dec_init_ver(aom_codec_ctx_t *ctx,
     res = AOM_CODEC_INVALID_PARAM;
   else if (iface->abi_version != AOM_CODEC_INTERNAL_ABI_VERSION)
     res = AOM_CODEC_ABI_MISMATCH;
-  else if ((flags & AOM_CODEC_USE_POSTPROC) &&
-           !(iface->caps & AOM_CODEC_CAP_POSTPROC))
-    res = AOM_CODEC_INCAPABLE;
   else if (!(iface->caps & AOM_CODEC_CAP_DECODER))
     res = AOM_CODEC_INCAPABLE;
   else {

@@ -19,16 +19,4 @@
     frames that are ready for display, depending on the codec.
 
 
-    \section usage_postproc Postprocessing
-    Postprocessing is a process that is applied after a frame is decoded to
-    enhance the image's appearance by removing artifacts introduced in the
-    compression process. It is not required to properly decode the frame, and
-    is generally done only when there is enough spare CPU time to execute
-    the required filters. Codecs may support a number of different
-    postprocessing filters, and the available filters may differ from platform
-    to platform. Embedded devices often do not have enough CPU to implement
-    postprocessing in software. The filter selection is generally handled
-    automatically by the codec.
-
-
 */

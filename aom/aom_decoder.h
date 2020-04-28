@@ -42,7 +42,7 @@ extern "C" {
  * fields to structures
  */
 #define AOM_DECODER_ABI_VERSION \
-  (5 + AOM_CODEC_ABI_VERSION) /**<\hideinitializer*/
+  (6 + AOM_CODEC_ABI_VERSION) /**<\hideinitializer*/
 
 /*! \brief Decoder capabilities bitfield
  *
@@ -52,7 +52,6 @@ extern "C" {
  *
  *  The available flags are specified by AOM_CODEC_CAP_* defines.
  */
-#define AOM_CODEC_CAP_POSTPROC 0x40000 /**< Can postprocess decoded frame */
 /*!brief Can support external frame buffers */
 #define AOM_CODEC_CAP_EXTERNAL_FRAME_BUFFER 0x200000
 
@@ -63,7 +62,6 @@ extern "C" {
  *
  *  The available flags are specified by AOM_CODEC_USE_* defines.
  */
-#define AOM_CODEC_USE_POSTPROC 0x10000 /**< Postprocess decoded frame */
 
 /*!\brief Stream properties
  *
