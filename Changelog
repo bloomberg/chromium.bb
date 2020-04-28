@@ -36,7 +36,33 @@ version <next>:
 - xfade_opencl filter
 - afirsrc audio filter source
 - pad_opencl filter
+- Simon & Schuster Interactive ADPCM decoder
+- Real War KVAG demuxer
 - CDToons video decoder
+- siren audio decoder
+- Rayman 2 ADPCM decoder
+- Rayman 2 APM demuxer
+- cas video filter
+- High Voltage Software ADPCM decoder
+- LEGO Racers ALP (.tun & .pcm) demuxer
+- AMQP 0-9-1 protocol (RabbitMQ)
+- Vulkan support
+- avgblur_vulkan, overlay_vulkan, scale_vulkan and chromaber_vulkan filters
+- ADPCM IMA MTF decoder
+- FWSE demuxer
+- DERF DPCM decoder
+- DERF demuxer
+- CRI HCA decoder
+- CRI HCA demuxer
+- overlay_cuda filter
+- switch from AvxSynth to AviSynth+ on Linux
+- mv30 decoder
+- Expanded styling support for 3GPP Timed Text Subtitles (movtext)
+- WebP parser
+- tmedian filter
+- maskedthreshold filter
+- Support for muxing pcm and pgs in m2ts
+- Cunning Developments ADPCM decoder
 
 
 version 4.2:

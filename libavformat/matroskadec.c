@@ -558,7 +558,7 @@ static EbmlSyntax matroska_track[] = {
     { MATROSKA_ID_CODECID,               EBML_STR,   0, offsetof(MatroskaTrack, codec_id) },
     { MATROSKA_ID_CODECPRIVATE,          EBML_BIN,   0, offsetof(MatroskaTrack, codec_priv) },
     { MATROSKA_ID_CODECDELAY,            EBML_UINT,  0, offsetof(MatroskaTrack, codec_delay) },
-    { MATROSKA_ID_TRACKLANGUAGE,         EBML_UTF8,  0, offsetof(MatroskaTrack, language),     { .s = "eng" } },
+    { MATROSKA_ID_TRACKLANGUAGE,         EBML_STR,   0, offsetof(MatroskaTrack, language),     { .s = "eng" } },
     { MATROSKA_ID_TRACKDEFAULTDURATION,  EBML_UINT,  0, offsetof(MatroskaTrack, default_duration) },
     { MATROSKA_ID_TRACKTIMECODESCALE,    EBML_FLOAT, 0, offsetof(MatroskaTrack, time_scale),   { .f = 1.0 } },
     { MATROSKA_ID_TRACKFLAGDEFAULT,      EBML_UINT,  0, offsetof(MatroskaTrack, flag_default), { .u = 1 } },
@@ -750,6 +750,25 @@ static EbmlSyntax matroska_cluster_enter[] = {
     { 0 }
 };
 #undef CHILD_OF
+
+static const CodecMime mkv_image_mime_tags[] = {
+    {"image/gif"                  , AV_CODEC_ID_GIF},
+    {"image/jpeg"                 , AV_CODEC_ID_MJPEG},
+    {"image/png"                  , AV_CODEC_ID_PNG},
+    {"image/tiff"                 , AV_CODEC_ID_TIFF},
+
+    {""                           , AV_CODEC_ID_NONE}
+};
+
+static const CodecMime mkv_mime_tags[] = {
+    {"text/plain"                 , AV_CODEC_ID_TEXT},
+    {"application/x-truetype-font", AV_CODEC_ID_TTF},
+    {"application/x-font"         , AV_CODEC_ID_TTF},
+    {"application/vnd.ms-opentype", AV_CODEC_ID_OTF},
+    {"binary"                     , AV_CODEC_ID_BIN_DATA},
+
+    {""                           , AV_CODEC_ID_NONE}
+};
 
 static const char *const matroska_doctypes[] = { "matroska", "webm" };
 
@@ -1549,7 +1568,7 @@ static int matroska_probe(const AVProbeData *p)
 }
 
 static MatroskaTrack *matroska_find_track_by_num(MatroskaDemuxContext *matroska,
-                                                 int num)
+                                                 uint64_t num)
 {
     MatroskaTrack *tracks = matroska->tracks.elem;
     int i;
@@ -1558,7 +1577,7 @@ static MatroskaTrack *matroska_find_track_by_num(MatroskaDemuxContext *matroska,
         if (tracks[i].num == num)
             return &tracks[i];
 
-    av_log(matroska->ctx, AV_LOG_ERROR, "Invalid track number %d\n", num);
+    av_log(matroska->ctx, AV_LOG_ERROR, "Invalid track number %"PRIu64"\n", num);
     return NULL;
 }
 
@@ -2621,6 +2640,14 @@ static int matroska_parse_tracks(AVFormatContext *s)
             ret = matroska_parse_flac(s, track, &extradata_offset);
             if (ret < 0)
                 return ret;
+        } else if (codec_id == AV_CODEC_ID_WAVPACK && track->codec_priv.size < 2) {
+            av_log(matroska->ctx, AV_LOG_INFO, "Assuming WavPack version 4.10 "
+                   "in absence of valid CodecPrivate.\n");
+            extradata_size = 2;
+            extradata = av_mallocz(2 + AV_INPUT_BUFFER_PADDING_SIZE);
+            if (!extradata)
+                return AVERROR(ENOMEM);
+            AV_WL16(extradata, 0x410);
         } else if (codec_id == AV_CODEC_ID_PRORES && track->codec_priv.size == 4) {
             fourcc = AV_RL32(track->codec_priv.data);
         } else if (codec_id == AV_CODEC_ID_VP9 && track->codec_priv.size) {
@@ -2882,10 +2909,10 @@ static int matroska_read_header(AVFormatContext *s)
             av_dict_set(&st->metadata, "mimetype", attachments[j].mime, 0);
             st->codecpar->codec_id   = AV_CODEC_ID_NONE;
 
-            for (i = 0; ff_mkv_image_mime_tags[i].id != AV_CODEC_ID_NONE; i++) {
-                if (!strncmp(ff_mkv_image_mime_tags[i].str, attachments[j].mime,
-                             strlen(ff_mkv_image_mime_tags[i].str))) {
-                    st->codecpar->codec_id = ff_mkv_image_mime_tags[i].id;
+            for (i = 0; mkv_image_mime_tags[i].id != AV_CODEC_ID_NONE; i++) {
+                if (!strncmp(mkv_image_mime_tags[i].str, attachments[j].mime,
+                             strlen(mkv_image_mime_tags[i].str))) {
+                    st->codecpar->codec_id = mkv_image_mime_tags[i].id;
                     break;
                 }
             }
@@ -2913,10 +2940,10 @@ static int matroska_read_header(AVFormatContext *s)
                 memcpy(st->codecpar->extradata, attachments[j].bin.data,
                        attachments[j].bin.size);
 
-                for (i = 0; ff_mkv_mime_tags[i].id != AV_CODEC_ID_NONE; i++) {
-                    if (!strncmp(ff_mkv_mime_tags[i].str, attachments[j].mime,
-                                strlen(ff_mkv_mime_tags[i].str))) {
-                        st->codecpar->codec_id = ff_mkv_mime_tags[i].id;
+                for (i = 0; mkv_mime_tags[i].id != AV_CODEC_ID_NONE; i++) {
+                    if (!strncmp(mkv_mime_tags[i].str, attachments[j].mime,
+                                strlen(mkv_mime_tags[i].str))) {
+                        st->codecpar->codec_id = mkv_mime_tags[i].id;
                         break;
                     }
                 }
@@ -2933,10 +2960,6 @@ static int matroska_read_header(AVFormatContext *s)
                                    (AVRational) { 1, 1000000000 },
                                    chapters[i].start, chapters[i].end,
                                    chapters[i].title);
-            if (chapters[i].chapter) {
-                av_dict_set(&chapters[i].chapter->metadata,
-                            "title", chapters[i].title, 0);
-            }
             max_start = chapters[i].start;
         }
 
@@ -3178,9 +3201,10 @@ static int matroska_parse_wavpack(MatroskaTrack *track, uint8_t *src,
     uint16_t ver;
     int ret, offset = 0;
 
-    if (srclen < 12 || track->stream->codecpar->extradata_size < 2)
+    if (srclen < 12)
         return AVERROR_INVALIDDATA;
 
+    av_assert1(track->stream->codecpar->extradata_size >= 2);
     ver = AV_RL16(track->stream->codecpar->extradata);
 
     samples = AV_RL32(src);

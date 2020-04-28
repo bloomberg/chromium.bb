@@ -39,6 +39,7 @@ typedef struct CUDAFramesContext {
 static const enum AVPixelFormat supported_formats[] = {
     AV_PIX_FMT_NV12,
     AV_PIX_FMT_YUV420P,
+    AV_PIX_FMT_YUVA420P,
     AV_PIX_FMT_YUV444P,
     AV_PIX_FMT_P010,
     AV_PIX_FMT_P016,
@@ -200,53 +201,7 @@ static int cuda_transfer_get_formats(AVHWFramesContext *ctx,
     return 0;
 }
 
-static int cuda_transfer_data_from(AVHWFramesContext *ctx, AVFrame *dst,
-                                   const AVFrame *src)
-{
-    CUDAFramesContext       *priv = ctx->internal->priv;
-    AVHWDeviceContext *device_ctx = ctx->device_ctx;
-    AVCUDADeviceContext    *hwctx = device_ctx->hwctx;
-    CudaFunctions             *cu = hwctx->internal->cuda_dl;
-
-    CUcontext dummy;
-    int i, ret;
-
-    /* We don't support transfers to HW devices. */
-    if (dst->hw_frames_ctx)
-        return AVERROR(ENOSYS);
-
-    ret = CHECK_CU(cu->cuCtxPushCurrent(hwctx->cuda_ctx));
-    if (ret < 0)
-        return ret;
-
-    for (i = 0; i < FF_ARRAY_ELEMS(src->data) && src->data[i]; i++) {
-        CUDA_MEMCPY2D cpy = {
-            .srcMemoryType = CU_MEMORYTYPE_DEVICE,
-            .dstMemoryType = CU_MEMORYTYPE_HOST,
-            .srcDevice     = (CUdeviceptr)src->data[i],
-            .dstHost       = dst->data[i],
-            .srcPitch      = src->linesize[i],
-            .dstPitch      = dst->linesize[i],
-            .WidthInBytes  = FFMIN(src->linesize[i], dst->linesize[i]),
-            .Height        = src->height >> (i ? priv->shift_height : 0),
-        };
-
-        ret = CHECK_CU(cu->cuMemcpy2DAsync(&cpy, hwctx->stream));
-        if (ret < 0)
-            goto exit;
-    }
-
-    ret = CHECK_CU(cu->cuStreamSynchronize(hwctx->stream));
-    if (ret < 0)
-        goto exit;
-
-exit:
-    CHECK_CU(cu->cuCtxPopCurrent(&dummy));
-
-    return 0;
-}
-
-static int cuda_transfer_data_to(AVHWFramesContext *ctx, AVFrame *dst,
+static int cuda_transfer_data(AVHWFramesContext *ctx, AVFrame *dst,
                                  const AVFrame *src)
 {
     CUDAFramesContext       *priv = ctx->internal->priv;
@@ -257,8 +212,8 @@ static int cuda_transfer_data_to(AVHWFramesContext *ctx, AVFrame *dst,
     CUcontext dummy;
     int i, ret;
 
-    /* We don't support transfers from HW devices. */
-    if (src->hw_frames_ctx)
+    if ((src->hw_frames_ctx && ((AVHWFramesContext*)src->hw_frames_ctx->data)->format != AV_PIX_FMT_CUDA) ||
+        (dst->hw_frames_ctx && ((AVHWFramesContext*)dst->hw_frames_ctx->data)->format != AV_PIX_FMT_CUDA))
         return AVERROR(ENOSYS);
 
     ret = CHECK_CU(cu->cuCtxPushCurrent(hwctx->cuda_ctx));
@@ -267,17 +222,35 @@ static int cuda_transfer_data_to(AVHWFramesContext *ctx, AVFrame *dst,
 
     for (i = 0; i < FF_ARRAY_ELEMS(src->data) && src->data[i]; i++) {
         CUDA_MEMCPY2D cpy = {
-            .srcMemoryType = CU_MEMORYTYPE_HOST,
-            .dstMemoryType = CU_MEMORYTYPE_DEVICE,
-            .srcHost       = src->data[i],
-            .dstDevice     = (CUdeviceptr)dst->data[i],
             .srcPitch      = src->linesize[i],
             .dstPitch      = dst->linesize[i],
             .WidthInBytes  = FFMIN(src->linesize[i], dst->linesize[i]),
-            .Height        = src->height >> (i ? priv->shift_height : 0),
+            .Height        = src->height >> ((i == 0 || i == 3) ? 0 : priv->shift_height),
         };
 
+        if (src->hw_frames_ctx) {
+            cpy.srcMemoryType = CU_MEMORYTYPE_DEVICE;
+            cpy.srcDevice     = (CUdeviceptr)src->data[i];
+        } else {
+            cpy.srcMemoryType = CU_MEMORYTYPE_HOST;
+            cpy.srcHost       = src->data[i];
+        }
+
+        if (dst->hw_frames_ctx) {
+            cpy.dstMemoryType = CU_MEMORYTYPE_DEVICE;
+            cpy.dstDevice     = (CUdeviceptr)dst->data[i];
+        } else {
+            cpy.dstMemoryType = CU_MEMORYTYPE_HOST;
+            cpy.dstHost       = dst->data[i];
+        }
+
         ret = CHECK_CU(cu->cuMemcpy2DAsync(&cpy, hwctx->stream));
+        if (ret < 0)
+            goto exit;
+    }
+
+    if (!dst->hw_frames_ctx) {
+        ret = CHECK_CU(cu->cuStreamSynchronize(hwctx->stream));
         if (ret < 0)
             goto exit;
     }
@@ -521,8 +494,8 @@ const HWContextType ff_hwcontext_type_cuda = {
     .frames_init          = cuda_frames_init,
     .frames_get_buffer    = cuda_get_buffer,
     .transfer_get_formats = cuda_transfer_get_formats,
-    .transfer_data_to     = cuda_transfer_data_to,
-    .transfer_data_from   = cuda_transfer_data_from,
+    .transfer_data_to     = cuda_transfer_data,
+    .transfer_data_from   = cuda_transfer_data,
 
     .pix_fmts             = (const enum AVPixelFormat[]){ AV_PIX_FMT_CUDA, AV_PIX_FMT_NONE },
 };

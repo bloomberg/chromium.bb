@@ -255,6 +255,7 @@ External library support:
   --enable-libopenmpt      enable decoding tracked files via libopenmpt [no]
   --enable-libopus         enable Opus de/encoding via libopus [no]
   --enable-libpulse        enable Pulseaudio input via libpulse [no]
+  --enable-librabbitmq     enable RabbitMQ library [no]
   --enable-librav1e        enable AV1 encoding via rav1e [no]
   --enable-librsvg         enable SVG rasterization via librsvg [no]
   --enable-librubberband   enable rubberband needed for rubberband filter [no]
@@ -1666,7 +1667,7 @@ COMPONENT_LIST="
 "
 
 EXAMPLE_LIST="
-    avio_dir_cmd_example
+    avio_list_dir_example
     avio_reading_example
     decode_audio_example
     decode_video_example
@@ -1789,6 +1790,7 @@ EXTERNAL_LIBRARY_LIST="
     libopenmpt
     libopus
     libpulse
+    librabbitmq
     librav1e
     librsvg
     librtmp
@@ -2788,7 +2790,9 @@ msmpeg4v3_decoder_select="h263_decoder"
 msmpeg4v3_encoder_select="h263_encoder"
 mss2_decoder_select="mpegvideo qpeldsp vc1_decoder"
 mts2_decoder_select="mss34dsp"
+mv30_decoder_select="aandcttables blockdsp"
 mvha_decoder_deps="zlib"
+mvha_decoder_select="llviddsp"
 mwsc_decoder_deps="zlib"
 mxpeg_decoder_select="mjpeg_decoder"
 nellymoser_decoder_select="mdct sinewin"
@@ -3023,6 +3027,8 @@ scale_cuda_filter_deps_any="cuda_nvcc cuda_llvm"
 thumbnail_cuda_filter_deps="ffnvcodec"
 thumbnail_cuda_filter_deps_any="cuda_nvcc cuda_llvm"
 transpose_npp_filter_deps="ffnvcodec libnpp"
+overlay_cuda_filter_deps="ffnvcodec"
+overlay_cuda_filter_deps_any="cuda_nvcc cuda_llvm"
 
 amf_deps_any="libdl LoadLibrary"
 nvenc_deps="ffnvcodec"
@@ -3289,6 +3295,7 @@ matroska_audio_muxer_select="matroska_muxer"
 matroska_demuxer_select="iso_media riffdec"
 matroska_demuxer_suggest="bzlib lzo zlib"
 matroska_muxer_select="iso_media riffenc"
+mlp_demuxer_select="mlp_parser"
 mmf_muxer_select="riffenc"
 mov_demuxer_select="iso_media riffdec"
 mov_demuxer_suggest="zlib"
@@ -3323,6 +3330,7 @@ spdif_muxer_select="adts_header"
 spx_muxer_select="ogg_muxer"
 swf_demuxer_suggest="zlib"
 tak_demuxer_select="tak_parser"
+truehd_demuxer_select="mlp_parser"
 tg2_muxer_select="mov_muxer"
 tgp_muxer_select="mov_muxer"
 vobsub_demuxer_select="mpegps_demuxer"
@@ -3330,6 +3338,7 @@ w64_demuxer_select="wav_demuxer"
 w64_muxer_select="wav_muxer"
 wav_demuxer_select="riffdec"
 wav_muxer_select="riffenc"
+webm_chunk_muxer_select="webm_muxer"
 webm_muxer_select="iso_media riffenc"
 webm_dash_manifest_demuxer_select="matroska_demuxer"
 wtv_demuxer_select="mpegts_demuxer riffdec"
@@ -3434,6 +3443,8 @@ unix_protocol_deps="sys_un_h"
 unix_protocol_select="network"
 
 # external library protocols
+libamqp_protocol_deps="librabbitmq"
+libamqp_protocol_select="network"
 librtmp_protocol_deps="librtmp"
 librtmpe_protocol_deps="librtmp"
 librtmps_protocol_deps="librtmp"
@@ -3491,6 +3502,7 @@ derain_filter_select="dnn"
 deshake_filter_select="pixelutils"
 deshake_opencl_filter_deps="opencl"
 dilation_opencl_filter_deps="opencl"
+dnn_processing_filter_deps="swscale"
 dnn_processing_filter_select="dnn"
 drawtext_filter_deps="libfreetype"
 drawtext_filter_suggest="libfontconfig libfribidi"
@@ -3610,7 +3622,7 @@ yadif_cuda_filter_deps="ffnvcodec"
 yadif_cuda_filter_deps_any="cuda_nvcc cuda_llvm"
 
 # examples
-avio_dir_cmd_deps="avformat avutil"
+avio_list_dir_deps="avformat avutil"
 avio_reading_deps="avformat avcodec avutil"
 decode_audio_example_deps="avcodec avutil"
 decode_video_example_deps="avcodec avutil"
@@ -4415,7 +4427,7 @@ msvc_common_flags(){
             # generic catch all at the bottom will print the original flag.
             -Wall)                ;;
             -Wextra)              ;;
-            -std=c99)             ;;
+            -std=c*)              ;;
             # Common flags
             -fomit-frame-pointer) ;;
             -g)                   echo -Z7 ;;
@@ -4431,6 +4443,7 @@ msvc_common_flags(){
             -l*)                  echo ${flag#-l}.lib ;;
             -LARGEADDRESSAWARE)   echo $flag ;;
             -L*)                  echo -libpath:${flag#-L} ;;
+            -Wl,*)                ;;
             *)                    echo $flag ;;
         esac
     done
@@ -4658,7 +4671,11 @@ probe_cc(){
         _ld_path='-libpath:'
     elif $_cc -nologo- 2>&1 | grep -q Microsoft || { $_cc -v 2>&1 | grep -q clang && $_cc -? > /dev/null 2>&1; }; then
         _type=msvc
-        _ident=$($_cc 2>&1 | head -n1 | tr -d '\r')
+        if $_cc -nologo- 2>&1 | grep -q Microsoft; then
+            _ident=$($_cc 2>&1 | head -n1 | tr -d '\r')
+        else
+            _ident=$($_cc --version 2>/dev/null | head -n1 | tr -d '\r')
+        fi
         _DEPCMD='$(DEP$(1)) $(DEP$(1)FLAGS) $($(1)DEP_FLAGS) $< 2>&1 | awk '\''/including/ { sub(/^.*file: */, ""); gsub(/\\/, "/"); if (!match($$0, / /)) print "$@:", $$0 }'\'' > $(@:.o=.d)'
         _DEPFLAGS='$(CPPFLAGS) $(CFLAGS) -showIncludes -Zs'
         _cflags_speed="-O2"
@@ -4786,7 +4803,7 @@ fi
 
 if test "$cpu" = host; then
     enabled cross_compile &&
-        die "--cpu=host makes no sense when cross-compiling."
+        warn "--cpu=host makes no sense when cross-compiling."
 
     case "$cc_type" in
         gcc|llvm_gcc)
@@ -5305,6 +5322,7 @@ case $target_os in
         ;;
     openbsd|bitrig)
         disable symver
+        enable section_data_rel_ro
         striptype=""
         SHFLAGS='-shared'
         SLIB_INSTALL_NAME='$(SLIBNAME).$(LIBMAJOR).$(LIBMINOR)'
@@ -5343,6 +5361,11 @@ case $target_os in
         fi
         version_script='-exported_symbols_list'
         VERSION_SCRIPT_POSTPROCESS_CMD='tr " " "\n" | sed -n /global:/,/local:/p | grep ";" | tr ";" "\n" | sed -E "s/(.+)/_\1/g" | sed -E "s/(.+[^*])$$$$/\1*/"'
+        # Workaround for Xcode 11 -fstack-check bug
+        if enabled clang; then
+            clang_version=$($cc -dumpversion)
+            test ${clang_version%%.*} -eq 11 && add_cflags -fno-stack-check
+        fi
         ;;
     msys*)
         die "Native MSYS builds are discouraged, please use the MINGW environment."
@@ -6237,6 +6260,7 @@ for func in $COMPLEX_FUNCS; do
 done
 
 # these are off by default, so fail if requested and not available
+enabled avisynth          && require_headers "avisynth/avisynth_c.h"
 enabled cuda_nvcc         && { check_nvcc cuda_nvcc || die "ERROR: failed checking for nvcc."; }
 enabled chromaprint       && require chromaprint chromaprint.h chromaprint_get_version -lchromaprint
 enabled decklink          && { require_headers DeckLinkAPI.h &&
@@ -6322,6 +6346,7 @@ enabled libopenmpt        && require_pkg_config libopenmpt "libopenmpt >= 0.2.65
 #    }
 # }
 enabled libpulse          && require_pkg_config libpulse libpulse pulse/pulseaudio.h pa_context_new
+enabled librabbitmq       && require_pkg_config librabbitmq "librabbitmq >= 0.7.1" amqp.h amqp_new_connection
 enabled librav1e          && require_pkg_config librav1e "rav1e >= 0.1.0" rav1e.h rav1e_context_new
 enabled librsvg           && require_pkg_config librsvg librsvg-2.0 librsvg-2.0/librsvg/rsvg.h rsvg_handle_render_cairo
 enabled librtmp           && require_pkg_config librtmp librtmp librtmp/rtmp.h RTMP_Socket
@@ -6656,7 +6681,7 @@ if enabled x86; then
             disable ffnvcodec cuvid nvdec nvenc
             ;;
     esac
-elif enabled ppc64 && ! enabled bigendian; then
+elif enabled_any aarch64 ppc64 && ! enabled bigendian; then
     case $target_os in
         linux)
             ;;

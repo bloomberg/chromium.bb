@@ -2329,6 +2329,8 @@ RMS_trough
 Crest_factor
 Flat_factor
 Peak_count
+Noise_floor
+Noise_floor_count
 Bit_depth
 Dynamic_range
 Zero_crossings
@@ -2351,6 +2353,8 @@ RMS_peak
 RMS_trough
 Flat_factor
 Peak_count
+Noise_floor
+Noise_floor_count
 Bit_depth
 Number_of_samples
 Number_of_NaNs
@@ -2421,6 +2425,13 @@ Flatness (i.e. consecutive samples with the same value) of the signal at its pea
 @item Peak count
 Number of occasions (not the number of samples) that the signal attained either
 @var{Min level} or @var{Max level}.
+
+@item Noise floor dB
+Minimum local peak measured in dBFS over a short window.
+
+@item Noise floor count
+Number of occasions (not the number of samples) that the signal attained
+@var{Noise floor}.
 
 @item Bit depth
 Overall bit depth of audio. Number of bits used for each sample.
@@ -6532,11 +6543,20 @@ Default is disabled.
 
 Detect video intervals that are (almost) completely black. Can be
 useful to detect chapter transitions, commercials, or invalid
-recordings. Output lines contains the time for the start, end and
-duration of the detected black interval expressed in seconds.
+recordings.
 
-In order to display the output lines, you need to set the loglevel at
-least to the AV_LOG_INFO value.
+The filter outputs its detection analysis to both the log as well as
+frame metadata. If a black segment of at least the specified minimum
+duration is found, a line with the start and end timestamps as well
+as duration is printed to the log with level @code{info}. In addition,
+a log line with level @code{debug} is printed per frame showing the
+black amount detected for that frame.
+
+The filter also attaches metadata to the first frame of a black
+segment with key @code{lavfi.black_start} and to the first frame
+after the black segment ends with key @code{lavfi.black_end}. The
+value is the frame's timestamp. This metadata is added regardless
+of the minimum duration specified.
 
 The filter accepts the following options:
 
@@ -6608,7 +6628,8 @@ The threshold below which a pixel value is considered black; it defaults to
 
 @end table
 
-@section blend, tblend
+@anchor{blend}
+@section blend
 
 Blend two video frames into each other.
 
@@ -6994,6 +7015,21 @@ Only deinterlace frames marked as interlaced.
 @end table
 
 The default value is @code{all}.
+@end table
+
+@section cas
+
+Apply Contrast Adaptive Sharpen filter to video stream.
+
+The filter accepts the following options:
+
+@table @option
+@item strength
+Set the sharpening strength. Default value is 0.
+
+@item planes
+Set planes to filter. Default value is to filter all
+planes except alpha plane.
 @end table
 
 @section chromahold
@@ -8862,6 +8898,7 @@ delogo=x=0:y=0:w=100:h=77:band=10
 
 @end itemize
 
+@anchor{derain}
 @section derain
 
 Remove the rain in the input image/video by applying the derain methods based on
@@ -8915,6 +8952,8 @@ Set path to model file specifying network architecture and its parameters.
 Note that different backends use different file formats. TensorFlow and native
 backend can load files for only its format.
 @end table
+
+It can also be finished with @ref{dnn_processing} filter.
 
 @section deshake
 
@@ -9140,6 +9179,7 @@ ffmpeg -i INPUT -f lavfi -i nullsrc=hd720,geq='r=128+80*(sin(sqrt((X-W/2)*(X-W/2
 @end example
 @end itemize
 
+@anchor{dnn_processing}
 @section dnn_processing
 
 Do image processing with deep neural networks. It works together with another filter
@@ -9180,17 +9220,31 @@ Set the output name of the dnn network.
 
 @end table
 
+@subsection Examples
+
 @itemize
 @item
-Halve the red channle of the frame with format rgb24:
+Remove rain in rgb24 frame with can.pb (see @ref{derain} filter):
 @example
-ffmpeg -i input.jpg -vf format=rgb24,dnn_processing=model=halve_first_channel.model:input=dnn_in:output=dnn_out:dnn_backend=native out.native.png
+./ffmpeg -i rain.jpg -vf format=rgb24,dnn_processing=dnn_backend=tensorflow:model=can.pb:input=x:output=y derain.jpg
 @end example
 
 @item
 Halve the pixel value of the frame with format gray32f:
 @example
 ffmpeg -i input.jpg -vf format=grayf32,dnn_processing=model=halve_gray_float.model:input=dnn_in:output=dnn_out:dnn_backend=native -y out.native.png
+@end example
+
+@item
+Handle the Y channel with srcnn.pb (see @ref{sr} filter) for frame with yuv420p (planar YUV formats supported):
+@example
+./ffmpeg -i 480p.jpg -vf format=yuv420p,scale=w=iw*2:h=ih*2,dnn_processing=dnn_backend=tensorflow:model=srcnn.pb:input=x:output=y -y srcnn.jpg
+@end example
+
+@item
+Handle the Y channel with espcn.pb (see @ref{sr} filter), which changes frame size, for format yuv420p (planar YUV formats supported):
+@example
+./ffmpeg -i 480p.jpg -vf format=yuv420p,dnn_processing=dnn_backend=tensorflow:model=espcn.pb:input=x:output=y -y tmp.espcn.jpg
 @end example
 
 @end itemize
@@ -12226,6 +12280,8 @@ this value filter algorithm for connecting components is activated.
 By default value is 0.
 @end table
 
+The @code{hysteresis} filter also supports the @ref{framesync} options.
+
 @section idet
 
 Detect video interlacing type.
@@ -13078,6 +13134,8 @@ set output bit depth, only available for @code{lut2} filter. By default is 0,
 which means bit depth is automatically picked from first input format.
 @end table
 
+The @code{lut2} filter also supports the @ref{framesync} options.
+
 Each of them specifies the expression to use for computing the lookup table for
 the corresponding pixel component values.
 
@@ -13197,6 +13255,27 @@ This filter accepts the following options:
 @item planes
 Set which planes will be processed as bitmap, unprocessed planes will be
 copied from first stream.
+By default value 0xf, all planes will be processed.
+@end table
+
+@section maskedthreshold
+Pick pixels comparing absolute difference of two video streams with fixed
+threshold.
+
+If absolute difference between pixel component of first and second video
+stream is equal or lower than user supplied threshold than pixel component
+from first video stream is picked, otherwise pixel component from second
+video stream is picked.
+
+This filter accepts the following options:
+@table @option
+@item threshold
+Set threshold used when picking pixels from absolute difference from two input
+video streams.
+
+@item planes
+Set which planes will be processed as bitmap, unprocessed planes will be
+copied from second stream.
 By default value 0xf, all planes will be processed.
 @end table
 
@@ -14351,6 +14430,38 @@ testsrc=s=100x100, split=4 [in0][in1][in2][in3];
 @end example
 
 @end itemize
+
+@anchor{overlay_cuda}
+@section overlay_cuda
+
+Overlay one video on top of another.
+
+This is the CUDA cariant of the @ref{overlay} filter.
+It only accepts CUDA frames. The underlying input pixel formats have to match.
+
+It takes two inputs and has one output. The first input is the "main"
+video on which the second input is overlaid.
+
+It accepts the following parameters:
+
+@table @option
+@item x
+@item y
+Set the x and y coordinates of the overlaid video on the main video.
+Default value is "0" for both expressions.
+
+@item eof_action
+See @ref{framesync}.
+
+@item shortest
+See @ref{framesync}.
+
+@item repeatlast
+See @ref{framesync}.
+
+@end table
+
+This filter also supports the @ref{framesync} options.
 
 @section owdenoise
 
@@ -17291,6 +17402,7 @@ Set quality level. The value @code{max} can be used to set the maximum level,
 currently @code{6}.
 @end table
 
+@anchor{sr}
 @section sr
 
 Scale the input by applying one of the super-resolution methods based on
@@ -17344,6 +17456,8 @@ Set scale factor for SRCNN model. Allowed values are @code{2}, @code{3} and @cod
 Default value is @code{2}. Scale factor is necessary for SRCNN model, because it accepts
 input upscaled using bicubic upscaling with proper scale factor.
 @end table
+
+This feature can also be finished with @ref{dnn_processing} filter.
 
 @section ssim
 
@@ -17801,6 +17915,11 @@ the position in the file of the input frame, NAN if unknown
 
 @section swapuv
 Swap U & V plane.
+
+@section tblend
+Blend successive video frames.
+
+See @ref{blend}
 
 @section telecine
 
@@ -18284,6 +18403,25 @@ enabled for @option{mode} @var{interleave_top} and @var{interleave_bottom}.
 
 @end table
 
+@section tmedian
+Pick median pixels from several successive input video frames.
+
+The filter accepts the following options:
+
+@table @option
+@item radius
+Set radius of median filter.
+Default is 1. Allowed range is from 1 to 127.
+
+@item planes
+Set which planes to filter. Default value is @code{15}, by which all planes are processed.
+
+@item percentile
+Set median percentile. Default value is @code{0.5}.
+Default value of @code{0.5} will pick always median values, while @code{0} will pick
+minimum values, and @code{1} maximum values.
+@end table
+
 @section tmix
 
 Mix successive video frames.
@@ -18444,29 +18582,31 @@ The filter accepts the following options:
 
 @table @option
 @item start
-Specify number of delay frames before input video stream.
+Specify number of delay frames before input video stream. Default is 0.
 
 @item stop
 Specify number of padding frames after input video stream.
-Set to -1 to pad indefinitely.
+Set to -1 to pad indefinitely. Default is 0.
 
 @item start_mode
 Set kind of frames added to beginning of stream.
 Can be either @var{add} or @var{clone}.
 With @var{add} frames of solid-color are added.
 With @var{clone} frames are clones of first frame.
+Default is @var{add}.
 
 @item stop_mode
 Set kind of frames added to end of stream.
 Can be either @var{add} or @var{clone}.
 With @var{add} frames of solid-color are added.
 With @var{clone} frames are clones of last frame.
+Default is @var{add}.
 
 @item start_duration, stop_duration
 Specify the duration of the start/stop delay. See
 @ref{time duration syntax,,the Time duration section in the ffmpeg-utils(1) manual,ffmpeg-utils}
 for the accepted syntax.
-These options override @var{start} and @var{stop}.
+These options override @var{start} and @var{stop}. Default is 0.
 
 @item color
 Specify the color of the padded area. For the syntax of this option,
@@ -18911,7 +19051,8 @@ Default value is @b{@samp{0}}.
 
 @item barrel
 @item fb
-Facebook's 360 format.
+@item barrelsplit
+Facebook's 360 formats.
 
 @item sg
 Stereographic format.
@@ -18966,12 +19107,15 @@ If diagonal field of view is set it overrides horizontal and vertical field of v
 @end table
 
 @item pannini
-Pannini projection. @i{(output only)}
+Pannini projection.
 
 Format specific options:
 @table @option
 @item h_fov
-Set pannini parameter.
+Set output pannini parameter.
+
+@item ih_fov
+Set input pannini parameter.
 @end table
 
 @item cylindrical
@@ -19005,6 +19149,13 @@ Set perspective parameter.
 
 @item tetrahedron
 Tetrahedron projection.
+
+@item tsp
+Truncated square pyramid projection.
+
+@item he
+@item hequirect
+Half equirectangular projection.
 @end table
 
 @item interp
@@ -19020,6 +19171,8 @@ Nearest neighbour.
 @item line
 @item linear
 Bilinear interpolation.
+@item lagrange9
+Lagrange9 interpolation.
 @item cube
 @item cubic
 Bicubic interpolation.
@@ -19114,6 +19267,10 @@ Convert transposed and horizontally flipped Equi-Angular Cubemap in side-by-side
 v360=eac:equirect:in_stereo=sbs:in_trans=1:ih_flip=1:out_stereo=tb
 @end example
 @end itemize
+
+@subsection Commands
+
+This filter supports subset of above options as @ref{commands}.
 
 @section vaguedenoiser
 
@@ -20022,6 +20179,10 @@ Set one of available transition effects:
 @item diagtr
 @item diagbl
 @item diagbr
+@item hlslice
+@item hrslice
+@item vuslice
+@item vdslice
 @end table
 Default transition effect is fade.
 
@@ -21303,6 +21464,8 @@ Number of inputs to the filter.  Defaults to 1.
 Size of output frames.  Defaults to the same as the first input.
 
 @end table
+
+The @code{program_opencl} filter also supports the @ref{framesync} options.
 
 The program source file must contain a kernel function with the given name,
 which will be run once for each plane of the output.  Each run on a plane
@@ -23153,6 +23316,21 @@ These filters accept the following options:
 @table @option
 @item nb_inputs, n
 Set the number of different inputs, it is 2 by default.
+
+@item duration
+How to determine the end-of-stream.
+
+@table @option
+@item longest
+The duration of the longest input. (default)
+
+@item shortest
+The duration of the shortest input.
+
+@item first
+The duration of the first input.
+@end table
+
 @end table
 
 @subsection Examples
@@ -23633,6 +23811,38 @@ The command is sent when the current frame timestamp leaves the
 specified interval. In other words, the command is sent when the
 previous frame timestamp was in the given interval, and the
 current is not.
+
+@item expr
+The command @var{ARG} is interpreted as expression and result of
+expression is passed as @var{ARG}.
+
+The expression is evaluated through the eval API and can contain the following
+constants:
+
+@table @option
+@item POS
+Original position in the file of the frame, or undefined if undefined
+for the current frame.
+
+@item PTS
+The presentation timestamp in input.
+
+@item N
+The count of the input frame for video or audio, starting from 0.
+
+@item T
+The time in seconds of the current frame.
+
+@item TS
+The start time in seconds of the current command interval.
+
+@item TE
+The end time in seconds of the current command interval.
+
+@item TI
+The interpolated time of the current command interval, TI = (T - TS) / (TE - TS).
+@end table
+
 @end table
 
 If @var{FLAGS} is not specified, a default value of @code{[enter]} is

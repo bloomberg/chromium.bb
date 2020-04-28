@@ -21,6 +21,7 @@
 
 #include "libavutil/avassert.h"
 #include "libavutil/base64.h"
+#include "libavutil/bprint.h"
 #include "libavutil/avstring.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/mathematics.h"
@@ -1616,6 +1617,7 @@ int ff_rtsp_make_setup_request(AVFormatContext *s, const char *host, int port,
             char url[1024], namebuf[50], optbuf[20] = "";
             struct sockaddr_storage addr;
             int port, ttl;
+            AVDictionary *opts = map_to_opts(rt);
 
             if (reply->transports[0].destination.ss_family) {
                 addr      = reply->transports[0].destination;
@@ -1632,8 +1634,11 @@ int ff_rtsp_make_setup_request(AVFormatContext *s, const char *host, int port,
                         namebuf, sizeof(namebuf), NULL, 0, NI_NUMERICHOST);
             ff_url_join(url, sizeof(url), "rtp", NULL, namebuf,
                         port, "%s", optbuf);
-            if (ffurl_open_whitelist(&rtsp_st->rtp_handle, url, AVIO_FLAG_READ_WRITE,
-                           &s->interrupt_callback, NULL, s->protocol_whitelist, s->protocol_blacklist, NULL) < 0) {
+            err = ffurl_open_whitelist(&rtsp_st->rtp_handle, url, AVIO_FLAG_READ_WRITE,
+                           &s->interrupt_callback, &opts, s->protocol_whitelist, s->protocol_blacklist, NULL);
+            av_dict_free(&opts);
+
+            if (err < 0) {
                 err = AVERROR_INVALIDDATA;
                 goto fail;
             }
@@ -2447,7 +2452,7 @@ static int rtp_probe(const AVProbeData *p)
 static int rtp_read_header(AVFormatContext *s)
 {
     uint8_t recvbuf[RTP_MAX_PACKET_LENGTH];
-    char host[500], sdp[500];
+    char host[500], filters_buf[1000];
     int ret, port;
     URLContext* in = NULL;
     int payload_type;
@@ -2456,6 +2461,8 @@ static int rtp_read_header(AVFormatContext *s)
     AVIOContext pb;
     socklen_t addrlen = sizeof(addr);
     RTSPState *rt = s->priv_data;
+    const char *p;
+    AVBPrint sdp;
 
     if (!ff_network_init())
         return AVERROR(EIO);
@@ -2513,16 +2520,39 @@ static int rtp_read_header(AVFormatContext *s)
     av_url_split(NULL, 0, NULL, 0, host, sizeof(host), &port,
                  NULL, 0, s->url);
 
-    snprintf(sdp, sizeof(sdp),
-             "v=0\r\nc=IN IP%d %s\r\nm=%s %d RTP/AVP %d\r\n",
-             addr.ss_family == AF_INET ? 4 : 6, host,
-             par->codec_type == AVMEDIA_TYPE_DATA  ? "application" :
-             par->codec_type == AVMEDIA_TYPE_VIDEO ? "video" : "audio",
-             port, payload_type);
-    av_log(s, AV_LOG_VERBOSE, "SDP:\n%s\n", sdp);
+    av_bprint_init(&sdp, 0, AV_BPRINT_SIZE_UNLIMITED);
+    av_bprintf(&sdp, "v=0\r\nc=IN IP%d %s\r\n",
+               addr.ss_family == AF_INET ? 4 : 6, host);
+
+    p = strchr(s->url, '?');
+    if (p) {
+        static const char filters[][2][8] = { { "sources", "incl" },
+                                              { "block",   "excl" } };
+        int i;
+        char *q;
+        for (i = 0; i < FF_ARRAY_ELEMS(filters); i++) {
+            if (av_find_info_tag(filters_buf, sizeof(filters_buf), filters[i][0], p)) {
+                q = filters_buf;
+                while ((q = strchr(q, ',')) != NULL)
+                    *q = ' ';
+                av_bprintf(&sdp, "a=source-filter:%s IN IP%d %s %s\r\n",
+                           filters[i][1],
+                           addr.ss_family == AF_INET ? 4 : 6, host,
+                           filters_buf);
+            }
+        }
+    }
+
+    av_bprintf(&sdp, "m=%s %d RTP/AVP %d\r\n",
+               par->codec_type == AVMEDIA_TYPE_DATA  ? "application" :
+               par->codec_type == AVMEDIA_TYPE_VIDEO ? "video" : "audio",
+               port, payload_type);
+    av_log(s, AV_LOG_VERBOSE, "SDP:\n%s\n", sdp.str);
+    if (!av_bprint_is_complete(&sdp))
+        goto fail_nobuf;
     avcodec_parameters_free(&par);
 
-    ffio_init_context(&pb, sdp, strlen(sdp), 0, NULL, NULL, NULL, NULL);
+    ffio_init_context(&pb, sdp.str, sdp.len, 0, NULL, NULL, NULL, NULL);
     s->pb = &pb;
 
     /* sdp_read_header initializes this again */
@@ -2532,8 +2562,13 @@ static int rtp_read_header(AVFormatContext *s)
 
     ret = sdp_read_header(s);
     s->pb = NULL;
+    av_bprint_finalize(&sdp, NULL);
     return ret;
 
+fail_nobuf:
+    ret = AVERROR(ENOMEM);
+    av_log(s, AV_LOG_ERROR, "rtp_read_header(): not enough buffer space for sdp-headers\n");
+    av_bprint_finalize(&sdp, NULL);
 fail:
     avcodec_parameters_free(&par);
     if (in)

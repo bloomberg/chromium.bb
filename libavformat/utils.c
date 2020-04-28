@@ -19,7 +19,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <stdarg.h>
 #include <stdint.h>
 
 #include "config.h"
@@ -31,26 +30,22 @@
 #include "libavutil/mathematics.h"
 #include "libavutil/opt.h"
 #include "libavutil/parseutils.h"
-#include "libavutil/pixdesc.h"
+#include "libavutil/pixfmt.h"
 #include "libavutil/thread.h"
 #include "libavutil/time.h"
-#include "libavutil/time_internal.h"
 #include "libavutil/timestamp.h"
 
 #include "libavcodec/bytestream.h"
 #include "libavcodec/internal.h"
 #include "libavcodec/raw.h"
 
-#include "audiointerleave.h"
 #include "avformat.h"
 #include "avio_internal.h"
 #include "id3v2.h"
 #include "internal.h"
-#include "metadata.h"
 #if CONFIG_NETWORK
 #include "network.h"
 #endif
-#include "riff.h"
 #include "url.h"
 
 #include "libavutil/ffversion.h"
@@ -222,7 +217,8 @@ static const AVCodec *find_probe_decoder(AVFormatContext *s, const AVStream *st,
 
     if (codec->capabilities & AV_CODEC_CAP_AVOID_PROBING) {
         const AVCodec *probe_codec = NULL;
-        while (probe_codec = av_codec_next(probe_codec)) {
+        void *iter = NULL;
+        while ((probe_codec = av_codec_iterate(&iter))) {
             if (probe_codec->id == codec_id &&
                     av_codec_is_decoder(probe_codec) &&
                     !(probe_codec->capabilities & (AV_CODEC_CAP_AVOID_PROBING | AV_CODEC_CAP_EXPERIMENTAL))) {
@@ -637,12 +633,6 @@ FF_ENABLE_DEPRECATION_WARNINGS
     } else if (s->internal->id3v2_meta) {
         av_log(s, AV_LOG_WARNING, "Discarding ID3 tags because more suitable tags were found.\n");
         av_dict_free(&s->internal->id3v2_meta);
-#if 0  // Chromium: Don't quit because extra data was found. http://crbug.com/891179
-        if (s->error_recognition & AV_EF_EXPLODE) {
-            ret = AVERROR_INVALIDDATA;
-            goto close;
-        }
-#endif
     }
 
     if (id3v2_extra_meta) {
@@ -3132,6 +3122,8 @@ static int try_decode_frame(AVFormatContext *s, AVStream *st,
         } else if (avctx->codec_type == AVMEDIA_TYPE_SUBTITLE) {
             ret = avcodec_decode_subtitle2(avctx, &subtitle,
                                            &got_picture, &pkt);
+            if (got_picture)
+                avsubtitle_free(&subtitle);
             if (ret >= 0)
                 pkt.size = 0;
         }
@@ -3603,6 +3595,21 @@ static int extract_extradata(AVStream *st, const AVPacket *pkt)
         av_packet_unref(pkt_ref);
     }
 
+    return 0;
+}
+
+static int add_coded_side_data(AVStream *st, AVCodecContext *avctx)
+{
+    int i;
+
+    for (i = 0; i < avctx->nb_coded_side_data; i++) {
+        const AVPacketSideData *sd_src = &avctx->coded_side_data[i];
+        uint8_t *dst_data;
+        dst_data = av_stream_new_side_data(st, sd_src->type, sd_src->size);
+        if (!dst_data)
+            return AVERROR(ENOMEM);
+        memcpy(dst_data, sd_src->data, sd_src->size);
+    }
     return 0;
 }
 
@@ -4145,6 +4152,9 @@ FF_ENABLE_DEPRECATION_WARNINGS
             ret = avcodec_parameters_from_context(st->codecpar, st->internal->avctx);
             if (ret < 0)
                 goto find_stream_info_err;
+            ret = add_coded_side_data(st, st->internal->avctx);
+            if (ret < 0)
+                goto find_stream_info_err;
 #if FF_API_LOWRES
             // The decoder might reduce the video size by the lowres factor.
             if (st->internal->avctx->lowres && orig_w) {
@@ -4399,10 +4409,7 @@ static void free_stream(AVStream **pst)
 
     if (st->internal) {
         avcodec_free_context(&st->internal->avctx);
-        for (i = 0; i < st->internal->nb_bsfcs; i++) {
-            av_bsf_free(&st->internal->bsfcs[i]);
-            av_freep(&st->internal->bsfcs);
-        }
+        av_bsf_free(&st->internal->bsfc);
         av_freep(&st->internal->priv_pts);
         av_bsf_free(&st->internal->extract_extradata.bsf);
         av_packet_free(&st->internal->extract_extradata.pkt);
@@ -5563,7 +5570,8 @@ int ff_stream_add_bitstream_filter(AVStream *st, const char *name, const char *a
     int ret;
     const AVBitStreamFilter *bsf;
     AVBSFContext *bsfc;
-    AVCodecParameters *in_par;
+
+    av_assert0(!st->internal->bsfc);
 
     if (!(bsf = av_bsf_get_by_name(name))) {
         av_log(NULL, AV_LOG_ERROR, "Unknown bitstream filter '%s'\n", name);
@@ -5573,15 +5581,8 @@ int ff_stream_add_bitstream_filter(AVStream *st, const char *name, const char *a
     if ((ret = av_bsf_alloc(bsf, &bsfc)) < 0)
         return ret;
 
-    if (st->internal->nb_bsfcs) {
-        in_par = st->internal->bsfcs[st->internal->nb_bsfcs - 1]->par_out;
-        bsfc->time_base_in = st->internal->bsfcs[st->internal->nb_bsfcs - 1]->time_base_out;
-    } else {
-        in_par = st->codecpar;
-        bsfc->time_base_in = st->time_base;
-    }
-
-    if ((ret = avcodec_parameters_copy(bsfc->par_in, in_par)) < 0) {
+    bsfc->time_base_in = st->time_base;
+    if ((ret = avcodec_parameters_copy(bsfc->par_in, st->codecpar)) < 0) {
         av_bsf_free(&bsfc);
         return ret;
     }
@@ -5604,10 +5605,7 @@ int ff_stream_add_bitstream_filter(AVStream *st, const char *name, const char *a
         return ret;
     }
 
-    if ((ret = av_dynarray_add_nofree(&st->internal->bsfcs, &st->internal->nb_bsfcs, bsfc))) {
-        av_bsf_free(&bsfc);
-        return ret;
-    }
+    st->internal->bsfc = bsfc;
 
     av_log(NULL, AV_LOG_VERBOSE,
            "Automatically inserted bitstream filter '%s'; args='%s'\n",

@@ -39,7 +39,7 @@ static int v4l2_try_start(AVCodecContext *avctx)
     V4L2m2mContext *s = ((V4L2m2mPriv*)avctx->priv_data)->context;
     V4L2Context *const capture = &s->capture;
     V4L2Context *const output = &s->output;
-    struct v4l2_selection selection;
+    struct v4l2_selection selection = { 0 };
     int ret;
 
     /* 1. start the output process */
@@ -122,6 +122,13 @@ static int v4l2_prepare_decoder(V4L2m2mContext *s)
             return ret;
         }
     }
+
+    memset(&sub, 0, sizeof(sub));
+    sub.type = V4L2_EVENT_EOS;
+    ret = ioctl(s->fd, VIDIOC_SUBSCRIBE_EVENT, &sub);
+    if (ret < 0)
+        av_log(s->avctx, AV_LOG_WARNING,
+               "the v4l2 driver does not support end of stream VIDIOC_SUBSCRIBE_EVENT\n");
 
     return 0;
 }

@@ -52,6 +52,7 @@ typedef struct ThreadData {
 
 #define OFFSET(x) offsetof(V360Context, x)
 #define FLAGS AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_VIDEO_PARAM
+#define TFLAGS AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_VIDEO_PARAM|AV_OPT_FLAG_RUNTIME_PARAM
 
 static const AVOption v360_options[] = {
     {     "input", "set input projection",              OFFSET(in), AV_OPT_TYPE_INT,    {.i64=EQUIRECTANGULAR}, 0,    NB_PROJECTIONS-1, FLAGS, "in" },
@@ -73,8 +74,13 @@ static const AVOption v360_options[] = {
     {    "hammer", "hammer",                                     0, AV_OPT_TYPE_CONST,  {.i64=HAMMER},          0,                   0, FLAGS, "in" },
     {"sinusoidal", "sinusoidal",                                 0, AV_OPT_TYPE_CONST,  {.i64=SINUSOIDAL},      0,                   0, FLAGS, "in" },
     {   "fisheye", "fisheye",                                    0, AV_OPT_TYPE_CONST,  {.i64=FISHEYE},         0,                   0, FLAGS, "in" },
+    {   "pannini", "pannini",                                    0, AV_OPT_TYPE_CONST,  {.i64=PANNINI},         0,                   0, FLAGS, "in" },
     {"cylindrical", "cylindrical",                               0, AV_OPT_TYPE_CONST,  {.i64=CYLINDRICAL},     0,                   0, FLAGS, "in" },
     {"tetrahedron", "tetrahedron",                               0, AV_OPT_TYPE_CONST,  {.i64=TETRAHEDRON},     0,                   0, FLAGS, "in" },
+    {"barrelsplit", "barrel split facebook's 360 format",        0, AV_OPT_TYPE_CONST,  {.i64=BARREL_SPLIT},    0,                   0, FLAGS, "in" },
+    {       "tsp", "truncated square pyramid",                   0, AV_OPT_TYPE_CONST,  {.i64=TSPYRAMID},       0,                   0, FLAGS, "in" },
+    { "hequirect", "half equirectangular",                       0, AV_OPT_TYPE_CONST,  {.i64=HEQUIRECTANGULAR},0,                   0, FLAGS, "in" },
+    {        "he", "half equirectangular",                       0, AV_OPT_TYPE_CONST,  {.i64=HEQUIRECTANGULAR},0,                   0, FLAGS, "in" },
     {    "output", "set output projection",            OFFSET(out), AV_OPT_TYPE_INT,    {.i64=CUBEMAP_3_2},     0,    NB_PROJECTIONS-1, FLAGS, "out" },
     {         "e", "equirectangular",                            0, AV_OPT_TYPE_CONST,  {.i64=EQUIRECTANGULAR}, 0,                   0, FLAGS, "out" },
     {  "equirect", "equirectangular",                            0, AV_OPT_TYPE_CONST,  {.i64=EQUIRECTANGULAR}, 0,                   0, FLAGS, "out" },
@@ -98,11 +104,16 @@ static const AVOption v360_options[] = {
     {"cylindrical", "cylindrical",                               0, AV_OPT_TYPE_CONST,  {.i64=CYLINDRICAL},     0,                   0, FLAGS, "out" },
     {"perspective", "perspective",                               0, AV_OPT_TYPE_CONST,  {.i64=PERSPECTIVE},     0,                   0, FLAGS, "out" },
     {"tetrahedron", "tetrahedron",                               0, AV_OPT_TYPE_CONST,  {.i64=TETRAHEDRON},     0,                   0, FLAGS, "out" },
+    {"barrelsplit", "barrel split facebook's 360 format",        0, AV_OPT_TYPE_CONST,  {.i64=BARREL_SPLIT},    0,                   0, FLAGS, "out" },
+    {       "tsp", "truncated square pyramid",                   0, AV_OPT_TYPE_CONST,  {.i64=TSPYRAMID},       0,                   0, FLAGS, "out" },
+    { "hequirect", "half equirectangular",                       0, AV_OPT_TYPE_CONST,  {.i64=HEQUIRECTANGULAR},0,                   0, FLAGS, "out" },
+    {        "he", "half equirectangular",                       0, AV_OPT_TYPE_CONST,  {.i64=HEQUIRECTANGULAR},0,                   0, FLAGS, "out" },
     {    "interp", "set interpolation method",      OFFSET(interp), AV_OPT_TYPE_INT,    {.i64=BILINEAR},        0, NB_INTERP_METHODS-1, FLAGS, "interp" },
     {      "near", "nearest neighbour",                          0, AV_OPT_TYPE_CONST,  {.i64=NEAREST},         0,                   0, FLAGS, "interp" },
     {   "nearest", "nearest neighbour",                          0, AV_OPT_TYPE_CONST,  {.i64=NEAREST},         0,                   0, FLAGS, "interp" },
     {      "line", "bilinear interpolation",                     0, AV_OPT_TYPE_CONST,  {.i64=BILINEAR},        0,                   0, FLAGS, "interp" },
     {    "linear", "bilinear interpolation",                     0, AV_OPT_TYPE_CONST,  {.i64=BILINEAR},        0,                   0, FLAGS, "interp" },
+    { "lagrange9", "lagrange9 interpolation",                    0, AV_OPT_TYPE_CONST,  {.i64=LAGRANGE9},       0,                   0, FLAGS, "interp" },
     {      "cube", "bicubic interpolation",                      0, AV_OPT_TYPE_CONST,  {.i64=BICUBIC},         0,                   0, FLAGS, "interp" },
     {     "cubic", "bicubic interpolation",                      0, AV_OPT_TYPE_CONST,  {.i64=BICUBIC},         0,                   0, FLAGS, "interp" },
     {      "lanc", "lanczos interpolation",                      0, AV_OPT_TYPE_CONST,  {.i64=LANCZOS},         0,                   0, FLAGS, "interp" },
@@ -122,27 +133,27 @@ static const AVOption v360_options[] = {
     {"out_forder", "output cubemap face order", OFFSET(out_forder), AV_OPT_TYPE_STRING, {.str="rludfb"},        0,     NB_DIRECTIONS-1, FLAGS, "out_forder"},
     {   "in_frot", "input cubemap face rotation",  OFFSET(in_frot), AV_OPT_TYPE_STRING, {.str="000000"},        0,     NB_DIRECTIONS-1, FLAGS, "in_frot"},
     {  "out_frot", "output cubemap face rotation",OFFSET(out_frot), AV_OPT_TYPE_STRING, {.str="000000"},        0,     NB_DIRECTIONS-1, FLAGS, "out_frot"},
-    {    "in_pad", "percent input cubemap pads",    OFFSET(in_pad), AV_OPT_TYPE_FLOAT,  {.dbl=0.f},           0.f,                 1.f, FLAGS, "in_pad"},
-    {   "out_pad", "percent output cubemap pads",  OFFSET(out_pad), AV_OPT_TYPE_FLOAT,  {.dbl=0.f},           0.f,                 1.f, FLAGS, "out_pad"},
-    {   "fin_pad", "fixed input cubemap pads",     OFFSET(fin_pad), AV_OPT_TYPE_INT,    {.i64=0},               0,                 100, FLAGS, "fin_pad"},
-    {  "fout_pad", "fixed output cubemap pads",   OFFSET(fout_pad), AV_OPT_TYPE_INT,    {.i64=0},               0,                 100, FLAGS, "fout_pad"},
-    {       "yaw", "yaw rotation",                     OFFSET(yaw), AV_OPT_TYPE_FLOAT,  {.dbl=0.f},        -180.f,               180.f, FLAGS, "yaw"},
-    {     "pitch", "pitch rotation",                 OFFSET(pitch), AV_OPT_TYPE_FLOAT,  {.dbl=0.f},        -180.f,               180.f, FLAGS, "pitch"},
-    {      "roll", "roll rotation",                   OFFSET(roll), AV_OPT_TYPE_FLOAT,  {.dbl=0.f},        -180.f,               180.f, FLAGS, "roll"},
-    {    "rorder", "rotation order",                OFFSET(rorder), AV_OPT_TYPE_STRING, {.str="ypr"},           0,                   0, FLAGS, "rorder"},
-    {     "h_fov", "horizontal field of view",       OFFSET(h_fov), AV_OPT_TYPE_FLOAT,  {.dbl=90.f},     0.00001f,               360.f, FLAGS, "h_fov"},
-    {     "v_fov", "vertical field of view",         OFFSET(v_fov), AV_OPT_TYPE_FLOAT,  {.dbl=45.f},     0.00001f,               360.f, FLAGS, "v_fov"},
-    {     "d_fov", "diagonal field of view",         OFFSET(d_fov), AV_OPT_TYPE_FLOAT,  {.dbl=0.f},           0.f,               360.f, FLAGS, "d_fov"},
-    {    "h_flip", "flip out video horizontally",   OFFSET(h_flip), AV_OPT_TYPE_BOOL,   {.i64=0},               0,                   1, FLAGS, "h_flip"},
-    {    "v_flip", "flip out video vertically",     OFFSET(v_flip), AV_OPT_TYPE_BOOL,   {.i64=0},               0,                   1, FLAGS, "v_flip"},
-    {    "d_flip", "flip out video indepth",        OFFSET(d_flip), AV_OPT_TYPE_BOOL,   {.i64=0},               0,                   1, FLAGS, "d_flip"},
-    {   "ih_flip", "flip in video horizontally",   OFFSET(ih_flip), AV_OPT_TYPE_BOOL,   {.i64=0},               0,                   1, FLAGS, "ih_flip"},
-    {   "iv_flip", "flip in video vertically",     OFFSET(iv_flip), AV_OPT_TYPE_BOOL,   {.i64=0},               0,                   1, FLAGS, "iv_flip"},
+    {    "in_pad", "percent input cubemap pads",    OFFSET(in_pad), AV_OPT_TYPE_FLOAT,  {.dbl=0.f},           0.f,                 1.f,TFLAGS, "in_pad"},
+    {   "out_pad", "percent output cubemap pads",  OFFSET(out_pad), AV_OPT_TYPE_FLOAT,  {.dbl=0.f},           0.f,                 1.f,TFLAGS, "out_pad"},
+    {   "fin_pad", "fixed input cubemap pads",     OFFSET(fin_pad), AV_OPT_TYPE_INT,    {.i64=0},               0,                 100,TFLAGS, "fin_pad"},
+    {  "fout_pad", "fixed output cubemap pads",   OFFSET(fout_pad), AV_OPT_TYPE_INT,    {.i64=0},               0,                 100,TFLAGS, "fout_pad"},
+    {       "yaw", "yaw rotation",                     OFFSET(yaw), AV_OPT_TYPE_FLOAT,  {.dbl=0.f},        -180.f,               180.f,TFLAGS, "yaw"},
+    {     "pitch", "pitch rotation",                 OFFSET(pitch), AV_OPT_TYPE_FLOAT,  {.dbl=0.f},        -180.f,               180.f,TFLAGS, "pitch"},
+    {      "roll", "roll rotation",                   OFFSET(roll), AV_OPT_TYPE_FLOAT,  {.dbl=0.f},        -180.f,               180.f,TFLAGS, "roll"},
+    {    "rorder", "rotation order",                OFFSET(rorder), AV_OPT_TYPE_STRING, {.str="ypr"},           0,                   0,TFLAGS, "rorder"},
+    {     "h_fov", "output horizontal field of view",OFFSET(h_fov), AV_OPT_TYPE_FLOAT,  {.dbl=90.f},     0.00001f,               360.f,TFLAGS, "h_fov"},
+    {     "v_fov", "output vertical field of view",  OFFSET(v_fov), AV_OPT_TYPE_FLOAT,  {.dbl=45.f},     0.00001f,               360.f,TFLAGS, "v_fov"},
+    {     "d_fov", "output diagonal field of view",  OFFSET(d_fov), AV_OPT_TYPE_FLOAT,  {.dbl=0.f},           0.f,               360.f,TFLAGS, "d_fov"},
+    {    "h_flip", "flip out video horizontally",   OFFSET(h_flip), AV_OPT_TYPE_BOOL,   {.i64=0},               0,                   1,TFLAGS, "h_flip"},
+    {    "v_flip", "flip out video vertically",     OFFSET(v_flip), AV_OPT_TYPE_BOOL,   {.i64=0},               0,                   1,TFLAGS, "v_flip"},
+    {    "d_flip", "flip out video indepth",        OFFSET(d_flip), AV_OPT_TYPE_BOOL,   {.i64=0},               0,                   1,TFLAGS, "d_flip"},
+    {   "ih_flip", "flip in video horizontally",   OFFSET(ih_flip), AV_OPT_TYPE_BOOL,   {.i64=0},               0,                   1,TFLAGS, "ih_flip"},
+    {   "iv_flip", "flip in video vertically",     OFFSET(iv_flip), AV_OPT_TYPE_BOOL,   {.i64=0},               0,                   1,TFLAGS, "iv_flip"},
     {  "in_trans", "transpose video input",   OFFSET(in_transpose), AV_OPT_TYPE_BOOL,   {.i64=0},               0,                   1, FLAGS, "in_transpose"},
     { "out_trans", "transpose video output", OFFSET(out_transpose), AV_OPT_TYPE_BOOL,   {.i64=0},               0,                   1, FLAGS, "out_transpose"},
-    {    "ih_fov", "input horizontal field of view",OFFSET(ih_fov), AV_OPT_TYPE_FLOAT,  {.dbl=90.f},     0.00001f,               360.f, FLAGS, "ih_fov"},
-    {    "iv_fov", "input vertical field of view",  OFFSET(iv_fov), AV_OPT_TYPE_FLOAT,  {.dbl=45.f},     0.00001f,               360.f, FLAGS, "iv_fov"},
-    {    "id_fov", "input diagonal field of view",  OFFSET(id_fov), AV_OPT_TYPE_FLOAT,  {.dbl=0.f},           0.f,               360.f, FLAGS, "id_fov"},
+    {    "ih_fov", "input horizontal field of view",OFFSET(ih_fov), AV_OPT_TYPE_FLOAT,  {.dbl=90.f},     0.00001f,               360.f,TFLAGS, "ih_fov"},
+    {    "iv_fov", "input vertical field of view",  OFFSET(iv_fov), AV_OPT_TYPE_FLOAT,  {.dbl=45.f},     0.00001f,               360.f,TFLAGS, "iv_fov"},
+    {    "id_fov", "input diagonal field of view",  OFFSET(id_fov), AV_OPT_TYPE_FLOAT,  {.dbl=0.f},           0.f,               360.f,TFLAGS, "id_fov"},
     {"alpha_mask", "build mask in alpha plane",      OFFSET(alpha), AV_OPT_TYPE_BOOL,   {.i64=0},               0,                   1, FLAGS, "alpha"},
     { NULL }
 };
@@ -304,9 +315,11 @@ static int remap##ws##_##bits##bit_slice(AVFilterContext *ctx, void *arg, int jo
 
 DEFINE_REMAP(1,  8)
 DEFINE_REMAP(2,  8)
+DEFINE_REMAP(3,  8)
 DEFINE_REMAP(4,  8)
 DEFINE_REMAP(1, 16)
 DEFINE_REMAP(2, 16)
+DEFINE_REMAP(3, 16)
 DEFINE_REMAP(4, 16)
 
 #define DEFINE_REMAP_LINE(ws, bits, div)                                                      \
@@ -337,8 +350,10 @@ static void remap##ws##_##bits##bit_line_c(uint8_t *dst, int width, const uint8_
 }
 
 DEFINE_REMAP_LINE(2,  8, 1)
+DEFINE_REMAP_LINE(3,  8, 1)
 DEFINE_REMAP_LINE(4,  8, 1)
 DEFINE_REMAP_LINE(2, 16, 2)
+DEFINE_REMAP_LINE(3, 16, 2)
 DEFINE_REMAP_LINE(4, 16, 2)
 
 void ff_v360_init(V360Context *s, int depth)
@@ -349,6 +364,9 @@ void ff_v360_init(V360Context *s, int depth)
         break;
     case BILINEAR:
         s->remap_line = depth <= 8 ? remap2_8bit_line_c : remap2_16bit_line_c;
+        break;
+    case LAGRANGE9:
+        s->remap_line = depth <= 8 ? remap3_8bit_line_c : remap3_16bit_line_c;
         break;
     case BICUBIC:
     case LANCZOS:
@@ -406,6 +424,47 @@ static void bilinear_kernel(float du, float dv, const XYRemap *rmap,
     ker[1] = lrintf(       du  * (1.f - dv) * 16385.f);
     ker[2] = lrintf((1.f - du) *        dv  * 16385.f);
     ker[3] = lrintf(       du  *        dv  * 16385.f);
+}
+
+/**
+ * Calculate 1-dimensional lagrange coefficients.
+ *
+ * @param t relative coordinate
+ * @param coeffs coefficients
+ */
+static inline void calculate_lagrange_coeffs(float t, float *coeffs)
+{
+    coeffs[0] = (t - 1.f) * (t - 2.f) * 0.5f;
+    coeffs[1] = -t * (t - 2.f);
+    coeffs[2] =  t * (t - 1.f) * 0.5f;
+}
+
+/**
+ * Calculate kernel for lagrange interpolation.
+ *
+ * @param du horizontal relative coordinate
+ * @param dv vertical relative coordinate
+ * @param rmap calculated 4x4 window
+ * @param u u remap data
+ * @param v v remap data
+ * @param ker ker remap data
+ */
+static void lagrange_kernel(float du, float dv, const XYRemap *rmap,
+                            int16_t *u, int16_t *v, int16_t *ker)
+{
+    float du_coeffs[3];
+    float dv_coeffs[3];
+
+    calculate_lagrange_coeffs(du, du_coeffs);
+    calculate_lagrange_coeffs(dv, dv_coeffs);
+
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            u[i * 3 + j] = rmap->u[i + 1][j + 1];
+            v[i * 3 + j] = rmap->v[i + 1][j + 1];
+            ker[i * 3 + j] = lrintf(du_coeffs[j] * dv_coeffs[i] * 16385.f);
+        }
+    }
 }
 
 /**
@@ -617,6 +676,55 @@ static inline int mod(int a, int b)
     } else {
         return res;
     }
+}
+
+/**
+ * Reflect y operation.
+ *
+ * @param y input vertical position
+ * @param h input height
+ */
+static inline int reflecty(int y, int h)
+{
+    if (y < 0) {
+        return -y;
+    } else if (y >= h) {
+        return 2 * h - 1 - y;
+    }
+
+    return y;
+}
+
+/**
+ * Reflect x operation for equirect.
+ *
+ * @param x input horizontal position
+ * @param y input vertical position
+ * @param w input width
+ * @param h input height
+ */
+static inline int ereflectx(int x, int y, int w, int h)
+{
+    if (y < 0 || y >= h)
+        x += w / 2;
+
+    return mod(x, w);
+}
+
+/**
+ * Reflect x operation.
+ *
+ * @param x input horizontal position
+ * @param y input vertical position
+ * @param w input width
+ * @param h input height
+ */
+static inline int reflectx(int x, int y, int w, int h)
+{
+    if (y < 0 || y >= h)
+        return w - 1 - x;
+
+    return mod(x, w);
 }
 
 /**
@@ -884,33 +992,33 @@ static void cube_to_xyz(const V360Context *s,
     switch (direction) {
     case RIGHT:
         l_x =  1.f;
-        l_y = -vf;
-        l_z =  uf;
+        l_y =  vf;
+        l_z = -uf;
         break;
     case LEFT:
         l_x = -1.f;
-        l_y = -vf;
-        l_z = -uf;
+        l_y =  vf;
+        l_z =  uf;
         break;
     case UP:
-        l_x =  uf;
-        l_y =  1.f;
-        l_z = -vf;
-        break;
-    case DOWN:
         l_x =  uf;
         l_y = -1.f;
         l_z =  vf;
         break;
+    case DOWN:
+        l_x =  uf;
+        l_y =  1.f;
+        l_z = -vf;
+        break;
     case FRONT:
         l_x =  uf;
-        l_y = -vf;
-        l_z = -1.f;
+        l_y =  vf;
+        l_z =  1.f;
         break;
     case BACK:
         l_x = -uf;
-        l_y = -vf;
-        l_z =  1.f;
+        l_y =  vf;
+        l_z = -1.f;
         break;
     default:
         av_assert0(0);
@@ -937,8 +1045,8 @@ static void xyz_to_cube(const V360Context *s,
                         const float *vec,
                         float *uf, float *vf, int *direction)
 {
-    const float phi   = atan2f(vec[0], -vec[2]);
-    const float theta = asinf(-vec[1]);
+    const float phi   = atan2f(vec[0], vec[2]);
+    const float theta = asinf(vec[1]);
     float phi_norm, theta_threshold;
     int face;
 
@@ -965,27 +1073,27 @@ static void xyz_to_cube(const V360Context *s,
 
     switch (*direction) {
     case RIGHT:
-        *uf =  vec[2] / vec[0];
-        *vf = -vec[1] / vec[0];
-        break;
-    case LEFT:
-        *uf =  vec[2] / vec[0];
+        *uf = -vec[2] / vec[0];
         *vf =  vec[1] / vec[0];
         break;
-    case UP:
-        *uf =  vec[0] / vec[1];
-        *vf = -vec[2] / vec[1];
+    case LEFT:
+        *uf = -vec[2] / vec[0];
+        *vf = -vec[1] / vec[0];
         break;
-    case DOWN:
+    case UP:
         *uf = -vec[0] / vec[1];
         *vf = -vec[2] / vec[1];
         break;
+    case DOWN:
+        *uf =  vec[0] / vec[1];
+        *vf = -vec[2] / vec[1];
+        break;
     case FRONT:
-        *uf = -vec[0] / vec[2];
+        *uf =  vec[0] / vec[2];
         *vf =  vec[1] / vec[2];
         break;
     case BACK:
-        *uf = -vec[0] / vec[2];
+        *uf =  vec[0] / vec[2];
         *vf = -vec[1] / vec[2];
         break;
     default:
@@ -1207,8 +1315,8 @@ static int cube3x2_to_xyz(const V360Context *s,
                           int i, int j, int width, int height,
                           float *vec)
 {
-    const float scalew = s->fout_pad > 0 ? 1.f - s->fout_pad / (s->out_width  / 3.f) : 1.f - s->out_pad;
-    const float scaleh = s->fout_pad > 0 ? 1.f - s->fout_pad / (s->out_height / 2.f) : 1.f - s->out_pad;
+    const float scalew = s->fout_pad > 0 ? 1.f - s->fout_pad / (width  / 3.f) : 1.f - s->out_pad;
+    const float scaleh = s->fout_pad > 0 ? 1.f - s->fout_pad / (height / 2.f) : 1.f - s->out_pad;
 
     const float ew = width  / 3.f;
     const float eh = height / 2.f;
@@ -1246,8 +1354,8 @@ static int xyz_to_cube3x2(const V360Context *s,
                           const float *vec, int width, int height,
                           int16_t us[4][4], int16_t vs[4][4], float *du, float *dv)
 {
-    const float scalew = s->fin_pad > 0 ? 1.f - s->fin_pad / (s->in_width  / 3.f) : 1.f - s->in_pad;
-    const float scaleh = s->fin_pad > 0 ? 1.f - s->fin_pad / (s->in_height / 2.f) : 1.f - s->in_pad;
+    const float scalew = s->fin_pad > 0 ? 1.f - s->fin_pad / (width  / 3.f) : 1.f - s->in_pad;
+    const float scaleh = s->fin_pad > 0 ? 1.f - s->fin_pad / (height / 2.f) : 1.f - s->in_pad;
     const float ew = width  / 3.f;
     const float eh = height / 2.f;
     float uf, vf;
@@ -1276,10 +1384,10 @@ static int xyz_to_cube3x2(const V360Context *s,
     *du = uf - ui;
     *dv = vf - vi;
 
-    for (int i = -1; i < 3; i++) {
-        for (int j = -1; j < 3; j++) {
-            int new_ui = ui + j;
-            int new_vi = vi + i;
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            int new_ui = ui + j - 1;
+            int new_vi = vi + i - 1;
             int u_shift, v_shift;
             int new_ewi, new_ehi;
 
@@ -1313,8 +1421,8 @@ static int xyz_to_cube3x2(const V360Context *s,
                 new_vi = av_clip(lrintf(0.5f * new_ehi * (vf + 1.f)), 0, new_ehi - 1);
             }
 
-            us[i + 1][j + 1] = u_shift + new_ui;
-            vs[i + 1][j + 1] = v_shift + new_vi;
+            us[i][j] = u_shift + new_ui;
+            vs[i][j] = v_shift + new_vi;
         }
     }
 
@@ -1335,8 +1443,8 @@ static int cube1x6_to_xyz(const V360Context *s,
                           int i, int j, int width, int height,
                           float *vec)
 {
-    const float scalew = s->fout_pad > 0 ? 1.f - (float)(s->fout_pad) / s->out_width : 1.f - s->out_pad;
-    const float scaleh = s->fout_pad > 0 ? 1.f - s->fout_pad / (s->out_height / 6.f) : 1.f - s->out_pad;
+    const float scalew = s->fout_pad > 0 ? 1.f - (float)(s->fout_pad) / width : 1.f - s->out_pad;
+    const float scaleh = s->fout_pad > 0 ? 1.f - s->fout_pad / (height / 6.f) : 1.f - s->out_pad;
 
     const float ew = width;
     const float eh = height / 6.f;
@@ -1368,8 +1476,8 @@ static int cube6x1_to_xyz(const V360Context *s,
                           int i, int j, int width, int height,
                           float *vec)
 {
-    const float scalew = s->fout_pad > 0 ? 1.f - s->fout_pad / (s->out_width / 6.f)   : 1.f - s->out_pad;
-    const float scaleh = s->fout_pad > 0 ? 1.f - (float)(s->fout_pad) / s->out_height : 1.f - s->out_pad;
+    const float scalew = s->fout_pad > 0 ? 1.f - s->fout_pad / (width / 6.f)   : 1.f - s->out_pad;
+    const float scaleh = s->fout_pad > 0 ? 1.f - (float)(s->fout_pad) / height : 1.f - s->out_pad;
 
     const float ew = width / 6.f;
     const float eh = height;
@@ -1403,8 +1511,8 @@ static int xyz_to_cube1x6(const V360Context *s,
                           const float *vec, int width, int height,
                           int16_t us[4][4], int16_t vs[4][4], float *du, float *dv)
 {
-    const float scalew = s->fin_pad > 0 ? 1.f - (float)(s->fin_pad) / s->in_width : 1.f - s->in_pad;
-    const float scaleh = s->fin_pad > 0 ? 1.f - s->fin_pad / (s->in_height / 6.f) : 1.f - s->in_pad;
+    const float scalew = s->fin_pad > 0 ? 1.f - (float)(s->fin_pad) / width : 1.f - s->in_pad;
+    const float scaleh = s->fin_pad > 0 ? 1.f - s->fin_pad / (height / 6.f) : 1.f - s->in_pad;
     const float eh = height / 6.f;
     const int ewi = width;
     float uf, vf;
@@ -1429,10 +1537,10 @@ static int xyz_to_cube1x6(const V360Context *s,
     *du = uf - ui;
     *dv = vf - vi;
 
-    for (int i = -1; i < 3; i++) {
-        for (int j = -1; j < 3; j++) {
-            int new_ui = ui + j;
-            int new_vi = vi + i;
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            int new_ui = ui + j - 1;
+            int new_vi = vi + i - 1;
             int v_shift;
             int new_ehi;
 
@@ -1459,8 +1567,8 @@ static int xyz_to_cube1x6(const V360Context *s,
                 new_vi = av_clip(lrintf(0.5f * new_ehi * (vf + 1.f)), 0, new_ehi - 1);
             }
 
-            us[i + 1][j + 1] =           new_ui;
-            vs[i + 1][j + 1] = v_shift + new_vi;
+            us[i][j] =           new_ui;
+            vs[i][j] = v_shift + new_vi;
         }
     }
 
@@ -1483,8 +1591,8 @@ static int xyz_to_cube6x1(const V360Context *s,
                           const float *vec, int width, int height,
                           int16_t us[4][4], int16_t vs[4][4], float *du, float *dv)
 {
-    const float scalew = s->fin_pad > 0 ? 1.f - s->fin_pad / (s->in_width / 6.f)   : 1.f - s->in_pad;
-    const float scaleh = s->fin_pad > 0 ? 1.f - (float)(s->fin_pad) / s->in_height : 1.f - s->in_pad;
+    const float scalew = s->fin_pad > 0 ? 1.f - s->fin_pad / (width / 6.f)   : 1.f - s->in_pad;
+    const float scaleh = s->fin_pad > 0 ? 1.f - (float)(s->fin_pad) / height : 1.f - s->in_pad;
     const float ew = width / 6.f;
     const int ehi = height;
     float uf, vf;
@@ -1509,10 +1617,10 @@ static int xyz_to_cube6x1(const V360Context *s,
     *du = uf - ui;
     *dv = vf - vi;
 
-    for (int i = -1; i < 3; i++) {
-        for (int j = -1; j < 3; j++) {
-            int new_ui = ui + j;
-            int new_vi = vi + i;
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            int new_ui = ui + j - 1;
+            int new_vi = vi + i - 1;
             int u_shift;
             int new_ewi;
 
@@ -1539,8 +1647,8 @@ static int xyz_to_cube6x1(const V360Context *s,
                 new_vi = av_clip(lrintf(0.5f *     ehi * (vf + 1.f)), 0,     ehi - 1);
             }
 
-            us[i + 1][j + 1] = u_shift + new_ui;
-            vs[i + 1][j + 1] =           new_vi;
+            us[i][j] = u_shift + new_ui;
+            vs[i][j] =           new_vi;
         }
     }
 
@@ -1561,17 +1669,46 @@ static int equirect_to_xyz(const V360Context *s,
                            int i, int j, int width, int height,
                            float *vec)
 {
-    const float phi   = ((2.f * i) / width  - 1.f) * M_PI;
-    const float theta = ((2.f * j) / height - 1.f) * M_PI_2;
+    const float phi   = ((2.f * i + 0.5f) / width  - 1.f) * M_PI;
+    const float theta = ((2.f * j + 0.5f) / height - 1.f) * M_PI_2;
 
     const float sin_phi   = sinf(phi);
     const float cos_phi   = cosf(phi);
     const float sin_theta = sinf(theta);
     const float cos_theta = cosf(theta);
 
-    vec[0] =  cos_theta * sin_phi;
-    vec[1] = -sin_theta;
-    vec[2] = -cos_theta * cos_phi;
+    vec[0] = cos_theta * sin_phi;
+    vec[1] = sin_theta;
+    vec[2] = cos_theta * cos_phi;
+
+    return 1;
+}
+
+/**
+ * Calculate 3D coordinates on sphere for corresponding frame position in half equirectangular format.
+ *
+ * @param s filter private context
+ * @param i horizontal position on frame [0, width)
+ * @param j vertical position on frame [0, height)
+ * @param width frame width
+ * @param height frame height
+ * @param vec coordinates on sphere
+ */
+static int hequirect_to_xyz(const V360Context *s,
+                            int i, int j, int width, int height,
+                            float *vec)
+{
+    const float phi   = ((2.f * i + 0.5f) / width  - 1.f) * M_PI_2;
+    const float theta = ((2.f * j + 0.5f) / height - 1.f) * M_PI_2;
+
+    const float sin_phi   = sinf(phi);
+    const float cos_phi   = cosf(phi);
+    const float sin_theta = sinf(theta);
+    const float cos_theta = cosf(theta);
+
+    vec[0] = cos_theta * sin_phi;
+    vec[1] = sin_theta;
+    vec[2] = cos_theta * cos_phi;
 
     return 1;
 }
@@ -1607,13 +1744,15 @@ static int stereographic_to_xyz(const V360Context *s,
                                 int i, int j, int width, int height,
                                 float *vec)
 {
-    const float x = ((2.f * i) / width  - 1.f) * s->flat_range[0];
-    const float y = ((2.f * j) / height - 1.f) * s->flat_range[1];
-    const float xy = x * x + y * y;
+    const float x = ((2.f * i + 1.f) / width  - 1.f) * s->flat_range[0];
+    const float y = ((2.f * j + 1.f) / height - 1.f) * s->flat_range[1];
+    const float r = hypotf(x, y);
+    const float theta = atanf(r) * 2.f;
+    const float sin_theta = sinf(theta);
 
-    vec[0] = 2.f * x / (1.f + xy);
-    vec[1] = (-1.f + xy) / (1.f + xy);
-    vec[2] = 2.f * y / (1.f + xy);
+    vec[0] = x / r * sin_theta;
+    vec[1] = y / r * sin_theta;
+    vec[2] = cosf(theta);
 
     normalize_vector(vec);
 
@@ -1653,25 +1792,27 @@ static int xyz_to_stereographic(const V360Context *s,
                                 const float *vec, int width, int height,
                                 int16_t us[4][4], int16_t vs[4][4], float *du, float *dv)
 {
-    const float x = vec[0] / (1.f - vec[1]) / s->iflat_range[0] * s->input_mirror_modifier[0];
-    const float y = vec[2] / (1.f - vec[1]) / s->iflat_range[1] * s->input_mirror_modifier[1];
-    float uf, vf;
-    int visible, ui, vi;
+    const float theta = acosf(vec[2]);
+    const float r = tanf(theta * 0.5f);
+    const float c = r / hypotf(vec[0], vec[1]);
+    const float x = vec[0] * c / s->iflat_range[0] * s->input_mirror_modifier[0];
+    const float y = vec[1] * c / s->iflat_range[1] * s->input_mirror_modifier[1];
 
-    uf = (x + 1.f) * width  / 2.f;
-    vf = (y + 1.f) * height / 2.f;
-    ui = floorf(uf);
-    vi = floorf(vf);
+    const float uf = (x + 1.f) * width  / 2.f;
+    const float vf = (y + 1.f) * height / 2.f;
 
-    visible = isfinite(x) && isfinite(y) && vi >= 0 && vi < height && ui >= 0 && ui < width;
+    const int ui = floorf(uf);
+    const int vi = floorf(vf);
+
+    const int visible = isfinite(x) && isfinite(y) && vi >= 0 && vi < height && ui >= 0 && ui < width;
 
     *du = visible ? uf - ui : 0.f;
     *dv = visible ? vf - vi : 0.f;
 
-    for (int i = -1; i < 3; i++) {
-        for (int j = -1; j < 3; j++) {
-            us[i + 1][j + 1] = visible ? av_clip(ui + j, 0, width  - 1) : 0;
-            vs[i + 1][j + 1] = visible ? av_clip(vi + i, 0, height - 1) : 0;
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            us[i][j] = visible ? av_clip(ui + j - 1, 0, width  - 1) : 0;
+            vs[i][j] = visible ? av_clip(vi + i - 1, 0, height - 1) : 0;
         }
     }
 
@@ -1694,27 +1835,66 @@ static int xyz_to_equirect(const V360Context *s,
                            const float *vec, int width, int height,
                            int16_t us[4][4], int16_t vs[4][4], float *du, float *dv)
 {
-    const float phi   = atan2f(vec[0], -vec[2]) * s->input_mirror_modifier[0];
-    const float theta = asinf(-vec[1]) * s->input_mirror_modifier[1];
-    float uf, vf;
-    int ui, vi;
+    const float phi   = atan2f(vec[0], vec[2]) * s->input_mirror_modifier[0];
+    const float theta = asinf(vec[1]) * s->input_mirror_modifier[1];
 
-    uf = (phi   / M_PI   + 1.f) * width  / 2.f;
-    vf = (theta / M_PI_2 + 1.f) * height / 2.f;
-    ui = floorf(uf);
-    vi = floorf(vf);
+    const float uf = (phi   / M_PI   + 1.f) * width  / 2.f;
+    const float vf = (theta / M_PI_2 + 1.f) * height / 2.f;
+
+    const int ui = floorf(uf);
+    const int vi = floorf(vf);
 
     *du = uf - ui;
     *dv = vf - vi;
 
-    for (int i = -1; i < 3; i++) {
-        for (int j = -1; j < 3; j++) {
-            us[i + 1][j + 1] = mod(ui + j, width);
-            vs[i + 1][j + 1] = av_clip(vi + i, 0, height - 1);
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            us[i][j] = ereflectx(ui + j - 1, vi + i - 1, width, height);
+            vs[i][j] = reflecty(vi + i - 1, height);
         }
     }
 
     return 1;
+}
+
+/**
+ * Calculate frame position in half equirectangular format for corresponding 3D coordinates on sphere.
+ *
+ * @param s filter private context
+ * @param vec coordinates on sphere
+ * @param width frame width
+ * @param height frame height
+ * @param us horizontal coordinates for interpolation window
+ * @param vs vertical coordinates for interpolation window
+ * @param du horizontal relative coordinate
+ * @param dv vertical relative coordinate
+ */
+static int xyz_to_hequirect(const V360Context *s,
+                            const float *vec, int width, int height,
+                            int16_t us[4][4], int16_t vs[4][4], float *du, float *dv)
+{
+    const float phi   = atan2f(vec[0], vec[2]) * s->input_mirror_modifier[0];
+    const float theta = asinf(vec[1]) * s->input_mirror_modifier[1];
+
+    const float uf = (phi   / M_PI_2 + 1.f) * width  / 2.f;
+    const float vf = (theta / M_PI_2 + 1.f) * height / 2.f;
+
+    const int ui = floorf(uf);
+    const int vi = floorf(vf);
+
+    const int visible = phi >= -M_PI_2 && phi <= M_PI_2;
+
+    *du = uf - ui;
+    *dv = vf - vi;
+
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            us[i][j] = av_clip(ui + j - 1, 0, width  - 1);
+            vs[i][j] = av_clip(vi + i - 1, 0, height - 1);
+        }
+    }
+
+    return visible;
 }
 
 /**
@@ -1753,11 +1933,11 @@ static int xyz_to_flat(const V360Context *s,
     const float theta = acosf(vec[2]);
     const float r = tanf(theta);
     const float rr = fabsf(r) < 1e+6f ? r : hypotf(width, height);
-    const float zf = -vec[2];
+    const float zf = vec[2];
     const float h = hypotf(vec[0], vec[1]);
     const float c = h <= 1e-6f ? 1.f : rr / h;
-    float uf = -vec[0] * c / s->iflat_range[0] * s->input_mirror_modifier[0];
-    float vf =  vec[1] * c / s->iflat_range[1] * s->input_mirror_modifier[1];
+    float uf = vec[0] * c / s->iflat_range[0] * s->input_mirror_modifier[0];
+    float vf = vec[1] * c / s->iflat_range[1] * s->input_mirror_modifier[1];
     int visible, ui, vi;
 
     uf = zf >= 0.f ? (uf + 1.f) * width  / 2.f : 0.f;
@@ -1771,10 +1951,10 @@ static int xyz_to_flat(const V360Context *s,
     *du = uf - ui;
     *dv = vf - vi;
 
-    for (int i = -1; i < 3; i++) {
-        for (int j = -1; j < 3; j++) {
-            us[i + 1][j + 1] = visible ? av_clip(ui + j, 0, width  - 1) : 0;
-            vs[i + 1][j + 1] = visible ? av_clip(vi + i, 0, height - 1) : 0;
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            us[i][j] = visible ? av_clip(ui + j - 1, 0, width  - 1) : 0;
+            vs[i][j] = visible ? av_clip(vi + i - 1, 0, height - 1) : 0;
         }
     }
 
@@ -1797,23 +1977,22 @@ static int xyz_to_mercator(const V360Context *s,
                            const float *vec, int width, int height,
                            int16_t us[4][4], int16_t vs[4][4], float *du, float *dv)
 {
-    const float phi   = atan2f(vec[0], -vec[2]) * s->input_mirror_modifier[0];
-    const float theta = -vec[1] * s->input_mirror_modifier[1];
-    float uf, vf;
-    int ui, vi;
+    const float phi   = atan2f(vec[0], vec[2]) * s->input_mirror_modifier[0];
+    const float theta = vec[1] * s->input_mirror_modifier[1];
 
-    uf = (phi / M_PI + 1.f) * width / 2.f;
-    vf = (av_clipf(logf((1.f + theta) / (1.f - theta)) / (2.f * M_PI), -1.f, 1.f) + 1.f) * height / 2.f;
-    ui = floorf(uf);
-    vi = floorf(vf);
+    const float uf = (phi / M_PI + 1.f) * width / 2.f;
+    const float vf = (av_clipf(logf((1.f + theta) / (1.f - theta)) / (2.f * M_PI), -1.f, 1.f) + 1.f) * height / 2.f;
+
+    const int ui = floorf(uf);
+    const int vi = floorf(vf);
 
     *du = uf - ui;
     *dv = vf - vi;
 
-    for (int i = -1; i < 3; i++) {
-        for (int j = -1; j < 3; j++) {
-            us[i + 1][j + 1] = av_clip(ui + j, 0, width  - 1);
-            vs[i + 1][j + 1] = av_clip(vi + i, 0, height - 1);
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            us[i][j] = av_clip(ui + j - 1, 0, width  - 1);
+            vs[i][j] = av_clip(vi + i - 1, 0, height - 1);
         }
     }
 
@@ -1834,18 +2013,18 @@ static int mercator_to_xyz(const V360Context *s,
                            int i, int j, int width, int height,
                            float *vec)
 {
-    const float phi = ((2.f * i) / width - 1.f) * M_PI + M_PI_2;
-    const float y   = ((2.f * j) / height - 1.f) * M_PI;
+    const float phi = ((2.f * i + 1.f) / width  - 1.f) * M_PI + M_PI_2;
+    const float y   = ((2.f * j + 1.f) / height - 1.f) * M_PI;
     const float div = expf(2.f * y) + 1.f;
 
     const float sin_phi   = sinf(phi);
     const float cos_phi   = cosf(phi);
-    const float sin_theta = -2.f * expf(y) / div;
-    const float cos_theta = -(expf(2.f * y) - 1.f) / div;
+    const float sin_theta = 2.f * expf(y) / div;
+    const float cos_theta = (expf(2.f * y) - 1.f) / div;
 
-    vec[0] = sin_theta * cos_phi;
-    vec[1] = cos_theta;
-    vec[2] = sin_theta * sin_phi;
+    vec[0] = -sin_theta * cos_phi;
+    vec[1] =  cos_theta;
+    vec[2] =  sin_theta * sin_phi;
 
     return 1;
 }
@@ -1867,23 +2046,21 @@ static int xyz_to_ball(const V360Context *s,
                        int16_t us[4][4], int16_t vs[4][4], float *du, float *dv)
 {
     const float l = hypotf(vec[0], vec[1]);
-    const float r = sqrtf(1.f + vec[2]) / M_SQRT2;
-    float uf, vf;
-    int ui, vi;
+    const float r = sqrtf(1.f - vec[2]) / M_SQRT2;
 
-    uf = (1.f + r * vec[0] * s->input_mirror_modifier[0] / (l > 0.f ? l : 1.f)) * width  * 0.5f;
-    vf = (1.f - r * vec[1] * s->input_mirror_modifier[1] / (l > 0.f ? l : 1.f)) * height * 0.5f;
+    const float uf = (1.f + r * vec[0] * s->input_mirror_modifier[0] / (l > 0.f ? l : 1.f)) * width  * 0.5f;
+    const float vf = (1.f + r * vec[1] * s->input_mirror_modifier[1] / (l > 0.f ? l : 1.f)) * height * 0.5f;
 
-    ui = floorf(uf);
-    vi = floorf(vf);
+    const int ui = floorf(uf);
+    const int vi = floorf(vf);
 
     *du = uf - ui;
     *dv = vf - vi;
 
-    for (int i = -1; i < 3; i++) {
-        for (int j = -1; j < 3; j++) {
-            us[i + 1][j + 1] = av_clip(ui + j, 0, width  - 1);
-            vs[i + 1][j + 1] = av_clip(vi + i, 0, height - 1);
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            us[i][j] = av_clip(ui + j - 1, 0, width  - 1);
+            vs[i][j] = av_clip(vi + i - 1, 0, height - 1);
         }
     }
 
@@ -1904,20 +2081,20 @@ static int ball_to_xyz(const V360Context *s,
                        int i, int j, int width, int height,
                        float *vec)
 {
-    const float x = (2.f * i) / width  - 1.f;
-    const float y = (2.f * j) / height - 1.f;
+    const float x = (2.f * i + 1.f) / width  - 1.f;
+    const float y = (2.f * j + 1.f) / height - 1.f;
     const float l = hypotf(x, y);
 
     if (l <= 1.f) {
         const float z = 2.f * l * sqrtf(1.f - l * l);
 
-        vec[0] =  z * x / (l > 0.f ? l : 1.f);
-        vec[1] = -z * y / (l > 0.f ? l : 1.f);
-        vec[2] = -1.f + 2.f * l * l;
+        vec[0] = z * x / (l > 0.f ? l : 1.f);
+        vec[1] = z * y / (l > 0.f ? l : 1.f);
+        vec[2] = 1.f - 2.f * l * l;
     } else {
-        vec[0] =  0.f;
-        vec[1] = -1.f;
-        vec[2] =  0.f;
+        vec[0] = 0.f;
+        vec[1] = 1.f;
+        vec[2] = 0.f;
         return 0;
     }
 
@@ -1938,8 +2115,8 @@ static int hammer_to_xyz(const V360Context *s,
                          int i, int j, int width, int height,
                          float *vec)
 {
-    const float x = ((2.f * i) / width  - 1.f);
-    const float y = ((2.f * j) / height - 1.f);
+    const float x = ((2.f * i + 1.f) / width  - 1.f);
+    const float y = ((2.f * j + 1.f) / height - 1.f);
 
     const float xx = x * x;
     const float yy = y * y;
@@ -1954,9 +2131,9 @@ static int hammer_to_xyz(const V360Context *s,
 
     const float w = sqrtf(1.f - 2.f * yy * z * z);
 
-    vec[0] =  w * 2.f * a * b / (aa + bb);
-    vec[1] = -M_SQRT2 * y * z;
-    vec[2] = -w * (bb  - aa) / (aa + bb);
+    vec[0] = w * 2.f * a * b / (aa + bb);
+    vec[1] = M_SQRT2 * y * z;
+    vec[2] = w * (bb  - aa) / (aa + bb);
 
     normalize_vector(vec);
 
@@ -1979,26 +2156,25 @@ static int xyz_to_hammer(const V360Context *s,
                          const float *vec, int width, int height,
                          int16_t us[4][4], int16_t vs[4][4], float *du, float *dv)
 {
-    const float theta = atan2f(vec[0], -vec[2]) * s->input_mirror_modifier[0];
+    const float theta = atan2f(vec[0], vec[2]) * s->input_mirror_modifier[0];
 
     const float z = sqrtf(1.f + sqrtf(1.f - vec[1] * vec[1]) * cosf(theta * 0.5f));
     const float x = sqrtf(1.f - vec[1] * vec[1]) * sinf(theta * 0.5f) / z;
-    const float y = -vec[1] / z * s->input_mirror_modifier[1];
-    float uf, vf;
-    int ui, vi;
+    const float y = vec[1] / z * s->input_mirror_modifier[1];
 
-    uf = (x + 1.f) * width  / 2.f;
-    vf = (y + 1.f) * height / 2.f;
-    ui = floorf(uf);
-    vi = floorf(vf);
+    const float uf = (x + 1.f) * width  / 2.f;
+    const float vf = (y + 1.f) * height / 2.f;
+
+    const int ui = floorf(uf);
+    const int vi = floorf(vf);
 
     *du = uf - ui;
     *dv = vf - vi;
 
-    for (int i = -1; i < 3; i++) {
-        for (int j = -1; j < 3; j++) {
-            us[i + 1][j + 1] = av_clip(ui + j, 0, width  - 1);
-            vs[i + 1][j + 1] = av_clip(vi + i, 0, height - 1);
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            us[i][j] = av_clip(ui + j - 1, 0, width  - 1);
+            vs[i][j] = av_clip(vi + i - 1, 0, height - 1);
         }
     }
 
@@ -2019,17 +2195,17 @@ static int sinusoidal_to_xyz(const V360Context *s,
                              int i, int j, int width, int height,
                              float *vec)
 {
-    const float theta = ((2.f * j) / height - 1.f) * M_PI_2;
-    const float phi   = ((2.f * i) / width  - 1.f) * M_PI / cosf(theta);
+    const float theta = ((2.f * j + 1.f) / height - 1.f) * M_PI_2;
+    const float phi   = ((2.f * i + 1.f) / width  - 1.f) * M_PI / cosf(theta);
 
     const float sin_phi   = sinf(phi);
     const float cos_phi   = cosf(phi);
     const float sin_theta = sinf(theta);
     const float cos_theta = cosf(theta);
 
-    vec[0] =  cos_theta * sin_phi;
-    vec[1] = -sin_theta;
-    vec[2] = -cos_theta * cos_phi;
+    vec[0] = cos_theta * sin_phi;
+    vec[1] = sin_theta;
+    vec[2] = cos_theta * cos_phi;
 
     normalize_vector(vec);
 
@@ -2052,23 +2228,22 @@ static int xyz_to_sinusoidal(const V360Context *s,
                              const float *vec, int width, int height,
                              int16_t us[4][4], int16_t vs[4][4], float *du, float *dv)
 {
-    const float theta = asinf(-vec[1]) * s->input_mirror_modifier[1];
-    const float phi   = atan2f(vec[0], -vec[2]) * s->input_mirror_modifier[0] * cosf(theta);
-    float uf, vf;
-    int ui, vi;
+    const float theta = asinf(vec[1]) * s->input_mirror_modifier[1];
+    const float phi   = atan2f(vec[0], vec[2]) * s->input_mirror_modifier[0] * cosf(theta);
 
-    uf = (phi   / M_PI   + 1.f) * width  / 2.f;
-    vf = (theta / M_PI_2 + 1.f) * height / 2.f;
-    ui = floorf(uf);
-    vi = floorf(vf);
+    const float uf = (phi   / M_PI   + 1.f) * width  / 2.f;
+    const float vf = (theta / M_PI_2 + 1.f) * height / 2.f;
+
+    const int ui = floorf(uf);
+    const int vi = floorf(vf);
 
     *du = uf - ui;
     *dv = vf - vi;
 
-    for (int i = -1; i < 3; i++) {
-        for (int j = -1; j < 3; j++) {
-            us[i + 1][j + 1] = av_clip(ui + j, 0, width  - 1);
-            vs[i + 1][j + 1] = av_clip(vi + i, 0, height - 1);
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            us[i][j] = av_clip(ui + j - 1, 0, width  - 1);
+            vs[i][j] = av_clip(vi + i - 1, 0, height - 1);
         }
     }
 
@@ -2225,33 +2400,33 @@ static int eac_to_xyz(const V360Context *s,
     switch (face) {
     case TOP_LEFT:
         l_x = -1.f;
-        l_y = -vf;
-        l_z = -uf;
+        l_y =  vf;
+        l_z =  uf;
         break;
     case TOP_MIDDLE:
         l_x =  uf;
-        l_y = -vf;
-        l_z = -1.f;
+        l_y =  vf;
+        l_z =  1.f;
         break;
     case TOP_RIGHT:
         l_x =  1.f;
-        l_y = -vf;
-        l_z =  uf;
+        l_y =  vf;
+        l_z = -uf;
         break;
     case BOTTOM_LEFT:
         l_x = -vf;
-        l_y = -1.f;
-        l_z =  uf;
+        l_y =  1.f;
+        l_z = -uf;
         break;
     case BOTTOM_MIDDLE:
         l_x = -vf;
-        l_y =  uf;
-        l_z =  1.f;
+        l_y = -uf;
+        l_z = -1.f;
         break;
     case BOTTOM_RIGHT:
         l_x = -vf;
-        l_y =  1.f;
-        l_z = -uf;
+        l_y = -1.f;
+        l_z =  uf;
         break;
     default:
         av_assert0(0);
@@ -2316,10 +2491,10 @@ static int xyz_to_eac(const V360Context *s,
     *du = uf - ui;
     *dv = vf - vi;
 
-    for (int i = -1; i < 3; i++) {
-        for (int j = -1; j < 3; j++) {
-            us[i + 1][j + 1] = av_clip(ui + j, 0, width  - 1);
-            vs[i + 1][j + 1] = av_clip(vi + i, 0, height - 1);
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            us[i][j] = av_clip(ui + j - 1, 0, width  - 1);
+            vs[i][j] = av_clip(vi + i - 1, 0, height - 1);
         }
     }
 
@@ -2357,12 +2532,12 @@ static int flat_to_xyz(const V360Context *s,
                        int i, int j, int width, int height,
                        float *vec)
 {
-    const float l_x =  s->flat_range[0] * (2.f * i / width  - 1.f);
-    const float l_y = -s->flat_range[1] * (2.f * j / height - 1.f);
+    const float l_x = s->flat_range[0] * ((2.f * i + 0.5f) / width  - 1.f);
+    const float l_y = s->flat_range[1] * ((2.f * j + 0.5f) / height - 1.f);
 
-    vec[0] =  l_x;
-    vec[1] =  l_y;
-    vec[2] = -1.f;
+    vec[0] = l_x;
+    vec[1] = l_y;
+    vec[2] = 1.f;
 
     normalize_vector(vec);
 
@@ -2401,14 +2576,19 @@ static int fisheye_to_xyz(const V360Context *s,
                           float *vec)
 {
     const float uf = s->flat_range[0] * ((2.f * i) / width  - 1.f);
-    const float vf = s->flat_range[1] * ((2.f * j) / height - 1.f);
+    const float vf = s->flat_range[1] * ((2.f * j + 1.f) / height - 1.f);
 
-    const float phi   = -atan2f(vf, uf);
-    const float theta = -M_PI_2 * (1.f - hypotf(uf, vf));
+    const float phi   = atan2f(vf, uf);
+    const float theta = M_PI_2 * (1.f - hypotf(uf, vf));
 
-    vec[0] = cosf(theta) * cosf(phi);
-    vec[1] = cosf(theta) * sinf(phi);
-    vec[2] = sinf(theta);
+    const float sin_phi   = sinf(phi);
+    const float cos_phi   = cosf(phi);
+    const float sin_theta = sinf(theta);
+    const float cos_theta = cosf(theta);
+
+    vec[0] = cos_theta * cos_phi;
+    vec[1] = cos_theta * sin_phi;
+    vec[2] = sin_theta;
 
     normalize_vector(vec);
 
@@ -2448,11 +2628,12 @@ static int xyz_to_fisheye(const V360Context *s,
                           const float *vec, int width, int height,
                           int16_t us[4][4], int16_t vs[4][4], float *du, float *dv)
 {
-    const float phi   = -atan2f(hypotf(vec[0], vec[1]), -vec[2]) / M_PI;
-    const float theta = -atan2f(vec[0], vec[1]);
+    const float h   = hypotf(vec[0], vec[1]);
+    const float lh  = h > 0.f ? h : 1.f;
+    const float phi = atan2f(h, vec[2]) / M_PI;
 
-    float uf = sinf(theta) * phi * s->input_mirror_modifier[0] / s->iflat_range[0];
-    float vf = cosf(theta) * phi * s->input_mirror_modifier[1] / s->iflat_range[1];
+    float uf = vec[0] / lh * phi * s->input_mirror_modifier[0] / s->iflat_range[0];
+    float vf = vec[1] / lh * phi * s->input_mirror_modifier[1] / s->iflat_range[1];
 
     const int visible = hypotf(uf, vf) <= 0.5f;
     int ui, vi;
@@ -2466,10 +2647,10 @@ static int xyz_to_fisheye(const V360Context *s,
     *du = visible ? uf - ui : 0.f;
     *dv = visible ? vf - vi : 0.f;
 
-    for (int i = -1; i < 3; i++) {
-        for (int j = -1; j < 3; j++) {
-            us[i + 1][j + 1] = visible ? av_clip(ui + j, 0, width  - 1) : 0;
-            vs[i + 1][j + 1] = visible ? av_clip(vi + i, 0, height - 1) : 0;
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            us[i][j] = visible ? av_clip(ui + j - 1, 0, width  - 1) : 0;
+            vs[i][j] = visible ? av_clip(vi + i - 1, 0, height - 1) : 0;
         }
     }
 
@@ -2490,16 +2671,16 @@ static int pannini_to_xyz(const V360Context *s,
                           int i, int j, int width, int height,
                           float *vec)
 {
-    const float uf = ((2.f * i) / width  - 1.f);
-    const float vf = ((2.f * j) / height - 1.f);
+    const float uf = ((2.f * i + 1.f) / width  - 1.f);
+    const float vf = ((2.f * j + 1.f) / height - 1.f);
 
     const float d = s->h_fov;
     const float k = uf * uf / ((d + 1.f) * (d + 1.f));
     const float dscr = k * k * d * d - (k + 1.f) * (k * d * d - 1.f);
     const float clon = (-k * d + sqrtf(dscr)) / (k + 1.f);
     const float S = (d + 1.f) / (d + clon);
-    const float lon = -(M_PI + atan2f(uf, S * clon));
-    const float lat = -atan2f(vf, S);
+    const float lon = atan2f(uf, S * clon);
+    const float lat = atan2f(vf, S);
 
     vec[0] = sinf(lon) * cosf(lat);
     vec[1] = sinf(lat);
@@ -2508,6 +2689,52 @@ static int pannini_to_xyz(const V360Context *s,
     normalize_vector(vec);
 
     return 1;
+}
+
+/**
+ * Calculate frame position in pannini format for corresponding 3D coordinates on sphere.
+ *
+ * @param s filter private context
+ * @param vec coordinates on sphere
+ * @param width frame width
+ * @param height frame height
+ * @param us horizontal coordinates for interpolation window
+ * @param vs vertical coordinates for interpolation window
+ * @param du horizontal relative coordinate
+ * @param dv vertical relative coordinate
+ */
+static int xyz_to_pannini(const V360Context *s,
+                          const float *vec, int width, int height,
+                          int16_t us[4][4], int16_t vs[4][4], float *du, float *dv)
+{
+    const float phi   = atan2f(vec[0], vec[2]) * s->input_mirror_modifier[0];
+    const float theta = asinf(vec[1]) * s->input_mirror_modifier[1];
+
+    const float d = s->ih_fov;
+    const float S = (d + 1.f) / (d + cosf(phi));
+
+    const float x = S * sinf(phi);
+    const float y = S * tanf(theta);
+
+    const float uf = (x + 1.f) * width  / 2.f;
+    const float vf = (y + 1.f) * height / 2.f;
+
+    const int ui = floorf(uf);
+    const int vi = floorf(vf);
+
+    const int visible = vi >= 0 && vi < height && ui >= 0 && ui < width && vec[2] >= 0.f;
+
+    *du = uf - ui;
+    *dv = vf - vi;
+
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            us[i][j] = visible ? av_clip(ui + j - 1, 0, width  - 1) : 0;
+            vs[i][j] = visible ? av_clip(vi + i - 1, 0, height - 1) : 0;
+        }
+    }
+
+    return visible;
 }
 
 /**
@@ -2541,8 +2768,8 @@ static int cylindrical_to_xyz(const V360Context *s,
                               int i, int j, int width, int height,
                               float *vec)
 {
-    const float uf = s->flat_range[0] * ((2.f * i) / width  - 1.f);
-    const float vf = s->flat_range[1] * ((2.f * j) / height - 1.f);
+    const float uf = s->flat_range[0] * ((2.f * i + 1.f) / width  - 1.f);
+    const float vf = s->flat_range[1] * ((2.f * j + 1.f) / height - 1.f);
 
     const float phi   = uf;
     const float theta = atanf(vf);
@@ -2552,9 +2779,9 @@ static int cylindrical_to_xyz(const V360Context *s,
     const float sin_theta = sinf(theta);
     const float cos_theta = cosf(theta);
 
-    vec[0] =  cos_theta * sin_phi;
-    vec[1] = -sin_theta;
-    vec[2] = -cos_theta * cos_phi;
+    vec[0] = cos_theta * sin_phi;
+    vec[1] = sin_theta;
+    vec[2] = cos_theta * cos_phi;
 
     normalize_vector(vec);
 
@@ -2594,27 +2821,26 @@ static int xyz_to_cylindrical(const V360Context *s,
                               const float *vec, int width, int height,
                               int16_t us[4][4], int16_t vs[4][4], float *du, float *dv)
 {
-    const float phi   = atan2f(vec[0], -vec[2]) * s->input_mirror_modifier[0] / s->iflat_range[0];
-    const float theta = atan2f(-vec[1], hypotf(vec[0], vec[2])) * s->input_mirror_modifier[1] / s->iflat_range[1];
-    int visible, ui, vi;
-    float uf, vf;
+    const float phi   = atan2f(vec[0], vec[2]) * s->input_mirror_modifier[0] / s->iflat_range[0];
+    const float theta = asinf(vec[1]) * s->input_mirror_modifier[1];
 
-    uf = (phi + 1.f) * (width - 1) / 2.f;
-    vf = (tanf(theta) + 1.f) * height / 2.f;
-    ui = floorf(uf);
-    vi = floorf(vf);
+    const float uf = (phi + 1.f) * (width - 1) / 2.f;
+    const float vf = (tanf(theta) / s->iflat_range[1] + 1.f) * height / 2.f;
 
-    visible = vi >= 0 && vi < height && ui >= 0 && ui < width &&
-              theta <=  M_PI * s->iv_fov / 180.f &&
-              theta >= -M_PI * s->iv_fov / 180.f;
+    const int ui = floorf(uf);
+    const int vi = floorf(vf);
+
+    const int visible = vi >= 0 && vi < height && ui >= 0 && ui < width &&
+                        theta <=  M_PI * s->iv_fov / 180.f &&
+                        theta >= -M_PI * s->iv_fov / 180.f;
 
     *du = uf - ui;
     *dv = vf - vi;
 
-    for (int i = -1; i < 3; i++) {
-        for (int j = -1; j < 3; j++) {
-            us[i + 1][j + 1] = visible ? av_clip(ui + j, 0, width  - 1) : 0;
-            vs[i + 1][j + 1] = visible ? av_clip(vi + i, 0, height - 1) : 0;
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            us[i][j] = visible ? av_clip(ui + j - 1, 0, width  - 1) : 0;
+            vs[i][j] = visible ? av_clip(vi + i - 1, 0, height - 1) : 0;
         }
     }
 
@@ -2635,8 +2861,8 @@ static int perspective_to_xyz(const V360Context *s,
                               int i, int j, int width, int height,
                               float *vec)
 {
-    const float uf = ((2.f * i) / width  - 1.f);
-    const float vf = ((2.f * j) / height - 1.f);
+    const float uf = ((2.f * i + 1.f) / width  - 1.f);
+    const float vf = ((2.f * j + 1.f) / height - 1.f);
     const float rh = hypotf(uf, vf);
     const float sinzz = 1.f - rh * rh;
     const float h = 1.f + s->v_fov;
@@ -2654,13 +2880,13 @@ static int perspective_to_xyz(const V360Context *s,
         const float sin_theta = sinf(theta);
         const float cos_theta = cosf(theta);
 
-        vec[0] =  cos_theta * sin_phi;
-        vec[1] =  sin_theta;
-        vec[2] = -cos_theta * cos_phi;
+        vec[0] = cos_theta * sin_phi;
+        vec[1] = sin_theta;
+        vec[2] = cos_theta * cos_phi;
     } else {
-        vec[0] =  0.f;
-        vec[1] = -1.f;
-        vec[2] =  0.f;
+        vec[0] = 0.f;
+        vec[1] = 1.f;
+        vec[2] = 0.f;
         return 0;
     }
 
@@ -2710,17 +2936,14 @@ static int xyz_to_tetrahedron(const V360Context *s,
                               const float *vec, int width, int height,
                               int16_t us[4][4], int16_t vs[4][4], float *du, float *dv)
 {
-    float d = 0.5f * (vec[0] * vec[0] + vec[1] * vec[1] + vec[2] * vec[2]);
-
-    const float d0 = (vec[0] * 0.5f + vec[1] * 0.5f + vec[2] *-0.5f) / d;
-    const float d1 = (vec[0] *-0.5f + vec[1] *-0.5f + vec[2] *-0.5f) / d;
-    const float d2 = (vec[0] * 0.5f + vec[1] *-0.5f + vec[2] * 0.5f) / d;
-    const float d3 = (vec[0] *-0.5f + vec[1] * 0.5f + vec[2] * 0.5f) / d;
+    const float d0 = vec[0] * 1.f + vec[1] * 1.f + vec[2] *-1.f;
+    const float d1 = vec[0] *-1.f + vec[1] *-1.f + vec[2] *-1.f;
+    const float d2 = vec[0] * 1.f + vec[1] *-1.f + vec[2] * 1.f;
+    const float d3 = vec[0] *-1.f + vec[1] * 1.f + vec[2] * 1.f;
+    const float d = FFMAX(d0, FFMAX3(d1, d2, d3));
 
     float uf, vf, x, y, z;
     int ui, vi;
-
-    d = FFMAX(d0, FFMAX3(d1, d2, d3));
 
     x =  vec[0] / d;
     y =  vec[1] / d;
@@ -2744,10 +2967,10 @@ static int xyz_to_tetrahedron(const V360Context *s,
     *du = uf - ui;
     *dv = vf - vi;
 
-    for (int i = -1; i < 3; i++) {
-        for (int j = -1; j < 3; j++) {
-            us[i + 1][j + 1] = mod(ui + j, width);
-            vs[i + 1][j + 1] = av_clip(vi + i, 0, height - 1);
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            us[i][j] = reflectx(ui + j - 1, vi + i - 1, width, height);
+            vs[i][j] = reflecty(vi + i - 1, height);
         }
     }
 
@@ -2774,10 +2997,10 @@ static int dfisheye_to_xyz(const V360Context *s,
     const float eh = height;
 
     const int ei = i >= ew ? i - ew : i;
-    const float m = i >= ew ? -1.f : 1.f;
+    const float m = i >= ew ? 1.f : -1.f;
 
     const float uf = ((2.f * ei) / ew - 1.f) * scale;
-    const float vf = ((2.f *  j) / eh - 1.f) * scale;
+    const float vf = ((2.f * j + 1.f) / eh - 1.f) * scale;
 
     const float h     = hypotf(uf, vf);
     const float lh    = h > 0.f ? h : 1.f;
@@ -2786,8 +3009,8 @@ static int dfisheye_to_xyz(const V360Context *s,
     const float sin_theta = sinf(theta);
     const float cos_theta = cosf(theta);
 
-    vec[0] = cos_theta * m * -uf / lh;
-    vec[1] = cos_theta *     -vf / lh;
+    vec[0] = cos_theta * m * uf / lh;
+    vec[1] = cos_theta *     vf / lh;
     vec[2] = sin_theta;
 
     normalize_vector(vec);
@@ -2820,16 +3043,16 @@ static int xyz_to_dfisheye(const V360Context *s,
     const float lh    = h > 0.f ? h : 1.f;
     const float theta = acosf(fabsf(vec[2])) / M_PI;
 
-    float uf = (theta * (-vec[0] / lh) * s->input_mirror_modifier[0] * scale + 0.5f) * ew;
-    float vf = (theta * (-vec[1] / lh) * s->input_mirror_modifier[1] * scale + 0.5f) * eh;
+    float uf = (theta * (vec[0] / lh) * s->input_mirror_modifier[0] * scale + 0.5f) * ew;
+    float vf = (theta * (vec[1] / lh) * s->input_mirror_modifier[1] * scale + 0.5f) * eh;
 
     int ui, vi;
     int u_shift;
 
     if (vec[2] >= 0.f) {
-        u_shift = 0;
-    } else {
         u_shift = ceilf(ew);
+    } else {
+        u_shift = 0;
         uf = ew - uf;
     }
 
@@ -2839,10 +3062,10 @@ static int xyz_to_dfisheye(const V360Context *s,
     *du = uf - ui;
     *dv = vf - vi;
 
-    for (int i = -1; i < 3; i++) {
-        for (int j = -1; j < 3; j++) {
-            us[i + 1][j + 1] = av_clip(u_shift + ui + j, 0, width  - 1);
-            vs[i + 1][j + 1] = av_clip(          vi + i, 0, height - 1);
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            us[i][j] = av_clip(u_shift + ui + j - 1, 0, width  - 1);
+            vs[i][j] = av_clip(          vi + i - 1, 0, height - 1);
         }
     }
 
@@ -2880,9 +3103,9 @@ static int barrel_to_xyz(const V360Context *s,
         const float sin_theta = sinf(theta);
         const float cos_theta = cosf(theta);
 
-        l_x =  cos_theta * sin_phi;
-        l_y = -sin_theta;
-        l_z = -cos_theta * cos_phi;
+        l_x = cos_theta * sin_phi;
+        l_y = sin_theta;
+        l_z = cos_theta * cos_phi;
     } else {
         const int ew = width  / 5;
         const int eh = height / 2;
@@ -2890,15 +3113,15 @@ static int barrel_to_xyz(const V360Context *s,
         float uf, vf;
 
         if (j < eh) {   // UP
-            uf = 2.f * (i - 4 * ew) / ew  - 1.f;
+            uf = 2.f * (i - 4 * ew) / ew - 1.f;
             vf = 2.f * (j         ) / eh - 1.f;
 
             uf /= scale;
             vf /= scale;
 
             l_x =  uf;
-            l_y =  1.f;
-            l_z = -vf;
+            l_y = -1.f;
+            l_z =  vf;
         } else {            // DOWN
             uf = 2.f * (i - 4 * ew) / ew - 1.f;
             vf = 2.f * (j -     eh) / eh - 1.f;
@@ -2907,8 +3130,8 @@ static int barrel_to_xyz(const V360Context *s,
             vf /= scale;
 
             l_x =  uf;
-            l_y = -1.f;
-            l_z =  vf;
+            l_y =  1.f;
+            l_z = -vf;
         }
     }
 
@@ -2939,8 +3162,8 @@ static int xyz_to_barrel(const V360Context *s,
 {
     const float scale = 0.99f;
 
-    const float phi   = atan2f(vec[0], -vec[2]) * s->input_mirror_modifier[0];
-    const float theta = asinf(-vec[1]) * s->input_mirror_modifier[1];
+    const float phi   = atan2f(vec[0], vec[2]) * s->input_mirror_modifier[0];
+    const float theta = asinf(vec[1]) * s->input_mirror_modifier[1];
     const float theta_range = M_PI_4;
 
     int ew, eh;
@@ -2964,11 +3187,11 @@ static int xyz_to_barrel(const V360Context *s,
         u_shift = s->ih_flip ? 0 : 4 * ew;
 
         if (theta < 0.f) {  // UP
-            uf =  vec[0] / vec[1];
+            uf = -vec[0] / vec[1];
             vf = -vec[2] / vec[1];
             v_shift = 0;
         } else {            // DOWN
-            uf = -vec[0] / vec[1];
+            uf =  vec[0] / vec[1];
             vf = -vec[2] / vec[1];
             v_shift = eh;
         }
@@ -2986,10 +3209,327 @@ static int xyz_to_barrel(const V360Context *s,
     *du = uf - ui;
     *dv = vf - vi;
 
-    for (int i = -1; i < 3; i++) {
-        for (int j = -1; j < 3; j++) {
-            us[i + 1][j + 1] = u_shift + av_clip(ui + j, 0, ew - 1);
-            vs[i + 1][j + 1] = v_shift + av_clip(vi + i, 0, eh - 1);
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            us[i][j] = u_shift + av_clip(ui + j - 1, 0, ew - 1);
+            vs[i][j] = v_shift + av_clip(vi + i - 1, 0, eh - 1);
+        }
+    }
+
+    return 1;
+}
+
+/**
+ * Calculate frame position in barrel split facebook's format for corresponding 3D coordinates on sphere.
+ *
+ * @param s filter private context
+ * @param vec coordinates on sphere
+ * @param width frame width
+ * @param height frame height
+ * @param us horizontal coordinates for interpolation window
+ * @param vs vertical coordinates for interpolation window
+ * @param du horizontal relative coordinate
+ * @param dv vertical relative coordinate
+ */
+static int xyz_to_barrelsplit(const V360Context *s,
+                              const float *vec, int width, int height,
+                              int16_t us[4][4], int16_t vs[4][4], float *du, float *dv)
+{
+    const float phi   = atan2f(vec[0], vec[2]) * s->input_mirror_modifier[0];
+    const float theta = asinf(vec[1]) * s->input_mirror_modifier[1];
+
+    const float theta_range = M_PI_4;
+
+    int ew, eh;
+    int u_shift, v_shift;
+    float uf, vf;
+    int ui, vi;
+
+    if (theta >= -theta_range && theta <= theta_range) {
+        const float scalew = s->fin_pad > 0 ? 1.f - s->fin_pad / (width * 2.f / 3.f) : 1.f - s->in_pad;
+        const float scaleh = s->fin_pad > 0 ? 1.f - s->fin_pad / (height / 2.f) : 1.f - s->in_pad;
+
+        ew = width / 3 * 2;
+        eh = height / 2;
+
+        u_shift = s->ih_flip ? width / 3 : 0;
+        v_shift = phi >= M_PI_2 || phi < -M_PI_2 ? eh : 0;
+
+        uf = fmodf(phi, M_PI_2) / M_PI_2;
+        vf = theta / M_PI_4;
+
+        if (v_shift)
+            uf = uf >= 0.f ? fmodf(uf - 1.f, 1.f) : fmodf(uf + 1.f, 1.f);
+
+        uf = (uf * scalew + 1.f) * width  / 3.f;
+        vf = (vf * scaleh + 1.f) * height / 4.f;
+    } else {
+        const float scalew = s->fin_pad > 0 ? 1.f - s->fin_pad / (width  / 3.f) : 1.f - s->in_pad;
+        const float scaleh = s->fin_pad > 0 ? 1.f - s->fin_pad / (height / 4.f) : 1.f - s->in_pad;
+        int v_offset = 0;
+
+        ew = width  / 3;
+        eh = height / 4;
+
+        u_shift = s->ih_flip ? 0 : 2 * ew;
+
+        if (theta <= 0.f && theta >= -M_PI_2 &&
+            phi <= M_PI_2 && phi >= -M_PI_2) {
+            uf = -vec[0] / vec[1];
+            vf = -vec[2] / vec[1];
+            v_shift = 0;
+            v_offset = -eh;
+        } else if (theta >= 0.f && theta <= M_PI_2 &&
+                   phi <= M_PI_2 && phi >= -M_PI_2) {
+            uf =  vec[0] / vec[1];
+            vf = -vec[2] / vec[1];
+            v_shift = height * 0.25f;
+        } else if (theta <= 0.f && theta >= -M_PI_2) {
+            uf =  vec[0] / vec[1];
+            vf =  vec[2] / vec[1];
+            v_shift = height * 0.5f;
+            v_offset = -eh;
+        } else {
+            uf = -vec[0] / vec[1];
+            vf =  vec[2] / vec[1];
+            v_shift = height * 0.75f;
+        }
+
+        uf *= s->input_mirror_modifier[0] * s->input_mirror_modifier[1];
+        vf *= s->input_mirror_modifier[1];
+
+        uf = 0.5f * width / 3.f * (uf * scalew + 1.f);
+        vf = height * 0.25f * (vf * scaleh + 1.f) + v_offset;
+    }
+
+    ui = floorf(uf);
+    vi = floorf(vf);
+
+    *du = uf - ui;
+    *dv = vf - vi;
+
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            us[i][j] = u_shift + av_clip(ui + j - 1, 0, ew - 1);
+            vs[i][j] = v_shift + av_clip(vi + i - 1, 0, eh - 1);
+        }
+    }
+
+    return 1;
+}
+
+/**
+ * Calculate 3D coordinates on sphere for corresponding frame position in barrel split facebook's format.
+ *
+ * @param s filter private context
+ * @param i horizontal position on frame [0, width)
+ * @param j vertical position on frame [0, height)
+ * @param width frame width
+ * @param height frame height
+ * @param vec coordinates on sphere
+ */
+static int barrelsplit_to_xyz(const V360Context *s,
+                              int i, int j, int width, int height,
+                              float *vec)
+{
+    const float x = (i + 0.5f) / width;
+    const float y = (j + 0.5f) / height;
+    float l_x, l_y, l_z;
+
+    if (x < 2.f / 3.f) {
+        const float scalew = s->fout_pad > 0 ? 1.f - s->fout_pad / (width * 2.f / 3.f) : 1.f - s->out_pad;
+        const float scaleh = s->fout_pad > 0 ? 1.f - s->fout_pad / (height / 2.f) : 1.f - s->out_pad;
+
+        const float back = floorf(y * 2.f);
+
+        const float phi   = ((3.f / 2.f * x - 0.5f) / scalew - back) * M_PI;
+        const float theta = (y - 0.25f - 0.5f * back) / scaleh * M_PI;
+
+        const float sin_phi   = sinf(phi);
+        const float cos_phi   = cosf(phi);
+        const float sin_theta = sinf(theta);
+        const float cos_theta = cosf(theta);
+
+        l_x = cos_theta * sin_phi;
+        l_y = sin_theta;
+        l_z = cos_theta * cos_phi;
+    } else {
+        const float scalew = s->fout_pad > 0 ? 1.f - s->fout_pad / (width  / 3.f) : 1.f - s->out_pad;
+        const float scaleh = s->fout_pad > 0 ? 1.f - s->fout_pad / (height / 4.f) : 1.f - s->out_pad;
+
+        const int face = floorf(y * 4.f);
+        float uf, vf;
+
+        uf = x * 3.f - 2.f;
+
+        switch (face) {
+        case 0:
+            vf = y * 2.f;
+            uf = 1.f - uf;
+            vf = 0.5f - vf;
+
+            l_x = (0.5f - uf) / scalew;
+            l_y = -0.5f;
+            l_z = (0.5f - vf) / scaleh;
+            break;
+        case 1:
+            vf = y * 2.f;
+            uf = 1.f - uf;
+            vf = 1.f - (vf - 0.5f);
+
+            l_x = (0.5f - uf) / scalew;
+            l_y =  0.5f;
+            l_z = (-0.5f + vf) / scaleh;
+            break;
+        case 2:
+            vf = y * 2.f - 0.5f;
+            vf = 1.f - (1.f - vf);
+
+            l_x = (0.5f - uf) / scalew;
+            l_y = -0.5f;
+            l_z = (0.5f - vf) / scaleh;
+            break;
+        case 3:
+            vf = y * 2.f - 1.5f;
+
+            l_x = (0.5f - uf) / scalew;
+            l_y =  0.5f;
+            l_z = (-0.5f + vf) / scaleh;
+            break;
+        }
+    }
+
+    vec[0] = l_x;
+    vec[1] = l_y;
+    vec[2] = l_z;
+
+    normalize_vector(vec);
+
+    return 1;
+}
+
+/**
+ * Calculate 3D coordinates on sphere for corresponding frame position in tspyramid format.
+ *
+ * @param s filter private context
+ * @param i horizontal position on frame [0, width)
+ * @param j vertical position on frame [0, height)
+ * @param width frame width
+ * @param height frame height
+ * @param vec coordinates on sphere
+ */
+static int tspyramid_to_xyz(const V360Context *s,
+                            int i, int j, int width, int height,
+                            float *vec)
+{
+    const float x = (i + 0.5f) / width;
+    const float y = (j + 0.5f) / height;
+
+    if (x < 0.5f) {
+        vec[0] =  x * 4.f - 1.f;
+        vec[1] = (y * 2.f - 1.f);
+        vec[2] = 1.f;
+    } else if (x >= 0.6875f && x < 0.8125f &&
+               y >= 0.375f  && y < 0.625f) {
+        vec[0] = -(x - 0.6875f) * 16.f + 1.f;
+        vec[1] = (y - 0.375f) * 8.f - 1.f;
+        vec[2] = -1.f;
+    } else if (0.5f <= x && x < 0.6875f &&
+               ((0.f <= y && y < 0.375f && y >= 2.f * (x - 0.5f)) ||
+                (0.375f <= y && y < 0.625f) ||
+                (0.625f <= y && y < 1.f && y <= 2.f * (1.f - x)))) {
+        vec[0] =  1.f;
+        vec[1] =  2.f * (y - 2.f * x + 1.f) / (3.f - 4.f * x) - 1.f;
+        vec[2] = -2.f * (x - 0.5f) / 0.1875f + 1.f;
+    } else if (0.8125f <= x && x < 1.f &&
+               ((0.f <= y && y < 0.375f && x >= (1.f - y / 2.f)) ||
+                (0.375f <= y && y < 0.625f) ||
+                (0.625f <= y && y < 1.f && y <= (2.f * x - 1.f)))) {
+        vec[0] = -1.f;
+        vec[1] =  2.f * (y + 2.f * x - 2.f) / (4.f * x - 3.f) - 1.f;
+        vec[2] =  2.f * (x - 0.8125f) / 0.1875f - 1.f;
+    } else if (0.f <= y && y < 0.375f &&
+               ((0.5f <= x && x < 0.8125f && y < 2.f * (x - 0.5f)) ||
+                (0.6875f <= x && x < 0.8125f) ||
+                (0.8125f <= x && x < 1.f && x < (1.f - y / 2.f)))) {
+        vec[0] =  2.f * (1.f - x - 0.5f * y) / (0.5f - y) - 1.f;
+        vec[1] = -1.f;
+        vec[2] =  2.f * (0.375f - y) / 0.375f - 1.f;
+    } else {
+        vec[0] =  2.f * (0.5f - x + 0.5f * y) / (y - 0.5f) - 1.f;
+        vec[1] =  1.f;
+        vec[2] = -2.f * (1.f - y) / 0.375f + 1.f;
+    }
+
+    normalize_vector(vec);
+
+    return 1;
+}
+
+/**
+ * Calculate frame position in tspyramid format for corresponding 3D coordinates on sphere.
+ *
+ * @param s filter private context
+ * @param vec coordinates on sphere
+ * @param width frame width
+ * @param height frame height
+ * @param us horizontal coordinates for interpolation window
+ * @param vs vertical coordinates for interpolation window
+ * @param du horizontal relative coordinate
+ * @param dv vertical relative coordinate
+ */
+static int xyz_to_tspyramid(const V360Context *s,
+                            const float *vec, int width, int height,
+                            int16_t us[4][4], int16_t vs[4][4], float *du, float *dv)
+{
+    float uf, vf;
+    int ui, vi;
+    int face;
+
+    xyz_to_cube(s, vec, &uf, &vf, &face);
+
+    uf = (uf + 1.f) * 0.5f;
+    vf = (vf + 1.f) * 0.5f;
+
+    switch (face) {
+    case UP:
+        uf = 0.1875f * vf - 0.375f * uf * vf - 0.125f * uf + 0.8125f;
+        vf = 0.375f - 0.375f * vf;
+        break;
+    case FRONT:
+        uf = 0.5f * uf;
+        break;
+    case DOWN:
+        uf = 1.f - 0.1875f * vf - 0.5f * uf + 0.375f * uf * vf;
+        vf = 1.f - 0.375f * vf;
+        break;
+    case LEFT:
+        vf = 0.25f * vf + 0.75f * uf * vf - 0.375f * uf + 0.375f;
+        uf = 0.1875f * uf + 0.8125f;
+        break;
+    case RIGHT:
+        vf = 0.375f * uf - 0.75f * uf * vf + vf;
+        uf = 0.1875f * uf + 0.5f;
+        break;
+    case BACK:
+        uf = 0.125f * uf + 0.6875f;
+        vf = 0.25f * vf + 0.375f;
+        break;
+    }
+
+    uf *= width;
+    vf *= height;
+
+    ui = floorf(uf);
+    vi = floorf(vf);
+
+    *du = uf - ui;
+    *dv = vf - vi;
+
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            us[i][j] = reflectx(ui + j - 1, vi + i - 1, width, height);
+            vs[i][j] = reflecty(vi + i - 1, height);
         }
     }
 
@@ -3021,8 +3561,8 @@ static inline void calculate_rotation_matrix(float yaw, float pitch, float roll,
     const float pitch_rad = pitch * M_PI / 180.f;
     const float roll_rad  = roll  * M_PI / 180.f;
 
-    const float sin_yaw   = sinf(-yaw_rad);
-    const float cos_yaw   = cosf(-yaw_rad);
+    const float sin_yaw   = sinf(yaw_rad);
+    const float cos_yaw   = cosf(yaw_rad);
     const float sin_pitch = sinf(pitch_rad);
     const float cos_pitch = cosf(pitch_rad);
     const float sin_roll  = sinf(roll_rad);
@@ -3082,18 +3622,22 @@ static inline void mirror(const float *modifier, float *vec)
 
 static int allocate_plane(V360Context *s, int sizeof_uv, int sizeof_ker, int sizeof_mask, int p)
 {
-    s->u[p] = av_calloc(s->uv_linesize[p] * s->pr_height[p], sizeof_uv);
-    s->v[p] = av_calloc(s->uv_linesize[p] * s->pr_height[p], sizeof_uv);
+    if (!s->u[p])
+        s->u[p] = av_calloc(s->uv_linesize[p] * s->pr_height[p], sizeof_uv);
+    if (!s->v[p])
+        s->v[p] = av_calloc(s->uv_linesize[p] * s->pr_height[p], sizeof_uv);
     if (!s->u[p] || !s->v[p])
         return AVERROR(ENOMEM);
     if (sizeof_ker) {
-        s->ker[p] = av_calloc(s->uv_linesize[p] * s->pr_height[p], sizeof_ker);
+        if (!s->ker[p])
+            s->ker[p] = av_calloc(s->uv_linesize[p] * s->pr_height[p], sizeof_ker);
         if (!s->ker[p])
             return AVERROR(ENOMEM);
     }
 
     if (sizeof_mask && !p) {
-        s->mask = av_calloc(s->pr_width[p] * s->pr_height[p], sizeof_mask);
+        if (!s->mask)
+            s->mask = av_calloc(s->pr_width[p] * s->pr_height[p], sizeof_mask);
         if (!s->mask)
             return AVERROR(ENOMEM);
     }
@@ -3104,18 +3648,27 @@ static int allocate_plane(V360Context *s, int sizeof_uv, int sizeof_ker, int siz
 static void fov_from_dfov(int format, float d_fov, float w, float h, float *h_fov, float *v_fov)
 {
     switch (format) {
+    case STEREOGRAPHIC:
+        {
+            const float d = 0.5f * hypotf(w, h);
+            const float l = d / (tanf(d_fov * M_PI / 720.f));
+
+            *h_fov = 2.f * atan2f(w * 0.5f, l) * 360.f / M_PI;
+            *v_fov = 2.f * atan2f(h * 0.5f, l) * 360.f / M_PI;
+        }
+        break;
     case FISHEYE:
         {
             const float d = 0.5f * hypotf(w, h);
 
-            *h_fov = d / h * d_fov;
-            *v_fov = d / w * d_fov;
+            *h_fov = d / w * d_fov;
+            *v_fov = d / h * d_fov;
         }
         break;
     case FLAT:
     default:
         {
-            const float da = tanf(0.5 * FFMIN(d_fov, 359.f) * M_PI / 180.f);
+            const float da = tanf(0.5f * FFMIN(d_fov, 359.f) * M_PI / 180.f);
             const float d = hypotf(w, h);
 
             *h_fov = atan2f(da * w, d) * 360.f / M_PI;
@@ -3232,6 +3785,13 @@ static int config_output(AVFilterLink *outlink)
         sizeof_uv = sizeof(int16_t) * s->elements;
         sizeof_ker = sizeof(int16_t) * s->elements;
         break;
+    case LAGRANGE9:
+        s->calculate_kernel = lagrange_kernel;
+        s->remap_slice = depth <= 8 ? remap3_8bit_slice : remap3_16bit_slice;
+        s->elements = 3 * 3;
+        sizeof_uv = sizeof(int16_t) * s->elements;
+        sizeof_ker = sizeof(int16_t) * s->elements;
+        break;
     case BICUBIC:
         s->calculate_kernel = bicubic_kernel;
         s->remap_slice = depth <= 8 ? remap4_8bit_slice : remap4_16bit_slice;
@@ -3271,16 +3831,22 @@ static int config_output(AVFilterLink *outlink)
         int rorder;
 
         if (c == '\0') {
-            av_log(ctx, AV_LOG_ERROR,
-                   "Incomplete rorder option. Direction for all 3 rotation orders should be specified.\n");
-            return AVERROR(EINVAL);
+            av_log(ctx, AV_LOG_WARNING,
+                   "Incomplete rorder option. Direction for all 3 rotation orders should be specified. Switching to default rorder.\n");
+            s->rotation_order[0] = YAW;
+            s->rotation_order[1] = PITCH;
+            s->rotation_order[2] = ROLL;
+            break;
         }
 
         rorder = get_rorder(c);
         if (rorder == -1) {
-            av_log(ctx, AV_LOG_ERROR,
-                   "Incorrect rotation order symbol '%c' in rorder option.\n", c);
-            return AVERROR(EINVAL);
+            av_log(ctx, AV_LOG_WARNING,
+                   "Incorrect rotation order symbol '%c' in rorder option. Switching to default rorder.\n", c);
+            s->rotation_order[0] = YAW;
+            s->rotation_order[1] = PITCH;
+            s->rotation_order[2] = ROLL;
+            break;
         }
 
         s->rotation_order[order] = rorder;
@@ -3358,7 +3924,6 @@ static int config_output(AVFilterLink *outlink)
         hf = h;
         break;
     case PERSPECTIVE:
-    case PANNINI:
         av_log(ctx, AV_LOG_ERROR, "Supplied format is not accepted as input.\n");
         return AVERROR(EINVAL);
     case DUAL_FISHEYE:
@@ -3409,6 +3974,12 @@ static int config_output(AVFilterLink *outlink)
         wf = w * 2;
         hf = h;
         break;
+    case PANNINI:
+        s->in_transform = xyz_to_pannini;
+        err = 0;
+        wf = w;
+        hf = h;
+        break;
     case CYLINDRICAL:
         s->in_transform = xyz_to_cylindrical;
         err = prepare_cylindrical_in(ctx);
@@ -3419,6 +3990,24 @@ static int config_output(AVFilterLink *outlink)
         s->in_transform = xyz_to_tetrahedron;
         err = 0;
         wf = w;
+        hf = h;
+        break;
+    case BARREL_SPLIT:
+        s->in_transform = xyz_to_barrelsplit;
+        err = 0;
+        wf = w * 4.f / 3.f;
+        hf = h;
+        break;
+    case TSPYRAMID:
+        s->in_transform = xyz_to_tspyramid;
+        err = 0;
+        wf = w;
+        hf = h;
+        break;
+    case HEQUIRECTANGULAR:
+        s->in_transform = xyz_to_hequirect;
+        err = 0;
+        wf = w * 2.f;
         hf = h;
         break;
     default:
@@ -3539,13 +4128,39 @@ static int config_output(AVFilterLink *outlink)
         w = lrintf(wf);
         h = lrintf(hf);
         break;
+    case BARREL_SPLIT:
+        s->out_transform = barrelsplit_to_xyz;
+        prepare_out = NULL;
+        w = lrintf(wf / 4.f * 3.f);
+        h = lrintf(hf);
+        break;
+    case TSPYRAMID:
+        s->out_transform = tspyramid_to_xyz;
+        prepare_out = NULL;
+        w = lrintf(wf);
+        h = lrintf(hf);
+        break;
+    case HEQUIRECTANGULAR:
+        s->out_transform = hequirect_to_xyz;
+        prepare_out = NULL;
+        w = lrintf(wf / 2.f);
+        h = lrintf(hf);
+        break;
     default:
         av_log(ctx, AV_LOG_ERROR, "Specified output format is not handled.\n");
         return AVERROR_BUG;
     }
 
     // Override resolution with user values if specified
-    if (s->width > 0 && s->height > 0) {
+    if (s->width > 0 && s->height <= 0 && s->h_fov > 0.f && s->v_fov > 0.f &&
+        s->out == FLAT && s->d_fov == 0.f) {
+        w = s->width;
+        h = w / tanf(s->h_fov * M_PI / 360.f) * tanf(s->v_fov * M_PI / 360.f);
+    } else if (s->width <= 0 && s->height > 0 && s->h_fov > 0.f && s->v_fov > 0.f &&
+        s->out == FLAT && s->d_fov == 0.f) {
+        h = s->height;
+        w = h / tanf(s->v_fov * M_PI / 360.f) * tanf(s->h_fov * M_PI / 360.f);
+    } else if (s->width > 0 && s->height > 0) {
         w = s->width;
         h = s->height;
     } else if (s->width > 0 || s->height > 0) {
@@ -3559,6 +4174,9 @@ static int config_output(AVFilterLink *outlink)
             FFSWAP(int, w, h);
     }
 
+    s->width  = w;
+    s->height = h;
+
     if (s->d_fov > 0.f)
         fov_from_dfov(s->out, s->d_fov, w, h, &s->h_fov, &s->v_fov);
 
@@ -3569,12 +4187,6 @@ static int config_output(AVFilterLink *outlink)
     }
 
     set_dimensions(s->pr_width, s->pr_height, w, h, desc);
-
-    s->out_width = s->pr_width[0];
-    s->out_height = s->pr_height[0];
-
-    if (s->out_transpose)
-        FFSWAP(int, s->out_width, s->out_height);
 
     switch (s->out_stereo) {
     case STEREO_2D:
@@ -3650,6 +4262,18 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     return ff_filter_frame(outlink, out);
 }
 
+static int process_command(AVFilterContext *ctx, const char *cmd, const char *args,
+                           char *res, int res_len, int flags)
+{
+    int ret;
+
+    ret = ff_filter_process_command(ctx, cmd, args, res, res_len, flags);
+    if (ret < 0)
+        return ret;
+
+    return config_output(ctx->outputs[0]);
+}
+
 static av_cold void uninit(AVFilterContext *ctx)
 {
     V360Context *s = ctx->priv;
@@ -3690,4 +4314,5 @@ AVFilter ff_vf_v360 = {
     .outputs       = outputs,
     .priv_class    = &v360_class,
     .flags         = AVFILTER_FLAG_SLICE_THREADS,
+    .process_command = process_command,
 };

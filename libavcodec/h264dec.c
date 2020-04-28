@@ -30,7 +30,6 @@
 #include "libavutil/imgutils.h"
 #include "libavutil/opt.h"
 #include "libavutil/stereo3d.h"
-#include "libavutil/timer.h"
 #include "internal.h"
 #include "bytestream.h"
 #include "cabac.h"
@@ -45,7 +44,7 @@
 #include "h264_mvpred.h"
 #include "h264_ps.h"
 #include "golomb.h"
-#include "hwaccel.h"
+#include "hwconfig.h"
 #include "mathops.h"
 #include "me_cmp.h"
 #include "mpegutils.h"
@@ -308,7 +307,6 @@ static int h264_init_context(AVCodecContext *avctx, H264Context *h)
     h->width_from_caller     = avctx->width;
     h->height_from_caller    = avctx->height;
 
-    h->picture_structure     = PICT_FRAME;
     h->workaround_bugs       = avctx->workaround_bugs;
     h->flags                 = avctx->flags;
     h->poc.prev_poc_msb      = 1 << 16;
@@ -323,8 +321,6 @@ static int h264_init_context(AVCodecContext *avctx, H264Context *h)
         h->last_pocs[i] = INT_MIN;
 
     ff_h264_sei_uninit(&h->sei);
-
-    avctx->chroma_sample_location = AVCHROMA_LOC_LEFT;
 
     h->nb_slice_ctx = (avctx->active_thread_type & FF_THREAD_SLICE) ? avctx->thread_count : 1;
     h->slice_ctx = av_mallocz_array(h->nb_slice_ctx, sizeof(*h->slice_ctx));
@@ -410,13 +406,21 @@ static av_cold int h264_decode_init(AVCodecContext *avctx)
     }
     avctx->ticks_per_frame = 2;
 
-    if (avctx->extradata_size > 0 && avctx->extradata) {
-        ret = ff_h264_decode_extradata(avctx->extradata, avctx->extradata_size,
-                                       &h->ps, &h->is_avc, &h->nal_length_size,
-                                       avctx->err_recognition, avctx);
-        if (ret < 0) {
-            h264_decode_end(avctx);
-            return ret;
+    if (!avctx->internal->is_copy) {
+        if (avctx->extradata_size > 0 && avctx->extradata) {
+            ret = ff_h264_decode_extradata(avctx->extradata, avctx->extradata_size,
+                                           &h->ps, &h->is_avc, &h->nal_length_size,
+                                           avctx->err_recognition, avctx);
+           if (ret < 0) {
+               int explode = avctx->err_recognition & AV_EF_EXPLODE;
+               av_log(avctx, explode ? AV_LOG_ERROR: AV_LOG_WARNING,
+                      "Error decoding the extradata\n");
+               if (explode) {
+                   h264_decode_end(avctx);
+                   return ret;
+               }
+               ret = 0;
+           }
         }
     }
 
@@ -424,8 +428,6 @@ static av_cold int h264_decode_init(AVCodecContext *avctx)
         h->avctx->has_b_frames < h->ps.sps->num_reorder_frames) {
         h->avctx->has_b_frames = h->ps.sps->num_reorder_frames;
     }
-
-    avctx->internal->allocate_progress = 1;
 
     ff_h264_flush_change(h);
 
@@ -440,27 +442,6 @@ static av_cold int h264_decode_init(AVCodecContext *avctx)
 
     return 0;
 }
-
-#if HAVE_THREADS
-static int decode_init_thread_copy(AVCodecContext *avctx)
-{
-    H264Context *h = avctx->priv_data;
-    int ret;
-
-    if (!avctx->internal->is_copy)
-        return 0;
-
-    memset(h, 0, sizeof(*h));
-
-    ret = h264_init_context(avctx, h);
-    if (ret < 0)
-        return ret;
-
-    h->context_initialized = 0;
-
-    return 0;
-}
-#endif
 
 /**
  * instantaneous decoder refresh.
@@ -503,8 +484,7 @@ void ff_h264_flush_change(H264Context *h)
     h->mmco_reset = 1;
 }
 
-/* forget old pics after a seek */
-static void flush_dpb(AVCodecContext *avctx)
+static void h264_decode_flush(AVCodecContext *avctx)
 {
     H264Context *h = avctx->priv_data;
     int i;
@@ -780,9 +760,7 @@ end:
      * past end by one (callers fault) and resync_mb_y != 0
      * causes problems for the first MB line, too.
      */
-    if (!FIELD_PICTURE(h) && h->current_slice &&
-        h->ps.sps == (const SPS*)h->ps.sps_list[h->ps.pps->sps_id]->data &&
-        h->enable_er) {
+    if (!FIELD_PICTURE(h) && h->current_slice && h->enable_er) {
 
         H264SliceContext *sl = h->slice_ctx;
         int use_last_pic = h->last_pic_for_ec.f->buf[0] && !sl->ref_count[0];
@@ -1085,9 +1063,9 @@ AVCodec ff_h264_decoder = {
 #endif
                                NULL
                            },
-    .caps_internal         = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_EXPORTS_CROPPING,
-    .flush                 = flush_dpb,
-    .init_thread_copy      = ONLY_IF_THREADS_ENABLED(decode_init_thread_copy),
+    .caps_internal         = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_EXPORTS_CROPPING |
+                             FF_CODEC_CAP_ALLOCATE_PROGRESS,
+    .flush                 = h264_decode_flush,
     .update_thread_context = ONLY_IF_THREADS_ENABLED(ff_h264_update_thread_context),
     .profiles              = NULL_IF_CONFIG_SMALL(ff_h264_profiles),
     .priv_class            = &h264_class,

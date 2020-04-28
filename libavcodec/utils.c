@@ -44,7 +44,7 @@
 #include "libavutil/thread.h"
 #include "avcodec.h"
 #include "decode.h"
-#include "hwaccel.h"
+#include "hwconfig.h"
 #include "libavutil/opt.h"
 #include "mpegvideo.h"
 #include "thread.h"
@@ -583,12 +583,6 @@ int attribute_align_arg avcodec_open2(AVCodecContext *avctx, const AVCodec *code
     }
     avctx->internal = avci;
 
-    avci->pool = av_mallocz(sizeof(*avci->pool));
-    if (!avci->pool) {
-        ret = AVERROR(ENOMEM);
-        goto free_and_end;
-    }
-
     avci->to_free = av_frame_alloc();
     if (!avci->to_free) {
         ret = AVERROR(ENOMEM);
@@ -947,6 +941,9 @@ FF_ENABLE_DEPRECATION_WARNINGS
         && avctx->codec_descriptor->type == AVMEDIA_TYPE_VIDEO)
         av_log(avctx, AV_LOG_WARNING,
                "gray decoding requested but not enabled at configuration time\n");
+    if (avctx->flags2 & AV_CODEC_FLAG2_EXPORT_MVS) {
+        avctx->export_side_data |= AV_CODEC_EXPORT_DATA_MVS;
+    }
 
     if (   avctx->codec->init && (!(avctx->active_thread_type&FF_THREAD_FRAME)
         || avci->frame_thread_encoder)) {
@@ -1073,7 +1070,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
         av_packet_free(&avci->ds.in_pkt);
         ff_decode_bsfs_uninit(avctx);
 
-        av_freep(&avci->pool);
+        av_buffer_unref(&avci->pool);
     }
     av_freep(&avci);
     avctx->internal = NULL;
@@ -1108,7 +1105,6 @@ av_cold int avcodec_close(AVCodecContext *avctx)
         return 0;
 
     if (avcodec_is_open(avctx)) {
-        FramePool *pool = avctx->internal->pool;
         if (CONFIG_FRAME_THREAD_ENCODER &&
             avctx->internal->frame_thread_encoder && avctx->thread_count > 1) {
             ff_frame_thread_encoder_free(avctx);
@@ -1127,9 +1123,7 @@ av_cold int avcodec_close(AVCodecContext *avctx)
 
         av_packet_free(&avctx->internal->ds.in_pkt);
 
-        for (i = 0; i < FF_ARRAY_ELEMS(pool->pools); i++)
-            av_buffer_pool_uninit(&pool->pools[i]);
-        av_freep(&avctx->internal->pool);
+        av_buffer_unref(&avctx->internal->pool);
 
         if (avctx->hwaccel && avctx->hwaccel->uninit)
             avctx->hwaccel->uninit(avctx);
@@ -1475,6 +1469,7 @@ int av_get_exact_bits_per_sample(enum AVCodecID codec_id)
     case AV_CODEC_ID_PCM_S8_PLANAR:
     case AV_CODEC_ID_PCM_U8:
     case AV_CODEC_ID_SDX2_DPCM:
+    case AV_CODEC_ID_DERF_DPCM:
         return 8;
     case AV_CODEC_ID_PCM_S16BE:
     case AV_CODEC_ID_PCM_S16BE_PLANAR:
@@ -1977,6 +1972,11 @@ AVCPBProperties *ff_add_cpb_side_data(AVCodecContext *avctx)
     AVPacketSideData *tmp;
     AVCPBProperties  *props;
     size_t size;
+    int i;
+
+    for (i = 0; i < avctx->nb_coded_side_data; i++)
+        if (avctx->coded_side_data[i].type == AV_PKT_DATA_CPB_PROPERTIES)
+            return (AVCPBProperties *)avctx->coded_side_data[i].data;
 
     props = av_cpb_properties_alloc(&size);
     if (!props)

@@ -390,32 +390,28 @@ int ff_vk_add_exec_dep(AVFilterContext *avctx, FFVkExecContext *e,
                        AVFrame *frame, VkPipelineStageFlagBits in_wait_dst_flag)
 {
     AVVkFrame *f = (AVVkFrame *)frame->data[0];
-    AVHWFramesContext *fc = (AVHWFramesContext *)frame->hw_frames_ctx->data;
-    int planes = av_pix_fmt_count_planes(fc->sw_format);
 
-    for (int i = 0; i < planes; i++) {
-        e->sem_wait = av_fast_realloc(e->sem_wait, &e->sem_wait_alloc,
-                                      (e->sem_wait_cnt + 1)*sizeof(*e->sem_wait));
-        if (!e->sem_wait)
-            return AVERROR(ENOMEM);
+    e->sem_wait = av_fast_realloc(e->sem_wait, &e->sem_wait_alloc,
+                                  (e->sem_wait_cnt + 1)*sizeof(*e->sem_wait));
+    if (!e->sem_wait)
+        return AVERROR(ENOMEM);
 
-        e->sem_wait_dst = av_fast_realloc(e->sem_wait_dst, &e->sem_wait_dst_alloc,
-                                          (e->sem_wait_cnt + 1)*sizeof(*e->sem_wait_dst));
-        if (!e->sem_wait_dst)
-            return AVERROR(ENOMEM);
+    e->sem_wait_dst = av_fast_realloc(e->sem_wait_dst, &e->sem_wait_dst_alloc,
+                                      (e->sem_wait_cnt + 1)*sizeof(*e->sem_wait_dst));
+    if (!e->sem_wait_dst)
+        return AVERROR(ENOMEM);
 
-        e->sem_sig = av_fast_realloc(e->sem_sig, &e->sem_sig_alloc,
-                                     (e->sem_sig_cnt + 1)*sizeof(*e->sem_sig));
-        if (!e->sem_sig)
-            return AVERROR(ENOMEM);
+    e->sem_sig = av_fast_realloc(e->sem_sig, &e->sem_sig_alloc,
+                                 (e->sem_sig_cnt + 1)*sizeof(*e->sem_sig));
+    if (!e->sem_sig)
+        return AVERROR(ENOMEM);
 
-        e->sem_wait[e->sem_wait_cnt] = f->sem[i];
-        e->sem_wait_dst[e->sem_wait_cnt] = in_wait_dst_flag;
-        e->sem_wait_cnt++;
+    e->sem_wait[e->sem_wait_cnt] = f->sem;
+    e->sem_wait_dst[e->sem_wait_cnt] = in_wait_dst_flag;
+    e->sem_wait_cnt++;
 
-        e->sem_sig[e->sem_sig_cnt] = f->sem[i];
-        e->sem_sig_cnt++;
-    }
+    e->sem_sig[e->sem_sig_cnt] = f->sem;
+    e->sem_sig_cnt++;
 
     return 0;
 }
@@ -664,6 +660,18 @@ VkSampler *ff_vk_init_sampler(AVFilterContext *avctx, int unnorm_coords,
     }
 
     return sampler;
+}
+
+int ff_vk_mt_is_np_rgb(enum AVPixelFormat pix_fmt)
+{
+    if (pix_fmt == AV_PIX_FMT_ABGR   || pix_fmt == AV_PIX_FMT_BGRA   ||
+        pix_fmt == AV_PIX_FMT_RGBA   || pix_fmt == AV_PIX_FMT_RGB24  ||
+        pix_fmt == AV_PIX_FMT_BGR24  || pix_fmt == AV_PIX_FMT_RGB48  ||
+        pix_fmt == AV_PIX_FMT_RGBA64 || pix_fmt == AV_PIX_FMT_RGB565 ||
+        pix_fmt == AV_PIX_FMT_BGR565 || pix_fmt == AV_PIX_FMT_BGR0   ||
+        pix_fmt == AV_PIX_FMT_0BGR   || pix_fmt == AV_PIX_FMT_RGB0)
+        return 1;
+    return 0;
 }
 
 const char *ff_vk_shader_rep_fmt(enum AVPixelFormat pixfmt)

@@ -6,12 +6,15 @@ HEADERS = ac3_parser.h                                                  \
           avcodec.h                                                     \
           avdct.h                                                       \
           avfft.h                                                       \
+          codec_desc.h                                                  \
+          codec_id.h                                                    \
           d3d11va.h                                                     \
           dirac.h                                                       \
           dv_profile.h                                                  \
           dxva2.h                                                       \
           jni.h                                                         \
           mediacodec.h                                                  \
+          packet.h                                                      \
           qsv.h                                                         \
           vaapi.h                                                       \
           vdpau.h                                                       \
@@ -265,6 +268,7 @@ OBJS-$(CONFIG_DCA_DECODER)             += dcadec.o dca.o dcadata.o dcahuff.o \
 OBJS-$(CONFIG_DCA_ENCODER)             += dcaenc.o dca.o dcadata.o dcahuff.o \
                                           dcaadpcm.o
 OBJS-$(CONFIG_DDS_DECODER)             += dds.o
+OBJS-$(CONFIG_DERF_DPCM_DECODER)       += dpcm.o
 OBJS-$(CONFIG_DIRAC_DECODER)           += diracdec.o dirac.o diracdsp.o diractab.o \
                                           dirac_arith.o dirac_dwt.o dirac_vlc.o
 OBJS-$(CONFIG_DFA_DECODER)             += dfa.o
@@ -366,6 +370,7 @@ OBJS-$(CONFIG_H264_V4L2M2M_DECODER)    += v4l2_m2m_dec.o
 OBJS-$(CONFIG_H264_V4L2M2M_ENCODER)    += v4l2_m2m_enc.o
 OBJS-$(CONFIG_HAP_DECODER)             += hapdec.o hap.o
 OBJS-$(CONFIG_HAP_ENCODER)             += hapenc.o hap.o
+OBJS-$(CONFIG_HCA_DECODER)             += hcadec.o
 OBJS-$(CONFIG_HCOM_DECODER)            += hcom.o
 OBJS-$(CONFIG_HEVC_DECODER)            += hevcdec.o hevc_mvs.o \
                                           hevc_cabac.o hevc_refs.o hevcpred.o    \
@@ -492,6 +497,7 @@ OBJS-$(CONFIG_MSVIDEO1_DECODER)        += msvideo1.o
 OBJS-$(CONFIG_MSVIDEO1_ENCODER)        += msvideo1enc.o elbg.o
 OBJS-$(CONFIG_MSZH_DECODER)            += lcldec.o
 OBJS-$(CONFIG_MTS2_DECODER)            += mss4.o
+OBJS-$(CONFIG_MV30_DECODER)            += mv30.o
 OBJS-$(CONFIG_MVC1_DECODER)            += mvcdec.o
 OBJS-$(CONFIG_MVC2_DECODER)            += mvcdec.o
 OBJS-$(CONFIG_MVDV_DECODER)            += midivid.o
@@ -584,6 +590,7 @@ OBJS-$(CONFIG_SIPR_DECODER)            += sipr.o acelp_pitch_delay.o \
                                           celp_math.o acelp_vectors.o \
                                           acelp_filters.o celp_filters.o \
                                           sipr16k.o
+OBJS-$(CONFIG_SIREN_DECODER)           += siren.o
 OBJS-$(CONFIG_SMACKAUD_DECODER)        += smacker.o
 OBJS-$(CONFIG_SMACKER_DECODER)         += smacker.o
 OBJS-$(CONFIG_SMC_DECODER)             += smc.o
@@ -692,7 +699,7 @@ OBJS-$(CONFIG_VP9_QSV_ENCODER)         += qsvenc_vp9.o
 OBJS-$(CONFIG_VPLAYER_DECODER)         += textdec.o ass.o
 OBJS-$(CONFIG_VP9_V4L2M2M_DECODER)     += v4l2_m2m_dec.o
 OBJS-$(CONFIG_VQA_DECODER)             += vqavideo.o
-OBJS-$(CONFIG_WAVPACK_DECODER)         += wavpack.o
+OBJS-$(CONFIG_WAVPACK_DECODER)         += wavpack.o dsd.o
 OBJS-$(CONFIG_WAVPACK_ENCODER)         += wavpackenc.o
 OBJS-$(CONFIG_WCMV_DECODER)            += wcmv.o
 OBJS-$(CONFIG_WEBP_DECODER)            += webp.o
@@ -833,13 +840,17 @@ OBJS-$(CONFIG_ADPCM_G726_ENCODER)         += g726.o
 OBJS-$(CONFIG_ADPCM_G726LE_DECODER)       += g726.o
 OBJS-$(CONFIG_ADPCM_G726LE_ENCODER)       += g726.o
 OBJS-$(CONFIG_ADPCM_IMA_AMV_DECODER)      += adpcm.o adpcm_data.o
+OBJS-$(CONFIG_ADPCM_IMA_ALP_DECODER)      += adpcm.o adpcm_data.o
 OBJS-$(CONFIG_ADPCM_IMA_APC_DECODER)      += adpcm.o adpcm_data.o
+OBJS-$(CONFIG_ADPCM_IMA_APM_DECODER)      += adpcm.o adpcm_data.o
+OBJS-$(CONFIG_ADPCM_IMA_CUNNING_DECODER)  += adpcm.o adpcm_data.o
 OBJS-$(CONFIG_ADPCM_IMA_DAT4_DECODER)     += adpcm.o adpcm_data.o
 OBJS-$(CONFIG_ADPCM_IMA_DK3_DECODER)      += adpcm.o adpcm_data.o
 OBJS-$(CONFIG_ADPCM_IMA_DK4_DECODER)      += adpcm.o adpcm_data.o
 OBJS-$(CONFIG_ADPCM_IMA_EA_EACS_DECODER)  += adpcm.o adpcm_data.o
 OBJS-$(CONFIG_ADPCM_IMA_EA_SEAD_DECODER)  += adpcm.o adpcm_data.o
 OBJS-$(CONFIG_ADPCM_IMA_ISS_DECODER)      += adpcm.o adpcm_data.o
+OBJS-$(CONFIG_ADPCM_IMA_MTF_DECODER)      += adpcm.o adpcm_data.o
 OBJS-$(CONFIG_ADPCM_IMA_OKI_DECODER)      += adpcm.o adpcm_data.o
 OBJS-$(CONFIG_ADPCM_IMA_QT_DECODER)       += adpcm.o adpcm_data.o
 OBJS-$(CONFIG_ADPCM_IMA_QT_ENCODER)       += adpcmenc.o adpcm_data.o
@@ -887,7 +898,7 @@ OBJS-$(CONFIG_HEVC_D3D11VA_HWACCEL)       += dxva2_hevc.o
 OBJS-$(CONFIG_HEVC_DXVA2_HWACCEL)         += dxva2_hevc.o
 OBJS-$(CONFIG_HEVC_NVDEC_HWACCEL)         += nvdec_hevc.o
 OBJS-$(CONFIG_HEVC_QSV_HWACCEL)           += qsvdec_h2645.o
-OBJS-$(CONFIG_HEVC_VAAPI_HWACCEL)         += vaapi_hevc.o
+OBJS-$(CONFIG_HEVC_VAAPI_HWACCEL)         += vaapi_hevc.o h265_profile_level.o
 OBJS-$(CONFIG_HEVC_VDPAU_HWACCEL)         += vdpau_hevc.o
 OBJS-$(CONFIG_MJPEG_NVDEC_HWACCEL)        += nvdec_mjpeg.o
 OBJS-$(CONFIG_MJPEG_VAAPI_HWACCEL)        += vaapi_mjpeg.o
@@ -1057,7 +1068,6 @@ OBJS-$(CONFIG_MLP_PARSER)              += mlp_parse.o mlp_parser.o mlp.o
 OBJS-$(CONFIG_MPEG4VIDEO_PARSER)       += mpeg4video_parser.o h263.o \
                                           mpeg4videodec.o mpeg4video.o \
                                           ituh263dec.o h263dec.o h263data.o
-OBJS-$(CONFIG_PNG_PARSER)              += png_parser.o
 OBJS-$(CONFIG_MPEGAUDIO_PARSER)        += mpegaudio_parser.o
 OBJS-$(CONFIG_MPEGVIDEO_PARSER)        += mpegvideo_parser.o    \
                                           mpeg12.o mpeg12data.o
@@ -1075,6 +1085,7 @@ OBJS-$(CONFIG_VC1_PARSER)              += vc1_parser.o vc1.o vc1data.o  \
 OBJS-$(CONFIG_VP3_PARSER)              += vp3_parser.o
 OBJS-$(CONFIG_VP8_PARSER)              += vp8_parser.o
 OBJS-$(CONFIG_VP9_PARSER)              += vp9_parser.o
+OBJS-$(CONFIG_WEBP_PARSER)             += webp_parser.o
 OBJS-$(CONFIG_XMA_PARSER)              += xma_parser.o
 
 # bitstream filters

@@ -21,6 +21,7 @@
 
 #include "avformat.h"
 #include "internal.h"
+#include "rawenc.h"
 
 static const char mode20_header[] = "#!iLBC20\n";
 static const char mode30_header[] = "#!iLBC30\n";
@@ -49,12 +50,6 @@ static int ilbc_write_header(AVFormatContext *s)
         av_log(s, AV_LOG_ERROR, "Unsupported mode\n");
         return AVERROR(EINVAL);
     }
-    return 0;
-}
-
-static int ilbc_write_packet(AVFormatContext *s, AVPacket *pkt)
-{
-    avio_write(s->pb, pkt->data, pkt->size);
     return 0;
 }
 
@@ -126,6 +121,7 @@ AVInputFormat ff_ilbc_demuxer = {
     .flags        = AVFMT_GENERIC_INDEX,
 };
 
+#if CONFIG_ILBC_MUXER
 AVOutputFormat ff_ilbc_muxer = {
     .name         = "ilbc",
     .long_name    = NULL_IF_CONFIG_SMALL("iLBC storage"),
@@ -133,6 +129,7 @@ AVOutputFormat ff_ilbc_muxer = {
     .extensions   = "lbc",
     .audio_codec  = AV_CODEC_ID_ILBC,
     .write_header = ilbc_write_header,
-    .write_packet = ilbc_write_packet,
+    .write_packet = ff_raw_write_packet,
     .flags        = AVFMT_NOTIMESTAMPS,
 };
+#endif

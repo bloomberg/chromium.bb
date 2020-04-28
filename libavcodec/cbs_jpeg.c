@@ -34,7 +34,7 @@
 #define SUBSCRIPTS(subs, ...) (subs > 0 ? ((int[subs + 1]){ subs, __VA_ARGS__ }) : NULL)
 
 #define u(width, name, range_min, range_max) \
-    xu(width, name, range_min, range_max, 0)
+    xu(width, name, range_min, range_max, 0, )
 #define us(width, name, sub, range_min, range_max) \
     xu(width, name, range_min, range_max, 1, sub)
 
@@ -196,6 +196,9 @@ static int cbs_jpeg_split_fragment(CodedBitstreamContext *ctx,
 
         if (marker == JPEG_MARKER_SOS) {
             length = AV_RB16(frag->data + start);
+
+            if (length > end - start)
+                return AVERROR_INVALIDDATA;
 
             data_ref = NULL;
             data     = av_malloc(end - start +

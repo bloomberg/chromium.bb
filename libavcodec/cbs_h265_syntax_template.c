@@ -601,6 +601,8 @@ static int FUNC(st_ref_pic_set)(CodedBitstreamContext *ctx, RWContext *rw,
             }
         }
 
+        if (i > 15)
+            return AVERROR_INVALIDDATA;
         infer(num_negative_pics, i);
         for (i = 0; i < current->num_negative_pics; i++) {
             infer(delta_poc_s0_minus1[i],
@@ -630,6 +632,8 @@ static int FUNC(st_ref_pic_set)(CodedBitstreamContext *ctx, RWContext *rw,
             }
         }
 
+        if (i + current->num_negative_pics > 15)
+            return AVERROR_INVALIDDATA;
         infer(num_positive_pics, i);
         for (i = 0; i < current->num_positive_pics; i++) {
             infer(delta_poc_s1_minus1[i],
@@ -1275,7 +1279,7 @@ static int FUNC(slice_segment_header)(CodedBitstreamContext *ctx, RWContext *rw,
     flag(first_slice_segment_in_pic_flag);
 
     if (current->nal_unit_header.nal_unit_type >= HEVC_NAL_BLA_W_LP &&
-        current->nal_unit_header.nal_unit_type <= HEVC_NAL_IRAP_VCL23)
+        current->nal_unit_header.nal_unit_type <= HEVC_NAL_RSV_IRAP_VCL23)
         flag(no_output_of_prior_pics_flag);
 
     ue(slice_pic_parameter_set_id, 0, 63);

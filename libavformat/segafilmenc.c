@@ -155,7 +155,6 @@ static int get_audio_codec_id(enum AVCodecID codec_id)
 
 static int film_init(AVFormatContext *format_context)
 {
-    AVStream *audio = NULL;
     FILMOutputContext *film = format_context->priv_data;
     film->audio_index = -1;
     film->video_index = -1;
@@ -171,8 +170,12 @@ static int film_init(AVFormatContext *format_context)
                 av_log(format_context, AV_LOG_ERROR, "Sega FILM allows a maximum of one audio stream.\n");
                 return AVERROR(EINVAL);
             }
+            if (get_audio_codec_id(st->codecpar->codec_id) < 0) {
+                av_log(format_context, AV_LOG_ERROR,
+                       "Incompatible audio stream format.\n");
+                return AVERROR(EINVAL);
+            }
             film->audio_index = i;
-            audio = st;
         }
 
         if (st->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
@@ -197,11 +200,6 @@ static int film_init(AVFormatContext *format_context)
 
     if (film->video_index == -1) {
         av_log(format_context, AV_LOG_ERROR, "No video stream present.\n");
-        return AVERROR(EINVAL);
-    }
-
-    if (audio != NULL && get_audio_codec_id(audio->codecpar->codec_id) < 0) {
-        av_log(format_context, AV_LOG_ERROR, "Incompatible audio stream format.\n");
         return AVERROR(EINVAL);
     }
 
@@ -269,11 +267,9 @@ static int film_write_header(AVFormatContext *format_context)
 {
     int ret = 0;
     int64_t sample_table_size, stabsize, headersize;
-    int8_t audio_codec;
     AVIOContext *pb = format_context->pb;
     FILMOutputContext *film = format_context->priv_data;
     FILMPacket *prev, *packet;
-    AVStream *audio = NULL;
     AVStream *video = NULL;
 
     /* Calculate how much we need to reserve for the header;
@@ -290,19 +286,6 @@ static int film_write_header(AVFormatContext *format_context)
     /* Seek back to the beginning to start writing the header now */
     avio_seek(pb, 0, SEEK_SET);
 
-    if (film->audio_index > -1)
-        audio = format_context->streams[film->audio_index];
-    if (film->video_index > -1)
-        video = format_context->streams[film->video_index];
-
-    if (audio != NULL) {
-        audio_codec = get_audio_codec_id(audio->codecpar->codec_id);
-        if (audio_codec < 0) {
-            av_log(format_context, AV_LOG_ERROR, "Incompatible audio stream format.\n");
-            return AVERROR(EINVAL);
-        }
-    }
-
     /* First, write the FILM header; this is very simple */
 
     ffio_wfourcc(pb, "FILM");
@@ -316,6 +299,8 @@ static int film_write_header(AVFormatContext *format_context)
     /* Next write the FDSC (file description) chunk */
     ffio_wfourcc(pb, "FDSC");
     avio_wb32(pb, 0x20); /* Size of FDSC chunk */
+
+    video = format_context->streams[film->video_index];
 
     /* The only two supported codecs; raw video is rare */
     switch (video->codecpar->codec_id) {
@@ -331,7 +316,10 @@ static int film_write_header(AVFormatContext *format_context)
     avio_wb32(pb, video->codecpar->width);
     avio_w8(pb, 24); /* Bits per pixel - observed to always be 24 */
 
-    if (audio != NULL) {
+    if (film->audio_index > -1) {
+        AVStream *audio = format_context->streams[film->audio_index];
+        int audio_codec = get_audio_codec_id(audio->codecpar->codec_id);
+
         avio_w8(pb, audio->codecpar->channels); /* Audio channels */
         avio_w8(pb, audio->codecpar->bits_per_coded_sample); /* Audio bit depth */
         avio_w8(pb, audio_codec); /* Compression - 0 is PCM, 2 is ADX */
@@ -372,8 +360,21 @@ static int film_write_header(AVFormatContext *format_context)
         packet = packet->next;
         av_freep(&prev);
     }
+    film->start = film->last = NULL;
 
     return 0;
+}
+
+static void film_deinit(AVFormatContext *format_context)
+{
+    FILMOutputContext *film = format_context->priv_data;
+    FILMPacket *packet = film->start;
+    while (packet != NULL) {
+        FILMPacket *next = packet->next;
+        av_free(packet);
+        packet = next;
+    }
+    film->start = film->last = NULL;
 }
 
 AVOutputFormat ff_segafilm_muxer = {
@@ -386,4 +387,5 @@ AVOutputFormat ff_segafilm_muxer = {
     .init           = film_init,
     .write_trailer  = film_write_header,
     .write_packet   = film_write_packet,
+    .deinit         = film_deinit,
 };

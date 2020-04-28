@@ -237,7 +237,7 @@ static void sub2video_push_ref(InputStream *ist, int64_t pts)
     }
 }
 
-void sub2video_update(InputStream *ist, AVSubtitle *sub)
+void sub2video_update(InputStream *ist, int64_t heartbeat_pts, AVSubtitle *sub)
 {
     AVFrame *frame = ist->sub2video.frame;
     int8_t *dst;
@@ -254,7 +254,12 @@ void sub2video_update(InputStream *ist, AVSubtitle *sub)
                                  AV_TIME_BASE_Q, ist->st->time_base);
         num_rects = sub->num_rects;
     } else {
-        pts       = ist->sub2video.end_pts;
+        /* If we are initializing the system, utilize current heartbeat
+           PTS as the start time, and show until the following subpicture
+           is received. Otherwise, utilize the previous subpicture's end time
+           as the fall-back value. */
+        pts       = ist->sub2video.initialize ?
+                    heartbeat_pts : ist->sub2video.end_pts;
         end_pts   = INT64_MAX;
         num_rects = 0;
     }
@@ -269,6 +274,7 @@ void sub2video_update(InputStream *ist, AVSubtitle *sub)
         sub2video_copy_rect(dst, dst_linesize, frame->width, frame->height, sub->rects[i]);
     sub2video_push_ref(ist, pts);
     ist->sub2video.end_pts = end_pts;
+    ist->sub2video.initialize = 0;
 }
 
 static void sub2video_heartbeat(InputStream *ist, int64_t pts)
@@ -291,9 +297,11 @@ static void sub2video_heartbeat(InputStream *ist, int64_t pts)
         /* do not send the heartbeat frame if the subtitle is already ahead */
         if (pts2 <= ist2->sub2video.last_pts)
             continue;
-        if (pts2 >= ist2->sub2video.end_pts ||
-            (!ist2->sub2video.frame->data[0] && ist2->sub2video.end_pts < INT64_MAX))
-            sub2video_update(ist2, NULL);
+        if (pts2 >= ist2->sub2video.end_pts || ist2->sub2video.initialize)
+            /* if we have hit the end of the current displayed subpicture,
+               or if we need to initialize the system, update the
+               overlayed subpicture and its start/end times */
+            sub2video_update(ist2, pts2 + 1, NULL);
         for (j = 0, nb_reqs = 0; j < ist2->nb_filters; j++)
             nb_reqs += av_buffersrc_get_nb_failed_requests(ist2->filters[j]->filter);
         if (nb_reqs)
@@ -307,7 +315,7 @@ static void sub2video_flush(InputStream *ist)
     int ret;
 
     if (ist->sub2video.end_pts < INT64_MAX)
-        sub2video_update(ist, NULL);
+        sub2video_update(ist, INT64_MAX, NULL);
     for (i = 0; i < ist->nb_filters; i++) {
         ret = av_buffersrc_add_frame(ist->filters[i]->filter, NULL);
         if (ret != AVERROR_EOF && ret < 0)
@@ -780,6 +788,8 @@ static void write_packet(OutputFile *of, AVPacket *pkt, OutputStream *ost, int u
             int64_t max = ost->last_mux_dts + !(s->oformat->flags & AVFMT_TS_NONSTRICT);
             if (pkt->dts < max) {
                 int loglevel = max - pkt->dts > 2 || st->codecpar->codec_type == AVMEDIA_TYPE_VIDEO ? AV_LOG_WARNING : AV_LOG_DEBUG;
+                if (exit_on_error)
+                    loglevel = AV_LOG_ERROR;
                 av_log(s, loglevel, "Non-monotonous DTS in output stream "
                        "%d:%d; previous: %"PRId64", current: %"PRId64"; ",
                        ost->file_index, ost->st->index, ost->last_mux_dts, pkt->dts);
@@ -1137,7 +1147,7 @@ static void do_video_out(OutputFile *of,
                 av_log(NULL, AV_LOG_DEBUG, "Not duplicating %d initial frames\n", (int)lrintf(delta0));
                 delta = duration;
                 delta0 = 0;
-                ost->sync_opts = lrint(sync_ipts);
+                ost->sync_opts = llrint(sync_ipts);
             }
         case VSYNC_CFR:
             // FIXME set to 0.5 after we fix some dts/pts bugs like in avidec.c
@@ -1148,18 +1158,18 @@ static void do_video_out(OutputFile *of,
             else if (delta > 1.1) {
                 nb_frames = lrintf(delta);
                 if (delta0 > 1.1)
-                    nb0_frames = lrintf(delta0 - 0.6);
+                    nb0_frames = llrintf(delta0 - 0.6);
             }
             break;
         case VSYNC_VFR:
             if (delta <= -0.6)
                 nb_frames = 0;
             else if (delta > 0.6)
-                ost->sync_opts = lrint(sync_ipts);
+                ost->sync_opts = llrint(sync_ipts);
             break;
         case VSYNC_DROP:
         case VSYNC_PASSTHROUGH:
-            ost->sync_opts = lrint(sync_ipts);
+            ost->sync_opts = llrint(sync_ipts);
             break;
         default:
             av_assert0(0);
@@ -1905,9 +1915,6 @@ static void flush_encoders(void)
             }
         }
 
-        if (enc->codec_type == AVMEDIA_TYPE_AUDIO && enc->frame_size <= 1)
-            continue;
-
         if (enc->codec_type != AVMEDIA_TYPE_VIDEO && enc->codec_type != AVMEDIA_TYPE_AUDIO)
             continue;
 
@@ -2507,7 +2514,7 @@ static int transcode_subtitles(InputStream *ist, AVPacket *pkt, int *got_output,
         return ret;
 
     if (ist->sub2video.frame) {
-        sub2video_update(ist, &subtitle);
+        sub2video_update(ist, INT64_MIN, &subtitle);
     } else if (ist->nb_filters) {
         if (!ist->sub2video.sub_queue)
             ist->sub2video.sub_queue = av_fifo_alloc(8 * sizeof(AVSubtitle));
@@ -3469,21 +3476,14 @@ static int init_output_stream(OutputStream *ost, char *error, int error_len)
             !av_dict_get(ost->encoder_opts, "ab", NULL, 0))
             av_dict_set(&ost->encoder_opts, "b", "128000", 0);
 
-        if (ost->filter && av_buffersink_get_hw_frames_ctx(ost->filter->filter) &&
-            ((AVHWFramesContext*)av_buffersink_get_hw_frames_ctx(ost->filter->filter)->data)->format ==
-            av_buffersink_get_format(ost->filter->filter)) {
-            ost->enc_ctx->hw_frames_ctx = av_buffer_ref(av_buffersink_get_hw_frames_ctx(ost->filter->filter));
-            if (!ost->enc_ctx->hw_frames_ctx)
-                return AVERROR(ENOMEM);
-        } else {
-            ret = hw_device_setup_for_encode(ost);
-            if (ret < 0) {
-                snprintf(error, error_len, "Device setup failed for "
-                         "encoder on output stream #%d:%d : %s",
+        ret = hw_device_setup_for_encode(ost);
+        if (ret < 0) {
+            snprintf(error, error_len, "Device setup failed for "
+                     "encoder on output stream #%d:%d : %s",
                      ost->file_index, ost->index, av_err2str(ret));
-                return ret;
-            }
+            return ret;
         }
+
         if (ist && ist->dec->type == AVMEDIA_TYPE_SUBTITLE && ost->enc->type == AVMEDIA_TYPE_SUBTITLE) {
             int input_props = 0, output_props = 0;
             AVCodecDescriptor const *input_descriptor =
@@ -4253,6 +4253,7 @@ static int process_input(int file_index)
     int ret, thread_ret, i, j;
     int64_t duration;
     int64_t pkt_dts;
+    int disable_discontinuity_correction = copy_ts;
 
     is  = ifile->ctx;
     ret = get_input_packet(ifile, &pkt);
@@ -4454,10 +4455,20 @@ static int process_input(int file_index)
         pkt.dts += duration;
 
     pkt_dts = av_rescale_q_rnd(pkt.dts, ist->st->time_base, AV_TIME_BASE_Q, AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX);
+
+    if (copy_ts && pkt_dts != AV_NOPTS_VALUE && ist->next_dts != AV_NOPTS_VALUE &&
+        (is->iformat->flags & AVFMT_TS_DISCONT) && ist->st->pts_wrap_bits < 60) {
+        int64_t wrap_dts = av_rescale_q_rnd(pkt.dts + (1LL<<ist->st->pts_wrap_bits),
+                                            ist->st->time_base, AV_TIME_BASE_Q,
+                                            AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX);
+        if (FFABS(wrap_dts - ist->next_dts) < FFABS(pkt_dts - ist->next_dts)/10)
+            disable_discontinuity_correction = 0;
+    }
+
     if ((ist->dec_ctx->codec_type == AVMEDIA_TYPE_VIDEO ||
          ist->dec_ctx->codec_type == AVMEDIA_TYPE_AUDIO) &&
          pkt_dts != AV_NOPTS_VALUE && ist->next_dts != AV_NOPTS_VALUE &&
-        !copy_ts) {
+        !disable_discontinuity_correction) {
         int64_t delta   = pkt_dts - ist->next_dts;
         if (is->iformat->flags & AVFMT_TS_DISCONT) {
             if (delta < -1LL*dts_delta_threshold*AV_TIME_BASE ||
@@ -4748,7 +4759,6 @@ static int transcode(void)
         }
     }
 
-    av_buffer_unref(&hw_device_ctx);
     hw_device_free_all();
 
     /* finished ! */

@@ -44,16 +44,80 @@
 
 #define DEFAULT_PASS_LOGFILENAME_PREFIX "ffmpeg2pass"
 
+#define SPECIFIER_OPT_FMT_str  "%s"
+#define SPECIFIER_OPT_FMT_i    "%i"
+#define SPECIFIER_OPT_FMT_i64  "%"PRId64
+#define SPECIFIER_OPT_FMT_ui64 "%"PRIu64
+#define SPECIFIER_OPT_FMT_f    "%f"
+#define SPECIFIER_OPT_FMT_dbl  "%lf"
+
+static const char *opt_name_codec_names[]               = {"c", "codec", "acodec", "vcodec", "scodec", "dcodec", NULL};
+static const char *opt_name_audio_channels[]            = {"ac", NULL};
+static const char *opt_name_audio_sample_rate[]         = {"ar", NULL};
+static const char *opt_name_frame_rates[]               = {"r", NULL};
+static const char *opt_name_frame_sizes[]               = {"s", NULL};
+static const char *opt_name_frame_pix_fmts[]            = {"pix_fmt", NULL};
+static const char *opt_name_ts_scale[]                  = {"itsscale", NULL};
+static const char *opt_name_hwaccels[]                  = {"hwaccel", NULL};
+static const char *opt_name_hwaccel_devices[]           = {"hwaccel_device", NULL};
+static const char *opt_name_hwaccel_output_formats[]    = {"hwaccel_output_format", NULL};
+static const char *opt_name_autorotate[]                = {"autorotate", NULL};
+static const char *opt_name_max_frames[]                = {"frames", "aframes", "vframes", "dframes", NULL};
+static const char *opt_name_bitstream_filters[]         = {"bsf", "absf", "vbsf", NULL};
+static const char *opt_name_codec_tags[]                = {"tag", "atag", "vtag", "stag", NULL};
+static const char *opt_name_sample_fmts[]               = {"sample_fmt", NULL};
+static const char *opt_name_qscale[]                    = {"q", "qscale", NULL};
+static const char *opt_name_forced_key_frames[]         = {"forced_key_frames", NULL};
+static const char *opt_name_force_fps[]                 = {"force_fps", NULL};
+static const char *opt_name_frame_aspect_ratios[]       = {"aspect", NULL};
+static const char *opt_name_rc_overrides[]              = {"rc_override", NULL};
+static const char *opt_name_intra_matrices[]            = {"intra_matrix", NULL};
+static const char *opt_name_inter_matrices[]            = {"inter_matrix", NULL};
+static const char *opt_name_chroma_intra_matrices[]     = {"chroma_intra_matrix", NULL};
+static const char *opt_name_top_field_first[]           = {"top", NULL};
+static const char *opt_name_presets[]                   = {"pre", "apre", "vpre", "spre", NULL};
+static const char *opt_name_copy_initial_nonkeyframes[] = {"copyinkfr", NULL};
+static const char *opt_name_copy_prior_start[]          = {"copypriorss", NULL};
+static const char *opt_name_filters[]                   = {"filter", "af", "vf", NULL};
+static const char *opt_name_filter_scripts[]            = {"filter_script", NULL};
+static const char *opt_name_reinit_filters[]            = {"reinit_filter", NULL};
+static const char *opt_name_fix_sub_duration[]          = {"fix_sub_duration", NULL};
+static const char *opt_name_canvas_sizes[]              = {"canvas_size", NULL};
+static const char *opt_name_pass[]                      = {"pass", NULL};
+static const char *opt_name_passlogfiles[]              = {"passlogfile", NULL};
+static const char *opt_name_max_muxing_queue_size[]     = {"max_muxing_queue_size", NULL};
+static const char *opt_name_guess_layout_max[]          = {"guess_layout_max", NULL};
+static const char *opt_name_apad[]                      = {"apad", NULL};
+static const char *opt_name_discard[]                   = {"discard", NULL};
+static const char *opt_name_disposition[]               = {"disposition", NULL};
+static const char *opt_name_time_bases[]                = {"time_base", NULL};
+static const char *opt_name_enc_time_bases[]            = {"enc_time_base", NULL};
+
+#define WARN_MULTIPLE_OPT_USAGE(name, type, so, st)\
+{\
+    char namestr[128] = "";\
+    const char *spec = so->specifier && so->specifier[0] ? so->specifier : "";\
+    for (i = 0; opt_name_##name[i]; i++)\
+        av_strlcatf(namestr, sizeof(namestr), "-%s%s", opt_name_##name[i], opt_name_##name[i+1] ? (opt_name_##name[i+2] ? ", " : " or ") : "");\
+    av_log(NULL, AV_LOG_WARNING, "Multiple %s options specified for stream %d, only the last option '-%s%s%s "SPECIFIER_OPT_FMT_##type"' will be used.\n",\
+           namestr, st->index, opt_name_##name[0], spec[0] ? ":" : "", spec, so->u.type);\
+}
+
 #define MATCH_PER_STREAM_OPT(name, type, outvar, fmtctx, st)\
 {\
-    int i, ret;\
+    int i, ret, matches = 0;\
+    SpecifierOpt *so;\
     for (i = 0; i < o->nb_ ## name; i++) {\
         char *spec = o->name[i].specifier;\
-        if ((ret = check_stream_specifier(fmtctx, st, spec)) > 0)\
+        if ((ret = check_stream_specifier(fmtctx, st, spec)) > 0) {\
             outvar = o->name[i].u.type;\
-        else if (ret < 0)\
+            so = &o->name[i];\
+            matches++;\
+        } else if (ret < 0)\
             exit_program(1);\
     }\
+    if (matches > 1)\
+       WARN_MULTIPLE_OPT_USAGE(name, type, so, st);\
 }
 
 #define MATCH_PER_TYPE_OPT(name, type, outvar, fmtctx, mediatype)\
@@ -73,12 +137,8 @@ const HWAccel hwaccels[] = {
 #if CONFIG_LIBMFX
     { "qsv",   qsv_init,   HWACCEL_QSV,   AV_PIX_FMT_QSV },
 #endif
-#if CONFIG_CUVID
-    { "cuvid", cuvid_init, HWACCEL_CUVID, AV_PIX_FMT_CUDA },
-#endif
     { 0 },
 };
-AVBufferRef *hw_device_ctx;
 HWDevice *filter_hw_device;
 
 char *vstats_filename;
@@ -172,14 +232,11 @@ static void init_options(OptionsContext *o)
 static int show_hwaccels(void *optctx, const char *opt, const char *arg)
 {
     enum AVHWDeviceType type = AV_HWDEVICE_TYPE_NONE;
-    int i;
 
     printf("Hardware acceleration methods:\n");
     while ((type = av_hwdevice_iterate_types(type)) !=
            AV_HWDEVICE_TYPE_NONE)
         printf("%s\n", av_hwdevice_get_type_name(type));
-    for (i = 0; hwaccels[i].name; i++)
-        printf("%s\n", hwaccels[i].name);
     printf("\n");
     return 0;
 }
@@ -478,21 +535,15 @@ static int opt_sdp_file(void *optctx, const char *opt, const char *arg)
 #if CONFIG_VAAPI
 static int opt_vaapi_device(void *optctx, const char *opt, const char *arg)
 {
-    HWDevice *dev;
     const char *prefix = "vaapi:";
     char *tmp;
     int err;
     tmp = av_asprintf("%s%s", prefix, arg);
     if (!tmp)
         return AVERROR(ENOMEM);
-    err = hw_device_init_from_string(tmp, &dev);
+    err = hw_device_init_from_string(tmp, NULL);
     av_free(tmp);
-    if (err < 0)
-        return err;
-    hw_device_ctx = av_buffer_ref(dev->device_ref);
-    if (!hw_device_ctx)
-        return AVERROR(ENOMEM);
-    return 0;
+    return err;
 }
 #endif
 
@@ -820,9 +871,28 @@ static void add_input_streams(OptionsContext *o, AVFormatContext *ic)
             MATCH_PER_STREAM_OPT(top_field_first, i, ist->top_field_first, ic, st);
 
             MATCH_PER_STREAM_OPT(hwaccels, str, hwaccel, ic, st);
+            MATCH_PER_STREAM_OPT(hwaccel_output_formats, str,
+                                 hwaccel_output_format, ic, st);
+
+            if (!hwaccel_output_format && hwaccel && !strcmp(hwaccel, "cuvid")) {
+                av_log(NULL, AV_LOG_WARNING,
+                    "WARNING: defaulting hwaccel_output_format to cuda for compatibility "
+                    "with old commandlines. This behaviour is DEPRECATED and will be removed "
+                    "in the future. Please explicitly set \"-hwaccel_output_format cuda\".\n");
+                ist->hwaccel_output_format = AV_PIX_FMT_CUDA;
+            } else if (hwaccel_output_format) {
+                ist->hwaccel_output_format = av_get_pix_fmt(hwaccel_output_format);
+                if (ist->hwaccel_output_format == AV_PIX_FMT_NONE) {
+                    av_log(NULL, AV_LOG_FATAL, "Unrecognised hwaccel output "
+                           "format: %s", hwaccel_output_format);
+                }
+            } else {
+                ist->hwaccel_output_format = AV_PIX_FMT_NONE;
+            }
+
             if (hwaccel) {
                 // The NVDEC hwaccels use a CUDA device, so remap the name here.
-                if (!strcmp(hwaccel, "nvdec"))
+                if (!strcmp(hwaccel, "nvdec") || !strcmp(hwaccel, "cuvid"))
                     hwaccel = "cuda";
 
                 if (!strcmp(hwaccel, "none"))
@@ -856,8 +926,6 @@ static void add_input_streams(OptionsContext *o, AVFormatContext *ic)
                                AV_HWDEVICE_TYPE_NONE)
                             av_log(NULL, AV_LOG_FATAL, "%s ",
                                    av_hwdevice_get_type_name(type));
-                        for (i = 0; hwaccels[i].name; i++)
-                            av_log(NULL, AV_LOG_FATAL, "%s ", hwaccels[i].name);
                         av_log(NULL, AV_LOG_FATAL, "\n");
                         exit_program(1);
                     }
@@ -869,18 +937,6 @@ static void add_input_streams(OptionsContext *o, AVFormatContext *ic)
                 ist->hwaccel_device = av_strdup(hwaccel_device);
                 if (!ist->hwaccel_device)
                     exit_program(1);
-            }
-
-            MATCH_PER_STREAM_OPT(hwaccel_output_formats, str,
-                                 hwaccel_output_format, ic, st);
-            if (hwaccel_output_format) {
-                ist->hwaccel_output_format = av_get_pix_fmt(hwaccel_output_format);
-                if (ist->hwaccel_output_format == AV_PIX_FMT_NONE) {
-                    av_log(NULL, AV_LOG_FATAL, "Unrecognised hwaccel output "
-                           "format: %s", hwaccel_output_format);
-                }
-            } else {
-                ist->hwaccel_output_format = AV_PIX_FMT_NONE;
             }
 
             ist->hwaccel_pix_fmt = AV_PIX_FMT_NONE;
@@ -1682,8 +1738,6 @@ static OutputStream *new_video_stream(OptionsContext *o, AVFormatContext *oc, in
 
     MATCH_PER_STREAM_OPT(filter_scripts, str, ost->filters_script, oc, st);
     MATCH_PER_STREAM_OPT(filters,        str, ost->filters,        oc, st);
-    if (o->nb_filters > 1)
-        av_log(NULL, AV_LOG_ERROR, "Only '-vf %s' read, ignoring remaining -vf options: Use ',' to separate filters\n", ost->filters);
 
     if (!ost->stream_copy) {
         const char *p = NULL;
@@ -1865,8 +1919,6 @@ static OutputStream *new_audio_stream(OptionsContext *o, AVFormatContext *oc, in
 
     MATCH_PER_STREAM_OPT(filter_scripts, str, ost->filters_script, oc, st);
     MATCH_PER_STREAM_OPT(filters,        str, ost->filters,        oc, st);
-    if (o->nb_filters > 1)
-        av_log(NULL, AV_LOG_ERROR, "Only '-af %s' read, ignoring remaining -af options: Use ',' to separate filters\n", ost->filters);
 
     if (!ost->stream_copy) {
         char *sample_fmt = NULL;
@@ -2373,12 +2425,14 @@ loop_end:
                    o->attachments[i]);
             exit_program(1);
         }
-        if (!(attachment = av_malloc(len))) {
-            av_log(NULL, AV_LOG_FATAL, "Attachment %s too large to fit into memory.\n",
+        if (len > INT_MAX - AV_INPUT_BUFFER_PADDING_SIZE ||
+            !(attachment = av_malloc(len + AV_INPUT_BUFFER_PADDING_SIZE))) {
+            av_log(NULL, AV_LOG_FATAL, "Attachment %s too large.\n",
                    o->attachments[i]);
             exit_program(1);
         }
         avio_read(pb, attachment, len);
+        memset(attachment + len, 0, AV_INPUT_BUFFER_PADDING_SIZE);
 
         ost = new_attachment_stream(o, oc, -1);
         ost->stream_copy               = 0;
@@ -3278,6 +3332,7 @@ static int open_files(OptionGroupList *l, const char *inout,
         if (ret < 0) {
             av_log(NULL, AV_LOG_ERROR, "Error parsing options for %s file "
                    "%s.\n", inout, g->arg);
+            uninit_options(&o);
             return ret;
         }
 

@@ -177,6 +177,7 @@ OBJS-$(CONFIG_BOXBLUR_FILTER)                += vf_boxblur.o boxblur.o
 OBJS-$(CONFIG_BOXBLUR_OPENCL_FILTER)         += vf_avgblur_opencl.o opencl.o \
                                                 opencl/avgblur.o boxblur.o
 OBJS-$(CONFIG_BWDIF_FILTER)                  += vf_bwdif.o yadif_common.o
+OBJS-$(CONFIG_CAS_FILTER)                    += vf_cas.o
 OBJS-$(CONFIG_CHROMABER_VULKAN_FILTER)       += vf_chromaber_vulkan.o vulkan.o
 OBJS-$(CONFIG_CHROMAHOLD_FILTER)             += vf_chromakey.o
 OBJS-$(CONFIG_CHROMAKEY_FILTER)              += vf_chromakey.o
@@ -301,6 +302,7 @@ OBJS-$(CONFIG_MASKEDCLAMP_FILTER)            += vf_maskedclamp.o framesync.o
 OBJS-$(CONFIG_MASKEDMAX_FILTER)              += vf_maskedminmax.o framesync.o
 OBJS-$(CONFIG_MASKEDMERGE_FILTER)            += vf_maskedmerge.o framesync.o
 OBJS-$(CONFIG_MASKEDMIN_FILTER)              += vf_maskedminmax.o framesync.o
+OBJS-$(CONFIG_MASKEDTHRESHOLD_FILTER)        += vf_maskedthreshold.o framesync.o
 OBJS-$(CONFIG_MASKFUN_FILTER)                += vf_maskfun.o
 OBJS-$(CONFIG_MCDEINT_FILTER)                += vf_mcdeint.o
 OBJS-$(CONFIG_MEDIAN_FILTER)                 += vf_median.o
@@ -323,6 +325,7 @@ OBJS-$(CONFIG_OCR_FILTER)                    += vf_ocr.o
 OBJS-$(CONFIG_OCV_FILTER)                    += vf_libopencv.o
 OBJS-$(CONFIG_OSCILLOSCOPE_FILTER)           += vf_datascope.o
 OBJS-$(CONFIG_OVERLAY_FILTER)                += vf_overlay.o framesync.o
+OBJS-$(CONFIG_OVERLAY_CUDA_FILTER)           += vf_overlay_cuda.o framesync.o vf_overlay_cuda.ptx.o
 OBJS-$(CONFIG_OVERLAY_OPENCL_FILTER)         += vf_overlay_opencl.o opencl.o \
                                                 opencl/overlay.o framesync.o
 OBJS-$(CONFIG_OVERLAY_QSV_FILTER)            += vf_overlay_qsv.o framesync.o
@@ -415,6 +418,7 @@ OBJS-$(CONFIG_THUMBNAIL_CUDA_FILTER)         += vf_thumbnail_cuda.o vf_thumbnail
 OBJS-$(CONFIG_TILE_FILTER)                   += vf_tile.o
 OBJS-$(CONFIG_TINTERLACE_FILTER)             += vf_tinterlace.o
 OBJS-$(CONFIG_TLUT2_FILTER)                  += vf_lut2.o framesync.o
+OBJS-$(CONFIG_TMEDIAN_FILTER)                += vf_xmedian.o framesync.o
 OBJS-$(CONFIG_TMIX_FILTER)                   += vf_mix.o framesync.o
 OBJS-$(CONFIG_TONEMAP_FILTER)                += vf_tonemap.o colorspace.o
 OBJS-$(CONFIG_TONEMAP_OPENCL_FILTER)         += vf_tonemap_opencl.o colorspace.o opencl.o \
@@ -525,7 +529,7 @@ TESTPROGS = drawutils filtfmts formats integral
 TOOLS-$(CONFIG_LIBZMQ) += zmqsend
 
 clean::
-	$(RM) $(CLEANSUFFIXES:%=libavfilter/libmpcodecs/%)
+	$(RM) $(CLEANSUFFIXES:%=libavfilter/dnn/%)
 
 OPENCL = $(subst $(SRC_PATH)/,,$(wildcard $(SRC_PATH)/libavfilter/opencl/*.cl))
 .SECONDARY: $(OPENCL:.cl=.c)

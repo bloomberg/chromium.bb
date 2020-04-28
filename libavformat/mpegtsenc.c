@@ -94,6 +94,10 @@ typedef struct MpegTSWrite {
     int pmt_start_pid;
     int start_pid;
     int m2ts_mode;
+    int m2ts_video_pid;
+    int m2ts_audio_pid;
+    int m2ts_pgssub_pid;
+    int m2ts_textsub_pid;
 
     int pcr_period_ms;
 #define MPEGTS_FLAG_REEMIT_PAT_PMT  0x01
@@ -234,6 +238,7 @@ typedef struct MpegTSWriteStream {
     int payload_flags;
     uint8_t *payload;
     AVFormatContext *amux;
+    int data_st_warning;
 
     int64_t pcr_period; /* PCR period in PCR time base */
     int64_t last_pcr;
@@ -278,6 +283,141 @@ static void put_registration_descriptor(uint8_t **q_ptr, uint32_t tag)
     *q_ptr = q;
 }
 
+static int get_dvb_stream_type(AVFormatContext *s, AVStream *st)
+{
+    MpegTSWrite *ts = s->priv_data;
+    MpegTSWriteStream *ts_st = st->priv_data;
+    int stream_type;
+
+    switch (st->codecpar->codec_id) {
+    case AV_CODEC_ID_MPEG1VIDEO:
+    case AV_CODEC_ID_MPEG2VIDEO:
+        stream_type = STREAM_TYPE_VIDEO_MPEG2;
+        break;
+    case AV_CODEC_ID_MPEG4:
+        stream_type = STREAM_TYPE_VIDEO_MPEG4;
+        break;
+    case AV_CODEC_ID_H264:
+        stream_type = STREAM_TYPE_VIDEO_H264;
+        break;
+    case AV_CODEC_ID_HEVC:
+        stream_type = STREAM_TYPE_VIDEO_HEVC;
+        break;
+    case AV_CODEC_ID_CAVS:
+        stream_type = STREAM_TYPE_VIDEO_CAVS;
+        break;
+    case AV_CODEC_ID_DIRAC:
+        stream_type = STREAM_TYPE_VIDEO_DIRAC;
+        break;
+    case AV_CODEC_ID_VC1:
+        stream_type = STREAM_TYPE_VIDEO_VC1;
+        break;
+    case AV_CODEC_ID_MP2:
+    case AV_CODEC_ID_MP3:
+        if (   st->codecpar->sample_rate > 0
+            && st->codecpar->sample_rate < 32000) {
+            stream_type = STREAM_TYPE_AUDIO_MPEG2;
+        } else {
+            stream_type = STREAM_TYPE_AUDIO_MPEG1;
+        }
+        break;
+    case AV_CODEC_ID_AAC:
+        stream_type = (ts->flags & MPEGTS_FLAG_AAC_LATM)
+                      ? STREAM_TYPE_AUDIO_AAC_LATM
+                      : STREAM_TYPE_AUDIO_AAC;
+        break;
+    case AV_CODEC_ID_AAC_LATM:
+        stream_type = STREAM_TYPE_AUDIO_AAC_LATM;
+        break;
+    case AV_CODEC_ID_AC3:
+        stream_type = (ts->flags & MPEGTS_FLAG_SYSTEM_B)
+                      ? STREAM_TYPE_PRIVATE_DATA
+                      : STREAM_TYPE_AUDIO_AC3;
+        break;
+    case AV_CODEC_ID_EAC3:
+        stream_type = (ts->flags & MPEGTS_FLAG_SYSTEM_B)
+                      ? STREAM_TYPE_PRIVATE_DATA
+                      : STREAM_TYPE_AUDIO_EAC3;
+        break;
+    case AV_CODEC_ID_DTS:
+        stream_type = STREAM_TYPE_AUDIO_DTS;
+        break;
+    case AV_CODEC_ID_TRUEHD:
+        stream_type = STREAM_TYPE_AUDIO_TRUEHD;
+        break;
+    case AV_CODEC_ID_OPUS:
+        stream_type = STREAM_TYPE_PRIVATE_DATA;
+        break;
+    case AV_CODEC_ID_TIMED_ID3:
+        stream_type = STREAM_TYPE_METADATA;
+        break;
+    case AV_CODEC_ID_DVB_SUBTITLE:
+    case AV_CODEC_ID_DVB_TELETEXT:
+        stream_type = STREAM_TYPE_PRIVATE_DATA;
+        break;
+    default:
+        av_log_once(s, AV_LOG_WARNING, AV_LOG_DEBUG, &ts_st->data_st_warning,
+                    "Stream %d, codec %s, is muxed as a private data stream "
+                    "and may not be recognized upon reading.\n", st->index,
+                    avcodec_get_name(st->codecpar->codec_id));
+        stream_type = STREAM_TYPE_PRIVATE_DATA;
+        break;
+    }
+
+    return stream_type;
+}
+
+static int get_m2ts_stream_type(AVFormatContext *s, AVStream *st)
+{
+    int stream_type;
+    MpegTSWriteStream *ts_st = st->priv_data;
+
+    switch (st->codecpar->codec_id) {
+    case AV_CODEC_ID_MPEG2VIDEO:
+        stream_type = STREAM_TYPE_VIDEO_MPEG2;
+        break;
+    case AV_CODEC_ID_H264:
+        stream_type = STREAM_TYPE_VIDEO_H264;
+        break;
+    case AV_CODEC_ID_VC1:
+        stream_type = STREAM_TYPE_VIDEO_VC1;
+        break;
+    case AV_CODEC_ID_HEVC:
+        stream_type = STREAM_TYPE_VIDEO_HEVC;
+        break;
+    case AV_CODEC_ID_PCM_BLURAY:
+        stream_type = 0x80;
+        break;
+    case AV_CODEC_ID_AC3:
+        stream_type = 0x81;
+        break;
+    case AV_CODEC_ID_DTS:
+        stream_type = (st->codecpar->channels > 6) ? 0x85 : 0x82;
+        break;
+    case AV_CODEC_ID_TRUEHD:
+        stream_type = 0x83;
+        break;
+    case AV_CODEC_ID_EAC3:
+        stream_type = 0x84;
+        break;
+    case AV_CODEC_ID_HDMV_PGS_SUBTITLE:
+        stream_type = 0x90;
+        break;
+    case AV_CODEC_ID_HDMV_TEXT_SUBTITLE:
+        stream_type = 0x92;
+        break;
+    default:
+        av_log_once(s, AV_LOG_WARNING, AV_LOG_DEBUG, &ts_st->data_st_warning,
+                    "Stream %d, codec %s, is muxed as a private data stream "
+                    "and may not be recognized upon reading.\n", st->index,
+                    avcodec_get_name(st->codecpar->codec_id));
+        stream_type = STREAM_TYPE_PRIVATE_DATA;
+        break;
+    }
+
+    return stream_type;
+}
+
 static int mpegts_write_pmt(AVFormatContext *s, MpegTSService *service)
 {
     MpegTSWrite *ts = s->priv_data;
@@ -291,6 +431,14 @@ static int mpegts_write_pmt(AVFormatContext *s, MpegTSService *service)
     q += 2; /* patched after */
 
     /* put program info here */
+    if (ts->m2ts_mode) {
+        put_registration_descriptor(&q, MKTAG('H', 'D', 'M', 'V'));
+        *q++ = 0x88;        // descriptor_tag - hdmv_copy_control_descriptor
+        *q++ = 0x04;        // descriptor_length
+        put16(&q, 0x0fff);  // CA_System_ID
+        *q++ = 0xfc;        // private_data_byte
+        *q++ = 0xfc;        // private_data_byte
+    }
 
     val = 0xf000 | (q - program_info_length_ptr - 2);
     program_info_length_ptr[0] = val >> 8;
@@ -319,74 +467,8 @@ static int mpegts_write_pmt(AVFormatContext *s, MpegTSService *service)
             err = 1;
             break;
         }
-        switch (st->codecpar->codec_id) {
-        case AV_CODEC_ID_MPEG1VIDEO:
-        case AV_CODEC_ID_MPEG2VIDEO:
-            stream_type = STREAM_TYPE_VIDEO_MPEG2;
-            break;
-        case AV_CODEC_ID_MPEG4:
-            stream_type = STREAM_TYPE_VIDEO_MPEG4;
-            break;
-        case AV_CODEC_ID_H264:
-            stream_type = STREAM_TYPE_VIDEO_H264;
-            break;
-        case AV_CODEC_ID_HEVC:
-            stream_type = STREAM_TYPE_VIDEO_HEVC;
-            break;
-        case AV_CODEC_ID_CAVS:
-            stream_type = STREAM_TYPE_VIDEO_CAVS;
-            break;
-        case AV_CODEC_ID_DIRAC:
-            stream_type = STREAM_TYPE_VIDEO_DIRAC;
-            break;
-        case AV_CODEC_ID_VC1:
-            stream_type = STREAM_TYPE_VIDEO_VC1;
-            break;
-        case AV_CODEC_ID_MP2:
-        case AV_CODEC_ID_MP3:
-            if (   st->codecpar->sample_rate > 0
-                && st->codecpar->sample_rate < 32000) {
-                stream_type = STREAM_TYPE_AUDIO_MPEG2;
-            } else {
-                stream_type = STREAM_TYPE_AUDIO_MPEG1;
-            }
-            break;
-        case AV_CODEC_ID_AAC:
-            stream_type = (ts->flags & MPEGTS_FLAG_AAC_LATM)
-                          ? STREAM_TYPE_AUDIO_AAC_LATM
-                          : STREAM_TYPE_AUDIO_AAC;
-            break;
-        case AV_CODEC_ID_AAC_LATM:
-            stream_type = STREAM_TYPE_AUDIO_AAC_LATM;
-            break;
-        case AV_CODEC_ID_AC3:
-            stream_type = (ts->flags & MPEGTS_FLAG_SYSTEM_B)
-                          ? STREAM_TYPE_PRIVATE_DATA
-                          : STREAM_TYPE_AUDIO_AC3;
-            break;
-        case AV_CODEC_ID_EAC3:
-            stream_type = (ts->flags & MPEGTS_FLAG_SYSTEM_B)
-                          ? STREAM_TYPE_PRIVATE_DATA
-                          : STREAM_TYPE_AUDIO_EAC3;
-            break;
-        case AV_CODEC_ID_DTS:
-            stream_type = STREAM_TYPE_AUDIO_DTS;
-            break;
-        case AV_CODEC_ID_TRUEHD:
-            stream_type = STREAM_TYPE_AUDIO_TRUEHD;
-            break;
-        case AV_CODEC_ID_OPUS:
-            stream_type = STREAM_TYPE_PRIVATE_DATA;
-            break;
-        case AV_CODEC_ID_TIMED_ID3:
-            stream_type = STREAM_TYPE_METADATA;
-            break;
-        default:
-            av_log(s, AV_LOG_WARNING, "Stream %d, codec %s, is muxed as a private data stream "
-                   "and may not be recognized upon reading.\n", i, avcodec_get_name(st->codecpar->codec_id));
-            stream_type = STREAM_TYPE_PRIVATE_DATA;
-            break;
-        }
+
+        stream_type = ts->m2ts_mode ? get_m2ts_stream_type(s, st) : get_dvb_stream_type(s, st);
 
         *q++ = stream_type;
         put16(&q, 0xe000 | ts_st->pid);
@@ -860,6 +942,19 @@ static int mpegts_init(AVFormatContext *s)
         }
     }
 
+    ts->m2ts_video_pid   = M2TS_VIDEO_PID;
+    ts->m2ts_audio_pid   = M2TS_AUDIO_START_PID;
+    ts->m2ts_pgssub_pid  = M2TS_PGSSUB_START_PID;
+    ts->m2ts_textsub_pid = M2TS_TEXTSUB_PID;
+
+    if (ts->m2ts_mode) {
+        ts->pmt_start_pid = M2TS_PMT_PID;
+        if (s->nb_programs > 1) {
+            av_log(s, AV_LOG_ERROR, "Only one program is allowed in m2ts mode!\n");
+            return AVERROR(EINVAL);
+        }
+    }
+
     if (s->max_delay < 0) /* Not set by the caller */
         s->max_delay = 0;
 
@@ -923,7 +1018,37 @@ static int mpegts_init(AVFormatContext *s)
         /* MPEG pid values < 16 are reserved. Applications which set st->id in
          * this range are assigned a calculated pid. */
         if (st->id < 16) {
-            ts_st->pid = ts->start_pid + i;
+            if (ts->m2ts_mode) {
+                switch (st->codecpar->codec_type) {
+                case AVMEDIA_TYPE_VIDEO:
+                    ts_st->pid = ts->m2ts_video_pid++;
+                    break;
+                case AVMEDIA_TYPE_AUDIO:
+                    ts_st->pid = ts->m2ts_audio_pid++;
+                    break;
+                case AVMEDIA_TYPE_SUBTITLE:
+                    switch (st->codecpar->codec_id) {
+                    case AV_CODEC_ID_HDMV_PGS_SUBTITLE:
+                        ts_st->pid = ts->m2ts_pgssub_pid++;
+                        break;
+                    case AV_CODEC_ID_HDMV_TEXT_SUBTITLE:
+                        ts_st->pid = ts->m2ts_textsub_pid++;
+                        break;
+                    }
+                    break;
+                }
+                if (ts->m2ts_video_pid   > M2TS_VIDEO_PID + 1          ||
+                    ts->m2ts_audio_pid   > M2TS_AUDIO_START_PID + 32   ||
+                    ts->m2ts_pgssub_pid  > M2TS_PGSSUB_START_PID + 32  ||
+                    ts->m2ts_textsub_pid > M2TS_TEXTSUB_PID + 1        ||
+                    ts_st->pid < 16) {
+                    av_log(s, AV_LOG_ERROR, "Cannot automatically assign PID for stream %d\n", st->index);
+                    ret = AVERROR(EINVAL);
+                    goto fail;
+                }
+            } else {
+                ts_st->pid = ts->start_pid + i;
+            }
         } else {
             ts_st->pid = st->id;
         }

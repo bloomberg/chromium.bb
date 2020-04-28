@@ -740,6 +740,12 @@ static int sub2video_prepare(InputStream *ist, InputFilter *ifilter)
         return AVERROR(ENOMEM);
     ist->sub2video.last_pts = INT64_MIN;
     ist->sub2video.end_pts  = INT64_MIN;
+
+    /* sub2video structure has been (re-)initialized.
+       Mark it as such so that the system will be
+       initialized with the first received heartbeat. */
+    ist->sub2video.initialize = 1;
+
     return 0;
 }
 
@@ -1055,17 +1061,9 @@ int configure_filtergraph(FilterGraph *fg)
     if ((ret = avfilter_graph_parse2(fg->graph, graph_desc, &inputs, &outputs)) < 0)
         goto fail;
 
-    if (filter_hw_device || hw_device_ctx) {
-        AVBufferRef *device = filter_hw_device ? filter_hw_device->device_ref
-                                               : hw_device_ctx;
-        for (i = 0; i < fg->graph->nb_filters; i++) {
-            fg->graph->filters[i]->hw_device_ctx = av_buffer_ref(device);
-            if (!fg->graph->filters[i]->hw_device_ctx) {
-                ret = AVERROR(ENOMEM);
-                goto fail;
-            }
-        }
-    }
+    ret = hw_device_setup_for_filter(fg);
+    if (ret < 0)
+        goto fail;
 
     if (simple && (!inputs || inputs->next || !outputs || outputs->next)) {
         const char *num_inputs;
@@ -1168,7 +1166,7 @@ int configure_filtergraph(FilterGraph *fg)
             while (av_fifo_size(ist->sub2video.sub_queue)) {
                 AVSubtitle tmp;
                 av_fifo_generic_read(ist->sub2video.sub_queue, &tmp, sizeof(tmp), NULL);
-                sub2video_update(ist, &tmp);
+                sub2video_update(ist, INT64_MIN, &tmp);
                 avsubtitle_free(&tmp);
             }
         }
