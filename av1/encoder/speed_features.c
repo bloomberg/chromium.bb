@@ -73,14 +73,15 @@ static unsigned int tx_domain_dist_types[3][MODE_EVAL_TYPES] = { { 0, 2, 0 },
 // Index 2: Winner mode evaluation.
 // Index 1 and 2 are applicable when enable_winner_mode_for_coeff_opt speed
 // feature is ON
-// There are 6 levels with increasing speed, mapping to vertical indices.
-static unsigned int coeff_opt_dist_thresholds[6][MODE_EVAL_TYPES] = {
+// There are 7 levels with increasing speed, mapping to vertical indices.
+static unsigned int coeff_opt_dist_thresholds[7][MODE_EVAL_TYPES] = {
   { UINT_MAX, UINT_MAX, UINT_MAX },
   { 3200, 250, UINT_MAX },
   { 1728, 142, UINT_MAX },
   { 864, 142, UINT_MAX },
   { 432, 86, UINT_MAX },
-  { 216, 86, UINT_MAX }
+  { 216, 86, UINT_MAX },
+  { 216, 0, UINT_MAX }
 };
 
 // Transform size to be used for default, mode and winner mode evaluation
@@ -616,6 +617,7 @@ static void set_good_speed_features_framesize_independent(
 
   if (speed >= 6) {
     sf->mv_sf.simple_motion_subpel_force_stop = FULL_PEL;
+    sf->rd_sf.perform_coeff_opt = is_boosted_arf2_bwd_type ? 4 : 6;
     sf->tpl_sf.subpel_force_stop = FULL_PEL;
   }
 }
@@ -1281,7 +1283,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
 
   // assert ensures that coeff_opt_dist_thresholds is accessed correctly
   assert(cpi->sf.rd_sf.perform_coeff_opt >= 0 &&
-         cpi->sf.rd_sf.perform_coeff_opt < 6);
+         cpi->sf.rd_sf.perform_coeff_opt < 7);
   memcpy(winner_mode_params->coeff_opt_dist_threshold,
          coeff_opt_dist_thresholds[cpi->sf.rd_sf.perform_coeff_opt],
          sizeof(winner_mode_params->coeff_opt_dist_threshold));
