@@ -446,8 +446,8 @@ class SDKFetcher(object):
       Version number in the format 'R30-3929.0.0' or None.
     """
     try:
-       # If the version doesn't exist in google storage,
-       # which isn't unlikely, don't waste time on retries.
+      # If the version doesn't exist in google storage,
+      # which isn't unlikely, don't waste time on retries.
       full_version = self.gs_ctx.Cat(version_file, retries=0, encoding='utf-8')
       assert full_version.startswith('R')
       return full_version
@@ -1318,6 +1318,14 @@ class ChromeSDKCommand(command.CliCommand):
 
     goma_dir = self.options.gomadir
     if not goma_dir:
+      goma_dir_cmd = ['goma_ctl', 'goma_dir']
+      goma_dir = cros_build_lib.run(
+          goma_dir_cmd, check=False, capture_output=True,
+          encoding='utf-8').stdout.strip()
+
+    # TODO(crbug.com/1072400): Remove use of Goma in legacy location.
+    if not goma_dir or not os.path.exists(os.path.join(goma_dir, 'gomacc')):
+      logging.warning('Falling back to legacy Goma location')
       ref = common_cache.Lookup(('goma', '2'))
       if not ref.Exists():
         Log('Installing Goma.', silent=self.silent)
