@@ -2,6 +2,45 @@
 
 Welcome to the Build API.
 
+## Getting Started
+
+### Overview
+
+The Build API is a CLI-only, proto based API to execute build steps.
+It was created to provide a stable interface for the CI builders.
+The proto files (in [chromite/infra/proto](#chromite/infra/proto/)) define the
+services/RPCs provided by the API.
+The modules in
+[controller/](https://chromium.googlesource.com/chromiumos/chromite/+/refs/heads/master/api/controller/)
+are the entry points for the RPCs defined in the proto files.
+The Build API is invoked via the `build_api` script, which takes 4 arguments;
+the name of the endpoint being called (e.g. chromite.api.SdkService/Create),
+and the input, output, and optional config protos, which are provided as paths
+to files containing the respective JSON or protobuf-binary encoded messages.
+
+### Calling An Endpoint
+
+To manually call an endpoint, e.g. for testing, the
+[gen_call_scripts](https://chromium.googlesource.com/chromiumos/chromite/+/refs/heads/master/api/contrib/README.md#gen_call_scripts_call_templates_and-call_scripts)
+process is recommended, it makes calling a specific endpoint much
+simpler. Please also contribute new example input files when you
+add new endpoints!
+
+The overall process is simple whether you want to do it manually
+or in a script, though. You'll need to build out an instance of
+the request message and write it to a file, and then just call
+the `build_api` script.
+
+The only tricky part is getting the compiled protobuf. If you're
+working in recipes or in chromite the problem has already been
+addressed. Otherwise, you'll need to figure out a process that
+works for you depending on your language and purpose. For immediate,
+local work, compiling the proto with protoc should be relatively
+straightforward, but for production services consulting the CrOS CI
+team may be worthwhile.
+
+## Directory Reference
+
 ### chromite/infra/proto/
 
 **Make sure you've consulted the Build and CI teams when considering making
@@ -15,7 +54,8 @@ chromite changes.
 * chromite/api/ contains the Build API services.
   * Except chromite/api/build_api.proto, which contains service and method
     option definitions.
-* chromiumos/ generally contains more sharable proto.
+  * And build_api_test.proto which is used only for testing the Build API itself.
+* chromiumos/ generally contains more shareable proto.
   * chromiumos/common.proto contains well shared messages.
   * chromiumos/metrics.proto contains message declarations related to build api
     event monitoring.
@@ -79,4 +119,5 @@ service(s), then translates their output to a specified response format.
 ### contrib/
 
 This directory contains scripts that may not be 100% supported yet.
-See `contrib/README.md` for information about the scripts.
+See [`contrib/README.md`](https://chromium.googlesource.com/chromiumos/chromite/+/refs/heads/master/api/contrib/README.md)
+for information about the scripts.
