@@ -13,12 +13,16 @@ as the clients of the data.
 from __future__ import print_function
 
 import os
+import sys
 
 from chromite.lib import buildbucket_v2
 from chromite.lib import cidb
 from chromite.lib import constants
 from chromite.lib import failure_message_lib
 from chromite.lib import fake_cidb
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class BuildStoreException(Exception):
