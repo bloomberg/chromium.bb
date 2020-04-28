@@ -74,7 +74,6 @@ SKIP = 'skip'
 SPECIAL_TESTS = {
     # Tests that need to run inside the chroot.
     'cli/cros/lint_unittest': INSIDE,
-    'lib/chroot_util_unittest': INSIDE,
     'lib/cros_test_lib_unittest': INSIDE,
     'lib/operation_unittest': INSIDE,
 
