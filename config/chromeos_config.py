@@ -340,9 +340,6 @@ def GeneralTemplates(site_config):
   # An anchor of Laktiu' notification email settings.
   site_config.AddTemplate(
       'lakitu_notification_emails',
-      # Send an email on build failures.
-      health_threshold=1,
-      health_alert_recipients=['gci-alerts+buildbots@google.com'],
   )
 
   site_config.AddTemplate(
@@ -1002,8 +999,6 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       description='Toolchain master (all others are slaves).',
       master=True,
       sync_chrome=True,
-      health_alert_recipients=['c-compiler-chrome@google.com'],
-      health_threshold=1,
       slave_configs=[],
       # 3 PM UTC is 7 AM PST (no daylight savings)
       schedule='0 15 * * *',
@@ -1071,7 +1066,6 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       boards=['chell'],
       # This builder is now running under recipes.
       # TODO(crbug/1019868): remove this builder from legacy.
-      health_alert_recipients=['c-compiler-chrome@google.com'],
   )
 
   def ChromeAFDOPublishBuilders(name, board, _schedule):
@@ -1085,7 +1079,6 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
         # These builders are now running under recipes.
         # TODO(crbug/1019868): remove this builder from legacy.
         # schedule=schedule,
-        health_alert_recipients=['c-compiler-chrome@google.com'],
     )
 
   # Start at 7 hours after benchmark-afdo-generate, to
@@ -1109,9 +1102,6 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
         # These builders are now running under recipes.
         # TODO(crbug/1019868): remove this builder from legacy.
         # schedule=schedule,
-        health_alert_recipients=['c-compiler-chrome@google.com'],
-        # Send emails if this builder fails once
-        health_threshold=1,
     )
 
   # Start at the same time every day. The kernel profiles are
@@ -1133,9 +1123,6 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       # This builder is now running under recipes.
       # TODO(crbug/1019868): remove this builder from legacy.
       # schedule='0 10/12 * * *',
-      health_alert_recipients=['c-compiler-chrome@google.com'],
-      # Send emails if this builder fails once
-      health_threshold=1,
   )
 
   site_config.Add(
@@ -1146,9 +1133,6 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       # This builder is now running under recipes.
       # TODO(crbug/1019868): remove this builder from legacy.
       # schedule='0 2/12 * * *',
-      health_alert_recipients=['c-compiler-chrome@google.com'],
-      # Send emails if this builder fails once
-      health_threshold=1,
   )
 
   # This config is manually run when we want to generate a 'release' AFDO

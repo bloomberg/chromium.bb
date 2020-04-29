@@ -3568,9 +3568,6 @@
         "_template": "benchmark_afdo_generate",
         "boards": [
             "chell"
-        ],
-        "health_alert_recipients": [
-            "c-compiler-chrome@google.com"
         ]
     },
     "benchmark-afdo-generate-tryjob": {
@@ -3580,9 +3577,6 @@
         ],
         "debug": true,
         "display_label": "tryjob",
-        "health_alert_recipients": [
-            "c-compiler-chrome@google.com"
-        ],
         "hw_tests_override": null,
         "luci_builder": "Try"
     },
@@ -7637,9 +7631,6 @@
             "snappy"
         ],
         "chrome_afdo_verify": true,
-        "health_alert_recipients": [
-            "c-compiler-chrome@google.com"
-        ],
         "useflags": [
             "-cros-debug",
             "afdo_verify",
@@ -7655,9 +7646,6 @@
         "chrome_afdo_verify": true,
         "debug": true,
         "display_label": "tryjob",
-        "health_alert_recipients": [
-            "c-compiler-chrome@google.com"
-        ],
         "hw_tests_override": null,
         "luci_builder": "Try",
         "useflags": [
@@ -7673,9 +7661,6 @@
             "eve"
         ],
         "chrome_afdo_verify": true,
-        "health_alert_recipients": [
-            "c-compiler-chrome@google.com"
-        ],
         "useflags": [
             "-cros-debug",
             "afdo_verify",
@@ -7691,9 +7676,6 @@
         "chrome_afdo_verify": true,
         "debug": true,
         "display_label": "tryjob",
-        "health_alert_recipients": [
-            "c-compiler-chrome@google.com"
-        ],
         "hw_tests_override": null,
         "luci_builder": "Try",
         "useflags": [
@@ -7709,9 +7691,6 @@
             "samus"
         ],
         "chrome_afdo_verify": true,
-        "health_alert_recipients": [
-            "c-compiler-chrome@google.com"
-        ],
         "useflags": [
             "-cros-debug",
             "afdo_verify",
@@ -7727,9 +7706,6 @@
         "chrome_afdo_verify": true,
         "debug": true,
         "display_label": "tryjob",
-        "health_alert_recipients": [
-            "c-compiler-chrome@google.com"
-        ],
         "hw_tests_override": null,
         "luci_builder": "Try",
         "useflags": [
@@ -18582,10 +18558,6 @@
         "boards": [
             "chell"
         ],
-        "health_alert_recipients": [
-            "c-compiler-chrome@google.com"
-        ],
-        "health_threshold": 1,
         "kernel_afdo_verify": true
     },
     "kernel-3_18-release-afdo-verify-tryjob": {
@@ -18595,10 +18567,6 @@
         ],
         "debug": true,
         "display_label": "tryjob",
-        "health_alert_recipients": [
-            "c-compiler-chrome@google.com"
-        ],
-        "health_threshold": 1,
         "hw_tests_override": null,
         "kernel_afdo_verify": true,
         "luci_builder": "Try"
@@ -18608,10 +18576,6 @@
         "boards": [
             "auron_yuna"
         ],
-        "health_alert_recipients": [
-            "c-compiler-chrome@google.com"
-        ],
-        "health_threshold": 1,
         "kernel_afdo_verify": true
     },
     "kernel-4_14-release-afdo-verify-tryjob": {
@@ -18621,10 +18585,6 @@
         ],
         "debug": true,
         "display_label": "tryjob",
-        "health_alert_recipients": [
-            "c-compiler-chrome@google.com"
-        ],
-        "health_threshold": 1,
         "hw_tests_override": null,
         "kernel_afdo_verify": true,
         "luci_builder": "Try"
@@ -18634,10 +18594,6 @@
         "boards": [
             "banon"
         ],
-        "health_alert_recipients": [
-            "c-compiler-chrome@google.com"
-        ],
-        "health_threshold": 1,
         "kernel_afdo_verify": true
     },
     "kernel-4_19-release-afdo-verify-tryjob": {
@@ -18647,10 +18603,6 @@
         ],
         "debug": true,
         "display_label": "tryjob",
-        "health_alert_recipients": [
-            "c-compiler-chrome@google.com"
-        ],
-        "health_threshold": 1,
         "hw_tests_override": null,
         "kernel_afdo_verify": true,
         "luci_builder": "Try"
@@ -18660,10 +18612,6 @@
         "boards": [
             "eve"
         ],
-        "health_alert_recipients": [
-            "c-compiler-chrome@google.com"
-        ],
-        "health_threshold": 1,
         "kernel_afdo_verify": true
     },
     "kernel-4_4-release-afdo-verify-tryjob": {
@@ -18673,10 +18621,6 @@
         ],
         "debug": true,
         "display_label": "tryjob",
-        "health_alert_recipients": [
-            "c-compiler-chrome@google.com"
-        ],
-        "health_threshold": 1,
         "hw_tests_override": null,
         "kernel_afdo_verify": true,
         "luci_builder": "Try"
@@ -19818,10 +19762,6 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
-        "health_alert_recipients": [
-            "gci-alerts+buildbots@google.com"
-        ],
-        "health_threshold": 1,
         "hw_tests_override": [],
         "internal": true,
         "manifest": "official.xml",
@@ -19850,10 +19790,6 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
-        "health_alert_recipients": [
-            "gci-alerts+buildbots@google.com"
-        ],
-        "health_threshold": 1,
         "hw_tests_override": null,
         "internal": true,
         "luci_builder": "Try",
@@ -19971,10 +19907,6 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
-        "health_alert_recipients": [
-            "gci-alerts+buildbots@google.com"
-        ],
-        "health_threshold": 1,
         "hw_tests": [],
         "hw_tests_override": [],
         "hwqual": false,
@@ -20010,10 +19942,6 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
-        "health_alert_recipients": [
-            "gci-alerts+buildbots@google.com"
-        ],
-        "health_threshold": 1,
         "hw_tests": [],
         "hw_tests_override": null,
         "hwqual": false,
@@ -20070,10 +19998,6 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
-        "health_alert_recipients": [
-            "gci-alerts+buildbots@google.com"
-        ],
-        "health_threshold": 1,
         "hw_tests_override": [],
         "image_test": false,
         "images": [
@@ -20103,10 +20027,6 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
-        "health_alert_recipients": [
-            "gci-alerts+buildbots@google.com"
-        ],
-        "health_threshold": 1,
         "hw_tests_override": null,
         "image_test": false,
         "images": [
@@ -20189,10 +20109,6 @@
             "{\n    \"test_suite\": \"gce-sanity\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}",
             "{\n    \"test_suite\": \"gce-smoke\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}"
         ],
-        "health_alert_recipients": [
-            "gci-alerts+buildbots@google.com"
-        ],
-        "health_threshold": 1,
         "hw_tests_override": [],
         "internal": true,
         "manifest": "official.xml",
@@ -20224,10 +20140,6 @@
             "{\n    \"test_suite\": \"gce-sanity\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}",
             "{\n    \"test_suite\": \"gce-smoke\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}"
         ],
-        "health_alert_recipients": [
-            "gci-alerts+buildbots@google.com"
-        ],
-        "health_threshold": 1,
         "hw_tests_override": null,
         "internal": true,
         "luci_builder": "Try",
@@ -20344,10 +20256,6 @@
             "{\n    \"test_suite\": \"gce-sanity\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}",
             "{\n    \"test_suite\": \"gce-smoke\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}"
         ],
-        "health_alert_recipients": [
-            "gci-alerts+buildbots@google.com"
-        ],
-        "health_threshold": 1,
         "hw_tests": [],
         "hw_tests_override": [],
         "hwqual": false,
@@ -20385,10 +20293,6 @@
             "{\n    \"test_suite\": \"gce-sanity\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}",
             "{\n    \"test_suite\": \"gce-smoke\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}"
         ],
-        "health_alert_recipients": [
-            "gci-alerts+buildbots@google.com"
-        ],
-        "health_threshold": 1,
         "hw_tests": [],
         "hw_tests_override": null,
         "hwqual": false,
@@ -20448,10 +20352,6 @@
             "{\n    \"test_suite\": \"gce-sanity\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}",
             "{\n    \"test_suite\": \"gce-smoke\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}"
         ],
-        "health_alert_recipients": [
-            "gci-alerts+buildbots@google.com"
-        ],
-        "health_threshold": 1,
         "hw_tests_override": [],
         "internal": true,
         "manifest": "official.xml",
@@ -20484,10 +20384,6 @@
             "{\n    \"test_suite\": \"gce-sanity\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}",
             "{\n    \"test_suite\": \"gce-smoke\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}"
         ],
-        "health_alert_recipients": [
-            "gci-alerts+buildbots@google.com"
-        ],
-        "health_threshold": 1,
         "hw_tests_override": null,
         "internal": true,
         "luci_builder": "Try",
@@ -20750,10 +20646,6 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
-        "health_alert_recipients": [
-            "gci-alerts+buildbots@google.com"
-        ],
-        "health_threshold": 1,
         "hw_tests": [],
         "hw_tests_override": [],
         "hwqual": false,
@@ -20787,10 +20679,6 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
-        "health_alert_recipients": [
-            "gci-alerts+buildbots@google.com"
-        ],
-        "health_threshold": 1,
         "hw_tests": [],
         "hw_tests_override": null,
         "hwqual": false,
@@ -20864,10 +20752,6 @@
             "{\n    \"test_suite\": \"gce-sanity\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}",
             "{\n    \"test_suite\": \"gce-smoke\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}"
         ],
-        "health_alert_recipients": [
-            "gci-alerts+buildbots@google.com"
-        ],
-        "health_threshold": 1,
         "hw_tests": [],
         "hw_tests_override": [],
         "hwqual": false,
@@ -20904,10 +20788,6 @@
             "{\n    \"test_suite\": \"gce-sanity\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}",
             "{\n    \"test_suite\": \"gce-smoke\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}"
         ],
-        "health_alert_recipients": [
-            "gci-alerts+buildbots@google.com"
-        ],
-        "health_threshold": 1,
         "hw_tests": [],
         "hw_tests_override": null,
         "hwqual": false,
@@ -20996,10 +20876,6 @@
             "{\n    \"test_suite\": \"gce-sanity\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}",
             "{\n    \"test_suite\": \"gce-smoke\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}"
         ],
-        "health_alert_recipients": [
-            "gci-alerts+buildbots@google.com"
-        ],
-        "health_threshold": 1,
         "hw_tests_override": [],
         "internal": true,
         "manifest": "official.xml",
@@ -21031,10 +20907,6 @@
             "{\n    \"test_suite\": \"gce-sanity\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}",
             "{\n    \"test_suite\": \"gce-smoke\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}"
         ],
-        "health_alert_recipients": [
-            "gci-alerts+buildbots@google.com"
-        ],
-        "health_threshold": 1,
         "hw_tests_override": null,
         "internal": true,
         "luci_builder": "Try",
@@ -21151,10 +21023,6 @@
             "{\n    \"test_suite\": \"gce-sanity\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}",
             "{\n    \"test_suite\": \"gce-smoke\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}"
         ],
-        "health_alert_recipients": [
-            "gci-alerts+buildbots@google.com"
-        ],
-        "health_threshold": 1,
         "hw_tests": [],
         "hw_tests_override": [],
         "hwqual": false,
@@ -21192,10 +21060,6 @@
             "{\n    \"test_suite\": \"gce-sanity\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}",
             "{\n    \"test_suite\": \"gce-smoke\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}"
         ],
-        "health_alert_recipients": [
-            "gci-alerts+buildbots@google.com"
-        ],
-        "health_threshold": 1,
         "hw_tests": [],
         "hw_tests_override": null,
         "hwqual": false,
@@ -21326,10 +21190,6 @@
             "{\n    \"test_suite\": \"gce-sanity\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}",
             "{\n    \"test_suite\": \"gce-smoke\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}"
         ],
-        "health_alert_recipients": [
-            "gci-alerts+buildbots@google.com"
-        ],
-        "health_threshold": 1,
         "hw_tests_override": [],
         "internal": true,
         "manifest": "official.xml",
@@ -21361,10 +21221,6 @@
             "{\n    \"test_suite\": \"gce-sanity\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}",
             "{\n    \"test_suite\": \"gce-smoke\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}"
         ],
-        "health_alert_recipients": [
-            "gci-alerts+buildbots@google.com"
-        ],
-        "health_threshold": 1,
         "hw_tests_override": null,
         "internal": true,
         "luci_builder": "Try",
@@ -21481,10 +21337,6 @@
             "{\n    \"test_suite\": \"gce-sanity\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}",
             "{\n    \"test_suite\": \"gce-smoke\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}"
         ],
-        "health_alert_recipients": [
-            "gci-alerts+buildbots@google.com"
-        ],
-        "health_threshold": 1,
         "hw_tests": [],
         "hw_tests_override": [],
         "hwqual": false,
@@ -21520,10 +21372,6 @@
             "{\n    \"test_suite\": \"gce-sanity\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}",
             "{\n    \"test_suite\": \"gce-smoke\",\n    \"test_type\": \"gce_suite\",\n    \"timeout\": 3600,\n    \"use_ctest\": true\n}"
         ],
-        "health_alert_recipients": [
-            "gci-alerts+buildbots@google.com"
-        ],
-        "health_threshold": 1,
         "hw_tests": [],
         "hw_tests_override": null,
         "hwqual": false,
@@ -23079,10 +22927,6 @@
         "_template": "toolchain",
         "boards": [],
         "description": "Toolchain master (all others are slaves).",
-        "health_alert_recipients": [
-            "c-compiler-chrome@google.com"
-        ],
-        "health_threshold": 1,
         "master": true,
         "schedule": "0 15 * * *",
         "slave_configs": [
@@ -23099,10 +22943,6 @@
         "debug_cidb": true,
         "description": "Toolchain master (all others are slaves).",
         "display_label": "tryjob",
-        "health_alert_recipients": [
-            "c-compiler-chrome@google.com"
-        ],
-        "health_threshold": 1,
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"enable_skylab\": true,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"quota_account\": null,\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"enable_skylab\": true,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"quota_account\": null,\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
@@ -26208,11 +26048,7 @@
         "_template": "orderfile_generate_toolchain",
         "boards": [
             "terra"
-        ],
-        "health_alert_recipients": [
-            "c-compiler-chrome@google.com"
-        ],
-        "health_threshold": 1
+        ]
     },
     "orderfile-generate-toolchain-tryjob": {
         "_template": "orderfile_generate_toolchain",
@@ -26221,10 +26057,6 @@
         ],
         "debug": true,
         "display_label": "tryjob",
-        "health_alert_recipients": [
-            "c-compiler-chrome@google.com"
-        ],
-        "health_threshold": 1,
         "hw_tests_override": null,
         "luci_builder": "Try"
     },
@@ -26232,11 +26064,7 @@
         "_template": "orderfile_verify_toolchain",
         "boards": [
             "eve"
-        ],
-        "health_alert_recipients": [
-            "c-compiler-chrome@google.com"
-        ],
-        "health_threshold": 1
+        ]
     },
     "orderfile-verify-toolchain-tryjob": {
         "_template": "orderfile_verify_toolchain",
@@ -26245,10 +26073,6 @@
         ],
         "debug": true,
         "display_label": "tryjob",
-        "health_alert_recipients": [
-            "c-compiler-chrome@google.com"
-        ],
-        "health_threshold": 1,
         "hw_tests_override": null,
         "luci_builder": "Try"
     },
