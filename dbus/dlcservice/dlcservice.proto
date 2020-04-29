@@ -47,6 +47,24 @@ message DlcModuleList {
   string omaha_url = 2;
 }
 
+// This message is used to query the DLCs that have data on disk. This allows
+// Chrome UI to show this list to the users and users can decide whether to
+// delete unused DLCs or not.
+message DlcsWithContent {
+  message DlcInfo {
+    // The unique ID of the DLC.
+    string id = 1;
+    // The human readable name of the DLC.
+    string name = 2;
+    // The human readable description of the DLC.
+    string description = 3;
+    // The amount of disk space used by this DLC (bytes).
+    uint64 used_bytes_on_disk = 4;
+  }
+  // The list of DLCs that have used disk space.
+  repeated DlcInfo dlc_infos = 1;
+}
+
 // This is the message that is returned from DLC Service via |GetState| method
 // and indicates what state a DLC is in.
 // TODO(crbug.com/1056269): Propagate error code as well to know reason for
