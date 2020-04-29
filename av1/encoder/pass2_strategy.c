@@ -1953,13 +1953,12 @@ static int test_candidate_kf(TWO_PASS *twopass,
     if (boost_score > 30.0 && (i > count_for_tolerable_prediction)) {
       is_viable_kf = 1;
     } else {
-      // Reset the file position
-      reset_fpf_position(twopass, start_pos);
-
       is_viable_kf = 0;
     }
-  }
 
+    // Reset the file position
+    reset_fpf_position(twopass, start_pos);
+  }
   return is_viable_kf;
 }
 
@@ -2670,16 +2669,17 @@ void av1_get_second_pass_params(AV1_COMP *cpi,
     assert(cpi->common.current_frame.frame_number == 0 ||
            gf_group->index == gf_group->size);
     const FIRSTPASS_STATS *const start_position = twopass->stats_in;
-    int num_frames_to_detect_scenecut, frames_to_key;
-    if (cpi->lap_enabled && cpi->rc.enable_scenecut_detection)
+
+    if (cpi->lap_enabled && cpi->rc.enable_scenecut_detection) {
+      int num_frames_to_detect_scenecut, frames_to_key;
       num_frames_to_detect_scenecut = MAX_GF_LENGTH_LAP + 1;
-    else
-      num_frames_to_detect_scenecut = 0;
-    frames_to_key = define_kf_interval(cpi, &this_frame, NULL,
-                                       num_frames_to_detect_scenecut);
+      frames_to_key = define_kf_interval(cpi, &this_frame, NULL,
+                                         num_frames_to_detect_scenecut);
+      if (frames_to_key != -1)
+        rc->frames_to_key = AOMMIN(rc->frames_to_key, frames_to_key);
+    }
+
     reset_fpf_position(twopass, start_position);
-    if (frames_to_key != -1)
-      rc->frames_to_key = AOMMIN(rc->frames_to_key, frames_to_key);
 
     int max_gop_length = (cpi->oxcf.lag_in_frames >= 32 &&
                           is_stat_consumption_stage_twopass(cpi))

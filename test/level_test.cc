@@ -134,7 +134,7 @@ TEST_P(LevelTest, TestLevelMonitoringHighBitrate) {
     target_level_ = kLevelKeepStats;
     cfg_.rc_target_bitrate = 4000;
     ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
-    ASSERT_EQ(level_[0], 1);
+    ASSERT_EQ(level_[0], 0);
   }
 }
 
