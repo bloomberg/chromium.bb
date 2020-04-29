@@ -317,7 +317,14 @@ struct macroblock {
   CompoundTypeRdBuffers comp_rd_buffer;
 
   CONV_BUF_TYPE *tmp_conv_dst;
-  uint8_t *tmp_obmc_bufs[2];
+
+  // Points to a buffer that is used to hold temporary prediction results. This
+  // is used in two ways:
+  // 1. This is a temporary buffer used to pingpong the prediction in
+  //    handle_inter_mode.
+  // 2. xd->tmp_obmc_bufs also points to this buffer, and is used in ombc
+  //     prediction.
+  uint8_t *tmp_pred_bufs[2];
 
   FRAME_CONTEXT *row_ctx;
   // This context will be used to update color_map_cdf pointer which would be

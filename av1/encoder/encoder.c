@@ -886,7 +886,7 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
   av1_release_compound_type_rd_buffers(&cpi->td.mb.comp_rd_buffer);
   aom_free(cpi->td.mb.tmp_conv_dst);
   for (int j = 0; j < 2; ++j) {
-    aom_free(cpi->td.mb.tmp_obmc_bufs[j]);
+    aom_free(cpi->td.mb.tmp_pred_bufs[j]);
   }
 
 #if CONFIG_DENOISE
@@ -2872,11 +2872,11 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
     x->e_mbd.tmp_conv_dst = x->tmp_conv_dst;
   }
   for (int i = 0; i < 2; ++i) {
-    if (x->tmp_obmc_bufs[i] == NULL) {
-      CHECK_MEM_ERROR(cm, x->tmp_obmc_bufs[i],
+    if (x->tmp_pred_bufs[i] == NULL) {
+      CHECK_MEM_ERROR(cm, x->tmp_pred_bufs[i],
                       aom_memalign(32, 2 * MAX_MB_PLANE * MAX_SB_SQUARE *
-                                           sizeof(*x->tmp_obmc_bufs[i])));
-      x->e_mbd.tmp_obmc_bufs[i] = x->tmp_obmc_bufs[i];
+                                           sizeof(*x->tmp_pred_bufs[i])));
+      x->e_mbd.tmp_obmc_bufs[i] = x->tmp_pred_bufs[i];
     }
   }
 
@@ -3606,7 +3606,7 @@ void av1_remove_compressor(AV1_COMP *cpi) {
       aom_free(thread_data->td->tmp_conv_dst);
       av1_release_compound_type_rd_buffers(&thread_data->td->comp_rd_buffer);
       for (int j = 0; j < 2; ++j) {
-        aom_free(thread_data->td->tmp_obmc_bufs[j]);
+        aom_free(thread_data->td->tmp_pred_bufs[j]);
       }
       aom_free(thread_data->td->above_pred_buf);
       aom_free(thread_data->td->left_pred_buf);

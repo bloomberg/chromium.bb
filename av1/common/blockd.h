@@ -723,7 +723,7 @@ typedef struct macroblockd {
   // tmp_obmc_bufs[i][p * MAX_SB_SQUARE] is the buffer used for plane 'p'.
   // There are pointers to actual buffers allocated elsewhere: e.g. In dec,
   // 'pbi->td.tmp_obmc_bufs' or 'pbi->thread_data[t].td->xd.tmp_conv_dst' and in
-  // enc, 'x->tmp_obmc_bufs' or 'cpi->tile_thr_data[t].td->mb.tmp_obmc_bufs'.
+  // enc, 'x->tmp_pred_bufs' or 'cpi->tile_thr_data[t].td->mb.tmp_pred_bufs'.
   uint8_t *tmp_obmc_bufs[2];
 } MACROBLOCKD;
 
