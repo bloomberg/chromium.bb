@@ -192,6 +192,7 @@ proto_library("system_api-attestation-protos") {
   proto_out_dir = "include/attestation/proto_bindings"
   sources = [
     "${proto_in_dir}/attestation_ca.proto",
+    "${proto_in_dir}/google_key.proto",
     "${proto_in_dir}/interface.proto",
     "${proto_in_dir}/keystore.proto",
     "${proto_in_dir}/pca_agent.proto",
