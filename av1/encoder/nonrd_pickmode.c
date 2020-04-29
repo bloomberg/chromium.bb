@@ -713,8 +713,8 @@ static void model_rd_for_sb_y(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
     rate = INT_MAX;  // this will be overwritten later with block_yrd
     dist = INT_MAX;
   }
-  *var_y = var;
-  *sse_y = sse;
+  if (var_y) *var_y = var;
+  if (sse_y) *sse_y = sse;
   x->pred_sse[ref] = (unsigned int)AOMMIN(sse, UINT_MAX);
 
   assert(rate >= 0);
@@ -1529,6 +1529,165 @@ static AOM_INLINE void get_ref_frame_use_mask(AV1_COMP *cpi, MACROBLOCK *x,
   use_ref_frame[GOLDEN_FRAME] = use_golden_ref_frame;
 }
 
+static void estimate_intra_mode(
+    AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize, int use_modeled_non_rd_cost,
+    int best_early_term, unsigned int ref_cost_intra, int reuse_prediction,
+    struct buf_2d *orig_dst, PRED_BUFFER *tmp_buffers,
+    PRED_BUFFER **this_mode_pred, RD_STATS *best_rdc,
+    BEST_PICKMODE *best_pickmode) {
+  AV1_COMMON *const cm = &cpi->common;
+  MACROBLOCKD *const xd = &x->e_mbd;
+  MB_MODE_INFO *const mi = xd->mi[0];
+  const unsigned char segment_id = mi->segment_id;
+  const int *const rd_threshes = cpi->rd.threshes[segment_id][bsize];
+  const int *const rd_thresh_freq_fact = x->thresh_freq_fact[bsize];
+  const int mi_row = xd->mi_row;
+  const int mi_col = xd->mi_col;
+  struct macroblockd_plane *const pd = &xd->plane[0];
+
+  const CommonQuantParams *quant_params = &cm->quant_params;
+
+  RD_STATS this_rdc;
+
+  int intra_cost_penalty = av1_get_intra_cost_penalty(
+      quant_params->base_qindex, quant_params->y_dc_delta_q,
+      cm->seq_params.bit_depth);
+  int64_t inter_mode_thresh = RDCOST(x->rdmult, intra_cost_penalty, 0);
+  int perform_intra_pred = cpi->sf.rt_sf.check_intra_pred_nonrd;
+
+  int do_early_exit_rdthresh = 1;
+
+  uint32_t spatial_var_thresh = 50;
+  int motion_thresh = 32;
+  // Adjust thresholds to make intra mode likely tested if the other
+  // references (golden, alt) are skipped/not checked.
+  if (cpi->sf.rt_sf.use_nonrd_altref_frame == 0 &&
+      cpi->sf.rt_sf.nonrd_prune_ref_frame_search > 0) {
+    spatial_var_thresh = 150;
+    motion_thresh = 0;
+  }
+
+  // Some adjustments to checking intra mode based on source variance.
+  if (x->source_variance < spatial_var_thresh) {
+    // If the best inter mode is large motion or non-LAST ref reduce intra cost
+    // penalty, so intra mode is more likely tested.
+    if (best_pickmode->best_ref_frame != LAST_FRAME ||
+        abs(mi->mv[0].as_mv.row) >= motion_thresh ||
+        abs(mi->mv[0].as_mv.col) >= motion_thresh) {
+      intra_cost_penalty = intra_cost_penalty >> 2;
+      inter_mode_thresh = RDCOST(x->rdmult, intra_cost_penalty, 0);
+      do_early_exit_rdthresh = 0;
+    }
+    // For big blocks worth checking intra (since only DC will be checked),
+    // even if best_early_term is set.
+    if (bsize >= BLOCK_32X32) best_early_term = 0;
+  } else if (cpi->sf.rt_sf.source_metrics_sb_nonrd &&
+             x->content_state_sb == kLowSad) {
+    perform_intra_pred = 0;
+  }
+
+  if (!(best_rdc->rdcost == INT64_MAX ||
+        (perform_intra_pred && !best_early_term &&
+         best_rdc->rdcost > inter_mode_thresh &&
+         bsize <= cpi->sf.part_sf.max_intra_bsize))) {
+    return;
+  }
+
+  int64_t this_sse = INT64_MAX;
+  struct estimate_block_intra_args args = { cpi, x, DC_PRED, 1, 0 };
+  TX_SIZE intra_tx_size =
+      AOMMIN(AOMMIN(max_txsize_lookup[bsize],
+                    tx_mode_to_biggest_tx_size[x->tx_mode_search_type]),
+             TX_16X16);
+
+  PRED_BUFFER *const best_pred = best_pickmode->best_pred;
+  if (reuse_prediction && best_pred != NULL) {
+    const int bh = block_size_high[bsize];
+    const int bw = block_size_wide[bsize];
+    if (best_pred->data == orig_dst->buf) {
+      *this_mode_pred = &tmp_buffers[get_pred_buffer(tmp_buffers, 3)];
+      aom_convolve_copy(best_pred->data, best_pred->stride,
+                        (*this_mode_pred)->data, (*this_mode_pred)->stride, bw,
+                        bh);
+      best_pickmode->best_pred = *this_mode_pred;
+    }
+  }
+  pd->dst = *orig_dst;
+
+  for (int i = 0; i < 4; ++i) {
+    const PREDICTION_MODE this_mode = intra_mode_list[i];
+    const THR_MODES mode_index = mode_idx[INTRA_FRAME][mode_offset(this_mode)];
+    const int mode_rd_thresh = rd_threshes[mode_index];
+
+    // Only check DC for blocks >= 32X32.
+    if (this_mode > 0 && bsize >= BLOCK_32X32) continue;
+
+    if (rd_less_than_thresh(best_rdc->rdcost, mode_rd_thresh,
+                            rd_thresh_freq_fact[mode_index]) &&
+        (do_early_exit_rdthresh || this_mode == SMOOTH_PRED)) {
+      continue;
+    }
+    const BLOCK_SIZE uv_bsize = get_plane_block_size(
+        bsize, xd->plane[1].subsampling_x, xd->plane[1].subsampling_y);
+
+    mi->mode = this_mode;
+    mi->ref_frame[0] = INTRA_FRAME;
+    mi->ref_frame[1] = NONE_FRAME;
+
+    this_rdc.dist = this_rdc.rate = 0;
+    args.mode = this_mode;
+    args.skippable = 1;
+    args.rdc = &this_rdc;
+    mi->tx_size = intra_tx_size;
+    compute_intra_yprediction(cm, this_mode, bsize, x, xd);
+    // Look into selecting tx_size here, based on prediction residual.
+    if (use_modeled_non_rd_cost)
+      model_rd_for_sb_y(cpi, bsize, x, xd, &this_rdc.rate, &this_rdc.dist,
+                        &this_rdc.skip_txfm, NULL, NULL, NULL, 1);
+    else
+      block_yrd(cpi, x, mi_row, mi_col, &this_rdc, &args.skippable, &this_sse,
+                bsize, mi->tx_size);
+    // TODO(kyslov@) Need to account for skippable
+    if (x->color_sensitivity[0]) {
+      av1_foreach_transformed_block_in_plane(xd, uv_bsize, 1,
+                                             estimate_block_intra, &args);
+    }
+    if (x->color_sensitivity[1]) {
+      av1_foreach_transformed_block_in_plane(xd, uv_bsize, 2,
+                                             estimate_block_intra, &args);
+    }
+
+    int mode_cost = 0;
+    if (av1_is_directional_mode(this_mode) && av1_use_angle_delta(bsize)) {
+      mode_cost +=
+          x->angle_delta_cost[this_mode - V_PRED]
+                             [MAX_ANGLE_DELTA + mi->angle_delta[PLANE_TYPE_Y]];
+    }
+    if (this_mode == DC_PRED && av1_filter_intra_allowed_bsize(cm, bsize)) {
+      mode_cost += x->filter_intra_cost[bsize][0];
+    }
+    this_rdc.rate += ref_cost_intra;
+    this_rdc.rate += intra_cost_penalty;
+    this_rdc.rate += mode_cost;
+    this_rdc.rdcost = RDCOST(x->rdmult, this_rdc.rate, this_rdc.dist);
+
+    if (this_rdc.rdcost < best_rdc->rdcost) {
+      *best_rdc = this_rdc;
+      best_pickmode->best_mode = this_mode;
+      best_pickmode->best_intra_tx_size = mi->tx_size;
+      best_pickmode->best_ref_frame = INTRA_FRAME;
+      mi->uv_mode = this_mode;
+      mi->mv[0].as_int = INVALID_MV;
+      mi->mv[1].as_int = INVALID_MV;
+    }
+  }
+  if (best_pickmode->best_ref_frame != INTRA_FRAME) {
+    mi->tx_size = best_pickmode->best_tx_size;
+  } else {
+    mi->tx_size = best_pickmode->best_intra_tx_size;
+  }
+}
+
 void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                                   MACROBLOCK *x, RD_STATS *rd_cost,
                                   BLOCK_SIZE bsize, PICK_MODE_CONTEXT *ctx,
@@ -1576,11 +1735,6 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 #if COLLECT_PICK_MODE_STAT
   aom_usec_timer_start(&ms_stat.timer2);
 #endif
-  int intra_cost_penalty = av1_get_intra_cost_penalty(
-      quant_params->base_qindex, quant_params->y_dc_delta_q,
-      cm->seq_params.bit_depth);
-  int64_t inter_mode_thresh = RDCOST(x->rdmult, intra_cost_penalty, 0);
-  int perform_intra_pred = cpi->sf.rt_sf.check_intra_pred_nonrd;
   int use_modeled_non_rd_cost = 0;
   int enable_filter_search = 0;
   InterpFilter default_interp_filter = EIGHTTAP_REGULAR;
@@ -1967,133 +2121,10 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   mi->angle_delta[PLANE_TYPE_UV] = 0;
   mi->filter_intra_mode_info.use_filter_intra = 0;
 
-  uint32_t spatial_var_thresh = 50;
-  int motion_thresh = 32;
-  // Adjust thresholds to make intra mode likely tested if the other
-  // references (golden, alt) are skipped/not checked.
-  if (cpi->sf.rt_sf.use_nonrd_altref_frame == 0 &&
-      cpi->sf.rt_sf.nonrd_prune_ref_frame_search > 0) {
-    spatial_var_thresh = 150;
-    motion_thresh = 0;
-  }
-  int do_early_exit_rdthresh = 1;
-  // Some adjustments to checking intra mode based on source variance.
-  if (x->source_variance < spatial_var_thresh) {
-    // If the best inter mode is large motion or non-LAST ref reduce intra cost
-    // penalty, so intra mode is more likely tested.
-    if (best_pickmode.best_ref_frame != LAST_FRAME ||
-        abs(mi->mv[0].as_mv.row) >= motion_thresh ||
-        abs(mi->mv[0].as_mv.col) >= motion_thresh) {
-      intra_cost_penalty = intra_cost_penalty >> 2;
-      inter_mode_thresh = RDCOST(x->rdmult, intra_cost_penalty, 0);
-      do_early_exit_rdthresh = 0;
-    }
-    // For big blocks worth checking intra (since only DC will be checked),
-    // even if best_early_term is set.
-    if (bsize >= BLOCK_32X32) best_early_term = 0;
-  } else if (cpi->sf.rt_sf.source_metrics_sb_nonrd &&
-             x->content_state_sb == kLowSad) {
-    perform_intra_pred = 0;
-  }
-
-  if (best_rdc.rdcost == INT64_MAX ||
-      (perform_intra_pred && !best_early_term &&
-       best_rdc.rdcost > inter_mode_thresh &&
-       bsize <= cpi->sf.part_sf.max_intra_bsize)) {
-    int64_t this_sse = INT64_MAX;
-    struct estimate_block_intra_args args = { cpi, x, DC_PRED, 1, 0 };
-    PRED_BUFFER *const best_pred = best_pickmode.best_pred;
-    TX_SIZE intra_tx_size =
-        AOMMIN(AOMMIN(max_txsize_lookup[bsize],
-                      tx_mode_to_biggest_tx_size[x->tx_mode_search_type]),
-               TX_16X16);
-
-    if (reuse_inter_pred && best_pred != NULL) {
-      if (best_pred->data == orig_dst.buf) {
-        this_mode_pred = &tmp[get_pred_buffer(tmp, 3)];
-        aom_convolve_copy(best_pred->data, best_pred->stride,
-                          this_mode_pred->data, this_mode_pred->stride, bw, bh);
-        best_pickmode.best_pred = this_mode_pred;
-      }
-    }
-    pd->dst = orig_dst;
-
-    for (int i = 0; i < 4; ++i) {
-      const PREDICTION_MODE this_mode = intra_mode_list[i];
-      const THR_MODES mode_index =
-          mode_idx[INTRA_FRAME][mode_offset(this_mode)];
-      const int mode_rd_thresh = rd_threshes[mode_index];
-
-      // Only check DC for blocks >= 32X32.
-      if (this_mode > 0 && bsize >= BLOCK_32X32) continue;
-
-      if (rd_less_than_thresh(best_rdc.rdcost, mode_rd_thresh,
-                              rd_thresh_freq_fact[mode_index]) &&
-          (do_early_exit_rdthresh || this_mode == SMOOTH_PRED)) {
-        continue;
-      }
-      const BLOCK_SIZE uv_bsize = get_plane_block_size(
-          bsize, xd->plane[1].subsampling_x, xd->plane[1].subsampling_y);
-
-      mi->mode = this_mode;
-      mi->ref_frame[0] = INTRA_FRAME;
-      mi->ref_frame[1] = NONE_FRAME;
-
-      this_rdc.dist = this_rdc.rate = 0;
-      args.mode = this_mode;
-      args.skippable = 1;
-      args.rdc = &this_rdc;
-      mi->tx_size = intra_tx_size;
-      compute_intra_yprediction(cm, this_mode, bsize, x, xd);
-      // Look into selecting tx_size here, based on prediction residual.
-      if (use_modeled_non_rd_cost)
-        model_rd_for_sb_y(cpi, bsize, x, xd, &this_rdc.rate, &this_rdc.dist,
-                          &this_rdc.skip_txfm, NULL, &var_y, &sse_y, 1);
-      else
-        block_yrd(cpi, x, mi_row, mi_col, &this_rdc, &args.skippable, &this_sse,
-                  bsize, mi->tx_size);
-      // TODO(kyslov@) Need to account for skippable
-      if (x->color_sensitivity[0]) {
-        av1_foreach_transformed_block_in_plane(xd, uv_bsize, 1,
-                                               estimate_block_intra, &args);
-      }
-      if (x->color_sensitivity[1]) {
-        av1_foreach_transformed_block_in_plane(xd, uv_bsize, 2,
-                                               estimate_block_intra, &args);
-      }
-
-      int mode_cost = 0;
-      if (av1_is_directional_mode(this_mode) && av1_use_angle_delta(bsize)) {
-        mode_cost += x->angle_delta_cost[this_mode - V_PRED]
-                                        [MAX_ANGLE_DELTA +
-                                         mi->angle_delta[PLANE_TYPE_Y]];
-      }
-      if (this_mode == DC_PRED && av1_filter_intra_allowed_bsize(cm, bsize)) {
-        mode_cost += x->filter_intra_cost[bsize][0];
-      }
-      this_rdc.rate += ref_costs_single[INTRA_FRAME];
-      this_rdc.rate += intra_cost_penalty;
-      this_rdc.rate += mode_cost;
-      this_rdc.rdcost = RDCOST(x->rdmult, this_rdc.rate, this_rdc.dist);
-
-      if (this_rdc.rdcost < best_rdc.rdcost) {
-        best_rdc = this_rdc;
-        best_pickmode.best_mode = this_mode;
-        best_pickmode.best_intra_tx_size = mi->tx_size;
-        best_pickmode.best_ref_frame = INTRA_FRAME;
-        mi->uv_mode = this_mode;
-        mi->mv[0].as_int = INVALID_MV;
-        mi->mv[1].as_int = INVALID_MV;
-      }
-    }
-
-    // Reset mb_mode_info to the best inter mode.
-    if (best_pickmode.best_ref_frame != INTRA_FRAME) {
-      mi->tx_size = best_pickmode.best_tx_size;
-    } else {
-      mi->tx_size = best_pickmode.best_intra_tx_size;
-    }
-  }
+  estimate_intra_mode(cpi, x, bsize, use_modeled_non_rd_cost, best_early_term,
+                      ref_costs_single[INTRA_FRAME], reuse_inter_pred,
+                      &orig_dst, tmp, &this_mode_pred, &best_rdc,
+                      &best_pickmode);
 
   pd->dst = orig_dst;
   mi->mode = best_pickmode.best_mode;
