@@ -18,6 +18,7 @@ from chromite.api.gen.chromite.api import toolchain_pb2
 from chromite.api.gen.chromiumos.builder_config_pb2 import BuilderConfig
 from chromite.lib import cros_logging as logging
 from chromite.lib import toolchain_util
+from chromite.api.gen.chromite.api.artifacts_pb2 import PrepareForBuildResponse
 
 
 assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
@@ -160,15 +161,14 @@ def PrepareForBuild(input_proto, output_proto, _config):
   #   elif any UNKNOWN => UNKNOWN
   #   elif any POINTLESS => POINTLESS
   #   else UNKNOWN.
-  proto_resp = toolchain_pb2.PrepareForToolchainBuildResponse
   if toolchain_util.PrepareForBuildReturn.NEEDED in results:
-    output_proto.build_relevance = proto_resp.NEEDED
+    output_proto.build_relevance = PrepareForBuildResponse.NEEDED
   elif toolchain_util.PrepareForBuildReturn.UNKNOWN in results:
-    output_proto.build_relevance = proto_resp.UNKNOWN
+    output_proto.build_relevance = PrepareForBuildResponse.UNKNOWN
   elif toolchain_util.PrepareForBuildReturn.POINTLESS in results:
-    output_proto.build_relevance = proto_resp.POINTLESS
+    output_proto.build_relevance = PrepareForBuildResponse.POINTLESS
   else:
-    output_proto.build_relevance = proto_resp.UNKNOWN
+    output_proto.build_relevance = PrepareForBuildResponse.UNKNOWN
   return controller.RETURN_CODE_SUCCESS
 
 
