@@ -42,7 +42,7 @@ lightfield_test() {
 
   eval "${AOM_TEST_PREFIX}" "${encoder}" "${img_width}" "${img_height}" \
       "${yuv_file}" "${lf_file}" "${lf_width}" \
-      "${lf_height}" "${lf_blocksize}" ${devnull}
+      "${lf_height}" "${lf_blocksize}" ${devnull} || return 1
 
   [ -e "${lf_file}" ] || return 1
 
@@ -73,7 +73,7 @@ lightfield_test() {
   fi
 
   eval "${AOM_TEST_PREFIX}" "${bs_decoder}" "${lf_file}" "${tl_file}" \
-      "${num_references}" "${tl_text_file}" ${devnull}
+      "${num_references}" "${tl_text_file}" ${devnull} || return 1
 
   [ -e "${tl_file}" ] || return 1
 
@@ -86,7 +86,7 @@ lightfield_test() {
   fi
 
   eval "${AOM_TEST_PREFIX}" "${tl_decoder}" "${tl_file}" "${tl_outfile}" \
-      "${num_references}" "${num_tile_lists}" ${devnull}
+      "${num_references}" "${num_tile_lists}" ${devnull} || return 1
 
   [ -e "${tl_outfile}" ] || return 1
 
@@ -99,7 +99,7 @@ lightfield_test() {
   fi
 
   eval "${AOM_TEST_PREFIX}" "${ref_decoder}" "${lf_file}" "${tl_reffile}" \
-      "${num_references}" "${tl_text_file}" ${devnull}
+      "${num_references}" "${tl_text_file}" ${devnull} || return 1
 
   [ -e "${tl_reffile}" ] || return 1
 
