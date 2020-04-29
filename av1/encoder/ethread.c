@@ -839,7 +839,7 @@ void av1_encode_tiles_row_mt(AV1_COMP *cpi) {
 }
 
 void av1_tpl_row_mt_sync_read_dummy(AV1TplRowMultiThreadSync *const tpl_mt_sync,
-                                    const int r, int c) {
+                                    int r, int c) {
   (void)tpl_mt_sync;
   (void)r;
   (void)c;
@@ -847,8 +847,7 @@ void av1_tpl_row_mt_sync_read_dummy(AV1TplRowMultiThreadSync *const tpl_mt_sync,
 }
 
 void av1_tpl_row_mt_sync_write_dummy(
-    AV1TplRowMultiThreadSync *const tpl_mt_sync, const int r, int c,
-    const int cols) {
+    AV1TplRowMultiThreadSync *const tpl_mt_sync, int r, int c, const int cols) {
   (void)tpl_mt_sync;
   (void)r;
   (void)c;
