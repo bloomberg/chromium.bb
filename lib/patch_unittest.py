@@ -306,7 +306,9 @@ I am the first commit.
 
   def _CommonGitSetup(self):
     git1 = self._MakeRepo('git1', self.source)
-    git2 = self._MakeRepo('git2', self.source)
+    git2 = os.path.join(self.tempdir, 'git2')
+    # Avoid another git clone as it's a bit expensive.
+    shutil.copytree(git1, git2)
     patch = self.CommitFile(git1, 'monkeys', 'foon')
     return git1, git2, patch
 
