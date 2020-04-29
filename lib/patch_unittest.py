@@ -224,6 +224,10 @@ I am the first commit.
         ['git', 'init', '--separate-git-dir', bare_path, checkout_path],
         cwd=tmp_path, print_cmd=False, capture_output=True)
 
+    # Nerf any hooks the OS might have installed on us as they aren't going to
+    # be useful to us, just slow things down.
+    shutil.rmtree(os.path.join(bare_path, 'hooks'))
+
     # Add an initial commit then wipe the working tree.
     cros_build_lib.run(
         ['git', 'commit', '--allow-empty', '-m', 'initial commit'],
@@ -286,6 +290,9 @@ I am the first commit.
       remote = config_lib.GetSiteParams().EXTERNAL_REMOTE
     cmd += ['--origin', remote]
     self._run(cmd)
+    # Nerf any hooks the OS might have installed on us as they aren't going to
+    # be useful to us, just slow things down.
+    shutil.rmtree(os.path.join(path, '.git', 'hooks'))
     return path
 
   def _MakeCommit(self, repo, commit=None):
