@@ -1108,13 +1108,12 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       'benchmark-afdo-generate',
       site_config.templates.benchmark_afdo_generate,
       boards=['chell'],
-      # 10 AM UTC is 2 AM PST (no daylight savings)
-      # Repeat every 12 hours
-      schedule='0 10/12 * * *',
+      # This builder is now running under recipes.
+      # TODO(crbug/1019868): remove this builder from legacy.
       health_alert_recipients=['c-compiler-chrome@google.com'],
   )
 
-  def ChromeAFDOPublishBuilders(name, board, schedule):
+  def ChromeAFDOPublishBuilders(name, board, _schedule):
     site_config.Add(
         'chrome-' + name + '-release-afdo-verify',
         site_config.templates.release_afdo_verify,
@@ -1122,7 +1121,9 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
         chrome_afdo_verify=True,
         afdo_use=False,
         useflags=config_lib.append_useflags(['afdo_verify']),
-        schedule=schedule,
+        # These builders are now running under recipes.
+        # TODO(crbug/1019868): remove this builder from legacy.
+        # schedule=schedule,
         health_alert_recipients=['c-compiler-chrome@google.com'],
     )
 
@@ -1138,13 +1139,15 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
   ChromeAFDOPublishBuilders('airmont', 'snappy', '0 5 * * 0,4')
   ChromeAFDOPublishBuilders('broadwell', 'eve', '0 5 * * 0,4')
 
-  def KernelAFDOPublishBuilders(name, board, schedule):
+  def KernelAFDOPublishBuilders(name, board, _schedule):
     site_config.Add(
         name + '-release-afdo-verify',
         site_config.templates.release_afdo_verify,
         boards=[board],
         kernel_afdo_verify=True,
-        schedule=schedule,
+        # These builders are now running under recipes.
+        # TODO(crbug/1019868): remove this builder from legacy.
+        # schedule=schedule,
         health_alert_recipients=['c-compiler-chrome@google.com'],
         # Send emails if this builder fails once
         health_threshold=1,
@@ -1166,9 +1169,9 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       # The board should not matter much, since we are not running
       # anything on the board.
       boards=['terra'],
-      # 10 AM UTC is 2 AM PST (no daylight savings)
-      # Repeat every 12 hours
-      schedule='0 10/12 * * *',
+      # This builder is now running under recipes.
+      # TODO(crbug/1019868): remove this builder from legacy.
+      # schedule='0 10/12 * * *',
       health_alert_recipients=['c-compiler-chrome@google.com'],
       # Send emails if this builder fails once
       health_threshold=1,
@@ -1179,10 +1182,9 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.orderfile_verify_toolchain,
       # Only test on X86 for now.
       boards=['eve'],
-      # 2 PM UTC is 6 AM PST (no daylight savings)
-      # Start this builder 4 hours after orderfile-generate-toolchain
-      # Repeat every 12 hours
-      schedule='0 2/12 * * *',
+      # This builder is now running under recipes.
+      # TODO(crbug/1019868): remove this builder from legacy.
+      # schedule='0 2/12 * * *',
       health_alert_recipients=['c-compiler-chrome@google.com'],
       # Send emails if this builder fails once
       health_threshold=1,

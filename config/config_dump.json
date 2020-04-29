@@ -3792,8 +3792,7 @@
         ],
         "health_alert_recipients": [
             "c-compiler-chrome@google.com"
-        ],
-        "schedule": "0 10/12 * * *"
+        ]
     },
     "benchmark-afdo-generate-tryjob": {
         "_template": "benchmark_afdo_generate",
@@ -7862,7 +7861,6 @@
         "health_alert_recipients": [
             "c-compiler-chrome@google.com"
         ],
-        "schedule": "0 5 * * 0,4",
         "useflags": [
             "-cros-debug",
             "afdo_verify",
@@ -7899,7 +7897,6 @@
         "health_alert_recipients": [
             "c-compiler-chrome@google.com"
         ],
-        "schedule": "0 5 * * 0,4",
         "useflags": [
             "-cros-debug",
             "afdo_verify",
@@ -7936,7 +7933,6 @@
         "health_alert_recipients": [
             "c-compiler-chrome@google.com"
         ],
-        "schedule": "0 5 * * 0,4",
         "useflags": [
             "-cros-debug",
             "afdo_verify",
@@ -18959,8 +18955,7 @@
             "c-compiler-chrome@google.com"
         ],
         "health_threshold": 1,
-        "kernel_afdo_verify": true,
-        "schedule": "0 17 * * *"
+        "kernel_afdo_verify": true
     },
     "kernel-3_18-release-afdo-verify-tryjob": {
         "_template": "release_afdo_verify",
@@ -18986,8 +18981,7 @@
             "c-compiler-chrome@google.com"
         ],
         "health_threshold": 1,
-        "kernel_afdo_verify": true,
-        "schedule": "0 5 * * *"
+        "kernel_afdo_verify": true
     },
     "kernel-4_14-release-afdo-verify-tryjob": {
         "_template": "release_afdo_verify",
@@ -19013,8 +19007,7 @@
             "c-compiler-chrome@google.com"
         ],
         "health_threshold": 1,
-        "kernel_afdo_verify": true,
-        "schedule": "0 11 * * *"
+        "kernel_afdo_verify": true
     },
     "kernel-4_19-release-afdo-verify-tryjob": {
         "_template": "release_afdo_verify",
@@ -19040,8 +19033,7 @@
             "c-compiler-chrome@google.com"
         ],
         "health_threshold": 1,
-        "kernel_afdo_verify": true,
-        "schedule": "0 23 * * *"
+        "kernel_afdo_verify": true
     },
     "kernel-4_4-release-afdo-verify-tryjob": {
         "_template": "release_afdo_verify",
@@ -26649,8 +26641,7 @@
         "health_alert_recipients": [
             "c-compiler-chrome@google.com"
         ],
-        "health_threshold": 1,
-        "schedule": "0 10/12 * * *"
+        "health_threshold": 1
     },
     "orderfile-generate-toolchain-tryjob": {
         "_template": "orderfile_generate_toolchain",
@@ -26674,8 +26665,7 @@
         "health_alert_recipients": [
             "c-compiler-chrome@google.com"
         ],
-        "health_threshold": 1,
-        "schedule": "0 2/12 * * *"
+        "health_threshold": 1
     },
     "orderfile-verify-toolchain-tryjob": {
         "_template": "orderfile_verify_toolchain",
