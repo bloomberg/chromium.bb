@@ -544,7 +544,7 @@ INSTANTIATE_TEST_SUITE_P(
 
 #endif  // HAVE_SSSE3 && ARCH_X86_64
 
-#if HAVE_AVX && ARCH_X86_64
+#if HAVE_AVX
 INSTANTIATE_TEST_SUITE_P(
     AVX, QuantizeTest,
     ::testing::Values(
@@ -553,5 +553,5 @@ INSTANTIATE_TEST_SUITE_P(
         make_tuple(&aom_quantize_b_32x32_c, &aom_quantize_b_32x32_avx,
                    static_cast<TX_SIZE>(TX_32X32), TYPE_B, AOM_BITS_8)));
 
-#endif  // HAVE_AVX && ARCH_X86_64
+#endif  // HAVE_AVX
 }  // namespace
