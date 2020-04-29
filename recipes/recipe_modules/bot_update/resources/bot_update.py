@@ -716,7 +716,6 @@ def _git_checkout(sln, sln_dir, revisions, refs, no_fetch_tags, git_cache_dir,
   if url == CHROMIUM_SRC_URL or url + '.git' == CHROMIUM_SRC_URL:
     # This is for performance investigation of `git fetch` in chromium/src.
     env = {
-        'GIT_CURL_VERBOSE': '1',
         'GIT_TRACE': 'true',
         'GIT_TRACE_PERFORMANCE': 'true',
     }
