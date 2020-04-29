@@ -231,16 +231,9 @@ I am the first commit.
     self.source = os.path.join(self.tempdir, 'source.git')
     self._CreateSourceRepo(self.source)
     self.default_cwd = os.path.join(self.tempdir, 'unwritable')
-    self.original_cwd = os.getcwd()
-    os.mkdir(self.default_cwd)
+    # Disallow write so as to smoke out any invalid writes to cwd.
+    os.mkdir(self.default_cwd, 0o500)
     os.chdir(self.default_cwd)
-    # Disallow write so as to smoke out any invalid writes to
-    # cwd.
-    os.chmod(self.default_cwd, 0o500)
-
-  def tearDown(self):
-    if hasattr(self, 'original_cwd'):
-      os.chdir(self.original_cwd)
 
   def _MkPatch(self, source, sha1, ref='refs/heads/master', **kwargs):
     # This arg is used by inherited versions of _MkPatch. Pop it to make this
