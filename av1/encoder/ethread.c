@@ -485,19 +485,7 @@ static AOM_INLINE void create_enc_workers(AV1_COMP *cpi, int num_workers) {
       av1_setup_sms_tree(cpi, thread_data->td);
       av1_setup_shared_coeff_buffer(cm, &thread_data->td->shared_coeff_buf);
 
-      CHECK_MEM_ERROR(cm, thread_data->td->above_pred_buf,
-                      (uint8_t *)aom_memalign(
-                          16, MAX_MB_PLANE * MAX_SB_SQUARE *
-                                  sizeof(*thread_data->td->above_pred_buf)));
-      CHECK_MEM_ERROR(cm, thread_data->td->left_pred_buf,
-                      (uint8_t *)aom_memalign(
-                          16, MAX_MB_PLANE * MAX_SB_SQUARE *
-                                  sizeof(*thread_data->td->left_pred_buf)));
-
-      CHECK_MEM_ERROR(
-          cm, thread_data->td->wsrc_buf,
-          (int32_t *)aom_memalign(
-              16, MAX_SB_SQUARE * sizeof(*thread_data->td->wsrc_buf)));
+      av1_alloc_obmc_buffers(&thread_data->td->obmc_buffer, cm);
 
       CHECK_MEM_ERROR(cm, thread_data->td->inter_modes_info,
                       (InterModesInfo *)aom_malloc(
@@ -511,10 +499,6 @@ static AOM_INLINE void create_enc_workers(AV1_COMP *cpi, int num_workers) {
                   AOM_BUFFER_SIZE_FOR_BLOCK_HASH *
                   sizeof(*thread_data->td->hash_value_buffer[0][0])));
 
-      CHECK_MEM_ERROR(
-          cm, thread_data->td->mask_buf,
-          (int32_t *)aom_memalign(
-              16, MAX_SB_SQUARE * sizeof(*thread_data->td->mask_buf)));
       // Allocate frame counters in thread data.
       CHECK_MEM_ERROR(cm, thread_data->td->counts,
                       aom_calloc(1, sizeof(*thread_data->td->counts)));
@@ -637,9 +621,7 @@ static AOM_INLINE void prepare_enc_workers(AV1_COMP *cpi, AVxWorkerHook hook,
     if (thread_data->td != &cpi->td) {
       thread_data->td->mb = cpi->td.mb;
       thread_data->td->rd_counts = cpi->td.rd_counts;
-      thread_data->td->mb.above_pred_buf = thread_data->td->above_pred_buf;
-      thread_data->td->mb.left_pred_buf = thread_data->td->left_pred_buf;
-      thread_data->td->mb.wsrc_buf = thread_data->td->wsrc_buf;
+      thread_data->td->mb.obmc_buffer = thread_data->td->obmc_buffer;
 
       thread_data->td->mb.inter_modes_info = thread_data->td->inter_modes_info;
       for (int x = 0; x < 2; x++) {
@@ -652,7 +634,6 @@ static AOM_INLINE void prepare_enc_workers(AV1_COMP *cpi, AVxWorkerHook hook,
               thread_data->td->hash_value_buffer[x][y];
         }
       }
-      thread_data->td->mb.mask_buf = thread_data->td->mask_buf;
       thread_data->td->mb.mbmi_ext = thread_data->td->mbmi_ext;
     }
     if (thread_data->td->counts != &cpi->counts) {

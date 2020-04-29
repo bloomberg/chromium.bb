@@ -750,10 +750,7 @@ typedef struct ThreadData {
   SIMPLE_MOTION_DATA_TREE *sms_root;
   InterModesInfo *inter_modes_info;
   uint32_t *hash_value_buffer[2][2];
-  int32_t *wsrc_buf;
-  int32_t *mask_buf;
-  uint8_t *above_pred_buf;
-  uint8_t *left_pred_buf;
+  OBMCBuffer obmc_buffer;
   PALETTE_BUFFER *palette_buffer;
   CompoundTypeRdBuffers comp_rd_buffer;
   CONV_BUF_TYPE *tmp_conv_dst;
@@ -1674,6 +1671,8 @@ int av1_get_quantizer(struct AV1_COMP *cpi);
 
 int av1_convert_sect5obus_to_annexb(uint8_t *buffer, size_t *input_size);
 
+void av1_alloc_obmc_buffers(OBMCBuffer *obmc_buffer, AV1_COMMON *cm);
+void av1_release_obmc_buffers(OBMCBuffer *obmc_buffer);
 void av1_alloc_compound_type_rd_buffers(AV1_COMMON *const cm,
                                         CompoundTypeRdBuffers *const bufs);
 void av1_release_compound_type_rd_buffers(CompoundTypeRdBuffers *const bufs);

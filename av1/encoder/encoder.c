@@ -834,14 +834,7 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
   cpi->vmaf_info.rdmult_scaling_factors = NULL;
 #endif
 
-  aom_free(cpi->td.mb.above_pred_buf);
-  cpi->td.mb.above_pred_buf = NULL;
-
-  aom_free(cpi->td.mb.left_pred_buf);
-  cpi->td.mb.left_pred_buf = NULL;
-
-  aom_free(cpi->td.mb.wsrc_buf);
-  cpi->td.mb.wsrc_buf = NULL;
+  av1_release_obmc_buffers(&cpi->td.mb.obmc_buffer);
 
   aom_free(cpi->td.mb.inter_modes_info);
   cpi->td.mb.inter_modes_info = NULL;
@@ -851,8 +844,6 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
       aom_free(cpi->td.mb.intrabc_hash_info.hash_value_buffer[i][j]);
       cpi->td.mb.intrabc_hash_info.hash_value_buffer[i][j] = NULL;
     }
-  aom_free(cpi->td.mb.mask_buf);
-  cpi->td.mb.mask_buf = NULL;
 
   aom_free(cm->tpl_mvs);
   cm->tpl_mvs = NULL;
@@ -2689,6 +2680,35 @@ static AOM_INLINE void set_tpl_stats_block_size(int width, int height,
   *block_mis_log2 = is_720p_or_larger ? 2 : 1;
 }
 
+void av1_alloc_obmc_buffers(OBMCBuffer *obmc_buffer, AV1_COMMON *cm) {
+  CHECK_MEM_ERROR(
+      cm, obmc_buffer->wsrc,
+      (int32_t *)aom_memalign(16, MAX_SB_SQUARE * sizeof(*obmc_buffer->wsrc)));
+  CHECK_MEM_ERROR(
+      cm, obmc_buffer->mask,
+      (int32_t *)aom_memalign(16, MAX_SB_SQUARE * sizeof(*obmc_buffer->mask)));
+  CHECK_MEM_ERROR(
+      cm, obmc_buffer->above_pred,
+      (uint8_t *)aom_memalign(
+          16, MAX_MB_PLANE * MAX_SB_SQUARE * sizeof(*obmc_buffer->above_pred)));
+  CHECK_MEM_ERROR(
+      cm, obmc_buffer->left_pred,
+      (uint8_t *)aom_memalign(
+          16, MAX_MB_PLANE * MAX_SB_SQUARE * sizeof(*obmc_buffer->left_pred)));
+}
+
+void av1_release_obmc_buffers(OBMCBuffer *obmc_buffer) {
+  aom_free(obmc_buffer->mask);
+  aom_free(obmc_buffer->above_pred);
+  aom_free(obmc_buffer->left_pred);
+  aom_free(obmc_buffer->wsrc);
+
+  obmc_buffer->mask = NULL;
+  obmc_buffer->above_pred = NULL;
+  obmc_buffer->left_pred = NULL;
+  obmc_buffer->wsrc = NULL;
+}
+
 void av1_alloc_compound_type_rd_buffers(AV1_COMMON *const cm,
                                         CompoundTypeRdBuffers *const bufs) {
   CHECK_MEM_ERROR(
@@ -3164,18 +3184,7 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf, BufferPool *const pool,
 
   int sb_mi_size = av1_get_sb_mi_size(cm);
 
-  CHECK_MEM_ERROR(
-      cm, cpi->td.mb.above_pred_buf,
-      (uint8_t *)aom_memalign(16, MAX_MB_PLANE * MAX_SB_SQUARE *
-                                      sizeof(*cpi->td.mb.above_pred_buf)));
-  CHECK_MEM_ERROR(
-      cm, cpi->td.mb.left_pred_buf,
-      (uint8_t *)aom_memalign(16, MAX_MB_PLANE * MAX_SB_SQUARE *
-                                      sizeof(*cpi->td.mb.left_pred_buf)));
-
-  CHECK_MEM_ERROR(cm, cpi->td.mb.wsrc_buf,
-                  (int32_t *)aom_memalign(
-                      16, MAX_SB_SQUARE * sizeof(*cpi->td.mb.wsrc_buf)));
+  av1_alloc_obmc_buffers(&cpi->td.mb.obmc_buffer, cm);
 
   CHECK_MEM_ERROR(
       cm, cpi->td.mb.inter_modes_info,
@@ -3190,10 +3199,6 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf, BufferPool *const pool,
               sizeof(*cpi->td.mb.intrabc_hash_info.hash_value_buffer[0][0])));
 
   cpi->td.mb.intrabc_hash_info.g_crc_initialized = 0;
-
-  CHECK_MEM_ERROR(cm, cpi->td.mb.mask_buf,
-                  (int32_t *)aom_memalign(
-                      16, MAX_SB_SQUARE * sizeof(*cpi->td.mb.mask_buf)));
 
   CHECK_MEM_ERROR(cm, cpi->td.mb.mbmi_ext,
                   aom_calloc(sb_mi_size, sizeof(*cpi->td.mb.mbmi_ext)));
@@ -3608,9 +3613,7 @@ void av1_remove_compressor(AV1_COMP *cpi) {
       for (int j = 0; j < 2; ++j) {
         aom_free(thread_data->td->tmp_pred_bufs[j]);
       }
-      aom_free(thread_data->td->above_pred_buf);
-      aom_free(thread_data->td->left_pred_buf);
-      aom_free(thread_data->td->wsrc_buf);
+      av1_release_obmc_buffers(&thread_data->td->obmc_buffer);
       aom_free(thread_data->td->vt64x64);
 
       aom_free(thread_data->td->inter_modes_info);
@@ -3620,7 +3623,6 @@ void av1_remove_compressor(AV1_COMP *cpi) {
           thread_data->td->hash_value_buffer[x][y] = NULL;
         }
       }
-      aom_free(thread_data->td->mask_buf);
       aom_free(thread_data->td->counts);
       aom_free(thread_data->td->mbmi_ext);
       av1_free_shared_coeff_buffer(&thread_data->td->shared_coeff_buf);

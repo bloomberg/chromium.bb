@@ -51,8 +51,8 @@ static INLINE void init_ms_buffers(MSBuffers *ms_buffers, const MACROBLOCK *x) {
 
   av1_set_ms_compound_refs(ms_buffers, NULL, NULL, 0, 0);
 
-  ms_buffers->wsrc = x->wsrc_buf;
-  ms_buffers->obmc_mask = x->mask_buf;
+  ms_buffers->wsrc = x->obmc_buffer.wsrc;
+  ms_buffers->obmc_mask = x->obmc_buffer.mask;
 }
 
 void av1_make_default_fullpel_ms_params(FULLPEL_MOTION_SEARCH_PARAMS *ms_params,

@@ -3401,28 +3401,28 @@ static AOM_INLINE void init_mode_skip_mask(mode_skip_mask_t *mask,
       ~(sf->intra_sf.intra_y_mode_mask[max_txsize_lookup[bsize]]);
 }
 
-static AOM_INLINE void init_pred_buf(const MACROBLOCK *const x,
-                                     HandleInterModeArgs *const args) {
-  const MACROBLOCKD *const xd = &x->e_mbd;
-  if (is_cur_buf_hbd(xd)) {
+static AOM_INLINE void init_neighbor_pred_buf(
+    const OBMCBuffer *const obmc_buffer, HandleInterModeArgs *const args,
+    int is_hbd) {
+  if (is_hbd) {
     const int len = sizeof(uint16_t);
-    args->above_pred_buf[0] = CONVERT_TO_BYTEPTR(x->above_pred_buf);
-    args->above_pred_buf[1] =
-        CONVERT_TO_BYTEPTR(x->above_pred_buf + (MAX_SB_SQUARE >> 1) * len);
+    args->above_pred_buf[0] = CONVERT_TO_BYTEPTR(obmc_buffer->above_pred);
+    args->above_pred_buf[1] = CONVERT_TO_BYTEPTR(obmc_buffer->above_pred +
+                                                 (MAX_SB_SQUARE >> 1) * len);
     args->above_pred_buf[2] =
-        CONVERT_TO_BYTEPTR(x->above_pred_buf + MAX_SB_SQUARE * len);
-    args->left_pred_buf[0] = CONVERT_TO_BYTEPTR(x->left_pred_buf);
+        CONVERT_TO_BYTEPTR(obmc_buffer->above_pred + MAX_SB_SQUARE * len);
+    args->left_pred_buf[0] = CONVERT_TO_BYTEPTR(obmc_buffer->left_pred);
     args->left_pred_buf[1] =
-        CONVERT_TO_BYTEPTR(x->left_pred_buf + (MAX_SB_SQUARE >> 1) * len);
+        CONVERT_TO_BYTEPTR(obmc_buffer->left_pred + (MAX_SB_SQUARE >> 1) * len);
     args->left_pred_buf[2] =
-        CONVERT_TO_BYTEPTR(x->left_pred_buf + MAX_SB_SQUARE * len);
+        CONVERT_TO_BYTEPTR(obmc_buffer->left_pred + MAX_SB_SQUARE * len);
   } else {
-    args->above_pred_buf[0] = x->above_pred_buf;
-    args->above_pred_buf[1] = x->above_pred_buf + (MAX_SB_SQUARE >> 1);
-    args->above_pred_buf[2] = x->above_pred_buf + MAX_SB_SQUARE;
-    args->left_pred_buf[0] = x->left_pred_buf;
-    args->left_pred_buf[1] = x->left_pred_buf + (MAX_SB_SQUARE >> 1);
-    args->left_pred_buf[2] = x->left_pred_buf + MAX_SB_SQUARE;
+    args->above_pred_buf[0] = obmc_buffer->above_pred;
+    args->above_pred_buf[1] = obmc_buffer->above_pred + (MAX_SB_SQUARE >> 1);
+    args->above_pred_buf[2] = obmc_buffer->above_pred + MAX_SB_SQUARE;
+    args->left_pred_buf[0] = obmc_buffer->left_pred;
+    args->left_pred_buf[1] = obmc_buffer->left_pred + (MAX_SB_SQUARE >> 1);
+    args->left_pred_buf[2] = obmc_buffer->left_pred + MAX_SB_SQUARE;
   }
 }
 
@@ -3439,7 +3439,7 @@ static AOM_INLINE void set_params_rd_pick_inter_mode(
   MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
   unsigned char segment_id = mbmi->segment_id;
 
-  init_pred_buf(x, args);
+  init_neighbor_pred_buf(&x->obmc_buffer, args, is_cur_buf_hbd(&x->e_mbd));
   av1_collect_neighbors_ref_counts(xd);
   estimate_ref_frame_costs(cm, xd, x, segment_id, ref_costs_single,
                            ref_costs_comp);
@@ -5225,7 +5225,7 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
 }
 
 struct calc_target_weighted_pred_ctxt {
-  const MACROBLOCK *x;
+  const OBMCBuffer *obmc_buffer;
   const uint8_t *tmp;
   int tmp_stride;
   int overlap;
@@ -5245,8 +5245,8 @@ static INLINE void calc_target_weighted_pred_above(
   const int bw = xd->width << MI_SIZE_LOG2;
   const uint8_t *const mask1d = av1_get_obmc_mask(ctxt->overlap);
 
-  int32_t *wsrc = ctxt->x->wsrc_buf + (rel_mi_col * MI_SIZE);
-  int32_t *mask = ctxt->x->mask_buf + (rel_mi_col * MI_SIZE);
+  int32_t *wsrc = ctxt->obmc_buffer->wsrc + (rel_mi_col * MI_SIZE);
+  int32_t *mask = ctxt->obmc_buffer->mask + (rel_mi_col * MI_SIZE);
   const uint8_t *tmp = ctxt->tmp + rel_mi_col * MI_SIZE;
   const int is_hbd = is_cur_buf_hbd(xd);
 
@@ -5293,8 +5293,8 @@ static INLINE void calc_target_weighted_pred_left(
   const int bw = xd->width << MI_SIZE_LOG2;
   const uint8_t *const mask1d = av1_get_obmc_mask(ctxt->overlap);
 
-  int32_t *wsrc = ctxt->x->wsrc_buf + (rel_mi_row * MI_SIZE * bw);
-  int32_t *mask = ctxt->x->mask_buf + (rel_mi_row * MI_SIZE * bw);
+  int32_t *wsrc = ctxt->obmc_buffer->wsrc + (rel_mi_row * MI_SIZE * bw);
+  int32_t *mask = ctxt->obmc_buffer->mask + (rel_mi_row * MI_SIZE * bw);
   const uint8_t *tmp = ctxt->tmp + (rel_mi_row * MI_SIZE * ctxt->tmp_stride);
   const int is_hbd = is_cur_buf_hbd(xd);
 
@@ -5374,8 +5374,9 @@ static AOM_INLINE void calc_target_weighted_pred(
   const BLOCK_SIZE bsize = xd->mi[0]->sb_type;
   const int bw = xd->width << MI_SIZE_LOG2;
   const int bh = xd->height << MI_SIZE_LOG2;
-  int32_t *mask_buf = x->mask_buf;
-  int32_t *wsrc_buf = x->wsrc_buf;
+  const OBMCBuffer *obmc_buffer = &x->obmc_buffer;
+  int32_t *mask_buf = obmc_buffer->mask;
+  int32_t *wsrc_buf = obmc_buffer->wsrc;
 
   const int is_hbd = is_cur_buf_hbd(xd);
   const int src_scale = AOM_BLEND_A64_MAX_ALPHA * AOM_BLEND_A64_MAX_ALPHA;
@@ -5391,8 +5392,8 @@ static AOM_INLINE void calc_target_weighted_pred(
   if (xd->up_available) {
     const int overlap =
         AOMMIN(block_size_high[bsize], block_size_high[BLOCK_64X64]) >> 1;
-    struct calc_target_weighted_pred_ctxt ctxt = { x, above, above_stride,
-                                                   overlap };
+    struct calc_target_weighted_pred_ctxt ctxt = { obmc_buffer, above,
+                                                   above_stride, overlap };
     foreach_overlappable_nb_above(cm, (MACROBLOCKD *)xd,
                                   max_neighbor_obmc[mi_size_wide_log2[bsize]],
                                   calc_target_weighted_pred_above, &ctxt);
@@ -5407,8 +5408,8 @@ static AOM_INLINE void calc_target_weighted_pred(
   if (xd->left_available) {
     const int overlap =
         AOMMIN(block_size_wide[bsize], block_size_wide[BLOCK_64X64]) >> 1;
-    struct calc_target_weighted_pred_ctxt ctxt = { x, left, left_stride,
-                                                   overlap };
+    struct calc_target_weighted_pred_ctxt ctxt = { obmc_buffer, left,
+                                                   left_stride, overlap };
     foreach_overlappable_nb_left(cm, (MACROBLOCKD *)xd,
                                  max_neighbor_obmc[mi_size_high_log2[bsize]],
                                  calc_target_weighted_pred_left, &ctxt);

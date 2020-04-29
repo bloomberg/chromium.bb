@@ -224,6 +224,21 @@ typedef struct {
   uint8_t *tmp_best_mask_buf;  // backup of the best segmentation mask
 } CompoundTypeRdBuffers;
 
+// Struct for buffers used to speed up rdopt for obmc.
+// See the comments for calc_target_weighted_pred for details.
+typedef struct {
+  // A new source weighted with the above and left predictors for efficient
+  // rdopt in obmc mode.
+  int32_t *wsrc;
+  // A new mask constructed from the original left and horizontal masks for
+  // fast obmc rdopt.
+  int32_t *mask;
+  // Holds a prediction using the above/left predictor. This is used to build
+  // the obmc predictor.
+  uint8_t *above_pred;
+  uint8_t *left_pred;
+} OBMCBuffer;
+
 typedef struct {
   // A multiplier that converts mv cost to l2 error.
   int errorperbit;
@@ -308,14 +323,13 @@ struct macroblock {
   int pred_mv_sad[REF_FRAMES];
   int best_pred_mv_sad;
 
-  int32_t *wsrc_buf;
-  int32_t *mask_buf;
-  uint8_t *above_pred_buf;
-  uint8_t *left_pred_buf;
-
+  // Buffers used to hold/create predictions during rdopt
+  OBMCBuffer obmc_buffer;
   PALETTE_BUFFER *palette_buffer;
   CompoundTypeRdBuffers comp_rd_buffer;
 
+  // A buffer used for convolution during the averaging prediction in compound
+  // mode.
   CONV_BUF_TYPE *tmp_conv_dst;
 
   // Points to a buffer that is used to hold temporary prediction results. This
@@ -323,7 +337,7 @@ struct macroblock {
   // 1. This is a temporary buffer used to pingpong the prediction in
   //    handle_inter_mode.
   // 2. xd->tmp_obmc_bufs also points to this buffer, and is used in ombc
-  //     prediction.
+  //    prediction.
   uint8_t *tmp_pred_bufs[2];
 
   FRAME_CONTEXT *row_ctx;
