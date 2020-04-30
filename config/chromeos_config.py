@@ -1512,7 +1512,10 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
           board_configs,
           site_config.templates.vmrvc_android_pfq,
           enable_skylab_hw_tests=True,
-          hw_tests=hw_test_list.SharedPoolPFQ(),
+          # TODO(b/153392483): Temporarily remove bvt-arc from list of test
+          # suites blocking RVC PFQ.
+          hw_tests=[hwtest for hwtest in hw_test_list.SharedPoolPFQ()
+                    if hwtest.suite != constants.HWTEST_ARC_COMMIT_SUITE],
       ) +
       site_config.AddForBoards(
           'vmrvc-android-pfq',
