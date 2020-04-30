@@ -471,6 +471,51 @@ class GetTargetVersionsTest(cros_test_lib.MockTestCase, ApiConfigMixin):
     self.assertFalse(self.response.android_target_version)
     self.assertEqual(self.response.platform_version, platform_version)
 
+
+class GetBuilderMetadataTest(cros_test_lib.MockTestCase, ApiConfigMixin):
+  """GetBuilderMetadata tests."""
+
+  def setUp(self):
+    self.response = packages_pb2.GetBuilderMetadataResponse()
+
+  def _GetRequest(self, board=None):
+    """Helper to build out a request."""
+    request = packages_pb2.GetBuilderMetadataRequest()
+
+    if board:
+      request.build_target.name = board
+
+    return request
+
+  def testValidateOnly(self):
+    """Sanity check that a validate only call does not execute any logic."""
+    request = self._GetRequest(board='betty')
+    # TODO(crbug/1071620): Add/check mock for service layer calls.
+    packages_controller.GetBuilderMetadata(request, self.response,
+                                           self.validate_only_config)
+
+  def testMockCall(self):
+    """Test that a mock call does not execute logic, returns mocked value."""
+    request = self._GetRequest(board='betty')
+    # TODO(crbug/1071620): Add/check mock for service layer calls.
+    packages_controller.GetBuilderMetadata(request, self.response,
+                                           self.mock_call_config)
+
+    self.assertEqual(len(self.response.build_target_metadata), 1)
+    self.assertEqual(self.response.build_target_metadata[0].build_target,
+                     request.build_target.name)
+    self.assertEqual(len(self.response.model_metadata), 1)
+    self.assertTrue(self.response.model_metadata[0].model_name)
+    self.assertTrue(self.response.model_metadata[0].ec_firmware_version)
+
+  def testNoBuildTargetFails(self):
+    """No build target argument should fail."""
+    request = self._GetRequest()
+
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      packages_controller.GetBuilderMetadata(request, self.response,
+                                             self.api_config)
+
 class HasChromePrebuiltTest(cros_test_lib.MockTestCase, ApiConfigMixin):
   """HasChromePrebuilt tests."""
 

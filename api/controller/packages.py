@@ -192,6 +192,29 @@ def GetTargetVersions(input_proto, output_proto, _config):
   output_proto.full_version = packages.determine_full_version()
 
 
+def _GetBuilderMetadataResponse(input_proto, output_proto, _config):
+  """Add fake metadata fields to a successful response."""
+  # Populate only a few fields to validate faux testing.
+  build_target_metadata = output_proto.build_target_metadata.add()
+  build_target_metadata.build_target = input_proto.build_target.name
+  build_target_metadata.android_container_branch = 'git_pi-arc'
+  model_metadata = output_proto.model_metadata.add()
+  model_metadata.model_name = 'astronaut'
+  model_metadata.ec_firmware_version = 'coral_v1.1.1234-56789f'
+
+
+@faux.success(_GetBuilderMetadataResponse)
+@faux.empty_error
+@validate.require('build_target.name')
+@validate.validation_complete
+def GetBuilderMetadata(input_proto, output_proto, _config):
+  """Returns the target builder metadata."""
+  build_target = controller_util.ParseBuildTarget(input_proto.build_target)
+  build_target_metadata = output_proto.build_target_metadata.add()
+  build_target_metadata.build_target = build_target.name
+  # TODO(crbug/1071620): Add service layer calls to fill out the rest of
+  # build_target_metadata and model_metadata.
+
 def _HasPrebuiltSuccess(_input_proto, output_proto, _config):
   """The mock success case for HasChromePrebuilt."""
   output_proto.has_prebuilt = True
