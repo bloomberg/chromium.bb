@@ -159,90 +159,111 @@ extern aom_codec_iface_t *aom_codec_av1_cx(void);
  * \sa #aom_codec_control
  */
 enum aome_enc_control_id {
-  /*!\brief Codec control function to set which reference frame encoder can use.
+  /*!\brief Codec control function to set which reference frame encoder can use,
+   * int parameter.
    */
   AOME_USE_REFERENCE = 7,
 
-  /*!\brief Codec control function to pass an ROI map to encoder.
+  /*!\brief Codec control function to pass an ROI map to encoder, aom_roi_map_t*
+   * parameter.
    */
   AOME_SET_ROI_MAP = 8,
 
-  /*!\brief Codec control function to pass an Active map to encoder.
+  /*!\brief Codec control function to pass an Active map to encoder,
+   * aom_active_map_t* parameter.
    */
   AOME_SET_ACTIVEMAP = 9,
 
   /* NOTE: enum 10 unused */
 
-  /*!\brief Codec control function to set encoder scaling mode.
+  /*!\brief Codec control function to set encoder scaling mode,
+   * aom_scaling_mode_t* parameter.
    */
   AOME_SET_SCALEMODE = 11,
 
-  /*!\brief Codec control function to set encoder spatial layer id.
+  /*!\brief Codec control function to set encoder spatial layer id, unsigned int
+   * parameter.
    */
   AOME_SET_SPATIAL_LAYER_ID = 12,
 
-  /*!\brief Codec control function to set encoder internal speed settings.
+  /*!\brief Codec control function to set encoder internal speed settings,
+   * int parameter
    *
    * Changes in this value influences the complexity of algorithms used in
    * encoding process, values greater than 0 will increase encoder speed at
    * the expense of quality.
    *
-   * \note Valid range: 0..8
+   * Valid range: 0..8. 0 runs the slowest, and 8 runs the fastest;
+   * quality improves as run-time decreases (since more compression
+   * possibilities are explored).
    */
   AOME_SET_CPUUSED = 13,
 
-  /*!\brief Codec control function to enable automatic set and use alf frames.
+  /*!\brief Codec control function to enable automatic set and use alf frames,
+   * unsigned int parameter
+   *
+   * - 0 = disable
+   * - 1 = enable (default)
    */
   AOME_SET_ENABLEAUTOALTREF = 14,
 
   /* NOTE: enum 15 unused */
 
-  /*!\brief Codec control function to set sharpness.
+  /*!\brief Codec control function to set sharpness, unsigned int parameter.
    */
   AOME_SET_SHARPNESS = AOME_SET_ENABLEAUTOALTREF + 2,  // 16
 
-  /*!\brief Codec control function to set the threshold for MBs treated static.
+  /*!\brief Codec control function to set the threshold for MBs treated static,
+   * unsigned int parameter
    */
   AOME_SET_STATIC_THRESHOLD = 17,
 
   /* NOTE: enum 18 unused */
 
-  /*!\brief Codec control function to get last quantizer chosen by the encoder.
+  /*!\brief Codec control function to get last quantizer chosen by the encoder,
+   * int* parameter
    *
    * Return value uses internal quantizer scale defined by the codec.
    */
   AOME_GET_LAST_QUANTIZER = AOME_SET_STATIC_THRESHOLD + 2,  // 19
 
-  /*!\brief Codec control function to get last quantizer chosen by the encoder.
+  /*!\brief Codec control function to get last quantizer chosen by the encoder,
+   * int* parameter
    *
    * Return value uses the 0..63 scale as used by the rc_*_quantizer config
    * parameters.
    */
   AOME_GET_LAST_QUANTIZER_64 = 20,
 
-  /*!\brief Codec control function to set the max no of frames to create arf.
+  /*!\brief Codec control function to set the max no of frames to create arf,
+   * unsigned int parameter
    */
   AOME_SET_ARNR_MAXFRAMES = 21,
 
-  /*!\brief Codec control function to set the filter strength for the arf.
+  /*!\brief Codec control function to set the filter strength for the arf,
+   * unsigned int parameter
    */
   AOME_SET_ARNR_STRENGTH = 22,
 
   /* NOTE: enum 23 unused */
 
-  /*!\brief Codec control function to set visual tuning.
+  /*!\brief Codec control function to set visual tuning, aom_tune_metric (int)
+   * parameter
    */
   AOME_SET_TUNING = AOME_SET_ARNR_STRENGTH + 2,  // 24
 
-  /*!\brief Codec control function to set constrained / constant quality level.
+  /*!\brief Codec control function to set constrained / constant quality level,
+   * unsigned int parameter
+   *
+   * Valid range: 0..63
    *
    * \attention For this value to be used aom_codec_enc_cfg_t::rc_end_usage
    *            must be set to #AOM_CQ or #AOM_Q.
-   * \note Valid range: 0..63
    */
   AOME_SET_CQ_LEVEL = 25,
 
-  /*!\brief Codec control function to set Max data rate for Intra frames.
+  /*!\brief Codec control function to set max data rate for intra frames,
+   * unsigned int parameter
    *
    * This value controls additional clamping on the maximum size of a
    * keyframe. It is expressed as a percentage of the average
@@ -255,11 +276,13 @@ enum aome_enc_control_id {
    */
   AOME_SET_MAX_INTRA_BITRATE_PCT = 26,
 
-  /*!\brief Codec control function to set number of spatial layers.
+  /*!\brief Codec control function to set number of spatial layers, int
+   * parameter
    */
   AOME_SET_NUMBER_SPATIAL_LAYERS = 27,
 
-  /*!\brief Codec control function to set max data rate for Inter frames.
+  /*!\brief Codec control function to set max data rate for inter frames,
+   * unsigned int parameter
    *
    * This value controls additional clamping on the maximum size of an
    * inter frame. It is expressed as a percentage of the average
@@ -272,7 +295,8 @@ enum aome_enc_control_id {
    */
   AV1E_SET_MAX_INTER_BITRATE_PCT = AOME_SET_MAX_INTRA_BITRATE_PCT + 2,  // 28
 
-  /*!\brief Boost percentage for Golden Frame in CBR mode.
+  /*!\brief Boost percentage for Golden Frame in CBR mode, unsigned int
+   * parameter
    *
    * This value controls the amount of boost given to Golden Frame in
    * CBR mode. It is expressed as a percentage of the average
@@ -287,72 +311,81 @@ enum aome_enc_control_id {
 
   /* NOTE: enum 30 unused */
 
-  /*!\brief Codec control function to set lossless encoding mode.
+  /*!\brief Codec control function to set lossless encoding mode, unsigned int
+   * parameter
    *
    * AV1 can operate in lossless encoding mode, in which the bitstream
    * produced will be able to decode and reconstruct a perfect copy of
-   * input source. This control function provides a mean to switch encoder
-   * into lossless coding mode(1) or normal coding mode(0) that may be lossy.
-   *                          0 = lossy coding mode
-   *                          1 = lossless coding mode
+   * input source.
    *
-   *  By default, encoder operates in normal coding mode (maybe lossy).
+   * - 0 = normal coding mode, may be lossy (default)
+   * - 1 = lossless
    */
   AV1E_SET_LOSSLESS = AV1E_SET_GF_CBR_BOOST_PCT + 2,  // 31
 
-  /** control function to enable the row based multi-threading of encoder. A
-   * value that is equal to 1 indicates that row based multi-threading is
-   * enabled.
+  /*!\brief Code control function to enable the row based multi-threading
+   * of the encoder, unsigned int parameter
+   *
+   * - 0 = disable
+   * - 1 = enable (default)
    */
   AV1E_SET_ROW_MT = 32,
 
-  /*!\brief Codec control function to set number of tile columns.
+  /*!\brief Codec control function to set number of tile columns. unsigned int
+   * parameter
    *
    * In encoding and decoding, AV1 allows an input image frame be partitioned
    * into separate vertical tile columns, which can be encoded or decoded
    * independently. This enables easy implementation of parallel encoding and
    * decoding. The parameter for this control describes the number of tile
    * columns (in log2 units), which has a valid range of [0, 6]:
-   *             0 = 1 tile column
-   *             1 = 2 tile columns
-   *             2 = 4 tile columns
-   *             .....
-   *             n = 2**n tile columns
-   *
+   * \verbatim
+                 0 = 1 tile column
+                 1 = 2 tile columns
+                 2 = 4 tile columns
+                 .....
+                 n = 2**n tile columns
+     \endverbatim
    * By default, the value is 0, i.e. one single column tile for entire image.
    */
   AV1E_SET_TILE_COLUMNS = 33,
 
-  /*!\brief Codec control function to set number of tile rows.
+  /*!\brief Codec control function to set number of tile rows, unsigned int
+   * parameter
    *
    * In encoding and decoding, AV1 allows an input image frame be partitioned
    * into separate horizontal tile rows, which can be encoded or decoded
    * independently. The parameter for this control describes the number of tile
    * rows (in log2 units), which has a valid range of [0, 6]:
-   *            0 = 1 tile row
-   *            1 = 2 tile rows
-   *            2 = 4 tile rows
-   *            .....
-   *            n = 2**n tile rows
-   *
+   * \verbatim
+                0 = 1 tile row
+                1 = 2 tile rows
+                2 = 4 tile rows
+                .....
+                n = 2**n tile rows
+   \endverbatim
    * By default, the value is 0, i.e. one single row tile for entire image.
    */
   AV1E_SET_TILE_ROWS = 34,
 
   /*!\brief Codec control function to enable RDO modulated by frame temporal
-   * dependency.
+   * dependency, unsigned int parameter
    *
-   * By default, this feature is off.
+   * - 0 = disable
+   * - 1 = enable (default)
    */
   AV1E_SET_ENABLE_TPL_MODEL = 35,
 
-  /*!\brief Codec control function to enable temporal filtering on key frame.
+  /*!\brief Codec control function to enable temporal filtering on key frame,
+   * unsigned int parameter
    *
-   * By default, this feature is on.
+   * - 0 = disable
+   * - 1 = enable (default)
    */
   AV1E_SET_ENABLE_KEYFRAME_FILTERING = 36,
 
-  /*!\brief Codec control function to enable frame parallel decoding feature.
+  /*!\brief Codec control function to enable frame parallel decoding feature,
+   * unsigned int parameter
    *
    * AV1 has a bitstream feature to reduce decoding dependency between frames
    * by turning off backward update of probability context used in encoding
@@ -360,304 +393,301 @@ enum aome_enc_control_id {
    * video frames in the decoder. This control function provides a mean to
    * turn this feature on or off for bitstreams produced by encoder.
    *
-   * By default, this feature is off.
+   * - 0 = disable (default)
+   * - 1 = enable
    */
   AV1E_SET_FRAME_PARALLEL_DECODING = 37,
 
-  /*!\brief Codec control function to enable error_resilient_mode
+  /*!\brief Codec control function to enable error_resilient_mode, int parameter
    *
    * AV1 has a bitstream feature to guarantee parseability of a frame
    * by turning on the error_resilient_decoding mode, even though the
    * reference buffers are unreliable or not received.
    *
-   * By default, this feature is off.
+   * - 0 = disable (default)
+   * - 1 = enable
    */
   AV1E_SET_ERROR_RESILIENT_MODE = 38,
 
-  /*!\brief Codec control function to enable s_frame_mode
+  /*!\brief Codec control function to enable s_frame_mode, int parameter
    *
    * AV1 has a bitstream feature to designate certain frames as S-frames,
    * from where we can switch to a different stream,
    * even though the reference buffers may not be exactly identical.
    *
-   * By default, this feature is off.
+   * - 0 = disable (default)
+   * - 1 = enable
    */
   AV1E_SET_S_FRAME_MODE = 39,
 
-  /*!\brief Codec control function to set adaptive quantization mode.
+  /*!\brief Codec control function to set adaptive quantization mode, unsigned
+   * int parameter
    *
    * AV1 has a segment based feature that allows encoder to adaptively change
    * quantization parameter for each segment within a frame to improve the
    * subjective quality. This control makes encoder operate in one of the
    * several AQ_modes supported.
    *
-   * By default, encoder operates with AQ_Mode 0(adaptive quantization off).
+   * - 0 = disable (default)
+   * - 1 = enable
    */
   AV1E_SET_AQ_MODE = 40,
 
-  /*!\brief Codec control function to enable/disable periodic Q boost.
+  /*!\brief Codec control function to enable/disable periodic Q boost, unsigned
+   * int parameter
    *
    * One AV1 encoder speed feature is to enable quality boost by lowering
    * frame level Q periodically. This control function provides a mean to
    * turn on/off this feature.
-   *               0 = off
-   *               1 = on
    *
-   * By default, the encoder is allowed to use this feature for appropriate
-   * encoding modes.
+   * - 0 = disable (default)
+   * - 1 = enable
    */
   AV1E_SET_FRAME_PERIODIC_BOOST = 41,
 
-  /*!\brief Codec control function to set noise sensitivity.
+  /*!\brief Codec control function to set noise sensitivity, unsigned int
+   * parameter
    *
-   *  0: off, 1: On(YOnly)
+   * - 0 = disable (default)
+   * - 1 = enable (Y only)
    */
   AV1E_SET_NOISE_SENSITIVITY = 42,
 
-  /*!\brief Codec control function to set content type.
-   * \note Valid parameter range:
-   *              AOM_CONTENT_DEFAULT = Regular video content (Default)
-   *              AOM_CONTENT_SCREEN  = Screen capture content
+  /*!\brief Codec control function to set content type, aom_tune_content
+   * parameter
+   *
+   *  - AOM_CONTENT_DEFAULT = Regular video content (default)
+   *  - AOM_CONTENT_SCREEN  = Screen capture content
    */
   AV1E_SET_TUNE_CONTENT = 43,
 
-  /*!\brief Codec control function to set CDF update mode.
+  /*!\brief Codec control function to set CDF update mode, unsigned int
+   * parameter
    *
-   *  0: no update          1: update on every frame
-   *  2: selectively update
+   *  - 0: no update
+   *  - 1: update on every frame (default)
+   *  - 2: selectively update
    */
   AV1E_SET_CDF_UPDATE_MODE = 44,
 
-  /*!\brief Codec control function to set color space info.
-   * \note Valid ranges: 0..23, default is "Unspecified".
-   *                     0 = For future use
-   *                     1 = BT.709
-   *                     2 = Unspecified
-   *                     3 = For future use
-   *                     4 = BT.470 System M (historical)
-   *                     5 = BT.470 System B, G (historical)
-   *                     6 = BT.601
-   *                     7 = SMPTE 240
-   *                     8 = Generic film (color filters using illuminant C)
-   *                     9 = BT.2020, BT.2100
-   *                     10 = SMPTE 428 (CIE 1921 XYZ)
-   *                     11 = SMPTE RP 431-2
-   *                     12 = SMPTE EG 432-1
-   *                     13 = For future use (values 13 - 21)
-   *                     22 = EBU Tech. 3213-E
-   *                     23 = For future use
+  /*!\brief Codec control function to set color space info, int parameter
    *
+   *  - 0 = For future use
+   *  - 1 = BT.709
+   *  - 2 = Unspecified (default)
+   *  - 3 = For future use
+   *  - 4 = BT.470 System M (historical)
+   *  - 5 = BT.470 System B, G (historical)
+   *  - 6 = BT.601
+   *  - 7 = SMPTE 240
+   *  - 8 = Generic film (color filters using illuminant C)
+   *  - 9 = BT.2020, BT.2100
+   *  - 10 = SMPTE 428 (CIE 1921 XYZ)
+   *  - 11 = SMPTE RP 431-2
+   *  - 12 = SMPTE EG 432-1
+   *  - 13 = For future use (values 13 - 21)
+   *  - 22 = EBU Tech. 3213-E
+   *  - 23 = For future use
    */
   AV1E_SET_COLOR_PRIMARIES = 45,
 
-  /*!\brief Codec control function to set transfer function info.
-   * \note Valid ranges: 0..19, default is "Unspecified".
-   *                     0 = For future use
-   *                     1 = BT.709
-   *                     2 = Unspecified
-   *                     3 = For future use
-   *                     4 = BT.470 System M (historical)
-   *                     5 = BT.470 System B, G (historical)
-   *                     6 = BT.601
-   *                     7 = SMPTE 240 M
-   *                     8 = Linear
-   *                     9 = Logarithmic (100 : 1 range)
-   *                     10 = Logarithmic (100 * Sqrt(10) : 1 range)
-   *                     11 = IEC 61966-2-4
-   *                     12 = BT.1361
-   *                     13 = sRGB or sYCC
-   *                     14 = BT.2020 10-bit systems
-   *                     15 = BT.2020 12-bit systems
-   *                     16 = SMPTE ST 2084, ITU BT.2100 PQ
-   *                     17 = SMPTE ST 428
-   *                     18 = BT.2100 HLG, ARIB STD-B67
-   *                     19 = For future use
+  /*!\brief Codec control function to set transfer function info, int parameter
    *
+   * - 0 = For future use
+   * - 1 = BT.709
+   * - 2 = Unspecified (default)
+   * - 3 = For future use
+   * - 4 = BT.470 System M (historical)
+   * - 5 = BT.470 System B, G (historical)
+   * - 6 = BT.601
+   * - 7 = SMPTE 240 M
+   * - 8 = Linear
+   * - 9 = Logarithmic (100 : 1 range)
+   * - 10 = Logarithmic (100 * Sqrt(10) : 1 range)
+   * - 11 = IEC 61966-2-4
+   * - 12 = BT.1361
+   * - 13 = sRGB or sYCC
+   * - 14 = BT.2020 10-bit systems
+   * - 15 = BT.2020 12-bit systems
+   * - 16 = SMPTE ST 2084, ITU BT.2100 PQ
+   * - 17 = SMPTE ST 428
+   * - 18 = BT.2100 HLG, ARIB STD-B67
+   * - 19 = For future use
    */
   AV1E_SET_TRANSFER_CHARACTERISTICS = 46,
 
-  /*!\brief Codec control function to set transfer function info.
-   * \note Valid ranges: 0..15, default is "Unspecified".
-   *                     0 = Identity matrix
-   *                     1 = BT.709
-   *                     2 = Unspecified
-   *                     3 = For future use
-   *                     4 = US FCC 73.628
-   *                     5 = BT.470 System B, G (historical)
-   *                     6 = BT.601
-   *                     7 = SMPTE 240 M
-   *                     8 = YCgCo
-   *                     9 = BT.2020 non-constant luminance, BT.2100 YCbCr
-   *                     10 = BT.2020 constant luminance
-   *                     11 = SMPTE ST 2085 YDzDx
-   *                     12 = Chromaticity-derived non-constant luminance
-   *                     13 = Chromaticity-derived constant luminance
-   *                     14 = BT.2100 ICtCp
-   *                     15 = For future use
+  /*!\brief Codec control function to set transfer function info, int parameter
    *
+   * - 0 = Identity matrix
+   * - 1 = BT.709
+   * - 2 = Unspecified (default)
+   * - 3 = For future use
+   * - 4 = US FCC 73.628
+   * - 5 = BT.470 System B, G (historical)
+   * - 6 = BT.601
+   * - 7 = SMPTE 240 M
+   * - 8 = YCgCo
+   * - 9 = BT.2020 non-constant luminance, BT.2100 YCbCr
+   * - 10 = BT.2020 constant luminance
+   * - 11 = SMPTE ST 2085 YDzDx
+   * - 12 = Chromaticity-derived non-constant luminance
+   * - 13 = Chromaticity-derived constant luminance
+   * - 14 = BT.2100 ICtCp
+   * - 15 = For future use
    */
   AV1E_SET_MATRIX_COEFFICIENTS = 47,
 
-  /*!\brief Codec control function to set chroma 4:2:0 sample position info.
-   * \note Valid ranges: 0..3, default is "UNKNOWN".
-   *                     0 = UNKNOWN,
-   *                     1 = VERTICAL
-   *                     2 = COLOCATED
-   *                     3 = RESERVED
+  /*!\brief Codec control function to set chroma 4:2:0 sample position info,
+   * aom_chroma_sample_position_t parameter
+   *
+   * UNKNOWN is default
    */
   AV1E_SET_CHROMA_SAMPLE_POSITION = 48,
 
-  /*!\brief Codec control function to set minimum interval between GF/ARF frames
+  /*!\brief Codec control function to set minimum interval between GF/ARF
+   * frames, unsigned int parameter
    *
    * By default the value is set as 4.
    */
   AV1E_SET_MIN_GF_INTERVAL = 49,
 
-  /*!\brief Codec control function to set minimum interval between GF/ARF frames
+  /*!\brief Codec control function to set minimum interval between GF/ARF
+   * frames, unsigned int parameter
    *
    * By default the value is set as 16.
    */
   AV1E_SET_MAX_GF_INTERVAL = 50,
 
-  /*!\brief Codec control function to get an Active map back from the encoder.
+  /*!\brief Codec control function to get an active map back from the encoder,
+    aom_active_map_t* parameter
    */
   AV1E_GET_ACTIVEMAP = 51,
 
-  /*!\brief Codec control function to set color range bit.
-   * \note Valid ranges: 0..1, default is 0
-   *                     0 = Limited range (16..235 or HBD equivalent)
-   *                     1 = Full range (0..255 or HBD equivalent)
+  /*!\brief Codec control function to set color range bit, int parameter
+   *
+   * - 0 = Limited range, 16..235 or HBD equivalent (default)
+   * - 1 = Full range, 0..255 or HBD equivalent
    */
   AV1E_SET_COLOR_RANGE = 52,
 
-  /*!\brief Codec control function to set intended rendering image size.
+  /*!\brief Codec control function to set intended rendering image size,
+   * int32_t[2] parameter
    *
    * By default, this is identical to the image size in pixels.
    */
   AV1E_SET_RENDER_SIZE = 53,
 
   /*!\brief Control to set target sequence level index for a certain operating
-   * point(OP).
+   * point(OP), int parameter
    * Possible values are in the form of "ABxy"(pad leading zeros if less than
    * 4 digits).
-   *   AB: OP index.
-   *   xy: Target level index for the OP. Can be values 0~23(corresponding to
-   *   level 2.0 ~ 7.3) or 24(keep level stats only for level monitoring) or
-   *   31(maximum level parameter, no level-based constraints).
-   * E.g. "0" means target level index 0 for the 0th OP;
-   *      "111" means target level index 11 for the 1st OP;
-   *      "1021" means target level index 21 for the 10th OP.
+   *  - AB: OP index.
+   *  - xy: Target level index for the OP. Can be values 0~23(corresponding to
+   *    level 2.0 ~ 7.3) or 24(keep level stats only for level monitoring) or
+   *    31(maximum level parameter, no level-based constraints).
+   *
+   * E.g.:
+   * - "0" means target level index 0 for the 0th OP;
+   * - "111" means target level index 11 for the 1st OP;
+   * - "1021" means target level index 21 for the 10th OP.
+   *
    * If the target level is not specified for an OP, the maximum level parameter
    * of 31 is used as default.
    */
   AV1E_SET_TARGET_SEQ_LEVEL_IDX = 54,
 
   /*!\brief Codec control function to get sequence level index for each
-   * operating point. There can be at most 32 operating points. The results will
-   * be written into a provided integer array of sufficient size.
+   * operating point. int* parameter. There can be at most 32 operating points.
+   * The results will be written into a provided integer array of sufficient
+   * size.
    */
   AV1E_GET_SEQ_LEVEL_IDX = 55,
 
-  /*!\brief Codec control function to set intended superblock size.
+  /*!\brief Codec control function to set intended superblock size, unsigned int
+   * parameter
    *
    * By default, the superblock size is determined separately for each
    * frame by the encoder.
-   *
-   * Experiment: EXT_PARTITION
    */
   AV1E_SET_SUPERBLOCK_SIZE = 56,
 
-  /*!\brief Codec control function to enable automatic set and use
-   * bwd-pred frames.
+  /*!\brief Codec control function to enable automatic set and use of
+   * bwd-pred frames, unsigned int parameter
    *
+   * - 0 = disable (default)
+   * - 1 = enable
    */
   AOME_SET_ENABLEAUTOBWDREF = 57,
 
-  /*!\brief Codec control function to encode with CDEF.
+  /*!\brief Codec control function to encode with CDEF, unsigned int parameter
    *
    * CDEF is the constrained directional enhancement filter which is an
    * in-loop filter aiming to remove coding artifacts
-   *                          0 = do not apply CDEF
-   *                          1 = apply CDEF
    *
-   *  By default, the encoder applies CDEF.
-   *
-   * Experiment: AOM_CDEF
+   * - 0 = disable
+   * - 1 = enable (default)
    */
   AV1E_SET_ENABLE_CDEF = 58,
 
-  /*!\brief Codec control function to encode with Loop Restoration Filter.
+  /*!\brief Codec control function to encode with Loop Restoration Filter,
+   * unsigned int parameter
    *
-   *                          0 = do not apply Restoration Filter
-   *                          1 = apply Restoration Filter
-   *
-   *  By default, the encoder applies Restoration Filter.
-   *
+   * - 0 = disable
+   * - 1 = enable (default)
    */
   AV1E_SET_ENABLE_RESTORATION = 59,
 
-  /*!\brief Codec control function to force video mode
+  /*!\brief Codec control function to force video mode, unsigned int parameter
    *
-   *                          0 = do not force video mode
-   *                          1 = force video mode even for a single frame
-   *
-   *  By default, the encoder does not force video and allows still picture.
-   *
+   * - 0 = do not force video mode (default)
+   * - 1 = force video mode even for a single frame
    */
   AV1E_SET_FORCE_VIDEO_MODE = 60,
 
-  /*!\brief Codec control function to predict with OBMC mode.
+  /*!\brief Codec control function to predict with OBMC mode, unsigned int
+   * parameter
    *
-   *                          0 = do not allow OBMC mode
-   *                          1 = allow OBMC mode
-   *
-   *  By default, the encoder allows OBMC prediction mode.
-   *
+   * - 0 = disable
+   * - 1 = enable (default)
    */
   AV1E_SET_ENABLE_OBMC = 61,
 
-  /*!\brief Codec control function to encode without trellis quantization.
+  /*!\brief Codec control function to encode without trellis quantization,
+   * unsigned int parameter
    *
-   *                          0 = apply trellis quantization
-   *                          1 = do not apply trellis quantization
-   *                          2 = disable trellis quantization in rd search
-   *                          3 = disable trellis quantization in estimate yrd
-   *
-   *  By default, the encoder applies optimization on quantized
-   *  coefficients.
-   *
+   * - 0 = apply trellis quantization (default)
+   * - 1 = do not apply trellis quantization
+   * - 2 = disable trellis quantization in rd search
+   * - 3 = disable trellis quantization in estimate yrd
    */
   AV1E_SET_DISABLE_TRELLIS_QUANT = 62,
 
-  /*!\brief Codec control function to encode with quantisation matrices.
+  /*!\brief Codec control function to encode with quantisation matrices,
+   * unsigned int parameter
    *
    * AOM can operate with default quantisation matrices dependent on
    * quantisation level and block type.
-   *                          0 = do not use quantisation matrices
-   *                          1 = use quantisation matrices
    *
-   *  By default, the encoder operates without quantisation matrices.
-   *
-   * Experiment: AOM_QM
+   * - 0 = disable (default)
+   * - 1 = enable
    */
-
   AV1E_SET_ENABLE_QM = 63,
 
-  /*!\brief Codec control function to set the min quant matrix flatness.
+  /*!\brief Codec control function to set the min quant matrix flatness,
+   * unsigned int parameter
    *
    * AOM can operate with different ranges of quantisation matrices.
    * As quantisation levels increase, the matrices get flatter. This
    * control sets the minimum level of flatness from which the matrices
    * are determined.
    *
-   *  By default, the encoder sets this minimum at half the available
-   *  range.
-   *
-   * Experiment: AOM_QM
+   * By default, the encoder sets this minimum at half the available
+   * range.
    */
   AV1E_SET_QM_MIN = 64,
 
-  /*!\brief Codec control function to set the max quant matrix flatness.
+  /*!\brief Codec control function to set the max quant matrix flatness,
+   * unsigned int parameter
    *
    * AOM can operate with different ranges of quantisation matrices.
    * As quantisation levels increase, the matrices get flatter. This
@@ -665,363 +695,348 @@ enum aome_enc_control_id {
    *
    * By default, the encoder sets this maximum at the top of the
    * available range.
-   *
-   * Experiment: AOM_QM
    */
   AV1E_SET_QM_MAX = 65,
 
-  /*!\brief Codec control function to set the min quant matrix flatness.
+  /*!\brief Codec control function to set the min quant matrix flatness,
+   * unsigned int parameter
    *
    * AOM can operate with different ranges of quantisation matrices.
    * As quantisation levels increase, the matrices get flatter. This
    * control sets the flatness for luma (Y).
    *
-   *  By default, the encoder sets this minimum at half the available
-   *  range.
-   *
-   * Experiment: AOM_QM
+   * By default, the encoder sets this minimum at half the available
+   * range.
    */
   AV1E_SET_QM_Y = 66,
 
-  /*!\brief Codec control function to set the min quant matrix flatness.
+  /*!\brief Codec control function to set the min quant matrix flatness,
+   * unsigned int parameter
    *
    * AOM can operate with different ranges of quantisation matrices.
    * As quantisation levels increase, the matrices get flatter. This
    * control sets the flatness for chroma (U).
    *
-   *  By default, the encoder sets this minimum at half the available
-   *  range.
-   *
-   * Experiment: AOM_QM
+   * By default, the encoder sets this minimum at half the available
+   * range.
    */
   AV1E_SET_QM_U = 67,
 
-  /*!\brief Codec control function to set the min quant matrix flatness.
+  /*!\brief Codec control function to set the min quant matrix flatness,
+   * unsigned int parameter
    *
    * AOM can operate with different ranges of quantisation matrices.
    * As quantisation levels increase, the matrices get flatter. This
    * control sets the flatness for chrome (V).
    *
-   *  By default, the encoder sets this minimum at half the available
-   *  range.
-   *
-   * Experiment: AOM_QM
+   * By default, the encoder sets this minimum at half the available
+   * range.
    */
   AV1E_SET_QM_V = 68,
 
-  /*!\brief Codec control function to encode with dist_8x8.
-   *
-   *  The dist_8x8 is enabled automatically for model tuning parameters that
-   *  require measuring distortion at the 8x8 level. This control also allows
-   *  measuring distortion at the 8x8 level for other tuning options
-   *  (e.g., PSNR), for testing purposes.
-   *                          0 = do not use dist_8x8
-   *                          1 = use dist_8x8
-   *
-   *  By default, the encoder does not use dist_8x8
-   *
-   * Experiment: DIST_8X8
-   */
-  AV1E_SET_ENABLE_DIST_8X8 = 69,
+  /* NOTE: enum 69 unused */
 
-  /*!\brief Codec control function to set a maximum number of tile groups.
+  /*!\brief Codec control function to set a maximum number of tile groups,
+   * unsigned int parameter
    *
    * This will set the maximum number of tile groups. This will be
    * overridden if an MTU size is set. The default value is 1.
-   *
-   * Experiment: TILE_GROUPS
    */
   AV1E_SET_NUM_TG = 70,
 
-  /*!\brief Codec control function to set an MTU size for a tile group.
+  /*!\brief Codec control function to set an MTU size for a tile group, unsigned
+   * int parameter
    *
    * This will set the maximum number of bytes in a tile group. This can be
    * exceeded only if a single tile is larger than this amount.
    *
    * By default, the value is 0, in which case a fixed number of tile groups
    * is used.
-   *
-   * Experiment: TILE_GROUPS
    */
   AV1E_SET_MTU = 71,
 
-  /*!\brief Codec control function to set the number of symbols in an ANS data
-   * window.
-   *
-   * The number of ANS symbols (both boolean and non-booleans alphabets) in an
-   * ANS data window is set to 1 << value.
-   *
-   * \note Valid range: [8, 23]
-   *
-   * Experiment: ANS
-   */
-  AV1E_SET_ANS_WINDOW_SIZE_LOG2 = 72,
+  /* NOTE: enum 72 unused */
 
-  /*!\brief Codec control function to enable/disable rectangular partitions.
+  /*!\brief Codec control function to enable/disable rectangular partitions, int
+   * parameter
    *
-   * This will enable or disable usage of rectangular partitions. The default
-   * value is 1.
-   *
+   * - 0 = disable
+   * - 1 = enable (default)
    */
   AV1E_SET_ENABLE_RECT_PARTITIONS = 73,
 
-  /*!\brief Codec control function to enable/disable AB partitions.
+  /*!\brief Codec control function to enable/disable AB partitions, int
+   * parameter
    *
-   * This will enable or disable usage of AB partitions. The default
-   * value is 1.
-   *
+   * - 0 = disable
+   * - 1 = enable (default)
    */
   AV1E_SET_ENABLE_AB_PARTITIONS = 74,
 
-  /*!\brief Codec control function to enable/disable 1:4 and 4:1 partitions.
+  /*!\brief Codec control function to enable/disable 1:4 and 4:1 partitions, int
+   * parameter
    *
-   * This will enable or disable usage of 1:4 and 4:1 partitions. The default
-   * value is 1.
-   *
+   * - 0 = disable
+   * - 1 = enable (default)
    */
   AV1E_SET_ENABLE_1TO4_PARTITIONS = 75,
 
-  /*!\brief Codec control function to set min partition size.
+  /*!\brief Codec control function to set min partition size, int parameter
    *
-   * This will set min partition size. The default value is 4 for 4x4.
-   * valid values are [4, 8, 16, 32, 64, 128]
    * min_partition_size is applied to both width and height of the partition.
    * i.e, both width and height of a partition can not be smaller than
    * the min_partition_size, except the partition at the picture boundary.
    *
+   * Valid values: [4, 8, 16, 32, 64, 128]. The default value is 4 for
+   * 4x4.
    */
   AV1E_SET_MIN_PARTITION_SIZE = 76,
 
-  /*!\brief Codec control function to set max partition size.
+  /*!\brief Codec control function to set max partition size, int parameter
    *
-   * This will set max partition size. The default value is 128 for 128x128.
-   * valid values are [4, 8, 16, 32, 64, 128]
    * max_partition_size is applied to both width and height of the partition.
    * i.e, both width and height of a partition can not be larger than
    * the max_partition_size.
+   *
+   * Valid values:[4, 8, 16, 32, 64, 128] The default value is 128 for
+   * 128x128.
    */
   AV1E_SET_MAX_PARTITION_SIZE = 77,
 
   /*!\brief Codec control function to turn on / off intra edge filter
-   * at sequence level.
+   * at sequence level, int parameter
    *
-   * This will enable or disable usage of intra-edge filtering. The default
-   * value is 1.
-   *
+   * - 0 = disable
+   * - 1 = enable (default)
    */
   AV1E_SET_ENABLE_INTRA_EDGE_FILTER = 78,
 
-  /*!\brief Codec control function to turn on / off frame order hint for a
-   * few tools:
-   *
-   * joint compound mode
-   * motion field motion vector
+  /*!\brief Codec control function to turn on / off frame order hint (int
+   * parameter). Affects: joint compound mode, motion field motion vector,
    * ref frame sign bias
    *
-   * The default value is 1.
-   *
+   * - 0 = disable
+   * - 1 = enable (default)
    */
   AV1E_SET_ENABLE_ORDER_HINT = 79,
 
-  /*!\brief Codec control function to turn on / off 64-length transforms.
+  /*!\brief Codec control function to turn on / off 64-length transforms, int
+   * parameter
    *
    * This will enable or disable usage of length 64 transforms in any
-   * direction. The default value is 1.
+   * direction.
    *
+   * - 0 = disable
+   * - 1 = enable (default)
    */
   AV1E_SET_ENABLE_TX64 = 80,
 
   /*!\brief Codec control function to turn on / off flip and identity
-   * transforms.
+   * transforms, int parameter
    *
    * This will enable or disable usage of flip and identity transform
-   * types in any direction. The default value is 1. Including:
-   * FLIPADST_DCT, DCT_FLIPADST, FLIPADST_FLIPADST, ADST_FLIPADST,
-   * FLIPADST_ADST, IDTX, V_DCT, H_DCT, V_ADST, H_ADST, V_FLIPADST,
-   * H_FLIPADST
+   * types in any direction. If enabled, this includes:
+   * - FLIPADST_DCT
+   * - DCT_FLIPADST
+   * - FLIPADST_FLIPADST
+   * - ADST_FLIPADST
+   * - FLIPADST_ADST
+   * - IDTX
+   * - V_DCT
+   * - H_DCT
+   * - V_ADST
+   * - H_ADST
+   * - V_FLIPADST
+   * - H_FLIPADST
+   *
+   * Valid values:
+   * - 0 = disable
+   * - 1 = enable (default)
    */
   AV1E_SET_ENABLE_FLIP_IDTX = 81,
 
-  /*!\brief enum value 82 is empty.
-   *
-   */
+  /* Note: enum value 82 unused */
 
   /*!\brief Codec control function to turn on / off dist-wtd compound mode
-   * at sequence level.
+   * at sequence level, int parameter
    *
-   * This will enable or disable distance-weighted compound mode. The default
-   * value is 1. If AV1E_SET_ENABLE_ORDER_HINT is 0, then this flag is forced
+   * This will enable or disable distance-weighted compound mode.
+   * \attention If AV1E_SET_ENABLE_ORDER_HINT is 0, then this flag is forced
    * to 0.
    *
+   * - 0 = disable
+   * - 1 = enable (default)
    */
   AV1E_SET_ENABLE_DIST_WTD_COMP = 83,
 
   /*!\brief Codec control function to turn on / off ref frame mvs (mfmv) usage
-   * at sequence level.
+   * at sequence level, int parameter
    *
-   * This will enable or disable usage of MFMV. The default value is 1.
-   * If AV1E_SET_ENABLE_ORDER_HINT is 0, then this flag is forced to 0.
+   * \attention If AV1E_SET_ENABLE_ORDER_HINT is 0, then this flag is forced
+   * to 0.
    *
+   * - 0 = disable
+   * - 1 = enable (default)
    */
   AV1E_SET_ENABLE_REF_FRAME_MVS = 84,
 
   /*!\brief Codec control function to set temporal mv prediction
-   * enabling/disabling at frame level.
+   * enabling/disabling at frame level, int parameter
    *
-   * This will enable or disable temporal mv predicton. The default value is 1.
-   * If AV1E_SET_ENABLE_REF_FRAME_MVS is 0, then this flag is forced to 0.
+   * \attention If AV1E_SET_ENABLE_REF_FRAME_MVS is 0, then this flag is
+   * forced to 0.
    *
+   * - 0 = disable
+   * - 1 = enable (default)
    */
   AV1E_SET_ALLOW_REF_FRAME_MVS = 85,
 
-  /*!\brief Codec control function to turn on / off dual filter usage
-   * for a sequence.
+  /*!\brief Codec control function to turn on / off dual interpolation filter
+   * for a sequence, int parameter
    *
-   * This will enable or disable use of dual interpolation filter.
-   * The default value is 1.
-   *
+   * - 0 = disable
+   * - 1 = enable
    */
   AV1E_SET_ENABLE_DUAL_FILTER = 86,
 
   /*!\brief Codec control function to turn on / off delta quantization in chroma
-   * planes usage for a sequence.
+   * planes usage for a sequence, int parameter
    *
-   * This will enable or disable use of chroma deltaq.
-   * The default value is 0.
-   *
+   * - 0 = disable (default)
+   * - 1 = enable
    */
   AV1E_SET_ENABLE_CHROMA_DELTAQ = 87,
 
   /*!\brief Codec control function to turn on / off masked compound usage
-   * for a sequence.
+   * (wedge and diff-wtd compound modes) for a sequence, int parameter
    *
-   * This will enable or disable usage of wedge and diff-wtd compound
-   * modes. The default value is 1.
-   *
+   * - 0 = disable
+   * - 1 = enable (default)
    */
   AV1E_SET_ENABLE_MASKED_COMP = 88,
 
   /*!\brief Codec control function to turn on / off one sided compound usage
-   * for a sequence.
+   * for a sequence, int parameter
    *
-   * This will enable or disable usage of one sided compound
-   * modes. The default value is 1.
-   *
+   * - 0 = disable
+   * - 1 = enable (default)
    */
   AV1E_SET_ENABLE_ONESIDED_COMP = 89,
 
   /*!\brief Codec control function to turn on / off interintra compound
-   * for a sequence.
+   * for a sequence, int parameter
    *
-   * This will enable or disable usage of inter-intra compound modes.
-   * The default value is 1.
-   *
+   * - 0 = disable
+   * - 1 = enable (default)
    */
   AV1E_SET_ENABLE_INTERINTRA_COMP = 90,
 
   /*!\brief Codec control function to turn on / off smooth inter-intra
-   * mode for a sequence.
+   * mode for a sequence, int parameter
    *
-   * This will enable or disable usage of smooth inter-intra mode.
-   * The default value is 1.
-   *
+   * - 0 = disable
+   * - 1 = enable (default)
    */
   AV1E_SET_ENABLE_SMOOTH_INTERINTRA = 91,
 
   /*!\brief Codec control function to turn on / off difference weighted
-   * compound.
+   * compound, int parameter
    *
-   * This will enable or disable usage of difference weighted compound.
-   * The default value is 1.
-   *
+   * - 0 = disable
+   * - 1 = enable (default)
    */
   AV1E_SET_ENABLE_DIFF_WTD_COMP = 92,
 
   /*!\brief Codec control function to turn on / off interinter wedge
-   * compound.
+   * compound, int parameter
    *
-   * This will enable or disable usage of interinter wedge compound.
-   * The default value is 1.
-   *
+   * - 0 = disable
+   * - 1 = enable (default)
    */
   AV1E_SET_ENABLE_INTERINTER_WEDGE = 93,
 
   /*!\brief Codec control function to turn on / off interintra wedge
-   * compound.
+   * compound, int parameter
    *
-   * This will enable or disable usage of interintra wedge compound.
-   * The default value is 1.
-   *
+   * - 0 = disable
+   * - 1 = enable (default)
    */
   AV1E_SET_ENABLE_INTERINTRA_WEDGE = 94,
 
   /*!\brief Codec control function to turn on / off global motion usage
-   * for a sequence.
+   * for a sequence, int parameter
    *
-   * This will enable or disable usage of global motion. The default value is 1.
-   *
+   * - 0 = disable
+   * - 1 = enable (default)
    */
   AV1E_SET_ENABLE_GLOBAL_MOTION = 95,
 
   /*!\brief Codec control function to turn on / off warped motion usage
-   * at sequence level.
+   * at sequence level, int parameter
    *
-   * This will enable or disable usage of warped motion. The default value is 1.
-   *
+   * - 0 = disable
+   * - 1 = enable (default)
    */
   AV1E_SET_ENABLE_WARPED_MOTION = 96,
 
   /*!\brief Codec control function to turn on / off warped motion usage
-   * at frame level.
+   * at frame level, int parameter
    *
-   * This will enable or disable usage of warped motion. The default value is 1.
-   * If AV1E_SET_ENABLE_WARPED_MOTION is 0, then this flag is forced to 0.
+   * \attention If AV1E_SET_ENABLE_WARPED_MOTION is 0, then this flag is
+   * forced to 0.
    *
+   * - 0 = disable
+   * - 1 = enable (default)
    */
   AV1E_SET_ALLOW_WARPED_MOTION = 97,
 
   /*!\brief Codec control function to turn on / off filter intra usage at
-   * sequence level.
+   * sequence level, int parameter
    *
-   * This will enable or disable usage of filter intra. The default value is 1.
-   * If AV1E_SET_ENABLE_FILTER_INTRA is 0, then this flag is forced to 0.
+   * \attention If AV1E_SET_ENABLE_FILTER_INTRA is 0, then this flag is
+   * forced to 0.
    *
+   * - 0 = disable
+   * - 1 = enable (default)
    */
   AV1E_SET_ENABLE_FILTER_INTRA = 98,
 
-  /*!\brief Codec control function to turn on / off smooth intra modes usage.
+  /*!\brief Codec control function to turn on / off smooth intra modes usage,
+   * int parameter
    *
-   * This will enable or disable usage of smooth, smooth_h and smooth_v intra
-   * modes. The default value is 1.
-   *
+   * - 0 = disable
+   * - 1 = enable (default)
    */
   AV1E_SET_ENABLE_SMOOTH_INTRA = 99,
 
-  /*!\brief Codec control function to turn on / off Paeth intra mode usage.
+  /*!\brief Codec control function to turn on / off Paeth intra mode usage, int
+   * parameter
    *
-   * This will enable or disable usage of Paeth intra mode. The default value
-   * is 1.
-   *
+   * - 0 = disable
+   * - 1 = enable (default)
    */
   AV1E_SET_ENABLE_PAETH_INTRA = 100,
 
-  /*!\brief Codec control function to turn on / off CFL uv intra mode usage.
+  /*!\brief Codec control function to turn on / off CFL uv intra mode usage, int
+   * parameter
    *
-   * This will enable or disable usage of chroma-from-luma intra mode. The
-   * default value is 1.
-   *
+   * - 0 = disable
+   * - 1 = enable (default)
    */
   AV1E_SET_ENABLE_CFL_INTRA = 101,
 
-  /*!\brief Codec control function to turn on / off frame superresolution.
+  /*!\brief Codec control function to turn on / off frame superresolution, int
+   * parameter
    *
-   * This will enable or disable frame superresolution. The default value is 1
-   * If AV1E_SET_ENABLE_SUPERRES is 0, then this flag is forced to 0.
+   * \attention If AV1E_SET_ENABLE_SUPERRES is 0, then this flag is forced to 0.
+   *
+   * - 0 = disable
+   * - 1 = enable (default)
    */
   AV1E_SET_ENABLE_SUPERRES = 102,
 
   /*!\brief Codec control function to turn on / off overlay frames for
-   * fitlered ALTREF frames.
+   * filtered ALTREF frames, int parameter
    *
    * This will enable or disable coding of overlay frames for filtered ALTREF
    * frames. When set to 0, overlay frames are not used but show existing frame
@@ -1030,141 +1045,162 @@ enum aome_enc_control_id {
    */
   AV1E_SET_ENABLE_OVERLAY = 103,
 
-  /*!\brief Codec control function to turn on/off palette mode */
+  /*!\brief Codec control function to turn on/off palette mode, int parameter */
   AV1E_SET_ENABLE_PALETTE = 104,
 
-  /*!\brief Codec control function to turn on/off intra block copy mode */
+  /*!\brief Codec control function to turn on/off intra block copy mode, int
+     parameter */
   AV1E_SET_ENABLE_INTRABC = 105,
 
-  /*!\brief Codec control function to turn on/off intra angle delta */
+  /*!\brief Codec control function to turn on/off intra angle delta, int
+     parameter */
   AV1E_SET_ENABLE_ANGLE_DELTA = 106,
 
-  /*!\brief Codec control function to set the delta q mode
+  /*!\brief Codec control function to set the delta q mode, unsigned int
+   * parameter
    *
    * AV1 supports a delta q mode feature, that allows modulating q per
-   * superblock. This control makes encoder operate in one of several
-   * DELTA_Q_modes supported:
-   * 0: Not Supported
-   * 1: Use modulation to maximize objective quality
-   * 2: Use modulation to maximize perceptual quality
+   * superblock.
    *
-   * By default, encoder operates with DELTAQ_Mode 0(deltaq signaling off).
+   * - 0 = deltaq signaling off
+   * - 1 = use modulation to maximize objective quality (default)
+   * - 2 = use modulation to maximize perceptual quality
    */
   AV1E_SET_DELTAQ_MODE = 107,
 
   /*!\brief Codec control function to turn on/off loopfilter modulation
-   * when delta q modulation is enabled. Note AV1 only supports loopfilter
-   * modulation when delta q modulation is enabled as well.
+   * when delta q modulation is enabled, unsigned int parameter.
+   *
+   * \attention AV1 only supports loopfilter modulation when delta q
+   * modulation is enabled as well.
    */
   AV1E_SET_DELTALF_MODE = 108,
 
-  /*!\brief Codec control function to set the single tile decoding mode to 0 or
-   * 1.
+  /*!\brief Codec control function to set the single tile decoding mode,
+   * unsigned int parameter
    *
-   * 0 means that the single tile decoding is off, and 1 means that the single
-   * tile decoding is on.
-   *
-   * Experiment: EXT_TILE
+   * - 0 = single tile decoding is off
+   * - 1 = single tile decoding is on (default)
    */
   AV1E_SET_SINGLE_TILE_DECODING = 109,
 
-  /*!\brief Codec control function to enable the extreme motion vector unit test
-   * in AV1. Please note that this is only used in motion vector unit test.
+  /*!\brief Codec control function to enable the motion vector unit test,
+   * unsigned int parameter
    *
-   * 0 : off, 1 : MAX_EXTREME_MV, 2 : MIN_EXTREME_MV
+   * - 0 = off
+   * - 1 = MAX_EXTREME_MV
+   * - 2 = MIN_EXTREME_MV
+   *
+   * \note This is only used in motion vector unit test.
    */
   AV1E_ENABLE_MOTION_VECTOR_UNIT_TEST = 110,
 
   /*!\brief Codec control function to signal picture timing info in the
-   * bitstream. \note Valid ranges: 0..1, default is "UNKNOWN". 0 = UNKNOWN, 1 =
-   * EQUAL
+   * bitstream, aom_timing_info_type_t parameter. Default is
+   * AOM_TIMING_UNSPECIFIED.
    */
   AV1E_SET_TIMING_INFO_TYPE = 111,
 
   /*!\brief Codec control function to add film grain parameters (one of several
-   * preset types) info in the bitstream.
-   * \note Valid ranges: 0..11, default is "0". 0 = UNKNOWN,
-   * 1..16 = different test vectors for grain
+   * preset types) info in the bitstream, int parameter
+   *
+   Valid ranges: 0..16, 0 is unknown, 1..15 are test vectors
    */
   AV1E_SET_FILM_GRAIN_TEST_VECTOR = 112,
 
-  /*!\brief Codec control function to set the path to the film grain parameters
+  /*!\brief Codec control function to set the path to the film grain parameters,
+   * const char* parameter
    */
   AV1E_SET_FILM_GRAIN_TABLE = 113,
 
-  /*!\brief Sets the noise level */
+  /*!\brief Sets the noise level, int parameter */
   AV1E_SET_DENOISE_NOISE_LEVEL = 114,
 
-  /*!\brief Sets the denoisers block size */
+  /*!\brief Sets the denoisers block size, unsigned int parameter */
   AV1E_SET_DENOISE_BLOCK_SIZE = 115,
 
-  /*!\brief Sets the chroma subsampling x value */
+  /*!\brief Sets the chroma subsampling x value, unsigned int parameter */
   AV1E_SET_CHROMA_SUBSAMPLING_X = 116,
 
-  /*!\brief Sets the chroma subsampling y value */
+  /*!\brief Sets the chroma subsampling y value, unsigned int parameter */
   AV1E_SET_CHROMA_SUBSAMPLING_Y = 117,
 
-  /*!\brief Control to use a reduced tx type set */
+  /*!\brief Control to use a reduced tx type set, int parameter */
   AV1E_SET_REDUCED_TX_TYPE_SET = 118,
 
-  /*!\brief Control to use dct only for intra modes */
+  /*!\brief Control to use dct only for intra modes, int parameter */
   AV1E_SET_INTRA_DCT_ONLY = 119,
 
-  /*!\brief Control to use dct only for inter modes */
+  /*!\brief Control to use dct only for inter modes, int parameter */
   AV1E_SET_INTER_DCT_ONLY = 120,
 
-  /*!\brief Control to use default tx type only for intra modes */
+  /*!\brief Control to use default tx type only for intra modes, int parameter
+   */
   AV1E_SET_INTRA_DEFAULT_TX_ONLY = 121,
 
-  /*!\brief Control to use adaptive quantize_b */
+  /*!\brief Control to use adaptive quantize_b, int parameter */
   AV1E_SET_QUANT_B_ADAPT = 122,
 
-  /*!\brief Control to select maximum height for the GF group pyramid structure
-   * (valid values: 0 - 4) */
+  /*!\brief Control to select maximum height for the GF group pyramid structure,
+   * unsigned int parameter
+   *
+   * Valid range: 0..4
+   */
   AV1E_SET_GF_MAX_PYRAMID_HEIGHT = 123,
 
-  /*!\brief Control to select maximum reference frames allowed per frame
-   * (valid values: 3 - 7) */
+  /*!\brief Control to select maximum reference frames allowed per frame, int
+   * parameter
+   *
+   * Valid range: 3..7
+   */
   AV1E_SET_MAX_REFERENCE_FRAMES = 124,
 
-  /*!\brief Control to use reduced set of single and compound references. */
+  /*!\brief Control to use reduced set of single and compound references, int
+     parameter */
   AV1E_SET_REDUCED_REFERENCE_SET = 125,
 
   /* NOTE: enums 126-139 unused */
   /* NOTE: Need a gap in enum values to avoud conflict with 128, 129, 130 */
 
-  /*!\brief Control to set frequency of the cost updates for coefficients
-   * Possible values are:
-   * 0: Update at SB level (default)
-   * 1: Update at SB row level in tile
-   * 2: Update at tile level
+  /*!\brief Control to set frequency of the cost updates for coefficients,
+   * unsigned int parameter
+   *
+   * - 0 = update at SB level (default)
+   * - 1 = update at SB row level in tile
+   * - 2 = update at tile level
+   * - 3 = turn off
    */
   AV1E_SET_COEFF_COST_UPD_FREQ = 140,
 
-  /*!\brief Control to set frequency of the cost updates for mode
-   * Possible values are:
-   * 0: Update at SB level (default)
-   * 1: Update at SB row level in tile
-   * 2: Update at tile level
+  /*!\brief Control to set frequency of the cost updates for mode, unsigned int
+   * parameter
+   *
+   * - 0 = update at SB level (default)
+   * - 1 = update at SB row level in tile
+   * - 2 = update at tile level
+   * - 3 = turn off
    */
   AV1E_SET_MODE_COST_UPD_FREQ = 141,
 
-  /*!\brief Control to set frequency of the cost updates for motion vectors
-   * Possible values are:
-   * 0: Update at SB level (default)
-   * 1: Update at SB row level in tile
-   * 2: Update at tile level
-   * 3: Off
+  /*!\brief Control to set frequency of the cost updates for motion vectors,
+   * unsigned int parameter
+   *
+   * - 0 = update at SB level (default)
+   * - 1 = update at SB row level in tile
+   * - 2 = update at tile level
+   * - 3 = turn off
    */
   AV1E_SET_MV_COST_UPD_FREQ = 142,
 
   /*!\brief Control to set bit mask that specifies which tier each of the 32
-   * possible operating points conforms to.
-   * Bit value 0: Main Tier; 1: High Tier.
+   * possible operating points conforms to, unsigned int parameter
+   *
+   * - 0 = main tier (default)
+   * - 1 = high tier
    */
   AV1E_SET_TIER_MASK = 143,
 
-  /*!\brief Control to set minimum compression ratio.
+  /*!\brief Control to set minimum compression ratio, unsigned int parameter
    * Take integer values. If non-zero, encoder will try to keep the compression
    * ratio of each frame to be higher than the given value divided by 100.
    * E.g. 850 means minimum compression ratio of 8.5.
@@ -1173,45 +1209,58 @@ enum aome_enc_control_id {
 
   /* NOTE: enums 145-149 unused */
 
-  /*!\brief Codec control function to set the layer id.
+  /*!\brief Codec control function to set the layer id, aom_svc_layer_id_t*
+   * parameter
    */
   AV1E_SET_SVC_LAYER_ID = 150,
 
-  /*!\brief Codec control function to set SVC paramaeters.
+  /*!\brief Codec control function to set SVC paramaeters, aom_svc_params_t*
+   * parameter
    */
   AV1E_SET_SVC_PARAMS = 151,
 
   /*!\brief Codec control function to set reference frame config:
    * the ref_idx and the refresh flags for each buffer slot.
+   * aom_svc_ref_frame_config_t* parameter
    */
   AV1E_SET_SVC_REF_FRAME_CONFIG = 152,
 
   /*!\brief Codec control function to set the path to the VMAF model used when
-   * tuning the encoder for VMAF.
+   * tuning the encoder for VMAF, const char* parameter
    */
   AV1E_SET_VMAF_MODEL_PATH = 153,
 
-  /*!\brief Codec control function to enable EXT_TILE_DEBUG in AV1 encoder.
-   * Please note that this is only used in lightfield example test.
+  /*!\brief Codec control function to enable EXT_TILE_DEBUG in AV1 encoder,
+   * unsigned int parameter
    *
-   * 0 : off, 1 : enable EXT_TILE_DEBUG
+   * - 0 = disable (default)
+   * - 1 = enable
+   *
+   * \note This is only used in lightfield example test.
    */
   AV1E_ENABLE_EXT_TILE_DEBUG = 154,
 
   /*!\brief Codec control function to enable the superblock multipass unit test
    * in AV1 to ensure that the encoder does not leak state between different
-   * passes. Please note that this is only used in sb_multipass unit test.
+   * passes. unsigned int parameter.
    *
-   * 0 : off, 1 : on
+   * - 0 = disable (default)
+   * - 1 = enable
+   *
+   * \note This is only used in sb_multipass unit test.
    */
   AV1E_ENABLE_SB_MULTIPASS_UNIT_TEST = 155,
 
-  /*!\brief Control to select minimum height for the GF group pyramid structure
-   * (valid values: 0 - 4) */
+  /*!\brief Control to select minimum height for the GF group pyramid structure,
+   * unsigned int parameter
+   *
+   * Valid values: 0..4
+   */
   AV1E_SET_GF_MIN_PYRAMID_HEIGHT = 156,
 
   /*!\brief Control to set average complexity of the corpus in the case of
-   * single pass vbr based on LAP*/
+   * single pass vbr based on LAP, unsigned int parameter
+   */
   AV1E_SET_VBR_CORPUS_COMPLEXITY_LAP = 157,
 };
 

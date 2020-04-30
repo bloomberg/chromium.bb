@@ -45,25 +45,31 @@ extern "C" {
 enum aom_com_control_id {
   /*!\brief pass in an external frame into decoder to be used as reference frame
    */
-  AOM_SET_DBG_COLOR_REF_FRAME =
-      4, /**< set the reference frames to color for each macroblock */
-  AOM_SET_DBG_COLOR_MB_MODES = 5, /**< set which macro block modes to color */
-  AOM_SET_DBG_COLOR_B_MODES = 6,  /**< set which blocks modes to color */
-  AOM_SET_DBG_DISPLAY_MV = 7,     /**< set which motion vector modes to draw */
+  AOM_SET_DBG_COLOR_REF_FRAME = 4, /**< set the reference frames to color for
+                                      each macroblock, int parameter */
+  AOM_SET_DBG_COLOR_MB_MODES =
+      5, /**< set which macro block modes to color, int parameter */
+  AOM_SET_DBG_COLOR_B_MODES =
+      6, /**< set which blocks modes to color, int parameter */
+  AOM_SET_DBG_DISPLAY_MV =
+      7, /**< set which motion vector modes to draw, int parameter */
 
   /* TODO(jkoleszar): The encoder incorrectly reuses some of these values (5+)
    * for its control ids. These should be migrated to something like the
    * AOM_DECODER_CTRL_ID_START range next time we're ready to break the ABI.
    */
-  AV1_GET_REFERENCE = 128, /**< get a pointer to a reference frame */
-  AV1_SET_REFERENCE = 129, /**< write a frame into a reference buffer */
-  AV1_COPY_REFERENCE =
-      130, /**< get a copy of reference frame from the decoder */
+  AV1_GET_REFERENCE = 128,  /**< get a pointer to a reference frame,
+                               av1_ref_frame_t* parameter */
+  AV1_SET_REFERENCE = 129,  /**< write a frame into a reference buffer,
+                               av1_ref_frame_t* parameter */
+  AV1_COPY_REFERENCE = 130, /**< get a copy of reference frame from the decoderm
+                               av1_ref_frame_t* parameter */
   AOM_COMMON_CTRL_ID_MAX,
 
-  AV1_GET_NEW_FRAME_IMAGE = 192, /**< get a pointer to the new frame */
-  AV1_COPY_NEW_FRAME_IMAGE =
-      193, /**< copy the new frame to an external buffer */
+  AV1_GET_NEW_FRAME_IMAGE =
+      192, /**< get a pointer to the new frame, aom_image_t* parameter */
+  AV1_COPY_NEW_FRAME_IMAGE = 193, /**< copy the new frame to an external buffer,
+                                     aom_image_t* parameter */
 
   AOM_DECODER_CTRL_ID_START = 256
 };
