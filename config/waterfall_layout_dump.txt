@@ -366,7 +366,6 @@
     sand-release
     sarien-kvm-release
     sarien-release
-    scarlet-arcnext-release
     scarlet-release
     sentry-release
     setzer-release
@@ -1534,7 +1533,6 @@
     sand-release-tryjob
     sarien-kvm-release-tryjob
     sarien-release-tryjob
-    scarlet-arcnext-release-tryjob
     scarlet-release-tryjob
     sentry-release-tryjob
     setzer-release-tryjob
@@ -1818,11 +1816,6 @@
   sarien-payloads-tryjob
   sarien-release-tryjob
   sarien-unittest-stress
-  scarlet-arcnext-full-tryjob
-  scarlet-arcnext-llvm-next-toolchain-tryjob
-  scarlet-arcnext-llvm-toolchain-tryjob
-  scarlet-arcnext-release-tryjob
-  scarlet-arcnext-unittest-stress
   scarlet-factory-scarlet-10211.B-factorybranch-tryjob
   scarlet-full-tryjob
   scarlet-llvm-next-toolchain-tryjob

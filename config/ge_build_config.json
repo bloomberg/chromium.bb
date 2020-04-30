@@ -4813,50 +4813,6 @@
       ]
     },
     {
-      "name": "scarlet-arcnext",
-      "reference_board_name": "scarlet-arcnext",
-      "arch": "ARM_INTERNAL",
-      "builder": "RELEASE",
-      "experimental": true,
-      "models": [
-        {
-          "board_name": "scarlet-arcnext",
-          "name": "dru",
-          "cq_test_enabled": false,
-          "release_builder_test_pool": "bvt",
-          "board_id": 355,
-          "is_active": true
-        },
-        {
-          "board_name": "scarlet-arcnext",
-          "name": "druwl",
-          "cq_test_enabled": false,
-          "release_builder_test_pool": "bvt",
-          "board_id": 355,
-          "is_active": true
-        },
-        {
-          "board_name": "scarlet-arcnext",
-          "name": "dumo",
-          "test_suites": [
-            "sanity",
-            "bvt-inline",
-            "bvt-tast-cq",
-            "bvt-installer",
-            "bvt-arc",
-            "au",
-            "bvt-cq",
-            "bvt-perbuild",
-            "bvt-tast-informational"
-          ],
-          "cq_test_enabled": false,
-          "release_builder_test_pool": "bvt",
-          "board_id": 355,
-          "is_active": true
-        }
-      ]
-    },
-    {
       "name": "soraka",
       "reference_board_name": "soraka",
       "arch": "X86_INTERNAL",
