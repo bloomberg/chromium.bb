@@ -944,7 +944,10 @@
         "hw_tests_override": [],
         "luci_builder": "Informational",
         "schedule": "0 */3 * * *",
-        "uprev": false
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "amd64-generic-asan-tryjob": {
         "_template": "asan",
@@ -958,7 +961,10 @@
         "display_label": "tryjob",
         "doc": "https://dev.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
         "hw_tests_override": null,
-        "luci_builder": "Try"
+        "luci_builder": "Try",
+        "useflags": [
+            "-chrome_internal"
+        ]
     },
     "amd64-generic-cheets-full": {
         "_template": "full",

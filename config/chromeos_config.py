@@ -1770,6 +1770,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.asan,
       site_config.templates.incremental,
       site_config.templates.no_hwtest_builder,
+      site_config.templates.build_external_chrome,
       site_config.templates.informational,
       boards=['amd64-generic'],
       description='Build with Address Sanitizer (Clang)',
