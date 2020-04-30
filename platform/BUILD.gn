@@ -182,9 +182,12 @@ source_set("test") {
   }
   if (is_linux) {
     sources += [ "test/paths_internal_linux.cc" ]
-  }
-  if (is_mac) {
+  } else if (is_mac) {
     sources += [ "test/paths_internal_mac.cc" ]
+  } else if (build_with_chromium) {
+    # NOTE: This is used to resolve a linking issue when compiling in Chromium
+    # for other platforms, but nothing in here is called.
+    sources += [ "test/paths_internal_other.cc" ]
   }
 
   deps = [
