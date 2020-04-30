@@ -847,7 +847,7 @@ void av1_tpl_row_mt_sync_read_dummy(AV1TplRowMultiThreadSync *const tpl_mt_sync,
 }
 
 void av1_tpl_row_mt_sync_write_dummy(
-    AV1TplRowMultiThreadSync *const tpl_mt_sync, int r, int c, const int cols) {
+    AV1TplRowMultiThreadSync *const tpl_mt_sync, int r, int c, int cols) {
   (void)tpl_mt_sync;
   (void)r;
   (void)c;
