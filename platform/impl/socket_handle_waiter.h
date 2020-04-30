@@ -72,14 +72,21 @@ class SocketHandleWaiter {
       const Clock::duration& timeout) = 0;
 
  private:
-  struct HandleWithSubscriber {
+  struct SocketSubscription {
+    Subscriber* subscriber = nullptr;
+    Clock::time_point last_updated = Clock::time_point::min();
+  };
+
+  struct HandleWithSubscription {
     SocketHandleRef handle;
-    Subscriber* subscriber;
+    // Reference to the original subscription in the unordered map, so
+    // we can keep track of when we updated this socket handle.
+    SocketSubscription* subscription;
   };
 
   // Call the subscriber associated with each changed handle.  Handles are only
   // processed until |timeout| is exceeded.  Must be called with |mutex_| held.
-  void ProcessReadyHandles(const std::vector<HandleWithSubscriber>& handles,
+  void ProcessReadyHandles(std::vector<HandleWithSubscription>* handles,
                            Clock::duration timeout);
 
   // Guards against concurrent access to all other class data members.
@@ -94,7 +101,7 @@ class SocketHandleWaiter {
 
   // Set of all socket handles currently being watched, mapped to the subscriber
   // that is watching them.
-  std::unordered_map<SocketHandleRef, Subscriber*, SocketHandleHash>
+  std::unordered_map<SocketHandleRef, SocketSubscription, SocketHandleHash>
       handle_mappings_;
 
   const ClockNowFunctionPtr now_function_;

@@ -19,7 +19,7 @@ void SocketHandleWaiter::Subscribe(Subscriber* subscriber,
                                    SocketHandleRef handle) {
   std::lock_guard<std::mutex> lock(mutex_);
   if (handle_mappings_.find(handle) == handle_mappings_.end()) {
-    handle_mappings_.emplace(handle, subscriber);
+    handle_mappings_.emplace(handle, SocketSubscription{subscriber});
   }
 }
 
@@ -35,7 +35,7 @@ void SocketHandleWaiter::Unsubscribe(Subscriber* subscriber,
 void SocketHandleWaiter::UnsubscribeAll(Subscriber* subscriber) {
   std::lock_guard<std::mutex> lock(mutex_);
   for (auto it = handle_mappings_.begin(); it != handle_mappings_.end();) {
-    if (it->second == subscriber) {
+    if (it->second.subscriber == subscriber) {
       it = handle_mappings_.erase(it);
     } else {
       it++;
@@ -69,26 +69,40 @@ void SocketHandleWaiter::OnHandleDeletion(Subscriber* subscriber,
 }
 
 void SocketHandleWaiter::ProcessReadyHandles(
-    const std::vector<HandleWithSubscriber>& handles,
+    std::vector<HandleWithSubscription>* handles,
     Clock::duration timeout) {
-  Clock::time_point start_time = now_function_();
-  bool processed_one = false;
-  // TODO(btolsch): Track explicit or implicit time since last handled on each
-  // watched handle so we can sort by it here for better fairness.
-  for (const HandleWithSubscriber& handle : handles) {
-    Clock::time_point current_time = now_function_();
-    if (processed_one && (current_time - start_time) > timeout) {
-      return;
-    }
-
-    processed_one = true;
-    handle.subscriber->ProcessReadyHandle(handle.handle);
-
-    current_time = now_function_();
-    if ((current_time - start_time) > timeout) {
-      return;
-    }
+  if (handles->empty()) {
+    return;
   }
+
+  Clock::time_point start_time = now_function_();
+  // Process the stalest handles one by one until we hit our timeout.
+  do {
+    Clock::time_point oldest_time = Clock::time_point::max();
+    HandleWithSubscription& oldest_handle = handles->at(0);
+    for (HandleWithSubscription& handle : *handles) {
+      // Skip already processed handles.
+      if (handle.subscription->last_updated >= start_time) {
+        continue;
+      }
+
+      // Select the oldest handle.
+      if (handle.subscription->last_updated < oldest_time) {
+        oldest_time = handle.subscription->last_updated;
+        oldest_handle = handle;
+      }
+    }
+
+    // Already processed all handles.
+    if (oldest_time == Clock::time_point::max()) {
+      return;
+    }
+
+    // Process the oldest handle.
+    oldest_handle.subscription->last_updated = now_function_();
+    oldest_handle.subscription->subscriber->ProcessReadyHandle(
+        oldest_handle.handle);
+  } while (now_function_() - start_time <= timeout);
 }
 
 Error SocketHandleWaiter::ProcessHandles(Clock::duration timeout) {
@@ -109,7 +123,7 @@ Error SocketHandleWaiter::ProcessHandles(Clock::duration timeout) {
   ErrorOr<std::vector<SocketHandleRef>> changed_handles =
       AwaitSocketsReadable(handles, remaining_timeout);
 
-  std::vector<HandleWithSubscriber> ready_handles;
+  std::vector<HandleWithSubscription> ready_handles;
   {
     std::lock_guard<std::mutex> lock(mutex_);
     handles_being_deleted_.clear();
@@ -121,7 +135,7 @@ Error SocketHandleWaiter::ProcessHandles(Clock::duration timeout) {
         auto mapping_it = handle_mappings_.find(handle);
         if (mapping_it != handle_mappings_.end()) {
           ready_handles.push_back(
-              HandleWithSubscriber{handle, mapping_it->second});
+              HandleWithSubscription{handle, &(mapping_it->second)});
         }
       }
     }
@@ -132,7 +146,7 @@ Error SocketHandleWaiter::ProcessHandles(Clock::duration timeout) {
 
     current_time = now_function_();
     remaining_timeout = timeout - (current_time - start_time);
-    ProcessReadyHandles(ready_handles, remaining_timeout);
+    ProcessReadyHandles(&ready_handles, remaining_timeout);
   }
   return Error::None();
 }
