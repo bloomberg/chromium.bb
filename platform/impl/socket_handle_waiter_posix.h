@@ -29,7 +29,9 @@ class SocketHandleWaiterPosix : public SocketHandleWaiter {
   void RequestStopSoon();
 
  protected:
-  ErrorOr<std::vector<SocketHandleRef>> AwaitSocketsReadable(
+  using SocketHandleWaiter::ReadyHandle;
+
+  ErrorOr<std::vector<ReadyHandle>> AwaitSocketsReadable(
       const std::vector<SocketHandleRef>& socket_fds,
       const Clock::duration& timeout) override;
 

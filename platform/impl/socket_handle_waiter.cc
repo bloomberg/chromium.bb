@@ -101,7 +101,7 @@ void SocketHandleWaiter::ProcessReadyHandles(
     // Process the oldest handle.
     oldest_handle.subscription->last_updated = now_function_();
     oldest_handle.subscription->subscriber->ProcessReadyHandle(
-        oldest_handle.handle);
+        oldest_handle.ready_handle.handle, oldest_handle.ready_handle.flags);
   } while (now_function_() - start_time <= timeout);
 }
 
@@ -120,7 +120,7 @@ Error SocketHandleWaiter::ProcessHandles(Clock::duration timeout) {
 
   Clock::time_point current_time = now_function_();
   Clock::duration remaining_timeout = timeout - (current_time - start_time);
-  ErrorOr<std::vector<SocketHandleRef>> changed_handles =
+  ErrorOr<std::vector<ReadyHandle>> changed_handles =
       AwaitSocketsReadable(handles, remaining_timeout);
 
   std::vector<HandleWithSubscription> ready_handles;
@@ -132,7 +132,7 @@ Error SocketHandleWaiter::ProcessHandles(Clock::duration timeout) {
       auto& ch = changed_handles.value();
       ready_handles.reserve(ch.size());
       for (const auto& handle : ch) {
-        auto mapping_it = handle_mappings_.find(handle);
+        auto mapping_it = handle_mappings_.find(handle.handle);
         if (mapping_it != handle_mappings_.end()) {
           ready_handles.push_back(
               HandleWithSubscription{handle, &(mapping_it->second)});

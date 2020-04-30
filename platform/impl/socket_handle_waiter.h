@@ -26,13 +26,18 @@ class SocketHandleWaiter {
  public:
   using SocketHandleRef = std::reference_wrapper<const SocketHandle>;
 
+  enum Flags {
+    kReadable = 1,
+    kWriteable = 2,
+  };
+
   class Subscriber {
    public:
     virtual ~Subscriber() = default;
 
     // Provides a socket handle to the subscriber which has data waiting to be
     // processed.
-    virtual void ProcessReadyHandle(SocketHandleRef handle) = 0;
+    virtual void ProcessReadyHandle(SocketHandleRef handle, uint32_t flags) = 0;
   };
 
   explicit SocketHandleWaiter(ClockNowFunctionPtr now_function);
@@ -64,10 +69,15 @@ class SocketHandleWaiter {
   Error ProcessHandles(Clock::duration timeout);
 
  protected:
+  struct ReadyHandle {
+    SocketHandleRef handle;
+    uint32_t flags;
+  };
+
   // Waits until data is available in one of the provided sockets or the
   // provided timeout has passed - whichever is first. If any sockets have data
   // available, they are returned.
-  virtual ErrorOr<std::vector<SocketHandleRef>> AwaitSocketsReadable(
+  virtual ErrorOr<std::vector<ReadyHandle>> AwaitSocketsReadable(
       const std::vector<SocketHandleRef>& socket_fds,
       const Clock::duration& timeout) = 0;
 
@@ -78,7 +88,7 @@ class SocketHandleWaiter {
   };
 
   struct HandleWithSubscription {
-    SocketHandleRef handle;
+    ReadyHandle ready_handle;
     // Reference to the original subscription in the unordered map, so
     // we can keep track of when we updated this socket handle.
     SocketSubscription* subscription;

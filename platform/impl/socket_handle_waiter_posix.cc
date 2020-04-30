@@ -23,7 +23,7 @@ SocketHandleWaiterPosix::SocketHandleWaiterPosix(
 
 SocketHandleWaiterPosix::~SocketHandleWaiterPosix() = default;
 
-ErrorOr<std::vector<SocketHandleWaiterPosix::SocketHandleRef>>
+ErrorOr<std::vector<SocketHandleWaiterPosix::ReadyHandle>>
 SocketHandleWaiterPosix::AwaitSocketsReadable(
     const std::vector<SocketHandleRef>& socket_handles,
     const Clock::duration& timeout) {
@@ -59,12 +59,17 @@ SocketHandleWaiterPosix::AwaitSocketsReadable(
     return Error::Code::kAgain;
   }
 
-  std::vector<SocketHandleRef> changed_handles;
+  std::vector<ReadyHandle> changed_handles;
   for (const SocketHandleRef& handle : socket_handles) {
-    if (FD_ISSET(handle.get().fd, &read_handles) ||
-        FD_ISSET(handle.get().fd, &write_handles)) {
-      // TODO(btolsch): Distinguish between read and write.
-      changed_handles.push_back(handle);
+    uint32_t flags = 0;
+    if (FD_ISSET(handle.get().fd, &read_handles)) {
+      flags |= Flags::kReadable;
+    }
+    if (FD_ISSET(handle.get().fd, &write_handles)) {
+      flags |= Flags::kWriteable;
+    }
+    if (flags) {
+      changed_handles.push_back({handle, flags});
     }
   }
 

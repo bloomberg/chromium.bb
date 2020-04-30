@@ -25,19 +25,20 @@ using ::testing::_;
 class MockSubscriber : public SocketHandleWaiter::Subscriber {
  public:
   using SocketHandleRef = SocketHandleWaiter::SocketHandleRef;
-  MOCK_METHOD1(ProcessReadyHandle, void(SocketHandleRef));
+  MOCK_METHOD2(ProcessReadyHandle, void(SocketHandleRef, uint32_t));
 };
 
 class TestingSocketHandleWaiter : public SocketHandleWaiter {
  public:
   using SocketHandleRef = SocketHandleWaiter::SocketHandleRef;
+  using ReadyHandle = SocketHandleWaiter::ReadyHandle;
 
   TestingSocketHandleWaiter() : SocketHandleWaiter(&FakeClock::now) {}
 
   MOCK_METHOD2(
       AwaitSocketsReadable,
-      ErrorOr<std::vector<SocketHandleRef>>(const std::vector<SocketHandleRef>&,
-                                            const Clock::duration&));
+      ErrorOr<std::vector<ReadyHandle>>(const std::vector<SocketHandleRef>&,
+                                        const Clock::duration&));
 
   FakeClock fake_clock{Clock::time_point{Clock::duration{1234567}}};
 };
@@ -58,7 +59,7 @@ TEST(SocketHandleWaiterTest, BubblesUpAwaitSocketsReadableErrors) {
   waiter.Subscribe(&subscriber, std::cref(handle1_ref));
   waiter.Subscribe(&subscriber, std::cref(handle2_ref));
   Error::Code response = Error::Code::kAgain;
-  EXPECT_CALL(subscriber, ProcessReadyHandle(_)).Times(0);
+  EXPECT_CALL(subscriber, ProcessReadyHandle(_, _)).Times(0);
   EXPECT_CALL(waiter, AwaitSocketsReadable(_, _))
       .WillOnce(Return(ByMove(response)));
   waiter.ProcessHandles(Clock::duration{0});
@@ -81,14 +82,25 @@ TEST(SocketHandleWaiterTest, WatchedSocketsReturnedToCorrectSubscribers) {
   waiter.Subscribe(&subscriber, std::cref(handle2_ref));
   waiter.Subscribe(&subscriber2, std::cref(handle1_ref));
   waiter.Subscribe(&subscriber2, std::cref(handle3_ref));
-  EXPECT_CALL(subscriber, ProcessReadyHandle(std::cref(handle0_ref))).Times(1);
-  EXPECT_CALL(subscriber, ProcessReadyHandle(std::cref(handle2_ref))).Times(1);
-  EXPECT_CALL(subscriber2, ProcessReadyHandle(std::cref(handle1_ref))).Times(1);
-  EXPECT_CALL(subscriber2, ProcessReadyHandle(std::cref(handle3_ref))).Times(1);
+  constexpr uint32_t r_flags = SocketHandleWaiter::Flags::kReadable;
+  constexpr uint32_t w_flags = SocketHandleWaiter::Flags::kWriteable;
+  constexpr uint32_t rw_flags = SocketHandleWaiter::Flags::kReadable |
+                                SocketHandleWaiter::Flags::kWriteable;
+  EXPECT_CALL(subscriber, ProcessReadyHandle(std::cref(handle0_ref), r_flags))
+      .Times(1);
+  EXPECT_CALL(subscriber, ProcessReadyHandle(std::cref(handle2_ref), w_flags))
+      .Times(1);
+  EXPECT_CALL(subscriber2, ProcessReadyHandle(std::cref(handle1_ref), r_flags))
+      .Times(1);
+  EXPECT_CALL(subscriber2, ProcessReadyHandle(std::cref(handle3_ref), rw_flags))
+      .Times(1);
   EXPECT_CALL(waiter, AwaitSocketsReadable(_, _))
-      .WillOnce(Return(ByMove(std::vector<SocketHandleWaiter::SocketHandleRef>{
-          std::cref(handle0_ref), std::cref(handle1_ref),
-          std::cref(handle2_ref), std::cref(handle3_ref)})));
+      .WillOnce(
+          Return(ByMove(std::vector<TestingSocketHandleWaiter::ReadyHandle>{
+              {std::cref(handle0_ref), r_flags},
+              {std::cref(handle1_ref), r_flags},
+              {std::cref(handle2_ref), w_flags},
+              {std::cref(handle3_ref), rw_flags}})));
   waiter.ProcessHandles(Clock::duration{0});
 }
 

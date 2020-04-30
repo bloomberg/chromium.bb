@@ -46,7 +46,7 @@ class UdpSocketReaderPosix : public SocketHandleWaiter::Subscriber {
   virtual void OnDestroy(UdpSocket* socket);
 
   // SocketHandleWaiter::Subscriber overrides.
-  void ProcessReadyHandle(SocketHandleRef handle) override;
+  void ProcessReadyHandle(SocketHandleRef handle, uint32_t flags) override;
 
   OSP_DISALLOW_COPY_AND_ASSIGN(UdpSocketReaderPosix);
 

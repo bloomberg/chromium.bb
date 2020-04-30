@@ -20,14 +20,17 @@ UdpSocketReaderPosix::~UdpSocketReaderPosix() {
   waiter_->UnsubscribeAll(this);
 }
 
-void UdpSocketReaderPosix::ProcessReadyHandle(SocketHandleRef handle) {
-  std::lock_guard<std::mutex> lock(mutex_);
-  // NOTE: Because sockets_ is expected to remain small, the performance here
-  // is better than using an unordered_set.
-  for (UdpSocketPosix* socket : sockets_) {
-    if (socket->GetHandle() == handle) {
-      socket->ReceiveMessage();
-      break;
+void UdpSocketReaderPosix::ProcessReadyHandle(SocketHandleRef handle,
+                                              uint32_t flags) {
+  if (flags & SocketHandleWaiter::Flags::kReadable) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    // NOTE: Because sockets_ is expected to remain small, the performance here
+    // is better than using an unordered_set.
+    for (UdpSocketPosix* socket : sockets_) {
+      if (socket->GetHandle() == handle) {
+        socket->ReceiveMessage();
+        break;
+      }
     }
   }
 }
