@@ -14,7 +14,8 @@ vars = {
   'boringssl_git': 'https://boringssl.googlesource.com',
   'chromium_git': 'https://chromium.googlesource.com',
 
-  # TODO(jophba): move to googlesource external for github repos.
+  # NOTE: we should only reference GitHub directly for dependencies toggled
+  # with the "not build_with_chromium" condition.
   'github': 'https://github.com',
 
   # NOTE: Strangely enough, this will be overridden by any _parent_ DEPS, so

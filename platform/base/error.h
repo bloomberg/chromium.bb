@@ -312,6 +312,22 @@ class ErrorOr {
     return value_;
   }
 
+  // Move only value or fallback
+  ValueType&& value(ValueType&& fallback) {
+    if (is_value()) {
+      return std::move(value());
+    }
+    return std::forward<ValueType>(fallback);
+  }
+
+  // Copy only value or fallback
+  ValueType value(ValueType fallback) const {
+    if (is_value()) {
+      return value();
+    }
+    return std::move(fallback);
+  }
+
  private:
   // Only one of these is an active member, determined by |is_value_|. Since
   // they are union'ed, they must be explicitly constructed and destroyed.

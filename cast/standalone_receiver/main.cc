@@ -93,8 +93,7 @@ ErrorOr<std::unique_ptr<DiscoveryState>> StartDiscovery(
   return state;
 }
 
-void RunStandaloneReceiver(TaskRunnerImpl* task_runner,
-                           InterfaceInfo interface) {
+void StartCastAgent(TaskRunnerImpl* task_runner, InterfaceInfo interface) {
   CastAgent agent(task_runner, interface);
   const auto error = agent.Start();
   if (!error.ok()) {
@@ -107,12 +106,6 @@ void RunStandaloneReceiver(TaskRunnerImpl* task_runner,
   // appropriate user indication that shutdown is requested).
   task_runner->RunUntilSignaled();
 }
-
-}  // namespace
-}  // namespace cast
-}  // namespace openscreen
-
-namespace {
 
 void LogUsage(const char* argv0) {
   std::cerr << R"(
@@ -133,18 +126,21 @@ options:
   )";
 }
 
-}  // namespace
+InterfaceInfo GetInterfaceInfoFromName(const char* name) {
+  OSP_CHECK(name != nullptr) << "Missing mandatory argument: interface.";
+  InterfaceInfo interface_info;
+  std::vector<InterfaceInfo> network_interfaces = GetNetworkInterfaces();
+  for (auto& interface : network_interfaces) {
+    if (interface.name == name) {
+      interface_info = std::move(interface);
+      break;
+    }
+  }
+  OSP_CHECK(!interface_info.name.empty()) << "Invalid interface specified.";
+  return interface_info;
+}
 
-int main(int argc, char* argv[]) {
-  // TODO(jophba): refactor into separate method and make main a one-liner.
-  using openscreen::Clock;
-  using openscreen::ErrorOr;
-  using openscreen::InterfaceInfo;
-  using openscreen::IPAddress;
-  using openscreen::IPEndpoint;
-  using openscreen::PlatformClientPosix;
-  using openscreen::TaskRunnerImpl;
-
+int RunStandaloneReceiver(int argc, char* argv[]) {
   // A note about modifying command line arguments: consider uniformity
   // between all Open Screen executables. If it is a platform feature
   // being exposed, consider if it applies to the standalone receiver,
@@ -156,7 +152,6 @@ int main(int argc, char* argv[]) {
       {nullptr, 0, nullptr, 0}};
 
   bool is_verbose = false;
-  InterfaceInfo interface_info;
   std::unique_ptr<openscreen::TextTraceLoggingPlatform> trace_logger;
   int ch = -1;
   while ((ch = getopt_long(argc, argv, "tvh", kArgumentOptions, nullptr)) !=
@@ -173,38 +168,32 @@ int main(int argc, char* argv[]) {
         return 1;
     }
   }
-  openscreen::SetLogLevel(is_verbose ? openscreen::LogLevel::kVerbose
-                                     : openscreen::LogLevel::kInfo);
-
-  char* interface_argument = argv[optind];
-  OSP_CHECK(interface_argument != nullptr)
-      << "Missing mandatory argument: interface.";
-  std::vector<InterfaceInfo> network_interfaces =
-      openscreen::GetNetworkInterfaces();
-  for (auto& interface : network_interfaces) {
-    if (interface.name == interface_argument) {
-      interface_info = std::move(interface);
-      break;
-    }
-  }
-
-  OSP_CHECK(!interface_info.name.empty()) << "Invalid interface specified.";
+  InterfaceInfo interface_info = GetInterfaceInfoFromName(argv[optind]);
+  SetLogLevel(is_verbose ? openscreen::LogLevel::kVerbose
+                         : openscreen::LogLevel::kInfo);
 
   auto* const task_runner = new TaskRunnerImpl(&Clock::now);
   PlatformClientPosix::Create(Clock::duration{50}, Clock::duration{50},
                               std::unique_ptr<TaskRunnerImpl>(task_runner));
 
-  auto discovery_state =
-      openscreen::cast::StartDiscovery(task_runner, interface_info);
+  auto discovery_state = StartDiscovery(task_runner, interface_info);
   OSP_CHECK(discovery_state.is_value()) << "Failed to start discovery.";
 
   // Runs until the process is interrupted.  Safe to pass |task_runner| as it
   // will not be destroyed by ShutDown() until this exits.
-  openscreen::cast::RunStandaloneReceiver(task_runner, interface_info);
+  StartCastAgent(task_runner, interface_info);
 
   // The task runner must be deleted after all serial delete pointers, such
   // as the one stored in the discovery state.
   discovery_state.value().reset();
   PlatformClientPosix::ShutDown();
   return 0;
+}
+
+}  // namespace
+}  // namespace cast
+}  // namespace openscreen
+
+int main(int argc, char* argv[]) {
+  return openscreen::cast::RunStandaloneReceiver(argc, argv);
 }

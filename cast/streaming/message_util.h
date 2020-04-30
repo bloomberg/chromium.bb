@@ -60,17 +60,6 @@ inline ErrorOr<std::string> ParseString(const Json::Value& parent,
   return value.asString();
 }
 
-// TODO(jophba): refactor to be on ErrorOr itself.
-// Use this template for parsing only when there is a reasonable default
-// for the type you are using, e.g. int or std::string.
-template <typename T>
-T ValueOrDefault(const ErrorOr<T>& value, T fallback = T{}) {
-  if (value.is_value()) {
-    return value.value();
-  }
-  return fallback;
-}
-
 }  // namespace cast
 }  // namespace openscreen
 

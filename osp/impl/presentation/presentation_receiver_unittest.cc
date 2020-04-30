@@ -33,15 +33,9 @@ class MockConnectRequest final
  public:
   ~MockConnectRequest() override = default;
 
-  // TODO(jophba): remove trampoline once the following work item is completed:
-  // https://github.com/google/googletest/issues/2130
-  void OnConnectionOpened(
-      uint64_t request_id,
-      std::unique_ptr<ProtocolConnection> connection) override {
-    OnConnectionOpenedMock(request_id, connection.release());
-  }
-  MOCK_METHOD2(OnConnectionOpenedMock,
-               void(uint64_t request_id, ProtocolConnection* connection));
+  MOCK_METHOD2(OnConnectionOpened,
+               void(uint64_t request_id,
+                    std::unique_ptr<ProtocolConnection> connection));
   MOCK_METHOD1(OnConnectionFailed, void(uint64_t request_id));
 };
 
@@ -81,11 +75,14 @@ class PresentationReceiverTest : public ::testing::Test {
     MockConnectRequest mock_connect_request;
     NetworkServiceManager::Get()->GetProtocolConnectionClient()->Connect(
         quic_bridge_->kReceiverEndpoint, &mock_connect_request);
-    ProtocolConnection* stream;
-    EXPECT_CALL(mock_connect_request, OnConnectionOpenedMock(_, _))
-        .WillOnce(::testing::SaveArg<1>(&stream));
+    std::unique_ptr<ProtocolConnection> stream;
+    EXPECT_CALL(mock_connect_request, OnConnectionOpened(_, _))
+        .WillOnce([&stream](uint64_t request_id,
+                            std::unique_ptr<ProtocolConnection> connection) {
+          stream = std::move(connection);
+        });
     quic_bridge_->RunTasksUntilIdle();
-    return std::unique_ptr<ProtocolConnection>(stream);
+    return stream;
   }
 
   void SetUp() override {
