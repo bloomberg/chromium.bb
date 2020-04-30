@@ -1,4 +1,16 @@
+# This file is generated from a similarly-named Perl script in the BoringSSL
+# source tree. Do not edit by hand.
+
+#if defined(__has_feature)
+#if __has_feature(memory_sanitizer) && !defined(OPENSSL_NO_ASM)
+#define OPENSSL_NO_ASM
+#endif
+#endif
+
 #if defined(__x86_64__) && !defined(OPENSSL_NO_ASM)
+#if defined(BORINGSSL_PREFIX)
+#include <boringssl_prefix_symbols_asm.h>
+#endif
 .text	
 .extern	OPENSSL_ia32cap_P
 .hidden OPENSSL_ia32cap_P
@@ -3923,7 +3935,7 @@ do_length_block:
 	popq	%rbp
 .cfi_adjust_cfa_offset	-8
 	.byte	0xf3,0xc3
-.cfi_adjust_cfa_offset	(8 * 6) + 288 + 32
+.cfi_adjust_cfa_offset	(8 * 7) + 288 + 32
 
 seal_sse_128:
 	movdqu	.chacha20_consts(%rip),%xmm0
@@ -8972,3 +8984,4 @@ seal_avx2_short_tail:
 	jmp	seal_sse_tail_16
 .cfi_endproc	
 #endif
+.section	.note.GNU-stack,"",@progbits

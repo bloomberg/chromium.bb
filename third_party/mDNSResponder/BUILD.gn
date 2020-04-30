@@ -13,10 +13,6 @@ config("mdnsresponder_config") {
     "-DMD5_Final=MD5_Final_mDNS",
     "-DMD5_Transform=MD5_Transform_mDNS",
   ]
-
-  if (target_cpu == "arm" || target_cpu == "arm64") {
-    cflags_c += [ "-Dmd5_block_data_order=md5_block_data_order" ]
-  }
 }
 
 source_set("core") {

@@ -1,4 +1,16 @@
+# This file is generated from a similarly-named Perl script in the BoringSSL
+# source tree. Do not edit by hand.
+
+#if defined(__has_feature)
+#if __has_feature(memory_sanitizer) && !defined(OPENSSL_NO_ASM)
+#define OPENSSL_NO_ASM
+#endif
+#endif
+
 #if defined(__x86_64__) && !defined(OPENSSL_NO_ASM)
+#if defined(BORINGSSL_PREFIX)
+#include <boringssl_prefix_symbols_asm.h>
+#endif
 .text	
 
 .extern	OPENSSL_ia32cap_P
@@ -3958,3 +3970,4 @@ sha256_block_data_order_avx:
 .cfi_endproc	
 .size	sha256_block_data_order_avx,.-sha256_block_data_order_avx
 #endif
+.section	.note.GNU-stack,"",@progbits

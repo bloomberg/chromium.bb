@@ -77,15 +77,19 @@ deps = {
     'condition': 'not build_with_chromium',
   },
 
+  # Note about updating BoringSSL: after changing this hash, run the update
+  # script in BoringSSL's util folder for generating build files from the
+  # <openscreen src-dir>/third_party/boringssl directory:
+  # python ./src/util/generate_build_files.py gn
   'third_party/boringssl/src': {
     'url' : Var('boringssl_git') + '/boringssl.git' +
-      '@' + '6410e18e9190b6b0c71955119fbf3cae1b9eedb7',
+      '@' + '78987bb7bb4764ca3a8b08b0a6f7bd14b53c3e4f',
     'condition': 'not build_with_chromium',
   },
 
   'third_party/chromium_quic/src': {
     'url': Var('chromium_git') + '/openscreen/quic.git' +
-      '@' + 'd2363edc9f2a8561c9d02e836262f2d03de2d6e1',
+      '@' + '1bd3640a8eeb9d7c36e4ecb48f6ebab5d9694002',
     'condition': 'not build_with_chromium',
   },
 
@@ -99,6 +103,7 @@ deps = {
       '@' + '20de2db748ca0471cfb61cb53e813dd12938c12b',
     'condition': 'not build_with_chromium',
   },
+
   'third_party/libfuzzer/src': {
     'url': Var('chromium_git') +
       '/chromium/llvm-project/compiler-rt/lib/fuzzer.git' +
