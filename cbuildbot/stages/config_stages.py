@@ -296,6 +296,38 @@ class UpdateConfigStage(generic_stages.BuilderStage):
       return False
 
   def _RunUnitTest(self):
+    """Run chromeos_config_unittest on top of the changes.
+
+    Runs either the new pytest style test or old test depending
+    on the milestone version.
+    TODO(crbug/1062657): remove the legacy fallback when ConfigUpdater
+    no longer runs on a milestone <= 83.
+    """
+    if self.branch == 'master':
+      self._RunNewUnitTest()
+    else:
+      match = re.search(r'release-R(.+)-.*', self.branch)
+      if not match:
+        raise UpdateConfigException(
+            'Unable to determine milestone from %s' % self.branch)
+      milestone = int(match.group(1))
+      if milestone > 83:
+        self._RunNewUnitTest()
+      else:
+        self._RunLegacyUnitTest()
+
+  def _RunLegacyUnitTest(self):
+    """Run chromeos_config_unittest on top of the changes."""
+    logging.debug('Running chromeos_config_unittest')
+    test_path = path_util.ToChrootPath(
+        os.path.join(self.chromite_dir, self.config_dir,
+                     'chromeos_config_unittest'))
+
+    # Because of --update, this updates our generated files.
+    cmd = ['cros_sdk', '--', test_path, '--update']
+    cros_build_lib.run(cmd, cwd=os.path.dirname(self.chromite_dir))
+
+  def _RunNewUnitTest(self):
     """Run chromeos_config_unittest on top of the changes."""
     logging.info('Updating generated configuration files.')
     refresh_script_path = path_util.ToChrootPath(
