@@ -321,7 +321,8 @@ class ChromiumOSUpdater(BaseUpdater):
     nebraska_bin = os.path.join(self.device_dev_dir,
                                 self.REMOTE_NEBRASKA_FILENAME)
     nebraska = nebraska_wrapper.RemoteNebraskaWrapper(
-        self.device, nebraska_bin=nebraska_bin)
+        self.device, nebraska_bin=nebraska_bin,
+        copy_mode=self._transfer_obj.mode)
     nebraska.CheckNebraskaCanRun()
 
   @classmethod
@@ -461,7 +462,8 @@ class ChromiumOSUpdater(BaseUpdater):
     nebraska = nebraska_wrapper.RemoteNebraskaWrapper(
         self.device, nebraska_bin=nebraska_bin,
         update_payloads_address='file://' + self.device_payload_dir,
-        update_metadata_dir=self.device_payload_dir)
+        update_metadata_dir=self.device_payload_dir,
+        copy_mode=self._transfer_obj.mode)
 
     try:
       nebraska.Start()
@@ -544,13 +546,13 @@ class ChromiumOSUpdater(BaseUpdater):
           self.REMOTE_UPDATE_ENGINE_LOGFILE_PATH,
           os.path.join(self.tempdir, os.path.basename(
               self.REMOTE_UPDATE_ENGINE_LOGFILE_PATH)),
-          follow_symlinks=True,
+          follow_symlinks=True, mode=self._transfer_obj.mode,
           **self._cmd_kwargs_omit_error)
       self.device.CopyFromDevice(
           self.REMOTE_QUICK_PROVISION_LOGFILE_PATH,
           os.path.join(self.tempdir, os.path.basename(
               self.REMOTE_QUICK_PROVISION_LOGFILE_PATH)),
-          follow_symlinks=True,
+          follow_symlinks=True, mode=self._transfer_obj.mode,
           ignore_failures=True,
           **self._cmd_kwargs_omit_error)
 
@@ -787,7 +789,7 @@ class ChromiumOSUpdater(BaseUpdater):
 
     nebraska_hostlog_file = os.path.join(
         self.tempdir, 'devserver_hostlog_' + partial_filename)
-    nebraska.CollectRequestLogs(nebraska_hostlog_file, mode='scp')
+    nebraska.CollectRequestLogs(nebraska_hostlog_file)
 
   def _Reboot(self, error_stage, timeout=None):
     try:
@@ -1224,7 +1226,8 @@ class ChromiumOSUpdater(BaseUpdater):
                                 self.REMOTE_NEBRASKA_FILENAME)
     nebraska = nebraska_wrapper.RemoteNebraskaWrapper(
         self.device, nebraska_bin=nebraska_bin,
-        update_metadata_dir=self.device_payload_dir)
+        update_metadata_dir=self.device_payload_dir,
+        copy_mode=self._transfer_obj.mode)
 
     try:
       nebraska.Start()

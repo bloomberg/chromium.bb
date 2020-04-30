@@ -73,6 +73,10 @@ STATEFUL_FILENAME = 'stateful.tgz'
 # validity.
 _PAYLOAD_PATTERN = r'payloads/chromeos_(?P<image_version>[^_]+)_.*'
 
+# File copying modes.
+_RSYNC = 'rsync'
+_SCP = 'scp'
+
 
 class Error(Exception):
   """A generic auto updater transfer error."""
@@ -141,6 +145,11 @@ class Transfer(six.with_metaclass(abc.ABCMeta, object)):
     self._transfer_stateful_update = transfer_stateful_update
     self._transfer_rootfs_update = transfer_rootfs_update
     self._local_payload_props_path = None
+
+  @property
+  def mode(self):
+    """Mode for copying files."""
+    return _RSYNC
 
   @abc.abstractmethod
   def CheckPayloads(self):
@@ -348,6 +357,11 @@ class LabTransfer(Transfer):
     """
     self._staging_server = staging_server
     super(LabTransfer, self).__init__(*args, **kwargs)
+
+  @property
+  def mode(self):
+    """Mode for copying files."""
+    return _SCP
 
   def _GetPayloadFormat(self):
     """Gets the payload format that should be evaluated.
