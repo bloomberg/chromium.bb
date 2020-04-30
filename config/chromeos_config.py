@@ -1046,45 +1046,6 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       board_configs,
       site_config.templates.llvm_next_toolchain,
   )
-  site_config.Add(
-      'llvm-clang-tidy-toolchain',
-      site_config.templates.toolchain,
-      site_config.templates.no_hwtest_builder,
-      description='Full release build with LLVM toolchain, with clang-tidy)',
-      chrome_sdk=False,
-      # Run clang-tidy specific stages.
-      builder_class_name='clang_tidy_builders.ClangTidyBuilder',
-      useflags=config_lib.append_useflags(['clang_tidy']),
-      boards=['grunt'],
-      # Weekly on Sunday 3 AM UTC
-      schedule='0 0 3 * * 0 *',
-  )
-
-  def PGOBuilders(name, board):
-    site_config.Add(
-        name + '-pgo-generate-llvm-next-toolchain',
-        site_config.templates.llvm_next_toolchain,
-        site_config.templates.no_hwtest_builder,
-        description='Full release build with PGO instrumented LLVM toolchain)',
-        chrome_sdk=False,
-        # Run PGO generate specific stages.
-        builder_class_name='pgo_generate_builders.PGOGenerateBuilder',
-        useflags=config_lib.append_useflags(['llvm_pgo_generate',
-                                             '-llvm_pgo_use']),
-        boards=[board],
-        images=['base'],
-        # Build chrome as C++ training set, and kernel as C training set.
-        packages=[
-            'chromeos-base/chromeos-chrome',
-            'virtual/linux-sources'
-        ],
-        # Weekly on Sunday 1 AM UTC
-        schedule='0 0 1 * * 0 *',
-    )
-  # Create three PGO profile collecting builders.
-  PGOBuilders('amd64', 'eve')
-  PGOBuilders('arm', 'kevin')
-  PGOBuilders('arm64', 'kevin64')
 
   # All *-generic boards are external.
   site_config.Add(

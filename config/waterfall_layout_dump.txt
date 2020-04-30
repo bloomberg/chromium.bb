@@ -399,10 +399,6 @@
   master-rvc-android-pfq
 
 == toolchain ==
-  amd64-pgo-generate-llvm-next-toolchain
-  arm-pgo-generate-llvm-next-toolchain
-  arm64-pgo-generate-llvm-next-toolchain
-  llvm-clang-tidy-toolchain
   master-toolchain
     amd64-llvm-next-toolchain
     arm-llvm-next-toolchain
@@ -449,7 +445,6 @@
   amd64-generic-ubsan-tryjob
   amd64-generic-unittest-stress
   amd64-llvm-next-toolchain-tryjob
-  amd64-pgo-generate-llvm-next-toolchain-tryjob
   arkham-full-tryjob
   arkham-llvm-next-toolchain-tryjob
   arkham-llvm-toolchain-tryjob
@@ -461,7 +456,6 @@
   arm-generic-llvm-toolchain-tryjob
   arm-generic-unittest-stress
   arm-llvm-next-toolchain-tryjob
-  arm-pgo-generate-llvm-next-toolchain-tryjob
   arm64-generic-full-tryjob
   arm64-generic-llvm-next-toolchain-tryjob
   arm64-generic-llvm-toolchain-tryjob
@@ -471,7 +465,6 @@
   arm64-llvmpipe-llvm-next-toolchain-tryjob
   arm64-llvmpipe-llvm-toolchain-tryjob
   arm64-llvmpipe-unittest-stress
-  arm64-pgo-generate-llvm-next-toolchain-tryjob
   asuka-factory-glados-7828.B-factorybranch-tryjob
   asuka-full-tryjob
   asuka-llvm-next-toolchain-tryjob
@@ -1357,7 +1350,6 @@
   littlejoe-llvm-toolchain-tryjob
   littlejoe-release-tryjob
   littlejoe-unittest-stress
-  llvm-clang-tidy-toolchain-tryjob
   luci-scheduler-updater-tryjob
   lulu-factory-auron-6459.B-factorybranch-tryjob
   lulu-full-tryjob
