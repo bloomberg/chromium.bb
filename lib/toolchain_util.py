@@ -1048,8 +1048,7 @@ class _CommonPrepareBundle(object):
     # TODO(crbug/1019868): revisit when arch != amd64 becomes something we care
     # about.
     self.arch = 'amd64'
-    # Turn the input artifacts list into a dictionary.
-    self.input_artifacts = input_artifacts or []
+    self.input_artifacts = input_artifacts or {}
     self.profile_info = profile_info or {}
     self._ebuild_info = {}
 
