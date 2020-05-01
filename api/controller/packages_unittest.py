@@ -516,6 +516,39 @@ class GetBuilderMetadataTest(cros_test_lib.MockTestCase, ApiConfigMixin):
       packages_controller.GetBuilderMetadata(request, self.response,
                                              self.api_config)
 
+  def testGetBuilderMetadata(self):
+    """Verify basic return values."""
+    android_version = 'android_test_version'
+    self.PatchObject(packages_service, 'determine_android_version',
+                     return_value=android_version)
+    android_branch = 'android_test_branch'
+    self.PatchObject(packages_service, 'determine_android_branch',
+                     return_value=android_branch)
+    android_target = 'android_test_target'
+    self.PatchObject(packages_service, 'determine_android_target',
+                     return_value=android_target)
+    self.PatchObject(portage_util, 'GetBoardUseFlags',
+                     return_value=['arc', 'arcvm', 'big_little', 'cheets'])
+    request = self._GetRequest(board='betty')
+    packages_controller.GetBuilderMetadata(request, self.response,
+                                           self.api_config)
+    self.assertEqual(
+        self.response.build_target_metadata[0].build_target,
+        'betty')
+    self.assertEqual(
+        self.response.build_target_metadata[0].android_container_version,
+        android_version)
+    self.assertEqual(
+        self.response.build_target_metadata[0].android_container_branch,
+        android_branch)
+    self.assertEqual(
+        self.response.build_target_metadata[0].android_container_target,
+        android_target)
+    self.assertEqual(
+        self.response.build_target_metadata[0].arc_use_set,
+        True)
+
+
 class HasChromePrebuiltTest(cros_test_lib.MockTestCase, ApiConfigMixin):
   """HasChromePrebuilt tests."""
 

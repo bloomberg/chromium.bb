@@ -17,6 +17,7 @@ from chromite.api.gen.chromiumos import common_pb2
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import portage_util
 from chromite.lib.uprev_lib import GitRef
 from chromite.service import packages
 
@@ -212,6 +213,25 @@ def GetBuilderMetadata(input_proto, output_proto, _config):
   build_target = controller_util.ParseBuildTarget(input_proto.build_target)
   build_target_metadata = output_proto.build_target_metadata.add()
   build_target_metadata.build_target = build_target.name
+  # Android version.
+  android_version = packages.determine_android_version([build_target])
+  logging.info('Found android version: %s', android_version)
+  if android_version:
+    build_target_metadata.android_container_version = android_version
+  # Android branch version.
+  android_branch_version = packages.determine_android_branch(build_target)
+  logging.info('Found android branch version: %s', android_branch_version)
+  if android_branch_version:
+    build_target_metadata.android_container_branch = android_branch_version
+  # Android target version.
+  android_target_version = packages.determine_android_target(build_target)
+  logging.info('Found android target version: %s', android_target_version)
+  if android_target_version:
+    build_target_metadata.android_container_target = android_target_version
+
+  build_target_metadata.arc_use_set = 'arc' in portage_util.GetBoardUseFlags(
+      build_target.name)
+
   # TODO(crbug/1071620): Add service layer calls to fill out the rest of
   # build_target_metadata and model_metadata.
 
