@@ -1,5 +1,7 @@
 Name: VulkanMemoryAllocator
 URL: https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
+Revision: f575c5070b2acc5d6aba2ca33f65e86d314ca852
+Security Critical: yes
 License: MIT
 License File: LICENSE.txt
 
@@ -7,4 +9,4 @@ Description:
 Easy to integrate Vulkan memory allocation library.
 
 Modifications:
-Added OWNERS, BUILD.gn, README.chromium and codereview.settings.
+Added OWNERS, gni file, README.chromium and codereview.settings.
