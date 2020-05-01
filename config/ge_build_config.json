@@ -1621,11 +1621,7 @@
           "name": "bruce",
           "test_suites": [
             "bvt-inline",
-            "bvt-tast-cq",
-            "bvt-arc",
-            "bvt-cq",
-            "bvt-perbuild",
-            "bvt-tast-informational"
+            "bvt-tast-cq"
           ],
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
@@ -2101,39 +2097,6 @@
           "cq_test_enabled": true,
           "release_builder_test_pool": "bvt",
           "board_id": 353,
-          "is_active": true
-        }
-      ]
-    },
-    {
-      "name": "flapjack",
-      "reference_board_name": "flapjack",
-      "arch": "UNKNOWN",
-      "builder": "RELEASE",
-      "experimental": false,
-      "models": [
-        {
-          "board_name": "flapjack",
-          "name": "c18",
-          "cq_test_enabled": false,
-          "release_builder_test_pool": "bvt",
-          "board_id": 374,
-          "is_active": true
-        },
-        {
-          "board_name": "flapjack",
-          "name": "c19",
-          "cq_test_enabled": false,
-          "release_builder_test_pool": "bvt",
-          "board_id": 374,
-          "is_active": true
-        },
-        {
-          "board_name": "flapjack",
-          "name": "flapjack",
-          "cq_test_enabled": false,
-          "release_builder_test_pool": "bvt",
-          "board_id": 374,
           "is_active": true
         }
       ]
