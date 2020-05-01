@@ -153,6 +153,7 @@ x86_internal_release_boards = frozenset([
     'puff',
     'pyro',
     'rammus',
+    'rammus-arc-r',
     'reef',
     'reks',
     'relm',

@@ -1727,6 +1727,7 @@
   rammus-arc-r-full-tryjob
   rammus-arc-r-llvm-next-toolchain-tryjob
   rammus-arc-r-llvm-toolchain-tryjob
+  rammus-arc-r-payloads-tryjob
   rammus-arc-r-release-tryjob
   rammus-arc-r-unittest-stress
   rammus-arc-r-vmrvc-android-pfq-tryjob
