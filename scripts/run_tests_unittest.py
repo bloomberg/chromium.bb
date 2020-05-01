@@ -120,14 +120,6 @@ class MainTest(cros_test_lib.MockOutputTestCase):
     self.PatchObject(run_tests, 'ChrootAvailable', return_value=True)
     self.PatchObject(run_tests, 'ClearPythonCacheFiles')
 
-  def testList(self):
-    """Verify --list works"""
-    self.PatchObject(run_tests, 'RunTests', side_effect=Exception('do not run'))
-    with self.OutputCapturer() as output:
-      run_tests.main(['--list'])
-      # Verify some reasonable number of lines showed up.
-      self.assertGreater(len(output.GetStdoutLines()), 90)
-
   def testMisc(self):
     """Verify basic flags get passed down correctly"""
     m = self.PatchObject(run_tests, 'RunTests', return_value=True)
