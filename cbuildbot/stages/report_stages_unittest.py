@@ -23,6 +23,7 @@ from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import report_stages
 from chromite.lib import alerts
 from chromite.lib import cidb
+from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -227,7 +228,7 @@ class AbstractReportStageTestCase(
     cidb.CIDBConnectionFactory.SetupMockCidb(self.mock_cidb)
 
     # Setup topology for unittests
-    keyvals = {topology.DATASTORE_WRITER_CREDS_KEY:'./foo/bar.cert'}
+    keyvals = {topology.DATASTORE_WRITER_CREDS_KEY: './foo/bar.cert'}
     topology_unittest.FakeFetchTopology(keyvals=keyvals)
 
     self._Prepare()
@@ -345,33 +346,34 @@ class ReportStageTest(AbstractReportStageTestCase):
                         debug=False, update_list=True, acl=mock.ANY)]
     self.assertEqual(calls, commands.UploadArchivedFile.call_args_list)
 
-  def testAlertEmail(self):
+  def testEmailNotify(self):
     """Send out alerts when streak counter reaches the threshold."""
     self.PatchObject(cbuildbot_run._BuilderRunBase,
                      'InEmailReportingEnvironment', return_value=True)
     self.PatchObject(cros_build_lib, 'HostIsCIBuilder', return_value=True)
-    self._Prepare(extra_config={'health_threshold': 3,
-                                'health_alert_recipients': ['foo@bar.org']})
-    self._SetupUpdateStreakCounter(counter_value=-3)
-    self.RunStage()
-    # The mocking logic gets confused with SendEmail.
-    # pylint: disable=no-member
-    self.assertGreater(alerts.SendEmail.call_count, 0,
-                       'CQ health alerts emails were not sent.')
+    self.buildstore.UpdateLuciNotifyProperties = mock.Mock()
 
-  def testAlertEmailOnFailingStreak(self):
-    """Continue sending out alerts when streak counter exceeds the threshold."""
-    self.PatchObject(cbuildbot_run._BuilderRunBase,
-                     'InEmailReportingEnvironment', return_value=True)
-    self.PatchObject(cros_build_lib, 'HostIsCIBuilder', return_value=True)
-    self._Prepare(extra_config={'health_threshold': 3,
-                                'health_alert_recipients': ['foo@bar.org']})
-    self._SetupUpdateStreakCounter(counter_value=-5)
+    notification_config_1 = config_lib.NotificationConfig(
+        'test1@chromium.org', threshold=1)
+    notification_config_2 = config_lib.NotificationConfig(
+        'test2@chromium.org', threshold=2)
+    notification_config_3 = config_lib.NotificationConfig(
+        'test3@chromium.org', threshold=3, template='explicit_template')
+    self._Prepare(
+        extra_config={
+            'notification_configs': [
+                notification_config_1,
+                notification_config_2,
+                notification_config_3,
+            ]
+        })
+    self._SetupUpdateStreakCounter(counter_value=-2)
     self.RunStage()
-    # The mocking logic gets confused with SendEmail.
-    # pylint: disable=no-member
-    self.assertGreater(alerts.SendEmail.call_count, 0,
-                       'CQ health alerts emails were not sent.')
+    self.buildstore.UpdateLuciNotifyProperties.assert_called_once_with(
+        email_notify=[
+            notification_config_1.email_notify,
+            notification_config_2.email_notify,
+        ])
 
   def testWriteBasicMetadata(self):
     """Test that WriteBasicMetadata writes expected keys correctly."""

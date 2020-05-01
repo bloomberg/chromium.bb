@@ -316,6 +316,17 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     with self.assertRaises(buildstore.BuildStoreException):
       bs.FinishBuildStage(constants.MOCK_BUILD_ID, 'status')
 
+  def testUpdateLuciNotifyProperties(self):
+    """Tests the redirect for the UpdateLuciNotifyProperties function."""
+    init = self.PatchObject(BuildStore, 'InitializeClients', return_value=True)
+    bs = BuildStore(_write_to_bb=True)
+    buildbucket_v2.UpdateSelfCommonBuildProperties = mock.MagicMock()
+    email_notify = mock.MagicMock()
+    bs.UpdateLuciNotifyProperties(email_notify=email_notify)
+    buildbucket_v2.UpdateSelfCommonBuildProperties.assert_called_once_with(
+        email_notify=email_notify)
+    init.return_value = False
+
   def testFinishBuild(self):
     """Tests the redirect for FinishBuild function."""
     init = self.PatchObject(BuildStore, 'InitializeClients',

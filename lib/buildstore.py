@@ -307,6 +307,18 @@ class BuildStore(object):
       buildbucket_v2.UpdateSelfCommonBuildProperties(
           killed_child_builds=message_value)
 
+  def UpdateLuciNotifyProperties(self, email_notify=None):
+    """Update the buildbucket build with luci-notify specific properties.
+
+    Args:
+      email_notify: List of luci-notify email_notify values representing the
+                    recipients of failure alerts to for this builder.
+    """
+    if not self.InitializeClients():
+      raise BuildStoreException('BuildStore clients could not be initialized.')
+    if self._write_to_bb:
+      buildbucket_v2.UpdateSelfCommonBuildProperties(email_notify=email_notify)
+
   def FinishBuild(self, build_id, status=None, summary=None, metadata_url=None,
                   strict=True):
     """Update the given build row, marking it as finished.
@@ -601,6 +613,9 @@ class FakeBuildStore(object):
           build_id, message_type=message_type,
           message_subtype=message_subtype, message_value=str(buildbucket_id),
           board=board)
+
+  def UpdateLuciNotifyProperties(self, email_notify=None):
+    return
 
   def FinishBuild(self, build_id, status=None, summary=None, metadata_url=None,
                   strict=True):

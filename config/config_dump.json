@@ -80,6 +80,7 @@
         "models": [],
         "name": null,
         "nobuildretry": false,
+        "notification_configs": [],
         "orderfile_generate": false,
         "orderfile_verify": false,
         "overlays": "public",

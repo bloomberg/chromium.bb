@@ -611,6 +611,38 @@ class HWTestConfig(object):
     return self.__dict__ == other.__dict__
 
 
+class NotificationConfig(object):
+  """Config object for defining notification settings.
+
+  Attributes:
+    email: Email address that receives failure notifications.
+    threshold: Number of consecutive failures that should occur in order to
+              be notified. This number should be greater than or equal to 1. If
+              none is specified, default is 1.
+    template: Email template luci-notify should use when sending the email
+              notification. If none is specified, uses the default template.
+  """
+  DEFAULT_TEMPLATE = 'default'
+  DEFAULT_THRESHOLD = 1
+
+  def __init__(self,
+               email,
+               threshold=DEFAULT_THRESHOLD,
+               template=DEFAULT_TEMPLATE):
+    """Constructor -- see members above."""
+    self.email = email
+    self.threshold = threshold
+    self.template = template
+    self.threshold = threshold
+
+  @property
+  def email_notify(self):
+    return {'email': self.email, 'template': self.template}
+
+  def __eq__(self, other):
+    return self.__dict__ == other.__dict__
+
+
 def DefaultSettings():
   # Enumeration of valid settings; any/all config settings must be in this.
   # All settings must be documented.
@@ -667,6 +699,10 @@ def DefaultSettings():
 
       # Timeout for the build as a whole (in seconds).
       build_timeout=(5 * 60 + 30) * 60,
+
+      # A list of NotificationConfig objects describing who to notify of builder
+      # failures.
+      notification_configs=[],
 
       # An integer. If this builder fails this many times consecutively, send
       # an alert email to the recipients health_alert_recipients. This does

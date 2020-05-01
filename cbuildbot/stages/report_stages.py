@@ -555,11 +555,12 @@ class ReportStage(generic_stages.BuilderStage,
     self._completion_instance = completion_instance
     self._post_completion = False
 
-  def _UpdateRunStreak(self, builder_run, final_status):
-    """Update the streak counter for this builder, if applicable, and notify.
 
-    Update the pass/fail streak counter for the builder.  If the new
-    streak should trigger a notification email then send it now.
+  def _UpdateEmailNotify(self, builder_run, final_status):
+    """Update email_notify build property based on the builder's fail streak.
+
+    Update the pass/fail streak counter for the builder. Update the build's
+    email_notify property based on the new streak.
 
     Args:
       builder_run: BuilderRun for this run.
@@ -569,22 +570,14 @@ class ReportStage(generic_stages.BuilderStage,
       streak_value = self._UpdateStreakCounter(
           final_status=final_status, counter_name=builder_run.config.name,
           dry_run=self._run.options.debug_forced)
-      verb = 'passed' if streak_value > 0 else 'failed'
+      status = 'passed' if streak_value > 0 else 'failed'
       logging.info('Builder %s has %s %s time(s) in a row.',
-                   builder_run.config.name, verb, abs(streak_value))
-      # See if updated streak should trigger a notification email.
-      if (builder_run.config.health_alert_recipients and
-          builder_run.config.health_threshold > 0 and
-          streak_value <= -builder_run.config.health_threshold):
-        logging.info('Builder failed %i consecutive times, sending health '
-                     'alert email to %s.', -streak_value,
-                     builder_run.config.health_alert_recipients)
+                   builder_run.config.name, status, abs(streak_value))
 
-        subject = '%s health alert' % builder_run.config.name
-        body = self._HealthAlertMessage(-streak_value)
-        extra_fields = {'X-cbuildbot-alert': 'cq-health'}
-        alerts.SendHealthAlert(builder_run, subject, body,
-                               extra_fields=extra_fields)
+      if builder_run.config.notification_configs and status == 'failed':
+        email_notify = alerts.GetUpdatedEmailNotify(builder_run,
+                                                    abs(streak_value))
+        self.buildstore.UpdateLuciNotifyProperties(email_notify=email_notify)
 
   def _UpdateStreakCounter(self, final_status, counter_name,
                            dry_run=False):
@@ -844,7 +837,7 @@ class ReportStage(generic_stages.BuilderStage,
     # Upload metadata, and update the pass/fail streak counter for the main
     # run only. These aren't needed for the child builder runs.
     self.UploadMetadata(export=True)
-    self._UpdateRunStreak(self._run, final_status)
+    self._UpdateEmailNotify(self._run, final_status)
 
     build_identifier, db = self._run.GetCIDBHandle()
     build_id = build_identifier.cidb_id

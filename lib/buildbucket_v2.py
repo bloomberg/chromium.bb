@@ -59,12 +59,24 @@ def UpdateSelfBuildPropertiesNonBlocking(key, value):
   """
   logging.PrintKitchenSetBuildProperty(key, value)
 
-def UpdateSelfCommonBuildProperties(
-    critical=None, cidb_id=None, chrome_version=None, milestone_version=None,
-    platform_version=None, full_version=None, toolchain_url=None,
-    build_type=None, unibuild=None, suite_scheduling=None,
-    killed_child_builds=None, board=None, main_firmware_version=None,
-    ec_firmware_version=None, metadata_url=None, channels=None):
+
+def UpdateSelfCommonBuildProperties(critical=None,
+                                    cidb_id=None,
+                                    chrome_version=None,
+                                    milestone_version=None,
+                                    platform_version=None,
+                                    full_version=None,
+                                    toolchain_url=None,
+                                    build_type=None,
+                                    unibuild=None,
+                                    suite_scheduling=None,
+                                    killed_child_builds=None,
+                                    board=None,
+                                    main_firmware_version=None,
+                                    ec_firmware_version=None,
+                                    metadata_url=None,
+                                    channels=None,
+                                    email_notify=None):
   """Update build.output.properties for the current build.
 
   Sends the property values to buildbucket via
@@ -90,6 +102,8 @@ def UpdateSelfCommonBuildProperties(
     metadata_url: (Optional) google storage url to metadata.json of the build.
     channels: (Optional) list of channels the build are configured for.
         e.g. [beta,stable].
+    email_notify: (Optional) list of luci-notify email_notify values
+        representing the recipients of failure alerts to for this builder.
   """
   if critical is not None:
     critical = 1 if critical in [1, True] else 0
@@ -127,6 +141,9 @@ def UpdateSelfCommonBuildProperties(
     UpdateSelfBuildPropertiesNonBlocking('metadata_url', metadata_url)
   if channels is not None:
     UpdateSelfBuildPropertiesNonBlocking('channels', channels)
+  if email_notify is not None:
+    UpdateSelfBuildPropertiesNonBlocking('email_notify', email_notify)
+
 
 def UpdateBuildMetadata(metadata):
   """Update build.output.properties from a CBuildbotMetadata instance.
