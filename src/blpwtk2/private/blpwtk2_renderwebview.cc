@@ -843,8 +843,8 @@ void RenderWebView::detachFromRoutingId()
 
 bool RenderWebView::dispatchToRenderWidget(const IPC::Message& message)
 {
-    content::RenderView *rv =
-        content::RenderView::FromRoutingID(d_renderViewRoutingId);
+    content::RenderViewImpl *rv =
+        content::RenderViewImpl::FromRoutingID(d_renderViewRoutingId);
 
     if (rv) {
         blink::WebFrame *webFrame = rv->GetWebView()->MainFrame();
@@ -857,9 +857,13 @@ bool RenderWebView::dispatchToRenderWidget(const IPC::Message& message)
         v8::Context::Scope contextScope(
             webFrame->ToWebLocalFrame()->MainWorldScriptContext());
 
-        return static_cast<IPC::Listener *>(
+        rv->GetWidget()->LockSize(false);
+        bool rc = static_cast<IPC::Listener *>(
             content::RenderThreadImpl::current())
                 ->OnMessageReceived(message);
+        rv->GetWidget()->LockSize(true);
+
+        return rc;
     }
     else {
         return static_cast<IPC::Listener *>(
@@ -1601,6 +1605,8 @@ void RenderWebView::notifyRoutingId(int id)
     d_inputRouterImpl->BindNewFrameHost();
 
     updateFocus();
+
+    rv->GetWidget()->LockSize(true);
 
 #if defined(BLPWTK2_FEATURE_RUBBERBAND)
     updateAltDragRubberBanding();
