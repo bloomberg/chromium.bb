@@ -235,6 +235,12 @@ ignored-classes=hashlib,numpy
 # CHANGE: Added tempdir for @osutils.TempDirDecorator.
 generated-members=REQUEST,acl_users,aq_parent,AndRaise,AndReturn,InAnyOrder,MultipleTimes,tempdir
 
+# List of modules for which member attributes should not be checked.
+# Modules listed here will not trigger import errors even if the linter can't
+# import them.
+#
+# pytest: Made available by our testing virtualenv and can be assumed exists.
+ignored-modules=pytest
 
 [BASIC]
 
