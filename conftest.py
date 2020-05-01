@@ -10,14 +10,17 @@ by pytest:
 https://docs.pytest.org/en/latest/fixture.html#conftest-py-sharing-fixture-functions
 """
 
+from __future__ import division
 from __future__ import print_function
 
 import multiprocessing
 
 import pytest
 
+import chromite as cr
 from chromite.lib import cidb
 from chromite.lib import parallel
+from chromite.lib import portage_util
 from chromite.lib import retry_stats
 
 # We use wildcard imports here to make fixtures defined in the test module
@@ -121,3 +124,19 @@ def testcase_caplog(request, caplog):
   https://docs.pytest.org/en/latest/unittest.html#mixing-pytest-fixtures-into-unittest-testcase-subclasses-using-marks
   """
   request.cls.caplog = caplog
+
+
+def pytest_assertrepr_compare(op, left, right):
+  """Global hook for defining detailed explanations for failed assertions.
+
+  https://docs.pytest.org/en/latest/assert.html#defining-your-own-explanation-for-failed-assertions
+  """
+  if isinstance(left, portage_util.CPV) and isinstance(
+      right, cr.test.Overlay) and op == 'in':
+    package_path = right.path / left.category / left.package
+    return [
+        f'{left.pv}.ebuild exists in {right.path}',
+        'Ebuild does not exist in overlay.',
+        'Ebuilds found in overlay with same category and package:'
+    ] + sorted('\t' + str(p.relative_to(package_path))
+               for p in package_path.glob('*.ebuild'))

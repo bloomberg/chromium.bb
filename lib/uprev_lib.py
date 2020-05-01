@@ -160,7 +160,7 @@ class UprevChromeManager(object):
     self._build_targets = build_targets or []
     self._new_ebuild_files = []
     self._removed_ebuild_files = []
-    self._overlay_dir = overlay_dir or _CHROME_OVERLAY_PATH
+    self._overlay_dir = str(overlay_dir or _CHROME_OVERLAY_PATH)
     self._chroot = chroot
 
   @property
@@ -225,6 +225,10 @@ class UprevChromeManager(object):
       # Cases 1 and 2.
       return candidate
 
+    logging.warning('A chrome ebuild candidate with a higher version than the '
+                    'requested uprev version was found.')
+    logging.debug('Requested uprev version: %s', self._version)
+    logging.debug('Candidate version found: %s', candidate.chrome_version)
     return None
 
   def _mark_as_stable(self, stable_candidate, unstable_ebuild, package_name,

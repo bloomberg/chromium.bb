@@ -5,6 +5,7 @@
 
 """uprev_lib tests."""
 
+from __future__ import division
 from __future__ import print_function
 
 import os
@@ -12,6 +13,7 @@ import sys
 
 import mock
 
+import chromite as cr
 from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
@@ -235,7 +237,7 @@ class UprevManagerTest(cros_test_lib.MockTestCase):
   def test_clean_stale_packages_no_chroot(self):
     """Test no chroot skip."""
     manager = uprev_lib.UprevOverlayManager([], None)
-    patch = self.PatchObject(parallel, 'RunTasksInProcessPool')
+    self.PatchObject(parallel, 'RunTasksInProcessPool')
 
     # pylint: disable=protected-access
     manager._clean_stale_packages()
@@ -249,7 +251,7 @@ class UprevManagerTest(cros_test_lib.MockTestCase):
     chroot = Chroot()
     self.PatchObject(chroot, 'exists', return_value=False)
     manager = uprev_lib.UprevOverlayManager([], None, chroot=chroot)
-    patch = self.PatchObject(parallel, 'RunTasksInProcessPool')
+    self.PatchObject(parallel, 'RunTasksInProcessPool')
 
     # pylint: disable=protected-access
     manager._clean_stale_packages()
@@ -287,3 +289,139 @@ class UprevManagerTest(cros_test_lib.MockTestCase):
     manager._clean_stale_packages()
 
     patch.assert_called_once_with(mock.ANY, [[t] for t in targets + [None]])
+
+
+def test_find_chrome_ebuilds(overlay_stack):
+  """Test that chrome ebuilds can be discovered in the test overlay."""
+
+  overlay, = overlay_stack(1)
+  unstable_chrome = cr.test.Package(
+      'chromeos-base', 'chromeos-chrome', version='9999', keywords='~*')
+  stable_chrome = cr.test.Package(
+      'chromeos-base', 'chromeos-chrome', version='78.0.3876.1-r1')
+  overlay.add_package(unstable_chrome)
+  overlay.add_package(stable_chrome)
+
+  unstable, stable = uprev_lib.find_chrome_ebuilds(
+      overlay.path / 'chromeos-base' / 'chromeos-chrome')
+  assert unstable
+  assert stable
+
+
+def test_find_chrome_stable_candidate(overlay_stack):
+  """Test that a stable uprev candidate can be chosen in the expected case."""
+  NEW_CHROME_VERSION = '80.0.1234.0'
+
+  overlay, = overlay_stack(1)
+  unstable_chrome = cr.test.Package(
+      'chromeos-base', 'chromeos-chrome', version='9999', keywords='~*')
+  stable_chrome = cr.test.Package(
+      'chromeos-base', 'chromeos-chrome', version='78.0.3876.0_rc-r1')
+  overlay.add_package(unstable_chrome)
+  overlay.add_package(stable_chrome)
+
+  _unstable, stable = uprev_lib.find_chrome_ebuilds(
+      overlay.path / 'chromeos-base' / 'chromeos-chrome')
+  assert stable
+  uprev_manager = uprev_lib.UprevChromeManager(version=NEW_CHROME_VERSION)
+  # pylint: disable=protected-access
+  candidate = uprev_manager._find_chrome_uprev_candidate(stable)
+  assert candidate
+
+
+def test_basic_chrome_uprev(overlay_stack):
+  """Test that the default uprev path works as expected."""
+  NEW_CHROME_VERSION = '80.0.1234.0'
+
+  overlay, = overlay_stack(1)
+  unstable_chrome = cr.test.Package(
+      'chromeos-base', 'chromeos-chrome', version='9999', keywords='~*')
+  stable_chrome = cr.test.Package(
+      'chromeos-base', 'chromeos-chrome', version='78.0.3876.0_rc-r1')
+  overlay.add_package(unstable_chrome)
+  overlay.add_package(stable_chrome)
+
+  uprev_manager = uprev_lib.UprevChromeManager(
+      version=NEW_CHROME_VERSION, overlay_dir=overlay.path)
+
+  assert uprev_manager.uprev(constants.CHROME_CP)
+
+  new_chrome = cr.test.Package(
+      'chromeos-base', 'chromeos-chrome', version='80.0.1234.0_rc-r1')
+
+  assert new_chrome.cpv in overlay
+
+
+def test_chrome_uprev_revision_bump(overlay_stack):
+  """Test that an uprev with the same major version just increments revision."""
+  NEW_CHROME_VERSION = '80.0.1234.0'
+
+  overlay, = overlay_stack(1)
+  unstable_chrome = cr.test.Package(
+      'chromeos-base',
+      'chromeos-chrome',
+      version='9999',
+      keywords='~*',
+      depend='foo/bar')
+  stable_chrome = cr.test.Package(
+      'chromeos-base', 'chromeos-chrome', version='80.0.1234.0_rc-r1')
+
+  overlay.add_package(unstable_chrome)
+  overlay.add_package(stable_chrome)
+
+  uprev_manager = uprev_lib.UprevChromeManager(
+      version=NEW_CHROME_VERSION, overlay_dir=overlay.path)
+
+  assert uprev_manager.uprev(constants.CHROME_CP)
+
+  expected_uprev = cr.test.Package(
+      'chromeos-base', 'chromeos-chrome', version='80.0.1234.0_rc-r2')
+
+  assert expected_uprev.cpv in overlay
+
+
+def test_no_chrome_uprev_same_version(overlay_stack, caplog):
+  """Test that no uprev occurs when version and contents are the same."""
+  NEW_CHROME_VERSION = '80.0.1234.0'
+
+  overlay, = overlay_stack(1)
+  unstable_chrome = cr.test.Package(
+      'chromeos-base', 'chromeos-chrome', version='9999', keywords='~*')
+  stable_chrome = cr.test.Package(
+      'chromeos-base', 'chromeos-chrome', version='80.0.1234.0_rc-r1')
+
+  overlay.add_package(unstable_chrome)
+  overlay.add_package(stable_chrome)
+
+  uprev_manager = uprev_lib.UprevChromeManager(
+      version=NEW_CHROME_VERSION, overlay_dir=overlay.path)
+
+  assert not uprev_manager.uprev(constants.CHROME_CP)
+  ebuild_redundant_warning = ('Previous ebuild with same version found and '
+                              'ebuild is redundant.')
+  assert ebuild_redundant_warning in caplog.text
+
+
+def test_no_chrome_uprev_older_version(overlay_stack, caplog):
+  """Test that no uprev occurs when a newer version already exists."""
+  # Intentionally older than what already exists.
+  NEW_CHROME_VERSION = '55.0.1234.0'
+
+  overlay, = overlay_stack(1)
+  unstable_chrome = cr.test.Package(
+      'chromeos-base', 'chromeos-chrome', version='9999', keywords='~*')
+  stable_chrome = cr.test.Package(
+      'chromeos-base', 'chromeos-chrome', version='80.0.1234.0_rc-r1')
+
+  overlay.add_package(unstable_chrome)
+  overlay.add_package(stable_chrome)
+
+  uprev_manager = uprev_lib.UprevChromeManager(
+      version=NEW_CHROME_VERSION, overlay_dir=overlay.path)
+
+  assert not uprev_manager.uprev(constants.CHROME_CP)
+  newer_version_warning = (
+      'A chrome ebuild candidate with a higher version than the '
+      'requested uprev version was found.')
+  assert newer_version_warning in caplog.messages
+  assert 'Candidate version found: 80.0.1234.0' in caplog.messages

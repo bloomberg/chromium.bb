@@ -56,6 +56,14 @@ class Overlay(object):
 
     self._write_layout_conf()
 
+  def __contains__(self, item: portage_util.CPV):
+    if not isinstance(item, portage_util.CPV):
+      raise TypeError(f'Expected a CPV but received a {type(item)}')
+
+    ebuild_path = self.path / item.category / item.package / f'{item.pv}.ebuild'
+
+    return ebuild_path.is_file()
+
   def _write_layout_conf(self):
     """Write out the layout.conf as part of this Overlay's initialization."""
     layout_conf_path = self.path / 'metadata' / 'layout.conf'
@@ -245,7 +253,7 @@ class Package(object):
                package,
                version='1',
                eapi='7',
-               keywords='amd64',
+               keywords='*',
                slot='0',
                depend='',
                rdepend=''):
@@ -259,7 +267,13 @@ class Package(object):
     self.rdepend = rdepend
 
   @classmethod
-  def from_cpv(cls, pkg_str):
+  def from_cpv(cls, pkg_str: str):
     """Creates a Package from a CPV string."""
     cpv = portage_util.SplitCPV(pkg_str)
     return cls(category=cpv.category, package=cpv.package, version=cpv.version)
+
+  @property
+  def cpv(self) -> portage_util.CPV:
+    """Returns a CPV object constructed from this package's metadata."""
+    return portage_util.SplitCPV(self.category + '/' + self.package + '-' +
+                                 self.version)
