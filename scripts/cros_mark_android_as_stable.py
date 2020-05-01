@@ -56,8 +56,8 @@ TEST=CQ
 """
 
 # URLs that print lists of Android revisions between two build ids.
-_ANDROID_VERSION_URL = ('http://android-build-uber.corp.google.com/repo.html?'
-                        'last_bid=%(old)s&bid=%(new)s&branch=%(branch)s')
+_ANDROID_VERSION_URL = ('https://android-build.googleplex.com'
+                        '/builds/%(new)s/branches/%(branch)s/cls?end=%(old)s')
 
 
 def IsBuildIdValid(bucket_url, build_branch, build_id, targets):
