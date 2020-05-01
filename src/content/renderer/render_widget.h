@@ -632,6 +632,8 @@ class CONTENT_EXPORT RenderWidget
       mojo::PendingReceiver<mojom::WidgetInputHandler> receiver,
       mojo::PendingRemote<mojom::WidgetInputHandlerHost> host) override;
 
+  void LockSize(bool val);
+
   scoped_refptr<MainThreadEventQueue> GetInputEventQueue();
 
   void OnSetActive(bool active);
@@ -1170,6 +1172,8 @@ class CONTENT_EXPORT RenderWidget
   base::Optional<bool> has_touch_handlers_;
 
   uint32_t last_capture_sequence_number_ = 0u;
+
+  bool lock_size_ = false;
 
   bool bb_OnHandleInputEvent_no_ack_{false};
   base::WeakPtrFactory<RenderWidget> weak_ptr_factory_{this};
