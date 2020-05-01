@@ -12,7 +12,7 @@ https://docs.pytest.org/en/latest/fixture.html#conftest-py-sharing-fixture-funct
 
 from __future__ import print_function
 
-import pytest  # pylint: disable=import-error
+import pytest
 
 import chromite as cr
 

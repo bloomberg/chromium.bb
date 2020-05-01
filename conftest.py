@@ -14,11 +14,21 @@ from __future__ import print_function
 
 import multiprocessing
 
-import pytest  # pylint: disable=import-error
+import pytest
 
 from chromite.lib import cidb
 from chromite.lib import parallel
 from chromite.lib import retry_stats
+
+# We use wildcard imports here to make fixtures defined in the test module
+# globally visible.
+# pylint: disable=unused-wildcard-import, wildcard-import
+
+# Importing from *_fixtures.py files into conftest.py is the only time a
+# module should use a wildcard import. *_fixtures.py files should ensure
+# that the only items visible to a wildcard import are pytest fixtures,
+# usually by declaring __all__ if necessary.
+from chromite.test.portage_fixtures import *
 
 
 @pytest.fixture(scope='class', autouse=True)
