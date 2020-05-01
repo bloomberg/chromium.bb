@@ -25,11 +25,14 @@ def main(argv):
   parser = get_parser()
   opts, pytest_args = parser.parse_known_args()
   if opts.quick:
-    if not cros_build_lib.IsInsideChroot():
+    if not cros_build_lib.IsInsideChroot() and opts.chroot:
       logging.warn('Running tests from inside the chroot will start up faster.')
 
-  ensure_chroot_exists()
-  re_execute_inside_chroot(argv)
+  if opts.chroot:
+    ensure_chroot_exists()
+    re_execute_inside_chroot(argv)
+  else:
+    os.chdir(constants.CHROMITE_DIR)
 
   # This is a cheesy hack to make sure gsutil is populated in the cache before
   # we run tests. This is a partial workaround for crbug.com/468838.
@@ -105,5 +108,12 @@ def get_parser():
       action='store_true',
       help='Skip normal test sandboxing and namespacing for faster start up '
       'time.',
+  )
+  parser.add_argument(
+      '--no-chroot',
+      dest='chroot',
+      action='store_false',
+      help="Don't initialize or enter a chroot for the test invocation. May "
+      'cause tests to unexpectedly fail!',
   )
   return parser

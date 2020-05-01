@@ -4,5 +4,5 @@
 # found in the LICENSE file.
 
 # Will fail if any generated config files are out of date.
-exec ./run_pytest --quickstart \
+exec ./run_pytest --quickstart --no-chroot \
   config/chromeos_config_unittest.py::ConfigDumpTest::testDump
