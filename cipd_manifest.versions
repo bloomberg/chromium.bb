@@ -332,3 +332,55 @@ infra/tools/prpc/windows-386
 infra/tools/prpc/windows-amd64
 	git_revision:edd5644be66d37cdf82978efb0e5d6504d0d552f
 	97GIuWDvHohWyH9KfvpdGiWqPa0MtD__ITW7-lXiNrEC
+
+infra/tools/rdb/linux-386
+	git_revision:096ea62315c4392835b64293c0a36b98ca096f67
+	udEv--a_VuDft4Zjl15SvMI_B2dUZnpj6la6YvP7MS8C
+
+infra/tools/rdb/linux-amd64
+	git_revision:096ea62315c4392835b64293c0a36b98ca096f67
+	0Q0TKTC5MMbWIpdAPuEj0FCL-JekZZ99UEqtHNSUt7UC
+
+infra/tools/rdb/linux-arm64
+	git_revision:096ea62315c4392835b64293c0a36b98ca096f67
+	cU9miBECkrOQmDPM01qhv2-QDA6HqpXr0l_Fr7Cz4VAC
+
+infra/tools/rdb/linux-armv6l
+	git_revision:096ea62315c4392835b64293c0a36b98ca096f67
+	9kSqsKxgHO9iJmm_vTM72wTYz0JopQJE7HWIElrtdUMC
+
+infra/tools/rdb/linux-mips64
+	git_revision:096ea62315c4392835b64293c0a36b98ca096f67
+	FVJBn6XIRr9g-hZ2E3oUtbd57kIuXGO5Zhydro9ISGsC
+
+infra/tools/rdb/linux-mips64le
+	git_revision:096ea62315c4392835b64293c0a36b98ca096f67
+	xi0tw1Asz7BHJ6TQd93o5wfK-6hTJdst3WDH3s_btysC
+
+infra/tools/rdb/linux-mipsle
+	git_revision:096ea62315c4392835b64293c0a36b98ca096f67
+	EwdqAHGjDhI-jioWTrYOtCs4hYG72rVcRWYdeIvS-N4C
+
+infra/tools/rdb/linux-ppc64
+	git_revision:096ea62315c4392835b64293c0a36b98ca096f67
+	_SnROjbRC8xzHD3dIT5uFlJSOQUCxJsM2K-IBuftTZsC
+
+infra/tools/rdb/linux-ppc64le
+	git_revision:096ea62315c4392835b64293c0a36b98ca096f67
+	qVCn-ppuNj2GKLd5LNK6gGL_XwsHVPOSbx670R5GzTcC
+
+infra/tools/rdb/linux-s390x
+	git_revision:096ea62315c4392835b64293c0a36b98ca096f67
+	o3Ak-0e0txSetbUiKYVlhikn5rWaufB5SjXoPi6p0gcC
+
+infra/tools/rdb/mac-amd64
+	git_revision:096ea62315c4392835b64293c0a36b98ca096f67
+	dA30LK8PYTKoVhUJGFzOpXtfn6aQz4pcvTL99D1kEqUC
+
+infra/tools/rdb/windows-386
+	git_revision:096ea62315c4392835b64293c0a36b98ca096f67
+	t3IBL3MBpgjBwJQDXtvPzA9B5pZbIhSW_xEsZ1JWy0MC
+
+infra/tools/rdb/windows-amd64
+	git_revision:096ea62315c4392835b64293c0a36b98ca096f67
+	EdPwSdyU-JYEyaa0Y1pEynB7RcAyZwc1roP_9LtLTEIC
