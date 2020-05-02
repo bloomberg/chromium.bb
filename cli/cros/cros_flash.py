@@ -56,11 +56,11 @@ To update/image the device with a local image path:
   cros flash device /path/to/image.bin
 
 Examples:
-  cros flash 192.168.1.7 xbuddy://remote/x86-mario/latest-canary
-  cros flash 192.168.1.7 xbuddy://remote/x86-mario-paladin/R32-4830.0.0-rc1
-  cros flash usb:// xbuddy://remote/trybot-x86-mario-paladin/R32-5189.0.0-b100
-  cros flash usb:///dev/sde xbuddy://peppy/latest
-  cros flash file:///~/images xbuddy://peppy/latest
+  cros flash 192.168.1.7 xbuddy://remote/amd64-generic/latest-canary
+  cros flash 192.168.1.7 xbuddy://remote/amd64-generic-full/R84-13039.0.0
+  cros flash usb:// xbuddy://remote/kevin
+  cros flash usb:///dev/sde kevin/latest
+  cros flash file:///~/images kevin
 
   # For a recovery image
   cros flash usb:// xbuddy://remote/link/latest-stable/recovery
