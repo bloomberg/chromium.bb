@@ -111,7 +111,7 @@ class RemoteDeviceUpdaterTest(cros_test_lib.MockTempDirTestCase):
       ret for paths under devserver/static, and the expected value of
       os.path.exists otherwise.
     """
-    if path.startswith(flash.DEVSERVER_STATIC_DIR):
+    if path.startswith(dev_server_wrapper.DEFAULT_STATIC_DIR):
       return ret
     return os.access(path, os.F_OK)
 
@@ -155,10 +155,8 @@ class RemoteDeviceUpdaterTest(cros_test_lib.MockTempDirTestCase):
 
       # Call to download full_payload and stateful. No other calls.
       mock_xbuddy.assert_has_calls(
-          [mock.call('/path/to/image/full_payload', mock.ANY, mock.ANY,
-                     static_dir=flash.DEVSERVER_STATIC_DIR, silent=True),
-           mock.call('/path/to/image/stateful', mock.ANY, mock.ANY,
-                     static_dir=flash.DEVSERVER_STATIC_DIR, silent=True)])
+          [mock.call('/path/to/image/full_payload', 'board', None, silent=True),
+           mock.call('/path/to/image/stateful', 'board', None, silent=True)])
       self.assertEqual(mock_xbuddy.call_count, 2)
 
   def testTestImage(self):
@@ -174,10 +172,8 @@ class RemoteDeviceUpdaterTest(cros_test_lib.MockTempDirTestCase):
 
       # Call to download full_payload and image. No other calls.
       mock_xbuddy.assert_has_calls(
-          [mock.call('/path/to/image/full_payload', mock.ANY, mock.ANY,
-                     static_dir=flash.DEVSERVER_STATIC_DIR, silent=True),
-           mock.call('/path/to/image', mock.ANY, mock.ANY,
-                     static_dir=flash.DEVSERVER_STATIC_DIR)])
+          [mock.call('/path/to/image/full_payload', 'board', None, silent=True),
+           mock.call('/path/to/image', 'board', None)])
       self.assertEqual(mock_xbuddy.call_count, 2)
 
 

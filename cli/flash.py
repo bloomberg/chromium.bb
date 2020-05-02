@@ -20,7 +20,6 @@ from chromite.cli.cros import cros_chrome_sdk
 from chromite.lib import auto_updater
 from chromite.lib import auto_updater_transfer
 from chromite.lib import commandline
-from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import dev_server_wrapper as ds_wrapper
@@ -36,10 +35,6 @@ from chromite.lib.xbuddy import artifact_info
 
 
 assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
-
-
-DEVSERVER_STATIC_DIR = path_util.FromChrootPath(
-    os.path.join(constants.CHROOT_SOURCE_ROOT, 'devserver', 'static'))
 
 
 def GetDefaultBoard():
@@ -290,10 +285,8 @@ class USBImager(object):
     else:
       # Translate the xbuddy path to get the exact image to use.
       translated_path, _ = ds_wrapper.GetImagePathWithXbuddy(
-          self.image, self.board, version=self.version,
-          static_dir=DEVSERVER_STATIC_DIR)
-      image_path = ds_wrapper.TranslatedPathToLocalPath(
-          translated_path, DEVSERVER_STATIC_DIR)
+          self.image, self.board, self.version)
+      image_path = ds_wrapper.TranslatedPathToLocalPath(translated_path)
 
     logging.info('Using image %s', translated_path or image_path)
     return image_path
@@ -466,15 +459,13 @@ class RemoteDeviceUpdater(object):
       # fails, fallback to downloading the image.
       try:
         translated_path, _ = ds_wrapper.GetImagePathWithXbuddy(
-            os.path.join(self.image, artifact_info.FULL_PAYLOAD), self.board,
-            version=self.version, static_dir=DEVSERVER_STATIC_DIR, silent=True)
+            os.path.join(self.image, artifact_info.FULL_PAYLOAD),
+            self.board, self.version, silent=True)
         payload_dir = os.path.dirname(
-            ds_wrapper.TranslatedPathToLocalPath(translated_path,
-                                                 DEVSERVER_STATIC_DIR))
+            ds_wrapper.TranslatedPathToLocalPath(translated_path))
         ds_wrapper.GetImagePathWithXbuddy(
             os.path.join(self.image, artifact_info.STATEFUL_PAYLOAD),
-            self.board, version=self.version, static_dir=DEVSERVER_STATIC_DIR,
-            silent=True)
+            self.board, self.version, silent=True)
         fetch_image = False
       except (ds_wrapper.ImagePathError, ds_wrapper.ArtifactDownloadError):
         logging.info('Could not find full_payload or stateful for "%s"',
@@ -484,10 +475,8 @@ class RemoteDeviceUpdater(object):
       # We didn't find the full_payload, attempt to download the image.
       if fetch_image:
         translated_path, _ = ds_wrapper.GetImagePathWithXbuddy(
-            self.image, self.board, version=self.version,
-            static_dir=DEVSERVER_STATIC_DIR)
-        image_path = ds_wrapper.TranslatedPathToLocalPath(
-            translated_path, DEVSERVER_STATIC_DIR)
+            self.image, self.board, self.version)
+        image_path = ds_wrapper.TranslatedPathToLocalPath(translated_path)
         payload_dir = os.path.join(os.path.dirname(image_path), 'payloads')
         logging.notice('Using image path %s and payload directory %s',
                        image_path, payload_dir)
@@ -606,13 +595,8 @@ def Flash(device, image, board=None, install=False, src_image_to_delta=None,
     yes = True
 
   if clear_cache:
-    logging.info('Clearing the cache...')
-    ds_wrapper.DevServerWrapper.WipeStaticDirectory(DEVSERVER_STATIC_DIR)
-
-  try:
-    osutils.SafeMakedirsNonRoot(DEVSERVER_STATIC_DIR)
-  except OSError:
-    logging.error('Failed to create %s', DEVSERVER_STATIC_DIR)
+    ds_wrapper.DevServerWrapper.WipeStaticDirectory()
+  ds_wrapper.DevServerWrapper.CreateStaticDirectory()
 
   if install:
     if not device or device.scheme != commandline.DEVICE_SCHEME_USB:

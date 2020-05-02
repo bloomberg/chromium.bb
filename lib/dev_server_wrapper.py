@@ -40,7 +40,7 @@ from chromite.lib.xbuddy import xbuddy
 DEFAULT_PORT = 8080
 
 DEFAULT_STATIC_DIR = path_util.FromChrootPath(
-    os.path.join(constants.SOURCE_ROOT, 'src', 'platform', 'dev', 'static'))
+    os.path.join(constants.CHROOT_SOURCE_ROOT, 'devserver', 'static'))
 
 XBUDDY_REMOTE = 'remote'
 XBUDDY_LOCAL = 'local'
@@ -107,9 +107,8 @@ def GetXbuddyPath(path):
     raise ValueError('Do not support scheme %s.' % (parsed.scheme,))
 
 
-def GetImagePathWithXbuddy(path, board, version=None,
-                           static_dir=DEFAULT_STATIC_DIR,
-                           lookup_only=False, silent=False):
+def GetImagePathWithXbuddy(path, board, version, static_dir=DEFAULT_STATIC_DIR,
+                           silent=False):
   """Gets image path and resolved XBuddy path using xbuddy.
 
   Ask xbuddy to translate |path|, and if necessary, download and stage the
@@ -122,8 +121,6 @@ def GetImagePathWithXbuddy(path, board, version=None,
     board: The default board to use if board is not specified in |path|.
     version: The default version to use if one is not specified in |path|.
     static_dir: Static directory to stage the image in.
-    lookup_only: Caller only wants to translate the path not download the
-      artifact.
     silent: Suppress error messages.
 
   Returns:
@@ -146,15 +143,11 @@ def GetImagePathWithXbuddy(path, board, version=None,
     else:
       cherrypy.config.update({'server.log_to_screen': False})
 
-  xb = xbuddy.XBuddy(static_dir=static_dir, board=board, version=version,
-                     log_screen=False)
+  xb = xbuddy.XBuddy(board=board, version=version, log_screen=False,
+                     static_dir=static_dir)
   path_list = GetXbuddyPath(path).rsplit(os.path.sep)
   try:
-    if lookup_only:
-      build_id, file_name = xb.Translate(path_list)
-    else:
-      build_id, file_name = xb.Get(path_list)
-
+    build_id, file_name = xb.Get(path_list)
     resolved_path, _ = xb.LookupAlias(os.path.sep.join(path_list))
     return os.path.join(build_id, file_name), resolved_path
   except xbuddy.XBuddyException as e:
@@ -193,7 +186,7 @@ def GenerateXbuddyRequest(path, req_type):
     raise ValueError('Does not support xbuddy request type %s' % req_type)
 
 
-def TranslatedPathToLocalPath(translated_path, static_dir):
+def TranslatedPathToLocalPath(translated_path, static_dir=DEFAULT_STATIC_DIR):
   """Convert the translated path to a local path to the image file.
 
   Args:
@@ -372,15 +365,23 @@ class DevServerWrapper(multiprocessing.Process):
       return res.read()
 
   @classmethod
-  def WipeStaticDirectory(cls, static_dir):
+  def CreateStaticDirectory(cls, static_dir=DEFAULT_STATIC_DIR):
+    """Creates |static_dir|.
+
+    Args:
+      static_dir: path to the static directory of the devserver instance.
+    """
+    osutils.SafeMakedirsNonRoot(static_dir)
+
+  @classmethod
+  def WipeStaticDirectory(cls, static_dir=DEFAULT_STATIC_DIR):
     """Cleans up |static_dir|.
 
     Args:
       static_dir: path to the static directory of the devserver instance.
     """
-    # Wipe the payload cache.
     cls.WipePayloadCache(static_dir=static_dir)
-    logging.info('Cleaning up directory %s', static_dir)
+    logging.info('Clearing cache directory %s', static_dir)
     osutils.RmDir(static_dir, ignore_missing=True, sudo=True)
 
   @classmethod
