@@ -415,15 +415,10 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
     # Use the default cache location.
     self.SetupCommandMock(extra_args=['--clear-sdk-cache'],
                           default_cache_dir=True)
-    # Old chrome cache location.
-    old_chrome_cache = os.path.join(self.chrome_root, '.cros_cache')
     chrome_cache = os.path.join(self.chrome_src_dir, 'build/cros_cache')
-    osutils.SafeMakedirs(old_chrome_cache)
     self.assertNotExists(chrome_cache)
 
     self.cmd_mock.inst.Run()
-    # Old chrome cache should be gone and the new one should now exist.
-    self.assertNotExists(old_chrome_cache)
     self.assertExists(chrome_cache)
 
   def testSeabiosDownload(self):
