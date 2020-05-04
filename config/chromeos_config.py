@@ -2640,10 +2640,6 @@ def ApplyCustomOverrides(site_config):
 
       'jacuzzi-release': {
           'sign_types': ['recovery', 'factory'],
-          # No hw tests for jacuzzi (crbug.com/1011171).
-          'hw_tests': [],
-          'hw_tests_override': [],
-          'hw_tests_disabled_bug': 'https://crbug.com/1011171',
       },
 
       'kukui-release': {
