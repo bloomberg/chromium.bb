@@ -21,6 +21,8 @@ template("vulkan_memory_allocator") {
     if (is_clang) {
       cflags_cc = [
         "-Wno-implicit-fallthrough",
+        "-Wno-nullability-completeness",
+        "-Wno-unused-private-field",
         "-Wno-unused-variable",
       ]
     }
