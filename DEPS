@@ -46,7 +46,7 @@ deps = {
   'third_party/protobuf/src': {
     'url': Var('chromium_git') +
       '/external/github.com/protocolbuffers/protobuf.git' +
-      '@' + 'd09d649aea36f02c03f8396ba39a8d4db8a607e4', # version 3.10.1
+      '@' + 'd0bfd5221182da1a7cc280f3337b5e41a89539cf', # version 3.11.4
     'condition': 'not build_with_chromium',
   },
 
@@ -60,7 +60,7 @@ deps = {
   'third_party/jsoncpp/src': {
     'url': Var('chromium_git') +
       '/external/github.com/open-source-parsers/jsoncpp.git' +
-      '@' + '2eb20a938c454411c1d416caeeb2a6511daab5cb', # version 1.9.0
+      '@' + 'd2e6a971f4544c55b8e3b25cf96db266971b778f', # version 1.9.2
     'condition': 'not build_with_chromium',
   },
 

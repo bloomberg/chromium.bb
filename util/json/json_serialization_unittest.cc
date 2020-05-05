@@ -4,6 +4,7 @@
 
 #include "util/json/json_serialization.h"
 
+#include <array>
 #include <string>
 
 #include "gtest/gtest.h"
