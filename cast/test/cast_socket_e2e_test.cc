@@ -256,7 +256,7 @@ class CastSocketE2ETest : public ::testing::Test {
   IPAddress GetLoopbackV4Address() {
     absl::optional<InterfaceInfo> loopback = GetLoopbackInterfaceForTesting();
     OSP_CHECK(loopback);
-    auto address = loopback->GetIpAddressV4();
+    IPAddress address = loopback->GetIpAddressV4();
     OSP_CHECK(address);
     return address;
   }
@@ -264,8 +264,7 @@ class CastSocketE2ETest : public ::testing::Test {
   IPAddress GetLoopbackV6Address() {
     absl::optional<InterfaceInfo> loopback = GetLoopbackInterfaceForTesting();
     OSP_CHECK(loopback);
-    auto address = loopback->GetIpAddressV6();
-    OSP_CHECK(address);
+    IPAddress address = loopback->GetIpAddressV6();
     return address;
   }
 
@@ -338,8 +337,12 @@ TEST_F(CastSocketE2ETest, ConnectV4) {
 TEST_F(CastSocketE2ETest, ConnectV6) {
   OSP_LOG_INFO << "Getting loopback IPv6 address";
   IPAddress loopback_address = GetLoopbackV6Address();
-  OSP_LOG_INFO << "Connecting CastSockets";
-  Connect(loopback_address);
+  if (loopback_address) {
+    OSP_LOG_INFO << "Connecting CastSockets";
+    Connect(loopback_address);
+  } else {
+    OSP_LOG_WARN << "Test skipped due to missing IPv6 loopback address";
+  }
 }
 
 }  // namespace cast
