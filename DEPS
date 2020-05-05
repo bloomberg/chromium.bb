@@ -97,10 +97,13 @@ deps = {
     Var('chromium_git') + '/external/github.com/intel/tinycbor.git' +
     '@' + '755f9ef932f9830a63a712fd2ac971d838b131f1',
 
+  # Abseil recommends living at head.  Chromium takes an Abseil snapshot
+  # irregularly, every 1-2 months.  When rolling, roll manually to the current
+  # Chromium snapshot since it's pretty close to head.
   'third_party/abseil/src': {
     'url': Var('chromium_git') +
       '/external/github.com/abseil/abseil-cpp.git' +
-      '@' + '20de2db748ca0471cfb61cb53e813dd12938c12b',
+      '@' + 'cde2e2410e58c884b3bf5f67c6511e6266036249',
     'condition': 'not build_with_chromium',
   },
 
