@@ -303,12 +303,16 @@ class GetChromeVersion(cros_test_lib.MockTestCase, ApiConfigMixin):
   def testGetChromeVersion(self):
     """Verify basic return values."""
     chrome_version = '76.0.1.2'
-    self.PatchObject(packages_service, 'determine_chrome_version',
-                     return_value=chrome_version)
+    chrome_version_mock = self.PatchObject(packages_service,
+                                           'determine_chrome_version',
+                                           return_value=chrome_version)
     request = self._GetRequest(board='betty')
     packages_controller.GetChromeVersion(request, self.response,
                                          self.api_config)
     self.assertEqual(self.response.version, chrome_version)
+    # Verify call to determine_chrome_version passes a build_target object.
+    build_target = build_target_lib.BuildTarget('betty')
+    chrome_version_mock.assert_called_with(build_target)
 
   def testGetChromeVersionHandleNone(self):
     """Verify basic return values."""
@@ -419,17 +423,21 @@ class GetTargetVersionsTest(cros_test_lib.MockTestCase, ApiConfigMixin):
     # Mock that chrome is built and set the chrome_version.
     self.PatchObject(packages_service, 'builds', return_value=True)
     chrome_version = '76.0.1.2'
-    self.PatchObject(packages_service, 'determine_chrome_version',
-                     return_value=chrome_version)
+    chrome_version_mock = self.PatchObject(packages_service,
+                                           'determine_chrome_version',
+                                           return_value=chrome_version)
     android_version = 'android_test_version'
-    self.PatchObject(packages_service, 'determine_android_version',
-                     return_value=android_version)
+    android_version_mock = self.PatchObject(packages_service,
+                                            'determine_android_version',
+                                            return_value=android_version)
     android_branch = 'android_test_branch'
-    self.PatchObject(packages_service, 'determine_android_branch',
-                     return_value=android_branch)
+    android_branch_mock = self.PatchObject(packages_service,
+                                           'determine_android_branch',
+                                           return_value=android_branch)
     android_target = 'android_test_target'
-    self.PatchObject(packages_service, 'determine_android_target',
-                     return_value=android_target)
+    android_target_mock = self.PatchObject(packages_service,
+                                           'determine_android_target',
+                                           return_value=android_target)
     platform_version = '12345.1.2'
     self.PatchObject(packages_service, 'determine_platform_version',
                      return_value=platform_version)
@@ -449,6 +457,15 @@ class GetTargetVersionsTest(cros_test_lib.MockTestCase, ApiConfigMixin):
     self.assertEqual(self.response.platform_version, platform_version)
     self.assertEqual(self.response.milestone_version, milestone_version)
     self.assertEqual(self.response.full_version, full_version)
+    # Verify call to determine_chrome_version passes a build_target object.
+    build_target = build_target_lib.BuildTarget('betty')
+    chrome_version_mock.assert_called_with(build_target)
+    # Verify call to determine_android_version passes a list of the board name.
+    android_version_mock.assert_called_with(['betty'])
+    # Verify call to determine_android_branch passes a board name.
+    android_branch_mock.assert_called_with('betty')
+    # Verify call to determine_android_target passes a board name.
+    android_target_mock.assert_called_with('betty')
 
   def testGetTargetVersionNoAndroidNoChrome(self):
     """Verify return values on a board that does not have android."""
@@ -519,14 +536,17 @@ class GetBuilderMetadataTest(cros_test_lib.MockTestCase, ApiConfigMixin):
   def testGetBuilderMetadata(self):
     """Verify basic return values."""
     android_version = 'android_test_version'
-    self.PatchObject(packages_service, 'determine_android_version',
-                     return_value=android_version)
+    android_version_mock = self.PatchObject(packages_service,
+                                            'determine_android_version',
+                                            return_value=android_version)
     android_branch = 'android_test_branch'
-    self.PatchObject(packages_service, 'determine_android_branch',
-                     return_value=android_branch)
+    android_branch_mock = self.PatchObject(packages_service,
+                                           'determine_android_branch',
+                                           return_value=android_branch)
     android_target = 'android_test_target'
-    self.PatchObject(packages_service, 'determine_android_target',
-                     return_value=android_target)
+    android_target_mock = self.PatchObject(packages_service,
+                                           'determine_android_target',
+                                           return_value=android_target)
     self.PatchObject(portage_util, 'GetBoardUseFlags',
                      return_value=['arc', 'arcvm', 'big_little', 'cheets'])
     request = self._GetRequest(board='betty')
@@ -547,6 +567,12 @@ class GetBuilderMetadataTest(cros_test_lib.MockTestCase, ApiConfigMixin):
     self.assertEqual(
         self.response.build_target_metadata[0].arc_use_set,
         True)
+    # Verify call to determine_android_version passes list of the board name.
+    android_version_mock.assert_called_with(['betty'])
+    # Verify call to determine_android_branch passes board name.
+    android_branch_mock.assert_called_with('betty')
+    # Verify call to determine_android_target passes board name.
+    android_target_mock.assert_called_with('betty')
 
 
 class HasChromePrebuiltTest(cros_test_lib.MockTestCase, ApiConfigMixin):

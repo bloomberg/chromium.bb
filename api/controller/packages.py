@@ -162,17 +162,17 @@ def GetTargetVersions(input_proto, output_proto, _config):
   """Returns the target versions."""
   build_target = controller_util.ParseBuildTarget(input_proto.build_target)
   # Android version.
-  android_version = packages.determine_android_version([build_target])
+  android_version = packages.determine_android_version([build_target.name])
   logging.info('Found android version: %s', android_version)
   if android_version:
     output_proto.android_version = android_version
   # Android branch version.
-  android_branch_version = packages.determine_android_branch(build_target)
+  android_branch_version = packages.determine_android_branch(build_target.name)
   logging.info('Found android branch version: %s', android_branch_version)
   if android_branch_version:
     output_proto.android_branch_version = android_branch_version
   # Android target version.
-  android_target_version = packages.determine_android_target(build_target)
+  android_target_version = packages.determine_android_target(build_target.name)
   logging.info('Found android target version: %s', android_target_version)
   if android_target_version:
     output_proto.android_target_version = android_target_version
@@ -214,17 +214,17 @@ def GetBuilderMetadata(input_proto, output_proto, _config):
   build_target_metadata = output_proto.build_target_metadata.add()
   build_target_metadata.build_target = build_target.name
   # Android version.
-  android_version = packages.determine_android_version([build_target])
+  android_version = packages.determine_android_version([build_target.name])
   logging.info('Found android version: %s', android_version)
   if android_version:
     build_target_metadata.android_container_version = android_version
   # Android branch version.
-  android_branch_version = packages.determine_android_branch(build_target)
+  android_branch_version = packages.determine_android_branch(build_target.name)
   logging.info('Found android branch version: %s', android_branch_version)
   if android_branch_version:
     build_target_metadata.android_container_branch = android_branch_version
   # Android target version.
-  android_target_version = packages.determine_android_target(build_target)
+  android_target_version = packages.determine_android_target(build_target.name)
   logging.info('Found android target version: %s', android_target_version)
   if android_target_version:
     build_target_metadata.android_container_target = android_target_version
