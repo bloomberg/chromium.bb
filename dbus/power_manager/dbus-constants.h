@@ -66,6 +66,8 @@ const char kScreenIdleStateChangedSignal[] = "ScreenIdleStateChanged";
 const char kInactivityDelaysChangedSignal[] = "InactivityDelaysChanged";
 const char kAmbientColorTemperatureChangedSignal[] =
     "AmbientColorTemperatureChanged";
+const char kLidClosedSignal[] = "LidClosed";
+const char kLidOpenedSignal[] = "LidOpened";
 
 // Values
 const int kBrightnessTransitionGradual = 1;
