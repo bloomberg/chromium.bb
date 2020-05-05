@@ -744,7 +744,6 @@ class ChromeSDKCommand(command.CliCommand):
   _GOMA_TGZ = 'goma-goobuntu.tgz'
 
   _CHROME_CLANG_DIR = 'third_party/llvm-build/Release+Asserts/bin'
-  _HOST_BINUTILS_DIR = 'third_party/binutils/Linux_x64/Release/bin/'
   _BUILD_ARGS_DIR = 'build/args/chromeos/'
 
   EBUILD_ENV_PATHS = (
@@ -1021,11 +1020,6 @@ class ChromeSDKCommand(command.CliCommand):
     env['CXX_host'] = os.path.join(chrome_clang_path, 'clang++')
     env['LD_host'] = env['CXX_host']
 
-    binutils_path = os.path.join(options.chrome_src, self._HOST_BINUTILS_DIR)
-    env['AR_host'] = os.path.join(binutils_path, 'ar')
-    env['NM_host'] = os.path.join(binutils_path, 'nm')
-    env['READELF_host'] = os.path.join(binutils_path, 'readelf')
-
   def _AbsolutizeBinaryPath(self, binary, tc_path):
     """Modify toolchain path for goma build.
 
@@ -1128,10 +1122,6 @@ class ChromeSDKCommand(command.CliCommand):
       gn_args.pop('is_official_build', None)
       gn_args.pop('internal_gles2_conform_tests', None)
 
-    # For SimpleChrome, we use the binutils that comes bundled within Chrome.
-    # We should not use the binutils from the host system.
-    gn_args['linux_use_bundled_binutils'] = True
-
     target_tc_path = sdk_ctx.key_map[self.sdk.TARGET_TOOLCHAIN_KEY].path
     for env_path in self.EBUILD_ENV_PATHS:
       env[env_path] = self._AbsolutizeBinaryPath(env[env_path], target_tc_path)
@@ -1146,15 +1136,16 @@ class ChromeSDKCommand(command.CliCommand):
     gn_args['cros_host_cc'] = env['CC_host']
     gn_args['cros_host_cxx'] = env['CXX_host']
     gn_args['cros_host_ld'] = env['LD_host']
-    gn_args['cros_host_nm'] = env['NM_host']
-    gn_args['cros_host_ar'] = env['AR_host']
-    gn_args['cros_host_readelf'] = env['READELF_host']
     gn_args['cros_v8_snapshot_cc'] = env['CC_host']
     gn_args['cros_v8_snapshot_cxx'] = env['CXX_host']
     gn_args['cros_v8_snapshot_ld'] = env['LD_host']
-    gn_args['cros_v8_snapshot_nm'] = env['NM_host']
-    gn_args['cros_v8_snapshot_ar'] = env['AR_host']
-    gn_args['cros_v8_snapshot_readelf'] = env['READELF_host']
+    # Let Chromium's build files pick defaults for the following.
+    gn_args.pop('cros_host_nm', None)
+    gn_args.pop('cros_host_ar', None)
+    gn_args.pop('cros_host_readelf', None)
+    gn_args.pop('cros_v8_snapshot_nm', None)
+    gn_args.pop('cros_v8_snapshot_ar', None)
+    gn_args.pop('cros_v8_snapshot_readelf', None)
     # No need to adjust CFLAGS and CXXFLAGS for GN since the only
     # adjustment made in _SetupTCEnvironment is for split debug which
     # is done with 'use_debug_fission'.
