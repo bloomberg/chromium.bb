@@ -21,9 +21,9 @@ import sys
 
 from chromite.lib import constants
 from chromite.cli import command
-from chromite.cli import flash
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import dev_server_wrapper
 from chromite.lib import osutils
 
 
@@ -245,8 +245,7 @@ class CleanCommand(command.CliCommand):
           Clean(d)
 
     if self.options.flash:
-      logging.debug('Clean up the cros flash cache.')
-      Clean(flash.DEVSERVER_STATIC_DIR)
+      dev_server_wrapper.WipeStaticDirectory()
 
     if self.options.images:
       logging.debug('Clean the images cache.')

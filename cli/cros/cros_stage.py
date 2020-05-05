@@ -14,10 +14,10 @@ import sys
 from chromite.cbuildbot import commands
 
 from chromite.cli import command
-from chromite.cli import flash
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import dev_server_wrapper
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import remote_access
@@ -282,7 +282,7 @@ NOTES:
     logging.info('Attempting to stage: %s as Image: %s at Location: %s',
                  self.options.image, self.staged_image_name,
                  self.options.remote)
-    osutils.SafeMakedirsNonRoot(flash.DEVSERVER_STATIC_DIR)
+    dev_server_wrapper.CreateStaticDirectory()
 
     with osutils.TempDir() as tempdir:
       if self._remote_image:
