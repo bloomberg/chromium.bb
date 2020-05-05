@@ -44,6 +44,25 @@ const char kStateProperty[] = "State";
 
 }  // namespace profile
 
+// Error codes.
+const char kErrorAlreadyDisabled[] =
+    "org.chromium.Hermes.Error.AlreadyDisabled";
+const char kErrorAlreadyEnabled[] = "org.chromium.Hermes.Error.AlreadyEnabled";
+const char kErrorInvalidActivationCode[] =
+    "org.chromium.Hermes.Error.InvalidActivationCode";
+const char kErrorInvalidIccid[] = "org.chromium.Hermes.Error.InvalidIccid";
+const char kErrorInvalidParameter[] =
+    "org.chromium.Hermes.Error.InvalidParameter";
+const char kErrorNeedConfirmationCode[] =
+    "org.chromium.Hermes.Error.NeedConfirmationCode";
+const char kErrorSendNotificationFailure[] =
+    "org.chromium.Hermes.Error.SendNotificationFailure";
+const char kErrorTestProfileInProd[] =
+    "org.chromium.Hermes.Error.TestProfileInProd";
+const char kErrorUnknown[] = "org.chromium.Hermes.Error.Unknown";
+const char kErrorUnsupported[] = "org.chromium.Hermes.Error.Unsupported";
+const char kErrorWrongState[] = "org.chromium.Hermes.Error.WrongState";
+
 }  // namespace hermes
 
 #endif  // SYSTEM_API_DBUS_HERMES_DBUS_CONSTANTS_H_
