@@ -67,6 +67,7 @@ class UnitTestStageTest(generic_stages_unittest.AbstractStageTestCase,
 
     board_runattrs = self._run.GetBoardRunAttrs(self._current_board)
     board_runattrs.SetParallel('test_artifacts_uploaded', True)
+    board_runattrs.SetParallel('debug_symbols_completed', True)
     self.RunStage()
     makedirs_mock.assert_called_once_with(self._run.GetArchive().archive_path)
     self.rununittests_mock.assert_called_once_with(

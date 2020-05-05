@@ -8,7 +8,6 @@
 from __future__ import print_function
 
 import collections
-import math
 import os
 
 from chromite.cbuildbot import afdo
@@ -55,17 +54,9 @@ class UnitTestStage(generic_stages.BoardSpecificBuilderStage,
     """
     self.board_runattrs.GetParallel('test_artifacts_uploaded',
                                     timeout=None)
+    self.board_runattrs.GetParallel('debug_symbols_completed',
+                                    timeout=None)
     return True
-
-  def HandleSkip(self):
-    """Launch DebugSymbolsStage if UnitTestStage is skipped."""
-    self.board_runattrs.SetParallel('unittest_completed', True)
-    return super(UnitTestStage, self).HandleSkip()
-
-  def _HandleStageException(self, exc_info):
-    """Launch DebugSymbolStage if UnitTestStage is raising an exception."""
-    self.board_runattrs.SetParallel('unittest_completed', True)
-    return super(UnitTestStage, self)._HandleStageException(exc_info)
 
   def PerformStage(self):
     extra_env = {}
@@ -79,8 +70,6 @@ class UnitTestStage(generic_stages.BoardSpecificBuilderStage,
           blacklist=self._run.config.unittest_blacklist,
           extra_env=extra_env,
           build_stage=self._run.config.build_packages)
-    # The attribute 'unittest_completed' is used in DebugSymbolsStage.
-    self.board_runattrs.SetParallel('unittest_completed', True)
     # Package UnitTest binaries.
     tarball = commands.BuildUnitTestTarball(
         self._build_root, self._current_board, self.archive_path)

@@ -251,6 +251,9 @@ class SimpleBuilder(generic_builders.Builder):
       self._RunStage(build_stages.BuildImageStage, board,
                      builder_run=builder_run, afdo_use=config.afdo_use)
 
+    # Run the debug symbols stage before the UnitTestStage to avoid generating
+    # debug symbols from the altered, test symbols.
+    self._RunDebugSymbolStages(builder_run, board)
     # Run UnitTestStage & UploadTestArtifactsStage in a separate pass before
     # any of the other parallel stages to prevent races with the image
     # construction in the ArchiveStage.
@@ -260,7 +263,6 @@ class SimpleBuilder(generic_builders.Builder):
     parallel.RunParallelSteps([
         lambda: self._RunParallelStages(stage_objs + [archive_stage]),
         lambda: self._RunHWTests(builder_run, board),
-        lambda: self._RunDebugSymbolStages(builder_run, board),
     ])
     # Move VMTests out of parallel execution due to high failure rate.
     # http://crbug/932644

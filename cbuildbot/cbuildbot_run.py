@@ -187,6 +187,7 @@ class RunAttributes(object):
   BOARD_ATTRS = frozenset((
       'breakpad_symbols_generated',   # Set by DebugSymbolsStage.
       'debug_tarball_generated',      # Set by DebugSymbolsStage.
+      'debug_symbols_completed',      # Set by DebugSymbolsStage
       'images_generated',             # Set by BuildImageStage.
       'test_artifacts_uploaded',      # Set by UploadHWTestArtifacts.
       'autotest_tarball_generated',   # Set by ArchiveStage.
@@ -195,7 +196,6 @@ class RunAttributes(object):
       'packages_under_test',          # Set by BuildPackagesStage.
       'signed_images_ready',          # Set by SigningStage
       'paygen_test_payloads_ready',   # Set by PaygenStage
-      'unittest_completed',           # Set by UnitTestStage.
   ))
 
   # Attributes that need to be set by stages that can run in parallel

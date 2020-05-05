@@ -484,16 +484,6 @@ class DebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
   config_name = 'debug_symbols'
   category = constants.PRODUCT_OS_STAGE
 
-  def WaitUntilReady(self):
-    """Block until UnitTest completes.
-
-    The attribute 'unittest_completed' is set by UnitTestStage.
-
-    Returns:
-      Boolean that authorizes running of this stage.
-    """
-    return self.board_runattrs.GetParallel('unittest_completed', timeout=None)
-
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     """Generate debug symbols and upload debug.tgz."""
@@ -573,6 +563,8 @@ class DebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
                        os.path.join(url, failed_name),
                        os.path.join(url, 'debug_breakpad.tar.xz'))
 
+    self.board_runattrs.SetParallel('debug_symbols_completed', True)
+
     # Delay throwing the exception until after we uploaded the list.
     if not upload_passed:
       raise DebugSymbolsUploadException('Failed to upload all symbols.')
@@ -585,11 +577,13 @@ class DebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
   def HandleSkip(self):
     """Tell other stages to not wait on us if we are skipped."""
     self._SymbolsNotGenerated()
+    self.board_runattrs.SetParallel('debug_symbols_completed', True)
     return super(DebugSymbolsStage, self).HandleSkip()
 
   def _HandleStageException(self, exc_info):
     """Tell other stages to not wait on us if we die for some reason."""
     self._SymbolsNotGenerated()
+    self.board_runattrs.SetParallel('debug_symbols_completed', True)
 
     # TODO(dgarrett): Get failures tracked in metrics (crbug.com/652463).
     exc_type, e, _ = exc_info
