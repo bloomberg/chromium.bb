@@ -31362,6 +31362,10 @@
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"trogdor\",\n    \"name\": \"lazor\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"trogdor\",\n    \"name\": \"trogdor\",\n    \"test_suites\": []\n}"
         ],
+        "sign_types": [
+            "recovery",
+            "factory"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -31382,6 +31386,10 @@
         ],
         "paygen": false,
         "push_image": false,
+        "sign_types": [
+            "recovery",
+            "factory"
+        ],
         "suite_scheduling": false,
         "vm_tests": [],
         "vm_tests_override": null
