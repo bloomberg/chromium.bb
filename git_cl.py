@@ -767,10 +767,25 @@ class Settings(object):
   def GetSquashGerritUploads(self):
     """Returns True if uploads to Gerrit should be squashed by default."""
     if self.squash_gerrit_uploads is None:
+      self.squash_gerrit_uploads = self.GetSquashGerritUploadsOverride()
+    if self.squash_gerrit_uploads is None:
       # Default is squash now (http://crbug.com/611892#c23).
       self.squash_gerrit_uploads = self._GetConfig(
           'gerrit.squash-uploads').lower() != 'false'
     return self.squash_gerrit_uploads
+
+  def GetSquashGerritUploadsOverride(self):
+    """Return True or False if codereview.settings should be overridden.
+
+    Returns None if no override has been defined.
+    """
+    # See also http://crbug.com/611892#c23
+    result = self._GetConfig('gerrit.override-squash-uploads').lower()
+    if result == 'true':
+      return True
+    if result == 'false':
+      return False
+    return None
 
   def GetGerritSkipEnsureAuthenticated(self):
     """Return True if EnsureAuthenticated should not be done for Gerrit
@@ -2740,8 +2755,8 @@ def LoadCodereviewSettingsFromFile(fileobj):
     RunGit(['config', 'gerrit.host', keyvals['GERRIT_HOST']])
 
   if 'GERRIT_SQUASH_UPLOADS' in keyvals:
-    print('WARNING: GERRIT_SQUASH_UPLOADS in codereview.settings is no longer '
-          'supported.  Please delete it and update your ~/.gitconfig instead.')
+    RunGit(['config', 'gerrit.squash-uploads',
+            keyvals['GERRIT_SQUASH_UPLOADS']])
 
   if 'GERRIT_SKIP_ENSURE_AUTHENTICATED' in keyvals:
     RunGit(['config', 'gerrit.skip-ensure-authenticated',
