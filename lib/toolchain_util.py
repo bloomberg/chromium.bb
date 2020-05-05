@@ -240,8 +240,8 @@ def _ParseBenchmarkProfileName(profile_name):
   pattern = re.compile(BENCHMARK_PROFILE_NAME_REGEX, re.VERBOSE)
   match = pattern.match(profile_name)
   if not match:
-    raise ProfilesNameHelperError(
-        'Unparseable benchmark profile name: %s' % profile_name)
+    raise ProfilesNameHelperError('Unparseable benchmark profile name: %s' %
+                                  profile_name)
 
   groups = match.groups()
   version_groups = groups[:-1]
@@ -267,8 +267,8 @@ def _ParseCWPProfileName(profile_name):
   pattern = re.compile(CWP_PROFILE_NAME_REGEX, re.VERBOSE)
   match = pattern.match(profile_name)
   if not match:
-    raise ProfilesNameHelperError(
-        'Unparseable CWP profile name: %s' % profile_name)
+    raise ProfilesNameHelperError('Unparseable CWP profile name: %s' %
+                                  profile_name)
   return CWPProfileVersion(*[int(x) for x in match.groups()])
 
 
@@ -293,14 +293,14 @@ def _ParseMergedProfileName(artifact_name):
   pattern = re.compile(MERGED_PROFILE_NAME_REGEX, re.VERBOSE)
   match = pattern.match(artifact_name)
   if not match:
-    raise ProfilesNameHelperError(
-        'Unparseable merged AFDO name: %s' % artifact_name)
+    raise ProfilesNameHelperError('Unparseable merged AFDO name: %s' %
+                                  artifact_name)
   groups = match.groups()
   cwp_groups = groups[:4]
   benchmark_groups = groups[4:]
   return (BenchmarkProfileVersion(
-      *[int(x) for x in benchmark_groups], is_merged=False),
-          CWPProfileVersion(*[int(x) for x in cwp_groups]))
+      *[int(x) for x in benchmark_groups],
+      is_merged=False), CWPProfileVersion(*[int(x) for x in cwp_groups]))
 
 
 def _FindEbuildPath(package, buildroot=None, board=None):
@@ -370,8 +370,8 @@ def _GetArtifactVersionInChromium(arch, chrome_root):
         os.listdir(
             os.path.join(chrome_root, AFDO_PROFILE_PATH_IN_CHROMIUM % arch,
                          '..')))
-    raise RuntimeError(
-        'File %s containing profile name does not exist' % (profile_file,))
+    raise RuntimeError('File %s containing profile name does not exist' %
+                       (profile_file,))
 
   return osutils.ReadFile(profile_file)
 
@@ -470,8 +470,8 @@ def _GetBenchmarkAFDOName(buildroot, board):
     # We want to avoid uploading a profile with an unparsable name. There's no
     # reason to upload a profile with unparsable name because no builds can
     # use it anyway. See crbug.com/1048725 for such instances.
-    raise ValueError(
-        'Invalid to use %s as AFDO name because of unparsable' % afdo_file)
+    raise ValueError('Invalid to use %s as AFDO name because of unparsable' %
+                     afdo_file)
   return afdo_file
 
 
@@ -953,15 +953,15 @@ def _FindLatestAFDOArtifact(gs_url, ranking_function):
     # Try to find the latest profile from last branch.
     results = _FilterResultsBasedOnBranch(str(int(chrome_branch) - 1))
     if not results:
-      raise RuntimeError(
-          'No files found on %s for branch %s' % (gs_url, chrome_branch))
+      raise RuntimeError('No files found on %s for branch %s' %
+                         (gs_url, chrome_branch))
 
   ranked_results = [(ranking_function(x.url), x.url) for x in results]
   filtered_results = [x for x in ranked_results if x[0] is not None]
   if not filtered_results:
-    raise RuntimeError(
-        'No valid latest artifact was found on %s'
-        '(example invalid artifact: %s).' % (gs_url, results[0].url))
+    raise RuntimeError('No valid latest artifact was found on %s'
+                       '(example invalid artifact: %s).' %
+                       (gs_url, results[0].url))
 
   latest = max(filtered_results)
   name = os.path.basename(latest[1])
@@ -1002,8 +1002,9 @@ def _GetProfileAge(profile, artifact_type):
   """
 
   if artifact_type == 'kernel_afdo':
-    return (datetime.datetime.utcnow() - datetime.datetime.utcfromtimestamp(
-        int(profile.split('-')[-1]))).days
+    return (
+        datetime.datetime.utcnow() -
+        datetime.datetime.utcfromtimestamp(int(profile.split('-')[-1]))).days
 
   raise ValueError('Only kernel afdo is supported to check profile age.')
 
@@ -1096,8 +1097,8 @@ class _CommonPrepareBundle(object):
       return info
     else:
       raise PrepareForBuildHandlerError(
-          'Wrong number of %s/%s ebuilds found: %s' % (category, package,
-                                                       ', '.join(paths)))
+          'Wrong number of %s/%s ebuilds found: %s' %
+          (category, package, ', '.join(paths)))
 
   def _GetBenchmarkAFDOName(self, template=CHROME_BENCHMARK_AFDO_FILE):
     """Get the name of the benchmark AFDO file from the Chrome ebuild."""
@@ -1256,8 +1257,8 @@ class _CommonPrepareBundle(object):
 
     if not latest:
       raise RuntimeError('No valid latest artifact was found in %s'
-                         '(example invalid artifact: %s).' % (' '.join(gs_urls),
-                                                              results[0].url))
+                         '(example invalid artifact: %s).' %
+                         (' '.join(gs_urls), results[0].url))
 
     name = latest[1]
     logging.info('Latest AFDO artifact is %s', name)
@@ -1578,24 +1579,30 @@ class _CommonPrepareBundle(object):
     cros_build_lib.run(cmd_to_binary, enter_chroot=True, print_cmd=True)
 
   def _CreateAndUploadMergedAFDOProfile(self,
-                                        unmerged_name,
+                                        unmerged_profile,
                                         output_dir,
                                         recent_to_merge=5,
                                         max_age_days=14):
     """Create a merged AFDO profile from recent AFDO profiles and upload it.
 
     Args:
-      unmerged_name: name of the AFDO profile we've just uploaded. No profiles
-        whose names are lexicographically ordered after this are candidates for
-        selection.
+      unmerged_profile: Path to the AFDO profile we've just created. No
+        profiles whose names are lexicographically ordered after this are
+        candidates for selection.
       output_dir: Path to location to store merged profiles for uploading.
-      recent_to_merge: The maximum number of profiles to merge
+      recent_to_merge: The maximum number of profiles to merge (include the
+        current profile).
       max_age_days: Don't merge profiles older than max_age_days days old.
 
     Returns:
       The name of a merged profile if the AFDO profile is a candidate for
       merging and ready to be merged and uploaded. Otherwise, None.
     """
+    if recent_to_merge == 1:
+      # Merging the unmerged_profile into itself is a NOP.
+      return None
+
+    unmerged_name = os.path.basename(unmerged_profile)
     merged_suffix = '-merged'
     profile_suffix = AFDO_SUFFIX + BZ2_COMPRESSION_SUFFIX
     benchmark_url = self.input_artifacts.get(
@@ -1628,13 +1635,25 @@ class _CommonPrepareBundle(object):
                       'found')
       return None
 
-    base_time = benchmark_profiles[-1].creation_time
+    # The input "unmerged_name" should never be in GS bucket, as recipe
+    # builder executes only when the artifact not exists.
+    if os.path.splitext(os.path.basename(
+        benchmark_profiles[-1].url))[0] == unmerged_name:
+      benchmark_profiles = benchmark_profiles[:-1]
+
+    # assert os.path.splitext(os.path.basename(
+    #    benchmark_profiles[-1].url))[0] != unmerged_name, unmerged_name
+
+    base_time = datetime.datetime.fromtimestamp(
+        os.path.getmtime(unmerged_profile))
     time_cutoff = base_time - datetime.timedelta(days=max_age_days)
     merge_candidates = [
         p for p in benchmark_profiles if p.creation_time >= time_cutoff
     ]
 
-    merge_candidates = merge_candidates[-recent_to_merge:]
+    # Pick (recent_to_merge-1) from the GS URL, because we also need to pick
+    # the current profile locally.
+    merge_candidates = merge_candidates[-(recent_to_merge - 1):]
 
     # This should never happen, but be sure we're not merging a profile into
     # itself anyway. It's really easy for that to silently slip through, and can
@@ -1643,7 +1662,7 @@ class _CommonPrepareBundle(object):
     assert len(set(p.url for p in merge_candidates)) == len(merge_candidates)
 
     # Merging a profile into itself is pointless.
-    if len(merge_candidates) == 1:
+    if not merge_candidates:
       logging.warning('Skipping merged profile creation: we only have a single '
                       'merge candidate.')
       return None
@@ -1664,6 +1683,7 @@ class _CommonPrepareBundle(object):
       cros_build_lib.UncompressFile(copy_to, copy_to_uncompressed)
       afdo_files.append(copy_to_uncompressed)
 
+    afdo_files.append(unmerged_profile)
     afdo_basename = os.path.basename(afdo_files[-1])
     assert afdo_basename.endswith(AFDO_SUFFIX)
     afdo_basename = afdo_basename[:-len(AFDO_SUFFIX)]
@@ -1844,8 +1864,8 @@ class PrepareForBuildHandler(_CommonPrepareBundle):
 
   def _PrepareVerifiedChromeBenchmarkAfdoFile(self):
     """Unused: see _PrepareVerifiedReleaseAfdoFile."""
-    raise PrepareForBuildHandlerError(
-        'Unexpected artifact type %s.' % self.artifact_name)
+    raise PrepareForBuildHandlerError('Unexpected artifact type %s.' %
+                                      self.artifact_name)
 
   def _PrepareChromeDebugBinary(self):
     """Unused: see _PrepareUnverifiedChromeBenchmarkPerfFile."""
@@ -1853,8 +1873,8 @@ class PrepareForBuildHandler(_CommonPrepareBundle):
 
   def _PrepareUnverifiedKernelCwpAfdoFile(self):
     """Unused: CWP is from elsewhere."""
-    raise PrepareForBuildHandlerError(
-        'Unexpected artifact type %s.' % self.artifact_name)
+    raise PrepareForBuildHandlerError('Unexpected artifact type %s.' %
+                                      self.artifact_name)
 
   def _PrepareVerifiedKernelCwpAfdoFile(self):
     """Prepare to verify the kernel CWP AFDO artifact."""
@@ -1864,9 +1884,9 @@ class PrepareForBuildHandler(_CommonPrepareBundle):
       raise PrepareForBuildHandlerError(
           'Could not find kernel version to verify.')
     cwp_locs = [
-        x for x in self.input_artifacts
-        .get('UnverifiedKernelCwpAfdoFile',
-             [os.path.join(KERNEL_PROFILE_URL, kernel_version)])
+        x for x in self.input_artifacts.get(
+            'UnverifiedKernelCwpAfdoFile',
+            [os.path.join(KERNEL_PROFILE_URL, kernel_version)])
     ]
     afdo_path = self._FindLatestAFDOArtifact(cwp_locs,
                                              self._RankValidCWPProfiles)
@@ -1910,13 +1930,13 @@ class PrepareForBuildHandler(_CommonPrepareBundle):
 
   def _PrepareUnverifiedChromeCwpAfdoFile(self):
     """Unused: CWP is from elsewhere."""
-    raise PrepareForBuildHandlerError(
-        'Unexpected artifact type %s.' % self.artifact_name)
+    raise PrepareForBuildHandlerError('Unexpected artifact type %s.' %
+                                      self.artifact_name)
 
   def _PrepareVerifiedChromeCwpAfdoFile(self):
     """Unused: see _PrepareVerifiedReleaseAfdoFile."""
-    raise PrepareForBuildHandlerError(
-        'Unexpected artifact type %s.' % self.artifact_name)
+    raise PrepareForBuildHandlerError('Unexpected artifact type %s.' %
+                                      self.artifact_name)
 
   def _PrepareVerifiedReleaseAfdoFile(self):
     """Prepare to verify the Chrome AFDO artifact and release it.
@@ -2165,7 +2185,7 @@ class BundleArtifactHandler(_CommonPrepareBundle):
     # Merge recent benchmark profiles for Android/Linux use
     output_dir_full = self.chroot.full_path(self._AfdoTmpPath())
     merged_profile = self._CreateAndUploadMergedAFDOProfile(
-        afdo_name, output_dir_full)
+        os.path.join(output_dir_full, afdo_name), output_dir_full)
     merged_profile_inside = self._AfdoTmpPath(os.path.basename(merged_profile))
     merged_profile_compressed = os.path.join(
         self.output_dir,
@@ -2182,13 +2202,13 @@ class BundleArtifactHandler(_CommonPrepareBundle):
 
   def _BundleVerifiedChromeBenchmarkAfdoFile(self):
     """Unused: see _BundleVerifiedReleaseAfdoFile."""
-    raise BundleArtifactsHandlerError(
-        'Unexpected artifact type %s.' % self.artifact_name)
+    raise BundleArtifactsHandlerError('Unexpected artifact type %s.' %
+                                      self.artifact_name)
 
   def _BundleUnverifiedKernelCwpAfdoFile(self):
     """Unused: this artifact comes from CWP."""
-    raise BundleArtifactsHandlerError(
-        'Unexpected artifact type %s.' % self.artifact_name)
+    raise BundleArtifactsHandlerError('Unexpected artifact type %s.' %
+                                      self.artifact_name)
 
   def _BundleVerifiedKernelCwpAfdoFile(self):
     """Bundle the verified kernel CWP AFDO file."""
@@ -2210,13 +2230,13 @@ class BundleArtifactHandler(_CommonPrepareBundle):
 
   def _BundleUnverifiedChromeCwpAfdoFile(self):
     """Unused: this artifact comes from CWP."""
-    raise BundleArtifactsHandlerError(
-        'Unexpected artifact type %s.' % self.artifact_name)
+    raise BundleArtifactsHandlerError('Unexpected artifact type %s.' %
+                                      self.artifact_name)
 
   def _BundleVerifiedChromeCwpAfdoFile(self):
     """Unused: see _BundleVerifiedReleaseAfdoFile."""
-    raise BundleArtifactsHandlerError(
-        'Unexpected artifact type %s.' % self.artifact_name)
+    raise BundleArtifactsHandlerError('Unexpected artifact type %s.' %
+                                      self.artifact_name)
 
   def _BundleVerifiedReleaseAfdoFile(self):
     """Bundle the verified Release AFDO file for Chrome."""
@@ -2804,8 +2824,8 @@ def _PublishVettedAFDOArtifacts(json_file, uploaded, title=None):
       # checked before this function.
       continue
     if package not in afdo_versions:
-      raise PublishVettedAFDOArtifactsError(
-          'The key %s is not in JSON file.' % package)
+      raise PublishVettedAFDOArtifactsError('The key %s is not in JSON file.' %
+                                            package)
 
     old_value = afdo_versions[package]['name']
 
