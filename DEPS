@@ -39,7 +39,7 @@ deps = {
   # https://chromium.googlesource.com/chromium/src/buildtools/+/refs/heads/master.
   'buildtools': {
     'url': Var('chromium_git')+ '/chromium/src/buildtools' +
-      '@' + '8d2132841536523249669813b928e29144d487f9',
+      '@' + '204a35a2a64f7179f8b76d7a0385653690839e21',
     'condition': 'not build_with_chromium',
   },
 
@@ -67,7 +67,7 @@ deps = {
   'third_party/googletest/src': {
     'url': Var('chromium_git') +
       '/external/github.com/google/googletest.git' +
-      '@' + '8697709e0308af4cd5b09dc108480804e5447cf0',
+      '@' + '0eea2e9fc63461761dea5f2f517bd6af2ca024fa',
     'condition': 'not build_with_chromium',
   },
 
