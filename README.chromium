@@ -9,4 +9,4 @@ Description:
 Easy to integrate Vulkan memory allocation library.
 
 Modifications:
-Added OWNERS, gni file, README.chromium and codereview.settings.
+Added OWNERS, BUILD.gn, README.chromium and codereview.settings.
