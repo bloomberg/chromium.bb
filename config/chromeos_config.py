@@ -1946,6 +1946,7 @@ def FirmwareBuilders(site_config, _boards_dict, _ge_build_config):
       (WEEKLY, 'firmware-rammus-11275.B', ['rammus'], {}),
       (WEEKLY, 'firmware-octopus-11297.B', ['octopus'], {}),
       (WEEKLY, 'firmware-octopus-11297.83.B', ['octopus'], {}),
+      (WEEKLY, 'firmware-octopus-11297.106.B', ['octopus'], {}),
       (WEEKLY, 'firmware-kalista-11343.B', ['kalista'], {}),
       (WEEKLY, 'firmware-atlas-11827.B', ['atlas'], {}),
       (WEEKLY, 'firmware-sarien-12200.B', ['sarien'], {}),
