@@ -241,6 +241,12 @@ const char kPrintersServiceInterface[] =
     "org.chromium.PrintersServiceInterface";
 const char kPrintersServicePrintersChangedSignal[] = "PrintersChanged";
 
+constexpr char kMlDecisionServiceName[] = "org.chromium.MlDecisionService";
+constexpr char kMlDecisionServicePath[] = "/org/chromium/MlDecisionService";
+constexpr char kMlDecisionServiceInterface[] = "org.chromium.MlDecisionService";
+constexpr char kMlDecisionServiceShouldDeferScreenDimMethod[] =
+    "ShouldDeferScreenDim";
+
 }  // namespace chromeos
 
 namespace media_perception {
@@ -560,12 +566,11 @@ constexpr char kArcCameraServiceInterface[] = "org.chromium.ArcCamera";
 constexpr char kStartServiceMethod[] = "StartService";
 }  // namespace arc_camera
 
+// DEPRECATED, DO NOT USE
 namespace machine_learning {
 constexpr char kMlDecisionServiceName[] = "org.chromium.MlDecisionService";
 constexpr char kMlDecisionServicePath[] = "/org/chromium/MlDecisionService";
 constexpr char kMlDecisionServiceInterface[] = "org.chromium.MlDecisionService";
-
-// Method names.
 constexpr char kShouldDeferScreenDimMethod[] = "ShouldDeferScreenDim";
 }  // namespace machine_learning
 
