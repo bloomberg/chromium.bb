@@ -4,7 +4,7 @@
 
 #include "platform/test/paths.h"
 #include "platform/test/paths_internal.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace {

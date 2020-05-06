@@ -11,7 +11,7 @@
 #include "absl/base/thread_annotations.h"
 #include "platform/api/time.h"
 #include "platform/impl/socket_handle_waiter.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 

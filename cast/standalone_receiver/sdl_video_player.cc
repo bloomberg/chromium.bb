@@ -7,7 +7,7 @@
 #include <sstream>
 
 #include "cast/standalone_receiver/avcodec_glue.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 #include "util/trace_logging.h"
 
 namespace openscreen {

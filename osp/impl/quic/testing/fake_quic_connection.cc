@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "osp/impl/quic/testing/fake_quic_connection_factory.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace osp {

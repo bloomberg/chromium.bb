@@ -8,7 +8,7 @@
 #include <cstring>
 
 #include "platform/api/tls_connection.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 

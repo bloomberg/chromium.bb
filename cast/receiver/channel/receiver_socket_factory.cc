@@ -4,7 +4,7 @@
 
 #include "cast/receiver/public/receiver_socket_factory.h"
 
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace cast {

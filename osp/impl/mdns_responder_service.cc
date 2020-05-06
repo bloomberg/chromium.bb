@@ -10,7 +10,7 @@
 
 #include "osp/impl/internal_services.h"
 #include "platform/base/error.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 #include "util/trace_logging.h"
 
 namespace openscreen {

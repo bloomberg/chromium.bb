@@ -9,7 +9,7 @@
 
 #include "cast/streaming/constants.h"
 #include "cast/streaming/packet_util.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 #include "util/saturate_cast.h"
 #include "util/stringprintf.h"
 

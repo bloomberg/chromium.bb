@@ -11,7 +11,7 @@
 #include "osp/impl/mdns_responder_service.h"
 #include "platform/api/udp_socket.h"
 #include "platform/base/error.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace osp {

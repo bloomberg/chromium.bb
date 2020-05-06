@@ -14,7 +14,7 @@
 #include <utility>
 
 #include "absl/strings/string_view.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 

@@ -28,7 +28,7 @@
 #include "platform/impl/network_interface.h"
 #include "platform/impl/platform_client_posix.h"
 #include "util/crypto/certificate_utils.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 #include "util/serial_delete_ptr.h"
 
 namespace openscreen {

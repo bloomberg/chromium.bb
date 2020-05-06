@@ -15,7 +15,7 @@
 #include "osp/public/protocol_connection.h"
 #include "platform/base/error.h"
 #include "platform/base/macros.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace osp {

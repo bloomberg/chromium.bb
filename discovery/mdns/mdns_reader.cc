@@ -9,7 +9,7 @@
 
 #include "discovery/common/config.h"
 #include "discovery/mdns/public/mdns_constants.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace discovery {

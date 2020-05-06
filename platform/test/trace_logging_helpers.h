@@ -9,7 +9,7 @@
 
 #include "gmock/gmock.h"
 #include "platform/base/trace_logging_activation.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 

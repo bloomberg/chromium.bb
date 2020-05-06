@@ -24,7 +24,7 @@
 #include "platform/base/error.h"
 #include "platform/impl/stream_socket.h"
 #include "util/crypto/openssl_util.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 

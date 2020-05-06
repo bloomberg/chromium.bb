@@ -7,7 +7,7 @@
 #include <ctime>
 #include <ratio>
 
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 using std::chrono::duration_cast;
 using std::chrono::high_resolution_clock;

@@ -8,7 +8,7 @@
 #include <chrono>
 
 #include "cast/sender/public/cast_media_source.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace cast {

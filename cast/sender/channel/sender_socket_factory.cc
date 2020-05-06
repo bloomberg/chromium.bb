@@ -9,7 +9,7 @@
 #include "cast/sender/channel/message_util.h"
 #include "platform/base/tls_connect_options.h"
 #include "util/crypto/certificate_utils.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 using ::cast::channel::CastMessage;
 

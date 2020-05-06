@@ -27,7 +27,7 @@
 #include "platform/base/ip_address.h"
 #include "platform/impl/network_interface.h"
 #include "platform/impl/scoped_pipe.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace {

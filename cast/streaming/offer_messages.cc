@@ -18,7 +18,7 @@
 #include "platform/base/error.h"
 #include "util/big_endian.h"
 #include "util/json/json_serialization.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 #include "util/stringprintf.h"
 
 namespace openscreen {

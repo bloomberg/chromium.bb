@@ -9,7 +9,7 @@
 
 #include "platform/impl/socket_handle_posix.h"
 #include "platform/impl/udp_socket_posix.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 

@@ -11,7 +11,7 @@
 #include <string.h>
 
 #include "absl/strings/match.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace cast {

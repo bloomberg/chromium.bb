@@ -15,7 +15,7 @@
 #include "platform/api/time.h"
 #include "platform/test/paths.h"
 #include "testing/util/read_file.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace cast {

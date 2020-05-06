@@ -7,7 +7,7 @@
 #include "absl/hash/hash.h"
 #include "absl/strings/ascii.h"
 #include "util/hashing.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace discovery {

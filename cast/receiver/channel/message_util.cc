@@ -6,7 +6,7 @@
 
 #include "util/json/json_serialization.h"
 #include "util/json/json_value.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace cast {

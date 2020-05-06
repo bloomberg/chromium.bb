@@ -10,7 +10,7 @@
 #include <iostream>
 #include <memory>
 
-#include "util/logging.h"
+#include "util/osp_logging.h"
 #include "util/trace_logging.h"
 
 namespace openscreen {

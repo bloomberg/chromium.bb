@@ -15,7 +15,7 @@
 #include "cast/streaming/message_util.h"
 #include "cast/streaming/offer_messages.h"
 #include "cast/streaming/receiver.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace cast {

@@ -15,7 +15,7 @@
 #include "third_party/chromium_quic/src/base/task_runner.h"
 #include "third_party/chromium_quic/src/net/third_party/quic/core/quic_constants.h"
 #include "third_party/chromium_quic/src/net/third_party/quic/platform/impl/quic_chromium_clock.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 #include "util/trace_logging.h"
 
 namespace openscreen {

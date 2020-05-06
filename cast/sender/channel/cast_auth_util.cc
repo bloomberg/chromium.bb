@@ -14,7 +14,7 @@
 #include "cast/common/channel/proto/cast_channel.pb.h"
 #include "platform/api/time.h"
 #include "platform/base/error.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace cast {

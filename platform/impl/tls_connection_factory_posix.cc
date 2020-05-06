@@ -25,7 +25,7 @@
 #include "platform/impl/tls_connection_posix.h"
 #include "util/crypto/certificate_utils.h"
 #include "util/crypto/openssl_util.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 #include "util/trace_logging.h"
 
 namespace openscreen {

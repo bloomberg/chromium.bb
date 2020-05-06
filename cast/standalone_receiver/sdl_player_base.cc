@@ -11,7 +11,7 @@
 #include "cast/standalone_receiver/avcodec_glue.h"
 #include "cast/streaming/encoded_frame.h"
 #include "util/big_endian.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 #include "util/trace_logging.h"
 
 using std::chrono::duration_cast;

@@ -11,7 +11,7 @@
 
 #include "osp/msgs/osp_messages.h"
 #include "platform/base/error.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 

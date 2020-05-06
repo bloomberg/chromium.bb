@@ -8,7 +8,7 @@
 #include <cstdint>
 #include <string>
 
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 

@@ -11,7 +11,7 @@
 
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_replace.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace cast {

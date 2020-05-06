@@ -35,7 +35,7 @@
 #include "platform/base/udp_packet.h"
 #include "platform/test/fake_clock.h"
 #include "platform/test/fake_task_runner.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 using std::chrono::duration_cast;
 using std::chrono::microseconds;

@@ -6,7 +6,7 @@
 
 #include "cast/streaming/rtp_defines.h"
 #include "platform/api/task_runner.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace cast {

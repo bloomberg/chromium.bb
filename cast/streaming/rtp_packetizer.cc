@@ -12,7 +12,7 @@
 #include "platform/api/time.h"
 #include "util/big_endian.h"
 #include "util/integer_division.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace cast {

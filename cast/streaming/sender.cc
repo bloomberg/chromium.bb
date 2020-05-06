@@ -8,7 +8,7 @@
 #include <ratio>  // NOLINT
 
 #include "cast/streaming/session_config.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 #include "util/std_util.h"
 
 namespace openscreen {

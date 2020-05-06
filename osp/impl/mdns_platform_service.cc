@@ -6,7 +6,7 @@
 
 #include <cstring>
 
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace osp {

@@ -4,7 +4,7 @@
 
 #include "cast/standalone_sender/ffmpeg_glue.h"
 
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace cast {

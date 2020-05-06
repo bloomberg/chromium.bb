@@ -16,7 +16,7 @@
 #include "platform/base/error.h"
 #include "platform/base/ip_address.h"
 #include "third_party/mDNSResponder/src/mDNSCore/mDNSEmbeddedAPI.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 using std::chrono::duration_cast;
 using std::chrono::hours;

@@ -15,7 +15,7 @@
 #include "osp/public/presentation/presentation_controller.h"
 #include "osp/public/presentation/presentation_receiver.h"
 #include "osp/public/protocol_connection.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 #include "util/std_util.h"
 
 // TODO(crbug.com/openscreen/27): Address TODOs in this file

@@ -11,7 +11,7 @@
 #include "discovery/dnssd/public/dns_sd_publisher.h"
 #include "discovery/dnssd/public/dns_sd_service.h"
 #include "platform/base/error.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace discovery {

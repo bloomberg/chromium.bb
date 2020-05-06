@@ -4,7 +4,7 @@
 
 #include "cast/sender/cast_app_availability_tracker.h"
 
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace cast {

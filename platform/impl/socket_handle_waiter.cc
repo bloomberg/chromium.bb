@@ -8,7 +8,7 @@
 #include <atomic>
 
 #include "absl/algorithm/container.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 

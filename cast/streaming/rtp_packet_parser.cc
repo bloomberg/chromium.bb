@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "cast/streaming/packet_util.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace cast {

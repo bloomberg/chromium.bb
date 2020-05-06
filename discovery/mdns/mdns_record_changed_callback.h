@@ -6,7 +6,7 @@
 #define DISCOVERY_MDNS_MDNS_RECORD_CHANGED_CALLBACK_H_
 
 #include "discovery/mdns/mdns_records.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace discovery {

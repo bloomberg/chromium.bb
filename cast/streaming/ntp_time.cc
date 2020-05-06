@@ -4,7 +4,7 @@
 
 #include "cast/streaming/ntp_time.h"
 
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 using std::chrono::duration_cast;
 

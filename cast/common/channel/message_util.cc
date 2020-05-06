@@ -4,7 +4,7 @@
 
 #include "cast/common/channel/message_util.h"
 
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace cast {

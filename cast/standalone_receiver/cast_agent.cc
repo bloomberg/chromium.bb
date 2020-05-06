@@ -19,7 +19,7 @@
 #include "platform/base/tls_listen_options.h"
 #include "util/crypto/certificate_utils.h"
 #include "util/json/json_serialization.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace cast {

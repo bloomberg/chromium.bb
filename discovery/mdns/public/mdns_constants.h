@@ -21,7 +21,7 @@
 
 #include "platform/api/time.h"
 #include "platform/base/ip_address.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace discovery {

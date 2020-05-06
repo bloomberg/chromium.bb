@@ -5,7 +5,7 @@
 #ifndef PLATFORM_IMPL_LOGGING_H_
 #define PLATFORM_IMPL_LOGGING_H_
 
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 

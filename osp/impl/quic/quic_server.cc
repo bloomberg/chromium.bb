@@ -9,7 +9,7 @@
 
 #include "platform/api/task_runner.h"
 #include "platform/api/time.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace osp {

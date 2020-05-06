@@ -9,7 +9,7 @@
 #include "absl/strings/str_cat.h"
 #include "cast/streaming/message_util.h"
 #include "platform/base/error.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace cast {

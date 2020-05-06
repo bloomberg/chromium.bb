@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace cast {

@@ -9,7 +9,7 @@
 #include "osp/impl/quic/quic_connection.h"
 #include "platform/base/error.h"
 #include "util/big_endian.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 namespace openscreen {
 namespace osp {

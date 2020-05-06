@@ -15,7 +15,7 @@
 #include "osp/public/testing/message_demuxer_test_support.h"
 #include "platform/test/fake_clock.h"
 #include "platform/test/fake_task_runner.h"
-#include "util/logging.h"
+#include "util/osp_logging.h"
 
 using std::chrono::milliseconds;
 using std::chrono::seconds;
