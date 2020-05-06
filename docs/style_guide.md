@@ -14,7 +14,7 @@ according to the
 - `<functional>` and `std::function` objects are allowed.
 - `<chrono>` is allowed and encouraged for representation of time.
 - Abseil types are allowed based on the whitelist in [DEPS](https://chromium.googlesource.com/openscreen/+/refs/heads/master/DEPS).
-- **Do not** use Abseil types in public APIs.
+- However, Abseil types **must not be used in public APIs**.
 - `<thread>` and `<mutex>` are allowed, but discouraged from general use as the
   library only needs to handle threading in very specific places;
   see [threading.md](threading.md).
@@ -27,9 +27,10 @@ according to the
   `OSP_DCHECK(TaskRunner::IsRunningOnTaskRunner())` to catch thread safety
   problems early.
 
-## Style Addenda
+## Code style
 
-- Prefer to omit braces for single-line if statements.
+- Braces are optional for single-line if statements; follow the style of
+  surrounding code.
 
 ## Copy and Move Operators
 
@@ -38,7 +39,7 @@ objects.
 
 - Objects with data members greater than 32 bytes should be move-able.
 - Known large objects (I/O buffers, etc.) should be be move-only.
-- Application or client provided objects of variable length should be move-able
+- Variable length objects should be move-able
   (since they may be arbitrarily large in size) and, if possible, move-only.
 - Inherently non-copyable objects (like sockets) should be move-only.
 
@@ -46,6 +47,20 @@ We [prefer the use of `default` and `delete`](https://sites.google.com/a/chromiu
 to declare the copy and move semantics of objects.  See
 [Stoustrop's C++ FAQ](http://www.stroustrup.com/C++11FAQ.html#default)
 for details on how to do that.
+
+### User Defined Copy and Move Operators
+
+Classes should follow the [rule of
+three/five/zero](https://en.cppreference.com/w/cpp/language/rule_of_three),
+meaning that if it has a custom destructor, copy contructor, or copy
+assignment operator:
+
+- All three operators must be defined (and not defaulted).
+- It must also either:
+    - Have a custom move constructor *and* move assignment operator;
+    - Delete both of them if move semantics are not desired (in rare cases).
+- Polymorphic base classes with virtual destructors should declare all
+  contructors, destructors and assignment operators as defaulted.
 
 ## Noexcept
 
