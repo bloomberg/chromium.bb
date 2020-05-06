@@ -388,10 +388,15 @@ class DevServerWrapper(multiprocessing.Process):
   def WipePayloadCache(cls, devserver_bin='start_devserver', static_dir=None):
     """Cleans up devserver cache of payloads.
 
+    This isn't necessary for chrome checkouts.
+
     Args:
       devserver_bin: path to the devserver binary.
       static_dir: path to use as the static directory of the devserver instance.
     """
+    if path_util.DetermineCheckout().type == path_util.CHECKOUT_TYPE_GCLIENT:
+      return
+
     logging.info('Cleaning up previously generated payloads.')
     cmd = [devserver_bin, '--clear_cache', '--exit']
     if static_dir:
