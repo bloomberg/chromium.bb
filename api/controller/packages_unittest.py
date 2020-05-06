@@ -549,6 +549,14 @@ class GetBuilderMetadataTest(cros_test_lib.MockTestCase, ApiConfigMixin):
                                            return_value=android_target)
     self.PatchObject(portage_util, 'GetBoardUseFlags',
                      return_value=['arc', 'arcvm', 'big_little', 'cheets'])
+    fw_versions = packages_service.FirmwareVersions(
+        None,
+        'Google_Caroline.7820.263.0',
+        'Google_Caroline.7820.286.0',
+        'caroline_v1.9.357-ac5c7b4',
+        'caroline_v1.9.370-e8b9bd2')
+    self.PatchObject(packages_service, 'get_firmware_versions',
+                     return_value=fw_versions)
     request = self._GetRequest(board='betty')
     packages_controller.GetBuilderMetadata(request, self.response,
                                            self.api_config)
@@ -573,6 +581,12 @@ class GetBuilderMetadataTest(cros_test_lib.MockTestCase, ApiConfigMixin):
     android_branch_mock.assert_called_with('betty')
     # Verify call to determine_android_target passes board name.
     android_target_mock.assert_called_with('betty')
+    self.assertEqual(
+        self.response.build_target_metadata[0].main_firmware_version,
+        'Google_Caroline.7820.286.0')
+    self.assertEqual(
+        self.response.build_target_metadata[0].ec_firmware_version,
+        'caroline_v1.9.370-e8b9bd2')
 
 
 class HasChromePrebuiltTest(cros_test_lib.MockTestCase, ApiConfigMixin):

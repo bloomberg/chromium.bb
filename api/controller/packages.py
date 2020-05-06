@@ -234,6 +234,10 @@ def GetBuilderMetadata(input_proto, output_proto, _config):
 
   # TODO(crbug/1071620): Add service layer calls to fill out the rest of
   # build_target_metadata and model_metadata.
+  fw_versions = packages.determine_firmware_versions(build_target)
+  build_target_metadata.main_firmware_version = fw_versions.main_fw_version
+  build_target_metadata.ec_firmware_version = fw_versions.ec_fw_version
+
 
 def _HasPrebuiltSuccess(_input_proto, output_proto, _config):
   """The mock success case for HasChromePrebuilt."""

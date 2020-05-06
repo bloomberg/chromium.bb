@@ -877,3 +877,22 @@ def _find_firmware_versions(cmd_output):
     model = match.group('model')
 
   return FirmwareVersions(model, main, main_rw, ec, ec_rw)
+
+
+MainEcFirmwareVersions = collections.namedtuple(
+    'MainEcFirmwareVersions', ['main_fw_version', 'ec_fw_version'])
+
+def determine_firmware_versions(build_target):
+  """Returns a namedtuple with main and ec firmware versions.
+
+  Args:
+    build_target (build_target_lib.BuildTarget): The build target.
+
+  Returns:
+    MainEcFirmwareVersions namedtuple with results.
+  """
+  fw_versions = get_firmware_versions(build_target)
+  main_fw_version = fw_versions.main_rw or fw_versions.main
+  ec_fw_version = fw_versions.ec_rw or fw_versions.ec
+
+  return MainEcFirmwareVersions(main_fw_version, ec_fw_version)
