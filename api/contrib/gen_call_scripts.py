@@ -161,9 +161,9 @@ def GetParser():
       '-b',
       '--build-target',
       dest='build_target',
-      default='betty',
+      default='amd64-generic',
       help='Generate the configs with the given build target. Implies --force '
-           'when generating for a new build target. Defaults to betty.')
+           'when generating for a new build target. Defaults to amd64-generic.')
 
   call_type_group = parser.add_mutually_exclusive_group()
   call_type_group.add_argument(
