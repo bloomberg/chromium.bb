@@ -617,10 +617,7 @@ class XBuddy(object):
       is_local = (path_list.pop(0) == LOCAL)
 
     # Default image type is determined by remote vs. local.
-    if is_local:
-      image_type = ANY
-    else:
-      image_type = TEST
+    image_type = ANY if is_local else TEST
 
     if path_list and path_list[-1] in GS_ALIASES + LOCAL_ALIASES:
       image_type = path_list.pop(-1)
@@ -858,7 +855,7 @@ class XBuddy(object):
                                             artifact.
     """
     path = '/'.join(path_list)
-    default_board = self._board if self._board else board
+    default_board = self._board or board
     default_version = self._version or version or LATEST
     # Rewrite the path if there is an appropriate default.
     path, suffix = self.LookupAlias(path, board=default_board,
