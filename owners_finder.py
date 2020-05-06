@@ -334,14 +334,19 @@ class OwnersFinder(object):
     # Print results
     self.writeln()
     self.writeln()
-    self.writeln('** You selected these owners **')
-    self.writeln()
-    for owner in self.selected_owners:
-      self.writeln(self.bold_name(owner) + ':')
-      self.indent()
-      for file_name in sorted(self.owners_to_files[owner]):
-        self.writeln(file_name)
-      self.unindent()
+    if len(self.selected_owners) == 0:
+      self.writeln('This change list already has owner-reviewers for all '
+                   'files.')
+      self.writeln('Use --ignore-current if you want to ignore them.')
+    else:
+      self.writeln('** You selected these owners **')
+      self.writeln()
+      for owner in self.selected_owners:
+        self.writeln(self.bold_name(owner) + ':')
+        self.indent()
+        for file_name in sorted(self.owners_to_files[owner]):
+          self.writeln(file_name)
+        self.unindent()
 
   def bold(self, text):
     return self.COLOR_BOLD + text + self.COLOR_RESET
