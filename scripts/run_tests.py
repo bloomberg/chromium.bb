@@ -210,7 +210,7 @@ def SortTests(tests, jobs=1, timing_cache_file=None):
   return ret
 
 
-def BuildTestSets(tests, chroot_available, network, config_skew, jobs=1,
+def BuildTestSets(tests, chroot_available, network, jobs=1,
                   pyver=None):
   """Build the tests to execute.
 
@@ -221,7 +221,6 @@ def BuildTestSets(tests, chroot_available, network, config_skew, jobs=1,
     tests: List of tests to execute.
     chroot_available: Whether we can execute tests inside the sdk.
     network: Whether to execute network tests.
-    config_skew: Whether to execute config skew tests.
     jobs: How many jobs will we run in parallel.
     pyver: Which versions of Python to test against.
 
@@ -272,8 +271,6 @@ def BuildTestSets(tests, chroot_available, network, config_skew, jobs=1,
     cmd.append('--verbose')
     if network:
       cmd.append('--network')
-    if config_skew:
-      cmd.append('--config_skew')
     cmd = ['timeout', '--preserve-status', '-k', '%sm' % TEST_SIG_TIMEOUT,
            '%sm' % TEST_TIMEOUT] + cmd
 
@@ -283,7 +280,7 @@ def BuildTestSets(tests, chroot_available, network, config_skew, jobs=1,
 
 
 def RunTests(tests, jobs=1, chroot_available=True, network=False,
-             config_skew=False, dryrun=False, failfast=False, pyver=None):
+             dryrun=False, failfast=False, pyver=None):
   """Execute |tests| with |jobs| in parallel (including |network| tests).
 
   Args:
@@ -291,7 +288,6 @@ def RunTests(tests, jobs=1, chroot_available=True, network=False,
     jobs: How many tests to run in parallel.
     chroot_available: Whether we can run tests inside the sdk.
     network: Whether to run network based tests.
-    config_skew: Whether to run config skew tests.
     dryrun: Do everything but execute the test.
     failfast: Stop on first failure
     pyver: Which versions of Python to test against.
@@ -313,7 +309,7 @@ def RunTests(tests, jobs=1, chroot_available=True, network=False,
   try:
     # Build up the testsets.
     testsets = BuildTestSets(tests, chroot_available, network,
-                             config_skew, jobs=jobs, pyver=pyver)
+                             jobs=jobs, pyver=pyver)
 
     # Fork each test and add it to the list.
     for test, interp, cmd, tmpfile in testsets:
@@ -535,9 +531,6 @@ def GetParser():
                       help='Number of tests to run in parallel at a time')
   parser.add_argument('--network', default=False, action='store_true',
                       help='Run tests that depend on good network connectivity')
-  parser.add_argument('--config_skew', default=False, action='store_true',
-                      help='Run tests that check if new config matches legacy '
-                           'config')
   parser.add_argument('--py2', dest='pyver', action='store_const', const='py2',
                       help='Only run Python 2 unittests.')
   parser.add_argument('--py3', dest='pyver', action='store_const', const='py3',
@@ -619,8 +612,8 @@ def main(argv):
     with cros_build_lib.TimedSection() as timer:
       result = RunTests(
           tests, jobs=jobs, chroot_available=ChrootAvailable(),
-          network=opts.network, config_skew=opts.config_skew,
-          dryrun=opts.dryrun, failfast=opts.failfast, pyver=opts.pyver)
+          network=opts.network, dryrun=opts.dryrun,
+          failfast=opts.failfast, pyver=opts.pyver)
 
     if result:
       logging.info('All tests succeeded! (%s total)', timer.delta)
@@ -629,6 +622,3 @@ def main(argv):
 
   if not opts.network:
     logging.warning('Network tests skipped; use --network to run them')
-
-  if not opts.config_skew:
-    logging.warning('Config skew tests skipped; use --config_skew to run them')

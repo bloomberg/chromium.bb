@@ -125,31 +125,27 @@ class MainTest(cros_test_lib.MockOutputTestCase):
     m = self.PatchObject(run_tests, 'RunTests', return_value=True)
     run_tests.main(['--network'])
     m.assert_called_with(mock.ANY, jobs=mock.ANY, chroot_available=mock.ANY,
-                         network=True, config_skew=False, dryrun=False,
-                         failfast=False, pyver=None)
-    run_tests.main(['--config_skew'])
-    m.assert_called_with(mock.ANY, jobs=mock.ANY, chroot_available=mock.ANY,
-                         network=False, config_skew=True, dryrun=False,
+                         network=True, dryrun=False,
                          failfast=False, pyver=None)
     run_tests.main(['--dry-run'])
     m.assert_called_with(mock.ANY, jobs=mock.ANY, chroot_available=mock.ANY,
-                         network=False, config_skew=False, dryrun=True,
+                         network=False, dryrun=True,
                          failfast=False, pyver=None)
     run_tests.main(['--jobs', '1000'])
     m.assert_called_with(mock.ANY, jobs=1000, chroot_available=mock.ANY,
-                         network=False, config_skew=False, dryrun=False,
+                         network=False, dryrun=False,
                          failfast=False, pyver=None)
     run_tests.main(['--failfast'])
     m.assert_called_with(mock.ANY, jobs=mock.ANY, chroot_available=mock.ANY,
-                         network=False, config_skew=False, dryrun=False,
+                         network=False, dryrun=False,
                          failfast=True, pyver=None)
     run_tests.main(['--py2'])
     m.assert_called_with(mock.ANY, jobs=mock.ANY, chroot_available=mock.ANY,
-                         network=False, config_skew=False, dryrun=False,
+                         network=False, dryrun=False,
                          failfast=False, pyver='py2')
     run_tests.main(['--py3'])
     m.assert_called_with(mock.ANY, jobs=mock.ANY, chroot_available=mock.ANY,
-                         network=False, config_skew=False, dryrun=False,
+                         network=False, dryrun=False,
                          failfast=False, pyver='py3')
 
   def testUnknownArg(self):
@@ -183,5 +179,5 @@ class MainTest(cros_test_lib.MockOutputTestCase):
     tests = ['./some/foo_unittest', './bar_unittest']
     run_tests.main(tests)
     m.assert_called_with(tests, jobs=mock.ANY, chroot_available=mock.ANY,
-                         network=mock.ANY, config_skew=mock.ANY,
-                         dryrun=mock.ANY, failfast=mock.ANY, pyver=mock.ANY)
+                         network=mock.ANY, dryrun=mock.ANY,
+                         failfast=mock.ANY, pyver=mock.ANY)
