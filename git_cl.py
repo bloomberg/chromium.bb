@@ -4653,6 +4653,9 @@ def CMDowners(parser, args):
   author = cl.GetAuthor()
 
   if options.show_all:
+    if len(args) == 0:
+      print('No files specified for --show-all. Nothing to do.')
+      return 0
     for arg in args:
       base_branch = cl.GetCommonAncestorWithUpstream()
       database = owners.Database(settings.GetRoot(), open, os.path)
