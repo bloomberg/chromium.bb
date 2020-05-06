@@ -583,18 +583,16 @@ class ChromiumOSUpdater(BaseUpdater):
 
     TODO(ahassani): Once we only test delta or full payload with
     source image of M77 or higher, this function can be deprecated.
-
-    TODO(ahassani): Merge this somehow with ResolveAPPIDMismatchIfAny().
     """
     logging.info('Fixing payload properties file.')
     payload_properties_path = self._transfer_obj.GetPayloadPropsFile()
     props = json.loads(osutils.ReadFile(payload_properties_path))
+    props['appid'] = self.ResolveAPPIDMismatchIfAny(props.get('appid'))
     values = self._transfer_obj.GetPayloadProps()
 
     # TODO(ahassani): Use the keys form nebraska.py once it is moved to
     # chromite.
     valid_entries = {
-        'appid': '',
         # Since only old payloads don't have this and they are only used for
         # provisioning, they will be full payloads.
         'is_delta': False,
@@ -602,15 +600,12 @@ class ChromiumOSUpdater(BaseUpdater):
         'target_version': values['image_version'],
     }
 
-    are_props_modified = False
     for key, value in valid_entries.items():
       if props.get(key) is None:
         props[key] = value
-        are_props_modified = True
 
-    if are_props_modified:
-      with open(payload_properties_path, 'w') as fp:
-        json.dump(props, fp)
+    with open(payload_properties_path, 'w') as fp:
+      json.dump(props, fp)
 
   def RunUpdateRootfs(self):
     """Run all processes needed by updating rootfs.
@@ -681,31 +676,21 @@ class ChromiumOSUpdater(BaseUpdater):
             'signing problem, or an automated rollback occurred because '
             'your new image failed to boot.')
 
-  def PreparePayloadPropsFile(self):
-    """Triggers download for payload properties file for LabTransfer usecase."""
-    prop_file = self._transfer_obj.GetPayloadPropsFile()
-    self.ResolveAPPIDMismatchIfAny(prop_file)
-
-  def ResolveAPPIDMismatchIfAny(self, prop_file):
+  def ResolveAPPIDMismatchIfAny(self, payload_app_id):
     """Resolves and APP ID mismatch between the payload and device.
 
     If the APP ID of the payload is different than the device, then the nebraska
     will fail. We empty the payload's AppID so nebraska can do partial APP ID
     matching.
     """
-    content = json.loads(osutils.ReadFile(prop_file))
-    payload_app_id = content.get('appid')
-
     if ((self.device.app_id and self.device.app_id == payload_app_id) or
         payload_app_id == ''):
-      return
+      return payload_app_id
 
     logging.warning('You are installing an image with a different release '
                     'App ID than the device (%s vs %s), we are forcing the '
                     'install!', payload_app_id, self.device.app_id)
-    # Override the properties file with the new empty APP ID.
-    content['appid'] = ''
-    osutils.WriteFile(prop_file, json.dumps(content))
+    return ''
 
   def RunUpdate(self):
     """Update the device with image of specific version."""

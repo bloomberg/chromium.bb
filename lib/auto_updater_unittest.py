@@ -460,8 +460,8 @@ class ChromiumOSUpdaterRunTest(ChromiumOSUpdaterBaseTest):
       self.assertFalse(self._base_updater_mock.patched['UpdateRootfs'].called)
       self.assertTrue(self._base_updater_mock.patched['UpdateStateful'].called)
 
-  def testMismatchAppId(self):
-    """Tests that we correctly set the payload App ID to empty when mismatch."""
+  def testMismatchedAppId(self):
+    """Tests if App ID is set to empty when there's a mismatch."""
     self._payload_dir = self.tempdir
 
     with remote_access.ChromiumOSDeviceHandler(
@@ -469,62 +469,22 @@ class ChromiumOSUpdaterRunTest(ChromiumOSUpdaterBaseTest):
       CrOS_AU = auto_updater.ChromiumOSUpdater(
           device, None, self._payload_dir,
           transfer_class=auto_updater_transfer.LocalTransfer)
-      prop_file = os.path.join(self._payload_dir, 'payload.json')
-      osutils.WriteFile(prop_file, '{"appid": "helloworld!"}')
-      self.PatchObject(remote_access.ChromiumOSDevice, 'app_id',
-                       return_value='different')
-      CrOS_AU.ResolveAPPIDMismatchIfAny(prop_file)
-      self.assertEqual(osutils.ReadFile(prop_file), '{"appid": ""}')
+      type(CrOS_AU.device).app_id = mock.PropertyMock(return_value='different')
+      resolved_appid = CrOS_AU.ResolveAPPIDMismatchIfAny('helloworld!')
+      self.assertEqual(resolved_appid, '')
 
-      osutils.WriteFile(prop_file, '{"appid": "same"}')
-      self.PatchObject(remote_access.ChromiumOSDevice, 'app_id',
-                       return_value='same')
-      self.assertEqual(osutils.ReadFile(prop_file), '{"appid": "same"}')
-
-  def testPrepareLocalPayloadPropsFile(self):
-    """Tests that we correctly call ResolveAPPIDMismatchIfAny."""
+  def testMatchedAppId(self):
+    """Tests if App ID is unchanged when there's a match."""
     self._payload_dir = self.tempdir
 
-    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
+    with remote_access.ChromiumOSDeviceHandler(
+        remote_access.TEST_IP) as device:
       CrOS_AU = auto_updater.ChromiumOSUpdater(
           device, None, self._payload_dir,
           transfer_class=auto_updater_transfer.LocalTransfer)
-      local_xfer = auto_updater_transfer.LocalTransfer
-      cros_updater = auto_updater.ChromiumOSUpdater
-
-      self.PatchObject(local_xfer, 'GetPayloadPropsFile',
-                       return_value='/local/test_update.gz.json')
-      self.PatchObject(cros_updater, 'ResolveAPPIDMismatchIfAny')
-
-      CrOS_AU.PreparePayloadPropsFile()
-
-      self.assertTrue(local_xfer.GetPayloadPropsFile.called)
-      self.assertListEqual(
-          cros_updater.ResolveAPPIDMismatchIfAny.call_args_list,
-          [mock.call('/local/test_update.gz.json')])
-
-  def testPrepareLabPayloadPropsFile(self):
-    """Tests that we correctly call ResolveAPPIDMismatchIfAny."""
-    self._payload_dir = self.tempdir
-
-    with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
-      CrOS_AU = auto_updater.ChromiumOSUpdater(
-          device, None, self._payload_dir,
-          transfer_class=auto_updater_transfer.LabTransfer,
-          staging_server='http://0.0.0.0:8082/')
-      lab_xfer = auto_updater_transfer.LabTransfer
-      cros_updater = auto_updater.ChromiumOSUpdater
-
-      self.PatchObject(lab_xfer, 'GetPayloadPropsFile',
-                       return_value='/local/test_update.gz.json')
-      self.PatchObject(cros_updater, 'ResolveAPPIDMismatchIfAny')
-
-      CrOS_AU.PreparePayloadPropsFile()
-
-      self.assertTrue(lab_xfer.GetPayloadPropsFile.called)
-      self.assertListEqual(
-          cros_updater.ResolveAPPIDMismatchIfAny.call_args_list,
-          [mock.call('/local/test_update.gz.json')])
+      type(CrOS_AU.device).app_id = mock.PropertyMock(return_value='same')
+      resolved_appid = CrOS_AU.ResolveAPPIDMismatchIfAny('same')
+      self.assertEqual(resolved_appid, 'same')
 
   def testCreateTransferObjectError(self):
     """Test ChromiumOSUpdater.CreateTransferObject method.

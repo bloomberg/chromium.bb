@@ -35,8 +35,7 @@ class RemoteDeviceUpdaterMock(partial_mock.PartialCmdMock):
   """Mock out RemoteDeviceUpdater."""
   TARGET = 'chromite.lib.auto_updater.ChromiumOSUpdater'
   ATTRS = ('UpdateStateful', 'UpdateRootfs', 'SetupRootfsUpdate',
-           'RebootAndVerify', 'PreparePayloadPropsFile',
-           '_FixPayloadPropertiesFile')
+           'RebootAndVerify', '_FixPayloadPropertiesFile')
 
   def __init__(self):
     partial_mock.PartialCmdMock.__init__(self)
@@ -52,9 +51,6 @@ class RemoteDeviceUpdaterMock(partial_mock.PartialCmdMock):
 
   def RebootAndVerify(self, _inst, *_args, **_kwargs):
     """Mock out RebootAndVerify."""
-
-  def PreparePayloadPropsFile(self, _inst, *_args, **_kwargs):
-    """Mock out PreparePayloadPropsFile."""
 
   def _FixPayloadPropertiesFile(self, _inst, *_args, **_kwargs):
     """Mock out _FixPayloadPropertiesFile."""

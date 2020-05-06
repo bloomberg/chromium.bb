@@ -527,7 +527,6 @@ class RemoteDeviceUpdater(object):
               experimental_au=self.experimental_au,
               transfer_class=auto_updater_transfer.LocalTransfer)
           chromeos_AU.CheckPayloads()
-          chromeos_AU.PreparePayloadPropsFile()
           chromeos_AU.RunUpdate()
 
         except Exception:
