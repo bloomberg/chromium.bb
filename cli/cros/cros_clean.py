@@ -175,10 +175,13 @@ class CleanCommand(command.CliCommand):
 
     cros_build_lib.AssertOutsideChroot()
 
+    def _LogClean(path):
+      logging.notice('would have cleaned: %s', path)
+
     def Clean(path):
       """Helper wrapper for the dry-run checks"""
       if self.options.dry_run:
-        logging.notice('would have cleaned: %s', path)
+        _LogClean(path)
       else:
         osutils.RmDir(path, ignore_missing=True, sudo=True)
 
@@ -245,7 +248,10 @@ class CleanCommand(command.CliCommand):
           Clean(d)
 
     if self.options.flash:
-      dev_server_wrapper.WipeStaticDirectory()
+      if self.options.dry_run:
+        _LogClean(dev_server_wrapper.DEFAULT_STATIC_DIR)
+      else:
+        dev_server_wrapper.DevServerWrapper.WipeStaticDirectory()
 
     if self.options.images:
       logging.debug('Clean the images cache.')

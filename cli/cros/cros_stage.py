@@ -282,7 +282,7 @@ NOTES:
     logging.info('Attempting to stage: %s as Image: %s at Location: %s',
                  self.options.image, self.staged_image_name,
                  self.options.remote)
-    dev_server_wrapper.CreateStaticDirectory()
+    dev_server_wrapper.DevServerWrapper.CreateStaticDirectory()
 
     with osutils.TempDir() as tempdir:
       if self._remote_image:
