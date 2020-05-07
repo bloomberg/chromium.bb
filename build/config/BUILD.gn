@@ -219,6 +219,7 @@ config("default_coverage") {
   cflags = []
   ldflags = []
 
+  # TODO(issuetracker.google.com/155348032): Limit the use of these flags
   if (use_coverage) {
     cflags += [
       "-fprofile-instr-generate",

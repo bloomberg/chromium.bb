@@ -1,10 +1,4 @@
-<<<<<<< HEAD
-#!/usr/bin/python
-# Copyright 2019 The Chromium Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
-"""This script merges code coverage profiles from multiple steps."""
-=======
+#!/usr/bin/env/python
 # Copyright 2020 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -14,7 +8,6 @@ This script is taken from the chromium build tools and is synced
 manually on an as-needed basis:
 https://source.chromium.org/chromium/chromium/src/+/master:testing/merge_scripts/code_coverage/merge_steps.py?q=merge_steps.py&ss=chromium
 """
->>>>>>> master
 
 import argparse
 import os

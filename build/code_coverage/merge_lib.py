@@ -1,9 +1,4 @@
-<<<<<<< HEAD
-# Copyright 2019 The Chromium Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
-"""Functions for interacting with llvm-profdata"""
-=======
+#!/usr/bin/env/python
 # Copyright 2020 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -13,7 +8,6 @@ This script is taken from the chromium build tools and is synced
 manually on an as-needed basis:
 https://source.chromium.org/chromium/chromium/src/+/master:testing/merge_scripts/code_coverage/merge_lib.py
 """
->>>>>>> master
 
 import logging
 import multiprocessing
