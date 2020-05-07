@@ -22,6 +22,7 @@ from chromite.api.gen.config.replication_config_pb2 import (
 )
 from chromite.cbuildbot import manifest_version
 from chromite.lib import build_target_lib
+from chromite.lib import chroot_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
@@ -569,6 +570,47 @@ class AndroidVersionsTest(cros_test_lib.MockTestCase):
     # determine_android_target calls determine_android_package
     target = packages.determine_android_target(self.board)
     self.assertEqual(target, None)
+
+
+class GetFirmwareVersionsTest(cros_test_lib.RunCommandTempDirTestCase):
+  """Tests for get_firmware_versions."""
+
+  def setUp(self):
+    self.board = 'test-board'
+    self.rc.SetDefaultCmdResult(output="""
+
+flashrom(8): a8f99c2e61e7dc09c4b25ef5a76ef692 */build/kevin/usr/sbin/flashrom
+             ELF 32-bit LSB executable, ARM, EABI5 version 1 (SYSV), statically linked, for GNU/Linux 2.d
+             0.9.4  : 860875a : Apr 10 2017 23:54:29 UTC
+
+BIOS image:   6b5b855a0b8fd1657546d1402c15b206 *chromeos-firmware-kevin-0.0.1/.dist/kevin_fw_8785.178.0.n
+BIOS version: Google_Kevin.8785.178.0
+EC image:     1ebfa9518e6cac0558a80b7ab2f5b489 *chromeos-firmware-kevin-0.0.1/.dist/kevin_ec_8785.178.0.n
+EC version:kevin_v1.10.184-459421c
+
+Package Content:
+a8f99c2e61e7dc09c4b25ef5a76ef692 *./flashrom
+3c3a99346d1ca1273cbcd86c104851ff *./shflags
+457a8dc8546764affc9700f8da328d23 *./dump_fmap
+c392980ddb542639edf44a965a59361a *./updater5.sh
+490c95d6123c208d20d84d7c16857c7c *./crosfw.sh
+6b5b855a0b8fd1657546d1402c15b206 *./bios.bin
+7b5bef0d2da90c23ff2e157250edf0fa *./crosutil.sh
+d78722e4f1a0dc2d8c3d6b0bc7010ae3 *./crossystem
+457a8dc8546764affc9700f8da328d23 *./gbb_utility
+1ebfa9518e6cac0558a80b7ab2f5b489 *./ec.bin
+c98ca54db130886142ad582a58e90ddc *./common.sh
+5ba978bdec0f696f47f0f0de90936880 *./mosys
+312e8ee6122057f2a246d7bcf1572f49 *./vpd
+""")
+
+  def test_get_firmware_versions(self):
+    """Tests get_firmware_versions with mocked output."""
+    build_target = build_target_lib.BuildTarget(self.board)
+    result = packages.get_firmware_versions(build_target)
+    versions = packages.FirmwareVersions(
+        None, 'Google_Kevin.8785.178.0', None, 'kevin_v1.10.184-459421c', None)
+    self.assertEqual(result, versions)
 
 
 class ChromeVersionsTest(cros_test_lib.MockTestCase):
