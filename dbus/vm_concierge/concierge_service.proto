@@ -79,6 +79,12 @@ message VmInfo {
   uint64 seneschal_server_handle = 4;
 }
 
+// Optional fields for network configuration.
+message NetworkOptions {
+  // Toggles the IFF_VNET_HDR option for the TAP device.
+  bool enable_vnet_hdr = 1;
+}
+
 // Information that must be included with every StartVm dbus message.
 message StartVmRequest {
   // The VM that should be started. This is ignored if starting a termina VM,
@@ -166,6 +172,9 @@ message StartPluginVmRequest {
   // This field is only used if |guest_ipv4_address| is empty.
   // Valid values are 1 - 32, inclusive.
   uint32 subnet_index = 7;
+
+  // Additional networking options.
+  NetworkOptions net_options = 8;
 }
 
 // Information that must be included with every StartArcVm request.
