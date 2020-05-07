@@ -39,6 +39,99 @@ local work, compiling the proto with protoc should be relatively
 straightforward, but for production services consulting the CrOS CI
 team may be worthwhile.
 
+## API Developer Guide
+
+This section contains information for developers contributing to the Build API.
+
+### Special Build API Proto Behavior
+
+The Build API has some special, automatic functionality that triggers for a few
+specific proto messages/fields. These are meant to facilitate some specific
+aspects of the Build API and reduce boilerplate code.
+
+#### Service & Method Options
+
+The service and method options extensions in `chromite/api/build_api.proto`
+define some key information about the implementation of the endpoint.
+
+The first are the `module` and `implementation_name` fields, in the service and
+method options respectively, that tell the Build API how to call the endpoint.
+The service's `module` option is required, and defines the name of the
+[controller](#controller) module where the service's RPCs are implemented.
+The method's `implementation_name` field is optional, and defines the name of
+the function in the service's controller module for the RPC.
+When the `implementation_name` is not given, the API expects the function to
+have the same name as the RPC in the proto.
+
+The two options extensions also define the `service_chroot_assert` and
+`method_chroot_assert` fields, respectively.
+These two fields allow defining whether the endpoint must run `INSIDE` or
+`OUTSIDE` the chroot, or if either is fine when not set.
+The service's option is the default for all of its RPCs, and the RPC's method
+option overrides it when set.
+
+#### `INSIDE` chroot endpoints
+
+At first the `INSIDE` behavior can be somewhat confusing, but is designed to
+reduce boilerplate by automating chroot interactions.
+When writing an endpoint that needs to run inside the chroot, setting the
+chroot assertion to `INSIDE` is not required, but is strongly recommended for
+the sake of simplifying the implementation and standardizing the chroot
+interactions.
+
+All endpoints that do use the `INSIDE` functionality must have a
+`chromiumos.Chroot` field, but are otherwise free to use whatever it needs.
+The Build API parses the `chromiumos.Chroot` field, removes it from the input,
+then executes the endpoint inside the chroot.
+The endpoint's implementation can be written as if it is always inside the
+chroot, because while Build API invocations are always made from outside the
+chroot, it ensures the implementation does not even get imported until after it
+has entered the chroot.
+
+#### `INSIDE` Chroot `Path` Utilities
+
+The automatic chroot handling means inserting and extracting artifacts is not
+possible manually.
+This gap has been filled by the `Path`, `ResultPath`, and `SyncedDir` messages,
+defined in `chromiumos/common.proto`, that allows the implementations to always
+behave as if they are working with local files without considering chroot
+pathing implications.
+
+The `Path` message tells the Build API a path, and whether the path is inside
+or outside of the chroot.
+A `Path` message in a request can be used to inject a file or folder into the
+chroot for the endpoint to use.
+Before entering the chroot, the Build API copies the path into a temporary
+directory inside the chroot, and changes the path in the request sent to the
+inside-chroot invocation of the endpoint to point to that inside chroot path.
+For example, if you need `/working/directory/image.bin` for an endpoint inside
+the chroot, the Build API will create a `/path/to/chroot/tmp/rand-tmp-dir/`,
+copy in `image.bin`, and then the implementation running inside the chroot will
+be given `/tmp/rand-tmp-dir/image.bin`.
+
+The `ResultPath` message provides a similar functionality for extracting paths
+from the chroot.
+The`ResultPath` message itself must be defined in the request, and is analogous
+to passing a function an output directory.
+To use, simply set the paths of the response `Path` messages to the files or
+directories that need to be extracted from the chroot.
+After the endpoint execution completes, all `Path` messages in the response are
+copied into the given result path, and the paths in the response are updated to
+reflect their final location.
+Worth noting, the implementation does not require gathering artifacts to a
+specific location inside the chroot, the Build API will handle gathering the
+files into the ResultPath outside the chroot.
+
+The `SyncedDir` message in a request provides a blanket, bidirectional sync of
+a directory.
+Any files present in the specified directory are copied into a temp directory
+in the chroot before it is executed, then after it finishes the source directory
+is emptied, and all files in the chroot directory are copied out to the source
+directory.
+This message can be useful for situations where the directory structure or
+contents is not necessarily important, for example, setting a process' log
+directory to the `SyncedDir` path allows extracting all the log files.
+
 ## Directory Reference
 
 ### chromite/infra/proto/
