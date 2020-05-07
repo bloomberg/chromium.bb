@@ -39,7 +39,7 @@ def get_commands(servo):
   dut_control_on = [['cpu_fw_spi:on']]
   dut_control_off = [['cpu_fw_spi:off']]
   if servo.is_v2:
-    programmer = 'ft2232_spi:type=servo-v2,serial=%s' % servo.serial
+    programmer = 'ft2232_spi:type=google-servo-v2,serial=%s' % servo.serial
   elif servo.is_micro:
     # TODO (jacobraz): remove warning once http://b/147679336 is resolved
     logging.warning('servo_micro has not been functioning properly consider '

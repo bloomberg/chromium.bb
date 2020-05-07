@@ -60,7 +60,7 @@ def get_commands(servo):
         'spi2_buf_on_flex_en:off',
         'cold_reset:off',
     ])
-    programmer = 'ft2232_spi:type=servo-v2,serial=%s' % servo.serial
+    programmer = 'ft2232_spi:type=google-servo-v2,serial=%s' % servo.serial
   elif servo.is_micro:
     dut_control_on.append(['spi2_vref:pp1800', 'spi2_buf_en:on'])
     dut_control_off.append(['spi2_vref:off', 'spi2_buf_en:off'])

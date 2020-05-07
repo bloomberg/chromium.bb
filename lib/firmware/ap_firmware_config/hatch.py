@@ -60,7 +60,7 @@ def get_commands(servo):
     ])
     dut_control_off.append(['ec_uart_cmd:powerb'])
 
-    programmer = 'ft2232_spi:type=servo-v2,serial=%s' % servo.serial
+    programmer = 'ft2232_spi:type=google-servo-v2,serial=%s' % servo.serial
   elif servo.is_micro:
     dut_control_on.append(['ec_uart_cmd:apshutdown'])
     dut_control_on.append([
