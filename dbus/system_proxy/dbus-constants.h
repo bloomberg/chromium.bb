@@ -16,6 +16,7 @@ const char kSetAuthenticationDetailsMethod[] = "SetAuthenticationDetails";
 // SetSystemTrafficCredentials call. Please use SetAuthenticationDetails.
 const char kSetSystemTrafficCredentialsMethod[] = "SetSystemTrafficCredentials";
 const char kShutDownMethod[] = "ShutDown";
-const char kWorkerActiveSignal[] = "WorkerActiveSignal";
+const char kWorkerActiveSignal[] = "WorkerActive";
+const char kAuthenticationRequiredSignal[] = "AuthenticationRequired";
 }  // namespace system_proxy
 #endif  // SYSTEM_API_DBUS_SYSTEM_PROXY_DBUS_CONSTANTS_H_

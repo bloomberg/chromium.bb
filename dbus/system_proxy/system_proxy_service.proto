@@ -87,6 +87,16 @@ message ShutDownResponse {
 message WorkerActiveSignalDetails {
   // Indicates if the worker is authenticathing system or user traffic.
   optional TrafficOrigin traffic_origin = 1;
-  // The URI of the local proxy formatted as scheme://host:port.
+  // The local proxy address formatted as host:port. The proxy will be forwarded
+  // to system services as a PAC-style string and to ARC++ in scheme://host:port
+  // format.
   optional string local_proxy_url = 2;
+}
+
+// Message sent with the AuthenticationRequiredSignal. Contains information to
+// search credentials in Chrome's http auth credential cache. After receiving
+// this signal, Chrome is expected to call |SetAuthenticationDetails| with the
+// missing credentials.
+message AuthenticationRequiredDetails {
+  optional ProtectionSpace proxy_protection_space = 1;
 }
