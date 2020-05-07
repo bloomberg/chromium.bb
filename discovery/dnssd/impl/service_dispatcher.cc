@@ -11,6 +11,7 @@
 #include "discovery/dnssd/public/dns_sd_instance.h"
 #include "discovery/mdns/public/mdns_service.h"
 #include "platform/api/task_runner.h"
+#include "util/trace_logging.h"
 
 namespace openscreen {
 namespace discovery {
@@ -19,8 +20,6 @@ namespace {
 void ForAllQueriers(
     std::vector<std::unique_ptr<ServiceInstance>>* service_instances,
     std::function<void(DnsSdQuerier*)> action) {
-  // TODO(crbug.com/openscreen/114): Trace each below call so multiple errors
-  // can be seen.
   for (auto& service_instance : *service_instances) {
     auto* querier = service_instance->GetQuerier();
     OSP_CHECK(querier);
@@ -31,15 +30,16 @@ void ForAllQueriers(
 
 Error ForAllPublishers(
     std::vector<std::unique_ptr<ServiceInstance>>* service_instances,
-    std::function<Error(DnsSdPublisher*)> action) {
-  // TODO(crbug.com/openscreen/114): Trace each below call so multiple errors
-  // can be seen.
+    std::function<Error(DnsSdPublisher*)> action,
+    const char* operation) {
   Error result = Error::None();
   for (auto& service_instance : *service_instances) {
     auto* publisher = service_instance->GetPublisher();
     OSP_CHECK(publisher);
 
+    TRACE_SCOPED(TraceCategory::kDiscovery, operation);
     Error inner_result = action(publisher);
+    TRACE_SET_RESULT(inner_result);
     if (!inner_result.ok()) {
       result = std::move(inner_result);
     }
@@ -81,6 +81,7 @@ ServiceDispatcher::~ServiceDispatcher() {
 
 // DnsSdQuerier overrides.
 void ServiceDispatcher::StartQuery(const std::string& service, Callback* cb) {
+  TRACE_DEFAULT_SCOPED(TraceCategory::kDiscovery);
   auto start_query = [&service, cb](DnsSdQuerier* querier) {
     querier->StartQuery(service, cb);
   };
@@ -88,6 +89,7 @@ void ServiceDispatcher::StartQuery(const std::string& service, Callback* cb) {
 }
 
 void ServiceDispatcher::StopQuery(const std::string& service, Callback* cb) {
+  TRACE_DEFAULT_SCOPED(TraceCategory::kDiscovery);
   auto stop_query = [&service, cb](DnsSdQuerier* querier) {
     querier->StopQuery(service, cb);
   };
@@ -95,6 +97,7 @@ void ServiceDispatcher::StopQuery(const std::string& service, Callback* cb) {
 }
 
 void ServiceDispatcher::ReinitializeQueries(const std::string& service) {
+  TRACE_DEFAULT_SCOPED(TraceCategory::kDiscovery);
   auto reinitialize_queries = [&service](DnsSdQuerier* querier) {
     querier->ReinitializeQueries(service);
   };
@@ -104,30 +107,35 @@ void ServiceDispatcher::ReinitializeQueries(const std::string& service) {
 // DnsSdPublisher overrides.
 Error ServiceDispatcher::Register(const DnsSdInstance& instance,
                                   Client* client) {
+  TRACE_DEFAULT_SCOPED(TraceCategory::kDiscovery);
   auto register_instance = [&instance, client](DnsSdPublisher* publisher) {
     return publisher->Register(instance, client);
   };
-  return ForAllPublishers(&service_instances_, std::move(register_instance));
+  return ForAllPublishers(&service_instances_, std::move(register_instance),
+                          "DNS-SD.Register");
 }
 
 Error ServiceDispatcher::UpdateRegistration(const DnsSdInstance& instance) {
+  TRACE_DEFAULT_SCOPED(TraceCategory::kDiscovery);
   auto update_registration = [&instance](DnsSdPublisher* publisher) {
     return publisher->UpdateRegistration(instance);
   };
-  return ForAllPublishers(&service_instances_, std::move(update_registration));
+  return ForAllPublishers(&service_instances_, std::move(update_registration),
+                          "DNS-SD.UpdateRegistration");
 }
 
 ErrorOr<int> ServiceDispatcher::DeregisterAll(const std::string& service) {
-  // TODO(crbug.com/openscreen/114): Trace each below call so multiple errors
-  // can be seen.
+  TRACE_DEFAULT_SCOPED(TraceCategory::kDiscovery);
   int total = 0;
   Error failure = Error::None();
   for (auto& service_instance : service_instances_) {
     auto* publisher = service_instance->GetPublisher();
     OSP_CHECK(publisher);
 
+    TRACE_SCOPED(TraceCategory::kDiscovery, "DNS-SD.DeregisterAll");
     auto result = publisher->DeregisterAll(service);
     if (result.is_error()) {
+      TRACE_SET_RESULT(result.error());
       failure = std::move(result.error());
     } else {
       total += result.value();

@@ -16,6 +16,7 @@
 #include "discovery/mdns/public/mdns_constants.h"
 #include "platform/api/task_runner.h"
 #include "platform/base/error.h"
+#include "util/trace_logging.h"
 
 namespace openscreen {
 namespace discovery {
@@ -195,25 +196,29 @@ Error PublisherImpl::UpdatePublishedRegistration(
   }
 
   // Apply changes called out in |changed_records|.
-  // TODO(crbug.com/openscreen/114): Trace each below call so multiple errors
-  // can be seen.
   Error total_result = Error::None();
   for (const auto& pair : changed_records) {
     OSP_DCHECK(pair.second.first != absl::nullopt ||
                pair.second.second != absl::nullopt);
     if (pair.second.first == absl::nullopt) {
+      TRACE_SCOPED(TraceCategory::kDiscovery, "mdns.RegisterRecord");
       auto error = mdns_publisher_->RegisterRecord(pair.second.second.value());
+      TRACE_SET_RESULT(error);
       if (!error.ok()) {
         total_result = error;
       }
     } else if (pair.second.second == absl::nullopt) {
+      TRACE_SCOPED(TraceCategory::kDiscovery, "mdns.UnregisterRecord");
       auto error = mdns_publisher_->UnregisterRecord(pair.second.first.value());
+      TRACE_SET_RESULT(error);
       if (!error.ok()) {
         total_result = error;
       }
     } else if (pair.second.first.value() != pair.second.second.value()) {
+      TRACE_SCOPED(TraceCategory::kDiscovery, "mdns.UpdateRegisteredRecord");
       auto error = mdns_publisher_->UpdateRegisteredRecord(
           pair.second.first.value(), pair.second.second.value());
+      TRACE_SET_RESULT(error);
       if (!error.ok()) {
         total_result = error;
       }
@@ -233,15 +238,14 @@ ErrorOr<int> PublisherImpl::DeregisterAll(const std::string& service) {
   OSP_DVLOG << "Deregistering all instances";
 
   int removed_count = 0;
-
-  // TODO(crbug.com/openscreen/114): Trace each below call so multiple errors
-  // can be seen.
   Error error = Error::None();
   for (auto it = published_instances_.begin();
        it != published_instances_.end();) {
     if (it->second.service_id() == service) {
       for (const auto& mdns_record : GetDnsRecords(it->second)) {
+        TRACE_SCOPED(TraceCategory::kDiscovery, "mdns.UnregisterRecord");
         auto publisher_error = mdns_publisher_->UnregisterRecord(mdns_record);
+        TRACE_SET_RESULT(error);
         if (!publisher_error.ok()) {
           error = publisher_error;
         }
@@ -264,6 +268,7 @@ ErrorOr<int> PublisherImpl::DeregisterAll(const std::string& service) {
 
 void PublisherImpl::OnDomainFound(const DomainName& requested_name,
                                   const DomainName& confirmed_name) {
+  TRACE_DEFAULT_SCOPED(TraceCategory::kDiscovery);
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
 
   OSP_DVLOG << "Domain successfully claimed: '" << confirmed_name.ToString()
@@ -293,6 +298,7 @@ void PublisherImpl::OnDomainFound(const DomainName& requested_name,
   }
 
   for (const auto& mdns_record : GetDnsRecords(endpoint)) {
+    TRACE_SCOPED(TraceCategory::kDiscovery, "mdns.RegisterRecord");
     Error result = mdns_publisher_->RegisterRecord(mdns_record);
     if (!result.ok()) {
       reporting_client_->OnRecoverableError(

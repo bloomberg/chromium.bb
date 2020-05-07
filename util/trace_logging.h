@@ -82,6 +82,8 @@ inline void DoNothingForTracing(Args... args) {}
 #define TRACE_ROOT_ID openscreen::kEmptyTraceId
 #define TRACE_SCOPED(category, name, ...) \
   openscreen::internal::DoNothingForTracing(category, name, ##__VA_ARGS__)
+#define TRACE_DEFAULT_SCOPED(category, ...) \
+  TRACE_SCOPED(category, __PRETTY_FUNCTION__, ##__VA_ARGS__)
 #define TRACE_ASYNC_START(category, name, ...) \
   openscreen::internal::DoNothingForTracing(category, name, ##__VA_ARGS__)
 #define TRACE_ASYNC_END(category, id, result) \
