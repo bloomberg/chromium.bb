@@ -1943,11 +1943,11 @@ def LoadConfigFromString(json_string):
   # Use standard defaults, but allow the config to override.
   defaults = DefaultSettings()
   defaults.update(config_dict.pop(DEFAULT_BUILD_CONFIG))
-  _DeserializeTestConfigs(defaults)
+  _DeserializeConfigs(defaults)
 
   templates = config_dict.pop('_templates', {})
   for t in templates.values():
-    _DeserializeTestConfigs(t)
+    _DeserializeConfigs(t)
 
   defaultBuildConfig = BuildConfig(**defaults)
 
@@ -1963,56 +1963,58 @@ def LoadConfigFromString(json_string):
   return result
 
 
-def _DeserializeTestConfig(build_dict,
-                           config_key,
-                           test_class,
-                           preserve_none=False):
-  """Deserialize test config of given type inside build_dict.
+def _DeserializeConfig(build_dict,
+                       config_key,
+                       config_class,
+                       preserve_none=False):
+  """Deserialize config of given type inside build_dict.
 
   Args:
     build_dict: The build_dict to update (in place)
     config_key: Key for the config inside build_dict.
-    test_class: The class to instantiate for the config.
+    config_class: The class to instantiate for the config.
     preserve_none: If True, None values are preserved as is. By default, they
         are dropped.
   """
-  serialized_test_configs = build_dict.pop(config_key, None)
-  if serialized_test_configs is None:
+  serialized_configs = build_dict.pop(config_key, None)
+  if serialized_configs is None:
     if preserve_none:
       build_dict[config_key] = None
     return
 
-  test_configs = []
-  for test_config_string in serialized_test_configs:
-    if isinstance(test_config_string, test_class):
-      test_config = test_config_string
+  deserialized_configs = []
+  for config_string in serialized_configs:
+    if isinstance(config_string, config_class):
+      deserialized_config = config_string
     else:
       # Each test config is dumped as a json string embedded in json.
-      embedded_configs = json.loads(test_config_string)
-      test_config = test_class(**embedded_configs)
-    test_configs.append(test_config)
-  build_dict[config_key] = test_configs
+      embedded_configs = json.loads(config_string)
+      deserialized_config = config_class(**embedded_configs)
+    deserialized_configs.append(deserialized_config)
+  build_dict[config_key] = deserialized_configs
 
 
-def _DeserializeTestConfigs(build_dict):
+def _DeserializeConfigs(build_dict):
   """Updates a config dictionary with recreated objects.
 
-  Various test configs are serialized as strings (rather than JSON objects), so
-  we need to turn them into real objects before they can be consumed.
+  Notification configs and various test configs are serialized as strings
+  (rather than JSON objects), so we need to turn them into real objects before
+  they can be consumed.
 
   Args:
     build_dict: The config dictionary to update (in place).
   """
-  _DeserializeTestConfig(build_dict, 'vm_tests', VMTestConfig)
-  _DeserializeTestConfig(
+  _DeserializeConfig(build_dict, 'vm_tests', VMTestConfig)
+  _DeserializeConfig(
       build_dict, 'vm_tests_override', VMTestConfig, preserve_none=True)
-  _DeserializeTestConfig(build_dict, 'models', ModelTestConfig)
-  _DeserializeTestConfig(build_dict, 'hw_tests', HWTestConfig)
-  _DeserializeTestConfig(
+  _DeserializeConfig(build_dict, 'models', ModelTestConfig)
+  _DeserializeConfig(build_dict, 'hw_tests', HWTestConfig)
+  _DeserializeConfig(
       build_dict, 'hw_tests_override', HWTestConfig, preserve_none=True)
-  _DeserializeTestConfig(build_dict, 'gce_tests', GCETestConfig)
-  _DeserializeTestConfig(build_dict, 'tast_vm_tests', TastVMTestConfig)
-  _DeserializeTestConfig(build_dict, 'moblab_vm_tests', MoblabVMTestConfig)
+  _DeserializeConfig(build_dict, 'gce_tests', GCETestConfig)
+  _DeserializeConfig(build_dict, 'tast_vm_tests', TastVMTestConfig)
+  _DeserializeConfig(build_dict, 'moblab_vm_tests', MoblabVMTestConfig)
+  _DeserializeConfig(build_dict, 'notification_configs', NotificationConfig)
 
 
 def _CreateBuildConfig(name, default, build_dict, templates):
@@ -2030,7 +2032,7 @@ def _CreateBuildConfig(name, default, build_dict, templates):
     result.update(templates[template])
   result.update(build_dict)
 
-  _DeserializeTestConfigs(result)
+  _DeserializeConfigs(result)
 
   if child_configs is not None:
     result['child_configs'] = [
