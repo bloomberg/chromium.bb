@@ -4008,6 +4008,14 @@
         },
         {
           "board_name": "octopus",
+          "name": "garfour",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 354,
+          "is_active": true
+        },
+        {
+          "board_name": "octopus",
           "name": "garg",
           "test_suites": [
             "sanity",
