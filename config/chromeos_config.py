@@ -525,6 +525,7 @@ def GeneralTemplates(site_config):
       'release',
       site_config.templates.release_common,
       luci_builder=config_lib.LUCI_BUILDER_LEGACY_RELEASE,
+      notification_configs=[config_lib.NotificationConfig(email='navil+spam@chromium.org')]
   )
 
   site_config.AddTemplate(

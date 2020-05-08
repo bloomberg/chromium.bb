@@ -709,6 +709,9 @@
             "manifest": "official.xml",
             "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
             "manifest_version": true,
+            "notification_configs": [
+                "{\n    \"email\": \"navil+spam@chromium.org\",\n    \"template\": \"default\",\n    \"threshold\": 1\n}"
+            ],
             "overlays": "both",
             "paygen": true,
             "push_image": true,
