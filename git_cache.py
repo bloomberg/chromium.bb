@@ -529,18 +529,26 @@ class Mirror(object):
             'but failed. Continuing with non-optimized repository.'
             % len(pack_files))
 
-  def _fetch(self, rundir, verbose, depth, no_fetch_tags, reset_fetch_config):
+  def _fetch(self,
+             rundir,
+             verbose,
+             depth,
+             no_fetch_tags,
+             reset_fetch_config,
+             prune=True):
     self.config(rundir, reset_fetch_config)
-    v = []
-    d = []
-    t = []
+
+    fetch_cmd = ['fetch']
     if verbose:
-      v = ['-v', '--progress']
+      fetch_cmd.extend(['-v', '--progress'])
     if depth:
-      d = ['--depth', str(depth)]
+      fetch_cmd.extend(['--depth', str(depth)])
     if no_fetch_tags:
-      t = ['--no-tags']
-    fetch_cmd = ['fetch'] + v + d + t + ['origin']
+      fetch_cmd.append('--no-tags')
+    if prune:
+      fetch_cmd.append('--prune')
+    fetch_cmd.append('origin')
+
     fetch_specs = subprocess.check_output(
         [self.git_exe, 'config', '--get-all', 'remote.origin.fetch'],
         cwd=rundir).decode('utf-8', 'ignore').strip().splitlines()
@@ -574,16 +582,16 @@ class Mirror(object):
 
     try:
       self._ensure_bootstrapped(depth, bootstrap, reset_fetch_config)
-      self._fetch(
-          self.mirror_path, verbose, depth, no_fetch_tags, reset_fetch_config)
+      self._fetch(self.mirror_path, verbose, depth, no_fetch_tags,
+                  reset_fetch_config)
     except ClobberNeeded:
       # This is a major failure, we need to clean and force a bootstrap.
       gclient_utils.rmtree(self.mirror_path)
       self.print(GIT_CACHE_CORRUPT_MESSAGE)
       self._ensure_bootstrapped(
           depth, bootstrap, reset_fetch_config, force=True)
-      self._fetch(
-          self.mirror_path, verbose, depth, no_fetch_tags, reset_fetch_config)
+      self._fetch(self.mirror_path, verbose, depth, no_fetch_tags,
+                  reset_fetch_config)
     finally:
       if not ignore_lock:
         lockfile.unlock()

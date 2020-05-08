@@ -12,6 +12,13 @@ import sys
 import tempfile
 import unittest
 
+if sys.version_info.major == 2:
+  from StringIO import StringIO
+  import mock
+else:
+  from io import StringIO
+  from unittest import mock
+
 DEPOT_TOOLS_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, DEPOT_TOOLS_ROOT)
 
@@ -95,6 +102,22 @@ class GitCacheTest(unittest.TestCase):
     mirror.populate()
 
     mirror.populate()
+
+  @mock.patch('sys.stdout', StringIO())
+  def testPruneRequired(self):
+    self.git(['init', '-q'])
+    with open(os.path.join(self.origin_dir, 'foo'), 'w') as f:
+      f.write('touched\n')
+    self.git(['checkout', '-b', 'foo'])
+    self.git(['add', 'foo'])
+    self.git(['commit', '-m', 'foo'])
+    mirror = git_cache.Mirror(self.origin_dir)
+    mirror.populate()
+    self.git(['checkout', '-b', 'foo_tmp', 'foo'])
+    self.git(['branch', '-D', 'foo'])
+    self.git(['checkout', '-b', 'foo/bar', 'foo_tmp'])
+    mirror.populate()
+    self.assertNotIn(git_cache.GIT_CACHE_CORRUPT_MESSAGE, sys.stdout.getvalue())
 
   def _makeGitRepoWithTag(self):
     self.git(['init', '-q'])
