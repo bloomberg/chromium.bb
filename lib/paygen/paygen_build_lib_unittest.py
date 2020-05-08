@@ -11,6 +11,7 @@ import json
 import os
 import sys
 import tarfile
+import unittest
 
 import mock
 
@@ -1235,6 +1236,7 @@ class TestAutotestPayloadsPayloads(BasePaygenBuildLibTestWithBuilds):
     self.test_image.uri = 'test_image_uri'
     self.prev_test_image.uri = 'prev_test_image_uri'
 
+  @unittest.skip('Flaking in CQ https://crbug.com/1079484')
   def testAutotestPayloadsSuccess(self):
     payload_tests = [
         self.full_payload_test,
