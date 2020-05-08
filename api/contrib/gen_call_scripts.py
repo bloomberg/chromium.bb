@@ -160,6 +160,7 @@ def GetParser():
   parser.add_argument(
       '-b',
       '--build-target',
+      type='build_target',
       dest='build_target',
       default='amd64-generic',
       help='Generate the configs with the given build target. Implies --force '
@@ -199,7 +200,7 @@ def _ParseArgs(argv):
   parser = GetParser()
   opts = parser.parse_args(argv)
 
-  opts.force = opts.force or opts.build_target != read_build_target_file()
+  opts.force = opts.force or opts.build_target.name != read_build_target_file()
 
   opts.Freeze()
   return opts
@@ -207,6 +208,6 @@ def _ParseArgs(argv):
 
 def main(argv):
   opts = _ParseArgs(argv)
-  write_scripts(opts.build_target, force=opts.force)
-  write_build_target_file(opts.build_target)
+  write_scripts(opts.build_target.name, force=opts.force)
+  write_build_target_file(opts.build_target.name)
   write_config(opts.call_type or build_api_config_pb2.CALL_TYPE_EXECUTE)
