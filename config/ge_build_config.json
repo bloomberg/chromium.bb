@@ -3317,6 +3317,14 @@
       "models": [
         {
           "board_name": "kukui",
+          "name": "kakadu",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 364,
+          "is_active": true
+        },
+        {
+          "board_name": "kukui",
           "name": "kodama",
           "test_suites": [
             "sanity",
