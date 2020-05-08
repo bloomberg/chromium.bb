@@ -3318,6 +3318,9 @@
         {
           "board_name": "kukui",
           "name": "kakadu",
+          "test_suites": [
+            "au"
+          ],
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
           "board_id": 364,
