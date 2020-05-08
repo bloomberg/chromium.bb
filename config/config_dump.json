@@ -19428,6 +19428,7 @@
         ],
         "important": false,
         "models": [
+            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"kukui\",\n    \"name\": \"kakadu\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"kukui\",\n    \"name\": \"kodama\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"kukui\",\n    \"name\": \"krane\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"kukui\",\n    \"name\": \"kukui\",\n    \"test_suites\": []\n}"
@@ -19454,6 +19455,7 @@
         "hw_tests_override": null,
         "luci_builder": "Try",
         "models": [
+            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"kukui\",\n    \"name\": \"kakadu\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"kukui\",\n    \"name\": \"kodama\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"kukui\",\n    \"name\": \"krane\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"kukui\",\n    \"name\": \"kukui\",\n    \"test_suites\": []\n}"
