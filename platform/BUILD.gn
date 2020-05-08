@@ -44,6 +44,7 @@ source_set("api") {
     "api/network_interface.h",
     "api/scoped_wake_lock.cc",
     "api/scoped_wake_lock.h",
+    "api/serial_delete_ptr.h",
     "api/task_runner.h",
     "api/time.h",
     "api/tls_connection.cc",
@@ -56,9 +57,7 @@ source_set("api") {
     "api/udp_socket.h",
   ]
 
-  public_deps = [
-    ":base",
-  ]
+  public_deps = [ ":base" ]
 }
 
 # The following target is only activated in standalone builds (see :platform).
@@ -150,13 +149,9 @@ if (!build_with_chromium) {
 # The main target, which either assumes an embedder will link-in the platform
 # API implementation elsewhere, or links-in the :standalone_impl in the build.
 source_set("platform") {
-  public_deps = [
-    ":api",
-  ]
+  public_deps = [ ":api" ]
   if (!build_with_chromium) {
-    deps = [
-      ":standalone_impl",
-    ]
+    deps = [ ":standalone_impl" ]
   }
 }
 
@@ -202,6 +197,7 @@ source_set("unittests") {
   testonly = true
 
   sources = [
+    "api/serial_delete_ptr_unittest.cc",
     "api/time_unittest.cc",
     "base/error_unittest.cc",
     "base/ip_address_unittest.cc",

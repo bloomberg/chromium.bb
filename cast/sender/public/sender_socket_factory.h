@@ -12,10 +12,10 @@
 #include <vector>
 
 #include "cast/common/public/cast_socket.h"
+#include "platform/api/serial_delete_ptr.h"
 #include "platform/api/task_runner.h"
 #include "platform/api/tls_connection_factory.h"
 #include "platform/base/ip_address.h"
-#include "util/serial_delete_ptr.h"
 
 namespace openscreen {
 namespace cast {

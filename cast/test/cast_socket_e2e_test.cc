@@ -20,6 +20,7 @@
 #include "cast/receiver/public/receiver_socket_factory.h"
 #include "cast/sender/public/sender_socket_factory.h"
 #include "gtest/gtest.h"
+#include "platform/api/serial_delete_ptr.h"
 #include "platform/api/tls_connection_factory.h"
 #include "platform/base/tls_connect_options.h"
 #include "platform/base/tls_credentials.h"
@@ -29,7 +30,6 @@
 #include "platform/impl/platform_client_posix.h"
 #include "util/crypto/certificate_utils.h"
 #include "util/osp_logging.h"
-#include "util/serial_delete_ptr.h"
 
 namespace openscreen {
 namespace cast {

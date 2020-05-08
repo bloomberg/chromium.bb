@@ -45,7 +45,6 @@ source_set("util") {
     "operation_loop.h",
     "osp_logging.h",
     "saturate_cast.h",
-    "serial_delete_ptr.h",
     "simple_fraction.cc",
     "simple_fraction.h",
     "std_util.h",
@@ -62,9 +61,7 @@ source_set("util") {
     "yet_another_bit_vector.h",
   ]
 
-  public_deps = [
-    "../third_party/jsoncpp",
-  ]
+  public_deps = [ "../third_party/jsoncpp" ]
 
   deps = [
     "../third_party/abseil",
@@ -93,7 +90,6 @@ source_set("unittests") {
     "json/json_value_unittest.cc",
     "operation_loop_unittest.cc",
     "saturate_cast_unittest.cc",
-    "serial_delete_ptr_unittest.cc",
     "simple_fraction_unittest.cc",
     "stringprintf_unittest.cc",
     "trace_logging/scoped_trace_operations_unittest.cc",

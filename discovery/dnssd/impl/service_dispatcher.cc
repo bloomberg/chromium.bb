@@ -10,6 +10,7 @@
 #include "discovery/dnssd/impl/service_instance.h"
 #include "discovery/dnssd/public/dns_sd_instance.h"
 #include "discovery/mdns/public/mdns_service.h"
+#include "platform/api/serial_delete_ptr.h"
 #include "platform/api/task_runner.h"
 #include "util/trace_logging.h"
 

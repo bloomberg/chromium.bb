@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UTIL_SERIAL_DELETE_PTR_H_
-#define UTIL_SERIAL_DELETE_PTR_H_
+#ifndef PLATFORM_API_SERIAL_DELETE_PTR_H_
+#define PLATFORM_API_SERIAL_DELETE_PTR_H_
 
 #include <cassert>
 #include <memory>
@@ -110,4 +110,4 @@ SerialDeletePtr<Type> MakeSerialDelete(TaskRunner* task_runner,
 
 }  // namespace openscreen
 
-#endif  // UTIL_SERIAL_DELETE_PTR_H_
+#endif  // PLATFORM_API_SERIAL_DELETE_PTR_H_

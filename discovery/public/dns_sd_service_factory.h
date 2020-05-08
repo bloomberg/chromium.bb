@@ -6,7 +6,7 @@
 #define DISCOVERY_PUBLIC_DNS_SD_SERVICE_FACTORY_H_
 
 #include "discovery/dnssd/public/dns_sd_service.h"
-#include "util/serial_delete_ptr.h"
+#include "platform/api/serial_delete_ptr.h"
 
 namespace openscreen {
 
