@@ -325,9 +325,11 @@ def RunRemote(site_config, options, patch_pool, infra_testing=False,
   args = CbuildbotArgs(options)
   args += PushLocalPatches(patch_pool.local_patches, user_email)
 
-  email_template = None
   if options.debug:
+    # default_debug template used to test email templates before they go live.
     email_template = 'default_debug'
+  else:
+    email_template = 'tryjob'
 
   logging.info('Submitting tryjob...')
   results = []

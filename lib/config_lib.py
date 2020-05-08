@@ -622,7 +622,7 @@ class NotificationConfig(object):
     template: Email template luci-notify should use when sending the email
               notification. If none is specified, uses the default template.
   """
-  DEFAULT_TEMPLATE = 'default'
+  DEFAULT_TEMPLATE = 'legacy_release'
   DEFAULT_THRESHOLD = 1
 
   def __init__(self,
