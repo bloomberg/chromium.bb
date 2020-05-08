@@ -284,7 +284,8 @@ def _downloader_worker_thread(thread_num, q, force, base_url,
       continue
     # Fetch the file.
     if verbose:
-      out_q.put('%d> Downloading %s...' % (thread_num, output_filename))
+      out_q.put('%d> Downloading %s@%s...' %
+                (thread_num, output_filename, input_sha1_sum))
     try:
       if delete:
         os.remove(output_filename)  # Delete the file if it exists already.

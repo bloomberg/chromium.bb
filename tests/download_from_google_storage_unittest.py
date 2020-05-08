@@ -262,13 +262,11 @@ class DownloadTests(unittest.TestCase):
             ('ls', input_filename)),
         ('check_call',
             ('cp', input_filename, output_filename))]
+    sha1_hash = '7871c8e24da15bad8b0be2c36edc9dc77e37727f'
     if sys.platform != 'win32':
       expected_calls.append(
-          ('check_call',
-           ('stat',
-            'gs://sometesturl/7871c8e24da15bad8b0be2c36edc9dc77e37727f')))
-    expected_output = [
-        '0> Downloading %s...' % output_filename]
+          ('check_call', ('stat', 'gs://sometesturl/' + sha1_hash)))
+    expected_output = ['0> Downloading %s@%s...' % (output_filename, sha1_hash)]
     expected_ret_codes = []
     self.assertEqual(list(stdout_queue.queue), expected_output)
     self.assertEqual(self.gsutil.history, expected_calls)
@@ -313,8 +311,7 @@ class DownloadTests(unittest.TestCase):
           ('check_call',
            ('stat',
             'gs://sometesturl/%s' % sha1_hash)))
-    expected_output = [
-        '0> Downloading %s...' % output_filename]
+    expected_output = ['0> Downloading %s@%s...' % (output_filename, sha1_hash)]
     expected_output.extend([
         '0> Extracting 3 entries from %s to %s' % (output_filename,
                                                    output_dirname)])
@@ -400,7 +397,8 @@ class DownloadTests(unittest.TestCase):
     self.assertTrue(q.empty())
     msg = ('1> ERROR remote sha1 (%s) does not match expected sha1 (%s).' %
            ('8843d7f92416211de9ebb963ff4ce28125932878', sha1_hash))
-    self.assertEqual(out_q.get(), '1> Downloading %s...' % output_filename)
+    self.assertEqual(out_q.get(),
+                     '1> Downloading %s@%s...' % (output_filename, sha1_hash))
     self.assertEqual(out_q.get(), msg)
     self.assertEqual(ret_codes.get(), (20, msg))
     self.assertTrue(out_q.empty())
