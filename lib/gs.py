@@ -648,17 +648,22 @@ class GSContext(object):
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
 
     def read_content():
-      while True:
-        data = proc.stdout.read(chunksize)
-        if not data and proc.poll() is not None:
-          break
-        if data:
-          yield data
+      try:
+        while True:
+          data = proc.stdout.read(chunksize)
+          if not data and proc.poll() is not None:
+            break
+          if data:
+            yield data
 
-      rc = proc.wait()
-      if rc:
-        raise GSCommandError(
-            'Cannot stream cat %s from Google Storage!' % path, rc, None)
+        rc = proc.poll()
+        if rc:
+          raise GSCommandError(
+              'Cannot stream cat %s from Google Storage!' % path, rc, None)
+      finally:
+        if proc.returncode is None:
+          proc.stdout.close()
+          proc.terminate()
 
     return read_content()
 
