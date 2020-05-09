@@ -535,7 +535,6 @@ class ChromiumOSUpdaterRunTest(ChromiumOSUpdaterBaseTest):
     """
     class NotATransferSubclass(object):
       """Dummy class for testing ChromiumOSUpdater.CreateTransferObject."""
-      pass
 
     with remote_access.ChromiumOSDeviceHandler(remote_access.TEST_IP) as device:
       self.assertRaises(AssertionError,

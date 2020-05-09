@@ -95,7 +95,6 @@ class Serializer(object):
       data (str): The message data to deserialize.
       message (google.protobuf.Message): The message to load the data into.
     """
-    pass
 
   # pylint: disable=unused-argument
   def serialize(self, message):
