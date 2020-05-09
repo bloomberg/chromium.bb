@@ -111,7 +111,7 @@ class SignerInstructionConfig(object):
   def ReadIniFile(self, fd):
     """Reads given file descriptor into configuration"""
     config = configparser.ConfigParser(self.ToIniDict())
-    config.readfp(fd)
+    config.read_file(fd)
 
     self.archive = config.get('general', 'archive')
     self.board = config.get('general', 'board')

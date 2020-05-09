@@ -93,7 +93,7 @@ class InputInsns(object):
 
     config = configparser.ConfigParser()
     with open(self.GetInsnFile('DEFAULT')) as fp:
-      config.readfp(fp)
+      config.read_file(fp)
 
     # What pushimage internally refers to as 'recovery', are the basic signing
     # instructions in practice, and other types are stacked on top.
@@ -105,7 +105,7 @@ class InputInsns(object):
       # This board doesn't have any signing instructions.
       raise MissingBoardInstructions(self.board, image_type, input_insns)
     with open(input_insns) as fp:
-      config.readfp(fp)
+      config.read_file(fp)
 
     if image_type is not None:
       input_insns = self.GetInsnFile(image_type)
@@ -115,7 +115,7 @@ class InputInsns(object):
 
       self.image_type = image_type
       with open(input_insns) as fp:
-        config.readfp(fp)
+        config.read_file(fp)
 
     self.cfg = config
 
@@ -209,7 +209,7 @@ class InputInsns(object):
 
     # Create a new ConfigParser from the serialized data.
     ret = configparser.ConfigParser()
-    ret.readfp(data)
+    ret.read_file(data)
 
     return ret
 
