@@ -213,7 +213,7 @@ class PrepareBundleTest(cros_test_lib.RunCommandTempDirTestCase):
     self.data = b'data'
     self.arch = 'silvermont'
     self.fetch = self.PatchObject(
-        gob_util, 'FetchUrl', return_value=base64.encodestring(self.data))
+        gob_util, 'FetchUrl', return_value=base64.encodebytes(self.data))
 
 
 class CommonPrepareBundleTest(PrepareBundleTest):

@@ -1140,7 +1140,7 @@ class _CommonPrepareBundle(object):
       raise RuntimeError('Could not fetch https://%s/%s' %
                          (constants.EXTERNAL_GOB_HOST, profile_path))
 
-    return base64.decodestring(contents).decode('utf-8')
+    return base64.decodebytes(contents).decode('utf-8')
 
   def _GetArtifactVersionInEbuild(self, package, variable):
     """Find the version (name) of AFDO artifact from the ebuild.
