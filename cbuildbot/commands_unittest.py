@@ -761,7 +761,7 @@ The suite job has another 2:39:39.789250 till timeout.
         (self.JOB_ID_OUTPUT, False, None),
         (self.JSON_OUTPUT, False, None),
     ])
-    with (mock.patch.object(commands, '_HWTestWait', return_value=False)):
+    with mock.patch.object(commands, '_HWTestWait', return_value=False):
       with self.OutputCapturer() as output:
         self.RunHWTestSuite(wait_for_results=self._wait_for_results)
         self.assertCommandCalled(self.create_cmd, capture_output=True,
