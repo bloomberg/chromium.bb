@@ -2694,7 +2694,7 @@ def ExportToGCloud(build_root,
     cros_build_lib.run(cmd)
     success = True
   except cros_build_lib.RunCommandError as e:
-    logging.warn('Unable to export to datastore: %s', e)
+    logging.warning('Unable to export to datastore: %s', e)
     success = False
 
   metrics.Counter(constants.MON_EXPORT_TO_GCLOUD).increment(fields={

@@ -27,6 +27,11 @@ from logging import shutdown
 from chromite.lib import buildbot_annotations as _annotations
 
 
+# Remove deprecated APIs to force use of new ones.
+del WARN
+del warn
+
+
 # Notice Level.
 NOTICE = 25
 addLevelName(NOTICE, 'NOTICE')

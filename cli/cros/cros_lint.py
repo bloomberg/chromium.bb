@@ -135,20 +135,20 @@ def _WhiteSpaceLintData(path, data):
   # Make sure files all have a trailing newline.
   if not data.endswith('\n'):
     ret = False
-    logging.warn('%s: file needs a trailing newline', path)
+    logging.warning('%s: file needs a trailing newline', path)
 
   # Disallow leading & trailing blank lines.
   if data.startswith('\n'):
     ret = False
-    logging.warn('%s: delete leading blank lines', path)
+    logging.warning('%s: delete leading blank lines', path)
   if data.endswith('\n\n'):
     ret = False
-    logging.warn('%s: delete trailing blank lines', path)
+    logging.warning('%s: delete trailing blank lines', path)
 
   for i, line in enumerate(data.splitlines(), start=1):
     if line.rstrip() != line:
       ret = False
-      logging.warn('%s:%i: trim trailing whitespace: %s', path, i, line)
+      logging.warning('%s:%i: trim trailing whitespace: %s', path, i, line)
 
   return ret
 
@@ -350,9 +350,9 @@ def _ShellLintFile(path, output_format, debug, gentoo_format=False):
                 'Shellcheck output from file:\n%s\n\n<paste output here>\n\n'
                 "What is wrong with shellcheck's findings?\n" % path,
         }))
-    logging.warn('Shellcheck found problems. These will eventually become '
-                 'errors.  If the shellcheck findings are not useful, '
-                 'please file a bug at:\n%s', bug_url)
+    logging.warning('Shellcheck found problems. These will eventually become '
+                    'errors.  If the shellcheck findings are not useful, '
+                    'please file a bug at:\n%s', bug_url)
     lint_result.returncode = 0
   return lint_result
 

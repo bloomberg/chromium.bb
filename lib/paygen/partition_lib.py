@@ -92,7 +92,7 @@ def ExtractKernel(image, kern_out):
   ExtractPartition(image, constants.PART_KERN_B, kern_out)
   with open(kern_out, 'rb') as kern:
     if not any(kern.read(65536)):
-      logging.warn('%s: Kernel B is empty, patching kernel A.', image)
+      logging.warning('%s: Kernel B is empty, patching kernel A.', image)
       ExtractPartition(image, constants.PART_KERN_A, kern_out)
       PatchKernel(image, kern_out)
 

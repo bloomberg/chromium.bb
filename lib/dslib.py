@@ -69,5 +69,5 @@ def ChunkedBatchWrite(entities, client, batch_size=_BATCH_CHUNK_SIZE):
     try:
       batch.commit()
     except gcloud.exceptions.BadRequest:
-      logging.warn('Unexportable entities:\n%s', entities)
+      logging.warning('Unexportable entities:\n%s', entities)
       raise

@@ -700,9 +700,9 @@ class ChromiumOSUpdater(BaseUpdater):
         payload_app_id == ''):
       return
 
-    logging.warn('You are installing an image with a different release '
-                 'App ID than the device (%s vs %s), we are forcing the '
-                 'install!', payload_app_id, self.device.app_id)
+    logging.warning('You are installing an image with a different release '
+                    'App ID than the device (%s vs %s), we are forcing the '
+                    'install!', payload_app_id, self.device.app_id)
     # Override the properties file with the new empty APP ID.
     content['appid'] = ''
     osutils.WriteFile(prop_file, json.dumps(content))

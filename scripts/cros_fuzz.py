@@ -617,8 +617,8 @@ def GetBuildExtraEnv(build_type):
   # No good way to iterate over an enum in python2.
   for use_flag in BuildType.CHOICES:
     if use_flag in use_flags:
-      logging.warn('%s in USE flags. Please use --build_type instead.',
-                   use_flag)
+      logging.warning('%s in USE flags. Please use --build_type instead.',
+                      use_flag)
 
   # Set USE flags.
   fuzzer_build_type = 'fuzzer'
@@ -1002,7 +1002,7 @@ def StripFuzzerPrefixes(fuzzer_name):
     fuzzer_name = StripPrefix(prefix)
 
   if initial_name != fuzzer_name:
-    logging.warn(
+    logging.warning(
         '%s contains a prefix from ClusterFuzz (one or more of %s) that is not '
         "part of the fuzzer's name. Interpreting --fuzzer as %s.",
         initial_name, clusterfuzz_prefixes, fuzzer_name)

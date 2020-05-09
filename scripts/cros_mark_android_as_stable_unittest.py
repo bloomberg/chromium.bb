@@ -234,7 +234,7 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
       for dst_file in dst_filelist:
         self.gs_mock.AddCmdResult(['stat', '--', dst_file],
                                   side_effect=_RaiseGSNoSuchKey)
-      logging.warn('mocking no %s', dst_url)
+      logging.warning('mocking no %s', dst_url)
 
       # Allow copying of source to dest.
       for src_file, dst_file in izip(src_filelist, dst_filelist):

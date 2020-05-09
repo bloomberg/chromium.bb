@@ -124,8 +124,8 @@ def CreateCacheTarball(extensions, outputdir, identifier, tarball):
       user_type = ['unmanaged']
       if extension.get('child_users', 'no') == 'yes':
         user_type.append('child')
-      logging.warn('user_type filter has to be set explicitly for %s, using '
-                   '%s by default.', ext, user_type)
+      logging.warning('user_type filter has to be set explicitly for %s, using '
+                      '%s by default.', ext, user_type)
       extension['user_type'] = user_type
     else:
       if 'child_users' in extension:

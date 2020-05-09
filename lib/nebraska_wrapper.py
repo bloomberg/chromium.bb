@@ -199,7 +199,7 @@ class RemoteNebraskaWrapper(multiprocessing.Process):
   def Start(self):
     """Starts the nebraska process remotely on the remote device."""
     if self.is_alive():
-      logging.warn('Nebraska is already running, not running again.')
+      logging.warning('Nebraska is already running, not running again.')
       return
 
     self.start()

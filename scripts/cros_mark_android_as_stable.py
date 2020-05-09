@@ -82,12 +82,12 @@ def IsBuildIdValid(bucket_url, build_branch, build_id, targets):
     try:
       subpaths = gs_context.List(build_id_path)
     except gs.GSNoSuchKey:
-      logging.warn(
+      logging.warning(
           'Directory [%s] does not contain any subpath, ignoring it.',
           build_id_path)
       return None
     if len(subpaths) > 1:
-      logging.warn(
+      logging.warning(
           'Directory [%s] contains more than one subpath, ignoring it.',
           build_id_path)
       return None
@@ -99,7 +99,7 @@ def IsBuildIdValid(bucket_url, build_branch, build_id, targets):
     try:
       gs_context.List(subpath_dir)
     except gs.GSNoSuchKey:
-      logging.warn(
+      logging.warning(
           'Did not find a file for build id [%s] in directory [%s].',
           build_id, subpath_dir)
       return None
@@ -135,8 +135,8 @@ def GetLatestBuild(bucket_url, build_branch, targets):
       # Remove trailing slashes and get the base name, which is the build_id.
       build_id = os.path.basename(gs_result.url.rstrip('/'))
       if not build_id.isdigit():
-        logging.warn('Directory [%s] does not look like a valid build_id.',
-                     gs_result.url)
+        logging.warning('Directory [%s] does not look like a valid build_id.',
+                        gs_result.url)
         continue
       build_ids.append(build_id)
 
@@ -149,7 +149,7 @@ def GetLatestBuild(bucket_url, build_branch, targets):
       common_build_ids.intersection_update(build_ids)
 
   if common_build_ids is None:
-    logging.warn('Did not find a build_id common to all platforms.')
+    logging.warning('Did not find a build_id common to all platforms.')
     return None, None
 
   # Otherwise, find the most recent one that is valid.
@@ -159,7 +159,7 @@ def GetLatestBuild(bucket_url, build_branch, targets):
       return build_id, subpaths
 
   # If not found, no build_id is valid.
-  logging.warn('Did not find a build_id valid on all platforms.')
+  logging.warning('Did not find a build_id valid on all platforms.')
   return None, None
 
 
@@ -269,7 +269,7 @@ def CopyToArcBucket(android_bucket_url, build_branch, build_id, subpaths,
           if gs_context.Exists(arc_path):
             if (gs_context.Stat(targetfile.url).hash_crc32c !=
                 gs_context.Stat(arc_path).hash_crc32c):
-              logging.warn('Removing incorrect file %s', arc_path)
+              logging.warning('Removing incorrect file %s', arc_path)
               gs_context.Remove(arc_path)
             else:
               logging.info('Skipping already copied file %s', arc_path)

@@ -2417,8 +2417,8 @@ def GeneratePackageSizes(db, root, installed_packages):
         try:
           filesize = os.path.getsize(filename)
         except OSError as e:
-          logging.warn('unable to compute the size of %s (skipping): %s',
-                       filename, e)
+          logging.warning('unable to compute the size of %s (skipping): %s',
+                          filename, e)
           continue
         logging.debug('size of %s = %d', filename, filesize)
         total_package_filesize += filesize

@@ -330,8 +330,8 @@ def _EnsureSnapshottableState(chroot=None, replace=False):
   if res.returncode == 0:
     return
   elif 'Unable to find VG' in res.stderr and replace:
-    logging.warn('SDK was created with nouse-image which does not support '
-                 'snapshots. Recreating SDK to support snapshots.')
+    logging.warning('SDK was created with nouse-image which does not support '
+                    'snapshots. Recreating SDK to support snapshots.')
 
     args = CreateArguments(
         replace=True,
