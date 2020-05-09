@@ -141,7 +141,7 @@ class RemoteDeviceMock(partial_mock.PartialMock):
 
 
 class CreateTunnelTest(cros_test_lib.MockTempDirTestCase):
-  """Base class with _mockable_popen mocked out for testing RemoteAccess.CreateTunnel()."""
+  """Base class with popen mocked out for RemoteAccess.CreateTunnel() tests."""
 
   def setUp(self):
     self.popen_mock = self.StartPatcher(CreateTunnelPopenMock())

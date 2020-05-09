@@ -268,7 +268,7 @@ class PortForwardSpec(object):
 
   @property
   def command_line_spec(self):
-    """Output the port forwarding spec in the way understood by the `ssh` command."""
+    """Return the port forwarding spec for the `ssh` command."""
     if not self.remote_host:
       return '%d:%s:%d' % (self.remote_port, self.local_host, self.local_port)
     return '%s:%d:%s:%d' % (self.remote_host, self.remote_port, self.local_host,

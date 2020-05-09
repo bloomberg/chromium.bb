@@ -527,7 +527,7 @@ def _ProxySimSetup(options):
   # Find the apache module directory, and make sure it has the modules we need.
   module_dirs = {}
   for g in PROXY_APACHE_MODULE_GLOBS:
-    for mod, so in apache_modules:
+    for _, so in apache_modules:
       for f in glob.glob(os.path.join(g, so)):
         module_dirs.setdefault(os.path.dirname(f), []).append(so)
   for apache_module_path, modules_found in module_dirs.items():

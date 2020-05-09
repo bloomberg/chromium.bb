@@ -103,7 +103,7 @@ class RemoteNebraskaWrapperTest(cros_test_lib.MockTempDirTestCase):
 
   def test_WaitUntilStarted(self):
     """Tests _WaitUntilStarted."""
-    read_port_number_mock = self.PatchObject(
+    _read_port_number_mock = self.PatchObject(
         nebraska_wrapper.RemoteNebraskaWrapper, '_ReadPortNumber')
 
     # It should fail if we couldn't read the PID file.

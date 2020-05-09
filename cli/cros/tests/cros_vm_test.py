@@ -11,7 +11,8 @@ To run this command, first build a test image. e.g.
 (sdk)$ ./build_image --board=betty test
 (sdk)$ ./image_to_vm.sh --board=betty --test_image
 (sdk)$ cd ../../chromite/cli/cros/tests/
-(sdk)$ ./cros_vm_test --board=betty --image_path ~/trunk/src/build/images/betty/latest/chromiumos_qemu_image.bin
+(sdk)$ ./cros_vm_test --board=betty --image_path \
+~/trunk/src/build/images/betty/latest/chromiumos_qemu_image.bin
 """
 
 from __future__ import print_function

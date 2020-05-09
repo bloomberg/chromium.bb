@@ -20,16 +20,11 @@ emerge-eve =chromeos-base/android-container-pi-6417892-r1
 
 from __future__ import print_function
 
-import base64
 import filecmp
-import hashlib
 import glob
 import os
 import re
-import shutil
-import tempfile
 import time
-import subprocess
 import sys
 
 from chromite.lib import constants
