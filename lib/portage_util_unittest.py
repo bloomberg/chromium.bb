@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import sys
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -16,6 +17,9 @@ from chromite.lib import failures_lib
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import portage_util
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 MANIFEST = git.ManifestCheckout.Cached(constants.SOURCE_ROOT)

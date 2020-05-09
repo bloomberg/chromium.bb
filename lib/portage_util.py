@@ -15,6 +15,7 @@ import multiprocessing
 import os
 import re
 import shutil
+import sys
 
 import six
 
@@ -26,6 +27,9 @@ from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.utils import key_value_store
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # The parsed output of running `ebuild <ebuild path> info`.
