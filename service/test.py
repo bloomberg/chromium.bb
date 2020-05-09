@@ -229,7 +229,7 @@ def SimpleChromeWorkflowTest(sysroot_path, build_target_name, chrome_root,
   board_dir = 'out_%s' % build_target_name
 
   out_board_dir = os.path.join(chrome_root, board_dir, 'Release')
-  use_goma = goma != None
+  use_goma = goma is not None
   extra_args = []
 
   with osutils.TempDir(prefix='chrome-sdk-cache') as tempdir:

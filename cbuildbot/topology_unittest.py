@@ -35,7 +35,7 @@ def FakeFetchTopology(keyvals=None):
   args:
     keyvals: optional dictionary to populate topology
   """
-  keyvals = keyvals if keyvals != None else {}
+  keyvals = keyvals if keyvals is not None else {}
 
   topology.FetchTopology()
   topology.topology.update(keyvals)
