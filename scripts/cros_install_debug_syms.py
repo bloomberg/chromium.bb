@@ -298,7 +298,9 @@ def ListInstallArgs(options, sysroot):
 
 def GetInstallArgsList(argv):
   """Get the install args from the --list reexec of the command."""
-  cmd = argv + ['--list']
+  # Insert the --list as the first argument to prevent parsing --list as a
+  # package when a package is given.
+  cmd = [argv[0]] + ['--list'] + argv[1:]
   result = cros_build_lib.run(cmd, capture_output=True, encoding='utf-8')
   lines = result.output.splitlines()
   return [line.split() for line in lines if line]
