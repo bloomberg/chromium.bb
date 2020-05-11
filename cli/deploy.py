@@ -997,8 +997,7 @@ def _UninstallDLCImage(device, pkg_attrs):
     dlc_id = pkg_attrs[_DLC_ID]
     logging.notice('Uninstalling DLC image for %s', dlc_id)
 
-    device.run(['sudo', '-u', 'chronos', 'dlcservice_util', '--uninstall',
-                '--dlc_ids=%s' % dlc_id])
+    device.run(['dlcservice_util', '--uninstall', '--dlc_ids=%s' % dlc_id])
     return True
   else:
     logging.debug('DLC_ID not found in package')
@@ -1012,7 +1011,7 @@ def _DeployDLCImage(device, sysroot, board, dlc_id, dlc_package):
 
   logging.debug('Uninstall DLC %s if it is installed.', dlc_id)
   try:
-    device.run(['dlcservice_util', '--dlc_ids=%s' % dlc_id, '--uninstall'])
+    device.run(['dlcservice_util', '--uninstall', '--dlc_ids=%s' % dlc_id])
   except cros_build_lib.RunCommandError as e:
     logging.info('Failed to uninstall DLC:%s. Continue anyway.',
                  e.result.error)
