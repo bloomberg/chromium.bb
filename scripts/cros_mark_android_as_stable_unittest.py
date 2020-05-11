@@ -548,16 +548,6 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
                       'invalid-package',
                       constants.ANDROID_VMPI_BUILD_BRANCH)
 
-  def testGetAndroidRevisionListLink(self):
-    """Test generation of revision diff list."""
-    old_ebuild = portage_util.EBuild(self.old)
-    old2_ebuild = portage_util.EBuild(self.old2)
-    link = cros_mark_android_as_stable.GetAndroidRevisionListLink(
-        self.build_branch, old_ebuild, old2_ebuild)
-    self.assertEqual(link, ('https://android-build.googleplex.com'
-                            '/builds/50/branches/' + self.build_branch +
-                            '/cls?end=25'))
-
   def testMarkAndroidEBuildAsStable(self):
     """Test updating of ebuild."""
     self.PatchObject(cros_build_lib, 'run')

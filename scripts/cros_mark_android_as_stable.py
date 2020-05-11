@@ -50,10 +50,6 @@ BUG=None
 TEST=CQ
 """
 
-# URLs that print lists of Android revisions between two build ids.
-_ANDROID_VERSION_URL = ('https://android-build.googleplex.com'
-                        '/builds/%(new)s/branches/%(branch)s/cls?end=%(old)s')
-
 
 def IsBuildIdValid(bucket_url, build_branch, build_id, targets):
   """Checks that a specific build_id is valid.
@@ -399,23 +395,33 @@ def MakeBuildTargetDict(package_name, build_branch):
   return target
 
 
-def GetAndroidRevisionListLink(build_branch, old_android, new_android):
-  """Returns a link to the list of revisions between two Android versions
-
-  Given two AndroidEBuilds, generate a link to a page that prints the
-  Android changes between those two revisions, inclusive.
+def PrintUprevMetadata(build_branch, stable_candidate, new_ebuild):
+  """Shows metadata on buildbot page at UprevAndroid step.
 
   Args:
-    build_branch: branch of Android builds
-    old_android: ebuild for the version to diff from
-    new_android: ebuild for the version to which to diff
-
-  Returns:
-    The desired URL.
+    build_branch: The branch of Android builds.
+    stable_candidate: The existing stable ebuild.
+    new_ebuild: The newly written ebuild.
   """
-  return _ANDROID_VERSION_URL % {'branch': build_branch,
-                                 'old': old_android.version_no_rev,
-                                 'new': new_android.version_no_rev}
+  # Examples:
+  # "android-container-pi revved 6461825-r1 -> 6468247-r1"
+  # "android-container-pi revved 6461825-r1 -> 6461825-r2 (ebuild update only)"
+  msg = '%s revved %s -> %s' % (stable_candidate.pkgname,
+                                stable_candidate.version,
+                                new_ebuild.version)
+
+  old_android = stable_candidate.version_no_rev
+  new_android = new_ebuild.version_no_rev
+
+  if old_android == new_android:
+    msg += ' (ebuild update only)'
+  else:
+    ab_link = ('https://android-build.googleplex.com'
+               '/builds/%s/branches/%s/cls?end=%s'
+               % (new_android, build_branch, old_android))
+    logging.PrintBuildbotLink('Android changelog', ab_link)
+
+  logging.PrintBuildbotStepText(msg)
 
 
 def MarkAndroidEBuildAsStable(stable_candidate, unstable_ebuild,
@@ -476,14 +482,15 @@ def MarkAndroidEBuildAsStable(stable_candidate, unstable_ebuild,
   if IsTheNewEBuildRedundant(new_ebuild, stable_candidate):
     msg = 'Previous ebuild with same version found and ebuild is redundant.'
     logging.info(msg)
+    logging.PrintBuildbotStepText('%s %s not revved'
+                                  % (stable_candidate.pkgname,
+                                     stable_candidate.version))
     os.unlink(new_ebuild_path)
     return None
 
+  # PFQ runs should always be able to find a stable candidate.
   if stable_candidate:
-    logging.PrintBuildbotLink('Android revisions',
-                              GetAndroidRevisionListLink(build_branch,
-                                                         stable_candidate,
-                                                         new_ebuild))
+    PrintUprevMetadata(build_branch, stable_candidate, new_ebuild)
 
   git.RunGit(package_dir, ['add', new_ebuild_path])
   if stable_candidate and not stable_candidate.IsSticky():
