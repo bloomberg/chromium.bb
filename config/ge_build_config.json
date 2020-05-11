@@ -4888,6 +4888,14 @@
         },
         {
           "board_name": "volteer",
+          "name": "trondo",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 405,
+          "is_active": true
+        },
+        {
+          "board_name": "volteer",
           "name": "unprovisioned_ripto",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",

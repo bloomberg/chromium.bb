@@ -33629,6 +33629,7 @@
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"volteer\",\n    \"name\": \"halvor\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"volteer\",\n    \"name\": \"malefor\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"volteer\",\n    \"name\": \"ripto\",\n    \"test_suites\": []\n}",
+            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"volteer\",\n    \"name\": \"trondo\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"volteer\",\n    \"name\": \"unprovisioned_ripto\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"volteer\",\n    \"name\": \"unprovisioned_volteer\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"volteer\",\n    \"name\": \"volteer\",\n    \"test_suites\": []\n}"
@@ -33662,6 +33663,7 @@
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"volteer\",\n    \"name\": \"halvor\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"volteer\",\n    \"name\": \"malefor\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"volteer\",\n    \"name\": \"ripto\",\n    \"test_suites\": []\n}",
+            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"volteer\",\n    \"name\": \"trondo\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"volteer\",\n    \"name\": \"unprovisioned_ripto\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"volteer\",\n    \"name\": \"unprovisioned_volteer\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"volteer\",\n    \"name\": \"volteer\",\n    \"test_suites\": []\n}"
