@@ -228,13 +228,13 @@ class _BackgroundTask(multiprocessing.Process):
     )
     for cmd in commands:
       cls._DebugRunCommand(cmd, debug_level=log_level, check=False,
-                           log_output=True)
+                           log_output=True, encoding='utf-8')
 
     stdin = '\n'.join(['echo \\n>>> %s\\n\n%s' % (x, x)
                        for x in cls.GDB_COMMANDS])
     cmd = ('gdb', '--nx', '-q', '-p', pid, '-ex', 'set prompt',)
     cls._DebugRunCommand(cmd, debug_level=log_level, check=False,
-                         log_output=True, input=stdin)
+                         log_output=True, input=stdin, encoding='utf-8')
 
   def Kill(self, sig, log_level, first=False):
     """Kill process with signal, ignoring if the process is dead.
