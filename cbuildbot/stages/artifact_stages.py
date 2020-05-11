@@ -515,6 +515,8 @@ class DebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
     if self._run.config.upload_symbols:
       self.UploadSymbols(buildroot, board)
 
+    self.board_runattrs.SetParallel('debug_symbols_completed', True)
+
   def UploadDebugTarball(self):
     """Generate and upload the debug tarball."""
     filename = commands.GenerateDebugTarball(
@@ -562,8 +564,6 @@ class DebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
         logging.notice('upload_symbols --failed-list %s %s',
                        os.path.join(url, failed_name),
                        os.path.join(url, 'debug_breakpad.tar.xz'))
-
-    self.board_runattrs.SetParallel('debug_symbols_completed', True)
 
     # Delay throwing the exception until after we uploaded the list.
     if not upload_passed:
