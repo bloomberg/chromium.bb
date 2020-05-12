@@ -93,9 +93,6 @@ if (build_with_chromium) {
       "src/absl/types/variant.h",
     ]
 
-    configs -= [ "//build/config:symbol_visibility_hidden" ]
-    configs += [ "//build/config:symbol_visibility_default" ]
-
     configs += [ ":private_abseil_config" ]
     public_configs = [ ":abseil_config" ]
   }
