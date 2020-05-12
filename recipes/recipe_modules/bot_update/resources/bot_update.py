@@ -1101,6 +1101,16 @@ def checkout(options, git_slns, specs, revisions, step_text):
 
   first_sln = git_slns[0]['name']
   dir_names = [sln.get('name') for sln in git_slns if 'name' in sln]
+  dirty_path = '.dirty_bot_checkout'
+  if os.path.exists(dirty_path):
+    ensure_no_checkout(dir_names, options.cleanup_dir)
+
+  with open(dirty_path, 'w') as f:
+    # create file, no content
+    pass
+
+  should_delete_dirty_file = False
+
   try:
     # Outer try is for catching patch failures and exiting gracefully.
     # Inner try is for catching gclient failures and retrying gracefully.
@@ -1133,10 +1143,12 @@ def checkout(options, git_slns, specs, revisions, step_text):
           gerrit_reset=not options.gerrit_no_reset,
           disable_syntax_validation=options.disable_syntax_validation)
       gclient_output = ensure_checkout(**checkout_parameters)
+      should_delete_dirty_file = True
     except GclientSyncFailed:
       print('We failed gclient sync, lets delete the checkout and retry.')
       ensure_no_checkout(dir_names, options.cleanup_dir)
       gclient_output = ensure_checkout(**checkout_parameters)
+      should_delete_dirty_file = True
   except PatchFailed as e:
     # Tell recipes information such as root, got_revision, etc.
     emit_json(options.output_json,
@@ -1148,7 +1160,15 @@ def checkout(options, git_slns, specs, revisions, step_text):
               failed_patch_body=e.output,
               step_text='%s PATCH FAILED' % step_text,
               fixed_revisions=revisions)
+    should_delete_dirty_file = True
     raise
+  finally:
+    if should_delete_dirty_file:
+      try:
+        os.remove(dirty_path)
+      except OSError:
+        print('Dirty file %s has been removed by a different process.' %
+              dirty_path)
 
   # Take care of got_revisions outputs.
   revision_mapping = GOT_REVISION_MAPPINGS.get(git_slns[0]['url'], {})
