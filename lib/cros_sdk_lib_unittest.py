@@ -8,12 +8,16 @@
 from __future__ import print_function
 
 import os
+import sys
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_sdk_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import partial_mock
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class VersionHookTestCase(cros_test_lib.TempDirTestCase):
