@@ -8,11 +8,13 @@
 from __future__ import print_function
 
 import collections
+import enum
 import filecmp
 import functools
 import os
 import re
 import sys
+from typing import List, Optional, Tuple
 
 from chromite.cbuildbot import manifest_version
 from chromite.lib import constants
@@ -151,6 +153,58 @@ def find_chrome_ebuilds(package_dir):
   return best_chrome_ebuild(unstable_ebuilds), stable_ebuilds
 
 
+@enum.unique
+class Outcome(enum.Enum):
+  """An enum representing the possible outcomes of a package uprev attempt.
+
+  Variants:
+    NEWER_VERSION_EXISTS: An ebuild with a higher version than the requested
+        version already exists, so no change occurred.
+    SAME_VERSION_EXISTS: An ebuild with the same version as the requested
+        version already exists and the stable & unstable ebuilds are identical,
+        so no change occurred.
+    REVISION_BUMP: An ebuild with the same version as the requested version
+        already exists but the contents of the stable & unstable ebuilds differ,
+        so the stable ebuild was updated and the revision number was increased.
+    VERSION_BUMP: The requested uprev version was greater than that of any
+        stable ebuild that exists, so a new stable ebuild was created at the
+        requested version.
+    NEW_EBUILD_CREATED: No stable ebuild for this package existed yet, so a new
+        stable ebuild was created at the requested version.
+  """
+  NEWER_VERSION_EXISTS = enum.auto()
+  SAME_VERSION_EXISTS = enum.auto()
+  REVISION_BUMP = enum.auto()
+  VERSION_BUMP = enum.auto()
+  NEW_EBUILD_CREATED = enum.auto()
+
+
+class UprevResult(object):
+  """The result of a package uprev attempt.
+
+  This object is truthy if files were altered by the uprev and falsey if no
+  files were changed.
+
+  Attributes:
+    outcome: An instance of Outcome documenting what change took place.
+    best_ebuild: An Ebuild object representing the highest available version of
+        the package after the uprev. May differ from the requested version in
+        some cases.
+  """
+
+  def __init__(self, outcome: Outcome, best_ebuild: portage_util.EBuild):
+    self.outcome = outcome
+    self.best_ebuild = best_ebuild
+
+  def __bool__(self):
+    """Returns True only if this Result indicates that a file was modified."""
+    return self.outcome in (
+        Outcome.REVISION_BUMP,
+        Outcome.VERSION_BUMP,
+        Outcome.NEW_EBUILD_CREATED,
+    )
+
+
 class UprevChromeManager(object):
   """Class to handle uprevving chrome and its related packages."""
 
@@ -167,7 +221,7 @@ class UprevChromeManager(object):
   def modified_ebuilds(self):
     return self._new_ebuild_files + self._removed_ebuild_files
 
-  def uprev(self, package):
+  def uprev(self, package: str) -> UprevResult:
     """Uprev a chrome package."""
     package_dir = os.path.join(self._overlay_dir, package)
     package_name = os.path.basename(package)
@@ -175,31 +229,43 @@ class UprevChromeManager(object):
     # Find the unstable (9999) ebuild and any existing stable ebuilds.
     unstable_ebuild, stable_ebuilds = find_chrome_ebuilds(package_dir)
     # Find the best stable candidate to uprev -- the one that will be replaced.
-    candidate = self._find_chrome_uprev_candidate(stable_ebuilds)
-    new_ebuild = self._mark_as_stable(candidate, unstable_ebuild, package_name,
-                                      package_dir)
+    should_uprev, candidate = self._find_chrome_uprev_candidate(stable_ebuilds)
 
-    if not new_ebuild:
-      return False
+    if not should_uprev and candidate:
+      return UprevResult(Outcome.NEWER_VERSION_EXISTS, candidate)
 
-    self._new_ebuild_files.append(new_ebuild.ebuild_path)
+    result = self._mark_as_stable(candidate, unstable_ebuild, package_name,
+                                  package_dir)
+
+    # If result is falsey then no files changed, and we don't need to do any
+    # clean-up.
+    if not result:
+      return result
+
+    self._new_ebuild_files.append(result.best_ebuild.ebuild_path)
     if candidate and not candidate.IsSticky():
       osutils.SafeUnlink(candidate.ebuild_path)
       self._removed_ebuild_files.append(candidate.ebuild_path)
 
     if self._build_targets:
-      self._clean_stale_package(new_ebuild.atom)
+      self._clean_stale_package(result.best_ebuild.atom)
 
-    return True
+    return result
 
-  def _find_chrome_uprev_candidate(self, stable_ebuilds):
+  def _find_chrome_uprev_candidate(
+      self, stable_ebuilds: List[ChromeEBuild]
+  ) -> Tuple[bool, Optional[ChromeEBuild]]:
     """Find the ebuild to replace.
 
     Args:
-      stable_ebuilds (list[ChromeEBuild]): All stable ebuilds that were found.
+      stable_ebuilds: All stable ebuilds that were found.
 
     Returns:
-      ChromeEBuild|None: The ebuild being replaced.
+      A (okay_to_uprev, best_stable_candidate) tuple.
+      okay_to_uprev: A bool indicating that an uprev should proceed. False if
+          a newer stable ebuild than the requested version exists.
+      best_stable_candidate: The highest version stable ebuild that exists, or
+          None if no stable ebuilds exist.
     """
     candidates = []
     # This is an artifact from the old process.
@@ -209,7 +275,7 @@ class UprevChromeManager(object):
         candidates.append(ebuild)
 
     if not candidates:
-      return None
+      return (True, None)
 
     candidate = best_chrome_ebuild(candidates)
 
@@ -223,16 +289,16 @@ class UprevChromeManager(object):
         [self._version, candidate.chrome_version])
     if self._version == best_version:
       # Cases 1 and 2.
-      return candidate
+      return (True, candidate)
 
     logging.warning('A chrome ebuild candidate with a higher version than the '
                     'requested uprev version was found.')
     logging.debug('Requested uprev version: %s', self._version)
     logging.debug('Candidate version found: %s', candidate.chrome_version)
-    return None
+    return (False, candidate)
 
   def _mark_as_stable(self, stable_candidate, unstable_ebuild, package_name,
-                      package_dir):
+                      package_dir) -> UprevResult:
     """Uprevs the chrome ebuild specified by chrome_rev.
 
     This is the main function that uprevs the chrome_rev from a stable candidate
@@ -249,10 +315,8 @@ class UprevChromeManager(object):
     Returns:
       Full portage version atom (including rc's, etc) that was revved.
     """
-    if not stable_candidate:
-      return None
 
-    def _is_new_ebuild_redundant(uprevved_ebuild, stable_ebuild):
+    def _is_new_ebuild_redundant(uprevved_ebuild, stable_ebuild) -> bool:
       """Returns True if the new ebuild is redundant.
 
       This is True if there if the current stable ebuild is the exact same copy
@@ -272,9 +336,11 @@ class UprevChromeManager(object):
       new_ebuild_path = '%s-r%d.ebuild' % (
           stable_candidate.ebuild_path_no_revision,
           stable_candidate.current_revision + 1)
+      rev_bump = True
     else:
       pf = '%s-%s_rc-r1' % (package_name, self._version)
       new_ebuild_path = os.path.join(package_dir, '%s.ebuild' % pf)
+      rev_bump = False
 
     portage_util.EBuild.MarkAsStable(unstable_ebuild.ebuild_path,
                                      new_ebuild_path, {})
@@ -285,9 +351,18 @@ class UprevChromeManager(object):
       msg = 'Previous ebuild with same version found and ebuild is redundant.'
       logging.info(msg)
       os.unlink(new_ebuild_path)
-      return None
+      return UprevResult(Outcome.SAME_VERSION_EXISTS, stable_candidate)
 
-    return new_ebuild
+    if rev_bump:
+      return UprevResult(Outcome.REVISION_BUMP, new_ebuild)
+    elif stable_candidate:
+      # If a stable ebuild already existed and rev_bump is False, then a stable
+      # ebuild with a new major version has been generated.
+      return UprevResult(Outcome.VERSION_BUMP, new_ebuild)
+    else:
+      # If no stable ebuild existed, then we've created the first stable ebuild
+      # for this package.
+      return UprevResult(Outcome.NEW_EBUILD_CREATED, new_ebuild)
 
   def _clean_stale_package(self, package):
     clean_stale_packages([package], self._build_targets, chroot=self._chroot)

@@ -434,12 +434,25 @@ def uprev_chrome(build_targets, refs, chroot):
   # Determine the version from the refs (tags), i.e. the chrome versions are the
   # tag names.
   chrome_version = uprev_lib.get_chrome_version_from_refs(refs)
+  logging.debug('Chrome version determined from refs: %s', chrome_version)
 
   uprev_manager = uprev_lib.UprevChromeManager(
       chrome_version, build_targets=build_targets, chroot=chroot)
   result = UprevVersionedPackageResult()
   # Start with chrome itself, as we can't do anything else unless chrome
   # uprevs successfully.
+  # TODO(crbug.com/1080429): Handle all possible outcomes of a Chrome uprev
+  #     attempt. The expected behavior is documented in the following table:
+  #
+  #     Outcome of Chrome uprev attempt:
+  #     NEWER_VERSION_EXISTS:
+  #       Do nothing.
+  #     SAME_VERSION_EXISTS or REVISION_BUMP:
+  #       Uprev followers
+  #       Assert not VERSION_BUMP (any other outcome is fine)
+  #     VERSION_BUMP or NEW_EBUILD_CREATED:
+  #       Uprev followers
+  #       Assert that Chrome & followers are at same package version
   if not uprev_manager.uprev(constants.CHROME_CP):
     return result
 

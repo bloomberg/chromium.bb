@@ -22,7 +22,6 @@ from chromite.lib import uprev_lib
 from chromite.lib.build_target_lib import BuildTarget
 from chromite.lib.chroot_lib import Chroot
 
-
 assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
@@ -344,7 +343,9 @@ def test_basic_chrome_uprev(overlay_stack):
   uprev_manager = uprev_lib.UprevChromeManager(
       version=NEW_CHROME_VERSION, overlay_dir=overlay.path)
 
-  assert uprev_manager.uprev(constants.CHROME_CP)
+  result = uprev_manager.uprev(constants.CHROME_CP)
+  assert result
+  assert result.outcome is uprev_lib.Outcome.VERSION_BUMP
 
   new_chrome = cr.test.Package(
       'chromeos-base', 'chromeos-chrome', version='80.0.1234.0_rc-r1')
@@ -372,7 +373,9 @@ def test_chrome_uprev_revision_bump(overlay_stack):
   uprev_manager = uprev_lib.UprevChromeManager(
       version=NEW_CHROME_VERSION, overlay_dir=overlay.path)
 
-  assert uprev_manager.uprev(constants.CHROME_CP)
+  result = uprev_manager.uprev(constants.CHROME_CP)
+  assert result
+  assert result.outcome is uprev_lib.Outcome.REVISION_BUMP
 
   expected_uprev = cr.test.Package(
       'chromeos-base', 'chromeos-chrome', version='80.0.1234.0_rc-r2')
@@ -396,7 +399,10 @@ def test_no_chrome_uprev_same_version(overlay_stack, caplog):
   uprev_manager = uprev_lib.UprevChromeManager(
       version=NEW_CHROME_VERSION, overlay_dir=overlay.path)
 
-  assert not uprev_manager.uprev(constants.CHROME_CP)
+  result = uprev_manager.uprev(constants.CHROME_CP)
+  assert not result
+  assert result.outcome is uprev_lib.Outcome.SAME_VERSION_EXISTS
+
   ebuild_redundant_warning = ('Previous ebuild with same version found and '
                               'ebuild is redundant.')
   assert ebuild_redundant_warning in caplog.text
@@ -419,9 +425,39 @@ def test_no_chrome_uprev_older_version(overlay_stack, caplog):
   uprev_manager = uprev_lib.UprevChromeManager(
       version=NEW_CHROME_VERSION, overlay_dir=overlay.path)
 
-  assert not uprev_manager.uprev(constants.CHROME_CP)
+  result = uprev_manager.uprev(constants.CHROME_CP)
+  assert not result
+  assert result.outcome is uprev_lib.Outcome.NEWER_VERSION_EXISTS
+
   newer_version_warning = (
       'A chrome ebuild candidate with a higher version than the '
       'requested uprev version was found.')
   assert newer_version_warning in caplog.messages
   assert 'Candidate version found: 80.0.1234.0' in caplog.messages
+
+
+def test_chrome_uprev_no_existing_stable(overlay_stack):
+  """Test that an uprev generates a stable ebuild if one doesn't exist yet."""
+  NEW_CHROME_VERSION = '80.0.1234.0'
+
+  overlay, = overlay_stack(1)
+  unstable_chrome = cr.test.Package(
+      'chromeos-base',
+      'chromeos-chrome',
+      version='9999',
+      keywords='~*',
+      depend='foo/bar')
+
+  overlay.add_package(unstable_chrome)
+
+  uprev_manager = uprev_lib.UprevChromeManager(
+      version=NEW_CHROME_VERSION, overlay_dir=overlay.path)
+
+  result = uprev_manager.uprev(constants.CHROME_CP)
+  assert result
+  assert result.outcome is uprev_lib.Outcome.NEW_EBUILD_CREATED
+
+  stable_chrome = cr.test.Package(
+      'chromeos-base', 'chromeos-chrome', version=f'{NEW_CHROME_VERSION}_rc-r1')
+
+  assert stable_chrome.cpv in overlay
