@@ -2691,10 +2691,6 @@ def ApplyCustomOverrides(site_config):
 
       'drallion-release': {
           'sign_types': ['recovery', 'factory'],
-          # Drallion has no DUTs in the lab. (crbug.com/1043198)
-          'hw_tests': [],
-          'hw_tests_override': [],
-          'hw_tests_disabled_bug': 'https://crbug.com/1043198',
       },
 
       # reven board does not exist in the lab.
