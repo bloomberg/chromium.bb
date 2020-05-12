@@ -21,8 +21,6 @@ from chromite.lib import retry_util
 from chromite.lib import sudo
 from chromite.scripts import cros_sdk
 
-pytestmark = cros_test_lib.pytestmark_legacy_slow
-
 
 assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 

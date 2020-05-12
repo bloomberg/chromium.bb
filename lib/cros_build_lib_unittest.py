@@ -28,8 +28,6 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import signals as cros_signals
 
-pytestmark = cros_test_lib.pytestmark_legacy_slow
-
 
 class RunCommandErrorStrTest(cros_test_lib.TestCase):
   """Test that RunCommandError __str__ works as expected."""
@@ -795,6 +793,9 @@ class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
     self.assertEqual('out\n', osutils.ReadFile(stdout))
     self.assertEqual('err\n', osutils.ReadFile(stderr))
 
+  # TODO(crbug.com/1072139): Re-enable this test and migrate away from using
+  #                          OutputCapturer once this module is Python 3 only.
+  @cros_test_lib.pytestmark_skip
   def testRunCommandAtNoticeLevel(self):
     """Ensure that run prints output when mute_output is False."""
     # Needed by cros_sdk and brillo/cros chroot.
