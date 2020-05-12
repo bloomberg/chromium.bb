@@ -33,6 +33,7 @@ def main(argv):
     re_execute_inside_chroot(argv)
   else:
     os.chdir(constants.CHROMITE_DIR)
+    pytest_args += ['--no-chroot']
 
   # This is a cheesy hack to make sure gsutil is populated in the cache before
   # we run tests. This is a partial workaround for crbug.com/468838.

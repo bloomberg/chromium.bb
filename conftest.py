@@ -140,3 +140,27 @@ def pytest_assertrepr_compare(op, left, right):
         'Ebuilds found in overlay with same category and package:'
     ] + sorted('\t' + str(p.relative_to(package_path))
                for p in package_path.glob('*.ebuild'))
+
+
+def pytest_addoption(parser):
+  """Adds additional options to the default pytest CLI args."""
+  parser.addoption(
+      '--no-chroot',
+      dest='chroot',
+      action='store_false',
+      help='Skip any tests that require a chroot to function.',
+  )
+
+
+def pytest_collection_modifyitems(config, items):
+  """Modifies the list of test items pytest has collected.
+
+  See the following link for full documentation on pytest collection hooks:
+  https://docs.pytest.org/en/latest/reference.html?highlight=pytest_collection_modifyitems#collection-hooks
+  """
+  if config.option.chroot:
+    return
+  skip_inside_only = pytest.mark.skip(reason='Test requires a chroot to run.')
+  for item in items:
+    if 'inside_only' in item.keywords:
+      item.add_marker(skip_inside_only)
