@@ -8972,8 +8972,8 @@
         "models": [
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"drallion\",\n    \"name\": \"drallion\",\n    \"test_suites\": [\n        \"sanity\",\n        \"bvt-inline\",\n        \"bvt-tast-cq\",\n        \"bvt-installer\",\n        \"bvt-arc\",\n        \"au\",\n        \"bvt-cq\",\n        \"bvt-perbuild\",\n        \"bvt-tast-informational\"\n    ]\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"drallion\",\n    \"name\": \"drallion360\",\n    \"test_suites\": [\n        \"sanity\",\n        \"bvt-inline\",\n        \"bvt-tast-cq\",\n        \"bvt-installer\",\n        \"bvt-arc\",\n        \"au\",\n        \"bvt-cq\",\n        \"bvt-perbuild\",\n        \"bvt-tast-informational\"\n    ]\n}",
-            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"drallion\",\n    \"name\": \"drallion360_signed\",\n    \"test_suites\": [\n        \"sanity\",\n        \"bvt-inline\",\n        \"bvt-tast-cq\",\n        \"bvt-installer\",\n        \"bvt-arc\",\n        \"au\",\n        \"bvt-cq\",\n        \"bvt-perbuild\",\n        \"bvt-tast-informational\"\n    ]\n}",
-            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"drallion\",\n    \"name\": \"drallion_signed\",\n    \"test_suites\": [\n        \"sanity\",\n        \"bvt-inline\",\n        \"bvt-tast-cq\",\n        \"bvt-installer\",\n        \"bvt-arc\",\n        \"au\",\n        \"bvt-cq\",\n        \"bvt-perbuild\",\n        \"bvt-tast-informational\"\n    ]\n}"
+            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"drallion\",\n    \"name\": \"drallion360_signed\",\n    \"test_suites\": []\n}",
+            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"drallion\",\n    \"name\": \"drallion_signed\",\n    \"test_suites\": []\n}"
         ],
         "sign_types": [
             "recovery",
@@ -8996,8 +8996,8 @@
         "models": [
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"drallion\",\n    \"name\": \"drallion\",\n    \"test_suites\": [\n        \"sanity\",\n        \"bvt-inline\",\n        \"bvt-tast-cq\",\n        \"bvt-installer\",\n        \"bvt-arc\",\n        \"au\",\n        \"bvt-cq\",\n        \"bvt-perbuild\",\n        \"bvt-tast-informational\"\n    ]\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"drallion\",\n    \"name\": \"drallion360\",\n    \"test_suites\": [\n        \"sanity\",\n        \"bvt-inline\",\n        \"bvt-tast-cq\",\n        \"bvt-installer\",\n        \"bvt-arc\",\n        \"au\",\n        \"bvt-cq\",\n        \"bvt-perbuild\",\n        \"bvt-tast-informational\"\n    ]\n}",
-            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"drallion\",\n    \"name\": \"drallion360_signed\",\n    \"test_suites\": [\n        \"sanity\",\n        \"bvt-inline\",\n        \"bvt-tast-cq\",\n        \"bvt-installer\",\n        \"bvt-arc\",\n        \"au\",\n        \"bvt-cq\",\n        \"bvt-perbuild\",\n        \"bvt-tast-informational\"\n    ]\n}",
-            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"drallion\",\n    \"name\": \"drallion_signed\",\n    \"test_suites\": [\n        \"sanity\",\n        \"bvt-inline\",\n        \"bvt-tast-cq\",\n        \"bvt-installer\",\n        \"bvt-arc\",\n        \"au\",\n        \"bvt-cq\",\n        \"bvt-perbuild\",\n        \"bvt-tast-informational\"\n    ]\n}"
+            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"drallion\",\n    \"name\": \"drallion360_signed\",\n    \"test_suites\": []\n}",
+            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"drallion\",\n    \"name\": \"drallion_signed\",\n    \"test_suites\": []\n}"
         ],
         "paygen": false,
         "push_image": false,

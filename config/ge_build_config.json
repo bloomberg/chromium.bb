@@ -1810,17 +1810,6 @@
         {
           "board_name": "drallion",
           "name": "drallion360_signed",
-          "test_suites": [
-            "sanity",
-            "bvt-inline",
-            "bvt-tast-cq",
-            "bvt-installer",
-            "bvt-arc",
-            "au",
-            "bvt-cq",
-            "bvt-perbuild",
-            "bvt-tast-informational"
-          ],
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
           "board_id": 402,
@@ -1829,17 +1818,6 @@
         {
           "board_name": "drallion",
           "name": "drallion_signed",
-          "test_suites": [
-            "sanity",
-            "bvt-inline",
-            "bvt-tast-cq",
-            "bvt-installer",
-            "bvt-arc",
-            "au",
-            "bvt-cq",
-            "bvt-perbuild",
-            "bvt-tast-informational"
-          ],
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
           "board_id": 402,
