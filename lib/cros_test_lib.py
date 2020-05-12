@@ -46,7 +46,6 @@ from chromite.utils import outcap
 try:
   import pytest  # pylint: disable=import-error
   pytest_skip = pytest.skip
-  pytestmark_config_skew_test = pytest.mark.config_skew_test
   pytestmark_inside_only = pytest.mark.inside_only
   pytestmark_network_test = pytest.mark.network_test
   pytestmark_sigterm = pytest.mark.sigterm
@@ -57,7 +56,6 @@ except (ImportError, AttributeError):
   # define custom pytestmarks as null functions for test files to use.
   null_decorator = lambda obj: obj
   pytest_skip = lambda allow_module_level: True
-  pytestmark_config_skew_test = null_decorator
   pytestmark_inside_only = null_decorator
   pytestmark_network_test = null_decorator
   pytestmark_sigterm = null_decorator
