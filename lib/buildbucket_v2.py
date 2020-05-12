@@ -62,7 +62,10 @@ def UpdateSelfBuildPropertiesNonBlocking(key, value):
     key: name of the property.
     value: value of the property.
   """
-  logging.PrintKitchenSetBuildProperty(key, value)
+  if key == 'email_notify':
+    logging.PrintKitchenSetEmailNotifyProperty(key, value)
+  else:
+    logging.PrintKitchenSetBuildProperty(key, value)
 
 
 def UpdateSelfCommonBuildProperties(critical=None,
