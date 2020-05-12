@@ -12,10 +12,13 @@ functionality that can eventually be centralized here.
 from __future__ import print_function
 
 import os
-
-from chromite.lib import osutils
+import sys
 
 from chromite.lib import constants
+from chromite.lib import osutils
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class Error(Exception):
