@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import sys
 import unittest
 
 import mock
@@ -20,6 +21,9 @@ from chromite.lib import osutils
 
 if cidb.sqlalchemy_imported:
   import sqlalchemy  # pylint: disable=import-error
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class RetryableOperationalError(EnvironmentError):

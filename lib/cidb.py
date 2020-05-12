@@ -12,6 +12,7 @@ import datetime
 import glob
 import os
 import re
+import sys
 
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
@@ -31,6 +32,10 @@ try:
   sqlalchemy_imported = True
 except ImportError:
   pass
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 log = logging.getLogger(__name__)
 

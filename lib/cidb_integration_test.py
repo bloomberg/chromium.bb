@@ -12,6 +12,7 @@ import glob
 import os
 import random
 import shutil
+import sys
 
 from chromite.lib import constants
 from chromite.lib import metadata_lib
@@ -19,6 +20,9 @@ from chromite.lib import cidb
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # Hopefully cidb will be deleted soon (before Python 3 finalizes), so we don't
