@@ -1168,8 +1168,9 @@ class ChromeSDKCommand(command.CliCommand):
       gn_args['use_thin_lto'] = False
     if not options.cfi:
       gn_args['is_cfi'] = False
-    # Set use_goma_thin_lto to False to avoid assert (crbug.com/1065073).
-    gn_args['use_goma_thin_lto'] = False
+    # When using Goma and ThinLTO, distribute ThinLTO code generation on Goma.
+    gn_args['use_goma_thin_lto'] = (
+        gn_args.get('use_goma', False) and gn_args.get('use_thin_lto', False))
     # We need to remove the flag -Wl,-plugin-opt,-import-instr-limit=$num
     # from cros_target_extra_ldflags if options.thinlto is not set.
     # The format of ld flags is something like
