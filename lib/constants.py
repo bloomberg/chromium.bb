@@ -966,7 +966,11 @@ ACTIVE_BUCKETS = [
 ]
 
 # Build retry limit on buildbucket
-BUILDBUCKET_BUILD_RETRY_LIMIT = 2
+#
+# 2->1 on 2020-05-13 by engeg@: This is rarely effective, causes confusion,
+# higher bot utilization, and if the initial try was past uploading artifacts
+# then the retry is destined to fail with a difficult to parse error.
+BUILDBUCKET_BUILD_RETRY_LIMIT = 1
 
 # TODO(nxia): consolidate all run.metadata key constants,
 # add a unit test to avoid duplicated keys in run_metadata
