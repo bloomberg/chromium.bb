@@ -2832,7 +2832,7 @@ def BuildFactoryInstallImage(buildroot, board, extra_env):
   alias = _FACTORY_SHIM
   cmd = [
       './build_image',
-      '--board=%s' % board, '--replace',
+      '--board=%s' % board, '--replace', '--noeclean',
       '--symlink=%s' % alias, '--build_attempt=3', 'factory_install'
   ]
   RunBuildScript(
