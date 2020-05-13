@@ -686,18 +686,6 @@
       ]
     },
     {
-      "name": "guado-kernelnext",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": false,
-          "board_group": "",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "guado_labstation",
       "configs": [
         {
@@ -1167,18 +1155,6 @@
     },
     {
       "name": "samus",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": false,
-          "board_group": "",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
-      "name": "samus-kernelnext",
       "configs": [
         {
           "builder": "RELEASE",

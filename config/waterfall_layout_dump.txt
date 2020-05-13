@@ -299,7 +299,6 @@
     grunt-kernelnext-release
     grunt-release
     guado-cfm-release
-    guado-kernelnext-release
     guado-macrophage-release
     guado-release
     guado_labstation-release
@@ -361,7 +360,6 @@
     rikku-cfm-release
     rikku-release
     romer-release
-    samus-kernelnext-release
     samus-release
     sand-release
     sarien-kvm-release
@@ -1124,11 +1122,6 @@
   guado-cfm-unittest-stress
   guado-factory-auron-6772.B-factorybranch-tryjob
   guado-full-tryjob
-  guado-kernelnext-full-tryjob
-  guado-kernelnext-llvm-next-toolchain-tryjob
-  guado-kernelnext-llvm-toolchain-tryjob
-  guado-kernelnext-release-tryjob
-  guado-kernelnext-unittest-stress
   guado-llvm-next-toolchain-tryjob
   guado-llvm-toolchain-tryjob
   guado-macrophage-full-tryjob
@@ -1460,7 +1453,6 @@
     grunt-kernelnext-release-tryjob
     grunt-release-tryjob
     guado-cfm-release-tryjob
-    guado-kernelnext-release-tryjob
     guado-macrophage-release-tryjob
     guado-release-tryjob
     guado_labstation-release-tryjob
@@ -1522,7 +1514,6 @@
     rikku-cfm-release-tryjob
     rikku-release-tryjob
     romer-release-tryjob
-    samus-kernelnext-release-tryjob
     samus-release-tryjob
     sand-release-tryjob
     sarien-kvm-release-tryjob
