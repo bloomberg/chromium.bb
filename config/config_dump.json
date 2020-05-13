@@ -13003,26 +13003,6 @@
         "suite_scheduling": false,
         "workspace_branch": "firmware-octopus-11297.106.B"
     },
-    "firmware-octopus-11297.83.B-firmwarebranch": {
-        "_template": "firmwarebranch",
-        "boards": [
-            "octopus"
-        ],
-        "schedule": "with 168h interval",
-        "workspace_branch": "firmware-octopus-11297.83.B"
-    },
-    "firmware-octopus-11297.83.B-firmwarebranch-tryjob": {
-        "_template": "firmwarebranch",
-        "boards": [
-            "octopus"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "luci_builder": "Try",
-        "push_image": false,
-        "suite_scheduling": false,
-        "workspace_branch": "firmware-octopus-11297.83.B"
-    },
     "firmware-octopus-11297.B-firmwarebranch": {
         "_template": "firmwarebranch",
         "boards": [
