@@ -171,7 +171,7 @@ std::unique_ptr<corewm::Tooltip> DesktopWindowTreeHostWin::CreateTooltip() {
       (base::win::GetVersion() < base::win::Version::WIN8);
   if (base::FeatureList::IsEnabled(features::kEnableAuraTooltipsOnWindows) &&
       !force_legacy_tooltips)
-    return std::make_unique<corewm::TooltipAura>();
+    return std::make_unique<corewm::TooltipAura>(GetAcceleratedWidget());
 
   DCHECK(!tooltip_);
   tooltip_ = new corewm::TooltipWin(GetAcceleratedWidget());
