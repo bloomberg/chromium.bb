@@ -95,6 +95,7 @@ class SpellCheck : public base::SupportsWeakPtr<SpellCheck>,
                       int tag,
                       size_t* misspelling_start,
                       size_t* misspelling_len,
+                      bool check_for_contractions,
                       std::vector<base::string16>* optional_suggestions);
 
   // Overload of SpellCheckWord where the replacement suggestions are kept
@@ -108,6 +109,7 @@ class SpellCheck : public base::SupportsWeakPtr<SpellCheck>,
       int tag,
       size_t* misspelling_start,
       size_t* misspelling_len,
+      bool check_for_contractions,
       spellcheck::PerLanguageSuggestions* optional_per_language_suggestions);
 
   // Overload of SpellCheckWord for skipping optional suggestions with a
@@ -118,6 +120,7 @@ class SpellCheck : public base::SupportsWeakPtr<SpellCheck>,
                       int tag,
                       size_t* misspelling_start,
                       size_t* misspelling_len,
+                      bool check_for_contractions,
                       std::nullptr_t null_suggestions_ptr);
 
 #if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
