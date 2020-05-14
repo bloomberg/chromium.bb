@@ -289,7 +289,7 @@ void TooltipController::UpdateIfRequired() {
     HWND cur_hwnd = WindowFromPoint(point);
     HWND parent_hwnd = tooltip_->GetParentHwnd();
 
-    if (cur_hwnd != parent_hwnd) {
+    if (cur_hwnd != parent_hwnd && parent_hwnd) {
       tooltip_->Hide();
       SetTooltipWindow(NULL);
       return;
