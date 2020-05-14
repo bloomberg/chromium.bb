@@ -124,15 +124,19 @@ class ConvertableToTraceFormat {
    * Append the class info to the provided |out| string. The appended
    * data must be a valid JSON object. Strings must be properly quoted, and
    * escaped. There is no processing applied to the content after it is
-   * appended. Return length of text appended.
+   * appended.
    * 
-   * out was a std::string, changed to char* to avoid
-   * naming conflit between blpwtk2 and embedder when they are build with different
-   * version/source of c++ library.
-   * if out == nullptr, return len of the string that would be appended.
-   * maxLen is max length of data that can be copied to out.
+   * blpwtk2: The |out| parameter was previously a std::string. It was changed
+   * to char* to provide a C interface to the embedder in order to avoid STL
+   * incompatibility issues.
+   *
+   * If the caller sets |out| to nullptr, this function will return the
+   * expected buffer size that the caller needs to allocate. Once the caller
+   * allocates the buffer, it can call this function with |out| set to the
+   * base address of the buffer and |maxSize| set to the size of the buffer.
+   * The function will write the class info into the provided buffer.
    */
-  virtual int AppendAsTraceFormat(char* out, int maxLen) const = 0;
+  virtual int AppendAsTraceFormat(char* out, int maxSize) const = 0;
 };
 
 /**

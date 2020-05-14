@@ -110,11 +110,11 @@ void TracedValue::SetString(const char* name, const char* value) {
 void TracedValue::SetValue(const char* name, TracedValue* value) {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeDict);
   WriteName(name);
-  int len = value->AppendAsTraceFormat(nullptr, 0);
-  if (len) {
-    std::unique_ptr<char[]> buf(new char[len+1]);
-    value->AppendAsTraceFormat(buf.get(), len+1);
-    data_.append(buf.get(), len);
+  int size = value->AppendAsTraceFormat(nullptr, 0);
+  if (size) {
+    std::unique_ptr<char[]> buf(new char[size]);
+    value->AppendAsTraceFormat(buf.get(), size);
+    data_.append(buf.get(), size-1);
   }
 }
 
@@ -204,20 +204,20 @@ void TracedValue::WriteName(const char* name) {
   data_ += "\":";
 }
 
-int TracedValue::AppendAsTraceFormat(char* out, int maxLen) const {
-  int len = 2 + strlen(data_.c_str());
+int TracedValue::AppendAsTraceFormat(char* out, int maxSize) const {
+  int len = 2 + data_.size();
   if (out) {
-    if (len >= 2 && maxLen > 2) {
-      len = len > maxLen-1 ? len = maxLen : len;
+    if (len > 2 && maxSize > 3) {
+      len = len > maxSize-1 ? maxSize-1 : len;
       out[0] = '{';
-      strncpy(out+1, data_.c_str(), len-2);
-      out[len-2] = '}';
-      out[len-1] = 0;
+      strncpy(out+1, data_.data(), len-2);
+      out[len-1] = '}';
+      out[len] = 0;
     } else {
-      len = 0;
+      len = -1;
     }
   }
-  return len;
+  return len+1;
 }
 
 }  // namespace tracing
