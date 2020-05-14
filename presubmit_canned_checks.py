@@ -1222,6 +1222,10 @@ def PanProjectChecks(input_api, output_api,
     snapshot("checking do not submit in files")
     results.extend(input_api.canned_checks.CheckDoNotSubmitInFiles(
         input_api, output_api))
+    if input_api.change.scm == 'git':
+      snapshot("checking for commit objects in tree")
+      results.extend(input_api.canned_checks.CheckForCommitObjects(
+          input_api, output_api))
   snapshot("done")
   return results
 
@@ -1382,6 +1386,57 @@ def CheckCIPDClientDigests(input_api, output_api, client_version_file):
       cmd,
       {'shell': True} if input_api.is_windows else {},  # to resolve cipd.bat
       output_api.PresubmitError)
+
+
+def CheckForCommitObjects(input_api, output_api):
+  """Validates that there are no commit objects in the repository.
+
+  Commit objects are put into the git tree typically by submodule tooling.
+  Because we use gclient to handle external repository references instead,
+  we want to avoid this. Having commit objects in the tree can confuse git
+  tooling in some scenarios into thinking that the tree is dirty (e.g. the
+  presence of a DEPS subrepo at a location where a commit object is stored
+  in the tree).
+
+  Args:
+    input_api: Bag of input related interfaces.
+    output_api: Bag of output related interfaces.
+
+  Returns:
+    A presubmit error if a commit object is present in the tree.
+  """
+
+  def parse_tree_entry(ent):
+    """Splits a tree entry into components
+
+    Args:
+      ent: a tree entry in the form "filemode type hash\tname"
+
+    Returns:
+      The tree entry split into component parts
+    """
+    tabparts = ent.split('\t', 1)
+    spaceparts = tabparts[0].split(' ', 2)
+    return (spaceparts[0], spaceparts[1], spaceparts[2], tabparts[1])
+
+  full_tree = input_api.subprocess.check_output(
+          ['git', 'ls-tree', '-r', '--full-tree', 'HEAD'],
+          cwd=input_api.PresubmitLocalPath()
+        )
+  tree_entries = full_tree.split('\n')
+  tree_entries = filter(lambda x: len(x) > 0, tree_entries)
+  tree_entries = map(parse_tree_entry, tree_entries)
+  bad_tree_entries = filter(lambda x: x[1] == 'commit', tree_entries)
+  bad_tree_entries = map(lambda x: x[3], bad_tree_entries)
+  if len(bad_tree_entries) > 0:
+    return [output_api.PresubmitError(
+      'Commit objects present within tree.\n'
+      'This may be due to submodule-related interactions; the presence of a\n'
+      'commit object in the tree may lead to odd situations where files are\n'
+      'inconsistently checked-out. Remove these commit entries and validate\n'
+      'your changeset again:\n',
+      bad_tree_entries)]
+  return []
 
 
 def CheckVPythonSpec(input_api, output_api, file_filter=None):
