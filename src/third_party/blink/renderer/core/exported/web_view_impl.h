@@ -374,6 +374,10 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   int32_t AutoplayFlagsForTest() override;
 
   WebSize Size();
+
+  HWND GetHwnd() override;
+  void SetHwnd(HWND hwnd) override;
+
   IntSize MainFrameSize();
   blink::mojom::DisplayMode DisplayMode() const { return display_mode_; }
 
@@ -662,6 +666,9 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   scoped_refptr<cc::Layer> root_layer_;
   bool matches_heuristics_for_gpu_rasterization_ = false;
+
+  // hwnd of WebView if available. e.g. blpwtk2::RenderWebview
+  HWND hwnd_;
 
   std::unique_ptr<FullscreenController> fullscreen_controller_;
 
