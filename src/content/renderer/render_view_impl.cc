@@ -2014,7 +2014,7 @@ void RenderViewImpl::OnTextAutosizerPageInfoChanged(
 
 void RenderViewImpl::SetFocus(bool enable) {
   // This is only called from RenderFrameProxy.
-  CHECK(!webview()->MainFrame()->IsWebLocalFrame());
+  // CHECK(!webview()->MainFrame()->IsWebLocalFrame());
   webview()->SetFocus(enable);
 }
 
