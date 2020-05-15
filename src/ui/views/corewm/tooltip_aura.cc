@@ -180,9 +180,7 @@ class TooltipAura::TooltipView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(TooltipView);
 };
 
-TooltipAura::TooltipAura(HWND parent) : tooltip_view_(new TooltipView)
-                                      , parent_hwnd_(parent) {
-}
+TooltipAura::TooltipAura() : tooltip_view_(new TooltipView) {}
 
 TooltipAura::~TooltipAura() {
   DestroyWidget();
@@ -305,7 +303,7 @@ void TooltipAura::OnWidgetDestroying(views::Widget* widget) {
 }
 
 HWND TooltipAura::GetParentHwnd() {
-  return parent_hwnd_;
+  return 0;
 }
 
 }  // namespace corewm
