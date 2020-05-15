@@ -193,6 +193,9 @@ def parseArgs(argv):
   # dynamic CRT.
   applyVariableToEnvironment('GN_DEFINES', 'use_allocator_shim', 'false')
 
+  # Disable mDNS support.
+  applyVariableToEnvironment('GN_DEFINES', 'enable_mdns', 'false')
+
   if gn_type == 'debug' or not gn_type:
     if gn_mode == 'shared' or not gn_mode:
       createBuildCmd(gn_shared, 'shared', 'debug', bb_version, 'static_crt')
