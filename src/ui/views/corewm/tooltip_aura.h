@@ -32,7 +32,7 @@ class TooltipAuraTestApi;
 // Implementation of Tooltip that shows the tooltip using a Widget and Label.
 class VIEWS_EXPORT TooltipAura : public Tooltip, public WidgetObserver {
  public:
-  TooltipAura(HWND parent = nullptr);
+  TooltipAura();
   ~TooltipAura() override;
 
   HWND GetParentHwnd() override;
@@ -68,9 +68,6 @@ class VIEWS_EXPORT TooltipAura : public Tooltip, public WidgetObserver {
 
   // The widget containing the tooltip. May be NULL.
   Widget* widget_ = nullptr;
-
-  // The window from where |tooltip_hwnd_| is triggered.
-  HWND parent_hwnd_;
 
   // The window we're showing the tooltip for. Never NULL and valid while
   // showing.
