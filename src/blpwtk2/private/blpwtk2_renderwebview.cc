@@ -789,7 +789,7 @@ void RenderWebView::updateGeometry()
 
     content::VisualProperties params = {};
     params.new_size = size;
-    params.compositor_viewport_pixel_rect = d_geometry;
+    params.compositor_viewport_pixel_rect = gfx::Rect(size);
     params.visible_viewport_size = size;
     params.display_mode = blink::mojom::DisplayMode::kBrowser;
     params.local_surface_id_allocation = d_compositor->GetLocalSurfaceIdAllocation();
