@@ -373,7 +373,7 @@ void BrowserContextImpl::addHttpProxy(ProxyType        type,
     d_proxyConfig->proxy_rules().proxies_for_http.AddProxyServer(
         makeServer(type, std::string(host.data(), host.size()), port));
 
-    d_requestContextGetter->setProxyConfig(*d_proxyConfig);
+    d_requestContextManager->SetCustomProxyConfig(*d_proxyConfig);
 }
 
 void BrowserContextImpl::addHttpsProxy(ProxyType        type,
@@ -386,7 +386,7 @@ void BrowserContextImpl::addHttpsProxy(ProxyType        type,
     d_proxyConfig->proxy_rules().proxies_for_https.AddProxyServer(
         makeServer(type, std::string(host.data(), host.size()), port));
 
-    d_requestContextGetter->setProxyConfig(*d_proxyConfig);
+    d_requestContextManager->SetCustomProxyConfig(*d_proxyConfig);
 }
 
 void BrowserContextImpl::addFtpProxy(ProxyType        type,
@@ -399,7 +399,7 @@ void BrowserContextImpl::addFtpProxy(ProxyType        type,
     d_proxyConfig->proxy_rules().proxies_for_ftp.AddProxyServer(
         makeServer(type, std::string(host.data(), host.size()), port));
 
-    d_requestContextGetter->setProxyConfig(*d_proxyConfig);
+    d_requestContextManager->SetCustomProxyConfig(*d_proxyConfig);
 }
 
 void BrowserContextImpl::addFallbackProxy(ProxyType        type,
@@ -412,7 +412,7 @@ void BrowserContextImpl::addFallbackProxy(ProxyType        type,
     d_proxyConfig->proxy_rules().fallback_proxies.AddProxyServer(
         makeServer(type, std::string(host.data(), host.size()), port));
 
-    d_requestContextGetter->setProxyConfig(*d_proxyConfig);
+    d_requestContextManager->SetCustomProxyConfig(*d_proxyConfig);
 }
 
 void BrowserContextImpl::clearHttpProxies()
@@ -421,7 +421,7 @@ void BrowserContextImpl::clearHttpProxies()
     DCHECK(!d_isDestroyed);
 
     d_proxyConfig->proxy_rules().proxies_for_http.Clear();
-    d_requestContextGetter->setProxyConfig(*d_proxyConfig);
+    d_requestContextManager->SetCustomProxyConfig(*d_proxyConfig);
 }
 
 void BrowserContextImpl::clearHttpsProxies()
@@ -430,7 +430,7 @@ void BrowserContextImpl::clearHttpsProxies()
     DCHECK(!d_isDestroyed);
 
     d_proxyConfig->proxy_rules().proxies_for_https.Clear();
-    d_requestContextGetter->setProxyConfig(*d_proxyConfig);
+    d_requestContextManager->SetCustomProxyConfig(*d_proxyConfig);
 }
 
 void BrowserContextImpl::clearFtpProxies()
@@ -439,7 +439,7 @@ void BrowserContextImpl::clearFtpProxies()
     DCHECK(!d_isDestroyed);
 
     d_proxyConfig->proxy_rules().proxies_for_ftp.Clear();
-    d_requestContextGetter->setProxyConfig(*d_proxyConfig);
+    d_requestContextManager->SetCustomProxyConfig(*d_proxyConfig);
 }
 
 void BrowserContextImpl::clearFallbackProxies()
@@ -448,7 +448,7 @@ void BrowserContextImpl::clearFallbackProxies()
     DCHECK(!d_isDestroyed);
 
     d_proxyConfig->proxy_rules().fallback_proxies.Clear();
-    d_requestContextGetter->setProxyConfig(*d_proxyConfig);
+    d_requestContextManager->SetCustomProxyConfig(*d_proxyConfig);
 }
 
 void BrowserContextImpl::addBypassRule(const StringRef& rule)
@@ -458,7 +458,7 @@ void BrowserContextImpl::addBypassRule(const StringRef& rule)
 
     d_proxyConfig->proxy_rules().bypass_rules.AddRuleFromString(
             std::string(rule.data(), rule.size()));
-    d_requestContextGetter->setProxyConfig(*d_proxyConfig);
+    d_requestContextManager->SetCustomProxyConfig(*d_proxyConfig);
 }
 
 void BrowserContextImpl::clearBypassRules()
@@ -467,7 +467,7 @@ void BrowserContextImpl::clearBypassRules()
     DCHECK(!d_isDestroyed);
 
     d_proxyConfig->proxy_rules().bypass_rules.Clear();
-    d_requestContextGetter->setProxyConfig(*d_proxyConfig);
+    d_requestContextManager->SetCustomProxyConfig(*d_proxyConfig);
 }
 
 void BrowserContextImpl::setPacUrl(const StringRef& url)
@@ -476,7 +476,7 @@ void BrowserContextImpl::setPacUrl(const StringRef& url)
     DCHECK(!d_isDestroyed);
 
     d_proxyConfig->set_pac_url(GURL(std::string(url.data(), url.size())));
-    d_requestContextGetter->setProxyConfig(*d_proxyConfig);
+    d_requestContextManager->SetCustomProxyConfig(*d_proxyConfig);
 }
 
 
