@@ -86,6 +86,7 @@ class ProxyConfigMonitor
   explicit ProxyConfigMonitor(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : task_runner_(task_runner)
+      , use_custom_proxy_(false)
   {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     // We must create the proxy config service on the UI loop on Linux because
@@ -103,6 +104,18 @@ class ProxyConfigMonitor
   {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
     proxy_config_service_->RemoveObserver(this);
+  }
+
+  void SetCustomProxyConfig(const net::ProxyConfig& custom_proxy_config)
+  {
+    if (!proxy_config_client_)
+      return;
+
+    use_custom_proxy_ = true;
+
+    proxy_config_client_->OnProxyConfigUpdated(
+      net::ProxyConfigWithAnnotation(custom_proxy_config,
+                                     GetProxyConfigTrafficAnnotationTag()));
   }
 
   // Populates proxy-related fields of |network_context_params|. Updated
@@ -133,6 +146,11 @@ class ProxyConfigMonitor
   {
     if (!proxy_config_client_)
       return;
+
+    // ignore system config change when the custom proxy is used.
+    if (use_custom_proxy_)
+      return;
+
     switch (availability) {
       case net::ProxyConfigService::CONFIG_VALID:
         proxy_config_client_->OnProxyConfigUpdated(config);
@@ -155,6 +173,8 @@ class ProxyConfigMonitor
   mojo::Receiver<::network::mojom::ProxyConfigPollerClient> poller_receiver_{
       this};
   mojo::Remote<::network::mojom::ProxyConfigClient> proxy_config_client_;
+
+  bool use_custom_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyConfigMonitor);
 };
@@ -226,6 +246,13 @@ RequestContextManager::CreateNetworkContextParams(bool is_system, std::string us
   }
   content::UpdateCorsExemptHeader(context_params.get());
   return context_params;
+}
+
+void RequestContextManager::SetCustomProxyConfig(const net::ProxyConfig& custom_proxy_config)
+{
+  if (proxy_config_monitor_) {
+    proxy_config_monitor_->SetCustomProxyConfig(custom_proxy_config);
+  }
 }
 
 }  // namespace blpwtk2

@@ -60,6 +60,9 @@ class RequestContextManager {
     return resource_context_.get();
   }
 
+  // Set the custom proxy config to override the system proxy config
+  void SetCustomProxyConfig(const net::ProxyConfig& custom_proxy_config);
+
  private:
   network::mojom::NetworkContextParamsPtr CreateNetworkContextParams(bool is_system,
                                                                      std::string user_agent);
