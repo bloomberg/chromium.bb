@@ -96,7 +96,7 @@ void CreateWindowsOnThread(const gfx::Size& size,
       WS_EX_NOPARENTNOTIFY | WS_EX_LAYERED | WS_EX_TRANSPARENT |
           WS_EX_NOREDIRECTIONBITMAP,
       reinterpret_cast<wchar_t*>(g_window_class), L"",
-      WS_CHILDWINDOW | WS_DISABLED | WS_VISIBLE, 0, 0, size.width(),
+      WS_CLIPSIBLINGS | WS_CHILDWINDOW | WS_DISABLED | WS_VISIBLE, 0, 0, size.width(),
       size.height(), *parent_window, nullptr, nullptr, nullptr);
   if (!window) {
     logging::SystemErrorCode error = logging::GetLastSystemErrorCode();
