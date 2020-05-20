@@ -173,7 +173,8 @@ class CONTENT_EXPORT RenderWidget
                bool is_undead,
                bool hidden,
                bool never_visible,
-               mojo::PendingReceiver<mojom::Widget> widget_receiver);
+               mojo::PendingReceiver<mojom::Widget> widget_receiver,
+               int32_t view_id = 0);
 
   ~RenderWidget() override;
 
@@ -196,7 +197,8 @@ class CONTENT_EXPORT RenderWidget
       blink::mojom::DisplayMode display_mode,
       bool is_undead,
       bool never_visible,
-      mojo::PendingReceiver<mojom::Widget> widget_receiver);
+      mojo::PendingReceiver<mojom::Widget> widget_receiver,
+      int32_t view_id);
   // Overrides the implementation of CreateForFrame() function below. Used by
   // web tests to return a partial fake of RenderWidget.
   static void InstallCreateForFrameHook(
@@ -210,7 +212,8 @@ class CONTENT_EXPORT RenderWidget
       CompositorDependencies* compositor_deps,
       blink::mojom::DisplayMode display_mode,
       bool is_undead,
-      bool never_visible);
+      bool never_visible,
+      int32_t view_id = 0);
 
   // Creates a RenderWidget for a popup. This is separate from CreateForFrame()
   // because popups do not not need to be faked out.
@@ -223,7 +226,8 @@ class CONTENT_EXPORT RenderWidget
       blink::mojom::DisplayMode display_mode,
       bool hidden,
       bool never_visible,
-      mojo::PendingReceiver<mojom::Widget> widget_receiver);
+      mojo::PendingReceiver<mojom::Widget> widget_receiver,
+      int32_t view_id = 0);
 
   // Initialize a new RenderWidget for a popup. The |show_callback| is called
   // when RenderWidget::Show() happens. The |opener_widget| is the local root
@@ -901,6 +905,8 @@ class CONTENT_EXPORT RenderWidget
   // Routing ID that allows us to communicate to the parent browser process
   // RenderWidgetHost.
   const int32_t routing_id_;
+
+  const int32_t view_id_;
 
   // Dependencies for initializing a compositor, including flags for optional
   // features.
