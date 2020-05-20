@@ -107,6 +107,12 @@ class WebViewImpl final : public WebView,
     bool OnNCDragBegin(int hitTestCode) override;
     void OnNCDragMove() override;
     void OnNCDragEnd() override;
+    void OnNCDoubleClick() override;
+    bool OnPreHandleMessage(unsigned window,
+                            unsigned message,
+                            unsigned w_param,
+                            long l_param,
+                            long *result) override;
     aura::Window* GetDefaultActivationWindow() override;
 
     // content::WebContentsDelegate overrides
