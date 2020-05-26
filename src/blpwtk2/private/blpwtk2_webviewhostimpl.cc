@@ -47,6 +47,12 @@ WebViewHostImpl::WebViewHostImpl(
 {
     WebViewProperties properties;
 
+    properties.takeKeyboardFocusOnMouseDown =
+        params.takeKeyboardFocusOnMouseDown;
+    properties.takeLogicalFocusOnMouseDown =
+        params.takeLogicalFocusOnMouseDown;
+    properties.activateWindowOnMouseDown =
+        params.activateWindowOnMouseDown;
     properties.domPasteEnabled =
         params.domPasteEnabled;
     properties.javascriptCanAccessClipboard =
@@ -398,6 +404,16 @@ void WebViewHostImpl::reload(reloadCallback callback)
 void WebViewHostImpl::stop()
 {
     d_impl->stop();
+}
+
+void WebViewHostImpl::takeKeyboardFocus()
+{
+    d_impl->takeKeyboardFocus();
+}
+
+void WebViewHostImpl::setLogicalFocus(bool focused)
+{
+    d_impl->setLogicalFocus(focused);
 }
 
 void WebViewHostImpl::performCustomContextMenuAction(int id)
