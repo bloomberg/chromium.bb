@@ -508,6 +508,11 @@ void NativeWidgetAura::SetBoundsConstrained(const gfx::Rect& bounds) {
   SetBounds(new_bounds);
 }
 
+void NativeWidgetAura::SetBoundsNoDPIAdjustment(const gfx::Rect& bounds) {
+  if (window_)
+    window_->SetBounds(bounds);
+}
+
 void NativeWidgetAura::SetSize(const gfx::Size& size) {
   if (window_)
     window_->SetBounds(gfx::Rect(window_->bounds().origin(), size));
