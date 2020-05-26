@@ -259,6 +259,8 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void DidFocus(blink::WebLocalFrame* calling_frame) override;
   bool CanHandleGestureEvent() override;
   bool AllowPopupsDuringPageUnload() override;
+  void setRubberbandRect(const blink::WebRect&) override;
+  void hideRubberbandRect() override;
 
   // RenderView implementation -------------------------------------------------
 
@@ -454,6 +456,8 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void OnUpdateTargetURLAck();
   void OnUpdateWebPreferences(const WebPreferences& prefs);
   void OnSetPageScale(float page_scale_factor);
+  void OnForceRedraw(const ui::LatencyInfo& latency_info);
+  void OnEnableAltDragRubberbanding(bool enable);
   void OnAudioStateChanged(bool is_audio_playing);
   void OnSetBackgroundOpaque(bool opaque);
 
