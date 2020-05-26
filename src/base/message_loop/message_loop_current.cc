@@ -97,7 +97,9 @@ MessageLoopCurrent::ScopedNestableTaskAllower::ScopedNestableTaskAllower()
 }
 
 MessageLoopCurrent::ScopedNestableTaskAllower::~ScopedNestableTaskAllower() {
-  sequence_manager_->SetTaskExecutionAllowed(old_state_);
+  if (GetCurrentSequenceManagerImpl()) {
+    sequence_manager_->SetTaskExecutionAllowed(old_state_);
+  }
 }
 
 bool MessageLoopCurrent::operator==(const MessageLoopCurrent& other) const {
