@@ -992,10 +992,7 @@ std::pair<float, float> LayerImpl::GetIdealContentsScaleAndAspectRatio() const {
   gfx::Vector2dF transform_scales =
       MathUtil::ComputeTransform2dScaleComponents(transform, default_scale);
 
-  constexpr float kMaxScaleRatio = 5.f;
-  float lower_scale = std::min(transform_scales.x(), transform_scales.y());
-  float higher_scale = std::max(transform_scales.x(), transform_scales.y());
-  return std::make_pair(std::min(kMaxScaleRatio * lower_scale, higher_scale),
+  return std::make_pair(transform_scales.x(),
                         transform_scales.y() / transform_scales.x());
 }
 
