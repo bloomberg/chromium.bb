@@ -99,7 +99,8 @@ class TaskQueuePacedSender : public RtpPacketPacer,
   // specified by SetPacingRates() if needed to achieve this goal.
   void SetQueueTimeLimit(TimeDelta limit) override;
 
- private:
+ protected:
+  // Exposed as protected for test.
   struct Stats {
     Stats()
         : oldest_packet_wait_time(TimeDelta::Zero()),
@@ -110,7 +111,9 @@ class TaskQueuePacedSender : public RtpPacketPacer,
     TimeDelta expected_queue_time;
     absl::optional<Timestamp> first_sent_packet_time;
   };
+  virtual void OnStatsUpdated(const Stats& stats);
 
+ private:
   // Check if it is time to send packets, or schedule a delayed task if not.
   // Use Timestamp::MinusInfinity() to indicate that this call has _not_
   // been scheduled by the pacing controller. If this is the case, check if
