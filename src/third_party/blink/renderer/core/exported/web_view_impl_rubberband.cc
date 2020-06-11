@@ -342,10 +342,13 @@ void WebViewImpl::RubberbandWalkLayoutObject(const RubberbandContext& context, c
     if (layoutObject->HasLayer()) {
         DCHECK(layoutObject->IsBoxModelObject());
         PaintLayer* layer = ToLayoutBoxModelObject(layoutObject)->Layer();
+        PaintLayer* containingLayer = layer->ContainingLayer();
         RubberbandLayerContext& layerContext = *localContext.m_layerContext;
 
-        auto location = layer->LocationWithoutPositionOffset().ToLayoutPoint() -
-                        layer->PixelSnappedScrolledContentOffset();
+        auto location = layer->LocationWithoutPositionOffset().ToLayoutPoint();
+        if (containingLayer) {
+            location -= containingLayer->PixelSnappedScrolledContentOffset();
+        }
 
         if (layer->HasTransformRelatedProperty()) {
             TransformationMatrix matrix = layer->CurrentTransform();
