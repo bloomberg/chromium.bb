@@ -390,6 +390,7 @@ class CONTENT_EXPORT RenderWidget
   bool WillHandleMouseEvent(const blink::WebMouseEvent& event) override;
 
   // RenderWidgetScreenMetricsEmulatorDelegate
+  void Redraw() override;
   void SetScreenMetricsEmulationParameters(
       bool enabled,
       const blink::WebDeviceEmulationParams& params) override;
@@ -630,6 +631,8 @@ class CONTENT_EXPORT RenderWidget
   void SetupWidgetInputHandler(
       mojo::PendingReceiver<mojom::WidgetInputHandler> receiver,
       mojo::PendingRemote<mojom::WidgetInputHandlerHost> host) override;
+
+  void LockSize(bool val);
 
   scoped_refptr<MainThreadEventQueue> GetInputEventQueue();
 
@@ -1169,6 +1172,8 @@ class CONTENT_EXPORT RenderWidget
   base::Optional<bool> has_touch_handlers_;
 
   uint32_t last_capture_sequence_number_ = 0u;
+
+  bool lock_size_ = false;
 
   bool bb_OnHandleInputEvent_no_ack_{false};
   base::WeakPtrFactory<RenderWidget> weak_ptr_factory_{this};
