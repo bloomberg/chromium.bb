@@ -35,6 +35,7 @@ class VIEWS_EXPORT TooltipAura : public Tooltip, public WidgetObserver {
   TooltipAura();
   ~TooltipAura() override;
 
+  HWND GetParentHwnd() override;
  private:
   class TooltipView;
 
