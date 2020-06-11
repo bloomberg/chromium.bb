@@ -76,6 +76,7 @@
 // feature 32
 // feature 33
 // feature 34
+#define BLPWTK2_FEATURE_KEYBOARD_LAYOUT
 // feature 35
 // feature 36
 // feature 37
