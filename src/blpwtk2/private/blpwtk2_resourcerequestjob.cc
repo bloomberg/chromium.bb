@@ -87,7 +87,9 @@ bool ResourceRequestJob::GetMimeType(std::string* mime_type) const {
 }
 
 void ResourceRequestJob::NotifyHeadersCompleteHelper() {
-  NotifyHeadersComplete();
+  if (!is_done()) {
+    NotifyHeadersComplete();
+  }
 }
 
 }  // close namespace blpwtk2
