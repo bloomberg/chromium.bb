@@ -1493,7 +1493,7 @@ void Element::setScrollTop(double new_top) {
           scrollable_area->GetSnapPositionAndSetTarget(*strategy).value_or(
               end_point);
       FloatPoint new_position(scrollable_area->ScrollPosition().X(),
-                              end_point.Y());
+                              roundf(end_point.Y()));
       scrollable_area->ScrollToAbsolutePosition(new_position,
                                                 kScrollBehaviorAuto);
     }
