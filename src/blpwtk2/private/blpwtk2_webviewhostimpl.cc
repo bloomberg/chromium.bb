@@ -519,6 +519,11 @@ void WebViewHostImpl::setParent(unsigned int window, setParentCallback callback)
     std::move(callback).Run(status, window);
 }
 
+void WebViewHostImpl::rootWindowCompositionChanged()
+{
+    d_impl->rootWindowCompositionChanged();
+}
+
 }  // close namespace blpwtk2
 
 // vim: ts=4 et
