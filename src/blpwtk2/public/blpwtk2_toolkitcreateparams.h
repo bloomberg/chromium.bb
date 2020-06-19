@@ -48,7 +48,7 @@ class BLPWTK2_EXPORT ToolkitDelegate {
                                     unsigned message,
                                     unsigned w_param,
                                     long l_param,
-                                    long *result) = 0;
+                                    LONG_PTR *result) = 0;
 
 
 

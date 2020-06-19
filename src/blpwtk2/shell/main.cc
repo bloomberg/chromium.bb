@@ -488,7 +488,7 @@ class ToolkitDelegate : public blpwtk2::ToolkitDelegate {
                             unsigned message,
                             unsigned w_param,
                             long l_param,
-                            long *result) override
+                            LONG_PTR *result) override
     {
         if (!d_interceptKey) {
             return false;

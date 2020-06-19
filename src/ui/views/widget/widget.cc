@@ -1264,7 +1264,7 @@ bool Widget::OnPreHandleMessage(unsigned window,
                                 unsigned message,
                                 unsigned w_param,
                                 long l_param,
-                                long *result) {
+                                LONG_PTR *result) {
   return widget_delegate_->OnPreHandleMessage(window,
                                               message,
                                               w_param,

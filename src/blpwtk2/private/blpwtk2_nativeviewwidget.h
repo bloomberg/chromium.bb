@@ -73,7 +73,7 @@ class NativeViewWidget : private views::WidgetDelegateView {
                             unsigned message,
                             unsigned w_param,
                             long l_param,
-                            long *result) override;
+                            LONG_PTR *result) override;
 
   private:
     NativeViewWidgetDelegate* d_delegate;  // held, not owned

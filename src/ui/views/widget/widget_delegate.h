@@ -206,7 +206,7 @@ class VIEWS_EXPORT WidgetDelegate {
                                   unsigned message,
                                   unsigned w_param,
                                   long l_param,
-                                  long *result);
+                                  LONG_PTR *result);
 
   // Provides the hit-test mask if HasHitTestMask above returns true.
   virtual void GetWidgetHitTestMask(SkPath* mask) const;

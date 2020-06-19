@@ -963,7 +963,7 @@ bool WebViewImpl::OnPreHandleMessage(unsigned window,
                                      unsigned message,
                                      unsigned w_param,
                                      long l_param,
-                                     long *result)
+                                     LONG_PTR *result)
 {
     if (!d_properties.messageInterceptionEnabled)
         return false;
