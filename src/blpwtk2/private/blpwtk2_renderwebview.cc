@@ -273,7 +273,7 @@ LRESULT RenderWebView::windowProcedure(UINT   uMsg,
 {
 #if defined(BLPWTK2_FEATURE_MSGINTERCEPT)
     auto *toolkitDelegate = Statics::toolkitDelegate;
-    long result;
+    LRESULT result;
 
     if (toolkitDelegate) {
         if (toolkitDelegate->onPreHandleMessage(reinterpret_cast<unsigned>(d_hwnd.get()),
@@ -2277,5 +2277,3 @@ void RenderWebView::OnSetRubberbandRect(const gfx::Rect& rect)
 }  // close namespace blpwtk2
 
 // vim: ts=4 et
-
-
