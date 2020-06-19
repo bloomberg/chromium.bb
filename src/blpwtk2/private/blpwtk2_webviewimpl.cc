@@ -331,7 +331,7 @@ void WebViewImpl::activateKeyboardLayout(unsigned int hkl)
 {
     HKL currentKL = ::GetKeyboardLayout(0);
     if (is_english_langid(LANGID(hkl)) && !is_asian_langid(LANGID(currentKL))) {
-        // user might expecting any of the eropean keyboard layout, 
+        // user might expecting any of the eropean keyboard layout,
         // so keep current layout unchanged if it is not an asian IME.
         return;
     }
@@ -353,16 +353,16 @@ void WebViewImpl::activateKeyboardLayout(unsigned int hkl)
         ImmReleaseContext(hwnd, hImeContext);
         return;
     }
-    
+
     // new input language is not English, switch IME first.
     if (newLangId != currentLangId) {
-        ::ActivateKeyboardLayout((HKL)hkl, KLF_SETFORPROCESS);
+        ::ActivateKeyboardLayout((HKL)(UINT_PTR)hkl, KLF_SETFORPROCESS);
     }
-    
+
     ImmSetOpenStatus(hImeContext, true);
 
     // set input mode to none alpha-numeric
-    if (newLangId == MAKELANGID(LANG_JAPANESE, SUBLANG_DEFAULT)) {                
+    if (newLangId == MAKELANGID(LANG_JAPANESE, SUBLANG_DEFAULT)) {
         dwConversion = IME_CMODE_NATIVE | IME_CMODE_FULLSHAPE | IME_CMODE_ROMAN; // hiragana
     }else if (newLangId == MAKELANGID(LANG_KOREAN, SUBLANG_DEFAULT)) {
         dwConversion = IME_CMODE_NATIVE;
@@ -370,7 +370,7 @@ void WebViewImpl::activateKeyboardLayout(unsigned int hkl)
         dwConversion = IME_CMODE_NATIVE;
     }
     ::ImmSetConversionStatus(hImeContext, dwConversion, dwSentence);
-    
+
     ImmReleaseContext(hwnd, hImeContext);
 }
 
@@ -424,7 +424,7 @@ void WebViewImpl::loadInspector(unsigned int pid, int routingId)
                                                      inspectedContents));
 
             GURL url = GetDevToolsFrontendURL();
-            loadUrl(url.spec());           
+            loadUrl(url.spec());
             LOG(INFO) << "Loaded devtools for routing id: " << routingId;
             return;
         }
@@ -472,7 +472,7 @@ int WebViewImpl::reload()
     DCHECK(!d_wasDestroyed);
 
     // TODO: do we want to make this an argument
-    const bool checkForRepost = false; 
+    const bool checkForRepost = false;
 
     d_webContents->GetController().Reload(content::ReloadType::NORMAL, checkForRepost);
     return 0;
@@ -966,4 +966,3 @@ void WebViewImpl::DidFailLoad(content::RenderFrameHost *render_frame_host,
 }  // close namespace blpwtk2
 
 // vim: ts=4 et
-
