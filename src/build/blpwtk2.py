@@ -105,7 +105,7 @@ def applyVariableToEnvironment(env, var, val):
   os.environ[env] = " ".join(envItems)
 
 
-def createBuildCmd(gn_cmds, gn_mode, gn_type, bb_version, crt_mode):
+def createBuildCmd(gn_cmds, gn_mode, gn_type, bb_version, crt_mode, arch_type):
   if gn_type == 'debug':
     applyVariableToEnvironment('GN_DEFINES', 'is_debug', 'true')
     applyVariableToEnvironment('GN_DEFINES', 'is_official_build', 'false')
@@ -135,11 +135,15 @@ def createBuildCmd(gn_cmds, gn_mode, gn_type, bb_version, crt_mode):
   if bb_version:
     version = ' bb_version=\\\"' + bb_version + '\\\"'
 
+  suffix = ''
+  if arch_type == 'x64':
+    suffix = '64'
+
   if crt_mode == 'static_crt':
-    gn_cmd = ' gen out/' + gn_mode + '_' + gn_type + ' --args="' \
+    gn_cmd = ' gen out/' + gn_mode + '_' + gn_type + suffix + ' --args="' \
              + os.environ['GN_DEFINES'] + version + '"'
   else:
-    gn_cmd = ' gen out/' + gn_mode + '_' + gn_type + '_md --args="' \
+    gn_cmd = ' gen out/' + gn_mode + '_' + gn_type + suffix + '_md --args="' \
              + os.environ['GN_DEFINES'] + version + '"'
 
   gn_cmds.append(gn_cmd)
@@ -152,6 +156,9 @@ def parseArgs(argv):
   bb_version = None
   crt_mode = None
 
+  # Generate 32-bit binaries and libraries by default
+  arch_type = 'x86'
+
   if argv:
     for i in xrange(0, len(argv)):
       arg = argv[i]
@@ -161,12 +168,14 @@ def parseArgs(argv):
         gn_type = arg
       elif arg == 'dynamic_crt' or arg == 'static_crt':
         crt_mode = arg
+      elif arg == 'x86' or arg == 'x64':
+        arch_type = arg
       elif arg == '--bb_version':
         with open('../devkit_version.txt', 'r') as f:
           bb_version = f.readline()
-  
-  # Generate 32-bit binaries and libraries
-  applyVariableToEnvironment('GN_DEFINES', 'target_cpu', '\\\"x86\\\"')
+
+  # Select target architecture
+  applyVariableToEnvironment('GN_DEFINES', 'target_cpu', '\\\"' + arch_type + '\\\"')
 
   # Disable NativeClient, print preview, browser extensiion, paint preview
   # and VR support
@@ -198,16 +207,16 @@ def parseArgs(argv):
 
   if gn_type == 'debug' or not gn_type:
     if gn_mode == 'shared' or not gn_mode:
-      createBuildCmd(gn_shared, 'shared', 'debug', bb_version, 'static_crt')
+      createBuildCmd(gn_shared, 'shared', 'debug', bb_version, 'static_crt', arch_type)
 
   if gn_type == 'release' or not gn_type:
     if gn_mode == 'shared' or not gn_mode:
-      createBuildCmd(gn_shared, 'shared', 'release', bb_version, 'static_crt')
+      createBuildCmd(gn_shared, 'shared', 'release', bb_version, 'static_crt', arch_type)
     if gn_mode == 'static' or not gn_mode:
       if crt_mode == 'static_crt' or not crt_mode:
-        createBuildCmd(gn_static, 'static', 'release', bb_version, 'static_crt')
+        createBuildCmd(gn_static, 'static', 'release', bb_version, 'static_crt', arch_type)
       if crt_mode == 'dynamic_crt' or not crt_mode:
-        createBuildCmd(gn_static, 'static', 'release', bb_version, 'dynamic_crt')
+        createBuildCmd(gn_static, 'static', 'release', bb_version, 'dynamic_crt', arch_type)
 
   return gn_shared, gn_static, gn_type
 
@@ -248,4 +257,3 @@ if __name__ == '__main__':
     print "Enabled Psyco JIT."
 
   sys.exit(main(sys.argv[1:]))
-
