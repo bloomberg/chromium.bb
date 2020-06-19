@@ -912,7 +912,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
                           unsigned message,
                           unsigned w_param,
                           long l_param,
-                          long *result) override;
+                          LONG_PTR *result) override;
   int GetNonClientComponent(const gfx::Point& point) override;
   void OnKeyEvent(ui::KeyEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;

@@ -188,7 +188,7 @@ bool WidgetDelegate::OnPreHandleMessage(unsigned window,
                                         unsigned message,
                                         unsigned w_param,
                                         long l_param,
-                                        long *result) {
+                                        LONG_PTR *result) {
   return false;
 }
 

@@ -136,7 +136,7 @@ class VIEWS_EXPORT NativeWidgetDelegate {
                                   unsigned message,
                                   unsigned w_param,
                                   long l_param,
-                                  long *result) = 0;
+                                  LONG_PTR *result) = 0;
 
   // Returns the non-client component (see ui/base/hit_test.h) containing
   // |point|, in client coordinates.
