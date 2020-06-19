@@ -242,6 +242,7 @@ def main(args):
   doMakeRelease = True
   doMakeStaticCRT = True
   doMakeDynamicCRT = True
+  doMakeX64 = False
   version = None
 
   for i in range(len(args)):
@@ -263,10 +264,12 @@ def main(args):
       doMakeStaticCRT = False
     elif args[i] == '--nodynamiccrt':
       doMakeDynamicCRT = False
+    elif args[i] == '--x64':
+      doMakeX64 = True
     elif args[i] == '--version':
       version = args[i+1]
     elif args[i].startswith('-'):
-      print("Usage: make_devkit.py --outdir <outdir> --version [--clean] [--maketag [--nopushtag] ] [--gn] [--nomap]")
+      print("Usage: make_devkit.py --outdir <outdir> --version [--clean] [--maketag [--nopushtag] ] [--gn] [--nomap] [--x64]")
       return 1
 
   if not outDir:
@@ -325,6 +328,17 @@ def main(args):
       if rc != 0:
         return rc
 
+      if doMakeX64:
+        print("Building 64-bit Release with static CRT...")
+        sys.stdout.flush()
+        rc = bbutil.shellExecNoPipe('python build/blpwtk2.py static release static_crt x64 --bb_version')
+        if rc != 0:
+          return rc
+
+        rc = bbutil.shellExecNoPipe('ninja.exe -C out/static_release64 blpwtk2_all')
+        if rc != 0:
+          return rc
+
     if doMakeDynamicCRT:
       print("Building Release with dynamic CRT...")
       sys.stdout.flush()
@@ -335,6 +349,17 @@ def main(args):
       rc = bbutil.shellExecNoPipe('ninja.exe -C out/static_release_md blpwtk2_all')
       if rc != 0:
         return rc
+
+      if doMakeX64:
+        print("Building 64-bit Release with dynamic CRT...")
+        sys.stdout.flush()
+        rc = bbutil.shellExecNoPipe('python build/blpwtk2.py static release dynamic_crt x64 --bb_version')
+        if rc != 0:
+          return rc
+
+        rc = bbutil.shellExecNoPipe('ninja.exe -C out/static_release64_md blpwtk2_all')
+        if rc != 0:
+          return rc
 
   os.chdir("..")
 
@@ -354,11 +379,23 @@ def main(args):
       os.mkdir(os.path.join(destDir, 'bin', 'release', swiftFolderName))
       configs.append('release')
 
+      if doMakeX64:
+        os.mkdir(os.path.join(destDir, 'bin', 'release64'))
+        os.mkdir(os.path.join(destDir, 'lib', 'release64'))
+        os.mkdir(os.path.join(destDir, 'bin', 'release64', swiftFolderName))
+        configs.append('release64')
+
     if doMakeDynamicCRT:
       os.mkdir(os.path.join(destDir, 'bin', 'release_md'))
       os.mkdir(os.path.join(destDir, 'lib', 'release_md'))
       os.mkdir(os.path.join(destDir, 'bin', 'release_md', swiftFolderName))
       configs.append('release_md')
+
+      if doMakeX64:
+        os.mkdir(os.path.join(destDir, 'bin', 'release64_md'))
+        os.mkdir(os.path.join(destDir, 'lib', 'release64_md'))
+        os.mkdir(os.path.join(destDir, 'bin', 'release64_md', swiftFolderName))
+        configs.append('release64_md')
 
   if doGenerateMap:
     generateMsvsMapFiles(version, configs)
