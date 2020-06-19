@@ -44,6 +44,11 @@ struct ToolkitCreateParamsImpl;
 // functionality at the toolkit level.
 class BLPWTK2_EXPORT ToolkitDelegate {
   public:
+    virtual bool onPreHandleMessage(unsigned window,
+                                    unsigned message,
+                                    unsigned w_param,
+                                    long l_param,
+                                    LONG_PTR *result) = 0;
 
 
 
