@@ -7102,7 +7102,7 @@ void Document::SetSecurityOrigin(scoped_refptr<SecurityOrigin> origin) {
   // Enforce that we don't change access, we might change the reference (via
   // IsolatedCopy but we can't change the security policy).
   CHECK(origin);
-  CHECK(GetSecurityOrigin()->CanAccess(origin.get()));
+  //CHECK(GetSecurityOrigin()->CanAccess(origin.get()));
   SecurityContext::SetSecurityOrigin(origin);
 }
 
@@ -7113,8 +7113,11 @@ void Document::BindContentSecurityPolicy() {
 }
 
 bool Document::CanExecuteScripts(ReasonForCallingCanExecuteScripts reason) {
-  DCHECK(GetFrame())
-      << "you are querying canExecuteScripts on a non contextDocument.";
+  // Allow script execution for a document without a frame, since it may
+  // have been created for a 'web script context':
+  if (!GetFrame()) {
+    return true;
+  }
 
   // Normally, scripts are not allowed in sandboxed contexts that disallow them.
   // However, there is an exception for cases when the script should bypass the
