@@ -250,7 +250,11 @@ namespace v8 {
 
 // blpwtk2: Prevent the linker from stripping out these symbols from the
 // shared library export table in Release builds.
+#ifdef _WIN64
+#pragma comment(linker, "/include:?CreateTraceBufferRingBuffer@TraceBuffer@tracing@platform@v8@@SAPEAV1234@_KPEAVTraceWriter@234@@Z")
+#else
 #pragma comment(linker, "/include:?CreateTraceBufferRingBuffer@TraceBuffer@tracing@platform@v8@@SAPAV1234@IPAVTraceWriter@234@@Z")
+#endif
 
 namespace {
 
@@ -10812,9 +10816,9 @@ void EmbedderHeapTracer::ResetHandleInNonTracingGC(
   UNREACHABLE();
 }
 
-int ConvertableToTraceFormatShim::AppendAsTraceFormat(char* out, int maxSize) const {
+size_t ConvertableToTraceFormatShim::AppendAsTraceFormat(char* out, size_t maxSize) const {
   const char* trace = GetToBeAppendedTraceFormat();
-  int len = strlen(trace);
+  size_t len = strlen(trace);
   if (out) {
     if (len && maxSize > 1) {
       len = len > maxSize-1 ? maxSize-1 : len;

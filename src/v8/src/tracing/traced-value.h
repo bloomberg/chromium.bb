@@ -52,7 +52,7 @@ class V8_EXPORT_PRIVATE TracedValue : public ConvertableToTraceFormat {
   void BeginDictionary();
 
   // ConvertableToTraceFormat implementation.
-  int AppendAsTraceFormat(char* out, int maxLen) const override;
+  size_t AppendAsTraceFormat(char* out, size_t maxLen) const override;
 
  private:
   TracedValue();

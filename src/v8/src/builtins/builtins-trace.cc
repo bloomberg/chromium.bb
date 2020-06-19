@@ -80,8 +80,8 @@ class JsonTraceValue : public ConvertableToTraceFormat {
     data_ = *data;
   }
 
-  int AppendAsTraceFormat(char* out, int maxSize) const override {
-    int len = data_.size();
+  size_t AppendAsTraceFormat(char* out, size_t maxSize) const override {
+    size_t len = data_.size();
     if (out) {
       if(len && maxSize > 1) {
         len = len > maxSize-1 ? maxSize-1 : len;
