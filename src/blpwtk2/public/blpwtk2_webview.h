@@ -158,6 +158,37 @@ class WebView
         // Execute a custom context menu action provided by blink.  An example
         // of such custom action is the selection of a spellcheck suggestion.
 
+    virtual void enableAltDragRubberbanding(bool enabled) = 0;
+        // If set the 'true', rubberbanding will be enabled via Alt+Mousedrag.
+        // This allows users to draw a rectangle within this WebView to copy
+        // text to the clipboard.
+
+    virtual bool forceStartRubberbanding(int x, int y) = 0;
+        // Begin rubberbanding, regardless of the state of the mouse/alt key.
+        // This method will internally invoke 'preStartRubberbanding' and, on
+        // success, 'startRubberBanding'.  Rubberbanding will begin at the
+        // specified 'x' and 'y' in WebView client coordinates. Returns
+        // 'true' if rubberbanding began or was already in progress, and
+        // 'false' otherwise. The behavior is undefined if the mouse is not
+        // currently down when this function is called.
+
+    virtual bool isRubberbanding() const = 0;
+        // Returns true if a rubberband is in progress.
+
+    virtual void abortRubberbanding() = 0;
+        // Abort rubberbanding.  Also, dispatch a "rubberbandaborted" event
+        // from the main document.  The behavior is undefined if
+        // 'isRubberbanding()' returns false.  Note that after this method
+        // returns, 'isRubberbanding()' will return false.
+
+    virtual String getTextInRubberband(const NativeRect&) = 0;
+        // Get the text in the specified rectangle (in WebView client
+        // coordinates), without actually starting and finishing a
+        // rubberband.  The behavior is undefined if 'isRubberbanding()'
+        // returns true.  Note that after this method returns,
+        // 'isRubberbanding()' will remain false.  Also note that the
+        // rubberband events will not be dispatched.
+
     virtual void find(const StringRef& text,
                       bool             matchCase,
                       bool             forward = true) = 0;
