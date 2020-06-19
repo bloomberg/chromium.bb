@@ -507,7 +507,7 @@ void RenderViewImpl::Initialize(
     undead_render_widget_ = RenderWidget::CreateForFrame(
         params->main_frame_widget_routing_id, compositor_deps,
         params->visual_properties.display_mode,
-        /*is_undead=*/true, params->never_visible);
+        /*is_undead=*/true, params->never_visible, params->view_id);
     undead_render_widget_->set_delegate(this);
     // We intentionally pass in a null webwidget since it is not needed
     // for remote frames, and we don't have one or a ScreenInfo until we have
