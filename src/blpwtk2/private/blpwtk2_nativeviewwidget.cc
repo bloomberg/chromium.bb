@@ -203,7 +203,7 @@ bool NativeViewWidget::OnPreHandleMessage(unsigned window,
                                           unsigned message,
                                           unsigned w_param,
                                           long l_param,
-                                          long *result)
+                                          LONG_PTR *result)
 {
     if (d_delegate)
         return d_delegate->OnPreHandleMessage(window,

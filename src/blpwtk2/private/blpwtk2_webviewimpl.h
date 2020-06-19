@@ -112,7 +112,7 @@ class WebViewImpl final : public WebView,
                             unsigned message,
                             unsigned w_param,
                             long l_param,
-                            long *result) override;
+                            LONG_PTR *result) override;
     aura::Window* GetDefaultActivationWindow() override;
 
     // content::WebContentsDelegate overrides
@@ -263,4 +263,3 @@ class WebViewImpl final : public WebView,
 #endif  // INCLUDED_BLPWTK2_WEBVIEWIMPL_H
 
 // vim: ts=4 et
-

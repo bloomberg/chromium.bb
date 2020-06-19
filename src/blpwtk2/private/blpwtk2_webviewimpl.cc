@@ -362,7 +362,7 @@ void WebViewImpl::loadInspector(unsigned int pid, int routingId)
                                                      inspectedContents));
 
             GURL url = GetDevToolsFrontendURL();
-            loadUrl(url.spec());           
+            loadUrl(url.spec());
             LOG(INFO) << "Loaded devtools for routing id: " << routingId;
             return;
         }
@@ -410,7 +410,7 @@ int WebViewImpl::reload()
     DCHECK(!d_wasDestroyed);
 
     // TODO: do we want to make this an argument
-    const bool checkForRepost = false; 
+    const bool checkForRepost = false;
 
     d_webContents->GetController().Reload(content::ReloadType::NORMAL, checkForRepost);
     return 0;
@@ -817,7 +817,7 @@ bool WebViewImpl::OnPreHandleMessage(unsigned window,
                                      unsigned message,
                                      unsigned w_param,
                                      long l_param,
-                                     long *result)
+                                     LONG_PTR *result)
 {
     if (!d_properties.messageInterceptionEnabled)
         return false;
@@ -937,4 +937,3 @@ void WebViewImpl::DidFailLoad(content::RenderFrameHost *render_frame_host,
 }  // close namespace blpwtk2
 
 // vim: ts=4 et
-
