@@ -30,6 +30,7 @@
 #include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/compositor/compositor_animation_observer.h"
 #include "ui/compositor/compositor_export.h"
+#include "ui/compositor/compositor_gpu_observer.h"
 #include "ui/compositor/compositor_lock.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/layer_animator_collection.h"
@@ -337,6 +338,9 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   // mode to use for resources, but may be used eg for tooltip windows.
   bool force_software_compositor() { return force_software_compositor_; }
 
+
+  bool caught_fatal_gpu_error() { return caught_fatal_gpu_error_; }
+
   // Returns the main thread task runner this compositor uses. Users of the
   // compositor generally shouldn't use this.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() const {
@@ -352,6 +356,10 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   void AddAnimationObserver(CompositorAnimationObserver* observer);
   void RemoveAnimationObserver(CompositorAnimationObserver* observer);
   bool HasAnimationObserver(const CompositorAnimationObserver* observer) const;
+
+  void AddGpuObserver(CompositorGpuObserver* observer);
+  void RemoveGpuObserver(CompositorGpuObserver* observer);
+  bool HasGpuObserver(const CompositorGpuObserver* observer) const;
 
   // Creates a compositor lock. Returns NULL if it is not possible to lock at
   // this time (i.e. we're waiting to complete a previous unlock). If the
@@ -407,6 +415,9 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override {}
   std::unique_ptr<cc::BeginMainFrameMetrics> GetBeginMainFrameMetrics()
       override;
+
+  // gpu command buffer callback
+  void OnGpuContextErrorMessage(const char* message, int32_t id);
 
   // cc::LayerTreeHostSingleThreadClient implementation.
   void DidSubmitCompositorFrame() override;
@@ -465,6 +476,7 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   base::ObserverList<CompositorObserver, true>::Unchecked observer_list_;
   base::ObserverList<CompositorAnimationObserver>::Unchecked
       animation_observer_list_;
+  base::ObserverList<CompositorGpuObserver>::Unchecked gpu_observer_list_;
 
   gfx::AcceleratedWidget widget_ = gfx::kNullAcceleratedWidget;
   // A sequence number of a current compositor frame for use with metrics.
@@ -491,6 +503,7 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
 
   const bool use_external_begin_frame_control_;
   const bool force_software_compositor_;
+  bool caught_fatal_gpu_error_ = false;
 
   // The device scale factor of the monitor that this compositor is compositing
   // layers on.
