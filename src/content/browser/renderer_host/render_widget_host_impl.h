@@ -897,6 +897,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnUnlockMouse();
   void OnSelectionBoundsChanged(
       const WidgetHostMsg_SelectionBounds_Params& params);
+  void OnSetRubberbandRect(const gfx::Rect& rect);
+  void OnHideRubberbandRect();
   void OnSetNeedsBeginFrames(bool needs_begin_frames);
   void OnStartDragging(const DropData& drop_data,
                        blink::WebDragOperationsMask operations_allowed,
