@@ -154,7 +154,7 @@ void PrintingMessageFilter::OnGetDefaultPrintSettings(IPC::Message* reply_msg) {
   auto* printer_query_ptr = printer_query.get();
   printer_query_ptr->GetSettings(
       PrinterQuery::GetSettingsAskParam::DEFAULTS, 0, false, DEFAULT_MARGINS,
-      false, false,
+      0, false, false,
       base::BindOnce(&PrintingMessageFilter::OnGetDefaultPrintSettingsReply,
                      this, std::move(printer_query), reply_msg));
 }
@@ -198,7 +198,7 @@ void PrintingMessageFilter::OnScriptedPrint(
   auto* printer_query_ptr = printer_query.get();
   printer_query_ptr->GetSettings(
       PrinterQuery::GetSettingsAskParam::ASK_USER, params.expected_pages_count,
-      params.has_selection, params.margin_type, params.is_scripted,
+      params.has_selection, params.margin_type, params.owner_wnd, params.is_scripted,
       params.is_modifiable,
       base::BindOnce(&PrintingMessageFilter::OnScriptedPrintReply, this,
                      std::move(printer_query), reply_msg));
