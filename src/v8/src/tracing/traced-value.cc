@@ -110,7 +110,7 @@ void TracedValue::SetString(const char* name, const char* value) {
 void TracedValue::SetValue(const char* name, TracedValue* value) {
   DCHECK_CURRENT_CONTAINER_IS(kStackTypeDict);
   WriteName(name);
-  int size = value->AppendAsTraceFormat(nullptr, 0);
+  size_t size = value->AppendAsTraceFormat(nullptr, 0);
   if (size) {
     std::unique_ptr<char[]> buf(new char[size]);
     value->AppendAsTraceFormat(buf.get(), size);
@@ -204,8 +204,8 @@ void TracedValue::WriteName(const char* name) {
   data_ += "\":";
 }
 
-int TracedValue::AppendAsTraceFormat(char* out, int maxSize) const {
-  int len = 2 + data_.size();
+size_t TracedValue::AppendAsTraceFormat(char* out, size_t maxSize) const {
+  size_t len = 2 + data_.size();
   if (out) {
     if (len > 2 && maxSize > 3) {
       len = len > maxSize-1 ? maxSize-1 : len;
