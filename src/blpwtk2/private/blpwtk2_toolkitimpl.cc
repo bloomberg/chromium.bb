@@ -630,6 +630,11 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
 
         d_isolateHolder.reset(new gin::IsolateHolder(taskRunner, gin::IsolateHolder::IsolateType::kBlinkMainThread));
         d_isolateHolder->isolate()->Enter();
+
+#if defined(BLPWTK2_FEATURE_MULTIHEAPTRACER)
+        d_multiHeapTracerForBrowserV8.reset(new gin::MultiHeapTracer());
+        d_isolateHolder->isolate()->SetEmbedderHeapTracer(d_multiHeapTracerForBrowserV8.get());
+#endif
     }
 
     ui::InitializeInputMethod();
