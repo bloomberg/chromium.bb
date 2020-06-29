@@ -62,6 +62,10 @@ class ContentMainRunner;
 
 namespace gin {
 class IsolateHolder;
+
+#if defined(BLPWTK2_FEATURE_MULTIHEAPTRACER)
+class MultiHeapTracer;
+#endif
 }  // close namespace gin
 
 namespace blpwtk2 {
@@ -111,6 +115,12 @@ class ToolkitImpl : public Toolkit {
     std::unique_ptr<gin::IsolateHolder> d_isolateHolder;
         // Only used for ORIGINAL thread mode and when the toolkit is created with
         // browserV8Enabled flag
+
+#if defined(BLPWTK2_FEATURE_MULTIHEAPTRACER)
+    std::unique_ptr<gin::MultiHeapTracer> d_multiHeapTracerForBrowserV8;
+        // Only used for ORIGINAL thread mode and when the toolkit is created with
+        // browserV8Enabled flag
+#endif
 
 
     // patch section: gpu
