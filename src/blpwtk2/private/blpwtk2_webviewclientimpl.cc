@@ -184,7 +184,7 @@ void WebViewClientImpl::setParent(NativeView parent)
 void WebViewClientImpl::takeKeyboardFocus()
 {
     LOG(INFO) << "takeKeyboardFocus";
-    if (d_nativeView) {
+    if (d_nativeView && !Statics::isNativeViewManipulationAsync) {
         ::SetFocus(d_nativeView);
     }
     else {
