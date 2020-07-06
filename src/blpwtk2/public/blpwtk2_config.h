@@ -49,6 +49,7 @@
 // feature 5
 // feature 6
 // feature 7
+#define BLPWTK2_FEATURE_PERFORMANCETIMING
 // feature 8
 // feature 9
 // feature 10
