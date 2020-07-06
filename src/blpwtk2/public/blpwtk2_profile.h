@@ -141,6 +141,8 @@ class Profile
 
 
     // patch section: printing
+    virtual void setDefaultPrinter(const StringRef& name) = 0;
+        // Sets the printer to use by default
 
 
     // patch section: diagnostics
