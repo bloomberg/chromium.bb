@@ -98,6 +98,7 @@ Toolkit* ToolkitFactory::create(const ToolkitCreateParams& params)
     Statics::isInProcessRendererEnabled = params.isInProcessRendererEnabled();
     Statics::channelErrorHandler = params.channelErrorHandler();
     Statics::inProcessResizeOptimizationDisabled = params.isInProcessResizeOptimizationDisabled();
+    Statics::isNativeViewManipulationAsync = params.isNativeViewManipulationAsync();
     Statics::toolkitDelegate = params.delegate();
     Statics::isRendererIOThreadEnabled = params.isRendererIOThreadEnabled();
 
