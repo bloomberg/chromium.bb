@@ -86,6 +86,11 @@ struct Statics {
     // in-process renderer should be enabled.
     static bool inProcessResizeOptimizationDisabled;
 
+    // If `true`, then, `WebViewProxy` will only use mojo messages to manipulate
+    // the browser-side HWND; if `false`, then, `WebViewProxy` will use
+    // Win32 APIs after the HWND has been communicated by the browser.
+    static bool isNativeViewManipulationAsync;
+
     // Whether or not the renderer uses a worker thread to issue waits for
     // sync IPC calls.
     static bool isRendererIOThreadEnabled;
