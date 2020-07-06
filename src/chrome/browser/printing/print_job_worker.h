@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
+#include "printing/buildflags/buildflags.h"
 #include "printing/page_number.h"
 #include "printing/print_job_constants.h"
 #include "printing/printing_context.h"
@@ -136,8 +137,10 @@ class PrintJobWorker {
                          bool is_scripted,
                          SettingsCallback callback);
 
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   // Called on the UI thread to update the print settings.
   void UpdatePrintSettings(base::Value new_settings, SettingsCallback callback);
+#endif
 
 #if defined(OS_CHROMEOS)
   // Called on the UI thread to update the print settings.
