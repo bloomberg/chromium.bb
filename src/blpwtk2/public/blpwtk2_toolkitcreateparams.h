@@ -248,6 +248,12 @@ class ToolkitCreateParams
         // rendering artifacts when the WebView is hosted in a deeply-nested
         // window hierarchy).
 
+    BLPWTK2_EXPORT void setNativeViewManipulationAsync(bool);
+        // Sets whether or not the renderer-side `WebViewProxy` uses mojo
+        // messages to manipulate the webview HWND asynchronously, or
+        // Win32 function calls to manipulate the webview HWND synchronously
+        // (which is normally forbidden by Chromium's sandbox).
+
     BLPWTK2_EXPORT void setProfileDirectory(const StringRef& profileDir);
         // Binds the toolkit to a specific browser context.  The browser
         // groups RenderProcesses based on the profile directory and each
@@ -307,6 +313,7 @@ class ToolkitCreateParams
     bool isPrintBackgroundGraphicsEnabled() const;
     StringRef subProcessModule() const;
     bool isInProcessResizeOptimizationDisabled() const;
+    bool isNativeViewManipulationAsync() const;
     StringRef profileDirectory() const;
     bool isIsolatedProfile() const;
     bool isRendererIOThreadEnabled() const;

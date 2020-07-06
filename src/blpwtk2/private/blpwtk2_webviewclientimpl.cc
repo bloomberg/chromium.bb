@@ -23,6 +23,7 @@
 #include <blpwtk2_webviewclientimpl.h>
 #include <blpwtk2_webviewclientdelegate.h>
 
+#include <blpwtk2_statics.h>
 #include <blpwtk2_string.h>
 #include <blpwtk2_webviewimpl.h>
 #include <blpwtk2_contextmenuparams.h>
@@ -55,7 +56,7 @@ WebViewClientImpl::~WebViewClientImpl()
 // blpwtk2::WebViewClient overrides
 void WebViewClientImpl::releaseHost()
 {
-    if (d_nativeView) {
+    if (d_nativeView && !Statics::isNativeViewManipulationAsync) {
         ::SetParent(d_nativeView, d_originalParentView);
     }
 
@@ -165,7 +166,7 @@ void WebViewClientImpl::setParent(NativeView parent)
 {
     LOG(INFO) << "setParent=" << (void*)parent;
 
-    if (d_nativeView) {
+    if (d_nativeView && !Statics::isNativeViewManipulationAsync) {
         NativeView parentView = parent ? parent : d_originalParentView;
         int status = 0;
         if (!::SetParent(d_nativeView, parentView)) {

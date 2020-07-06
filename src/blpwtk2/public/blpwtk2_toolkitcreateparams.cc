@@ -69,6 +69,7 @@ struct ToolkitCreateParamsImpl final
     bool d_isIsolatedProfile;
     ToolkitDelegate* d_delegate;
     bool d_rendererIOThreadEnabled;
+    bool d_isNativeViewManipulationAsync;
 
 
 
@@ -109,7 +110,7 @@ ToolkitCreateParamsImpl::ToolkitCreateParamsImpl()
     , d_isIsolatedProfile(true)
     , d_delegate(nullptr)
     , d_rendererIOThreadEnabled(false)
-
+    , d_isNativeViewManipulationAsync(false)
 
 
     // patch section: embedder ipc
@@ -307,6 +308,11 @@ void ToolkitCreateParams::enableRendererIOThread()
     d_impl->d_rendererIOThreadEnabled = true;
 }
 
+void ToolkitCreateParams::setNativeViewManipulationAsync(bool isNativeViewManipulationAsync)
+{
+    d_impl->d_isNativeViewManipulationAsync = isNativeViewManipulationAsync;
+}
+
 
 
 // patch section: embedder ipc
@@ -463,6 +469,11 @@ StringRef ToolkitCreateParams::subProcessModule() const
 bool ToolkitCreateParams::isInProcessResizeOptimizationDisabled() const
 {
     return d_impl->d_inProcessResizeOptimizationDisabled;
+}
+
+bool ToolkitCreateParams::isNativeViewManipulationAsync() const
+{
+    return d_impl->d_isNativeViewManipulationAsync;
 }
 
 StringRef ToolkitCreateParams::profileDirectory() const

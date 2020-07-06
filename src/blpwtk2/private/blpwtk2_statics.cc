@@ -37,6 +37,7 @@ ToolkitCreateParams::ChannelErrorHandler Statics::channelErrorHandler = 0;
 bool Statics::hasDevTools = false;
 bool Statics::isInProcessRendererEnabled = true;
 bool Statics::inProcessResizeOptimizationDisabled = false;
+bool Statics::isNativeViewManipulationAsync = false;
 bool Statics::isRendererIOThreadEnabled = false;
 WebViewHostObserver* Statics::webViewHostObserver = 0;
 ToolkitDelegate *Statics::toolkitDelegate = nullptr;
