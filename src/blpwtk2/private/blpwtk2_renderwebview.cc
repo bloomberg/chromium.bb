@@ -357,6 +357,26 @@ LRESULT RenderWebView::windowProcedure(UINT   uMsg,
             d_delegate->requestNCHitTest(this);
             return d_ncHitTestResult;
         }
+        if (d_ncHitTestRegion) {
+            POINT point = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+
+            // If the point is not in the window, then, return `HTNOWHERE`:
+            RECT rect;
+            ::GetWindowRect(d_hwnd.get(), &rect);
+            if (!::PtInRect(&rect, point)) {
+                return HTNOWHERE;
+            }
+
+            // If the point is in the hit-test region, then, return `HTTRANSPARENT`,
+            // delegating to the parent window:
+            ::ScreenToClient(d_hwnd.get(), &point);
+            if (::PtInRegion(d_ncHitTestRegion, point.x, point.y)) {
+                return HTTRANSPARENT;
+            }
+
+            // Return `HTCLIENT` otherwise:
+            return HTCLIENT;
+        }
     } break;
     case WM_MOUSEMOVE:
     case WM_MOUSELEAVE:
@@ -1285,6 +1305,12 @@ void RenderWebView::onNCHitTestResult(int x, int y, int result)
     d_ncHitTestResult = result;
 }
 
+void RenderWebView::setNCHitTestRegion(NativeRegion region)
+{
+    DCHECK(Statics::isInApplicationMainThread());
+    d_ncHitTestRegion = region;
+}
+
 void RenderWebView::performCustomContextMenuAction(int actionId)
 {
     d_proxy->performCustomContextMenuAction(actionId);
@@ -1369,6 +1395,9 @@ void RenderWebView::setBackgroundColor(NativeColor color)
 void RenderWebView::setRegion(NativeRegion region)
 {
     DCHECK(Statics::isInApplicationMainThread());
+    ::SetWindowRgn(d_hwnd.get(),
+                   region,
+                   ::IsWindowVisible(d_hwnd.get()));
 }
 
 #if defined(BLPWTK2_FEATURE_KEYBOARD_LAYOUT)
