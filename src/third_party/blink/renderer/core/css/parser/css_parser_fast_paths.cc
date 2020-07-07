@@ -941,6 +941,9 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
     case CSSPropertyID::kUserSelect:
       return value_id == CSSValueID::kAuto || value_id == CSSValueID::kNone ||
              value_id == CSSValueID::kText || value_id == CSSValueID::kAll;
+    case CSSPropertyID::kRubberbandable: // auto | none | text | text-with-tab
+      return value_id == CSSValueID::kAuto || value_id == CSSValueID::kNone ||
+             value_id == CSSValueID::kText || value_id == CSSValueID::kTextWithTab;
     case CSSPropertyID::kWebkitWritingMode:
       return value_id >= CSSValueID::kHorizontalTb &&
              value_id <= CSSValueID::kVerticalLr;
@@ -1088,6 +1091,7 @@ bool CSSParserFastPaths::IsKeywordPropertyID(CSSPropertyID property_id) {
     case CSSPropertyID::kWordBreak:
     case CSSPropertyID::kWritingMode:
     case CSSPropertyID::kScrollSnapStop:
+    case CSSPropertyID::kRubberbandable:
       return true;
     default:
       return false;
