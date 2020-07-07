@@ -57,7 +57,8 @@ class CONTENT_EXPORT LayerTreeView : public cc::LayerTreeHostClient,
   // The |ukm_recorder_factory| may be null to disable recording (in tests
   // only).
   void Initialize(const cc::LayerTreeSettings& settings,
-                  std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory);
+                  std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
+                  int routing_id);
 
   // Drops any references back to the delegate in preparation for being
   // destroyed.
