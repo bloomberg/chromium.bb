@@ -189,7 +189,7 @@ views::View* NativeViewWidget::GetContentsView()
 bool NativeViewWidget::OnNCHitTest(int* result, const gfx::Point& point)
 {
     if (d_delegate)
-        return d_delegate->OnNCHitTest(result);
+        return d_delegate->OnNCHitTest(result, point);
     return false;
 }
 
