@@ -47,6 +47,7 @@ WebViewCreateParams::WebViewCreateParams()
     d_impl->domPasteEnabled = false;
     d_impl->javascriptCanAccessClipboard = false;
     d_impl->rerouteMouseWheelToAnyRelatedWindow = false;
+    d_impl->messageInterceptionEnabled = false;
     d_impl->processId = 0;
 }
 
@@ -81,6 +82,11 @@ void WebViewCreateParams::setRerouteMouseWheelToAnyRelatedWindow(bool rerouteMou
     d_impl->rerouteMouseWheelToAnyRelatedWindow = rerouteMouseWheelToAnyRelatedWindow;
 }
 
+void WebViewCreateParams::setMessageInterceptionEnabled(bool enable)
+{
+    d_impl->messageInterceptionEnabled = enable;
+}
+
 bool WebViewCreateParams::domPasteEnabled() const
 {
     return d_impl->domPasteEnabled;
@@ -101,6 +107,10 @@ bool WebViewCreateParams::rerouteMouseWheelToAnyRelatedWindow() const
     return d_impl->rerouteMouseWheelToAnyRelatedWindow;
 }
 
+bool WebViewCreateParams::messageInterceptionEnabled() const
+{
+    return d_impl->messageInterceptionEnabled;
+}
 
 }  // close namespace blpwtk2
 
