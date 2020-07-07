@@ -17,6 +17,10 @@ namespace content {
 // delegate in order to transport emulation information across processes.
 class CONTENT_EXPORT RenderWidgetScreenMetricsEmulatorDelegate {
  public:
+
+  // Requests a full redraw of the contents of the renderer.
+  virtual void Redraw() = 0;
+
   // Passes device emulation parameters to the delegate.
   virtual void SetScreenMetricsEmulationParameters(
       bool enabled,
