@@ -182,6 +182,10 @@ class PRINTING_EXPORT PrintBackend
       const base::DictionaryValue* print_backend_settings,
       const std::string& locale);
 
+  static void SetUserDefaultPrinterName(std::string printerName);
+
+  const std::string& GetUserDefaultPrinterName();
+
   // Test method to override the print backend for testing.  Caller should
   // retain ownership.
   static void SetPrintBackendForTesting(PrintBackend* print_backend);
