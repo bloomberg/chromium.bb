@@ -154,6 +154,13 @@ class WebView
         // should only be called in response to 'requestNCHitTest' on the
         // delegate.
 
+    virtual void setNCHitTestRegion(NativeRegion region) = 0;
+        // Sets the region used for non-client hit testing; hit testing within
+        // this region will be delegated to the embedding window.
+        //
+        // This region will not be used in hit-testing if `enableNCHitTest()`
+        // was previously called to enable hit-testing by the WebViewDelegate.
+
     virtual void performCustomContextMenuAction(int actionId) = 0;
         // Execute a custom context menu action provided by blink.  An example
         // of such custom action is the selection of a spellcheck suggestion.

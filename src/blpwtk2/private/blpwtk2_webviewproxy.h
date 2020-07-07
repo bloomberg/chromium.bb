@@ -78,6 +78,7 @@ class WebViewProxy final : public WebView
     void deleteSelection() override;
     void enableNCHitTest(bool enabled) override;
     void onNCHitTestResult(int x, int y, int result) override;
+    void setNCHitTestRegion(NativeRegion region) override;
     void performCustomContextMenuAction(int actionId) override;
     void find(const StringRef& text, bool matchCase, bool forward) override;
     void stopFind(bool preserveSelection) override;

@@ -137,6 +137,8 @@ class WebViewHostImpl final : private WebViewImplClient
     void copySelection() override;
     void paste() override;
     void deleteSelection() override;
+    void applyNCHitTestRegion(const std::string&           blob,
+                              applyNCHitTestRegionCallback callback) override;
     void enableNCHitTest(bool enabled) override;
 
     void find(int                reqId,

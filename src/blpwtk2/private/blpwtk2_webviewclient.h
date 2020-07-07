@@ -74,6 +74,9 @@ class WebViewClient
 
     virtual void ncHitTestResult(int x, int y, int result) = 0;
 
+    virtual void applyNCHitTestRegion(NativeRegion region) = 0;
+        // Set the window-region used for non-client hit testing in the webview.
+
     virtual void setParent(NativeView parent) = 0;
 
     virtual void find(const std::string& text,
