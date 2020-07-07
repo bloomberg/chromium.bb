@@ -29,6 +29,10 @@ namespace aura {
 class Window;
 }
 
+namespace gfx {
+class Point;
+}
+
 namespace blpwtk2 {
 
 class NativeViewWidget;
@@ -44,7 +48,7 @@ class NativeViewWidgetDelegate {
     // Return true if an NC hit test result was set.  Returning false means the
     // default NC hit test behavior should be performed.  The hit test should be
     // performed using the most recent mouse coordinates.
-    virtual bool OnNCHitTest(int* result) = 0;
+    virtual bool OnNCHitTest(int* result, const gfx::Point& screen_point) = 0;
 
     // Called when the user starts dragging in a non-client region.  Return true
     // if the delegate will handle the non-client drag, in which case,

@@ -311,6 +311,15 @@ void WebViewProxy::onNCHitTestResult(int x, int y, int result)
     d_client->ncHitTestResult(x, y, result);
 }
 
+void WebViewProxy::setNCHitTestRegion(NativeRegion region)
+{
+    DCHECK(Statics::isInApplicationMainThread());
+    if (!validateClient()) {
+        return;
+    }
+    d_client->applyNCHitTestRegion(region);
+}
+
 void WebViewProxy::performCustomContextMenuAction(int actionId)
 {
     DCHECK(Statics::isInApplicationMainThread());

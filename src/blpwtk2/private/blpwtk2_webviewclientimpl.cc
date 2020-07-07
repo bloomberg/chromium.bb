@@ -153,6 +153,23 @@ void WebViewClientImpl::ncHitTestResult(int x, int y, int result)
     }
 }
 
+void WebViewClientImpl::applyNCHitTestRegion(NativeRegion region)
+{
+    // Blobify the region:
+    std::string regionBlob;
+
+    if (region) {
+        DWORD blobSize = ::GetRegionData(region, 0, nullptr);
+        regionBlob.resize(blobSize);
+        char *addr = const_cast<char*>(regionBlob.data());
+        ::GetRegionData(region, blobSize, reinterpret_cast<LPRGNDATA>(addr));
+    }
+
+    DCHECK(d_hostPtr);
+    d_hostPtr->applyNCHitTestRegion(regionBlob,
+                                    base::Bind(&deleteRegion, region));
+}
+
 void WebViewClientImpl::setParentStatusUpdate(int status, unsigned int parent)
 {
     DCHECK(d_delegate);
