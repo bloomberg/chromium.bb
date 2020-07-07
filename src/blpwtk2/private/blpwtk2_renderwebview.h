@@ -126,6 +126,7 @@ class RenderWebView final : public WebView
     gfx::Point d_unlockedMouseScreenPosition, d_unlockedMouseWebViewPosition;
     bool d_ncHitTestEnabled = false;
     int d_ncHitTestResult = 0;
+    HRGN d_ncHitTestRegion = NULL;
     bool d_mousePressed = false;
     bool d_mouseEntered = false, d_mouseLocked = false;
 
@@ -205,6 +206,7 @@ class RenderWebView final : public WebView
     void deleteSelection() override;
     void enableNCHitTest(bool enabled) override;
     void onNCHitTestResult(int x, int y, int result) override;
+    void setNCHitTestRegion(NativeRegion region) override;
     void performCustomContextMenuAction(int actionId) override;
 #if defined(BLPWTK2_FEATURE_RUBBERBAND)
     void enableAltDragRubberbanding(bool enabled) override;
