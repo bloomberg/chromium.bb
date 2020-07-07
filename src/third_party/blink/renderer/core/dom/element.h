@@ -352,6 +352,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
 
   // patch section: spellcheck
+  void bbRequestSpellCheck();
 
 
 
