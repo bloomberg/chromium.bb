@@ -112,6 +112,10 @@ interface WebViewHost {
     deleteSelection();
         // Wipe the current selection.
 
+    applyNCHitTestRegion(string blob) => ();
+        // Use region data to set the non-client hit testing region on the webview.
+        // This region data can be created by using the GetRegionData() function from gdi32.dll.
+
     enableNCHitTest(bool enabled);
         // Enable/Disable non-client hit-testing.
 

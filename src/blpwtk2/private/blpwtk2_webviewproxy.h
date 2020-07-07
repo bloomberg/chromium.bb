@@ -82,6 +82,7 @@ class WebViewProxy final : public WebView
     void deleteSelection() override;
     void enableNCHitTest(bool enabled) override;
     void onNCHitTestResult(int x, int y, int result) override;
+    void setNCHitTestRegion(NativeRegion region) override;
     void performCustomContextMenuAction(int actionId) override;
 
     // Begin Rubber Banding

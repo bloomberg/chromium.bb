@@ -638,6 +638,12 @@ void WebViewImpl::onNCHitTestResult(int x, int y, int result)
     }
 }
 
+void WebViewImpl::setNCHitTestRegion(NativeRegion region)
+{
+    DCHECK(Statics::isInBrowserMainThread());
+    d_ncHitTestRegion = region;
+}
+
 void WebViewImpl::performCustomContextMenuAction(int actionId)
 {
     DCHECK(Statics::isInBrowserMainThread());
@@ -873,7 +879,7 @@ bool WebViewImpl::CheckMediaAccessPermission(content::RenderFrameHost*,
     return true;
 }
 
-bool WebViewImpl::OnNCHitTest(int *result)
+bool WebViewImpl::OnNCHitTest(int *result, const gfx::Point& screen_point)
 {
     if (d_ncHitTestEnabled && d_delegate) {
         if (!d_ncHitTestPendingAck) {
@@ -897,6 +903,31 @@ bool WebViewImpl::OnNCHitTest(int *result)
             *result = d_lastNCHitTestResult;
         }
 
+        return true;
+    }
+    if (d_ncHitTestRegion) {
+        blpwtk2::NativeView hwnd = d_widget->getNativeWidgetView();
+
+        POINT point = screen_point.ToPOINT();
+
+        // If the point is not in the window, then, return `HTNOWHERE`:
+        RECT rect;
+        ::GetWindowRect(hwnd, &rect);
+        if (!::PtInRect(&rect, point)) {
+            *result = HTNOWHERE;
+            return true;
+        }
+
+        // If the point is in the hit-test region, then, return `HTTRANSPARENT`,
+        // delegating to the parent window:
+        ::ScreenToClient(hwnd, &point);
+        if (::PtInRegion(d_ncHitTestRegion, point.x, point.y)) {
+            *result = HTTRANSPARENT;
+            return true;
+        }
+
+        // Return `HTCLIENT` otherwise:
+        *result = HTCLIENT;
         return true;
     }
     return false;

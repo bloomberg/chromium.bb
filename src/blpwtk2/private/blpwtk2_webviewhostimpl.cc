@@ -507,6 +507,23 @@ void WebViewHostImpl::deleteSelection()
     d_impl->deleteSelection();
 }
 
+void WebViewHostImpl::applyNCHitTestRegion(const std::string&           blob,
+                                           applyNCHitTestRegionCallback callback)
+{
+    HRGN region = 0;
+
+    if (blob.size() > 0) {
+        region = ::ExtCreateRegion(
+                nullptr,
+                blob.size(),
+                reinterpret_cast<const RGNDATA* >(blob.data()));
+        DCHECK(region);
+    }
+
+    d_impl->setNCHitTestRegion(region);
+    std::move(callback).Run();
+}
+
 void WebViewHostImpl::enableNCHitTest(bool enabled)
 {
     d_impl->enableNCHitTest(enabled);

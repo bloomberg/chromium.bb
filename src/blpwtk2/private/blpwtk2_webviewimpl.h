@@ -97,6 +97,7 @@ class WebViewImpl final : public WebView,
     bool d_isReadyForDelete;  // when the underlying WebContents can be deleted
     bool d_wasDestroyed;      // if destroy() has been called
     bool d_isDeletingSoon;    // when DeleteSoon has been called
+    NativeRegion d_ncHitTestRegion = NULL;
     bool d_ncHitTestEnabled;
     bool d_ncHitTestPendingAck;
     bool d_altDragRubberbandingEnabled;
@@ -108,7 +109,7 @@ class WebViewImpl final : public WebView,
 
     // blpwtk2::NativeViewWidgetDelegate overrides
     void onDestroyed(NativeViewWidget* source) override;
-    bool OnNCHitTest(int* result) override;
+    bool OnNCHitTest(int* result, const gfx::Point& screen_point) override;
     bool OnNCDragBegin(int hitTestCode) override;
     void OnNCDragMove() override;
     void OnNCDragEnd() override;
@@ -258,6 +259,7 @@ class WebViewImpl final : public WebView,
     void copySelection() override;
     void paste() override;
     void deleteSelection() override;
+    void setNCHitTestRegion(NativeRegion region) override;
     void enableNCHitTest(bool enabled) override;
     void onNCHitTestResult(int x, int y, int result) override;
     void performCustomContextMenuAction(int actionId) override;

@@ -102,6 +102,8 @@ class WebViewClientImpl final : public WebViewClient
 
     void ncHitTestResult(int x, int y, int result) override;
 
+    void applyNCHitTestRegion(NativeRegion region) override;
+
     void setParent(NativeView parent) override;
 
     void takeKeyboardFocus() override;
