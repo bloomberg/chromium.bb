@@ -115,6 +115,7 @@ HTMLCanvasElement::HTMLCanvasElement(Document& document)
       size_(kDefaultCanvasWidth, kDefaultCanvasHeight),
       context_creation_was_blocked_(false),
       ignore_reset_(false),
+      m_bbDirectCompositingDisabled(false),
       origin_clean_(true),
       surface_layer_bridge_(nullptr),
       externally_allocated_memory_(0) {
@@ -359,6 +360,9 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContextInternal(
 }
 
 bool HTMLCanvasElement::ShouldBeDirectComposited() const {
+  if (m_bbDirectCompositingDisabled)
+    return false;
+
   return (context_ && context_->IsComposited()) || (!!surface_layer_bridge_);
 }
 
