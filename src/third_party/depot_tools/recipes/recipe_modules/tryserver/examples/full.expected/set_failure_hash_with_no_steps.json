@@ -1,0 +1,9 @@
+[
+  {
+    "failure": {
+      "failure": {},
+      "humanReason": "boom!"
+    },
+    "name": "$result"
+  }
+]
