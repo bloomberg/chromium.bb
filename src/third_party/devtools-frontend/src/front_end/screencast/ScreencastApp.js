@@ -8,7 +8,7 @@
  */
 export default class ScreencastApp {
   constructor() {
-    this._enabledSetting = Common.settings.createSetting('screencastEnabled', true);
+    this._enabledSetting = Common.settings.createSetting('screencastEnabled', false);
     this._toggleButton = new UI.ToolbarToggle(Common.UIString('Toggle screencast'), 'largeicon-phone');
     this._toggleButton.setToggled(this._enabledSetting.get());
     this._toggleButton.setEnabled(false);
