@@ -1,0 +1,8 @@
+{
+  "sysroot": {
+    "path": "/build/%(build_target)s"
+  },
+  "chroot": {
+    "path": "/usr/local/google/home/saklein/chromiumos/chroot"
+  }
+}

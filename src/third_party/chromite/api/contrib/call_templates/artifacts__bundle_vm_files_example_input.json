@@ -1,0 +1,7 @@
+{
+  "sysroot": {
+    "path": "/build/%(build_target)s"
+  },
+  "test_results_dir": "/tmp/test_results",
+  "output_dir": "/tmp"
+}

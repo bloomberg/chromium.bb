@@ -1,0 +1,13 @@
+{
+  "sysroot": {
+    "buildTarget": {
+      "name": "%(build_target)s"
+    },
+    "path": "/build/%(build_target)s"
+  },
+  "use_flags": [
+    {
+      "flag": "chrome_internal"
+    }
+  ]
+}

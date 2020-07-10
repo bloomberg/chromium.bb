@@ -1,0 +1,9 @@
+{
+  "build_target": {
+    "name": "%(build_target)s"
+  },
+  "flags": {
+    "chroot_current": true,
+    "replace": true
+  }
+}

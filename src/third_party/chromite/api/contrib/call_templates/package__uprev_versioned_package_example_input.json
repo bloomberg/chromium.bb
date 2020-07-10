@@ -1,0 +1,13 @@
+{
+  "package_info": {
+    "category": "chromeos-base",
+    "package_name": "chromeos-chrome"
+  },
+  "versions": [
+    {
+      "repository": "/path/to/chrome",
+      "ref": "123.456.789.012",
+      "revision": "abc123"
+    }
+  ]
+}
