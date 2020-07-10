@@ -1,0 +1,21 @@
+export DEFSPLUS=
+export INCLUDESPLUS=
+export CFLAGSPLUS=
+export LDFLAGSPLUS=
+export LIBSPLUS=
+export DLLFLAG=
+sedfiles=Makefile libtool config.h
+BUILDDIR=$(shell pwd.sh | sed -e "s/\(-.*\)-[^-]*$$/\1/")
+SRCDIR=../$(shell basename $(BUILDDIR)-src)
+
+.PHONY: all 
+all: CONF MFSED
+CONF:
+	$(SRCDIR)/configure --prefix=c:/progra~1/Gperf --srcdir="$(SRCDIR)"
+	
+-include $(DVLDIR)/makefile.chg
+
+#	make all
+#	make check
+#	make install prefix=c:/temp/sed
+                                 
