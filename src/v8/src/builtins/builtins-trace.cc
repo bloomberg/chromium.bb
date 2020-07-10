@@ -80,7 +80,19 @@ class JsonTraceValue : public ConvertableToTraceFormat {
     data_ = *data;
   }
 
-  void AppendAsTraceFormat(std::string* out) const override { *out += data_; }
+  size_t AppendAsTraceFormat(char* out, size_t maxSize) const override {
+    size_t len = data_.size();
+    if (out) {
+      if(len && maxSize > 1) {
+        len = len > maxSize-1 ? maxSize-1 : len;
+        strncpy(out, data_.data(), len);
+        out[len] = 0;
+      } else {
+        len = -1;
+      }
+    }
+    return len+1;
+  }
 
  private:
   std::string data_;

@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <queue>
 
-#include "include/libplatform/libplatform.h"
 #include "src/base/debug/stack_trace.h"
 #include "src/base/logging.h"
 #include "src/base/page-allocator.h"
@@ -31,7 +30,7 @@ void PrintStackTrace() {
 
 }  // namespace
 
-std::unique_ptr<v8::Platform> NewDefaultPlatform(
+std::unique_ptr<v8::Platform> NewDefaultPlatformImpl(
     int thread_pool_size, IdleTaskSupport idle_task_support,
     InProcessStackDumping in_process_stack_dumping,
     std::unique_ptr<v8::TracingController> tracing_controller) {
@@ -45,8 +44,8 @@ std::unique_ptr<v8::Platform> NewDefaultPlatform(
   return std::move(platform);
 }
 
-bool PumpMessageLoop(v8::Platform* platform, v8::Isolate* isolate,
-                     MessageLoopBehavior behavior) {
+bool PumpMessageLoopImpl(v8::Platform* platform, v8::Isolate* isolate,
+                         MessageLoopBehavior behavior) {
   return static_cast<DefaultPlatform*>(platform)->PumpMessageLoop(isolate,
                                                                   behavior);
 }

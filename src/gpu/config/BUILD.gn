@@ -7,6 +7,13 @@ import("//build/config/chromecast_build.gni")
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//gpu/vulkan/features.gni")
+import("//build/config/win/manifest.gni")
+
+windows_manifest("gpu_manifest") {
+  sources = [
+    default_compatibility_manifest,  # Want the normal OS compat list.
+  ]
+}
 
 group("config") {
   if (is_component_build) {
@@ -184,6 +191,7 @@ jumbo_source_set("config_sources") {
 
   deps = [
     ":process_json",
+    ":gpu_manifest",
     "//base",
     "//build:branding_buildflags",
     "//gpu/ipc/common:gpu_preferences_interface",

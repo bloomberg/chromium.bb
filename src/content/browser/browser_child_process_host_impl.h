@@ -69,7 +69,8 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   // Copies kEnableFeatures and kDisableFeatures to the command line. Generates
   // them from the FeatureList override state, to take into account overrides
   // from FieldTrials.
-  static void CopyFeatureAndFieldTrialFlags(base::CommandLine* cmd_line);
+  static void CopyFeatureAndFieldTrialFlags(base::CommandLine* cmd_line,
+                                            base::ProcessHandle child_process = 0);
 
   // Appends kTraceStartup and kTraceRecordMode flags to the command line, if
   // needed.

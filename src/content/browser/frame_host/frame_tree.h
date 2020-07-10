@@ -100,7 +100,8 @@ class CONTENT_EXPORT FrameTree {
             RenderFrameHostDelegate* render_frame_delegate,
             RenderViewHostDelegate* render_view_delegate,
             RenderWidgetHostDelegate* render_widget_delegate,
-            RenderFrameHostManager::Delegate* manager_delegate);
+            RenderFrameHostManager::Delegate* manager_delegate,
+            int render_process_affinity);
   ~FrameTree();
 
   FrameTreeNode* root() const { return root_; }
@@ -201,6 +202,10 @@ class CONTENT_EXPORT FrameTree {
   void SetFrameRemoveListener(
       base::RepeatingCallback<void(RenderFrameHost*)> on_frame_removed);
 
+  // Returns the render process affinity, or SiteInstance::kNoProcessAffinity
+  // if there is no affinity.
+  int RenderProcessAffinity() const { return render_process_affinity_; }
+
   // Creates a RenderViewHostImpl for a given |site_instance| in the tree.
   //
   // The RenderFrameHostImpls and the RenderFrameProxyHosts will share ownership
@@ -290,6 +295,10 @@ class CONTENT_EXPORT FrameTree {
   // more RenderFrameHosts or RenderFrameProxyHosts using it.
   std::unordered_map<int /* SiteInstance ID */, RenderViewHostImpl*>
       render_view_host_map_;
+
+  // Render process affinity, or SiteInstance::kNoProcessAffinity if there is
+  // no affinity.
+  int render_process_affinity_;
 
   // This is an owned ptr to the root FrameTreeNode, which never changes over
   // the lifetime of the FrameTree. It is not a scoped_ptr because we need the

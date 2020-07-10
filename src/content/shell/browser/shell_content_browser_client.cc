@@ -17,7 +17,12 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include <base/task/post_task.h>
+#include <base/task/task_traits.h>
+#include "base/threading/thread.h"
 #include "build/build_config.h"
+#include <content/public/browser/browser_task_traits.h>
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/cors_exempt_headers.h"
 #include "content/public/browser/login_delegate.h"
@@ -32,6 +37,7 @@
 #include "content/public/common/user_agent.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/test/test_service.h"
+#include "content/renderer/in_process_renderer_thread.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_browser_main_parts.h"
@@ -92,6 +98,7 @@ namespace content {
 namespace {
 
 ShellContentBrowserClient* g_browser_client;
+base::Thread* g_in_process_renderer_thread = 0;
 
 #if defined(OS_ANDROID)
 int GetCrashSignalFD(const base::CommandLine& command_line) {
@@ -330,6 +337,46 @@ std::string ShellContentBrowserClient::GetAcceptLangs(BrowserContext* context) {
   return GetShellLanguage();
 }
 
+bool ShellContentBrowserClient::SupportsInProcessRenderer()
+{
+#if !defined(OS_IOS) && (!defined(GOOGLE_CHROME_BUILD) || defined(OS_ANDROID))
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
+#else
+  // Single-process is an unsupported and not fully tested mode, so don't
+  // enable it for official Chrome builds (except on Android).
+  return false;
+#endif
+}
+
+void ShellContentBrowserClient::StartInProcessRendererThread(
+    mojo::OutgoingInvitation* broker_client_invitation,
+    int renderer_client_id) {
+  DCHECK(!g_in_process_renderer_thread);
+
+  g_in_process_renderer_thread =
+      CreateInProcessRendererThread(InProcessChildThreadParams(
+          base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
+          broker_client_invitation), renderer_client_id);
+
+  base::Thread::Options options;
+#if defined(OS_WIN) && !defined(OS_MACOSX)
+  // In-process plugins require this to be a UI message loop.
+  options.message_pump_type = base::MessagePumpType::UI;
+#else
+  // We can't have multiple UI loops on Linux and Android, so we don't support
+  // in-process plugins.
+  options.message_pump_type = base::MessagePumpType::DEFAULT;
+#endif
+
+  g_in_process_renderer_thread->StartWithOptions(options);
+}
+
+void ShellContentBrowserClient::StopInProcessRendererThread() {
+  DCHECK(g_in_process_renderer_thread);
+  delete g_in_process_renderer_thread;
+  g_in_process_renderer_thread = 0;
+}
+
 std::string ShellContentBrowserClient::GetDefaultDownloadName() {
   return "download";
 }
@@ -441,6 +488,10 @@ bool ShellContentBrowserClient::PreSpawnRenderer(sandbox::TargetPolicy* policy,
                                                  RendererSpawnFlags flags) {
   // Add sideloaded font files for testing. See also DIR_WINDOWS_FONTS
   // addition in |StartSandboxedProcess|.
+
+#if 0
+  // TODO(SHEZ): Fix this.
+
   std::vector<std::string> font_files = switches::GetSideloadFontFiles();
   for (std::vector<std::string>::const_iterator i(font_files.begin());
       i != font_files.end();
@@ -449,6 +500,7 @@ bool ShellContentBrowserClient::PreSpawnRenderer(sandbox::TargetPolicy* policy,
         sandbox::TargetPolicy::FILES_ALLOW_READONLY,
         base::UTF8ToWide(*i).c_str());
   }
+#endif
   return true;
 }
 #endif  // OS_WIN

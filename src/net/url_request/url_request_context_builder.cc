@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/lazy_instance.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -64,6 +65,9 @@
 namespace net {
 
 namespace {
+
+static base::LazyInstance<URLRequestContextBuilder::InterceptorInjector>::DestructorAtExit
+  g_interceptor_injector_ = LAZY_INSTANCE_INITIALIZER;
 
 class BasicNetworkDelegate : public NetworkDelegateImpl {
  public:
@@ -179,9 +183,17 @@ URLRequestContextBuilder::HttpCacheParams::HttpCacheParams()
     : type(IN_MEMORY), max_size(0) {}
 URLRequestContextBuilder::HttpCacheParams::~HttpCacheParams() = default;
 
-URLRequestContextBuilder::URLRequestContextBuilder() = default;
+URLRequestContextBuilder::URLRequestContextBuilder() {
+  if (g_interceptor_injector_.Get()) {
+    url_request_interceptors_.push_back(g_interceptor_injector_.Get()());
+  }
+}
 
 URLRequestContextBuilder::~URLRequestContextBuilder() = default;
+
+void URLRequestContextBuilder::set_interceptor_injector(InterceptorInjector injector) {
+  g_interceptor_injector_.Get() = injector;
+}
 
 void URLRequestContextBuilder::SetHttpNetworkSessionComponents(
     const URLRequestContext* request_context,
@@ -295,6 +307,9 @@ void URLRequestContextBuilder::SetInterceptors(
     std::vector<std::unique_ptr<URLRequestInterceptor>>
         url_request_interceptors) {
   url_request_interceptors_ = std::move(url_request_interceptors);
+  if (g_interceptor_injector_.Get()) {
+    url_request_interceptors_.push_back(g_interceptor_injector_.Get()());
+  }
 }
 
 void URLRequestContextBuilder::set_create_intercepting_job_factory(

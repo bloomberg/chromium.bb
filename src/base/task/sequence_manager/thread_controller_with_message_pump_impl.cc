@@ -83,6 +83,7 @@ void ThreadControllerWithMessagePumpImpl::BindToCurrentThread(
   pump_ = std::move(message_pump);
   work_id_provider_ = WorkIdProvider::GetForCurrentThread();
   RunLoop::RegisterDelegateForCurrentThread(this);
+  RunLoop::RegisterMessagePumpDelegateForCurrentThread(this);
   scoped_set_sequence_local_storage_map_for_current_thread_ = std::make_unique<
       base::internal::ScopedSetSequenceLocalStorageMapForCurrentThread>(
       &sequence_local_storage_map_);

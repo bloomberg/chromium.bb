@@ -4,7 +4,11 @@
 ; Copyright 2019 The ANGLE Project Authors. All rights reserved.
 ; Use of this source code is governed by a BSD-style license that can be
 ; found in the LICENSE file.
-LIBRARY libGLESv2
+;
+; Comment out 'LIBRARY libGLESv2' that blpcr_egl.$bb_version.dll would
+; link against blpcr_glesv2.$bb_version.dll instead of libGLESv2.dll
+; LIBRARY libGLESv2
+
 EXPORTS
 
     ; OpenGL ES 2.0
