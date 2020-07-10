@@ -1,0 +1,115 @@
+﻿// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html#License
+ig{
+    Currencies{
+        BMD{
+            "BMD",
+            "Dollar Bermuda",
+        }
+        BRL{
+            "R$",
+            "Real Brazil",
+        }
+        BZD{
+            "BZD",
+            "Dollar Belize",
+        }
+        CAD{
+            "CA$",
+            "Dollar Canada",
+        }
+        CNY{
+            "CN¥",
+            "Yuan China",
+        }
+        CVE{
+            "CVE",
+            "Escudo Caboverdiano",
+        }
+        EUR{
+            "€",
+            "Euro",
+        }
+        GBP{
+            "£",
+            "Pound British",
+        }
+        INR{
+            "₹",
+            "Rupee India",
+        }
+        JPY{
+            "¥",
+            "Yen Japan",
+        }
+        NGN{
+            "₦",
+            "Naịra",
+        }
+        RUB{
+            "RUB",
+            "Ruble Russia",
+        }
+        SRD{
+            "SRD",
+            "Dollar Surinamese",
+        }
+        TTD{
+            "TTD",
+            "Dollar Trinidad & Tobago",
+        }
+        USD{
+            "$",
+            "Dollar US",
+        }
+        XXX{
+            "¤",
+            "Ego Amaghị",
+        }
+    }
+    CurrencyPlurals{
+        BMD{
+            other{"Dollars Bermuda"}
+        }
+        BRL{
+            other{"Real Brazil"}
+        }
+        BZD{
+            other{"Dollars Belize"}
+        }
+        CAD{
+            other{"Dollars Canada"}
+        }
+        CNY{
+            other{"Yuan China"}
+        }
+        EUR{
+            other{"euro"}
+        }
+        GBP{
+            other{"Pound British"}
+        }
+        INR{
+            other{"Rupee India"}
+        }
+        JPY{
+            other{"Yen Japan"}
+        }
+        RUB{
+            other{"Ruble Russia"}
+        }
+        SRD{
+            other{"Dollar Surinamese"}
+        }
+        TTD{
+            other{"Dollars Trinidad & Tobago"}
+        }
+        USD{
+            other{"Dollars US"}
+        }
+        XXX{
+            other{"(ego amaghị)"}
+        }
+    }
+    Version{"36"}
+}

@@ -1,0 +1,25 @@
+﻿// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html#License
+si{
+    Version{"36"}
+    collations{
+        dictionary{
+            Sequence{
+                "[normalization on]"
+                "[reorder Sinh Deva Beng Guru Gujr Orya Taml Telu Knda Mlym]"
+                "&ඖ<ං<ඃ"
+                "&ජ්ඤ<<ඥ"
+            }
+            Version{"36"}
+        }
+        standard{
+            Sequence{
+                "[normalization on]"
+                "[reorder Sinh Deva Beng Guru Gujr Orya Taml Telu Knda Mlym]"
+                "&ඖ<ං<ඃ"
+                "&ඥ<ඤ"
+            }
+            Version{"36"}
+        }
+    }
+}
