@@ -2781,6 +2781,14 @@ bool RenderWidgetHostImpl::IsIgnoringInputEvents() const {
          delegate_->ShouldIgnoreInputEvents();
 }
 
+bool RenderWidgetHostImpl::ShouldSetKeyboardFocusOnMouseDown() const {
+  return !delegate_ || delegate_->ShouldSetKeyboardFocusOnMouseDown();
+}
+
+bool RenderWidgetHostImpl::ShouldSetLogicalFocusOnMouseDown() const {
+  return !delegate_ || delegate_->ShouldSetLogicalFocusOnMouseDown();
+}
+
 bool RenderWidgetHostImpl::GotResponseToLockMouseRequest(bool allowed) {
   if (!allowed) {
     RejectMouseLockOrUnlockIfNecessary();
