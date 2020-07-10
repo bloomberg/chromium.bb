@@ -51,7 +51,7 @@ class CC_EXPORT RecordingSource {
   void SetSlowdownRasterScaleFactor(int factor);
   void SetBackgroundColor(SkColor background_color);
   void SetRequiresClear(bool requires_clear);
-
+  void SetDefaultLCDBackgroundColor(SkColor default_lcd_background_color);
   void SetNeedsDisplayRect(const gfx::Rect& layer_rect);
 
   // These functions are virtual for testing.
@@ -68,6 +68,7 @@ class CC_EXPORT RecordingSource {
   bool clear_canvas_with_debug_color_;
   SkColor solid_color_;
   SkColor background_color_;
+  SkColor default_lcd_background_color_;
   scoped_refptr<DisplayItemList> display_list_;
   size_t painter_reported_memory_usage_;
   float recording_scale_factor_;

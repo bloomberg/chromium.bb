@@ -11,6 +11,7 @@
 #include "include/core/SkPoint.h"
 #include "include/core/SkRefCnt.h"
 #include "include/core/SkSize.h"
+#include "include/core/SkMatrix44.h"
 #include "modules/skottie/src/SkottieValue.h"
 #include "modules/sksg/include/SkSGScene.h"
 
