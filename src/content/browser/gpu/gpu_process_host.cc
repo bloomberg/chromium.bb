@@ -278,10 +278,10 @@ void RunCallbackOnIO(GpuProcessKind kind,
   std::move(callback).Run(host);
 }
 
-void OnGpuProcessHostDestroyedOnUI(int host_id, const std::string& message) {
+void OnGpuProcessHostDestroyedOnUI(int host_id, std::string message, int severity) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  GpuDataManagerImpl::GetInstance()->AddLogMessage(logging::LOG_ERROR,
-                                                   "GpuProcessHost", message);
+  GpuDataManagerImpl::GetInstance()->AddLogMessage(severity,
+                                                   "GpuProcessHost", std::move(message));
 #if defined(USE_OZONE)
   ui::OzonePlatform::GetInstance()
       ->GetGpuPlatformSupportHost()
@@ -594,6 +594,26 @@ void GpuProcessHost::SendGpuProcessMessage(IPC::Message* message) {
 }
 #endif  // defined(USE_OZONE)
 
+void GpuProcessHost::OnEstablishGpuChannelTimeout(int client_id,
+                                                  uint64_t client_tracing_id,
+                                                  bool is_gpu_host) {
+  std::string msg = "Establish Gpu Channel Timeout";
+  msg += "; client_id:" + std::to_string(client_id);
+  msg += "; client_tracing_id:" + std::to_string(client_tracing_id);
+  msg += "; is_gpu_host:" + std::to_string(is_gpu_host);
+  msg += "; process_launched_:" + std::to_string(process_launched_);
+  msg += "; sandboxed:" + std::to_string(kind_ == GPU_PROCESS_KIND_SANDBOXED);
+  msg += "; has process_:" + std::to_string(!!process_);
+  msg += "; has gpu_host:" + std::to_string(!!gpu_host_);
+
+  if (process_ && process_launched_ && kind_ == GPU_PROCESS_KIND_SANDBOXED && gpu_host_) {
+    process_->TerminateOnBadMessageReceived(msg);
+  }
+  base::PostTask(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&OnGpuProcessHostDestroyedOnUI, host_id_, std::move(msg), logging::LOG_WARNING));
+}
+
 // static
 GpuProcessHost* GpuProcessHost::FromID(int host_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -639,7 +659,9 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
       valid_(true),
       in_process_(false),
       kind_(kind),
-      process_launched_(false) {
+      process_launched_(false),
+      error_message_observer_(
+          std::make_unique<GpuErrorMessageObserver>(this)) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSingleProcess) ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -656,10 +678,14 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
 
   process_.reset(new BrowserChildProcessHostImpl(
       PROCESS_TYPE_GPU, this, ChildProcessHost::IpcMode::kNormal));
+  GpuDataManagerImpl::GetInstance()->AddObserver(
+      error_message_observer_.get());
 }
 
 GpuProcessHost::~GpuProcessHost() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  GpuDataManagerImpl::GetInstance()->RemoveObserver(
+      error_message_observer_.get());
   if (in_process_gpu_thread_)
     DCHECK(process_);
 
@@ -690,6 +716,8 @@ GpuProcessHost::~GpuProcessHost() {
 
   bool block_offscreen_contexts = true;
   if (!in_process_ && process_launched_) {
+    int severity = (kind_ == GPU_PROCESS_KIND_SANDBOXED) ? logging::LOG_ERROR
+                                                       : logging::LOG_INFO;
     ChildProcessTerminationInfo info =
         process_->GetTerminationInfo(false /* known_dead */);
     std::string message;
@@ -723,6 +751,7 @@ GpuProcessHost::~GpuProcessHost() {
         block_offscreen_contexts = false;
 #endif
         message += "exited normally. Everything is okay.";
+        severity = logging::LOG_INFO;
         break;
       case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
         message += base::StringPrintf("exited with code %d.", info.exit_code);
@@ -731,10 +760,20 @@ GpuProcessHost::~GpuProcessHost() {
         UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessTerminationOrigin",
                                   termination_origin_,
                                   GpuTerminationOrigin::kMax);
-        message += "was killed by you! Why?";
+        message += base::StringPrintf(
+            "was killed by you! Why? exit_code=%d.",
+            info.exit_code);
+        severity = logging::LOG_WARNING;
         break;
       case base::TERMINATION_STATUS_PROCESS_CRASHED:
-        message += "crashed!";
+        if (info.exit_code == RESULT_CODE_GPU_DEAD_ON_ARRIVAL) {
+          message += "exited because initialization failed. Might be black listed to use gpu";
+          severity = logging::LOG_WARNING;
+        } else {
+            message += base::StringPrintf(
+            "crashed! exit_code=%d.",
+            info.exit_code);
+        }
         break;
       case base::TERMINATION_STATUS_STILL_RUNNING:
         message += "hasn't exited yet.";
@@ -763,10 +802,27 @@ GpuProcessHost::~GpuProcessHost() {
       case base::TERMINATION_STATUS_MAX_ENUM:
         NOTREACHED();
         break;
+      default:
+        message += base::StringPrintf(
+            "exited with code %d. Termination status is %d",
+            info.exit_code, info.status);
+        severity = (info.status == base::TERMINATION_STATUS_NORMAL_TERMINATION) ?
+                      (logging::LOG_INFO) : (logging::LOG_WARNING);
+        break;
     }
+    
+    message += std::string(", process id=") + std::to_string(process_id_);
+    message += std::string(", mode=") + std::to_string((int)mode_);
+    message += std::string(", inProcess=") + std::to_string(in_process_);
+    message += std::string(", launched=") + std::to_string(process_launched_);
+    if (gpu_host_) {
+      message += std::string(", host inited=") +
+                std::to_string(GetGPUInfo().IsInitialized());
+    }
+
     base::PostTask(
         FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&OnGpuProcessHostDestroyedOnUI, host_id_, message));
+        base::BindOnce(&OnGpuProcessHostDestroyedOnUI, host_id_, message, severity));
   }
 
   // If there are any remaining offscreen contexts at the point the GPU process
@@ -1156,7 +1212,9 @@ void GpuProcessHost::RecordProcessCrash() {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   // Maximum number of times the GPU process can crash before we try something
   // different, like disabling hardware acceleration or all GL.
-  constexpr int kGpuFallbackCrashCount = 3;
+  // Change 3 to 1 to be more conservative and efficient on fallback
+  // because of less tries on restarting new GPU processes.
+  constexpr int kGpuFallbackCrashCount = 1;
 #else
   // Android and Chrome OS switch to software compositing and fallback crashes
   // the browser process. For Android the OS can also kill the GPU process
@@ -1211,8 +1269,15 @@ void GpuProcessHost::RecordProcessCrash() {
 
   // GPU process crashed too many times, fallback on a different GPU process
   // mode.
-  if (recent_crash_count >= kGpuFallbackCrashCount && !disable_crash_limit)
+  if (recent_crash_count >= kGpuFallbackCrashCount && !disable_crash_limit) {
+    auto current_mode = mode_;
     GpuDataManagerImpl::GetInstance()->FallBackToNextGpuMode();
+    auto next_mode = GpuDataManagerImpl::GetInstance()->GetGpuMode();
+    LOG(WARNING) << "GPU crashed at current mode:"
+                 << std::to_string(int(current_mode))
+                 << "; Will fall back to the next mode:"
+                 << std::to_string(int(next_mode));
+  }
 }
 
 viz::mojom::GpuService* GpuProcessHost::gpu_service() {
@@ -1222,6 +1287,27 @@ viz::mojom::GpuService* GpuProcessHost::gpu_service() {
 
 int GpuProcessHost::GetIDForTesting() const {
   return process_->GetData().id;
+}
+
+void GpuProcessHost::OnFatalErrorDetected(const std::string& header,
+                                          const std::string& message) {
+  std::string msg = "OnFatalErrorDetected";
+  msg += "; process_launched_:" + std::to_string(process_launched_);
+  msg += "; sandboxed:" + std::to_string(kind_ == GPU_PROCESS_KIND_SANDBOXED);
+  msg += "; has process_:" + std::to_string(!!process_);
+  msg += "; has gpu_host:" + std::to_string(!!gpu_host_);
+  msg += "; error header:" + header;
+  msg += "; error message:" + message;
+
+  if (process_ && process_launched_ && kind_ == GPU_PROCESS_KIND_SANDBOXED &&
+      gpu_host_) {
+    msg += "; GPU process will be terminated:";
+    process_->TerminateOnBadMessageReceived(msg);
+  }
+  base::PostTask(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&OnGpuProcessHostDestroyedOnUI, host_id_, std::move(msg),
+                     logging::LOG_WARNING));
 }
 
 }  // namespace content
