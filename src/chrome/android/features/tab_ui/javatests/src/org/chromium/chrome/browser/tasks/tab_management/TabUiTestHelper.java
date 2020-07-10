@@ -181,7 +181,7 @@ public class TabUiTestHelper {
     /**
      * Create a {@link OverviewModeBehaviorWatcher} to inspect overview hide.
      */
-    static OverviewModeBehaviorWatcher createOverviewHideWatcher(ChromeTabbedActivity cta) {
+    public static OverviewModeBehaviorWatcher createOverviewHideWatcher(ChromeTabbedActivity cta) {
         return new OverviewModeBehaviorWatcher(cta.getLayoutManager(), false, true);
     }
 

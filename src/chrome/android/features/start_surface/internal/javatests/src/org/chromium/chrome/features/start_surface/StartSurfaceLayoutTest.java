@@ -11,7 +11,11 @@ import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static android.support.test.espresso.matcher.ViewMatchers.withParent;
+import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
@@ -25,6 +29,7 @@ import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAU
 
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
@@ -61,6 +66,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabFeatureUtilities;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -76,6 +82,7 @@ import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.OverviewModeBehaviorWatcher;
 import org.chromium.chrome.test.util.RenderTestRule;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -83,6 +90,8 @@ import org.chromium.content_public.browser.test.util.WebContentsUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.test.util.UiRestriction;
+import org.chromium.ui.widget.ChipView;
+import org.chromium.ui.widget.ChromeImageView;
 import org.chromium.ui.widget.ViewLookupCachingFrameLayout;
 
 import java.io.FileOutputStream;
@@ -90,6 +99,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 // clang-format off
 /** Tests for the {@link StartSurfaceLayout} */
@@ -1050,6 +1060,134 @@ public class StartSurfaceLayoutTest {
         prepareTabs(1, 0, mUrl);
         enterGTSWithThumbnailChecking();
         leaveGTSAndVerifyThumbnailsAreReleased();
+    }
+
+    @Test
+    @MediumTest
+    @CommandLineFlags.Add({BASE_PARAMS + "/enable_search_term_chip/true"})
+    public void testSearchTermChip_noChip() throws InterruptedException {
+        prepareTabs(1, 0, mUrl);
+        enterGTSWithThumbnailChecking();
+
+        onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(1));
+        onView(withId(R.id.search_button)).check(matches(not(isDisplayed())));
+    }
+
+    @Test
+    @MediumTest
+    @CommandLineFlags.Add({BASE_PARAMS + "/enable_search_term_chip/true"})
+    public void testSearchTermChip_withChip() throws InterruptedException {
+        // Make sure we support RTL and CJKV languages.
+        String searchTermWithSpecialCodePoints = "a\n ئۇيغۇرچە\u200E漢字";
+        // Special code points like new line (\n) and left-to-right marker (‎‎‎\u200E) should
+        // be stripped out. See TabAttributeCache#removeEscapedCodePoints for more details.
+        String expectedTerm = "a ئۇيغۇرچە漢字";
+
+        String anotherTerm = "hello world";
+
+        // Do search, and verify the chip is still not shown.
+        AtomicReference<String> searchUrl = new AtomicReference<>();
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            TemplateUrlServiceFactory.get().setSearchEngine("google.com");
+            searchUrl.set(TemplateUrlServiceFactory.get().getUrlForSearchQuery(
+                    searchTermWithSpecialCodePoints));
+            cta.getTabModelSelector().getCurrentTab().loadUrl(new LoadUrlParams(searchUrl.get()));
+        });
+        enterGTSWithThumbnailChecking();
+
+        onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(1));
+        onView(withId(R.id.search_button)).check(matches(not(isDisplayed())));
+        leaveGTSAndVerifyThumbnailsAreReleased();
+
+        // Navigate, and verify the chip is shown.
+        mActivityTestRule.loadUrl(mUrl);
+        enterGTSWithThumbnailChecking();
+
+        onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(1));
+        onView(allOf(withParent(withId(R.id.search_button)), withText(expectedTerm)))
+                .check(matches(isDisplayed()));
+        leaveGTSAndVerifyThumbnailsAreReleased();
+
+        // Do another search, and verify the chip is gone.
+        AtomicReference<String> searchUrl2 = new AtomicReference<>();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            TemplateUrlServiceFactory.get().setSearchEngine("google.com");
+            searchUrl2.set(TemplateUrlServiceFactory.get().getUrlForSearchQuery(anotherTerm));
+            cta.getTabModelSelector().getCurrentTab().loadUrl(new LoadUrlParams(searchUrl2.get()));
+        });
+        enterGTSWithThumbnailChecking();
+
+        onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(1));
+        onView(withId(R.id.search_button)).check(matches(not(isDisplayed())));
+        leaveGTSAndVerifyThumbnailsAreReleased();
+
+        // Back to previous page, and verify the chip is back.
+        Espresso.pressBack();
+        enterGTSWithThumbnailChecking();
+
+        onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(1));
+        onView(allOf(withParent(withId(R.id.search_button)), withText(expectedTerm)))
+                .check(matches(isDisplayed()));
+
+        // Click the chip and check the tab navigates back to the search result page.
+        assertEquals(mUrl, cta.getTabModelSelector().getCurrentTab().getUrl());
+        OverviewModeBehaviorWatcher hideWatcher = TabUiTestHelper.createOverviewHideWatcher(cta);
+        onView(allOf(withParent(withId(R.id.search_button)), withText(expectedTerm)))
+                .perform(click());
+        hideWatcher.waitForBehavior();
+        CriteriaHelper.pollUiThread(Criteria.equals(
+                searchUrl.get(), () -> cta.getTabModelSelector().getCurrentTab().getUrl()));
+
+        // Verify the chip is gone.
+        enterGTSWithThumbnailChecking();
+
+        onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(1));
+        onView(withId(R.id.search_button)).check(matches(not(isDisplayed())));
+    }
+
+    @Test
+    @MediumTest
+    @CommandLineFlags.
+    Add({BASE_PARAMS + "/enable_search_term_chip/true/enable_search_term_chip_adaptive_icon/true"})
+    public void testSearchTermChip_adaptiveIcon() throws InterruptedException {
+        String searchTerm = "hello world";
+
+        // Do search, and verify the chip is still not shown.
+        AtomicReference<String> searchUrl = new AtomicReference<>();
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            TemplateUrlServiceFactory.get().setSearchEngine("google.com");
+            searchUrl.set(TemplateUrlServiceFactory.get().getUrlForSearchQuery(searchTerm));
+            cta.getTabModelSelector().getCurrentTab().loadUrl(new LoadUrlParams(searchUrl.get()));
+        });
+        enterGTSWithThumbnailChecking();
+
+        onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(1));
+        onView(withId(R.id.search_button)).check(matches(not(isDisplayed())));
+        leaveGTSAndVerifyThumbnailsAreReleased();
+
+        // Navigate, and verify the chip is shown.
+        mActivityTestRule.loadUrl(mUrl);
+        enterGTSWithThumbnailChecking();
+
+        onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(1));
+        onView(allOf(withParent(withId(R.id.search_button)), withText(searchTerm)))
+                .check(matches(isDisplayed()));
+
+        // Switch the default search engine from google.com to yahoo.com, the search chip icon
+        // should change.
+        RecyclerView tabListRecyclerView = cta.findViewById(R.id.tab_list_view);
+        ChipView chipView =
+                tabListRecyclerView.findViewHolderForAdapterPosition(0).itemView.findViewById(
+                        R.id.search_button);
+        ChromeImageView iconImageView = (ChromeImageView) chipView.getChildAt(0);
+        Drawable googleDrawable = iconImageView.getDrawable();
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { TemplateUrlServiceFactory.get().setSearchEngine("yahoo.com"); });
+
+        assertNotEquals(googleDrawable, iconImageView.getDrawable());
     }
 
     private void switchTabModel(boolean isIncognito) {

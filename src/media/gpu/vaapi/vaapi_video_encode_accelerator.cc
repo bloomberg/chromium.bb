@@ -463,11 +463,14 @@ void VaapiVideoEncodeAccelerator::ExecuteEncode(VASurfaceID va_surface_id) {
     NOTIFY_ERROR(kPlatformFailureError, "Failed to execute encode");
 }
 
-void VaapiVideoEncodeAccelerator::UploadFrame(scoped_refptr<VideoFrame> frame,
-                                              VASurfaceID va_surface_id) {
+void VaapiVideoEncodeAccelerator::UploadFrame(
+    scoped_refptr<VideoFrame> frame,
+    VASurfaceID va_surface_id,
+    const gfx::Size& va_surface_size) {
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
   DVLOGF(4) << "frame is uploading: " << va_surface_id;
-  if (!vaapi_wrapper_->UploadVideoFrameToSurface(*frame, va_surface_id))
+  if (!vaapi_wrapper_->UploadVideoFrameToSurface(*frame, va_surface_id,
+                                                 va_surface_size))
     NOTIFY_ERROR(kPlatformFailureError, "Failed to upload frame");
 }
 
@@ -686,9 +689,9 @@ std::unique_ptr<VaapiEncodeJob> VaapiVideoEncodeAccelerator::CreateEncodeJob(
       input_surface, std::move(reconstructed_surface), coded_buffer_id);
 
   if (!native_input_mode_) {
-    job->AddSetupCallback(
-        base::BindOnce(&VaapiVideoEncodeAccelerator::UploadFrame,
-                       base::Unretained(this), frame, input_surface->id()));
+    job->AddSetupCallback(base::BindOnce(
+        &VaapiVideoEncodeAccelerator::UploadFrame, base::Unretained(this), frame,
+        input_surface->id(), input_surface->size()));
   }
 
   return job;

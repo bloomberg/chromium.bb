@@ -37,6 +37,10 @@
 namespace {
 
 constexpr int kGetNetworksListLimit = 100;
+// Delay in millisecond before asking for a network property update when no IP
+// configuration can be retrieved for a network.
+constexpr base::TimeDelta kNetworkPropertyUpdateDelay =
+    base::TimeDelta::FromMilliseconds(5000);
 
 chromeos::NetworkStateHandler* GetStateHandler() {
   return chromeos::NetworkHandler::Get()->network_state_handler();
@@ -173,6 +177,13 @@ arc::mojom::IPConfigurationPtr TranslateONCIPConfig(
   return configuration;
 }
 
+// Returns true if the IP configuration is valid enough for ARC. Empty IP
+// config objects can be generated when IPv4 DHCP or IPv6 autoconf has not
+// completed yet.
+bool IsValidIPConfiguration(const arc::mojom::IPConfiguration& ip_config) {
+  return !ip_config.ip_address.empty() && !ip_config.gateway.empty();
+}
+
 // Returns an IPConfiguration vector from the IPConfigs ONC property, which may
 // include multiple IP configurations (e.g. IPv4 and IPv6).
 std::vector<arc::mojom::IPConfigurationPtr> IPConfigurationsFromONCIPConfigs(
@@ -184,7 +195,7 @@ std::vector<arc::mojom::IPConfigurationPtr> IPConfigurationsFromONCIPConfigs(
   std::vector<arc::mojom::IPConfigurationPtr> result;
   for (const auto& entry : ip_config_list->GetList()) {
     arc::mojom::IPConfigurationPtr config = TranslateONCIPConfig(&entry);
-    if (config)
+    if (config && IsValidIPConfiguration(*config))
       result.push_back(std::move(config));
   }
   return result;
@@ -199,7 +210,7 @@ std::vector<arc::mojom::IPConfigurationPtr> IPConfigurationsFromONCProperty(
   if (!ip_dict)
     return {};
   arc::mojom::IPConfigurationPtr config = TranslateONCIPConfig(ip_dict);
-  if (!config)
+  if (!config || !IsValidIPConfiguration(*config))
     return {};
   std::vector<arc::mojom::IPConfigurationPtr> result;
   result.push_back(std::move(config));
@@ -279,10 +290,6 @@ void AddDeviceProperties(arc::mojom::NetworkConfiguration* network,
 
   network->network_interface = device->interface();
 
-  // IP configurations were already obtained through cached ONC properties.
-  if (network->ip_configs)
-    return;
-
   std::vector<arc::mojom::IPConfigurationPtr> ip_configs;
   for (const auto& kv : device->ip_configs()) {
     auto ip_config = arc::mojom::IPConfiguration::New();
@@ -312,10 +319,14 @@ void AddDeviceProperties(arc::mojom::NetworkConfiguration* network,
         ip_config->name_servers.push_back(dns);
       }
     }
-    ip_configs.push_back(std::move(ip_config));
+    if (IsValidIPConfiguration(*ip_config))
+      ip_configs.push_back(std::move(ip_config));
   }
 
-  network->ip_configs = std::move(ip_configs);
+  // If the DeviceState had any IP configuration, always use them and ignore
+  // any other IP configuration previously obtained through NetworkState.
+  if (!ip_configs.empty())
+    network->ip_configs = std::move(ip_configs);
 }
 
 arc::mojom::NetworkConfigurationPtr TranslateONCConfiguration(
@@ -342,8 +353,7 @@ arc::mojom::NetworkConfigurationPtr TranslateONCConfiguration(
     ip_configs = IPConfigurationsFromONCProperty(
         dict, onc::network_config::kSavedIPConfig);
   }
-  if (!ip_configs.empty())
-    mojo->ip_configs = std::move(ip_configs);
+  mojo->ip_configs = std::move(ip_configs);
 
   mojo->guid = GetStringFromONCDictionary(dict, onc::network_config::kGUID,
                                           true /* required */);
@@ -402,6 +412,7 @@ std::vector<arc::mojom::NetworkConfigurationPtr> TranslateNetworkStates(
         state, chromeos::network_util::TranslateNetworkStateToONC(state).get());
     network->is_default_network =
         (network_path == GetStateHandler()->default_network_path());
+    network->service_name = network_path;
     networks.push_back(std::move(network));
   }
   return networks;
@@ -863,15 +874,14 @@ void ArcNetHostImpl::UpdateDefaultNetwork() {
 void ArcNetHostImpl::DefaultNetworkChanged(
     const chromeos::NetworkState* network) {
   UpdateDefaultNetwork();
+  UpdateActiveNetworks();
+}
 
-  // If the the default network switched between two networks, also send an
-  // ActiveNetworkChanged notification to let ARC observe the switch.
+void ArcNetHostImpl::UpdateActiveNetworks() {
   chromeos::NetworkStateHandler::NetworkStateList network_states;
   GetStateHandler()->GetActiveNetworkListByType(
       chromeos::NetworkTypePattern::Default(), &network_states);
-  if (network_states.size() > 1) {
-    ActiveNetworksChanged(network_states);
-  }
+  ActiveNetworksChanged(network_states);
 }
 
 void ArcNetHostImpl::DeviceListChanged() {
@@ -1100,7 +1110,40 @@ void ArcNetHostImpl::ActiveNetworksChanged(
 
   std::vector<arc::mojom::NetworkConfigurationPtr> network_configurations =
       TranslateNetworkStates(arc_vpn_service_path_, active_networks);
+
+  // A newly connected network may not immediately have any usable IP config
+  // object if IPv4 dhcp or IPv6 autoconf have not completed yet. Schedule
+  // with a few seconds delay a forced property update for that service to
+  // ensure the IP configuration is sent to ARC. Ensure that at most one such
+  // request is scheduled for a given service.
+  for (const auto& network : network_configurations) {
+    if (!network->ip_configs->empty())
+      continue;
+
+    if (!network->service_name)
+      continue;
+
+    const std::string& path = network->service_name.value();
+    if (pending_service_property_requests_.insert(path).second) {
+      LOG(WARNING) << "No IP configuration for " << path;
+      // TODO(hugobenichi): add exponential backoff for the case when IP
+      // configuration stays unavailable.
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE,
+          base::BindOnce(&ArcNetHostImpl::RequestUpdateForNetwork,
+                         weak_factory_.GetWeakPtr(), path),
+          kNetworkPropertyUpdateDelay);
+    }
+  }
+
   net_instance->ActiveNetworksChanged(std::move(network_configurations));
+}
+
+void ArcNetHostImpl::RequestUpdateForNetwork(const std::string& service_path) {
+  // TODO(hugobenichi): skip the request if the IP configuration for this
+  // service has been received since then and ARC has been notified about it.
+  pending_service_property_requests_.erase(service_path);
+  GetStateHandler()->RequestUpdateForNetwork(service_path);
 }
 
 void ArcNetHostImpl::NetworkListChanged() {
@@ -1109,6 +1152,7 @@ void ArcNetHostImpl::NetworkListChanged() {
   // temporarily be ranked below "inferior" services.  This callback
   // informs us that shill's ordering has been updated.
   UpdateDefaultNetwork();
+  UpdateActiveNetworks();
 }
 
 void ArcNetHostImpl::OnShuttingDown() {

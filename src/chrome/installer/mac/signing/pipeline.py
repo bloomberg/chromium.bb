@@ -138,6 +138,7 @@ def _create_pkgbuild_scripts(paths, dist_config):
         substitutions = {
             '@APP_DIR@': dist_config.app_dir,
             '@APP_PRODUCT@': dist_config.app_product,
+            '@BRAND_CODE@': dist_config.distribution.branding_code,
             '@FRAMEWORK_DIR@': dist_config.framework_dir
         }
         for key, value in substitutions.items():

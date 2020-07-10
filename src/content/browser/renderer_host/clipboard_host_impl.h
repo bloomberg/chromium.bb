@@ -72,6 +72,10 @@ class CONTENT_EXPORT ClipboardHostImpl : public blink::mojom::ClipboardHost {
   void WriteStringToFindPboard(const base::string16& text) override;
 #endif
 
+  // Check Raw Permission in M81 and M80 using a more simple strategy, to make
+  // for a safer backport. Always returns false in M80.
+  bool HasRawPermission();
+
   mojo::Receiver<blink::mojom::ClipboardHost> receiver_;
   ui::Clipboard* const clipboard_;  // Not owned
   std::unique_ptr<ui::ScopedClipboardWriter> clipboard_writer_;
