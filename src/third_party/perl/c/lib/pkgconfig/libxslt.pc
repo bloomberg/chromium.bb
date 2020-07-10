@@ -1,0 +1,12 @@
+prefix=${pcfiledir}/../..
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+
+Name: libxslt
+Version: 1.1.33
+Description: XSLT library version 2.
+Requires: libxml-2.0
+Libs: -L${libdir} -lxslt -L${pcfiledir}/../../lib -lxml2 -L${pcfiledir}/../../lib -lz -L${pcfiledir}/../../lib -llzma -L${pcfiledir}/../../lib -lws2_32  
+Cflags: -I${includedir}

@@ -1,0 +1,90 @@
+=pod
+
+=head1 NAME
+
+DateTime::Format::DateParse - Parses Date::Parse compatible formats
+
+=head1 SYNOPSIS
+
+    use DateTime::Format::DateParse;
+
+    my $dt = DateTime::Format::DateParse->parse_datetime( $date );
+    my $dt = DateTime::Format::DateParse->parse_datetime( $date, $zone );
+
+=head1 DESCRIPTION
+
+This module is a compatibility wrapper around L<Date::Parse>.
+
+=head1 USAGE
+
+=head2 Import Parameters
+
+This module accepts no arguments to it's C<import> method and exports no
+I<symbols>.
+
+=head2 Methods
+
+=head3 Class Methods
+
+=over 4
+
+=item * parse_datetime($date [, $zone])
+
+Accepts a L<Date::Parse> compatible C<$date> string and optionally a
+L<Time::Zone> compatible C<$zone> string.
+
+Returns a L<DateTime> object.
+
+=back
+
+=head1 GOTCHAS
+
+=over 4
+
+=item * If L<parse_datetime> is called on a C<$date> that doesn't know specify
+a timezone and C<$zone> is not set, then the timezone of the returned
+L<DateTime> object will be set to the C<local> timezone.  This is consistent
+with the behavior of L<Date::Parse>.
+
+=item * If L<parse_datetime> is called without a C<$zone> but the C<$date>
+string I<does> specify a timezone/offset or if L<parse_datetime> is called with
+a C<$zone> that L<DateTime::TimeZone> does not understand, the returned
+L<DateTime> object will have it's timezone set to a fixed offset from UTC.
+This means that C<DST> information is not available and date math will not
+reflect C<DST> transitions.  This may be resolved for true timezones by using
+the L<DateTime::TimeZone::Alias> module to C<alias> the L<Time::Zone> timezone
+to an Olson DB name.  This may be done automatically in a future release.
+
+=back
+
+=head1 CREDITS
+
+Graham Barr (GBARR) <gbarr@pobox.com>, author of L<Date::Parse>
+
+Everyone at the DateTime C<Asylum>.
+
+=head1 SUPPORT
+
+Support for this module is provided via the <datetime@perl.org> email list.  See
+L<http://lists.perl.org/> for more details.
+
+=head1 AUTHOR
+
+Joshua Hoblitt (JHOBLITT) <jhoblitt@cpan.org>
+
+=head1 COPYRIGHT
+
+Copyright (c) 2005-6  Joshua Hoblitt. All rights reserved. This program is free
+software; you can redistribute it and/or modify it under the same terms as Perl
+itself.
+
+The full text of the licenses can be found in the I<LICENSE> file included with
+this module, or in L<perlartistic> and L<perlgpl> as supplied with Perl 5.8.1
+and later.
+
+=head1 SEE ALSO
+
+L<Date::Parse>, L<Time::Zone>, L<DateTime>, L<DateTime::TimeZone>,
+L<DateTime::TimeZone::Alias>, L<http://datetime.perl.org/>
+
+=cut

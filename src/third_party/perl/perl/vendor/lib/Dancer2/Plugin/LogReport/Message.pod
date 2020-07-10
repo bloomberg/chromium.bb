@@ -1,0 +1,90 @@
+=encoding utf8
+
+=head1 NAME
+
+Dancer2::Plugin::LogReport::Message - extended Log::Report message class
+
+=head1 INHERITANCE
+
+ Dancer2::Plugin::LogReport::Message
+   is a Log::Report::Message
+
+=head1 SYNOPSIS
+
+  In your template:
+
+  [% FOR message IN messages %]
+    <div class="alert alert-[% message.bootstrap_color %]">
+      [% message.toString | html_entity %]
+    </div>
+  [% END %]
+
+=head1 DESCRIPTION
+
+[The Dancer2 plugin was contributed by Andrew Beverley]
+
+This class is an extension of L<Log::Report::Message>, with functions
+specifically designed for Dancer applications. Minimal functions are
+provided (currently only aimed at Bootstrap), but ideas for new ones are
+welcome.
+
+Extends L<"DESCRIPTION" in Log::Report::Message|Log::Report::Message/"DESCRIPTION">.
+ 
+=head1 METHODS
+
+Extends L<"METHODS" in Log::Report::Message|Log::Report::Message/"METHODS">.
+ 
+=over 4
+
+=item $obj-E<gt>B<bootstrap_color>()
+
+Get a suitable bootstrap context color for the message. This can be
+used as per the SYNOPSIS.
+
+C<success> is used for L<Dancer2::Plugin::LogReport::success()|Dancer2::Plugin::LogReport/"Handlers"> messages,
+C<info> colors are used for messages C<notice> and below, C<warning> is used
+for C<warning> and C<mistake>, C<danger> is used for all other messages
+
+=item $obj-E<gt>B<reason>()
+
+Get or set the reason of a message
+
+=back
+
+=head1 DETAILS
+
+Extends L<"DETAILS" in Log::Report::Message|Log::Report::Message/"DETAILS">.
+ 
+=head1 OVERLOADING
+
+Extends L<"OVERLOADING" in Log::Report::Message|Log::Report::Message/"OVERLOADING">.
+ 
+=over 4
+
+=item overload: B<as $function>
+
+Inherited, see L<Log::Report::Message/"OVERLOADING">
+
+=item overload: B<concatenation>
+
+Inherited, see L<Log::Report::Message/"OVERLOADING">
+
+=item overload: B<stringification>
+
+Inherited, see L<Log::Report::Message/"OVERLOADING">
+
+=back
+
+=head1 SEE ALSO
+
+This module is part of Log-Report distribution version 1.28,
+built on May 14, 2019. Website: F<http://perl.overmeer.net/CPAN/>
+
+=head1 LICENSE
+
+Copyrights 2007-2019 by [Mark Overmeer <markov@cpan.org>]. For other contributors see ChangeLog.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See F<http://dev.perl.org/licenses/>
+

@@ -1,0 +1,170 @@
+=head1 NAME
+
+DBIx::Class::Manual::Troubleshooting - Got a problem? Shoot it.
+
+=head2  "Can't locate storage blabla"
+
+You're trying to make a query on a non-connected schema. Make sure you got
+the current resultset from $schema->resultset('Artist') on a schema object
+you got back from connect().
+
+=head2 Tracing SQL
+
+The C<DBIC_TRACE> environment variable controls
+SQL tracing, so to see what is happening try
+
+  export DBIC_TRACE=1
+
+Alternatively use the C<< storage->debug >> class method:-
+
+  $schema->storage->debug(1);
+
+To send the output somewhere else set debugfh:-
+
+  $schema->storage->debugfh(IO::File->new('/tmp/trace.out', 'w'));
+
+Alternatively you can do this with the environment variable, too:-
+
+  export DBIC_TRACE="1=/tmp/trace.out"
+
+=head2 Can't locate method result_source_instance
+
+For some reason the table class in question didn't load fully, so the
+ResultSource object for it hasn't been created. Debug this class in
+isolation, then try loading the full schema again.
+
+=head2 Can't get last insert ID under Postgres with serial primary keys
+
+Older L<DBI> and L<DBD::Pg> versions do not handle C<last_insert_id>
+correctly, causing code that uses auto-incrementing primary key
+columns to fail with a message such as:
+
+  Can't get last insert id at /.../DBIx/Class/Row.pm line 95
+
+In particular the RHEL 4 and FC3 Linux distributions both ship with
+combinations of L<DBI> and L<DBD::Pg> modules that do not work
+correctly.
+
+L<DBI> version 1.50 and L<DBD::Pg> 1.43 are known to work.
+
+=head2 Can't locate object method "source_name" via package
+
+There's likely a syntax error in the table class referred to elsewhere
+in this error message.  In particular make sure that the package
+declaration is correct. For example, for a schema C< MySchema >
+you need to specify a fully qualified namespace: C< package MySchema::MyTable; >.
+
+=head2 syntax error at or near "<something>" ...
+
+This can happen if you have a relation whose name is a word reserved by your
+database, e.g. "user":
+
+  package My::Schema::User;
+  ...
+  __PACKAGE__->table('users');
+  __PACKAGE__->add_columns(qw/ id name /);
+  __PACKAGE__->set_primary_key('id');
+  ...
+  1;
+
+  package My::Schema::ACL;
+  ...
+  __PACKAGE__->table('acl');
+  __PACKAGE__->add_columns(qw/ user_id /);
+  __PACKAGE__->belongs_to( 'user' => 'My::Schema::User', 'user_id' );
+  ...
+  1;
+
+  $schema->resultset('ACL')->search(
+    {},
+    {
+      join => [qw/ user /],
+      '+select' => [ 'user.name' ]
+    }
+  );
+
+The SQL generated would resemble something like:
+
+  SELECT me.user_id, user.name FROM acl me
+  JOIN users user ON me.user_id = user.id
+
+If, as is likely, your database treats "user" as a reserved word, you'd end
+up with the following errors:
+
+1) syntax error at or near "." - due to "user.name" in the SELECT clause
+
+2) syntax error at or near "user" - due to "user" in the JOIN clause
+
+The solution is to enable quoting - see
+L<DBIx::Class::Manual::Cookbook/Setting quoting for the generated SQL> for
+details.
+
+=head2 column "foo DESC" does not exist ...
+
+This can happen if you are still using the obsolete order hack, and also
+happen to turn on SQL-quoting.
+
+  $rs->search( {}, { order_by => [ 'name DESC' ] } );
+
+Since L<DBIx::Class> >= 0.08100 and L<SQL::Abstract> >= 1.50 the above
+should be written as:
+
+  $rs->search( {}, { order_by => { -desc => 'name' } } );
+
+For more ways to express order clauses refer to
+L<SQL::Abstract/ORDER BY CLAUSES>
+
+=head2 Perl Performance Issues on Red Hat Systems
+
+There is a problem with slow performance of certain DBIx::Class
+operations using the system perl on some Fedora and Red Hat Enterprise
+Linux system (as well as their derivative distributions such as Centos,
+White Box and Scientific Linux).
+
+Distributions affected include Fedora 5 through to Fedora 8 and RHEL5
+up to and including RHEL5 Update 2. Fedora 9 (which uses perl 5.10) has
+never been affected - this is purely a perl 5.8.8 issue.
+
+As of September 2008 the following packages are known to be fixed and so
+free of this performance issue (this means all Fedora and RHEL5 systems
+with full current updates will not be subject to this problem):-
+
+  Fedora 8     - perl-5.8.8-41.fc8
+  RHEL5        - perl-5.8.8-15.el5_2.1
+
+This issue is due to perl doing an exhaustive search of blessed objects
+under certain circumstances.  The problem shows up as performance
+degradation exponential to the number of L<DBIx::Class> result objects in
+memory, so can be unnoticeable with certain data sets, but with huge
+performance impacts on other datasets.
+
+A pair of tests for susceptibility to the issue and performance effects
+of the bless/overload problem can be found in the L<DBIx::Class> test
+suite, in the C<t/99rh_perl_perf_bug.t> file.
+
+Further information on this issue can be found in
+L<https://bugzilla.redhat.com/show_bug.cgi?id=379791>,
+L<https://bugzilla.redhat.com/show_bug.cgi?id=460308> and
+L<http://rhn.redhat.com/errata/RHBA-2008-0876.html>
+
+=head2 Excessive Memory Allocation with TEXT/BLOB/etc. Columns and Large LongReadLen
+
+It has been observed, using L<DBD::ODBC>, that creating a L<DBIx::Class::Row>
+object which includes a column of data type TEXT/BLOB/etc. will allocate
+LongReadLen bytes.  This allocation does not leak, but if LongReadLen
+is large in size, and many such result objects are created, e.g. as the
+output of a ResultSet query, the memory footprint of the Perl interpreter
+can grow very large.
+
+The solution is to use the smallest practical value for LongReadLen.
+
+=head1 FURTHER QUESTIONS?
+
+Check the list of L<additional DBIC resources|DBIx::Class/GETTING HELP/SUPPORT>.
+
+=head1 COPYRIGHT AND LICENSE
+
+This module is free software L<copyright|DBIx::Class/COPYRIGHT AND LICENSE>
+by the L<DBIx::Class (DBIC) authors|DBIx::Class/AUTHORS>. You can
+redistribute it and/or modify it under the same terms as the
+L<DBIx::Class library|DBIx::Class/COPYRIGHT AND LICENSE>.

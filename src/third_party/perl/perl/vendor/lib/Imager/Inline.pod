@@ -1,0 +1,76 @@
+=head1 NAME
+
+Imager::Inline - using Imager with Inline::C.
+
+=head1 SYNOPSIS
+
+  use Inline with => 'Imager';
+  use Inline C => <<'EOS';
+  Imager some_func(Imager::Color c, Imager::Fill f) {
+    Imager img = i_img_8_new(200, 200, 3);
+    /* fill with color */
+    i_box_filled(img, 0, 0, 199, 199, c);
+    /* inner area with fill */
+    i_box_cfill(img, 50, 50, 149, 149, f);
+
+    return img;
+  }
+  EOS
+
+=head1 DESCRIPTION
+
+=for stopwords inline Inline Inline's
+
+Imager hooks into Inline's C<with> syntax to make it easier to write
+Inline::C code that works with Imager, you can call Imager functions
+without having to include headers or perform initialization.
+
+Imager's Inline C<with> support does the following:
+
+=over
+
+=item *
+
+add the installed Imager include directory to INC
+
+=item *
+
+add the Imager typemap to TYPEMAPS
+
+=item *
+
+include the headers needed by Imager C extension modules.
+
+=item *
+
+declare and initialize the Imager API function table pointer
+
+=item *
+
+filter the supplied code to replace Imager's class names with those
+that Inline::C can handle.
+
+=back
+
+=head1 LIMITATIONS
+
+The filtering mechanism is global, it will replace the class names
+even inside string constants.  If you need a string matching the name
+of one of Imager's classes, like C<"Imager::Color"> you will need to
+split it into 2 to use C's string pasting mechanism, for example:
+C<"Imager:" ":Color">.
+
+=head1 AUTHOR
+
+Tony Cook <tonyc@cpan.org>
+
+=head1 REVISION
+
+$Revision$
+
+=head1 SEE ALSO
+
+Imager, Imager::ExtUtils, Imager::API, Imager::APIRef,
+samples/inline_replace_color.pl
+
+=cut

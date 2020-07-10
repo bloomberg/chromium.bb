@@ -1,0 +1,74 @@
+=for comment POD_DERIVED_INDEX_GENERATED
+The following documentation is automatically generated.  Please do not edit
+this file, but rather the original, inline with DBIx::Class::PK
+at lib/DBIx/Class/PK.pm
+(on the system that originally ran this).
+If you do edit this file, and don't want your changes to be removed, make
+sure you change the first line.
+
+=cut
+
+=head1 NAME
+
+DBIx::Class::PK - Primary Key class
+
+=head1 SYNOPSIS
+
+=head1 DESCRIPTION
+
+This class contains methods for handling primary keys and methods
+depending on them.
+
+=head1 METHODS
+
+=head2 id
+
+Returns the primary key(s) for a row. Can't be called as
+a class method.
+
+=head2 ID
+
+Returns a unique id string identifying a result object by primary key.
+Used by L<DBIx::Class::CDBICompat::LiveObjectIndex> and
+L<DBIx::Class::ObjectCache>.
+
+=over 4
+
+=item WARNING
+
+The default C<_create_ID> method used by this function orders the returned
+values by the alphabetical order of the primary column names, B<unlike>
+the L</id> method, which follows the same order in which columns were fed
+to L<DBIx::Class::ResultSource/set_primary_key>.
+
+=back
+
+=head2 ident_condition
+
+  my $cond = $result_source->ident_condition();
+
+  my $cond = $result_source->ident_condition('alias');
+
+Produces a condition hash to locate a row based on the primary key(s).
+
+=head1 INHERITED METHODS
+
+=over 4
+
+=item L<DBIx::Class::Row>
+
+L<copy|DBIx::Class::Row/copy>, L<delete|DBIx::Class::Row/delete>, L<discard_changes|DBIx::Class::Row/discard_changes>, L<get_column|DBIx::Class::Row/get_column>, L<get_columns|DBIx::Class::Row/get_columns>, L<get_dirty_columns|DBIx::Class::Row/get_dirty_columns>, L<get_from_storage|DBIx::Class::Row/get_from_storage>, L<get_inflated_columns|DBIx::Class::Row/get_inflated_columns>, L<has_column_loaded|DBIx::Class::Row/has_column_loaded>, L<in_storage|DBIx::Class::Row/in_storage>, L<inflate_result|DBIx::Class::Row/inflate_result>, L<insert|DBIx::Class::Row/insert>, L<insert_or_update|DBIx::Class::Row/insert_or_update>, L<is_changed|DBIx::Class::Row/is_changed>, L<is_column_changed|DBIx::Class::Row/is_column_changed>, L<make_column_dirty|DBIx::Class::Row/make_column_dirty>, L<new|DBIx::Class::Row/new>, L<register_column|DBIx::Class::Row/register_column>, L<result_source|DBIx::Class::Row/result_source>, L<set_column|DBIx::Class::Row/set_column>, L<set_columns|DBIx::Class::Row/set_columns>, L<set_inflated_columns|DBIx::Class::Row/set_inflated_columns>, L<store_column|DBIx::Class::Row/store_column>, L<throw_exception|DBIx::Class::Row/throw_exception>, L<update|DBIx::Class::Row/update>, L<update_or_insert|DBIx::Class::Row/update_or_insert>
+
+=back
+
+=head1 FURTHER QUESTIONS?
+
+Check the list of L<additional DBIC resources|DBIx::Class/GETTING HELP/SUPPORT>.
+
+=head1 COPYRIGHT AND LICENSE
+
+This module is free software L<copyright|DBIx::Class/COPYRIGHT AND LICENSE>
+by the L<DBIx::Class (DBIC) authors|DBIx::Class/AUTHORS>. You can
+redistribute it and/or modify it under the same terms as the
+L<DBIx::Class library|DBIx::Class/COPYRIGHT AND LICENSE>.
+

@@ -1,0 +1,601 @@
+#PODNAME: DBD::Oracle::Troubleshooting::Macos
+#ABSTRACT: Tips and Hints to Troubleshoot DBD::Oracle on MacOs
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+DBD::Oracle::Troubleshooting::Macos - Tips and Hints to Troubleshoot DBD::Oracle on MacOs
+
+=head1 VERSION
+
+version 1.76
+
+=head1 General Info
+
+These instructions allow for the compilation and successful testing of
+DBD::Oracle on MacOS X 10.2.4 and higher, using Oracle 9iR2 DR
+(Release 9.2.0.1.0) or the 10g Instant Client release (10.1.0.3 at the
+time of writing).
+
+MacOS X DBD::Oracle has been tested (and used) under Jaguar (10.2.x),
+Panther (10.3.x), Snow Leopard (10.6.x), Lion (10.7.x). Jaguar comes
+with a Perl version of 5.6.0., which I can report to work with
+DBD::Oracle 1.14 and higher once you take certain steps (see below).
+You may want to install a later perl, e.g., Perl 5.8.x. Please refer to:
+
+    Installing Perl 5.8 on Jaguar
+    http://developer.apple.com/internet/macosx/perl.html
+
+for Perl 5.8.0 installation instructions.
+
+DBD::Oracle is likely to not install out of the box on MacOS X
+10.2. nor on 10.3. Manual but different changes will most likely be
+required on both versions.
+
+The key problem on 10.2. (Jaguar) is a symbol clash (caused by a
+function poll() named identically) between the IO library in at least
+Perl 5.6.0 (which is the version that comes with 10.2) and the Oracle
+client library in 9iR2 developer's release for MacOS X. The symptom is
+that your build appears to compile fine but then fails in the link
+stage. If you are running a (possibly self-installed) version of Perl
+other than 5.6.0, there's a chance that you are not affected by the
+symbol clash. So, try to build first without any special measures, and
+only resort to the instructions below if your build fails in the link
+stage with a duplicate symbol error. Note: if it fails to even
+compile, solve that problem first since it is not due to the symbol
+clash.
+
+The key problem on 10.3 (Panther) is that the default perl that comes
+with the system is compiled with multi-threading turned on, which at
+least with the 9iR2 developer's release exposes a memory leak. Your
+DBD::Oracle build will compile, test, and install fine, but if you
+execute the same prepared statement multiple times, the process will
+quickly run up hundreds of megabytes of RAM, and depending on how much
+memory you have it will die sooner or later.
+
+Oracle recently released an "Instant Client" for MacOSX 10.3
+(Panther), which as far as I can attest has none of the problems
+above. Since it is also a very compact download (actually, a series of
+downloads) I highly recommend you install and use the Instant Client
+if you are on 10.3 (Panther) and you do not intend to run the Oracle
+database server on your MacOSX box. See below (Instructions for
+10.3.x) for details.
+
+=head1 Instructions for 10.7.x (Lion)
+
+Perl on Lion and later is built with 64-bit support, and therefore requires
+the 64-bit Instant Client. As of this writing, only Instant Client 11.2
+(64-bit) actually works. The 64-bit Instant Client 10.2 is L<incompatible with
+Lion|http://only4left.jpiwowar.com/2011/08/instant-client-osx-lion-32-bit-only/>.
+We therefore recommend the 11.2 client. If you must Instant Client 10.2, you
+may need to recompile Perl with 32-bit support.
+
+Either way, setup and configuration is the same:
+
+=over
+
+=item *
+
+Download and install the basic, sqlplus, and sdk instantclient libraries and
+install them in a central location, such as F</usr/oracle_instantclient>.
+L<Downloads
+here|http://www.oracle.com/technetwork/topics/intel-macsoft-096467.html>
+
+=item *
+
+Create a symlink from F<libclntsh.dylib.10.1> to F<libclntsh.dylib>:
+
+  cd /usr/oracle_instantclient/
+  ln -s libclntsh.dylib.* libclntsh.dylib
+  ln -s libocci.dylib.* libocci.dylib
+
+=item *
+
+Update your environment to point to the libraries:
+
+  export ORACLE_HOME=/usr/oracle_instantclient
+  export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/oracle_instantclient
+
+=item *
+
+You should now be able to install DBD::Oracle from CPAN:
+
+     cpan DBD::Oracle
+
+=back
+
+=head1 Instructions for 10.6.x (Snow Leopard)
+
+These are taken from a stackoverflow answer by "nickisfat" who gave
+his/her permission for its inclusion here. You can see the original
+question and answers at http://stackoverflow.com/questions/5964999.
+
+Getting a mac install of perl to play nicely with oracle is a bit of a
+pain - once it's running it is fantastic, getting it running is a
+little frustrating..
+
+The below has worked for me on a few different intel macs, there could
+well be superfluous steps in there and it is likely not going to be
+the same for other platforms.
+
+This will require use of shell, the root user and a bit of CPANing -
+nothing too onerous
+
+First off create a directory for the oracle pap - libraries, instant client etc
+
+sudo mkdir /usr/oracle_instantClient64
+
+Download and extract all 64 bit instant client packages from oracle to
+the above directory
+
+Create a symlink within that directory for one of the files in there
+
+sudo cd /usr/oracle_instantClient64
+sudo ln -s /usr/oracle_instantClient64/libclntsh.dylib.10.1 libclntsh.dylib
+
+The following dir is hardcoded into the oracle instant client - god knows why - so need to create and symlink it
+
+sudo mkdir -p /b/227/rdbms/
+sudo cd /b/227/rdbms/
+sudo ln -s /usr/oracle_instantClient64/ lib
+
+Need to add a couple of environment variables, so edit /etc/profile
+and add them so they exist for all users:
+
+export ORACLE_HOME=/usr/oracle_instantClient64
+export DYLD_LIBRARY_PATH=/usr/oracle_instantClient64
+
+Now try and install DBD::Oracle through CPAN - this will fail, but it
+means any dependencies will be downloaded and it retrieves the module
+for us
+
+sudo perl -MCPAN -e shell
+install DBD::Oracle
+
+When this fails exit CPAN and head to your .cpan/build dir - if you
+used automatic config of CPAN it'll be
+
+cd ~/.cpan/build
+
+if you didn't auto configure you can find your build directory with
+the following command in CPAN
+
+o conf build_dir
+
+Once in the build dir look for the DBD::Oracle dir which has just been
+created (it'll be called something like DBD-Oracle-1.28-?) and cd into
+it.
+
+Now we need to switch to the root user. Root isn't enabled as default
+in osx - for details on enabling see this post on the apple website
+
+Once logged in as root we need to set the above environment variables for root:
+
+export ORACLE_HOME=/usr/oracle_instantClient64
+export DYLD_LIBRARY_PATH=/usr/oracle_instantClient64
+
+Now while still logged in as root we need to run the makefile for the
+module, then make, then install
+
+perl Makefile.pl
+make
+install
+
+Assuming that all worked without error log out of root: we're DBD'd
+up! If this didn't work it's time to bust out google on whatever
+errors you're seeing
+
+Now just to install the DBI module
+
+sudo perl -MCPAN -e shell
+install DBI
+
+Now you're all set - enjoy your perly oracley new life
+
+=head1 Instructions for 10.2.x (Jaguar)
+
+1) Install Oracle exactly per Oracle documentation. If you change
+install locations, then you'll need to modify paths accordingly.
+
+2) There are two ways to remedy the symbol clash. Either edit the
+symbol table of the Oracle client library
+$ORACLE_HOME/lib/libclntsh.dylib.9.0 such that the symbol _poll is no
+longer exported. Alternatively, download, patch, and re-install the
+perl IO modules. I could not successfully repeat the report for the
+former, but I did succeed by doing the latter. Instructions for both
+follow nonetheless.
+
+  2a) SKIP IF YOU WANT TO OR HAVE SUCCESSFULLY TRIED 2b).  Make a
+    backup copy of the $ORACLE_HOME/lib/libclntsh.dylib.9.0 file, or
+    the file this name points to, since we're about to modify that
+    library.  Note that the ".9.0" suffix of the file name is version
+    dependent, and that you want to work with the file pointed to
+    through one or a series of symbolic links rather than any of the
+    symbolic links (e.g., one will be called libclntsh.dylib).
+
+    As user 'oracle' execute the following command to fix namespace
+    collisions in Oracle's dynamic libraries.
+
+    nmedit -R ./hints/macos_lib.syms $ORACLE_HOME/lib/libclntsh.dylib.9.0
+
+    *** Recall the above caveats regarding the file name.
+
+    The problem with this is that the version of nm that comes with
+    Jaguar doesn't support the -R flag. I'd be grateful to anyone who
+    can suggest how to edit the symbol table of libraries on MacOS X.
+
+  2b) SKIP IF YOU WANT TO OR HAVE SUCCESSFULLY TRIED 2a). In this
+    variant, we will patch the Perl IO modules to change the name of
+    the poll() function, as that is where it is defined. In this case,
+    we do not need to do anything with the Oracle libraries. Follow
+    these steps:
+
+    - Download the module IO (IO.pm) from CPAN and unpack it. Check
+      the documentation as to whether the version is compatible with
+      your version of Perl; I used v1.20 with Perl 5.6.0 and had
+      success.
+
+    - The files IO.xs, poll.c, and poll.h need to be patched. Apply
+      the following patches, e.g., by cutting and pasting the marked
+      section into a file perlio.patch and using that file as input
+      for patch:
+
+      $ patch -p0 < perlio.patch
+
+      The patch will basically rename the C implementation of poll()
+      to io_poll(). The other patches were necessary to make v1.20
+      compile with Perl 5.6.0; they may not be necessary with other
+      versions of IO and Perl, respectively.
+
+        +=+=+=+=+=+=+= Cut after this line
+        diff -c ../IO-orig/IO-1.20/IO.xs ./IO.xs
+        *** ../IO-orig/IO-1.20/IO.xs	Mon Jul 13 23:36:24 1998
+        --- ./IO.xs	Sat May 10 15:20:02 2003
+        ***************
+        *** 205,211 ****
+                ST(0) = sv_2mortal(newSVpv((char*)&pos, sizeof(Fpos_t)));
+            }
+            else {
+        ! 	    ST(0) = &sv_undef;
+                errno = EINVAL;
+            }
+
+        --- 205,211 ----
+                ST(0) = sv_2mortal(newSVpv((char*)&pos, sizeof(Fpos_t)));
+            }
+            else {
+        ! 	    ST(0) = &PL_sv_undef;
+                errno = EINVAL;
+            }
+
+        ***************
+        *** 249,255 ****
+                SvREFCNT_dec(gv);   /* undo increment in newRV() */
+            }
+            else {
+        ! 	    ST(0) = &sv_undef;
+                SvREFCNT_dec(gv);
+            }
+
+        --- 249,255 ----
+                SvREFCNT_dec(gv);   /* undo increment in newRV() */
+            }
+            else {
+        ! 	    ST(0) = &PL_sv_undef;
+                SvREFCNT_dec(gv);
+            }
+
+        ***************
+        *** 272,278 ****
+            i++;
+            fds[j].revents = 0;
+            }
+        !     if((ret = poll(fds,nfd,timeout)) >= 0) {
+            for(i=1, j=0 ; j < nfd ; j++) {
+                sv_setiv(ST(i), fds[j].fd); i++;
+                sv_setiv(ST(i), fds[j].revents); i++;
+        --- 272,278 ----
+            i++;
+            fds[j].revents = 0;
+            }
+        !     if((ret = io_poll(fds,nfd,timeout)) >= 0) {
+            for(i=1, j=0 ; j < nfd ; j++) {
+                sv_setiv(ST(i), fds[j].fd); i++;
+                sv_setiv(ST(i), fds[j].revents); i++;
+        diff -c ../IO-orig/IO-1.20/poll.c ./poll.c
+        *** ../IO-orig/IO-1.20/poll.c	Wed Mar 18 21:34:00 1998
+        --- ./poll.c	Sat May 10 14:28:22 2003
+        ***************
+        *** 35,41 ****
+        # define POLL_EVENTS_MASK (POLL_CAN_READ | POLL_CAN_WRITE | POLL_HAS_EXCP)
+
+        int
+        ! poll(fds, nfds, timeout)
+        struct pollfd *fds;
+        unsigned long nfds;
+        int timeout;
+        --- 35,41 ----
+        # define POLL_EVENTS_MASK (POLL_CAN_READ | POLL_CAN_WRITE | POLL_HAS_EXCP)
+
+        int
+        ! io_poll(fds, nfds, timeout)
+        struct pollfd *fds;
+        unsigned long nfds;
+        int timeout;
+        diff -c ../IO-orig/IO-1.20/poll.h ./poll.h
+        *** ../IO-orig/IO-1.20/poll.h	Wed Apr 15 20:33:02 1998
+        --- ./poll.h	Sat May 10 14:29:11 2003
+        ***************
+        *** 44,50 ****
+        #define	POLLHUP		0x0010
+        #define	POLLNVAL	0x0020
+
+        ! int poll _((struct pollfd *, unsigned long, int));
+
+        #ifndef HAS_POLL
+        #  define HAS_POLL
+        --- 44,50 ----
+        #define	POLLHUP		0x0010
+        #define	POLLNVAL	0x0020
+
+        ! int io_poll _((struct pollfd *, unsigned long, int));
+
+        #ifndef HAS_POLL
+        #  define HAS_POLL
+        +=+=+=+=+=+=+= Cut to the previous line
+
+    - compile and install as you usually would, making sure that
+      existing but conflicting modules get removed:
+
+      $ perl Makefile.PL
+      $ make
+      $ make test
+      $ make install UNINST=1
+
+    - You are done. Continue with 3).
+
+3) Install the module DBI as per its instructions, if you haven't
+   already done so.
+
+4) Install the DBD::Oracle module.
+
+      $ perl Makefile.PL
+      $ make
+      $ make test
+      $ make install
+
+=head1 Instructions for 10.3.x (Panther)
+
+I highly recommend you install and use the Oracle 10g Instant Client
+for MacOSX 10.3. Compared to traditional Oracle client installations
+it is a very compact download, and it has the memory leak problem
+fixed. As an added benefit, you will be able to seamlessly connect to
+10g databases. Even if you do want to run the database server included
+in the 9iR2 Developer's Release, I'd still use the Instant Client for
+compiling OCI applications or drivers like DBD::Oracle.
+
+If you still decide to use the full 9iR2 DR client, and if all you use
+DBD::Oracle for on MacOSX is development and test scripts that don't
+involve running the same query multiple times or many queries within
+the same perl process, then note that the memory leak will most likely
+never affect you in a serious way. In this case you may not need to
+bother and instead just go ahead, build and install DBD::Oracle
+straightforwardly without any special measures.
+
+That said, here are the details.
+
+0) (If you decided for the 9iR2 DR client, skip to 1.) If you decided
+   to use the 10g Instant Client, make sure you download and install
+   all parts. (Given that this is perl land you may not need the JDBC
+   driver, but why bother sorting out the 25% you may or may not ever
+   need.) Follow the Oracle instructions and copy the contents of each
+   part into the same destination directory. Change to this
+   destination directory and create a symlink lib pointing to '.'
+   (without the quotes):
+
+   $ cd </path/to/my/oracle/instantclient>
+   $ ln -s lib .
+
+   Also, set the environment variable ORACLE_HOME to the path to your
+   instantclient destination directory. Makefile.PL needs it.
+
+   Now return to your DBD::Oracle download. If the version is 1.16 or
+   less you will need to patch Makefile.PL; in later versions this may
+   be fixed already. Apply the following patch, e.g., by cutting and
+   pasting into a file Makefile.PL.patch and then executing
+
+   $ patch -p0 < Makefile.PL.patch
+
+   Here is the patch:
+
+    +=+=+=+=+=+=+= Cut after this line
+    *** Makefile.PL.orig	Fri Oct 22 02:07:04 2004
+    --- Makefile.PL	Fri May 13 14:28:53 2005
+    ***************
+    *** 1252,1257 ****
+    --- 1252,1258 ----
+        print "Found $dir/$_\n" if $::opt_d;
+        }, "$OH/rdbms",
+            "$OH/plsql", # oratypes.h sometimes here (eg HPUX 11.23 Itanium Oracle 9.2.0)
+    +        "$OH/sdk", # Oracle Instant Client default location (10g)
+        );
+        @h_dir = keys %h_dir;
+        print "Found header files in @h_dir.\n" if @h_dir;
+    ***************
+    *** 1286,1292 ****
+    --- 1287,1297 ----
+        open FH, ">define.sql" or warn "Can't create define.sql: $!";
+        print FH "DEFINE _SQLPLUS_RELEASE\nQUIT\n";
+        close FH;
+    + 	# we need to temporarily disable login sql scripts
+    + 	my $sqlpath = $ENV{SQLPATH};
+    + 	delete $ENV{SQLPATH};
+        my $sqlplus_release = `$sqlplus_exe -S /nolog \@define.sql 2>&1`;
+    + 	$ENV{SQLPATH} = $sqlpath if $sqlpath;
+        unlink "define.sql";
+        print $sqlplus_release;
+        if ($sqlplus_release =~ /^DEFINE _SQLPLUS_RELEASE = "(\d?\d)(\d\d)(\d\d)(\d\d)(\d\d)"/) {
+    +=+=+=+=+=+=+= Cut to the previous line
+
+   The first hunk allows Makefile.PL to find the header files which
+   are in a subdirectory sdk, and the second temporarily disables any
+   global and local login.sql scripts which may make the sqlplus call
+   fail. If you don't have a local login.sql script you will most
+   likely be fine without the second hunk.
+
+   Now run Makefile.PL and make sure you provide the -l flag:
+
+   $ perl Makefile.PL -l
+
+   If you receive some ugly error message stating that some *.mk file
+   couldn't be found you forgot to add the -l flag.
+
+   The continue the standard build process by running make. In
+   DBD::Oracle versions 1.16 and earlier this will end in an error due
+   to a failed execution of nmedit -R. Ignore this error. Move on to
+   running the tests, making sure the test scripts can log in to your
+   database (e.g., by setting ORACLE_USERID). Note that by default the
+   Instant Client does not have a network/admin/tnsnames.ora
+   installed. Either install a suitable one, or point TNS_ADMIN to the
+   directory where you keep your tnsnames.ora, or include the full
+   SQLNET connection string in ORACLE_USERID. All three options are
+   documented by Oracle in the README_IC.htm file that comes with the
+   Instant Client, so be sure you read it if you don't understand what
+   I'm writing here.
+
+   All tests should succeed. Complete by make install. You are done!
+   Skip the other steps below, they do NOT apply to the Instant
+   Client. (Although of course you may still install a later version
+   of perl if you have the need.)
+
+1) Until the reason for the memory leak has been found and fixed, you
+   need to remove the condition that exposes it. Apparently, this is
+   multi-threading being enabled in Perl. The Perl 5.8.1RC3 that comes
+   with Panther was compiled with multi-threading enabled, and AFAIK
+   it cannot be turned off at runtime. Note that the problem is
+   independent of whether you run multiple concurrent threads or not.
+
+   Therefore, the solution is to build your own perl. I leave it up to
+   you whether you want to replace the system perl or not. At least
+   Perl 5.8.x comes with instructions as to how to replace the system
+   perl on MacOS X, and what the caveats and risks are. I used 5.8.4,
+   installed in /usr/local, and it worked perfectly fine.
+
+   The key when configuring your custom build of perl is to disable
+   multi-threading (usethreads, useithreads, and usemultiplicity
+   options). More precisely, do not enable them, as they are disabled
+   by default, at least up to version 5.8.5. You can check whether
+   threads are enabled or not by passing -V to ther Perl interpreter:
+
+   $ /path/to/your/perl -V | grep usethreads
+
+   You need to see a line saying, among other things,
+   usethreads=undef. If you see usethreads=define then multi-threading
+   is enabled.
+
+2) If you choose not to replace the system perl, make sure that when
+   you build DBI and DBD::Oracle you provide the full path to your own
+   perl when running Makefile.PL, like so (assuming you installed in
+   /usr/local, which is the default):
+
+   $ /usr/local/bin/perl Makefile.PL
+
+   Also, every time you run a DBD::Oracle script, you must use the
+   full path too, unless your custom-built perl comes before the
+   system perl in the PATH environment. The easiest way to ensure you
+   are using the right perl is to uninstall DBI from the system perl
+   if you did install it under that as well.
+
+3) Continue with 3) as in instructions for Jaguar (making path
+   substitutions for perl as discussed in 2).
+======================================================================
+
+If you have any problems then follow the instructions in the
+README. Please post details of any problems (or changes you needed to
+make) to dbi-users@perl.org and CC them to brooksch@mac.com on MacOSX
+specific problems. Rewrite of part of this readme, Panther
+instructions, and the Perl IO patch is credit to Hilmar Lapp, hlapp at
+gmx.net.
+
+Earlier and original instructions thanks to:
+    Andy Lester
+    Steve Sapovits
+    Tom Mornini
+
+Date: Tue, 15 Apr 2003 16:02:17 +1000
+Subject: Compilation bug in DBI on OSX with threaded Perl 5.8.0
+From: Danial Pearce
+
+In regards to a previous message on this list:
+
+http://archive.develooper.com/dbi-users@perl.org/msg16365.html
+
+I have some more info:
+
+I have compiled and installed Perl just fine with threads enabled:
+
+./Configure -de -Dusethreads -Dprefix=/usr
+make
+make test
+sudo make install
+
+I have then successfully installed Apache and mod_perl as well.
+
+When I try to compile and install DBI, I get a bus error, just like the
+people on this list have previously discussed on the thread above.
+
+If I unpack the DBI, and run perl Makefile.pl, then alter the created
+Makefile so that it uses gcc2 rather than just "cc" then it compiles,
+installs and runs just fine.
+
+The issue here is that Apple have just recently release 10.2.4, which
+updates /usr/bin/{gcc3,gcc2,g++3,g++2} and /usr/bin/cc is a symlink to
+/usr/bin/gcc3, so compilation of DBI under Apple's gcc3 does not work. It
+works find with gcc2 however.
+
+I had the same problem with DBD::Pg, and was able to compile and install
+that using the same fix.
+
+I am unsure if this is a problem with Apple's version of gcc, or a problem
+with the DBI/DBD code itself. Given that all my other open source
+applications are compiling and installing fine, I am thinking there isn't
+anything Apple are going to do about it.
+
+cheers
+Danial
+
+=head1 AUTHORS
+
+=over 4
+
+=item *
+
+Tim Bunce <timb@cpan.org>
+
+=item *
+
+John Scoles <byterock@cpan.org>
+
+=item *
+
+Yanick Champoux <yanick@cpan.org>
+
+=item *
+
+Martin J. Evans <mjevans@cpan.org>
+
+=back
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2018, 2014, 2013, 2012, 2011, 2010 by Tim Bunce.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut

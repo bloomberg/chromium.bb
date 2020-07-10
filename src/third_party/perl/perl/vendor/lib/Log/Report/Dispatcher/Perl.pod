@@ -1,0 +1,52 @@
+=encoding utf8
+
+=head1 NAME
+
+Log::Report::Dispatcher::Perl - send messages to die and warn
+
+=head1 INHERITANCE
+
+ Log::Report::Dispatcher::Perl
+   is a Log::Report::Dispatcher
+
+=head1 SYNOPSIS
+
+ dispatcher Log::Report::Dispatcher::Perl => 'default'
+   , accept => 'NOTICE-';
+
+ # close the default dispatcher
+ dispatcher close => 'default';
+
+=head1 DESCRIPTION
+
+Ventilate the problem reports via the standard Perl error mechanisms:
+C<die()>, C<warn()>, and C<print()>.  There can be only one such dispatcher
+(per thread), because once C<die()> is called, we are not able to return.
+Therefore, this dispatcher will always be called last.
+
+In the early releases of Log::Report, it tried to simulate the behavior
+of warn and die using STDERR and exit; however: that is not possible.
+
+Extends L<"DESCRIPTION" in Log::Report::Dispatcher|Log::Report::Dispatcher/"DESCRIPTION">.
+ 
+=head1 METHODS
+
+Extends L<"METHODS" in Log::Report::Dispatcher|Log::Report::Dispatcher/"METHODS">.
+ 
+=head1 DETAILS
+
+Extends L<"DETAILS" in Log::Report::Dispatcher|Log::Report::Dispatcher/"DETAILS">.
+ 
+=head1 SEE ALSO
+
+This module is part of Log-Report distribution version 1.28,
+built on May 14, 2019. Website: F<http://perl.overmeer.net/CPAN/>
+
+=head1 LICENSE
+
+Copyrights 2007-2019 by [Mark Overmeer <markov@cpan.org>]. For other contributors see ChangeLog.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See F<http://dev.perl.org/licenses/>
+

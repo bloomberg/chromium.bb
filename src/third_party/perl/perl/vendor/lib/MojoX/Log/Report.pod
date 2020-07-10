@@ -1,0 +1,62 @@
+=encoding utf8
+
+=head1 NAME
+
+MojoX::Log::Report - divert log messages into Log::Report 
+
+=head1 INHERITANCE
+
+ MojoX::Log::Report
+   is a Mojo::Log
+
+=head1 SYNOPSIS
+
+  use MojoX::Log::Report;
+  my $log = MojoX::Log::Report->new(%options);
+  $app->log($log);  # install logger in the Mojo::App
+
+=head1 DESCRIPTION
+
+[Included since Log::Report v1.00]
+Mojo likes to log messages directly into a file, by default.  Log::Report
+constructs a L<Log::Report::Exception|Log::Report::Exception> object first.
+
+Be aware that this extension does catch the messages to be logged,
+but that the dispatching of the error follows a different route now.
+For instance, you cannot use C<$ENV{MOJO_LOG_LEVEL}> to control the output
+level, but you need to use L<Log::Report::dispatcher()|Log::Report/"Report Production and Configuration"> action C<mode>.
+
+Mojo defines five "levels" of messages, which map onto Log::Report's
+reasons this way:
+
+  debug  TRACE
+  info   INFO
+  warn   WARNING
+  error  ERROR
+  fatal  ALERT
+
+=head1 METHODS
+
+=head2 Constructors
+
+=over 4
+
+=item MojoX::Log::Report-E<gt>B<new>(%options)
+
+Inherited %options C<path> and C<level> are ignored.
+
+=back
+
+=head1 SEE ALSO
+
+This module is part of Log-Report distribution version 1.28,
+built on May 14, 2019. Website: F<http://perl.overmeer.net/CPAN/>
+
+=head1 LICENSE
+
+Copyrights 2007-2019 by [Mark Overmeer <markov@cpan.org>]. For other contributors see ChangeLog.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See F<http://dev.perl.org/licenses/>
+

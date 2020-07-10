@@ -1,0 +1,376 @@
+=head1 NAME
+
+Imager::IO - Imager's io_layer object.
+
+=head1 SYNOPSIS
+
+  # Imager supplies Imager::IO objects to various callbacks
+  my $IO = ...;
+
+  my $count = $IO->write($data);
+  my $count = $IO->read($buffer, $max_count);
+  my $position = $IO->seek($offset, $whence);
+  my $status = $IO->close;
+
+=head1 DESCRIPTION
+
+Imager uses an abstraction when dealing with image files to allow the
+same code to work with disk files, in memory data and callbacks.
+
+If you're writing an Imager file handler your code will be passed an
+Imager::IO object to write to or read from.
+
+X<UTF-8>X<Unicode>Note that Imager::IO can only work with collections of bytes -
+if you need to read UTF-8 data you will need to read the bytes and
+decode them.  If you want to write UTF-8 data you will need to encode
+your characters to bytes and write the bytes.
+
+=head1 CONSTRUCTORS
+
+=over
+
+=item new_fd($fd)
+
+Create a new I/O layer based on a file descriptor.
+
+  my $io = Imager::IO->new(fileno($fh));
+
+=item new_buffer($data)
+
+Create a new I/O layer based on a memory buffer.
+
+Buffer I/O layers are read only.
+
+C<$data> can either a simple octet string, or a reference to an octet
+string.  If C<$data> contains characters with a code point above
+C<0xFF> an exception will be thrown.
+
+=item new_cb($writecb, $readcb, $seekcb, $closecb)
+
+Create a new I/O layer based on callbacks.  See 
+L<Imager::Files/"I/O Callbacks"> for details on the behavior of 
+the callbacks.
+
+=item new_fh($fh)
+
+Create a new I/O layer based on a perl file handle.
+
+=item new_bufchain()
+
+Create a new C<bufchain> based I/O layer.  This accumulates the file
+data as a chain of buffers starting from an empty stream.
+
+Use the L</slurp()> method to retrieve the accumulated content into a
+perl string.
+
+=back
+
+=head1 BUFFERED I/O METHODS
+
+These methods use buffered I/O to improve performance unless you call
+set_buffered() to disable buffering.
+
+Prior to Imager 0.86 the write and read methods performed raw I/O.
+
+=over
+
+=item write($data)
+
+Call to write to the file.  Returns the number of bytes written.  The
+data provided may contain only characters \x00 to \xFF - characters
+outside this range will cause this method to croak().
+
+If you supply a UTF-8 flagged string it will be converted to a byte
+string, which may have a performance impact.
+
+Returns -1 on error, though in most cases if the result of the write
+isn't the number of bytes supplied you'll want to treat it as an error
+anyway.
+
+=item read($buffer, $size)
+
+  my $buffer;
+  my $count = $io->read($buffer, $max_bytes);
+
+Reads up to I<$max_bytes> bytes from the current position in the file
+and stores them in I<$buffer>.  Returns the number of bytes read on
+success or an empty list on failure.  Note that a read of zero bytes
+is B<not> a failure, this indicates end of file.
+
+=item read2($size)
+
+  my $buffer = $io->read2($max_bytes);
+
+An alternative interface to read, that might be simpler to use in some
+cases.
+
+Returns the data read or an empty list.  At end of file the data read
+will be an empty string.
+
+=item seek($offset, $whence)
+
+  my $new_position = $io->seek($offset, $whence);
+
+Seek to a new position in the file.  Possible values for I<$whence> are:
+
+=over
+
+=item *
+
+C<SEEK_SET> - I<$offset> is the new position in the file.
+
+=item *
+
+C<SEEK_CUR> - I<$offset> is the offset from the current position in
+the file.
+
+=item *
+
+C<SEEK_END> - I<$offset> is the offset relative to the end of the
+file.
+
+=back
+
+Note that seeking past the end of the file may or may not result in an
+error.
+
+Any buffered output will be flushed, if flushing fails, seek() will
+return -1.
+
+Returns the new position in the file, or -1 on error.
+
+=item getc()
+
+Return the next byte from the stream.
+
+Returns the ordinal of the byte or -1 on error or end of file.
+
+  while ((my $c = $io->getc) != -1) {
+    print chr($c);
+  }
+
+=item nextc()
+
+Discard the next byte from the stream.
+
+Returns nothing.
+
+=item gets()
+
+=item gets($max_size)
+
+=item gets($max_size, $end_of_line)
+
+Returns the next line of input from the stream, as terminated by
+C<end_of_line>.
+
+The default C<max_size> is 8192.
+
+The default C<end_of_line> is C<ord "\n">.
+
+Returns nothing if the stream is in error or at end of file.
+
+Returns the line as a string, including the line terminator (if one
+was found) on success.
+
+  while (defined(my $line = $io->gets)) {
+    # do something with $line
+  }
+
+=item peekc()
+
+Return the buffered next character from the stream, loading the buffer
+if necessary.
+
+For an unbuffered stream a buffer will be setup and loaded with a
+single character.
+
+Returns the ordinal of the byte or -1 on error or end of file.
+
+  my $c = $io->peekc;
+
+=item peekn($size)
+
+Returns up to the next C<size> bytes from the file as a string.
+
+Only up to the stream buffer size bytes (currently 8192) can be peeked.
+
+This method ignores the buffering state of the stream.
+
+Returns nothing on EOF.
+
+  my $s = $io->peekn(4);
+  if ($s =~ /^(II|MM)\*\0/) {
+    print "TIFF image";
+  }
+
+=item putc($code)
+
+Write a single character to the stream.
+
+Returns C<code> on success, or -1 on failure.
+
+=item close()
+
+  my $result = $io->close;
+
+Call when you're done with the file.  If the IO object is connected to
+a file this won't close the file handle, but buffers may be flushed
+(if any).
+
+Returns 0 on success, -1 on failure.
+
+=item eof()
+
+  $io->eof
+
+Test if the stream is at end of file.  No further read requests will
+be passed to your read callback until you seek().
+
+=item error()
+
+Test if the stream has encountered a read or write error.
+
+  my $data = $io->read2(100);
+  $io->error
+     and die "Failed";
+
+When the stream has the error flag set no further read or write
+requests will be passed to your callbacks until you seek.
+
+=item flush()
+
+  $io->flush
+    or die "Flush error";
+
+Flush any buffered output.  This will not call lower write layers when
+the stream has it's error flag set.
+
+Returns a true value on success.
+
+=item is_buffered()
+
+Test if buffering is enabled for this stream.
+
+Returns a true value if the stream is buffered.
+
+=item set_buffered($enabled)
+
+If C<$enabled> is a non-zero integer, enable buffering, other disable
+it.
+
+Disabling buffering will flush any buffered output, but any buffered
+input will be retained and consumed by input methods.
+
+Returns true if any buffered output was flushed successfully, false if
+there was an error flushing output.
+
+=back
+
+=head1 RAW I/O METHODS
+
+These call the underlying I/O abstraction directly.
+
+=over
+
+=item raw_write()
+
+Call to write to the file.  Returns the number of bytes written.  The
+data provided may contain only characters \x00 to \xFF - characters
+outside this range will cause this method to croak().
+
+If you supply a UTF-8 flagged string it will be converted to a byte
+string, which may have a performance impact.
+
+Returns -1 on error, though in most cases if the result of the write
+isn't the number of bytes supplied you'll want to treat it as an error
+anyway.
+
+=item raw_read()
+
+  my $buffer;
+  my $count = $io->raw_read($buffer, $max_bytes);
+
+Reads up to I<$max_bytes> bytes from the current position in the file
+and stores them in I<$buffer>.  Returns the number of bytes read on
+success or an empty list on failure.  Note that a read of zero bytes
+is B<not> a failure, this indicates end of file.
+
+=item raw_read2()
+
+  my $buffer = $io->raw_read2($max_bytes);
+
+An alternative interface to raw_read, that might be simpler to use in some
+cases.
+
+Returns the data read or an empty list.
+
+=item raw_seek()
+
+  my $new_position = $io->raw_seek($offset, $whence);
+
+Seek to a new position in the file.  Possible values for I<$whence> are:
+
+=over
+
+=item *
+
+C<SEEK_SET> - I<$offset> is the new position in the file.
+
+=item *
+
+C<SEEK_CUR> - I<$offset> is the offset from the current position in
+the file.
+
+=item *
+
+C<SEEK_END> - I<$offset> is the offset relative to the end of the
+file.
+
+=back
+
+Note that seeking past the end of the file may or may not result in an
+error.
+
+Returns the new position in the file, or -1 on error.
+
+=item raw_close()
+
+  my $result = $io->raw_close;
+
+Call when you're done with the file.  If the IO object is connected to
+a file this won't close the file handle.
+
+Returns 0 on success, -1 on failure.
+
+=back
+
+=head1 UTILITY METHODS
+
+=over
+
+=item slurp()
+
+Retrieve the data accumulated from an I/O layer object created with
+the new_bufchain() method.
+
+  my $data = $io->slurp;
+
+=item dump()
+
+Dump the internal buffering state of the I/O object to C<stderr>.
+
+  $io->dump();
+
+=back
+
+=head1 AUTHOR
+
+Tony Cook <tonyc@cpan.org>
+
+=head1 SEE ALSO
+
+Imager, Imager::Files
+
+=cut
+

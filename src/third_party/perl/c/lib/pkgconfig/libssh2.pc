@@ -1,0 +1,17 @@
+###########################################################################
+# libssh2 installation details
+###########################################################################
+
+prefix=${pcfiledir}/../..
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: libssh2
+URL: https://www.libssh2.org/
+Description: Library for SSH-based communication
+Version: 1.8.2
+Requires.private: libssl,libcrypto,zlib
+Libs: -L${libdir} -lssh2  -lws2_32
+Libs.private:  -lws2_32
+Cflags: -I${includedir}

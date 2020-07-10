@@ -1,0 +1,577 @@
+=head1 NAME
+
+Imager::Engines - Programmable transformation operations
+
+=head1 SYNOPSIS
+
+  use Imager;
+
+  my %opts;
+  my @imgs;
+  my $img;
+  ...
+
+  my $newimg = $img->transform(
+      xexpr=>'x',
+      yexpr=>'y+10*sin((x+y)/10)')
+    or die $img->errstr;
+
+  my $newimg = Imager::transform2(\%opts, @imgs)
+    or die "transform2 failed: $Imager::ERRSTR";
+
+  my $newimg = $img->matrix_transform(
+     matrix=>[ -1, 0, $img->getwidth-1,
+                0,  1, 0,
+                0,  0, 1 ]);
+
+
+=head1 DESCRIPTION
+
+=head2 transform()
+
+The C<transform()> function can be used to generate spatial warps and
+rotations and such effects.  It only operates on a single image and
+its only function is to displace pixels.
+
+It can be given the operations in postfix notation or the module
+Affix::Infix2Postfix can be used to generate postfix code from infix
+code.  Look in the test case t/t55trans.t for an example.
+
+C<transform()> needs expressions (or opcodes) that determine the
+source pixel for each target pixel.  Source expressions are infix
+expressions using any of the +, -, *, / or ** binary operators, the -
+unary operator, ( and ) for grouping and the C<sin()> and C<cos()>
+functions.  The target pixel is input as the variables x and y.
+
+You specify the x and y expressions as C<xexpr> and C<yexpr> respectively.
+You can also specify opcodes directly, but that's magic deep enough
+that you can look at the source code.
+
+Note: You can still use the transform() function, but the transform2()
+function is just as fast and is more likely to be enhanced and
+maintained.
+
+  $new_img=$img->transform(xexpr=>'x',yexpr=>'y+10*sin((x+y)/10)')
+
+  $new_img=$img->transform(xexpr=>'x+0.1*y+5*sin(y/10.0+1.57)',
+                           yexpr=>'y+10*sin((x+y-0.785)/10)') 
+
+=head2 transform2()
+
+Imager also supports a C<transform2()> class method which allows you
+perform a more general set of operations, rather than just specifying
+a spatial transformation as with the transform() method, you can also
+perform color transformations, image synthesis and image
+combinations from multiple source images.
+
+C<transform2()> takes an reference to an options hash, and a list of
+images to operate one (this list may be empty):
+
+  my %opts;
+  my @imgs;
+  ...
+  my $img = Imager::transform2(\%opts, @imgs)
+      or die "transform2 failed: $Imager::ERRSTR";
+
+The options hash may define a transformation function, and optionally:
+
+=over
+
+=item *
+
+width - the width of the image in pixels.  If this isn't supplied the
+width of the first input image is used.  If there are no input images
+an error occurs.
+
+=item *
+
+height - the height of the image in pixels.  If this isn't supplied
+the height of the first input image is used.  If there are no input
+images an error occurs.
+
+=item *
+
+constants - a reference to hash of constants to define for the
+expression engine.  Some extra constants are defined by Imager
+
+=item *
+
+channels - the number of channels in the output image.  If this isn't
+supplied a 3 channel image will be created.
+
+=back
+
+The transformation function is specified using either the C<expr> or
+C<rpnexpr> member of the options.
+
+=head3 Infix expressions
+
+You can supply infix expressions to transform 2 with the C<expr> keyword.
+
+  $opts{expr} = 'return getp1(w-x, h-y)'
+
+The 'expression' supplied follows this general grammar:
+
+   ( identifier '=' expr ';' )* 'return' expr
+
+This allows you to simplify your expressions using variables.
+
+A more complex example might be:
+
+  $opts{expr} = 'pix = getp1(x,y); return if(value(pix)>0.8,pix*0.8,pix)'
+
+Currently to use infix expressions you must have the L<Parse::RecDescent>
+module installed (available from CPAN).  There is also what might be a
+significant delay the first time you run the infix expression parser
+due to the compilation of the expression grammar.
+
+=head3 Postfix expressions
+
+You can supply postfix or reverse-polish notation expressions to
+transform2() through the C<rpnexpr> keyword.
+
+The parser for C<rpnexpr> emulates a stack machine, so operators will
+expect to see their parameters on top of the stack.  A stack machine
+isn't actually used during the image transformation itself.
+
+You can store the value at the top of the stack in a variable called
+C<foo> using C<!foo> and retrieve that value again using @foo.  The !foo
+notation will pop the value from the stack.
+
+An example equivalent to the infix expression above:
+
+ $opts{rpnexpr} = 'x y getp1 !pix @pix value 0.8 gt @pix 0.8 * @pix ifp'
+
+At the end of the expression there should be a single pixel value left
+on the stack, which is used as the output pixel.
+
+=head3 Operators
+
+transform2() has a fairly rich range of operators.
+
+Each entry below includes the usage with C<rpnexpr>, formatted as:
+
+=over
+
+I<operand> I<operand> ... B<I<operator>> -- I<result>
+
+=back
+
+If the operand or result begins with "N" it is a numeric value, if it
+begins with "C" it is a color or pixel value.
+
+=over
+
+=item +, *, -, /, %, **
+
+multiplication, addition, subtraction, division, remainder and
+exponentiation.  Multiplication, addition and subtraction can be used
+on color values too - though you need to be careful - adding 2 white
+values together and multiplying by 0.5 will give you gray, not white.
+
+Division by zero (or a small number) just results in a large number.
+Modulo zero (or a small number) results in zero.  % is implemented
+using fmod() so you can use this to take a value mod a floating point
+value.
+
+=for stopwords N1 N2 N uminus
+
+C<rpnexpr> usage:
+
+=over
+
+I<N1> I<N2> B<+> -- I<N>
+
+I<N1> I<N2> B<*> -- I<N>
+
+I<N1> I<N2> B<-> -- I<N>
+
+I<N1> I<N2> B</> -- I<N>
+
+I<N1> I<N2> B<**> -- I<N>
+
+I<N1> B<uminus> -- I<N>
+
+=back
+
+=item sin(N), cos(N), atan2(y,x)
+
+Some basic trig functions.  They work in radians, so you can't just
+use the hue values.
+
+=for stopwords Ny Nx atan2
+
+C<rpnexpr> usage:
+
+=over
+
+I<N> B<sin> -- I<N>
+
+I<N> B<cos> -- I<N>
+
+I<Ny> I<Nx> B<atan2> -- I<N>
+
+=back
+
+=item distance(x1, y1, x2, y2)
+
+Find the distance between two points.  This is handy (along with
+atan2()) for producing circular effects.
+
+=for stopwords Nx1 Ny1 Nx2 Ny2
+
+C<rpnexpr> usage:
+
+=over
+
+I<Nx1> I<Ny1> I<Nx2> I<Ny2> B<distance> -- I<N>
+
+=back
+
+=item sqrt(n)
+
+Find the square root.  I haven't had much use for this since adding
+the distance() function.
+
+C<rpnexpr> usage:
+
+=over
+
+I<N> B<sqrt> -- I<N>
+
+=back
+
+=item abs(n)
+
+Find the absolute value.
+
+C<rpnexpr> usage:
+
+=over
+
+I<N> B<abs> -- I<N>
+
+=back
+
+=item getp1(x,y), getp2(x,y), getp3(x, y)
+
+Get the pixel at position (x,y) from the first, second or third image
+respectively.  I may add a getpn() function at some point, but this
+prevents static checking of the instructions against the number of
+images actually passed in.
+
+=for stopwords getp1 getp2 getp3
+
+C<rpnexpr> usage:
+
+=over
+
+I<Nx> I<Ny> B<getp1> -- I<C>
+
+I<Nx> I<Ny> B<getp2> -- I<C>
+
+I<Nx> I<Ny> B<getp3> -- I<C>
+
+=back
+
+=item value(c), hue(c), sat(c), hsv(h,s,v), hsva(h,s,v,alpha)
+
+Separates a color value into it's value (brightness), hue (color)
+and saturation elements.  Use hsv() to put them back together (after
+suitable manipulation), or hsva() to include a transparency value.
+
+=for stopwords Nh Ns Nv hsv hsva Nr Ng Nb rgb rgba
+
+C<rpnexpr> usage:
+
+=over
+
+I<C> B<value> -- I<N>
+
+I<C> B<hue> -- I<N>
+
+I<C> B<sat> -- I<N>
+
+I<Nh> I<Ns> I<Nv> B<hsv> -- I<C>
+
+I<Nh> I<Ns> I<Nv> I<Na> B<hsva> -- I<C>
+
+=back
+
+=item red(c), green(c), blue(c), rgb(r,g,b), rgba(r,g,b,a)
+
+Separates a color value into it's red, green and blue colors.  Use
+rgb(r,g,b) to put it back together, or rgba() to include a
+transparency value.
+
+C<rpnexpr> usage:
+
+=over
+
+I<C> B<red> -- I<N>
+
+I<C> B<green> -- I<N>
+
+I<C> B<blue> -- I<N>
+
+I<Nr> I<Ng> I<Nb> B<rgb> -- I<C>
+
+I<Nr> I<Ng> I<Nb> I<Na> B<rgba> -- I<C>
+
+=back
+
+=item alpha(c)
+
+Retrieve the alpha value from a color.
+
+C<rpnexpr> usage:
+
+=over
+
+I<C> B<alpha> -- I<N>
+
+=back
+
+=item int(n)
+
+Convert a value to an integer.  Uses a C int cast, so it may break on
+large values.
+
+C<rpnexpr> usage:
+
+=over
+
+I<N> B<int> -- I<N>
+
+=back
+
+=item if(cond,ntrue,nfalse), if(cond,ctrue,cfalse)
+
+A simple (and inefficient) if function.
+
+=for stopwords Ncond ifp
+
+C<rpnexpr> usage:
+
+=over
+
+I<Ncond> I<N-true-result> I<N-false-result> B<if> -- I<N>
+
+I<Ncond> I<C-true-result> I<C-false-result> B<if> -- I<C>
+
+I<Ncond> I<C-true-result> I<C-false-result> B<ifp> -- I<C>
+
+=back
+
+=item <=,<,==,>=,>,!=
+
+Relational operators (typically used with if()).  Since we're working
+with floating point values the equalities are 'near equalities' - an
+epsilon value is used.
+
+=over
+
+I<N1> I<N2> B<< <= >> -- I<N>
+
+I<N1> I<N2> B<< < >> -- I<N>
+
+I<N1> I<N2> B<< >= >> -- I<N>
+
+I<N1> I<N2> B<< > >> -- I<N>
+
+I<N1> I<N2> B<< == >> -- I<N>
+
+I<N1> I<N2> B<< != >> -- I<N>
+
+=back
+
+=item &&, ||, not(n)
+
+Basic logical operators.
+
+C<rpnexpr> usage:
+
+=over
+
+I<N1> I<N2> B<and> -- I<N>
+
+I<N1> I<N2> B<or> -- I<N>
+
+I<N> B<not> -- I<N>
+
+=back
+
+=item log(n), exp(n)
+
+Natural logarithm and exponential.
+
+C<rpnexpr> usage:
+
+=over
+
+I<N> B<log> -- I<N>
+
+I<N> B<exp> -- I<N>
+
+=back
+
+=item det(a, b, c, d)
+
+Calculate the determinant of the 2 x 2 matrix;
+
+  a b
+  c d
+
+=for stopwords Na Nv Nc Nd det
+
+C<rpnexpr> usage:
+
+=over
+
+I<Na> I<Nb> I<Nc> I<Nd> B<det> -- I<N>
+
+=back
+
+=back
+
+=head3 Constants
+
+transform2() defines the following constants:
+
+=over
+
+=item C<pi>
+
+The classical constant.
+
+=item C<w>
+
+=item C<h>
+
+The width and height of the output image.
+
+=item C<cx>
+
+=item C<cy>
+
+The center of the output image.
+
+=item C<w>I<image number>
+
+=item C<h>I<image number>
+
+The width and height of each of the input images, C<w1> is the width
+of the first input image and so on.
+
+=item C<cx>I<image number>
+
+=item C<cy>I<image number>
+
+The center of each of the input images, (C<cx1>, C<cy1>) is the center
+of the first input image and so on.
+
+=back
+
+A few examples:
+
+=over
+
+  rpnexpr=>'x 25 % 15 * y 35 % 10 * getp1 !pat x y getp1 !pix @pix sat 0.7 gt @pat @pix ifp'
+
+tiles a smaller version of the input image over itself where the
+color has a saturation over 0.7.
+
+  rpnexpr=>'x 25 % 15 * y 35 % 10 * getp1 !pat y 360 / !rat x y getp1 1 @rat - pmult @pat @rat pmult padd'
+
+tiles the input image over itself so that at the top of the image the
+full-size image is at full strength and at the bottom the tiling is
+most visible.
+
+  rpnexpr=>'x y getp1 !pix @pix value 0.96 gt @pix sat 0.1 lt and 128 128 255 rgb @pix ifp'
+
+replace pixels that are white or almost white with a palish blue
+
+  rpnexpr=>'x 35 % 10 * y 45 % 8 * getp1 !pat x y getp1 !pix @pix sat 0.2 lt @pix value 0.9 gt and @pix @pat @pix value 2 / 0.5 + pmult ifp'
+
+Tiles the input image over it self where the image isn't white or almost
+white.
+
+  rpnexpr=>'x y 160 180 distance !d y 180 - x 160 - atan2 !a @d 10 / @a + 3.1416 2 * % !a2 @a2 180 * 3.1416 / 1 @a2 sin 1 + 2 / hsv'
+
+Produces a spiral.
+
+  rpnexpr=>'x y 160 180 distance !d y 180 - x 160 - atan2 !a @d 10 / @a + 3.1416 2 * % !a2 @a 180 * 3.1416 / 1 @a2 sin 1 + 2 / hsv'
+
+A spiral built on top of a color wheel.
+
+=back
+
+For details on expression parsing see L<Imager::Expr>.  For details on
+the virtual machine used to transform the images, see
+L<Imager::regmach>.
+
+  # generate a colorful spiral
+  # requires that Parse::RecDescent be installed
+  my $newimg = Imager::transform2({
+                                   width => 160, height=>160,
+                                   expr => <<EOS
+  dist = distance(x, y, w/2, h/2);
+  angle = atan2(y-h/2, x-w/2);
+  angle2 = (dist / 10 + angle) % ( 2 * pi );
+  return hsv(angle*180/pi, 1, (sin(angle2)+1)/2);
+  EOS
+                                  });
+
+  # replace green portions of an image with another image
+  my $newimg = Imager::transform2({
+                                   rpnexpr => <<EOS
+  x y getp2 !pat # used to replace green portions
+  x y getp1 !pix # source with "green screen"
+  @pix red 10 lt @pix blue 10 lt && # low blue and red
+  @pix green 254 gt && # and high green
+  @pat @pix ifp
+  EOS
+                                  }, $source, $background);
+
+=head2 Matrix Transformations
+
+=over
+
+=item matrix_transform()
+
+Rather than having to write code in a little language, you can use a
+matrix to perform affine transformations, using the matrix_transform()
+method:
+
+  my $newimg = $img->matrix_transform(matrix=>[ -1, 0, $img->getwidth-1,
+                                            0,  1, 0,
+                                            0,  0, 1 ]);
+
+By default the output image will be the same size as the input image,
+but you can supply the C<xsize> and C<ysize> parameters to change the
+size.
+
+Rather than building matrices by hand you can use the Imager::Matrix2d
+module to build the matrices.  This class has methods to allow you to
+scale, shear, rotate, translate and reflect, and you can combine these
+with an overloaded multiplication operator.
+
+WARNING: the matrix you provide in the matrix operator transforms the
+co-ordinates within the B<destination> image to the co-ordinates
+within the I<source> image.  This can be confusing.
+
+You can also supply a C<back> argument which acts as a background
+color for the areas of the image with no samples available (outside
+the rectangle of the source image.)  This can be either an
+Imager::Color or Imager::Color::Float object.  This is B<not> mixed
+transparent pixels in the middle of the source image, it is B<only>
+used for pixels where there is no corresponding pixel in the source
+image.
+
+=back
+
+=head1 AUTHOR
+
+Tony Cook <tonyc@cpan.org>, Arnar M. Hrafnkelsson
+
+=cut

@@ -1,0 +1,704 @@
+=head1 NAME
+
+DBIx::Class::Manual::FAQ - Frequently Asked Questions (in theory)
+
+=head1 DESCRIPTION
+
+This document is intended as an anti-map of the documentation. If you
+know what you want to do, but not how to do it in L<DBIx::Class>, then
+look here. It does B<not> contain much code or examples, it just gives
+explanations and pointers to the correct pieces of documentation to
+read.
+
+=head1 FAQs
+
+How Do I:
+
+=head2 Getting started
+
+=over 4
+
+=item .. create a database to use?
+
+First, choose a database. For testing/experimenting, we recommend
+L<DBD::SQLite>, which is a self-contained small database (i.e. all you
+need to do is to install L<DBD::SQLite> from CPAN, and it works).
+
+Next, spend some time defining which data you need to store, and how
+it relates to the other data you have. For some help on normalisation,
+go to L<http://b62.tripod.com/doc/dbbase.htm>.
+
+Now, decide whether you want to have the database itself be the
+definitive source of information about the data layout, or your
+DBIx::Class schema. If it's the former, look up the documentation for
+your database, eg. L<http://sqlite.org/lang_createtable.html>, on how
+to create tables, and start creating them. For a nice universal
+interface to your database, you can try L<DBI::Shell>. If you decided
+on the latter choice, read the FAQ on setting up your classes
+manually, and the one on creating tables from your schema.
+
+=item .. use DBIx::Class with L<Catalyst>?
+
+Install L<Catalyst::Model::DBIC::Schema> from CPAN. See its
+documentation, or below, for further details.
+
+=item .. set up my DBIx::Class classes automatically from my database?
+
+Install L<DBIx::Class::Schema::Loader> from CPAN, and read its documentation.
+
+=item .. set up my DBIx::Class classes manually?
+
+Look at the L<DBIx::Class::Manual::Example> and come back here if you get lost.
+
+=item .. create my database tables from my DBIx::Class schema?
+
+Create your classes manually, as above. Write a script that calls
+L<DBIx::Class::Schema/deploy>. See there for details, or the
+L<DBIx::Class::Manual::Cookbook>.
+
+=item .. store/retrieve Unicode data in my database?
+
+Make sure you database supports Unicode and set the connect
+attributes appropriately - see
+L<DBIx::Class::Manual::Cookbook/Using Unicode>
+
+=item .. connect to my database?
+
+Once you have created all the appropriate table/source classes, and an
+overall L<Schema|DBIx::Class::Schema> class, you can start using
+them in an application. To do this, you need to create a central
+Schema object, which is used to access all the data in the various
+tables. See L<DBIx::Class::Schema/connect> for details. The actual
+connection does not happen until you actually request data, so don't
+be alarmed if the error from incorrect connection details happens a
+lot later.
+
+=item .. use DBIx::Class across multiple databases?
+
+If your database server allows you to run queries across multiple
+databases at once, then so can DBIx::Class. All you need to do is make
+sure you write the database name as part of the
+L<table|DBIx::Class::ResultSourceProxy::Table/table> call. Eg:
+
+  __PACKAGE__->table('mydb.mytablename');
+
+And load all the Result classes for both / all databases by calling
+L<DBIx::Class::Schema/load_namespaces>.
+
+=item .. use DBIx::Class across PostgreSQL/DB2/Oracle schemas?
+
+Add the name of the schema to the table name, when invoking
+L<table|DBIx::Class::ResultSourceProxy::Table/table>, and make sure the user
+you are about to connect as has permissions to read/write all the
+schemas/tables as necessary.
+
+=back
+
+=head2 Relationships
+
+=over 4
+
+=item .. tell DBIx::Class about relationships between my tables?
+
+There are a variety of relationship types that come pre-defined for
+you to use.  These are all listed in L<DBIx::Class::Relationship>. If
+you need a non-standard type, or more information, look in
+L<DBIx::Class::Relationship::Base>.
+
+=item .. define a one-to-many relationship?
+
+This is called a C<has_many> relationship on the one side, and a
+C<belongs_to> relationship on the many side. Currently these need to
+be set up individually on each side. See L<DBIx::Class::Relationship>
+for details.
+
+=item .. define a relationship where this table contains another table's primary key? (foreign key)
+
+Create a C<belongs_to> relationship for the field containing the
+foreign key.  See L<DBIx::Class::Relationship/belongs_to>.
+
+=item .. define a foreign key relationship where the key field may contain NULL?
+
+Just create a C<belongs_to> relationship, as above. If the column is
+NULL then the inflation to the foreign object will not happen. This
+has a side effect of not always fetching all the relevant data, if you
+use a nullable foreign-key relationship in a JOIN, then you probably
+want to set the C<join_type> to C<left>.
+
+=item .. define a relationship where the key consists of more than one column?
+
+Instead of supplying a single column name, all relationship types also
+allow you to supply a hashref containing the condition across which
+the tables are to be joined. The condition may contain as many fields
+as you like. See L<DBIx::Class::Relationship::Base>.
+
+=item .. define a relationship bridge across an intermediate table? (many-to-many)
+
+The term 'relationship' is used loosely with many_to_many as it is not considered a
+relationship in the fullest sense.  For more info, read the documentation on L<DBIx::Class::Relationship/many_to_many>.
+
+=item .. stop DBIx::Class from attempting to cascade deletes on my has_many and might_have relationships?
+
+By default, DBIx::Class cascades deletes and updates across
+C<has_many> and C<might_have> relationships. You can disable this
+behaviour on a per-relationship basis by supplying
+C<< cascade_delete => 0 >> in the relationship attributes.
+
+The cascaded operations are performed after the requested delete or
+update, so if your database has a constraint on the relationship, it
+will have deleted/updated the related records or raised an exception
+before DBIx::Class gets to perform the cascaded operation.
+
+See L<DBIx::Class::Relationship>.
+
+=item .. use a relationship?
+
+Use its name. An accessor is created using the name. See examples in
+L<DBIx::Class::Manual::Cookbook/USING RELATIONSHIPS>.
+
+=back
+
+=head2 Searching
+
+=over 4
+
+=item .. search for data?
+
+Create a C<$schema> object, as mentioned above in L</.. connect to my
+database?>. Find the
+L<ResultSet|DBIx::Class::Manual::Glossary/ResultSet> that you want to
+search in, by calling C<< $schema->resultset('MySource') >> and call
+C<search> on it. See L<DBIx::Class::ResultSet/search>.
+
+=item .. search using database functions?
+
+Supplying something like:
+
+ ->search({'mydatefield' => 'now()'})
+
+to search, will probably not do what you expect. It will quote the
+text "now()", instead of trying to call the function. To provide
+literal, unquoted text you need to pass in a scalar reference, like
+so:
+
+ ->search({'mydatefield' => \'now()'})
+
+=item .. sort the results of my search?
+
+Supply a list of columns you want to sort by to the C<order_by>
+attribute. See L<DBIx::Class::ResultSet/order_by>.
+
+=item .. sort my results based on fields I've aliased using C<as>?
+
+You didn't alias anything, since L<as|DBIx::Class::ResultSet/as>
+B<has nothing to do> with the produced SQL. See
+L<DBIx::Class::ResultSet/select> for details.
+
+=item .. group the results of my search?
+
+Supply a list of columns you want to group on, to the C<group_by>
+attribute, see L<DBIx::Class::ResultSet/group_by>.
+
+=item .. group my results based on fields I've aliased using C<as>?
+
+You don't. See the explanation on ordering by an alias above.
+
+=item .. filter the results of my search?
+
+The first argument to C<search> is a hashref of accessor names and
+values to filter them by, for example:
+
+ ->search({'created_time' => { '>=', '2006-06-01 00:00:00' } })
+
+Note that to use a function here you need to make it a scalar
+reference:
+
+ ->search({'created_time' => { '>=', \'yesterday()' } })
+
+=item .. search in several tables simultaneously?
+
+To search in two related tables, you first need to set up appropriate
+relationships between their respective classes. When searching you
+then supply the name of the relationship to the C<join> attribute in
+your search, for example when searching in the Books table for all the
+books by the author "Fred Bloggs":
+
+ ->search({'authors.name' => 'Fred Bloggs'}, { join => 'authors' })
+
+The type of join created in your SQL depends on the type of
+relationship between the two tables, see L<DBIx::Class::Relationship>
+for the join used by each relationship.
+
+=item .. create joins with conditions other than column equality?
+
+Currently, L<DBIx::Class> can only create join conditions using
+equality, so you're probably better off creating a C<view> in your
+database, and using that as your source. A C<view> is a stored SQL
+query, which can be accessed similarly to a table, see your database
+documentation for details.
+
+=item .. search with an SQL function on the left hand side?
+
+To use an SQL function on the left hand side of a comparison you currently need
+to resort to literal SQL:
+
+ ->search( \[ 'YEAR(date_of_birth) = ?', 1979 ] );
+
+=item .. find more help on constructing searches?
+
+Behind the scenes, DBIx::Class uses L<SQL::Abstract> to help construct
+its SQL searches. So if you fail to find help in the
+L<DBIx::Class::Manual::Cookbook>, try looking in the SQL::Abstract
+documentation.
+
+=item .. make searches in Oracle (10gR2 and newer) case-insensitive?
+
+To make Oracle behave like most RDBMS use on_connect_do to issue
+alter session statements on database connection establishment:
+
+ ->on_connect_do("ALTER SESSION SET NLS_COMP = 'LINGUISTIC'");
+ ->on_connect_do("ALTER SESSION SET NLS_SORT = '<NLS>_CI'");
+ e.g.
+ ->on_connect_do("ALTER SESSION SET NLS_SORT = 'BINARY_CI'");
+ ->on_connect_do("ALTER SESSION SET NLS_SORT = 'GERMAN_CI'");
+
+=item .. format a DateTime object for searching?
+
+L<search|DBIx::Class::ResultSet/search> and L<find|DBIx::Class::ResultSet/find>
+do not take L<DBIx::Class::InflateColumn> into account, and so your L<DateTime>
+object will not be correctly deflated into a format your RDBMS expects.
+
+The L<datetime_parser|DBIx::Class::Storage::DBI/datetime_parser> method on your
+storage object can be used to return the object that would normally do this, so
+it's easy to do it manually:
+
+  my $dtf = $schema->storage->datetime_parser;
+  my $rs = $schema->resultset('users')->search(
+    {
+      signup_date => {
+        -between => [
+          $dtf->format_datetime($dt_start),
+          $dtf->format_datetime($dt_end),
+        ],
+      }
+    },
+  );
+
+With in a Result Class method, you can get this from the
+L<C<result_source>|DBIx::Class::Row/result_source>.
+
+  my $dtf = $self->result_source->storage->datetime_parser;
+
+This kludge is necessary only for conditions passed to
+L<search|DBIx::Class::ResultSet/search> and L<DBIx::Class::ResultSet/find>,
+whereas L<create|DBIx::Class::ResultSet/create> and L<DBIx::Class::Row/update>
+(but not L<DBIx::Class::ResultSet/update>) are
+L<DBIx::Class::InflateColumn>-aware and will do the right thing when supplied
+an inflated L<DateTime> object.
+
+=back
+
+=head2 Fetching data
+
+=over 4
+
+=item .. fetch as much data as possible in as few select calls as possible?
+
+See the prefetch examples in the L<Cookbook|DBIx::Class::Manual::Cookbook>.
+
+=item .. fetch a whole column of data instead of a row?
+
+Call C<get_column> on a L<DBIx::Class::ResultSet>. This returns a
+L<DBIx::Class::ResultSetColumn>. See its documentation and the
+L<Cookbook|DBIx::Class::Manual::Cookbook> for details.
+
+=item .. fetch a formatted column?
+
+In your table schema class, create a "private" column accessor with:
+
+  __PACKAGE__->add_columns(my_column => { accessor => '_hidden_my_column' });
+
+Then, in the same class, implement a subroutine called "my_column" that
+fetches the real value and does the formatting you want.
+
+See the L<Cookbook|DBIx::Class::Manual::Cookbook> for more details.
+
+=item .. fetch a single (or topmost) row?
+
+Use the L<DBIx::Class::ResultSet/rows> and
+L<DBIx::Class::ResultSet/order_by> attributes to order your data and
+pick off a single row.
+
+See also L<DBIx::Class::Manual::Cookbook/Retrieve one and only one row from a resultset>.
+
+A less readable way is to ask a regular search to return 1 row, using
+L<DBIx::Class::ResultSet/slice>:
+
+  ->search->(undef, { order_by => "id DESC" })->slice(0)
+
+which (if supported by the database) will use LIMIT/OFFSET to hint to the
+database that we really only need one row. This can result in a significant
+speed improvement. The method using L<DBIx::Class::ResultSet/single> mentioned
+in the cookbook can do the same if you pass a C<rows> attribute to the search.
+
+=item .. refresh a row from storage?
+
+Use L<DBIx::Class::Row/discard_changes>.
+
+  $result->discard_changes
+
+Discarding changes and refreshing from storage are two sides of the same coin.  When you
+want to discard your local changes, just re-fetch the row from storage.  When you want
+to get a new, fresh copy of the row, just re-fetch the row from storage.
+L<DBIx::Class::Row/discard_changes> does just that by re-fetching the row from storage
+using the row's primary key.
+
+=item .. fetch my data a "page" at a time?
+
+Pass the C<rows> and C<page> attributes to your search, eg:
+
+  ->search({}, { rows => 10, page => 1});
+
+=item .. get a count of all rows even when paging?
+
+Call C<pager> on the paged resultset, it will return a L<Data::Page>
+object. Calling C<total_entries> on the pager will return the correct
+total.
+
+C<count> on the resultset will only return the total number in the page.
+
+=back
+
+=head2 Inserting and updating data
+
+=over 4
+
+=item .. insert a row with an auto incrementing primary key?
+
+This happens automatically. After
+L<creating|DBIx::Class::ResultSet/create> a result object, the primary
+key value created by your database can be fetched by calling C<id> (or
+the access of your primary key column) on the object.
+
+=item .. insert a row with a primary key that uses a sequence?
+
+You need to create a trigger in your database that updates your
+primary key field from the sequence. To help PK::Auto find the next
+key value, you can tell it the name of the sequence in the
+C<column_info> supplied with C<add_columns>.
+
+ ->add_columns({ id => { sequence => 'mysequence', auto_nextval => 1 } });
+
+=item .. insert many rows of data efficiently?
+
+The C<populate> method in L<DBIx::Class::ResultSet> provides
+efficient bulk inserts.
+
+L<DBIx::Class::Fixtures> provides an alternative way to do this.
+
+=item .. update a collection of rows at the same time?
+
+Create a resultset using a C<search>, to filter the rows of data you
+would like to update, then call C<update> on the resultset to change all
+the rows at once.
+
+=item .. use database functions when updating rows?
+
+=item .. update a column using data from another column?
+
+To stop the column name from being quoted, you'll need to tell DBIC
+that the right hand side is an SQL identifier (it will be quoted
+properly if you have quoting enabled):
+
+ ->update({ somecolumn => { -ident => 'othercolumn' } })
+
+This method will not retrieve the new value and put it in your Row
+object. To fetch the new value, use the C<discard_changes> method on
+the Row.
+
+  # will return the scalar reference:
+  $result->somecolumn()
+
+  # issue a select using the PK to re-fetch the row data:
+  $result->discard_changes();
+
+  # Now returns the correct new value:
+  $result->somecolumn()
+
+To update and refresh at once, chain your calls:
+
+  $result->update({ 'somecolumn' => { -ident => 'othercolumn' } })->discard_changes;
+
+=item .. store JSON/YAML in a column and have it deflate/inflate automatically?
+
+You can use L<DBIx::Class::InflateColumn> to accomplish YAML/JSON storage transparently.
+
+If you want to use JSON, then in your table schema class, do the following:
+
+ use JSON;
+
+ __PACKAGE__->add_columns(qw/ ... my_column ../)
+ __PACKAGE__->inflate_column('my_column', {
+     inflate => sub { jsonToObj(shift) },
+     deflate => sub { objToJson(shift) },
+ });
+
+For YAML, in your table schema class, do the following:
+
+ use YAML;
+
+ __PACKAGE__->add_columns(qw/ ... my_column ../)
+ __PACKAGE__->inflate_column('my_column', {
+     inflate => sub { YAML::Load(shift) },
+     deflate => sub { YAML::Dump(shift) },
+ });
+
+This technique is an easy way to store supplemental unstructured data in a table. Be
+careful not to overuse this capability, however. If you find yourself depending more
+and more on some data within the inflated column, then it may be time to factor that
+data out.
+
+=back
+
+=head2 Custom methods in Result classes
+
+You can add custom methods that do arbitrary things, even to unrelated tables.
+For example, to provide a C<< $book->foo() >> method which searches the
+cd table, you'd could add this to Book.pm:
+
+  sub foo {
+    my ($self, $col_data) = @_;
+    return $self->result_source->schema->resultset('cd')->search($col_data);
+  }
+
+And invoke that on any Book Result object like so:
+
+  my $rs = $book->foo({ title => 'Down to Earth' });
+
+When two tables ARE related, L<DBIx::Class::Relationship::Base> provides many
+methods to find or create data in related tables for you. But if you want to
+write your own methods, you can.
+
+For example, to provide a C<< $book->foo() >> method to manually implement
+what create_related() from L<DBIx::Class::Relationship::Base> does, you could
+add this to Book.pm:
+
+  sub foo {
+    my ($self, $rel_name, $col_data) = @_;
+    return $self->related_resultset($rel_name)->create($col_data);
+  }
+
+Invoked like this:
+
+  my $author = $book->foo('author', { name => 'Fred' });
+
+=head2 Misc
+
+=over 4
+
+=item How do I store my own (non-db) data in my DBIx::Class objects?
+
+You can add your own data accessors to your Result classes.
+
+One method is to use the built in mk_group_accessors (via L<Class::Accessor::Grouped>)
+
+	package App::Schema::Result::MyTable;
+
+	use parent 'DBIx::Class::Core';
+
+	__PACKAGE__->table('foo'); #etc
+	__PACKAGE__->mk_group_accessors('simple' => qw/non_column_data/); # must use simple group
+
+An another method is to use L<Moose> with your L<DBIx::Class> package.
+
+	package App::Schema::Result::MyTable;
+
+	use Moose; # import Moose
+	use Moose::Util::TypeConstraint; # import Moose accessor type constraints
+
+	extends 'DBIx::Class::Core'; # Moose changes the way we define our parent (base) package
+
+	has 'non_column_data' => ( is => 'rw', isa => 'Str' ); # define a simple attribute
+
+	__PACKAGE__->table('foo'); # etc
+
+With either of these methods the resulting use of the accessor would be
+
+	my $result;
+
+	# assume that somewhere in here $result will get assigned to a MyTable row
+
+	$result->non_column_data('some string'); # would set the non_column_data accessor
+
+	# some other stuff happens here
+
+	$result->update(); # would not inline the non_column_data accessor into the update
+
+
+=item How do I use DBIx::Class objects in my TT templates?
+
+Like normal objects, mostly. However you need to watch out for TT
+calling methods in list context. When calling relationship accessors
+you will not get resultsets, but a list of all the related objects.
+
+Use the L<DBIx::Class::ResultSet/search_rs> method, or the
+relationship accessor methods ending with "_rs" to work around this
+issue.
+
+See also L<DBIx::Class::Relationship/has_many>.
+
+=item See the SQL statements my code is producing?
+
+Set the shell environment variable C<DBIC_TRACE> to a true value.
+
+For more info see L<DBIx::Class::Storage> for details of how
+to turn on debugging in the environment, pass your own filehandle to
+save debug to, or create your own callback.
+
+=item Why didn't my search run any SQL?
+
+L<DBIx::Class> runs the actual SQL statement as late as possible, thus
+if you create a resultset using C<search> in scalar context, no query
+is executed. You can create further resultset refinements by calling
+search again or relationship accessors. The SQL query is only run when
+you ask the resultset for an actual result object.
+
+=item How do I deal with tables that lack a primary key?
+
+If your table lacks a primary key, DBIx::Class can't work out which row
+it should operate on, for example to delete or update.  However, a
+UNIQUE constraint on one or more columns allows DBIx::Class to uniquely
+identify the row, so you can tell L<DBIx::Class::ResultSource> these
+columns act as a primary key, even if they don't from the database's
+point of view:
+
+ $resultset->set_primary_key(@column);
+
+=item How do I make my program start faster?
+
+Look at the tips in L<DBIx::Class::Manual::Cookbook/"STARTUP SPEED">
+
+=item How do I reduce the overhead of database queries?
+
+You can reduce the overhead of object creation within L<DBIx::Class>
+using the tips in L<DBIx::Class::Manual::Cookbook/"Skip result object creation for faster results">
+and L<DBIx::Class::Manual::Cookbook/"Get raw data for blindingly fast results">
+
+=item How do I override a run time method (e.g. a relationship accessor)?
+
+If you need access to the original accessor, then you must "wrap around" the original method.
+You can do that either with L<Moose::Manual::MethodModifiers> or L<Class::Method::Modifiers>.
+The code example works for both modules:
+
+    package Your::Schema::Group;
+    use Class::Method::Modifiers;
+
+    # ... declare columns ...
+
+    __PACKAGE__->has_many('group_servers', 'Your::Schema::GroupServer', 'group_id');
+    __PACKAGE__->many_to_many('servers', 'group_servers', 'server');
+
+    # if the server group is a "super group", then return all servers
+    # otherwise return only servers that belongs to the given group
+    around 'servers' => sub {
+        my $orig = shift;
+        my $self = shift;
+
+        return $self->$orig(@_) unless $self->is_super_group;
+        return $self->result_source->schema->resultset('Server')->all;
+    };
+
+If you just want to override the original method, and don't care about the data
+from the original accessor, then you have two options. Either use
+L<Method::Signatures::Simple> that does most of the work for you, or do
+it the "dirty way".
+
+L<Method::Signatures::Simple> way:
+
+    package Your::Schema::Group;
+    use Method::Signatures::Simple;
+
+    # ... declare columns ...
+
+    __PACKAGE__->has_many('group_servers', 'Your::Schema::GroupServer', 'group_id');
+    __PACKAGE__->many_to_many('servers', 'group_servers', 'server');
+
+    # The method keyword automatically injects the annoying my $self = shift; for you.
+    method servers {
+        return $self->result_source->schema->resultset('Server')->search({ ... });
+    }
+
+The dirty way:
+
+    package Your::Schema::Group;
+    use Sub::Name;
+
+    # ... declare columns ...
+
+    __PACKAGE__->has_many('group_servers', 'Your::Schema::GroupServer', 'group_id');
+    __PACKAGE__->many_to_many('servers', 'group_servers', 'server');
+
+    *servers = subname servers => sub {
+        my $self = shift;
+        return $self->result_source->schema->resultset('Server')->search({ ... });
+    };
+
+=back
+
+=head2 Notes for CDBI users
+
+=over 4
+
+=item Is there a way to make an object auto-stringify itself as a
+particular column or group of columns (a-la cdbi Stringfy column
+group, or stringify_self method) ?
+
+See L<DBIx::Class::Manual::Cookbook/Stringification>
+
+=back
+
+=head2 Troubleshooting
+
+=over 4
+
+=item Help, I can't connect to postgresql!
+
+If you get an error such as:
+
+  DBI connect('dbname=dbic','user',...) failed: could not connect to server:
+  No such file or directory Is the server running locally and accepting
+  connections on Unix domain socket "/var/run/postgresql/.s.PGSQL.5432"?
+
+Likely you have/had two copies of postgresql installed simultaneously, the
+second one will use a default port of 5433, while L<DBD::Pg> is compiled with a
+default port of 5432.
+
+You can change the port setting in C<postgresql.conf>.
+
+=item I've lost or forgotten my mysql password
+
+Stop mysqld and restart it with the --skip-grant-tables option.
+
+Issue the following statements in the mysql client.
+
+  UPDATE mysql.user SET Password=PASSWORD('MyNewPass') WHERE User='root';
+  FLUSH PRIVILEGES;
+
+Restart mysql.
+
+Taken from:
+
+L<http://dev.mysql.com/doc/refman/5.1/en/resetting-permissions.html>.
+
+=back
+
+=head1 FURTHER QUESTIONS?
+
+Check the list of L<additional DBIC resources|DBIx::Class/GETTING HELP/SUPPORT>.
+
+=head1 COPYRIGHT AND LICENSE
+
+This module is free software L<copyright|DBIx::Class/COPYRIGHT AND LICENSE>
+by the L<DBIx::Class (DBIC) authors|DBIx::Class/AUTHORS>. You can
+redistribute it and/or modify it under the same terms as the
+L<DBIx::Class library|DBIx::Class/COPYRIGHT AND LICENSE>.

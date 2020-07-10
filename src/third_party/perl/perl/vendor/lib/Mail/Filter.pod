@@ -1,0 +1,106 @@
+=encoding utf8
+
+=head1 NAME
+
+Mail::Filter - filter mail through multiple subroutines
+
+=head1 SYNOPSIS
+
+ use Mail::Filter;
+    
+ my $filter = Mail::Filter->new( \&filter1, \&filter2 );
+    
+ my $mail   = Mail::Internet->new( [<>] );
+ my $mail   = $filter->filter($mail);
+
+ my $folder = Mail::Folder->new( .... );
+ my $filter->filter($folder);
+
+=head1 DESCRIPTION
+
+C<Mail::Filter> provides an interface to filtering Email through multiple
+subroutines.
+
+C<Mail::Filter> filters mail by calling each filter subroutine in turn. Each
+filter subroutine is called with two arguments, the first is the filter
+object and the second is the mail or folder object being filtered.
+
+The result from each filter sub is passed to the next filter as the mail
+object. If a filter subroutine returns undef, then C<Mail::Filter> will abort
+and return immediately.
+
+The function returns the result from the last subroutine to operate on the 
+mail object.  
+
+=head1 METHODS
+
+=head2 Constructors
+
+=over 4
+
+=item Mail::Filter-E<gt>B<new>(@filters)
+
+Create a new C<Mail::Filter> object with the given filter subroutines. Each
+filter may be either a code reference or the name of a method to call
+on the <Mail::Filter> object.
+
+=back
+
+=head2 Accessors
+
+=over 4
+
+=item $obj-E<gt>B<add>(@filters)
+
+Add the given @filters to the end of the filter list.
+
+=back
+
+=head2 Processing
+
+=over 4
+
+=item $obj-E<gt>B<filter>($mail|$folder)
+
+If the first argument is a L<Mail::Internet|Mail::Internet> object, then this object will
+be passed through the filter list. If the first argument is a Mail::Folder
+object, then each message in turn will be passed through the filter list.
+
+=item $obj-E<gt>B<folder>()
+
+While the L<filter()|Mail::Filter/"Processing"> method is called with a Mail::Folder object, these
+filter subroutines can call this method to obtain the folder object that is
+being processed.
+
+=item $obj-E<gt>B<msgnum>()
+
+If the L<filter()|Mail::Filter/"Processing"> method is called with a Mail::Folder object, then the
+filter subroutines may call this method to obtain the message number
+of the message that is being processed.
+
+=back
+
+=head1 SEE ALSO
+
+This module is part of the MailTools distribution,
+F<http://perl.overmeer.net/mailtools/>.
+
+=head1 AUTHORS
+
+The MailTools bundle was developed by Graham Barr.  Later, Mark
+Overmeer took over maintenance without commitment to further development.
+
+Mail::Cap by Gisle Aas E<lt>aas@oslonett.noE<gt>.
+Mail::Field::AddrList by Peter Orbaek E<lt>poe@cit.dkE<gt>.
+Mail::Mailer and Mail::Send by Tim Bunce E<lt>Tim.Bunce@ig.co.ukE<gt>.
+For other contributors see ChangeLog.
+
+=head1 LICENSE
+
+Copyrights 1995-2000 Graham Barr E<lt>gbarr@pobox.comE<gt> and
+2001-2017 Mark Overmeer E<lt>perl@overmeer.netE<gt>.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See F<http://www.perl.com/perl/misc/Artistic.html>
+

@@ -1,0 +1,74 @@
+=head1 NAME
+
+Imager::Security - brief notes on security and image processing
+
+=head1 SYNOPSIS
+
+  # keep abreast of security updates
+  apt-get update && apt-get upgrade
+  yum upgrade
+  pkgin update && pkgin upgrade
+  # or local equivalent
+
+  # limit memory use
+  use Imager;
+  # only images that use up to 10MB
+  Imager->set_file_limits(bytes => 10_000_000);
+
+=head1 DESCRIPTION
+
+There's two basic security considerations when dealing with images
+from an unknown source:
+
+=over
+
+=item *
+
+keeping your libraries up to date
+
+=item *
+
+limiting the amount of memory used to store images
+
+=back
+
+=head2 Keeping libraries up to date
+
+Image file format libraries such as C<libpng> or C<libtiff> have
+relatively frequent security updates, keeping your libraries up to
+date is basic security.
+
+If you're using user supplied fonts, you will need to keep your font
+libraries up to date too.
+
+=head2 Limiting memory used
+
+With compression, and especially with pointer formats like TIFF, it's
+possible to store very large images in a relatively small file.
+
+If you're receiving image data from an untrusted source you should
+limit the amount of memory that Imager can allocate for a read in
+image file using the C<set_file_limits()> method.
+
+  Imager->set_file_limits(bytes => 10_000_000);
+
+You may also want to limit the maximum width and height of images read
+from files:
+
+  Imager->set_file_limits(width => 10_000, height => 10_000,
+                          bytes => 10_000_000);
+
+This has no effect on images created without a file:
+
+  # succeeds
+  my $image = Imager->new(xsize => 10_001, ysize => 10_001);
+
+You can reset to the defaults with:
+
+  Imager->set_file_limits(reset => 1);
+
+=head1 AUTHOR
+
+Tony Cook <tonyc@cpan.org>
+
+=cut

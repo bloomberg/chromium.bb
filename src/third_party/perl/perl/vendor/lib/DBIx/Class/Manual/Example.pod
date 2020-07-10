@@ -1,0 +1,115 @@
+=head1 NAME
+
+DBIx::Class::Manual::Example - Simple CD database example
+
+=head1 DESCRIPTION
+
+This tutorial will guide you through the process of setting up and
+testing a very basic CD database using SQLite, with DBIx::Class::Schema
+as the database frontend.
+
+The database structure is based on the following rules:
+
+  An artist can have many cds, and each cd belongs to just one artist.
+  A cd can have many tracks, and each track belongs to just one cd.
+
+The database is implemented with the following:
+
+  table 'artist' with columns:  artistid, name
+  table 'cd'     with columns:  cdid, artistid, title, year
+  table 'track'  with columns:  trackid, cdid, title
+
+Each of the table's first columns is the primary key; any subsequent
+keys are foreign keys.
+
+=head2 Installation
+
+You'll need to install DBIx::Class via CPAN, and you'll also need to
+install sqlite3 (not sqlite) if it's not already intalled.
+
+=head3 The database/tables/data
+
+Your distribution already comes with a pre-filled SQLite database
+F<examples/Schema/db/example.db>. You can see it by e.g.
+
+  cpanm --look DBIx::Class
+
+If for some reason the file is unreadable on your system, you can
+recreate it as follows:
+
+  cp -a <unpacked-DBIC-tarball>/examples/Schema dbicapp
+  cd dbicapp
+  rm db/example.db
+  sqlite3 db/example.db < db/example.sql
+  perl insertdb.pl
+
+=head3 Testing the database
+
+Enter the example Schema directory
+
+  cd <unpacked-DBIC-tarball>/examples/Schema
+
+Run the script testdb.pl, which will test that the database has
+successfully been filled.
+
+When this script is run, it should output the following:
+
+ get_tracks_by_cd(Bad):
+ Leave Me Alone
+ Smooth Criminal
+ Dirty Diana
+
+ get_tracks_by_artist(Michael Jackson):
+ Billie Jean (from the CD 'Thriller')
+ Beat It (from the CD 'Thriller')
+ Leave Me Alone (from the CD 'Bad')
+ Smooth Criminal (from the CD 'Bad')
+ Dirty Diana (from the CD 'Bad')
+
+ get_cd_by_track(Stan):
+ The Marshall Mathers LP has the track 'Stan'.
+
+ get_cds_by_artist(Michael Jackson):
+ Thriller
+ Bad
+
+ get_artist_by_track(Dirty Diana):
+ Michael Jackson recorded the track 'Dirty Diana'.
+
+ get_artist_by_cd(The Marshall Mathers LP):
+ Eminem recorded the CD 'The Marshall Mathers LP'.
+
+
+=head3 Discussion about the results
+
+The data model defined in this example has an artist with multiple CDs,
+and a CD with multiple tracks; thus, it's simple to traverse from a
+track back to a CD, and from there back to an artist. This is
+demonstrated in the get_tracks_by_artist routine, where we easily walk
+from the individual track back to the title of the CD that the track
+came from ($track->cd->title).
+
+Note also that in the get_tracks_by_cd and get_tracks_by_artist
+routines, the result set is called multiple times with the 'next'
+iterator.  In contrast, get_cd_by_track uses the 'first' result set
+method, since only one CD is expected to have a specific track.
+
+This example uses L<DBIx::Class::Schema/load_namespaces> to load in the
+appropriate L<Result|DBIx::Class::Manual::ResultClass> classes from the
+C<MyApp::Schema::Result> namespace, and any required
+L<ResultSet|DBIx::Class::ResultSet> classes from the
+C<MyApp::Schema::ResultSet> namespace (although we did not add, nor needed
+any such classes in this example).
+
+=head1 FURTHER QUESTIONS?
+
+Check the list of L<additional DBIC resources|DBIx::Class/GETTING HELP/SUPPORT>.
+
+=head1 COPYRIGHT AND LICENSE
+
+This module is free software L<copyright|DBIx::Class/COPYRIGHT AND LICENSE>
+by the L<DBIx::Class (DBIC) authors|DBIx::Class/AUTHORS>. You can
+redistribute it and/or modify it under the same terms as the
+L<DBIx::Class library|DBIx::Class/COPYRIGHT AND LICENSE>.
+
+=cut

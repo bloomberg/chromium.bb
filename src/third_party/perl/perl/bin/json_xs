@@ -1,0 +1,248 @@
+#!perl
+
+=head1 NAME
+
+json_xs - JSON::XS commandline utility
+
+=head1 SYNOPSIS
+
+   json_xs [-v] [-f inputformat] [-t outputformat]
+
+=head1 DESCRIPTION
+
+F<json_xs> converts between some input and output formats (one of them is
+JSON).
+
+The default input format is C<json> and the default output format is
+C<json-pretty>.
+
+=head1 OPTIONS
+
+=over 4
+
+=item -v
+
+Be slightly more verbose.
+
+=item -f fromformat
+
+Read a file in the given format from STDIN.
+
+C<fromformat> can be one of:
+
+=over 4
+
+=item json - a json text encoded, either utf-8, utf16-be/le, utf32-be/le
+
+=item cbor - CBOR (RFC 7049, L<CBOR::XS>), a kind of binary JSON
+
+=item storable - a L<Storable> frozen value
+
+=item storable-file - a L<Storable> file (Storable has two incompatible formats)
+
+=item bencode - use L<Convert::Bencode>, if available (used by torrent files, among others)
+
+=item clzf - L<Compress::LZF> format (requires that module to be installed)
+
+=item eval - evaluate the given code as (non-utf-8) Perl, basically the reverse of "-t dump"
+
+=item yaml - L<YAML> format (requires that module to be installed)
+
+=item string - do not attempt to decode the file data
+
+=item none - nothing is read, creates an C<undef> scalar - mainly useful with C<-e>
+
+=back
+
+=item -t toformat
+
+Write the file in the given format to STDOUT.
+
+C<toformat> can be one of:
+
+=over 4
+
+=item json, json-utf-8 - json, utf-8 encoded
+
+=item json-pretty - as above, but pretty-printed
+
+=item json-utf-16le, json-utf-16be - little endian/big endian utf-16
+
+=item json-utf-32le, json-utf-32be - little endian/big endian utf-32
+
+=item cbor - CBOR (RFC 7049, L<CBOR::XS>), a kind of binary JSON
+
+=item cbor-packed - CBOR using extensions to make it smaller
+
+=item storable - a L<Storable> frozen value in network format
+
+=item storable-file - a L<Storable> file in network format (Storable has two incompatible formats)
+
+=item bencode - use L<Convert::Bencode>, if available (used by torrent files, among others)
+
+=item clzf - L<Compress::LZF> format
+
+=item yaml - L<YAML::XS> format
+
+=item dump - L<Data::Dump>
+
+=item dumper - L<Data::Dumper>
+
+=item string - writes the data out as if it were a string
+
+=item none - nothing gets written, mainly useful together with C<-e>
+
+Note that Data::Dumper doesn't handle self-referential data structures
+correctly - use "dump" instead.
+
+=back
+
+=item -e code
+
+Evaluate perl code after reading the data and before writing it out again
+- can be used to filter, create or extract data. The data that has been
+written is in C<$_>, and whatever is in there is written out afterwards.
+
+=back
+
+=head1 EXAMPLES
+
+   json_xs -t none <isitreally.json
+
+"JSON Lint" - tries to parse the file F<isitreally.json> as JSON - if it
+is valid JSON, the command outputs nothing, otherwise it will print an
+error message and exit with non-zero exit status.
+
+   <src.json json_xs >pretty.json
+
+Prettify the JSON file F<src.json> to F<dst.json>.
+
+   json_xs -f storable-file <file
+
+Read the serialised Storable file F<file> and print a human-readable JSON
+version of it to STDOUT.
+
+   json_xs -f storable-file -t yaml <file
+
+Same as above, but write YAML instead (not using JSON at all :)
+
+   json_xs -f none -e '$_ = [1, 2, 3]'
+
+Dump the perl array as UTF-8 encoded JSON text.
+
+   <torrentfile json_xs -f bencode -e '$_ = join "\n", map @$_, @{$_->{"announce-list"}}' -t string
+
+Print the tracker list inside a torrent file.
+
+   lwp-request http://cpantesters.perl.org/show/JSON-XS.json | json_xs
+
+Fetch the cpan-testers result summary C<JSON::XS> and pretty-print it.
+
+=head1 AUTHOR
+
+Copyright (C) 2008 Marc Lehmann <json@schmorp.de>
+
+=cut
+
+use strict;
+
+use Getopt::Long;
+use Storable ();
+use Encode;
+
+use JSON::XS;
+
+my $opt_verbose;
+my $opt_from = "json";
+my $opt_to   = "json-pretty";
+my $opt_eval;
+
+Getopt::Long::Configure ("bundling", "no_ignore_case", "require_order");
+
+GetOptions(
+   "v"   => \$opt_verbose,
+   "f=s" => \$opt_from,
+   "t=s" => \$opt_to,
+   "e=s" => \$opt_eval,
+) or die "Usage: $0 [-v] -f fromformat [-e code] [-t toformat]\n";
+
+my %F = (
+   "none"          => sub { undef },
+   "string"        => sub { $_ },
+   "json"          => sub {
+      my $enc =
+         /^\x00\x00\x00/s  ? "utf-32be"
+       : /^\x00.\x00/s     ? "utf-16be"
+       : /^.\x00\x00\x00/s ? "utf-32le"
+       : /^.\x00.\x00/s    ? "utf-16le"
+       :                     "utf-8";
+      warn "input text encoding is $enc\n" if $opt_verbose;
+      JSON::XS->new->decode (decode $enc, $_)
+   },
+   "cbor"          => sub { require CBOR::XS; CBOR::XS->new->allow_cycles->decode ($_) },
+   "storable"      => sub { Storable::thaw $_ },
+   "storable-file" => sub { open my $fh, "<", \$_; Storable::fd_retrieve $fh },
+   "bencode"       => sub { require Convert::Bencode; Convert::Bencode::bdecode ($_) },
+   "clzf"          => sub { require Compress::LZF; Compress::LZF::sthaw ($_) },
+   "yaml"          => sub { require YAML::XS; YAML::XS::Load ($_) },
+   "eval"          => sub { my $v = eval "no strict; no warnings; no utf8;\n#line 1 \"input\"\n$_"; die "$@" if $@; $v },
+);
+
+my %T = (
+   "none"          => sub { "" },
+   "string"        => sub { $_ },
+   "json"          => sub { encode_json $_ },
+   "json-utf-8"    => sub { encode_json $_ },
+   "json-pretty"   => sub { JSON::XS->new->utf8->pretty->canonical->encode ($_) },
+   "json-utf-16le" => sub { encode "utf-16le", JSON::XS->new->encode ($_) },
+   "json-utf-16be" => sub { encode "utf-16be", JSON::XS->new->encode ($_) },
+   "json-utf-32le" => sub { encode "utf-32le", JSON::XS->new->encode ($_) },
+   "json-utf-32be" => sub { encode "utf-32be", JSON::XS->new->encode ($_) },
+   "cbor"          => sub { require CBOR::XS; CBOR::XS::encode_cbor ($_) },
+   "cbor-packed"   => sub { require CBOR::XS; CBOR::XS->new->pack_strings->encode ($_) },
+   "storable"      => sub { Storable::nfreeze $_ },
+   "storable-file" => sub { open my $fh, ">", \my $buf; Storable::nstore_fd $_, $fh; $buf },
+   "bencode"       => sub { require Convert::Bencode; Convert::Bencode::bencode ($_) },
+   "clzf"          => sub { require Compress::LZF; Compress::LZF::sfreeze_cr ($_) },
+   "yaml"          => sub { require YAML::XS; YAML::XS::Dump ($_) },
+   "dumper"        => sub {
+      require Data::Dumper;
+      #local $Data::Dumper::Purity    = 1; # hopeless case
+      local $Data::Dumper::Terse     = 1;
+      local $Data::Dumper::Indent    = 1;
+      local $Data::Dumper::Useqq     = 1;
+      local $Data::Dumper::Quotekeys = 0;
+      local $Data::Dumper::Sortkeys  = 1;
+      Data::Dumper::Dumper($_)
+   },
+   "dump"          => sub {
+      require Data::Dump;
+      local $Data::Dump::TRY_BASE64 = 0;
+      Data::Dump::dump ($_) . "\n"
+   },
+);
+
+$F{$opt_from}
+   or die "$opt_from: not a valid fromformat\n";
+
+$T{$opt_to}
+   or die "$opt_to: not a valid toformat\n";
+
+if ($opt_from ne "none") {
+   local $/;
+   binmode STDIN; # stupid perl sometimes thinks its funny
+   $_ = <STDIN>;
+}
+
+$_ = $F{$opt_from}->();
+
+eval $opt_eval;
+die $@ if $@;
+
+$_ = $T{$opt_to}->();
+
+binmode STDOUT;
+syswrite STDOUT, $_;
+
+
+

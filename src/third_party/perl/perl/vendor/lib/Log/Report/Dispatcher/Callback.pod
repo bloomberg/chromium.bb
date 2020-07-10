@@ -1,0 +1,187 @@
+=encoding utf8
+
+=head1 NAME
+
+Log::Report::Dispatcher::Callback - call a code-ref for each log-line
+
+=head1 INHERITANCE
+
+ Log::Report::Dispatcher::Callback
+   is a Log::Report::Dispatcher
+
+=head1 SYNOPSIS
+
+ sub cb($$$)
+ {   my ($disp, $options, $reason, $message) = @_;
+     ...
+ }
+
+ dispatcher Log::Report::Dispatcher::Callback => 'cb'
+    , callback => \&cb;
+
+ dispatcher CALLBACK => 'cb'   # same
+    , callback => \&cb;
+
+=head1 DESCRIPTION
+
+This basic file logger accepts a callback, which is called for each
+message which is to be logged. When you need complex things, you
+may best make your own extension to L<Log::Report::Dispatcher|Log::Report::Dispatcher>, but
+for simple things this will do.
+
+Extends L<"DESCRIPTION" in Log::Report::Dispatcher|Log::Report::Dispatcher/"DESCRIPTION">.
+ 
+B<. Example>
+
+  sub send_mail($$$)
+  {   my ($disp, $options, $reason, $message) = @_;
+      my $msg = Mail::Send->new(Subject => $reason
+        , To => 'admin@localhost');
+      my $fh  = $msg->open('sendmail');
+      print $fh $disp->translate($reason, $message);
+      close $fh;
+  }
+
+  dispatcher CALLBACK => 'mail', callback => \&send_mail;
+
+=head1 METHODS
+
+Extends L<"METHODS" in Log::Report::Dispatcher|Log::Report::Dispatcher/"METHODS">.
+ 
+=head2 Constructors
+
+Extends L<"Constructors" in Log::Report::Dispatcher|Log::Report::Dispatcher/"Constructors">.
+ 
+=over 4
+
+=item $obj-E<gt>B<close>()
+
+Inherited, see L<Log::Report::Dispatcher/"Constructors">
+
+=item Log::Report::Dispatcher::Callback-E<gt>B<new>($type, $name, %options)
+
+ -Option       --Defined in             --Default
+  accept         Log::Report::Dispatcher  depend on mode
+  callback                                <required>
+  charset        Log::Report::Dispatcher  <undef>
+  format_reason  Log::Report::Dispatcher  'LOWERCASE'
+  locale         Log::Report::Dispatcher  <system locale>
+  mode           Log::Report::Dispatcher  'NORMAL'
+
+=over 2
+
+=item accept => REASONS
+
+=item callback => CODE
+
+Your C<callback> is called with five parameters: this dispatcher object,
+the options, a reason and a message.  The C<options> are the first
+parameter of L<Log::Report::report()|Log::Report/"Report Production and Configuration"> (read over there).  The C<reason>
+is a capitized string like C<ERROR>. Then, the C<message> (is a
+L<Log::Report::Message|Log::Report::Message>).  Finally the text-domain of the message.
+
+=item charset => CHARSET
+
+=item format_reason => 'UPPERCASE'|'LOWERCASE'|'UCFIRST'|'IGNORE'|CODE
+
+=item locale => LOCALE
+
+=item mode => 'NORMAL'|'VERBOSE'|'ASSERT'|'DEBUG'|0..3
+
+=back
+
+=back
+
+=head2 Accessors
+
+Extends L<"Accessors" in Log::Report::Dispatcher|Log::Report::Dispatcher/"Accessors">.
+ 
+=over 4
+
+=item $obj-E<gt>B<callback>()
+
+Returns the code reference which will handle each logged message.
+
+=item $obj-E<gt>B<isDisabled>()
+
+Inherited, see L<Log::Report::Dispatcher/"Accessors">
+
+=item $obj-E<gt>B<mode>()
+
+Inherited, see L<Log::Report::Dispatcher/"Accessors">
+
+=item $obj-E<gt>B<name>()
+
+Inherited, see L<Log::Report::Dispatcher/"Accessors">
+
+=item $obj-E<gt>B<needs>( [$reason] )
+
+Inherited, see L<Log::Report::Dispatcher/"Accessors">
+
+=item $obj-E<gt>B<type>()
+
+Inherited, see L<Log::Report::Dispatcher/"Accessors">
+
+=back
+
+=head2 Logging
+
+Extends L<"Logging" in Log::Report::Dispatcher|Log::Report::Dispatcher/"Logging">.
+ 
+=over 4
+
+=item $obj-E<gt>B<addSkipStack>(@CODE)
+
+=item Log::Report::Dispatcher::Callback-E<gt>B<addSkipStack>(@CODE)
+
+Inherited, see L<Log::Report::Dispatcher/"Logging">
+
+=item $obj-E<gt>B<collectLocation>()
+
+=item Log::Report::Dispatcher::Callback-E<gt>B<collectLocation>()
+
+Inherited, see L<Log::Report::Dispatcher/"Logging">
+
+=item $obj-E<gt>B<collectStack>( [$maxdepth] )
+
+=item Log::Report::Dispatcher::Callback-E<gt>B<collectStack>( [$maxdepth] )
+
+Inherited, see L<Log::Report::Dispatcher/"Logging">
+
+=item $obj-E<gt>B<log>(HASH-$of-%options, $reason, $message, $domain)
+
+Inherited, see L<Log::Report::Dispatcher/"Logging">
+
+=item $obj-E<gt>B<skipStack>()
+
+Inherited, see L<Log::Report::Dispatcher/"Logging">
+
+=item $obj-E<gt>B<stackTraceLine>(%options)
+
+=item Log::Report::Dispatcher::Callback-E<gt>B<stackTraceLine>(%options)
+
+Inherited, see L<Log::Report::Dispatcher/"Logging">
+
+=item $obj-E<gt>B<translate>(HASH-$of-%options, $reason, $message)
+
+Inherited, see L<Log::Report::Dispatcher/"Logging">
+
+=back
+
+=head1 DETAILS
+
+Extends L<"DETAILS" in Log::Report::Dispatcher|Log::Report::Dispatcher/"DETAILS">.
+ 
+=head1 SEE ALSO
+
+This module is part of Log-Report distribution version 1.28,
+built on May 14, 2019. Website: F<http://perl.overmeer.net/CPAN/>
+
+=head1 LICENSE
+
+Copyrights 2007-2019 by [Mark Overmeer <markov@cpan.org>]. For other contributors see ChangeLog.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See F<http://dev.perl.org/licenses/>
+

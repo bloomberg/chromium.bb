@@ -1,0 +1,215 @@
+=head1 NAME
+
+DBM::Deep::Cookbook - Cookbook for DBM::Deep
+
+=head1 DESCRIPTION
+
+This is the Cookbook for L<DBM::Deep>. It contains useful tips and tricks,
+plus some examples of how to do common tasks.
+
+=head1 RECIPES
+
+=head2 Unicode data
+
+If possible, it is highly recommended that you upgrade your database to
+version 2 (using the F<utils/upgrade_db.pl> script in the CPAN
+distribution), in order to use Unicode.
+
+If your databases are still shared by perl installations with older
+DBM::Deep versions, you can use filters to encode strings on the fly:
+
+  my $db = DBM::Deep->new( ... );
+  my $encode_sub = sub { my $s = shift; utf8::encode($s); $s };
+  my $decode_sub = sub { my $s = shift; utf8::decode($s); $s };
+  $db->set_filter( 'store_value' => $encode_sub );
+  $db->set_filter( 'fetch_value' => $decode_sub );
+  $db->set_filter( 'store_key' => $encode_sub );
+  $db->set_filter( 'fetch_key' => $decode_sub );
+
+A previous version of this cookbook recommended using
+C<binmode $db-E<gt>_fh, ":utf8">, but that is I<not> a good idea, as it
+could easily corrupt the database.
+
+=head2 Real-time Encryption Example
+
+B<NOTE>: This is just an example of how to write a filter. This most
+definitely should B<NOT> be taken as a proper way to write a filter that does
+encryption. (Furthermore, it fails to take Unicode into account.)
+
+Here is a working example that uses the I<Crypt::Blowfish> module to
+do real-time encryption / decryption of keys & values with DBM::Deep Filters.
+Please visit L<http://search.cpan.org/search?module=Crypt::Blowfish> for more
+on I<Crypt::Blowfish>. You'll also need the I<Crypt::CBC> module.
+
+  use DBM::Deep;
+  use Crypt::Blowfish;
+  use Crypt::CBC;
+
+  my $cipher = Crypt::CBC->new({
+      'key'             => 'my secret key',
+      'cipher'          => 'Blowfish',
+      'iv'              => '$KJh#(}q',
+      'regenerate_key'  => 0,
+      'padding'         => 'space',
+      'prepend_iv'      => 0
+  });
+
+  my $db = DBM::Deep->new(
+      file => "foo-encrypt.db",
+      filter_store_key => \&my_encrypt,
+      filter_store_value => \&my_encrypt,
+      filter_fetch_key => \&my_decrypt,
+      filter_fetch_value => \&my_decrypt,
+  );
+
+  $db->{key1} = "value1";
+  $db->{key2} = "value2";
+  print "key1: " . $db->{key1} . "\n";
+  print "key2: " . $db->{key2} . "\n";
+
+  undef $db;
+  exit;
+
+  sub my_encrypt {
+      return $cipher->encrypt( $_[0] );
+  }
+  sub my_decrypt {
+      return $cipher->decrypt( $_[0] );
+  }
+
+=head2 Real-time Compression Example
+
+Here is a working example that uses the I<Compress::Zlib> module to do real-time
+compression / decompression of keys & values with DBM::Deep Filters.
+Please visit L<http://search.cpan.org/search?module=Compress::Zlib> for
+more on I<Compress::Zlib>.
+
+  use DBM::Deep;
+  use Compress::Zlib;
+
+  my $db = DBM::Deep->new(
+      file => "foo-compress.db",
+      filter_store_key => \&my_compress,
+      filter_store_value => \&my_compress,
+      filter_fetch_key => \&my_decompress,
+      filter_fetch_value => \&my_decompress,
+  );
+
+  $db->{key1} = "value1";
+  $db->{key2} = "value2";
+  print "key1: " . $db->{key1} . "\n";
+  print "key2: " . $db->{key2} . "\n";
+
+  undef $db;
+  exit;
+
+  sub my_compress {
+      my $s = shift;
+      utf8::encode($s);
+      return Compress::Zlib::memGzip( $s ) ;
+  }
+  sub my_decompress {
+      my $s = Compress::Zlib::memGunzip( shift ) ;
+      utf8::decode($s);
+      return $s;
+  }
+
+B<Note:> Filtering of keys only applies to hashes. Array "keys" are
+actually numerical index numbers, and are not filtered.
+
+=head1 Custom Digest Algorithm
+
+DBM::Deep by default uses the I<Message Digest 5> (MD5) algorithm for hashing
+keys. However you can override this, and use another algorithm (such as SHA-256)
+or even write your own. But please note that DBM::Deep currently expects zero
+collisions, so your algorithm has to be I<perfect>, so to speak. Collision
+detection may be introduced in a later version.
+
+You can specify a custom digest algorithm by passing it into the parameter
+list for new(), passing a reference to a subroutine as the 'digest' parameter,
+and the length of the algorithm's hashes (in bytes) as the 'hash_size'
+parameter. Here is a working example that uses a 256-bit hash from the
+I<Digest::SHA256> module. Please see
+L<http://search.cpan.org/search?module=Digest::SHA256> for more information.
+
+The value passed to your digest function will be encoded as UTF-8 if the
+database is in version 2 format or higher.
+
+  use DBM::Deep;
+  use Digest::SHA256;
+
+  my $context = Digest::SHA256::new(256);
+
+  my $db = DBM::Deep->new(
+      filename => "foo-sha.db",
+      digest => \&my_digest,
+      hash_size => 32,
+  );
+
+  $db->{key1} = "value1";
+  $db->{key2} = "value2";
+  print "key1: " . $db->{key1} . "\n";
+  print "key2: " . $db->{key2} . "\n";
+
+  undef $db;
+  exit;
+
+  sub my_digest {
+      return substr( $context->hash($_[0]), 0, 32 );
+  }
+
+B<Note:> Your returned digest strings must be B<EXACTLY> the number
+of bytes you specify in the hash_size parameter (in this case 32). Undefined
+behavior will occur otherwise.
+
+B<Note:> If you do choose to use a custom digest algorithm, you must set it
+every time you access this file. Otherwise, the default (MD5) will be used.
+
+=head1 PERFORMANCE
+
+Because DBM::Deep is a conncurrent datastore, every change is flushed to disk
+immediately and every read goes to disk. This means that DBM::Deep functions
+at the speed of disk (generally 10-20ms) vs. the speed of RAM (generally
+50-70ns), or at least 150-200x slower than the comparable in-memory
+datastructure in Perl.
+
+There are several techniques you can use to speed up how DBM::Deep functions.
+
+=over 4
+
+=item * Put it on a ramdisk
+
+The easiest and quickest mechanism to making DBM::Deep run faster is to create
+a ramdisk and locate the DBM::Deep file there. Doing this as an option may
+become a feature of DBM::Deep, assuming there is a good ramdisk wrapper on CPAN.
+
+=item * Work at the tightest level possible
+
+It is much faster to assign the level of your db that you are working with to
+an intermediate variable than to re-look it up every time. Thus
+
+  # BAD
+  while ( my ($k, $v) = each %{$db->{foo}{bar}{baz}} ) {
+    ...
+  }
+
+  # GOOD
+  my $x = $db->{foo}{bar}{baz};
+  while ( my ($k, $v) = each %$x ) {
+    ...
+  }
+
+=item * Make your file as tight as possible
+
+If you know that you are not going to use more than 65K in your database,
+consider using the C<pack_size =E<gt> 'small'> option. This will instruct
+DBM::Deep to use 16bit addresses, meaning that the seek times will be less.
+
+=back
+
+=head1 SEE ALSO
+
+L<DBM::Deep(3)>, L<Digest::MD5(3)>, L<Digest::SHA256(3)>,
+L<Crypt::Blowfish(3)>, L<Compress::Zlib(3)>
+
+=cut

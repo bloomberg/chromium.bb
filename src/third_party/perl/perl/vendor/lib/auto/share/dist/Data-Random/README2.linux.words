@@ -1,0 +1,29 @@
+#!/bin/sh -xe
+# README2.linux.words - second file used to create linux.words
+# Created: Sun Oct 10 18:50:53 1993 by faith@cs.unc.edu (Rik Faith)
+# Revised: Sun Oct 10 21:26:01 1993 by faith@cs.unc.edu
+#
+
+# As noted in README.linux.words, extreme care was taken to be sure that
+# the linux.words list was free of copyright.  This was done so that
+# linux.words would be a suitable /usr/dict/words replacement for the Linux
+# community.  After the initial release of linux.words, Greg Alt
+# (galt@asylum.cs.utah.edu) and Josh Richardson (josh@gatelink.com) sent me
+# several short lists of words that were not in my original list.  They
+# obtained these lists by analyzing FAQs and online text material,
+# including the Federalist Papers.  The results were manually analyzed by
+# them before sending the lists to me.  In addition, I removed some words
+# which were not listed in The American Heritage Dictionary (Second College
+# Edition, Houghton Mifflin Co., 1991).  This method of obtaining words
+# (from documents, not from word lists) is also "safe" from the copyright
+# standpoint.  Therefore, I am merging these lists in with (version 1) of
+# linux.words to create the second version of linux.words.
+
+# move version 1 list
+mv linux.words dict.4
+
+# add in proper names (use sort twice to get uppercase before lowercase)
+cat dict.4 extra.words | sort | sort -df | uniq > linux.words
+
+# clean up
+rm dict.4

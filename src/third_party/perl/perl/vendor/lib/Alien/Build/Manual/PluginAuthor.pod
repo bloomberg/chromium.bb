@@ -1,0 +1,495 @@
+# PODNAME: Alien::Build::Manual::PluginAuthor
+# ABSTRACT: Alien::Build plugin author documentation
+# VERSION
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+Alien::Build::Manual::PluginAuthor - Alien::Build plugin author documentation
+
+=head1 VERSION
+
+version 1.74
+
+=head1 SYNOPSIS
+
+your plugin:
+
+ package Alien::Build::Plugin::Build::MyPlugin;
+ 
+ use strict;
+ use warnings;
+ use Alien::Build::Plugin;
+ 
+ has arg1 => 'default_for arg1';
+ has arg2 => sub { [ 'default', 'for', 'arg2' ] };
+ 
+ sub init
+ {
+   my($self, $meta) = @_;
+   ...
+ }
+ 
+ 1;
+
+and then from L<alienfile>:
+
+ use alienfile;
+ plugin 'Build::MyPlugin' => (
+   arg1 => 'override for arg1',
+   arg2 => [ 'something', 'else' ],
+ );
+
+=head1 DESCRIPTION
+
+This document explains how to write L<Alien::Build> plugins using the
+L<Alien::Build::Plugin> base class.  Plugins use L<Alien::Build::Plugin>,
+which sets the appropriate base class, and provides you with the C<has>
+property builder.  C<has> takes two arguments, the name of the property
+and the default value.  (As with L<Moose> and L<Moo>, you should use a
+code reference to specify default values for non-string defaults).
+
+The only method that you need to implement is C<init>.  From this method
+you can add hooks to change the behavior of the L<alienfile> recipe.
+
+ sub init
+ {
+   my($self, $meta) = @_;
+   $meta->register_hook(
+     probe => sub {
+       my($build) = @_;
+       if( ... )
+       {
+         return 'system';
+       }
+       else
+       {
+         return 'share';
+       }
+     },
+   );
+ }
+
+Hooks get the L<Alien::Build> instance as their first argument, and depending
+on the hook may get additional arguments.
+
+You can also modify hooks using C<before_hook>, C<around_hook> and C<after_hook>:
+
+ sub init
+ {
+   my($self, $meta) = @_;
+   
+   $meta->before_hook(
+     build => sub {
+       my($build) = @_;
+       $build->log('this runs before the build');
+     },
+   );
+
+   $meta->after_hook(
+     build => sub {
+       my($build) = @_;
+       $build->log('this runs after the build');
+     },
+   );
+   
+   $meta->around_hook(
+     build => sub {
+       my $orig = shift;
+       
+       # around hooks are useful for setting environment variables
+       local $ENV{CPPFLAGS} = '-I/foo/include';
+       
+       $orig->(@_);
+     },
+   );
+ }
+
+You can and should write tests for your plugin.  The best way to do
+this is using L<Test::Alien::Build>, which allows you to write an
+inline L<alienfile> in your test.
+
+ use Test::V0;
+ use Test::Alien::Build;
+ 
+ my $build = alienfile_ok q{
+   use alienfile;
+   plugin 'Build::MyPlugin' => (
+     arg1 => 'override for arg1',
+     arg2 => [ 'something', 'else' ],
+   );
+   ...
+ };
+ 
+ # you can interrogate $build, it is an instance of L<Alien::Build>.
+ 
+ my $alien = alien_build_ok;
+ 
+ # you can interrogate $alien, it is an instance of L<Alien::Base>.
+
+=head1 HOOKS
+
+=head2 probe hook
+
+ $meta->register_hook( probe => sub {
+   my($build) = @_;
+   return 'system' if ...; # system install
+   return 'share';         # otherwise
+ });
+ 
+ $meta->register_hook( probe => [ $command ] );
+
+This hook should return the string C<system> if the operating
+system provides the library or tool.  It should return C<share>
+otherwise.
+
+You can also use a command that returns true when the tool
+or library is available.  For example for use with C<pkg-config>:
+
+ $meta->register_hook( probe =>
+   [ '%{pkgconf} --exists libfoo' ] );
+
+Or if you needed a minimum version:
+
+ $meta->register_hook( probe =>
+   [ '%{pkgconf} --atleast-version=1.00 libfoo' ] );
+
+Note that this hook SHOULD NOT gather system properties, such as
+cflags, libs, versions, etc, because the probe hook will be skipped
+in the event the environment variable C<ALIEN_INSTALL_TYPE> is set.
+The detection of these properties should instead be done by the
+C<gather_system> hook, below.
+
+=head2 gather_system hook
+
+ $meta->register_hook( gather_system => sub {
+   my($build) = @_;
+   $build->runtime_prop->{cflags}  = ...;
+   $build->runtime_prop->{libs}    = ...;
+   $build->runtime_prop->{version} = ...;
+ });
+
+This hook is called for a system install to determine the properties
+necessary for using the library or tool.  These properties should be
+stored in the C<runtime_prop> hash as shown above.  Typical properties
+that are needed for libraries are cflags and libs.  If at all possible
+you should also try to determine the version of the library or tool.
+
+=head2 download hook
+
+ $meta->register_hook( download => sub {
+   my($build) = @_;
+   ...
+ });
+
+This hook is used to download from the internet the source.  Either as
+an archive (like tar, zip, etc), or as a directory of files (git clone,
+etc).  When the hook is called, the current working directory will be a
+new empty directory, so you can save the download to the current
+directory.  If you store a single file in the directory, L<Alien::Build>
+will assume that it is an archive, which will be processed by the
+extract hook below.  If you store multiple files, L<Alien::Build> will
+assume the current directory is the source root.  If no files are stored
+at all, an exception with an appropriate diagnostic will be thrown.
+
+B<Note>: If you register this hook, then the fetch, decode and prefer
+hooks will NOT be called.
+
+=head2 fetch hook
+
+ package Alien::Build::Plugin::MyPlugin;
+ 
+ use strict;
+ use warnings;
+ use Alien::Build::Plugin;
+ use Carp ();
+ 
+ has '+url' => sub { Carp::croak "url is required property" };
+
+ sub init
+ {
+   my($self, $meta) = @_;
+   
+   $meta->register_hook( fetch => sub {
+     my($build, $url) = @_;
+     ...
+   }
+ }
+ 
+ 1;
+
+Used to fetch a resource.  The first time it will be called without an
+argument, so the configuration used to find the resource should be
+specified by the plugin's properties.  On subsequent calls the first
+argument will be a URL.
+
+Normally the first fetch will be to either a file or a directory listing.
+If it is a file then the content should be returned as a hash reference
+with the following keys:
+
+ # content of file stored in Perl
+ return {
+   type     => 'file',
+   filename => $filename,
+   content  => $content,
+   version  => $version,  # optional, if known
+ };
+ 
+ # content of file stored in the filesystem
+ return {
+   type     => 'file',
+   filename => $filename,
+   path     => $path,     # full file system path to file
+   version  => $version,  # optional, if known
+   tmp      => $tmp,      # optional
+ };
+
+C<$tmp> if set will indicate if the file is temporary or not, and can
+be used by L<Alien::Build> to save a copy in some cases.  The default
+is true, so L<Alien::Build> assumes the file or directory is temporary
+if you don't tell it otherwise.
+
+If the URL points to a directory listing you should return it as either
+a hash reference containing a list of files:
+
+ return {
+   type => 'list',
+   list => [
+     # filename: each filename should be just the
+     #   filename portion, no path or url.
+     # url: each url should be the complete url
+     #   needed to fetch the file.
+     # version: OPTIONAL, may be provided by some fetch or prefer
+     { filename => $filename1, url => $url1, version => $version1 },
+     { filename => $filename2, url => $url2, version => $version2 },
+   ]
+ };
+
+or if the listing is in HTML format as a hash reference containing the
+HTML information:
+
+ return {
+   type => 'html',
+   charset => $charset, # optional
+   base    => $base,    # the base URL: used for computing relative URLs
+   content => $content, # the HTML content
+ };
+
+or a directory listing (usually produced by ftp servers) as a hash
+reference:
+
+ return {
+   type    => 'dir_listing',
+   base    => $base,
+   content => $content,
+ };
+
+=head2 decode hook
+
+ sub init
+ {
+   my($self, $meta) = @_;
+   
+   $meta->register_hook( decode => sub {
+     my($build, $res) = @_;
+     ...
+   }
+ }
+
+This hook takes a response hash reference from the C<fetch> hook above
+with a type of C<html> or C<dir_listing> and converts it into a response
+hash reference of type C<list>.  In short it takes an HTML or FTP file
+listing response from a fetch hook and converts it into a list of filenames
+and links that can be used by the prefer hook to choose the correct file to
+download.  See C<fetch> for the specification of the input and response
+hash references.
+
+=head2 prefer hook
+
+ sub init
+ {
+   my($self, $meta) = @_;
+   
+   $meta->register_hook( prefer => sub {
+     my($build, $res) = @_;
+     return {
+       type => 'list',
+       list => [sort @{ $res->{list} }],
+     };
+   }
+ }
+
+This hook sorts candidates from a listing generated from either the C<fetch>
+or C<decode> hooks.  It should return a new list hash reference with the
+candidates sorted from best to worst.  It may also remove candidates
+that are totally unacceptable.
+
+=head2 extract hook
+
+ $meta->register_hook( extract => sub {
+   my($build, $archive) = @_;
+   ...
+ });
+
+=head2 patch hook
+
+ $meta->register_hook( patch => sub {
+   my($build) = @_;
+   ...
+ });
+
+This hook is completely optional.  If registered, it will be triggered after
+extraction and before build.  It allows you to apply any patches or make any
+modifications to the source if they are necessary.
+
+=head2 patch_ffi hook
+
+ $meta->register_hook( patch_ffi => sub {
+   my($build) = @_;
+   ...
+ });
+
+This hook is exactly like the C<patch> hook, except it fires only on an
+FFI build.
+
+=head2 build hook
+
+ $meta->register_hook( build => sub {
+   my($build) = @_;
+   ...
+ });
+
+This does the main build of the alienized project and installs it into
+the staging area.  The current directory is the build root.  You need
+to run whatever tools are necessary for the project, and install them
+into C<%{.install.prefix}>.
+
+=head2 build_ffi hook
+
+ $meta->register_hook( build_ffi => sub {
+   my($build) = @_;
+   ...
+ });
+
+This is the same as C<build>, except it fires only on a FFI build.
+
+=head2 gather_share hook
+
+ $meta->register_hook( gather_share => sub {
+   my($build) = @_;
+   ...
+ });
+
+This is the same as C<gather_system>, except it fires after a C<share>
+install.
+
+=head2 gather_ffi hook
+
+ $meta->register_hook( gather_ffi => sub {
+   my($build) = @_;
+   ...
+ });
+
+This is the same as C<gather_share>, except it fires after a C<share> FFI
+install.
+
+=head2 override hook
+
+ $meta->register_hook( override => sub {
+   my($build) = @_;
+ });
+
+This allows you to alter the override logic.  It should return one of
+C<share>, C<system>, C<default> or C<''>.  The default implementation is
+just this:
+
+ return $ENV{ALIEN_INSTALL_TYPE} || '';
+
+=head2 clean_install
+
+ $meta->register_hook( clean_install => sub {
+   my($build) = @_;
+ });
+
+This hook allows you to remove files from the final install location before
+the files are installed by the installer layer (examples: L<Alien::Build::MM>,
+L<Alien::Build::MB> or L<App::af>).  This hook is never called by default,
+and must be enabled via the interface to the installer layer.
+
+This hook SHOULD NOT remove the C<_alien> directory or its content from the
+install location.
+
+The default implementation removes all the files EXCEPT the C<_alien> directory
+and its content.
+
+=head1 AUTHOR
+
+Author: Graham Ollis E<lt>plicease@cpan.orgE<gt>
+
+Contributors:
+
+Diab Jerius (DJERIUS)
+
+Roy Storey (KIWIROY)
+
+Ilya Pavlov
+
+David Mertens (run4flat)
+
+Mark Nunberg (mordy, mnunberg)
+
+Christian Walde (Mithaldu)
+
+Brian Wightman (MidLifeXis)
+
+Zaki Mughal (zmughal)
+
+mohawk (mohawk2, ETJ)
+
+Vikas N Kumar (vikasnkumar)
+
+Flavio Poletti (polettix)
+
+Salvador Fandiño (salva)
+
+Gianni Ceccarelli (dakkar)
+
+Pavel Shaydo (zwon, trinitum)
+
+Kang-min Liu (劉康民, gugod)
+
+Nicholas Shipp (nshp)
+
+Juan Julián Merelo Guervós (JJ)
+
+Joel Berger (JBERGER)
+
+Petr Pisar (ppisar)
+
+Lance Wicks (LANCEW)
+
+Ahmad Fatoum (a3f, ATHREEF)
+
+José Joaquín Atria (JJATRIA)
+
+Duke Leto (LETO)
+
+Shoichi Kaji (SKAJI)
+
+Shawn Laffan (SLAFFAN)
+
+Paul Evans (leonerd, PEVANS)
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2011-2019 by Graham Ollis.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut

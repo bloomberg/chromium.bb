@@ -1,0 +1,114 @@
+#-*- perl -*-
+
+package Unicode::LineBreak;
+
+=head1 NAME
+
+Unicode::LineBreak::Defaults - Configuration for Unicode::LineBreak
+
+=head1 SYNOPSIS
+
+Edit this file and place it on Unicode/LineBreak/Defaults.pm 
+to activate custom settings.
+
+=head1 DESCRIPTION
+
+Following settings are available.
+
+=over 4
+
+=item *
+
+BreakIndent
+
+=item *
+
+CharMax
+
+=item *
+
+ColMin
+
+=item *
+
+ColMax
+
+=item *
+
+ComplexBreaking
+
+=item *
+
+Context
+
+=item *
+
+EAWidth
+
+=item *
+
+Format
+
+=item *
+
+HangulAsAL
+
+=item *
+
+LBClass
+
+=item *
+
+LegacyCM
+
+=item *
+
+Newline
+
+=item *
+
+Prep
+
+=item *
+
+Sizing
+
+=item *
+
+Urgent
+
+=item *
+
+ViramaAsJoiner
+
+=back
+
+=head1 SEE ALSO
+
+L<Unicode::LineBreak>
+
+=cut
+
+#--------------------------------------------------------------------------#
+# Add your own settings below.
+#--------------------------------------------------------------------------#
+
+## Default settings on current release are:
+# $Config->{BreakIndent} = 'YES';
+# $Config->{CharMax} = 998;
+# $Config->{ColMin} = 0;
+# $Config->{ColMax} = 76;
+# $Config->{ComplexBreaking} = 'YES';
+# $Config->{Context} = 'NONEASTASIAN';
+# $Config->{EAWidth} = undef;
+# $Config->{Format} = 'SIMPLE';
+# $Config->{HangulAsAL} = 'NO';
+# $Config->{LBClass} = undef;
+# $Config->{LegacyCM} = 'YES';
+# $Config->{Newline} = "\n";
+# $Config->{Prep} = undef;
+# $Config->{Sizing} = 'UAX11';
+# $Config->{Urgent} = undef;
+# $Config->{ViramaAsJoiner} = 'YES';
+
+1;

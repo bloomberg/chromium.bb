@@ -1,0 +1,87 @@
+=head1 NAME
+
+IDEA - Perl interface to IDEA block cipher
+
+=head1 SYNOPSIS
+
+    use Crypt::IDEA;
+    
+
+=head1 DESCRIPTION
+
+This perl extension is an implementation of the IDEA block cipher algorithm.
+The module implements the Crypt::BlockCipher interface,
+which has the following methods
+
+=over 4
+
+=item blocksize
+=item keysize
+=item encrypt
+=item decrypt
+
+=back
+
+=head1 FUNCTIONS
+
+=over 4
+
+=item blocksize
+
+Returns the size (in bytes) of the block cipher.
+
+=item keysize
+
+Returns the size (in bytes) of the key.
+
+=item new
+
+	my $cipher = new IDEA $key;
+
+This creates a new IDEA BlockCipher object, using $key,
+where $key is a key of C<keysize()> bytes.
+
+=item encrypt
+
+	my $cipher = new IDEA $key;
+	my $ciphertext = $cipher->encrypt($plaintext);
+
+This function encrypts $plaintext and returns the $ciphertext
+where $plaintext and $ciphertext should be of C<blocksize()> bytes.
+
+=item decrypt
+
+	my $cipher = new IDEA $key;
+	my $plaintext = $cipher->decrypt($ciphertext);
+
+This function decrypts $ciphertext and returns the $plaintext
+where $plaintext and $ciphertext should be of C<blocksize()> bytes.
+
+=back
+
+=head1 EXAMPLE
+
+	my $key = pack("H32", "0123456789ABCDEF0123456789ABCDEF");
+	my $cipher = new IDEA $key;
+	my $ciphertext = $cipher->encrypt("plaintex");	# NB - 8 bytes
+	print unpack("H16", $ciphertext), "\n";
+
+=head1 SEE ALSO
+
+Crypt::CBD, Crypt::DES, Crypt::Blowfish
+
+Bruce Schneier, I<Applied Cryptography>, 1995, Second Edition,
+published by John Wiley & Sons, Inc.
+
+
+=head1 COPYRIGHT
+
+This implementation is copyright Systemics Ltd ( http://www.systemics.com/ ).
+
+The IDEA algorithm is patented in Europe and the United States
+by Ascom-Tech AG.
+
+Module altered between 1999 and 2005  to allow added functionality with perl -MCPAN,
+Changes by Dave Paris  (edited lib paths, endian issues, new tests).
+
+Thank you to contributors for endian patches and new test suite!

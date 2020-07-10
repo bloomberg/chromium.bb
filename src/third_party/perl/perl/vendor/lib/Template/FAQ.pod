@@ -1,0 +1,329 @@
+#============================================================= -*-perl-*-
+#
+# Template::FAQ
+#
+# DESCRIPTION
+
+#
+# AUTHOR
+#   Andy Wardley  <abw@wardley.org>
+#
+# COPYRIGHT
+#   Copyright (C) 1996-2007 Andy Wardley.  All Rights Reserved.
+#
+#   This module is free software; you can redistribute it and/or
+#   modify it under the same terms as Perl itself.
+#========================================================================
+
+=head1 NAME
+
+Template::FAQ - Frequently Asked Questions about the Template Toolkit
+
+=head1 Template Toolkit Language
+
+=head2 Why doesn't [% a = b IF c %] work as expected?
+
+There's a limitation in the TT2 parser which means that the following code
+doesn't work as you might expect:
+
+    [% a = b IF c %]
+
+The parser interprets it as an attempt to set C<a> to the result of 
+C<b IF c>, like this: 
+
+    [% a = (b IF c) %]
+
+If you want to set C<a = b> only if C<c> is true, then do this instead:
+
+    [% SET a = b IF c %]
+
+The explicit C<SET> keyword gives the parser the clue it needs to do the
+right thing.
+
+NOTE: this will be fixed in TT3
+
+=head2 If I'm using TT to write out a TT template, is there a good way to escape [% and %]?
+
+You can do something like this:
+ 
+    [% stag = "[\%"
+       etag = "%\]"
+    %]
+ 
+and then:
+ 
+    [% stag; 'hello'; etag %]
+
+Or you can use the C<TAGS> directive, like so:
+
+    [% TAGS [- -] %]
+    [- INCLUDE foo -]   # is a directive
+    [% INCLUDE foo %]   # not a directive
+
+=head2 How do I iterate over a hash?
+
+This is covered in the L<Template::Manual::VMethods> section of the
+manual. A list of all the keys that are in the hash can be obtained with the
+C<keys> virtual method. You can then iterate over that list and by looking up
+each key in turn get the value.
+
+    [% FOREACH key = product.keys %]
+       [% key %] => [% product.$key %]
+    [% END %]
+
+=head1 Plugins
+
+=head2 How do I get the Table plugin to order data across rather than down?
+
+Order the data into rows:
+
+    Steve     Karen     Jeff
+    Brooklyn  Nantucket Fairfax
+    NY        MA        VA
+    
+    [% USE table(data, rows=3) %]
+
+Then ask for each column
+
+    [% FOREACH column = table.cols %]
+
+And then print each item in the column going across the output rows
+
+    [% FOREACH item = column %]
+        <td>[% item %]</td>
+    [% END %]
+
+=head2 Accessing Cookies
+
+Jeff Boes E<lt>jboes@nexcerpt.comE<gt> asks:
+
+    Does anyone have a quick-n-dirty approach to accessing 
+    cookies from templates? 
+
+Jonas Liljegren answers:
+
+    [% USE CGI %]
+    
+    <p>The value is [% CGI.cookie('cookie_name') | html %]
+
+
+=head1 Extending the Template Toolkit
+
+=head2 Can I serve templates from a database?
+
+Short answer: yes, Chris Nandor has done this for Slash.  You need to 
+subclass L<Template::Provider>.  See the mailing list archives for further
+info.
+
+=head2 Can I fetch templates via http?
+
+To do the job properly, you should subclass L<Template::Provider> to
+C<Template::Provider::HTTP> and use a C<PREFIX_MAP> option to bind the C<http>
+template prefix to that particular provider (you may want to go digging around
+in the F<Changes> file around version 2.01 for more info on C<PREFIX_MAP> - it
+may not be properly documented anywhere else...yet!). e.g.
+
+    use Template::Provider::HTTP;
+    
+    my $file = Template::Provider( INCLUDE_PATH => [...] );
+    my $http = Template::Provider::HTTP->new(...);
+    my $tt2  = Template->new({
+        LOAD_TEMPLATES => [ $file, $http ],
+        PREFIX_MAP => {
+            file    => '0',     # file:foo.html
+            http    => '1',     # http:foo.html
+            default => '0',     # foo.html => file:foo.html
+        }
+    });
+
+Now a template specified as:
+
+    [% INCLUDE foo %]
+
+will be served by the 'file' provider (the default).  Otherwise you 
+can explicitly add a prefix:
+
+    [% INCLUDE file:foo.html %]
+    [% INCLUDE http:foo.html %]
+    [% INCLUDE http://www.xyz.com/tt2/header.tt2 %]
+
+This same principal can be used to create a DBI template provider.  e.g.
+
+    [% INCLUDE dbi:foo.html %]
+
+Alas, we don't yet have a DBI provider as part of the Template Toolkit. There
+has been some talk on the mailing list about efforts to develop DBI and/or
+HTTP providers but as yet no-one has stepped forward to take up the
+challenge...
+
+In the mean time, Craig Barrat's post from the mailing list has some useful
+pointers on how to achieve this using existing modules.  See
+L<http://tt2.org/pipermail/templates/2001-May/000954.html>
+
+=head1 Miscellaneous
+
+=head2 How can I find out the name of the main template being processed?
+
+The C<template> variable contains a reference to the
+Template::Document object for the main template you're processing
+(i.e. the one provided as the first argument to the Template process()
+method).  The C<name> method returns its name.
+
+    [% template.name %]     # e.g. index.html
+
+=head2 How can I find out the name of the current template being processed?
+
+The C<template> variable always references the I<main> template being processed.
+So even if you call [% INCLUDE header %], and that calls [% INCLUDE menu %],
+the C<template> variable will be unchanged.
+
+index.html:
+
+    [% template.name  %]     # index.html
+    [% INCLUDE header %]
+
+header:
+
+    [% template.name  %]     # index.html
+    [% INCLUDE menu   %]
+
+menu:
+
+    [% template.name  %]     # index.html
+
+In contrast, the C<component> variable always references the I<current>
+template being processed.  
+
+index.html
+
+    [% component.name %]     # index.html
+    [% INCLUDE header %]
+
+header:
+
+    [% component.name %]     # header
+    [% INCLUDE menu   %]
+
+menu:
+
+    [% component.name  %]     # menu
+
+=head2 How do I print the modification time of the template or component?
+
+The C<template> and C<component> variables reference the main template
+and the current template being processed (see previous questions).
+The C<modtime> method returns the modification time of the
+corresponding template file as a number of seconds since the Unix
+epoch (00:00:00 GMT 1st January 1970).
+
+This number doesn't mean much to anyone (except perhaps serious Unix
+geeks) so you'll probably want to use the Date plugin to format it for
+human consumption.
+
+    [% USE Date %]
+    [% template.name %] last modified [% Date.format(template.modtime) %]
+
+=head2 How can I configure variables on a per-request basis?
+
+One easy way to achieve this is to define a single C<PRE_PROCESS> template
+which loads in other configuration files based on variables defined or other
+conditions.
+
+For example, my setup usually looks something like this:
+
+    PRE_PROCESS => 'config/main'
+
+config/main:
+
+    [%  DEFAULT  style   = 'text'
+                 section =  template.section or 'home';
+                 
+        PROCESS  config/site
+              +  config/urls
+              +  config/macros
+              + "config/style/$style"
+              + "config/section/$section"
+              + ...
+    %]
+
+This allows me to set a single 'style' variable to control which config
+file gets pre-processed to set my various style options (colours, img paths,
+etc).  For example:
+
+config/style/basic:
+
+    [%  style = {
+            name = style    # save existing 'style' var as 'style.name'
+
+            # define various other style variables....
+            col = {
+                back => '#ffffff'
+                text => '#000000'
+                    # ...etc...
+            }
+
+            logo = {
+                    # ...etc...
+            }
+
+            # ...etc...
+        }
+    %]
+
+Each source template can declare which section it's in via a META
+directive:
+
+  [% META
+       title   = 'General Information'
+       section = 'info'
+  %]
+  ...
+
+This controls which section configuration file gets loaded to set various
+other variables for defining the section title, menu, etc.
+
+config/section/info:
+
+    [%  section = {
+            name   = section  # save 'section' var as 'section.name'
+            title  = 'Information'
+            menu   = [ ... ]
+            # ...etc...
+        }
+    %]
+
+This illustrates the basic principal but you can extend it to perform
+pretty much any kind of per-document initialisation that you require.
+
+=head2 Why do I get rubbish for my utf-8 templates?
+
+First of all, make sure that your template files define a Byte Order
+Mark L<http://en.wikipedia.org/wiki/Byte_Order_Mark>
+
+If you for some reason don't want to add BOM to your templates, you can
+force Template to use a particular encoding (e.g. C<utf8>) for your 
+templates with the C<ENCODING> option.
+
+    my $template = Template->new({ 
+        ENCODING => 'utf8' 
+    });
+
+=head1 Questions About This FAQ
+
+=head2 Why is this FAQ so short?
+
+Because we don't have anyone maintaining it.
+
+=head2 Can I help?
+
+Yes please :-)
+
+=cut
+
+# Local Variables:
+# mode: perl
+# perl-indent-level: 4
+# indent-tabs-mode: nil
+# End:
+#
+# vim: expandtab shiftwidth=4:

@@ -1,0 +1,139 @@
+=for comment POD_DERIVED_INDEX_GENERATED
+The following documentation is automatically generated.  Please do not edit
+this file, but rather the original, inline with DBIx::Class::InflateColumn
+at lib/DBIx/Class/InflateColumn.pm
+(on the system that originally ran this).
+If you do edit this file, and don't want your changes to be removed, make
+sure you change the first line.
+
+=cut
+
+=head1 NAME
+
+DBIx::Class::InflateColumn - Automatically create references from column data
+
+=head1 SYNOPSIS
+
+  # In your table classes
+  __PACKAGE__->inflate_column('column_name', {
+    inflate => sub {
+      my ($raw_value_from_db, $result_object) = @_;
+      ...
+    },
+    deflate => sub {
+      my ($inflated_value_from_user, $result_object) = @_;
+      ...
+    },
+  });
+
+=head1 DESCRIPTION
+
+This component translates column data into references, i.e. "inflating"
+the column data. It also "deflates" references into an appropriate format
+for the database.
+
+It can be used, for example, to automatically convert to and from
+L<DateTime> objects for your date and time fields. There's a
+convenience component to actually do that though, try
+L<DBIx::Class::InflateColumn::DateTime>.
+
+It will handle all types of references except scalar references. It
+will not handle scalar values, these are ignored and thus passed
+through to L<SQL::Abstract>. This is to allow setting raw values to
+"just work". Scalar references are passed through to the database to
+deal with, to allow such settings as C< \'year + 1'> and C< \'DEFAULT' >
+to work.
+
+If you want to filter plain scalar values and replace them with
+something else, see L<DBIx::Class::FilterColumn>.
+
+=head1 METHODS
+
+=head2 inflate_column
+
+Instruct L<DBIx::Class> to inflate the given column.
+
+In addition to the column name, you must provide C<inflate> and
+C<deflate> methods. The C<inflate> method is called when you access
+the field, while the C<deflate> method is called when the field needs
+to used by the database.
+
+For example, if you have a table C<events> with a timestamp field
+named C<insert_time>, you could inflate the column in the
+corresponding table class using something like:
+
+    __PACKAGE__->inflate_column('insert_time', {
+        inflate => sub {
+          my ($insert_time_raw_value, $event_result_object) = @_;
+          DateTime->from_epoch( epoch => $insert_time_raw_value );
+        },
+        deflate => sub {
+          my ($insert_time_dt_object, $event_result_object) = @_;
+          $insert_time_dt_object->epoch;
+        },
+    });
+
+The coderefs you set for inflate and deflate are called with two parameters,
+the first is the value of the column to be inflated/deflated, the second is
+the result object itself.
+
+In this example, calls to an event's C<insert_time> accessor return a
+L<DateTime> object. This L<DateTime> object is later "deflated" back
+to the integer epoch representation when used in the database layer.
+For a much more thorough handling of the above example, please see
+L<DBIx::Class::DateTime::Epoch>
+
+=head2 get_inflated_column
+
+  my $val = $obj->get_inflated_column($col);
+
+Fetch a column value in its inflated state.  This is directly
+analogous to L<DBIx::Class::Row/get_column> in that it only fetches a
+column already retrieved from the database, and then inflates it.
+Throws an exception if the column requested is not an inflated column.
+
+=head2 set_inflated_column
+
+  my $copy = $obj->set_inflated_column($col => $val);
+
+Sets a column value from an inflated value.  This is directly
+analogous to L<DBIx::Class::Row/set_column>.
+
+=head2 store_inflated_column
+
+  my $copy = $obj->store_inflated_column($col => $val);
+
+Sets a column value from an inflated value without marking the column
+as dirty. This is directly analogous to L<DBIx::Class::Row/store_column>.
+
+=head1 SEE ALSO
+
+=over 4
+
+=item L<DBIx::Class::Core> - This component is loaded as part of the
+      C<core> L<DBIx::Class> components; generally there is no need to
+      load it directly
+
+=back
+
+=head1 INHERITED METHODS
+
+=over 4
+
+=item L<DBIx::Class::Row>
+
+L<copy|DBIx::Class::Row/copy>, L<delete|DBIx::Class::Row/delete>, L<discard_changes|DBIx::Class::Row/discard_changes>, L<get_column|DBIx::Class::Row/get_column>, L<get_columns|DBIx::Class::Row/get_columns>, L<get_dirty_columns|DBIx::Class::Row/get_dirty_columns>, L<get_from_storage|DBIx::Class::Row/get_from_storage>, L<get_inflated_columns|DBIx::Class::Row/get_inflated_columns>, L<has_column_loaded|DBIx::Class::Row/has_column_loaded>, L<in_storage|DBIx::Class::Row/in_storage>, L<inflate_result|DBIx::Class::Row/inflate_result>, L<insert|DBIx::Class::Row/insert>, L<insert_or_update|DBIx::Class::Row/insert_or_update>, L<is_changed|DBIx::Class::Row/is_changed>, L<is_column_changed|DBIx::Class::Row/is_column_changed>, L<make_column_dirty|DBIx::Class::Row/make_column_dirty>, L<new|DBIx::Class::Row/new>, L<register_column|DBIx::Class::Row/register_column>, L<result_source|DBIx::Class::Row/result_source>, L<set_column|DBIx::Class::Row/set_column>, L<set_columns|DBIx::Class::Row/set_columns>, L<set_inflated_columns|DBIx::Class::Row/set_inflated_columns>, L<store_column|DBIx::Class::Row/store_column>, L<throw_exception|DBIx::Class::Row/throw_exception>, L<update|DBIx::Class::Row/update>, L<update_or_insert|DBIx::Class::Row/update_or_insert>
+
+=back
+
+=head1 FURTHER QUESTIONS?
+
+Check the list of L<additional DBIC resources|DBIx::Class/GETTING HELP/SUPPORT>.
+
+=head1 COPYRIGHT AND LICENSE
+
+This module is free software L<copyright|DBIx::Class/COPYRIGHT AND LICENSE>
+by the L<DBIx::Class (DBIC) authors|DBIx::Class/AUTHORS>. You can
+redistribute it and/or modify it under the same terms as the
+L<DBIx::Class library|DBIx::Class/COPYRIGHT AND LICENSE>.
+

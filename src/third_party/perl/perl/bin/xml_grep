@@ -1,0 +1,479 @@
+#!perl -w
+use strict;
+
+use Getopt::Long;
+use Pod::Usage;
+use XML::Twig;
+
+my $VERSION="0.9";
+
+# options (all used globally in the script)
+my( $help, $man, @roots, @paths, $files, 
+    $count, $nb_results, $nb_results_per_file,
+    $encoding, @exclude,
+    $wrap, $nowrap, $descr, $group, $pretty_print, $version, $text_only, $date, 
+    $html, $tidy, 
+    $add_ns,
+    $verbose, $strict
+  );
+
+# used to check if the wrapping tags need to be output
+my $results      = 0;
+my $file_results = 0;
+
+# first process the case where the user provides only 
+# an xpath expression and a list of files
+ if( @ARGV && ($ARGV[0] !~ m{^-}) )
+   { splice( @ARGV, 0, 0, '--group_by_file', 'file', '--pretty_print', 'indented', '--cond'); }
+
+GetOptions( 'help'            => \$help,
+            'man'             => \$man,
+            'Version'         => \$version,
+            'cond=s'          => \@paths,
+            'exclude|v=s'     => \@exclude,
+            'root=s'          => \@roots,
+            'files'           => \$files,
+            'count'           => \$count,
+            'nb_results=i'    => \$nb_results,
+            'by_file=i'       => \$nb_results_per_file,
+            'encoding=s'      => \$encoding,
+            'wrap:s'          => \$wrap,
+            'nowrap'          => \$nowrap,
+            'descr:s'         => \$descr,
+            'group_by_file:s' => \$group,
+            'pretty_print:s'  => \$pretty_print,
+            'text_only'       => \$text_only,
+            'date!'           => \$date,
+            'strict'          => \$strict,
+            'html'            => \$html,
+            'tidy'            => \$tidy,
+            'add_ns'          => \$add_ns,
+            'verbose'         => \$verbose,
+    ) or pod2usage(2);
+
+pod2usage(1) if $help;
+pod2usage(-exitstatus => 0, -verbose => 2) if $man;
+if( $version) { warn "$0 version $VERSION\n"; exit; }
+
+binmode STDOUT, ':utf8';
+
+# case where options are given, but no root or path, assume the
+# first arg is a path
+if( !@roots and !@paths and !@exclude and @ARGV) { @paths= shift @ARGV; }
+
+unless( @roots or @paths or @exclude or $files)  { pod2usage(1); exit; }
+if( ($files or $count) and !@paths)  { pod2usage(1); exit; }
+if( ($files or $count) and (@roots or $encoding or defined( $wrap) 
+                or defined( $group) or defined( $pretty_print)))
+                                     { pod2usage(1); exit; }
+if( $files and !@ARGV)               { pod2usage(1); exit; }
+if( !$files and !$count and @paths and !@roots) { @roots= @paths; @paths=(); }
+
+$date=1 unless( defined $date);
+
+# defaults for optional arguments to options
+$group        = 'file'     if( defined $group        and !$group);
+$pretty_print = 'indented' if( defined $pretty_print and !$pretty_print);
+
+if( $nowrap) { $wrap=''; } elsif( !defined( $wrap) and (@roots or @paths)) { $wrap= 'xml_grep'; }
+
+if( !defined( $descr) and (@roots or @paths))
+  { if( $date)
+      { $date= localtime();
+        $descr        = qq{version="$VERSION" date="$date"}
+      }
+    else
+      { $descr        = qq{version="$VERSION"}; }
+  } 
+
+# some globals
+my $current_file;
+my $count_file  = 0;
+my $count_total = 0;
+my $nb_results_left_in_current_file=0;
+
+# will be used to create the twig
+my %options;  
+
+if( $count)
+  { my $twig_roots={};
+    my $twig_root= sub { $count_file++; $_[0]->purge; };
+    foreach my $path (@paths)
+      { $twig_roots->{$path}= $twig_root; }
+
+    $options{twig_roots}= $twig_roots;
+  }
+elsif( @exclude)
+  { # general options
+    $nowrap=1;
+    # twig options
+    $options{twig_print_outside_roots} = 1;
+    my $root_handlers={};
+    foreach my $exclude (@exclude)
+      { $root_handlers->{$exclude}= sub { }; }
+    $options{twig_roots}= $root_handlers;
+  }
+else
+  { create_regular_handlers( \%options, \@roots, \@paths);
+  }
+    
+if( $tidy) { $html= 1; $options{use_tidy}= 1; }     
+
+
+$options{pretty_print}    = $pretty_print if( $pretty_print);
+$options{output_encoding} = $encoding     if( $encoding); 
+     
+my $t= create_twig( %options);
+
+if( @ARGV)
+  { foreach my $file (@ARGV)
+      { $current_file= $file;
+
+        if( $nb_results_per_file) { $nb_results_left_in_current_file= $nb_results_per_file; }
+
+        if( $verbose) { warn "parsing '$file'\n"; }
+        my $ok= $html && ($current_file=~ m{^(http|ftp|file)://}) ? $t->safe_parseurl_html( $file) 
+              : ($current_file=~ m{^(http|ftp|file)://})          ? $t->safe_parseurl( $file) 
+              : $html                                             ? $t->safe_parsefile_html( $file)
+              :                                                     $t->safe_parsefile( $file);
+
+        if( !$ok)
+          { if( $@ =~ m{XMLGREP: FOUND}) 
+              { # in files mode
+                print $current_file, "\n";
+                $nb_results--;
+                exit unless( $nb_results);
+              }
+            elsif( $@ =~ m{^XMLGREP: NB_RESULT_REACHED})
+              { print file_result_end() if( $group && $file_results);
+                print result_end()      if( $results);
+                exit;
+              }
+            else
+              { $@ ||= 'unknown cause';
+                if( $strict) { die $@; } 
+                warn $@;
+                if( !$count) { print "<!-- error parsing file '$file' -->\n"; }
+              }
+          }
+
+        if( $count)    
+          { print "$current_file: $count_file\n";
+            $count_total += $count_file;
+            $count_file=0;
+          }
+        elsif( @roots) { print file_result_end() if( $file_results); }
+        elsif( $count) { print "$count_total matches\n"; }
+      }
+
+    if( $count) { print "total: $count_total\n"; }
+    print result_end() if( $results);
+  }
+else
+  { $file_results=0;
+    my $ok= $t->safe_parse( \*STDIN);
+    if( !$ok and ( $@ !~ m{^XMLGREP: NB_RESULT_REACHED}))
+      { if( !$strict) { warn $@; } else { die $@; } }
+    if( $count) { print "$count_total matches\n"; }
+    else        { print result_end();             }
+  }
+
+sub create_regular_handlers
+  { my( $options, $roots, $paths)= @_;
+    if( @$roots)
+      { my $root_handlers={};
+        my $root_handler= twig_roots_handler( @$paths);
+        foreach my $root (@$roots)
+          { $root_handlers->{$root}= $root_handler; }
+
+        $options->{twig_roots}= $root_handlers;
+      }
+
+    if( @$paths)
+      { my $twig_handlers={};
+        my $twig_handler= twig_handlers();
+        foreach my $path (@$paths)
+          { $twig_handlers->{$path}= $twig_handler; }
+
+        $options->{twig_handlers}= $twig_handlers;
+      }
+  }
+
+sub create_twig
+  { my( %options)= @_;
+    my $twig;
+    eval { $twig= XML::Twig->new( %options) };
+    if( $@)
+      { # see if we are in the case where the only condition uses string() or regexp
+        if( ($@=~ m{^(regexp|string\(\)) condition not supported on twig_roots option})
+            && $options{twig_roots} && !$options{twig_handlers}
+            && ( keys %{$options{twig_roots}} == 1)
+          )
+          { # in this case add the proper twig_roots option
+            my $cond= (keys %{$options{twig_roots}})[0];
+            (my $root= $cond)=~ s{\[[^\]]*\]$}{};
+            #warn "cond: '$cond' - root: '$root'\n";
+            delete $options{twig_roots};
+            delete $options{twig_handlers};
+            @paths= ($cond);
+            @roots= ($root);
+            create_regular_handlers( \%options, \@roots, \@paths);
+            return create_twig( %options);
+          }
+        elsif( $@=~ m{^wrong condition: unrecognized expression in handler: '(.*?)'})
+          { die "error in filter condition '$1'\n"; }
+        else
+          { die "error: $@"; }
+      }
+      return $twig;
+  }
+
+ 
+sub twig_roots_handler
+  { my( @paths)= @_;
+    return  sub 
+              { my( $t, $root)= @_;
+                if( !@paths or $_->att( '#print'))
+                  { print result_start()        if( !$results); 
+                    print file_result_start()   if( $group && !$file_results);
+                    if( $text_only)
+                      { print $root->text, "\n"; }
+                    else
+                      { $root->print; }
+                    if( ! -- $nb_results) { $@= "XMLGREP: NB_RESULT_REACHED"; die; }
+                    if( ! -- $nb_results_left_in_current_file) { $t->finish_now(); }
+                  }
+                $t->purge; 
+                1;
+              };
+  }
+
+sub twig_handlers
+  { if( $files)
+      { return sub { $@="XMLGREP: FOUND"; die; }; }
+    else
+      { return sub { my( $t, $hit)= @_;
+                     foreach my $elt ( $hit->ancestors_or_self) 
+                       { $elt->set_att( '#print' => 1); }
+                         1;
+                   };
+      }
+  }
+
+sub result_start
+  { $results=1;
+    return if( $text_only);
+    my $enc_decl= $encoding ? qq{encoding="$encoding" } : '';
+    return $wrap ?  qq{<?xml version="1.0" $enc_decl?>\n<$wrap $descr>\n}
+                 : '';
+  }
+
+sub result_end
+  { my $result;
+    return if( $text_only);
+    if( !$group) { $result= "\n"; }
+    $result .= qq{</$wrap>\n} if( $wrap);
+    return $result;
+  }
+
+sub file_result_start
+  { $file_results=1;
+    return if( $text_only);
+    my $result;
+    $result= qq{<$group filename="$current_file">};
+    if( !$pretty_print)
+      { $result.= "\n"; }
+    return $result;
+  }
+
+sub file_result_end
+  { $file_results=0;
+    return '' if( $text_only);
+    return qq{\n</$group>\n};
+  }
+
+
+
+__END__
+
+=head1 NAME
+
+xml_grep - grep XML files looking for specific elements
+
+=head1 SYNOPSYS
+
+  xml_grep [options] <file list> 
+
+or
+
+  xml_grep <xpath expression> <file list>
+
+By default you can just give C<xml_grep> an XPath expression and
+a list of files, and get an XML file with the result.
+
+This is equivalent to writing 
+
+  xml_grep --group_by_file file --pretty_print indented --cond <file list>
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<--help>
+
+brief help message
+
+=item B<--man>
+
+full documentation
+
+=item B<--Version>
+
+display the tool version
+
+=item B<--root> <cond>
+
+look for and return xml chunks matching <cond>
+
+if neither C<--root> nor C<--file> are used then the element(s)
+that trigger the C<--cond> option is (are) used. If C<--cond> is
+not used then all elements matching the <cond> are returned
+
+several C<--root> can be provided
+
+=item B<--cond> <cond>
+
+return the chunks (or file names) only if they contain elements matching <cond>
+
+several C<--cond> can be provided (in which case they are OR'ed)
+
+=item B<--files>
+
+return only file names (do not generate an XML output)
+
+usage of this option precludes using any of the options that define the XML output:
+C<--roots>, C<--encoding>, C<--wrap>, C<--group_by_file> or C<--pretty_print>
+
+=item B<--count>
+
+return only the number of matches in each file
+
+usage of this option precludes using any of the options that define the XML output:
+C<--roots>, C<--encoding>, C<--wrap>, C<--group_by_file> or C<--pretty_print>
+
+=item B<--strict>
+
+without this option parsing errors are reported to STDOUT and the file skipped
+
+
+=item B<--date>
+
+when on (by default) the wrapping element get a C<date> attribute that gives
+the date the tool was run.
+
+with C<--nodate> this attribute is not added, which can be useful if you need
+to compare 2 runs.
+
+=item B<--encoding> <enc>
+
+encoding of the xml output (utf-8 by default)
+
+=item B<--nb_results> <nb>
+
+output only <nb> results
+
+=item B<--by_file>
+
+output only <nb> results by file 
+
+=item B<--wrap> <tag>
+
+wrap the xml result in the provided tag (defaults to 'xml_grep')
+
+If wrap is set to an empty string (C<--wrap ''>) then the xml result is not wrapped at all. 
+
+=item B<--nowrap>
+
+same as using C<--wrap ''>: the xml result is not wrapped. 
+
+=item B<--descr> <string>
+
+attributes of the wrap tag (defaults to C<< version="<VERSION>" date="<date>" >>)
+
+=item B<--group_by_file> <optional_tag>
+
+wrap results for each files into a separate element. By default that element 
+is named C<file>. It has an attribute named C<filename> that gives the name of the 
+file.
+
+the short version of this option is B<-g>
+
+=item B<--exclude> <condition>
+
+same as using C<-v> in grep: the elements that match the condition are excluded
+from the result, the input file(s) is (are) otherwise unchanged 
+
+the short form of this option is B<-v>
+
+=item B<--pretty_print> <optional_style>
+
+pretty print the output using XML::Twig styles ('C<indented>', 'C<record>'
+or 'C<record_c>' are probably what you are looking for) 
+
+if the option is used but no style is given then 'C<indented>' is used
+
+short form for this argument is B<-s>
+
+=item B<--text_only>
+
+Displays the text of the results, one by line.
+
+=item B<--html>
+
+Allow HTML input, files are converted using HTML::TreeBuilder
+
+=item B<--Tidy>
+
+Allow HTML input, files are converted using HTML::Tidy 
+
+=back
+
+=head2 Condition Syntax
+
+<cond> is an XPath-like expression as allowed by XML::Twig to trigger handlers. 
+ 
+examples: 
+  'para'
+  'para[@compact="compact"]'
+  '*[@urgent]'
+  '*[@urgent="1"]'
+  'para[string()="WARNING"]'
+
+see XML::Twig for a more complete description of the <cond> syntax
+
+options are processed by Getopt::Long so they can start with '-' or '--'
+and can be abbreviated (C<-r> instead of C<--root> for example)
+
+=head1 DESCRIPTION
+
+B<xml_grep> does a grep on XML files. Instead of using regular 
+expressions it uses XPath expressions (in fact the subset of 
+XPath supported by XML::Twig)
+
+the results can be the names of the files or XML elements 
+containing matching elements.
+
+=head1 SEE ALSO
+
+XML::Twig Getopt::Long
+
+=head1 LICENSE
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=head1 AUTHOR
+
+Michel Rodriguez <mirod@xmltwig.com>
+
+

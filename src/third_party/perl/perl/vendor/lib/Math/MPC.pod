@@ -1,0 +1,860 @@
+=pod
+
+=head1 NAME
+
+Math::MPC - perl interface to the MPC (multi precision complex) library.
+
+=head1 DEPENDENCIES
+
+   This module needs the MPC, MPFR and GMP C libraries. (Install GMP
+   first, followed by MPFR, followed by MPC.)
+
+   The GMP library is availble from http://gmplib.org
+   The MPFR library is available from http://www.mpfr.org/
+   The MPC library is available from
+    http://www.multiprecision.org/mpc/
+
+=head1 DESCRIPTION
+
+   A multiple precision complex number module utilising the MPC library.
+   Basically, this module simply wraps the 'mpc' complex number functions
+   provided by that library.
+   Operator overloading is also available.
+   The following documentation heavily plagiarises the mpc documentation.
+
+   use warnings;
+   use Math::MPFR qw(:mpfr); # needed by some Math::MPC functions
+   use Math::MPC qw(:mpc);
+   Rmpc_set_default_prec(500); # Set default precision to 500 bits
+   my $mpc1 = Math::MPC->new(12.5, 1125); # 12.5 + 1125*i
+   $mpc2 = sqrt($mpc1);
+   print "Square root of $mpc1 is $mpc2\n";
+
+   See also the Math::MPC test suite for some (simplistic) examples of
+   usage.
+
+
+=head1 ROUNDING MODE
+
+   A complex rounding mode is of the form MPC_RNDxy where "x" and "y"
+   are one of "N" (to nearest), "Z" (towards zero), "U" (towards plus
+   infinity), "D" (towards minus infinity). The first letter refers to
+   the rounding mode for the real part, and the second one for the
+   imaginary part.
+   For example MPC_RNDZU indicates to round the real part towards
+   zero, and the imaginary part towards plus infinity.
+   The default rounding mode is MPC_RNDNN, but this can be changed
+   using the Rmpc_set_default_rounding_mode() function.
+
+=head1 MEMORY MANAGEMENT
+
+   Objects can be created with the Rmpc_init2 and Rmpc_init3 functions,
+   which return an object that has been blessed into the package
+   Math::MPC. Alternatively, blessed objects can also be created by
+   calling the new() function (either as a function or as a method).
+   These objects will be automatically cleaned up by the DESTROY()
+   function whenever they go out of scope.
+
+   Rmpc_init2_nobless and Rmpc_init3_nobless are the same as Rmpc_init2
+   and Rmpc_init3, except that they return an unblessed object.
+   If you create Math::MPC objects using the '_nobless' versions,
+   it will then be up to you to clean up the memory associated with
+   these objects by calling Rmpc_clear($op) for each object.
+   Alternatively such objects will be cleaned up when the script ends.
+   I don't know why you would want to create unblessed objects. The
+   point is that you can if you want to.
+
+=head1 MIXING MPC OBJECTS WITH MPFR & GMP OBJECTS
+
+   Some of the Math::MPC functions below take Math::MPFR, Math::GMP,
+   Math::GMPz, Math::GMPq, or Math::GMPf objects as arguments.
+   Obviously, to make use of these functions, you'll need to have
+   loaded the appropriate module.
+
+=head1 FUNCTIONS
+
+   Most of the following functions are simply wrappers around an mpc
+   function of the same name. eg. Rmpc_neg() is a wrapper around
+   mpc_neg().
+
+   "$rop", "$op1", "$op2", etc. are Math::MPC objects - the
+   return value of one of the Rmpc_init* functions. They are in fact
+   references to mpc structures. The "$op" variables are the operands
+   and "$rop" is the variable that stores the result of the operation.
+   Generally, $rop, $op1, $op2, etc. can be the same perl variable
+   referencing the same mpc structure, though often they will be
+   distinct perl variables referencing distinct mpc structures.
+   Eg something like Rmpc_add($r1, $r1, $r1, $rnd),
+   where $r1 *is* the same reference to the same mpc structure,
+   would add $r1 to itself and store the result in $r1. Alternatively,
+   you could (courtesy of operator overloading) simply code it
+   as $r1 += $r1. Otoh, Rmpc_add($r1, $r2, $r3, $rnd), where each of the
+   arguments is a different reference to a different mpc structure
+   would add $r2 to $r3 and store the result in $r1. Alternatively
+   it could be coded as $r1 = $r2 + $r3.
+
+   In the documentation that follows:
+
+   "$ui" means an integer that will fit into a C 'unsigned long int',
+
+   "$si" means an integer that will fit into a C 'signed long int'.
+
+   "$uj" means an integer that will fit into a C 'uintmax_t'. Don't
+   use the _uj functions unless your perl was compiled with 64
+   bit integer support.
+
+   "$sj" means an integer that will fit into a C 'intmax_t'. Don't
+   use the _sj functions unless your perl was compiled with 64
+   bit integer support.
+
+   "$double" is a C double.
+
+   "$ld" is a C long double. Don't use the _ld functions unless your
+   perl was compiled with long double support.
+
+   "$bool" means a value (usually a 'signed long int') in which
+   the only interest is whether it evaluates as false or true.
+
+   "$str" simply means a string of symbols that represent a number,
+   eg '1234567890987654321234567@7' which might be a base 10 number,
+   or 'zsa34760sdfgq123r5@11' which would have to represent at least
+   a base 36 number (because "z" is a valid digit only in bases 36
+   and above). Valid bases for MPC numbers are 2 to 36 (inclusive).
+
+   "$rnd" is simply one of the 16 rounding mode values (discussed above).
+
+   "$p" is the (unsigned long) value for precision.
+
+   "$mpf" is a Math::GMPf object (floating point). You'll need Math::GMPf
+          installed in order to create $mpf.
+
+   "$mpq" is a Math::GMPq object (rational). You'll need Nath::GMPq
+          installed in order to create $mpq.
+
+   "$mpz" is a Math::GMP or Math::GMPz object (integer). You'll need
+          Math::GMPz or Math::GMP installed in order to create $mpz.
+
+   "$mpfr" is a Math::MPFR object (floating point). You'll need to
+           'use Math::MPFR;' in order to create $mpfr. (Math::MPFR
+           a pre-requisite module for Math::MPC.)
+
+   "$cc" is a Math::Complex_C (double _Complex) object. You'll need to
+         'use Math::Complex_C' (or create your own double _Complex
+         object) in order to create $cc, and to use the functions that
+         take such an argument. (Math::Complex_C is *not* a
+         pre-requisite module for Math::MPC.)
+
+   "$lcc" is a Math::Complex_C::Long (long double _Complex) object.
+         You'll need to 'use Math::Complex_C' (or create your own
+         long double _Complex object in order to create $lcc, and
+         to use the functions that take such an argument.
+
+   ######################
+
+   FUNCTION RETURN VALUES
+
+    Most MPC functions have a return value ($si) which is used to
+    indicate the position of the rounded real or imaginary parts with
+    respect to the exact (infinite precision) values. The functions
+    RMPC_INEX_RE($si) and RMPC_INEX_IM($si) return 0 if the corresponding
+    rounded value is exact, a negative value if the rounded value is less
+    than the exact one, and a positive value if it is greater than the
+    exact one. However, some functions do not completely fulfill this -
+    in some cases the sign is not guaranteed, and in some cases a
+    non-zero value is returned although the result is exact. In these
+    cases the function documentation explains the exact meaning of the
+    return value. However, the return value never wrongly indicates an
+    exact computation.
+
+   ###########################
+
+   MANIPULATING ROUNDING MODES
+
+   Rmpc_set_default_rounding_mode($rnd);
+    Sets the default rounding mode to $rnd.
+    The default rounding mode is to nearest initially (MPC_RNDNN).
+    The default rounding mode is the rounding mode that is used in
+    overloaded operations.
+
+   $ui = Rmpc_get_default_rounding_mode();
+    Returns the numeric value of the current default rounding mode.
+    This will initially be 0 (MPC_RNDNN).
+
+   ##########
+
+   INITIALIZATION
+
+   Normally, a variable should be initialized once only or at least
+   be cleared, using `Rmpc_clear', between initializations - but
+   don't explicitly call Rmpc_clear() on blessed objects. 'DESTROY'
+  (which calls 'Rmpc_clear') is automatically called on blessed
+   objects whenever they go out of scope.
+
+   First read the section 'MEMORY MANAGEMENT' (above).
+
+   Rmpc_set_default_prec($p);
+   Rmpc_set_default_prec2($p_re, $p_im);
+    Rmpc_set_default_prec sets the default precision to exactly $p
+    bits for both the real and imaginary parts. Rmpc_set_default_prec
+    sets the default precision to be *exactly* $p_re bits for the real
+    part, and *exactly* $p_im bits for the imaginary part. The
+    precision of a variable means the number of bits used to store its
+    mantissa.  All subsequent calls to `new' will use this precision,
+    but previously initialized variables are unaffected. This is also
+    the precision that will be used during some overloaded operations
+    (see OPERATOR OVERLOADING below).
+    The default precision is set to 53 bits initially (for both
+    real and imaginary components).
+
+   $ui = Rmpc_get_default_prec();
+   ($ui_re, $ui_im) = Rmpc_get_default_prec2();
+    Rmpc_get_default_prec returns the current default real precision
+    iff the default real precision is the same as the current default
+    imaginary precision. Otherwise it returns zero.
+    Rmpc_get_default_prec2 returns both current default real precision
+    and current default imaginary precision (in bits).
+
+   $ui = Rmpc_get_prec($op);
+    If the real and imaginary part of $op have the same precision,
+    it is returned. Otherwise 0 is returned.
+
+   $ui = Rmpc_get_re_prec($op);
+   $ui = Rmpc_get_im_prec($op)
+   ($re_prec, $im_prec) = Rmpc_get_prec2($op);
+    Get (respectively) the precision of the real part of $op, the
+    precision of the imaginary part of $op, or an array containing
+    precision of both real and imaginary parts of $op.
+
+   $rop = Math::MPC->new();
+   $rop = Math::MPC::new();
+   $rop = new Math::MPC();
+    Initialize $rop, and set its real and imaginary parts to NaN.
+    The precision of $rop is the default precision, which can be
+    changed by a call to `Rmpc_set_default_prec' or
+    `Rmpc_set_default_prec2' (documented above).
+
+   $rop = Rmpc_init2($p);
+   $rop = Rmpc_init2_nobless($p);
+    Initialize $rop, set the precision (of both real and imaginary
+    parts) to be *exactly* $p bits, and set its real and imaginary
+    parts to NaN.
+
+   $rop = Rmpc_init3($p_re, $p_im);
+   $rop = Rmpc_init3_nobless($p_r, $p_i);
+    Initialize $rop, set the precision of the real part to be
+    *exactly* $p_re bits, set the precision of the imaginary part to
+    be *exactly* $p_im bits, and set its real and imaginary parts to
+    NaN.
+
+   Rmpc_set_prec($op, $p);
+    Reset the precision of $op to be exactly $p bits, and set its
+    real/imaginary parts to NaN.
+
+   Rmpc_set_re_prec($op, $p);
+   Rmpc_set_im_prec($op, $p);
+    Set (respectively) the precision of the real part of $op to be
+    exactly $p bits and the precision of the imaginary part of $op
+    to be exactly $p bits. In both cases the value is set to NaN.
+    (There are currently no corresponding MPC library functions.)
+
+   ##########
+
+   ASSIGNMENT
+
+   $si = Rmpc_set($rop, $op, $rnd);
+   $si = Rmpc_set_ui($rop, $ui, $rnd);
+   $si2 = Rmpc_set_si($rop, $si1, $rnd);
+   $si = Rmpc_set_d($rop, $double, $rnd);
+   $si = Rmpc_set_uj($rop, $uj, $rnd);
+   $si = Rmpc_set_sj($rop, $sj, $rnd);
+   $si = Rmpc_set_ld($rop, $ld, $rnd);
+   $si = Rmpc_set_f($rop, $mpf, $rnd);
+   $si = Rmpc_set_q($rop, $mpq, $rnd);
+   $si = Rmpc_set_z($rop, $mpz, $rnd);
+   $si = Rmpc_set_fr($rop, $mpfr, $rnd);
+   $si = Rmpc_set_dc($rop, $cc, $rnd); # deprecated - use Rmpc_set_DC instead
+   $si = Rmpc_set_ldc($rop, $lcc, $rnd); # deprecated - use Rmpc_set_LDC instead
+   $si = Rmpc_set_DC($rop, $cc, $rnd);  # $cc is a Math:Complex_C object
+   $si = Rmpc_set_LDC($rop, $lcc, $rnd); # $lcc is a Math::Complex_C::L object
+   Rmpc_set_F128C($rop, $f128c, $rnd); # $f128c is a Math::Complex_C::Q object
+    Set the value of $rop from 2nd arg, rounded to the precision of
+    $rop towards the given direction $rnd.
+    Don't use Rmpc_set_ld unless perl has been built with long
+    double support. Don't use Rmpc_set_uj or Rmpc_set_sj unless
+    perl has been built with long long int support.
+    For Rmpc_set_DC and Rmpc_set_LDC, requires an mpc library (version 0.9
+    or later) that has been built with support for 'double _Complex' and 'long
+    double _Complex' data types (resp.). For Rmpc_set_F128C, the underlying
+    mpfr library needs to have been built with --enable-float128 option.
+
+
+   $si = Rmpc_set_str($rop, $string, $base, $rnd);
+   $si = Rmpc_strtoc($rop, $string, $base, $rnd);
+    Set $rop to the value represented in $string (in base $base), rounded
+    in accordance with $rnd. See the mpc documentation for details.
+
+   $si = Rmpc_set_ui_ui($rop, $ui1, $ui2, $rnd);
+   $si3 = Rmpc_set_si_si($rop, $si1, $si2, $rnd);
+   $si = Rmpc_set_d_d($rop, $double1, $double2, $rnd);
+   $si = Rmpc_set_f_f($rop, $mpf1, $mpf2, $rnd);
+   $si = Rmpc_set_q_q($rop, $mpq1, $mpq2, $rnd);
+   $si = Rmpc_set_z_z($rop, $mpz1, $mpz2, $rnd);
+   $si = Rmpc_set_fr_fr($rop, $mpfr1, $mpfr2, $rnd);
+    Sets the real part of $rop from 2nd arg, and the imaginary part
+    of $rop from 3rd arg, according to the rounding mode $rnd.
+
+   $si = Rmpc_set_uj_uj($rop, $uj1, $uj2, $rnd);
+   $si = Rmpc_set_sj_sj($rop, $sj1, $sj2, $rnd);
+   $si = Rmpc_set_ld_ld($rop, $ld1, $ld2, $rnd);
+    Don't use the first 2 functions unless Math::MPC::_has_longlong()
+    returns a true value. Don't use the 3rd function unless
+    Math::MPC::_has_longdouble() returns true.
+    Sets the real part of $rop from 2nd arg, and the imaginary part
+    of $rop from 3rd arg, according to the rounding mode $rnd.
+
+   $si = Rmpc_set_x_y($rop, $op1, $op2, $rnd);
+    You need to replace the 'x' and the 'y' with any one of 'ui',
+    'si', 'd', 'uj', 'sj', 'ld', 'f', 'q', 'z' and 'fr' - eg:
+        Rmpc_set_ui_d($rop, $ui, $double, $rnd);
+    Don't use the 'uj' or 'sj' variants if Math::MPC::_has_longlong()
+    doesn't return a true value. And don't use the 'ld' variants if
+    Math::MPC_haslongdouble() doesn't return a true value.
+    Sets the real part of $rop from 2nd arg, and the imaginary part
+    of $rop from 3rd arg, according to the rounding mode $rnd.
+
+   ################################################
+
+   COMBINED INITIALIZATION AND ASSIGNMENT
+
+   NOTE: Do NOT use these functions if $rop has already been initialised
+   or created by calling new(). Instead use the Rmpc_set* functions in
+   the section 'ASSIGNMENT' (above).
+
+   First read the section 'MEMORY MANAGEMENT' (above).
+
+   $rop = Math::MPC->new($arg1 [, $arg2]);
+   $rop = Math::MPC::new($arg1 [, $arg2]);
+   $rop = new Math::MPC($arg1, [, $arg2]);
+    Returns a Math::MPC object whose real component has a value of $arg1,
+    rounded in the default rounding direction, with default precision.
+    If $arg2 is supplied, the imaginary component of the returned
+    Math::MPC object is set to $arg2, rounded in the default rounding
+    direction, with default precision. Otherwise the imaginary component
+    of the returned Math::MPC object is set to zero. $arg1 & $arg2 can be
+    either a number (signed integer, unsigned integer, signed fraction or
+    unsigned fraction), a string that represents a numeric value, a
+    Math::MPFR object, a Math::GMP object, a Math::GMPz object, a
+    Math::GMPq object or a Math::GMPf object.
+    If a string argument begins with "0b" or "0B", then the string is
+    treated as a base 2 string. Elsif it begins with "0x" or "0X" it is
+    treated as a base 16 string. Else it is treated as a base 10 string.
+
+   ##########
+
+   ARITHMETIC
+
+   $si = Rmpc_add($rop, $op1, $op2, $rnd);
+   $si = Rmpc_add_ui($rop, $op, $ui, $rnd);
+   $si = Rmpc_add_fr($rop, $op, $mpfr, $rnd);
+    Set $rop to 2nd arg + 3rd arg rounded in the direction $rnd.
+
+
+   $si = Rmpc_sub($rop, $op1, $op2, $rnd);
+   $si = Rmpc_sub_ui($rop, $op, $ui, $rnd);
+   $si = Rmpc_ui_sub($rop, $ui, $op, $rnd);
+    Set $rop to 2nd arg - 3rd arg rounded in the direction $rnd.
+
+   $si = Rmpc_ui_ui_sub($rop, $ui_r, $ui_i, $op, $rnd);
+    The real part of $rop is set to $ui_r minus the real part of $op
+    (rounded in the direction $rnd) - and the imaginary part of $rop
+    is set to $ui_r minus the imaginary part of $op (rounded in the
+    direction $rnd)
+
+
+   $si = Rmpc_mul($rop, $op1, $op2, $rnd);
+   $si = Rmpc_mul_ui($rop, $op, $ui, $rnd);
+   $si = Rmpc_mul_si($rop, $op, $si1, $rnd);
+   $si = Rmpc_mul_sj($rop, $op, $sj, $rnd);   # Math::MPC XSub
+   $si = Rmpc_mul_d($rop, $op, $double, $rnd);# Math::MPC XSub
+   $si = Rmpc_mul_ld($rop, $op, $ld, $rnd);   # Math::MPC XSub
+   $si = Rmpc_mul_fr($rop, $op, $mpfr, $rnd);
+    Set $rop to 2nd arg * 3rd arg rounded in the direction $rnd.
+    The 'sj'/'ld' versions are available only on perls built with
+    '64 bit int'/'long double' support.
+
+   $si = Rmpc_mul_i($rop, $op, $si1, $rnd);
+    If $si1 >= 0 (non-negative), set $rop to $op times the
+    imaginary unit i - else set $rop to $op times -i.
+
+
+   $si = Rmpc_div($rop, $op1, $op2, $rnd);
+   $si = Rmpc_div_ui($rop, $op, $ui, $rnd);
+   $si = Rmpc_ui_div($rop, $ui, $op, $rnd);
+   $si = Rmpc_div_d($rop, $op, $double, $rnd); # Math::MPC XSub
+   $si = Rmpc_d_div($rop, $double, $op, $rnd); # Math::MPC XSub
+   $si = Rmpc_div_sj($rop, $op, $sj, $rnd); # Math::MPC XSub
+   $si = Rmpc_sj_div($rop, $sj, $op, $rnd); # Math::MPC XSub
+   $si = Rmpc_div_ld($rop, $op, $ld, $rnd); # Math::MPC XSub
+   $si = Rmpc_ld_div($rop, $ld, $op, $rnd); # Math::MPC XSub
+   $si = Rmpc_div_fr($rop, $op, $mpfr, $rnd);
+    Set $rop to 2nd arg / 3rd arg rounded in the direction $rnd.
+    The 'sj'/'ld' versions are available only on perls built with
+    '64 bit int'/'long double' support.
+
+   $si = Rmpc_sqr($rop, $op, $rnd);
+    Set $rop to the square of $op, rounded in direction $rnd.
+
+   $si = Rmpc_sqrt($rop, $op, $rnd);
+    Set $rop to the square root of the 2nd arg rounded in the
+    direction $rnd. When the return value is 0, it means the result
+    is exact. Else it's unknown whether the result is exact or not.
+
+   $si = Rmpc_rootofunity ($rop, $ui1, $ui2, $rnd); # mpc-1.1.0 and
+                                                    # later only
+    Set $rop to the standard primitive $ui1-th root of unity raised
+    to the power $ui2, that is, exp (2 * pi * i * $ui2 / $ui1),
+    rounded according to $rnd with the precision of $rop.
+
+   $si = Rmpc_pow($rop, $op1, $op2, $rnd);
+   $si = Rmpc_pow_d($rop, $op1, $double, $rnd);
+   $si = Rmpc_pow_ld($rop, $op1, $ld, $rnd);
+   $si2 = Rmpc_pow_si($rop, $op1, $si, $rnd);
+   $si = Rmpc_pow_ui($rop, $op1, $ui, $rnd);
+   $si = Rmpc_pow_z($rop, $op1, $mpz, $rnd);
+   $si = Rmpc_pow_fr($rop, $op1, $mpfr, $rnd);
+    Set $op to ($op1 ** 3rd arg) rounded in the direction $rnd.
+    Rmpc_pow_ld is available only on perls that have "long double"
+    support.
+
+   $si = Rmpc_neg($rop, $op, $rnd);
+    Set $rop to -$op rounded in the direction $rnd. Just
+    changes the sign if $rop and $op are the same variable.
+
+   $si = Rmpc_conj($rop, $op, $rnd);
+    Set $rop to the conjugate of $op rounded in the direction $rnd.
+    Just changes the sign of the imaginary part if $rop and $op are
+    the same variable.
+
+   $si = Rmpc_abs($mpfr, $op, $rnd);
+    Set the floating-point number $mpfr to the absolute value of $op,
+    rounded in the direction $rnd. Return 0 iff the result is exact.
+
+   $si = Rmpc_norm($mpfr, $op, $rnd);
+    Set the floating-point number $mpfr to the norm of $op (ie the
+    square of its absolute value), rounded in the direction $rnd.
+    Return 0 iff the result is exact.
+
+   $si = Rmpc_mul_2exp($rop, $op, $ui, $rnd);
+   $si = Rmpc_mul_2ui ($rop, $op, $ui, $rnd);#same as Rmpc_mul_2exp
+   $si1 = Rmpc_mul_2si ($rop, $op, $si2, $rnd);
+    Set $rop to $op times 2 raised to 3rd arg rounded according to
+    $rnd. Just increases the exponents of the real and imaginary
+    parts by value of 3rd arg when $rop and $op are identical.
+
+   $si = Rmpc_div_2exp($rop, $op, $ui, $rnd);
+   $si = Rmpc_div_2ui ($rop, $op, $ui, $rnd);#same as Rmpc_div_2exp
+   $si1 = Rmpc_div_2si ($rop, $op, $si2, $rnd);
+    Set $rop to $op divided by 2 raised to 3rd arg rounded according
+    to $rnd. Just decreases the exponents of the real and imaginary
+    parts by value of 3rd arg when $rop and $op are identical.
+
+  Rmpc_swap($op1, $op2);
+    Swap the values (and precisions) of op1 and op2 efficiently.
+
+   ##########
+
+   COMPARISON
+
+   $si = Rmpc_cmp($op1, $op2);
+   $si = Rmpc_cmp_si($op, $si1);
+    Compare 1st and 2nd args. The return value $si can be decomposed
+    into $x = RMPC_INEX_RE($si) and $y = RMPC_INEX_IM($si), such that $x
+    is positive if the real part of the 1st arg is greater than that of
+    the 2nd arg, zero if both real parts are equal, and negative if the
+    real part of the 1st arg is less than that of the 2nd arg.
+    Likewise for $y.
+    Both 1st and 2nd args are considered to their full own precision,
+    which may differ.
+    It is not allowed that one of the operands has a NaN (Not-a-Number)
+    part.
+    The storage of the return value is such that equality can be simply
+    checked with Rmpc_cmp($first_arg, $second_arg) == 0.
+
+   $si = Rmpc_cmp_si_si($op, $si1, $si2);
+    As for the above comparison functions - except that $op is being
+    compared with $si1 + ($si2 * i).
+
+   $si = Rmpc_cmp_abs ($op1, $op2); # requires mpc-1.1.0 and later
+
+    Compare the absolute values of $op1 and $op2. The return value is 0
+    if both are the same (including infinity), positive if the absolute
+    value of OP1 is greater than that of OP2, and negative if it is
+    smaller. If $op1 or $op2 has a real or imaginary part which is NaN,
+    the function behaves like 'mpfr_cmp' on two real numbers of which
+    at least one is NaN.
+
+   #######
+
+   SPECIAL
+
+   $si = Rmpc_exp($rop, $op, $rnd);
+    Set $rop to the exponential of $op, rounded according to $rnd
+    with the precision of $rop.
+
+   $si = Rmpc_log($rop, $op, $rnd);
+    Set $rop to the log of $op, rounded according to $rnd with the
+    precision of $rop.
+
+   $si = Rmpc_log10($rop, $op, $rnd);
+    Set $rop to the base 10 log of $op, rounded according to $rnd with
+    the precision of $rop.
+
+   $si = Rmpc_arg ($mpfr, $op, $rnd);
+     Set $mpfr to the argument of $op, with a branch cut along the
+     negative real axis. ($mpfr is a Math::MPFR object.)
+
+   $si = Rmpc_proj ($rop, $op, $rnd);
+     Compute a projection of $op onto the Riemann sphere. Set $rop
+     to $op, rounded in the direction $rnd, except when at least one
+     part of $op is infinite (even if the other part is a NaN) in
+     which case the real part of $rop is set to plus infinity and its
+     imaginary part to a signed zero with the same sign as the
+     imaginary part of $op.
+
+   Rmpc_set_nan($op);
+     Set $op to 'NaN +I*NaN'.
+
+   ##########
+
+   TRIGONOMETRIC
+
+   $si = Rmpc_sin($rop, $op, $rnd);
+    Set $rop to the sine of $op, rounded according to $rnd with the
+    precision of $rop.
+
+   $si = Rmpc_cos($rop, $op, $rnd);
+    Set $rop to the cosine of $op, rounded according to $rnd with
+    the precision of $rop.
+
+   $si = Rmpc_sin_cos($r_sin, $r_cos, $op, $rnd_sin, $rnd_cos);
+    Needs version 0.9 or later of the mpc C library.
+    Set $r_sin/$r_cos to the sin/cos of $op, rounded according to
+    $rnd_sin/$rnd_cos.
+    (If the mpc C library is pre version 0.9, calling this
+    function will cause the program to die with an appropriate
+    error message.)
+
+   $si = Rmpc_tan($rop, $op, $rnd);
+    Set $rop to the tangent of $op, rounded according to $rnd with
+    the precision of $rop.
+
+   $si = Rmpc_sinh($rop, $op, $rnd);
+    Set $rop to the hyperbolic sine of $op, rounded according to
+    $rnd with the precision of $rop.
+
+   $si = Rmpc_cosh($rop, $op, $rnd);
+    Set $rop to the hyperbolic cosine of $op, rounded according to
+    $rnd with the precision of $rop.
+
+   $si = Rmpc_tanh($rop, $op, $rnd);
+    Set $rop to the hyperbolic tangent of $op, rounded according to
+    $rnd with the precision of $rop.
+
+   $si = Rmpc_asin ($rop, $op, $rnd);
+    Set $rop to the inverse sine of $op, rounded according to
+    $rnd with the precision of $rop.
+
+   $si = Rmpc_acos ($rop, $op, $rnd);
+    Set $rop to the inverse cosine of $op, rounded according to
+    $rnd with the precision of $rop.
+
+   $si = Rmpc_atan ($rop, $op, $rnd);
+    Set $rop to the inverse tangent of $op, rounded according to
+    $rnd with the precision of $rop.
+
+   $si = Rmpc_asinh ($rop, $op, $rnd);
+    Set $rop to the inverse hyperbolic sine of $op, rounded
+    according to $rnd with the precision of $rop.
+
+   $si = Rmpc_acosh ($rop, $op, $rnd);
+    Set $rop to the inverse hyperbolic cosine of $op, rounded
+    according to$rnd with the precision of $rop.
+
+   $si = Rmpc_atanh ($rop, $op, $rnd);
+    Set $rop to the inverse hyperbolic tangent of $op, rounded
+    according to$rnd with the precision of $rop.
+
+   ##########
+
+   CONVERSION
+
+   ($real, $im) = c_string($op, $base, $digits, $rnd);
+   $real = r_string($op, $base, $digits, $rnd);
+   $im = i_string($op, $base, $digits, $rnd);
+    $real is a string containing the value of the real part of $op.
+    $im is a string containing the value of the imaginary part of $op.
+    $real and $im will be of the form XeY (X@Y for bases greater than 10)
+    - where X is the mantissa (in base $base) and Y is the exponent (in
+    base 10).
+    For example, -31.4132' would be returned as -3.14132e1. $digits is the
+    number of digits that will be written in the mantissa. If $digits is
+    zero, the mantissa will contain the maximum number of digits
+    accurately representable. The mantissa will be rounded in the
+    direction specified by $rnd.
+
+   @vals = Rmpc_deref4($op, $base, $digits, $rnd);
+    @vals contains (in order) the real mantissa, the real exponent, the
+    imaginary mantissa, and the imaginary exponent of $op.The mantissas,
+    expressed in base $base and rounded according to $rnd), contain an
+    implicit radix point to the left of the first (ie leftmost) digit.
+    The exponents are always expressed in base 10. $digits is the number
+    of digits that will be written in the mantissa. If $digits is zero
+    the mantissa will contain the maximum number of digits accurately
+    representable.
+
+   RMPC_RE($mpfr, $op);
+   RMPC_IM($mpfr, $op);
+    Set $mpfr to the value of the real (respectively imaginary) component
+    of $op. $mpfr will be an exact copy of the real/imaginary component
+    of op - ie the precision of $mpfr will be set to the precision of the
+    real/imaginary component of $op before the copy is made. Hence no need
+    for a rounding arg to be supplied.
+
+   $si = Rmpc_real($mpfr, $op, $rnd);
+   $si = Rmpc_imag($mpfr, $op, $rnd);
+     Set $mpfr to the value of the real (respectively imaginary) part of
+     $op, rounded in the direction $rnd. ($mpfr is a Math::MPFR object.)
+
+   #############
+
+   I-O FUNCTIONS
+
+   $ul = Rmpc_inp_str($rop, $stream, $base, $rnd);
+    Input a string in base $base from $stream, rounded according to $rnd,
+    and put the read complex in $rop. Each of the real and imaginary
+    parts should be of the form X@Ym or, if the base is 10 or less,
+    alternatively XeY or XEY. (X is the mantissa, Y is the exponent.
+    The mantissa is always in the specified base. The exponent is always
+    read in decimal. This function first reads the real part, followed by
+    the imaginary part. The argument $base may be in the range 0,2..36.
+    Return the number of bytes read, or if an error occurred, return 0.
+
+   $ul =
+   Rmpc_out_str([$pre,] $stream, $base, $digits, $op, $rnd [, $suf]);
+    This function changed from 1st release (version 0.45) of Math::MPC.
+    Output $op to $stream, in base $base, rounded according to $rnd. First
+    the real part is printed, followed by the imaginary part. The base may
+    be 0,2..36.  Print at most $digits significant digits for each
+    part, or if $digits is 0, the maximum number of digits accurately
+    representable by $op. In addition to the significant digits, a decimal
+    point at the right of the first digit and a trailing exponent, in the
+    form eYYY , are printed.  (If $base is greater than 10, "@" will be
+    used as exponent delimiter.) $pre and $suf are optional arguments
+    containing a string that will be prepended/appended to the output.
+    Return the number of bytes written. (The contents of $pre and $suf
+    are not included in the count.)
+
+   $string = Rmpc_get_str($base, $how_many, $op, $rnd);
+    Convert $op to a string containing the real and imaginary parts of
+    $op. The number of significant digits for both real and imaginary
+    parts is specified by $how_many. It is also possible to let
+    $how_many be zero, in which case the number of digits is chosen large
+    enough so that re-reading the printed value with the same precision,
+    assuming both output and input use rounding to nearest, will recover
+    the original value of $op. See the mpc documentation for details.
+
+   $si = Rmpc_get_dc($cc, $op, $rnd); # deprecated, use Rmpc_get_DC instead
+   $si = Rmpc_get_ldc($lcc, $op $rnd);# deprecated, use Rmpc_get_LDC instead
+   $si = Rmpc_get_DC($cc, $op, $rnd);  # $cc is a Math:Complex_C object
+   $si = Rmpc_get_LDC($lcc, $op, $rnd); # $lcc is a Math::Complex_C::L object
+   Rmpc_get_F128C($f128c, $op, $rnd);# $f128c is Math::Complex_C::Q object
+    Set the 'double _Complex'/'long double _Complex'/'__float128 _Complex'
+    object to the value of $op, rounded according to $rnd. For Rmpc_get_DC
+    and Rmpc_get_LDC, requires an mpc library (version 0.9 or later) that
+    has been built with support for 'double _Complex' and 'long double
+    _Complex' data types (resp.). For Rmpc_get_F128C, the underlying mpfr
+    library needs to have been built with --enable-float128 option.
+
+   ####################
+
+   OPERATOR OVERLOADING
+
+    Overloading works with numbers, strings (bases 2, 10, and 16
+    only - see step '4.' below) and Math::MPC objects.
+    Overloaded operations are performed using the current
+    "default rounding mode" (which you can determine using the
+    'Rmpc_get_default_rounding_mode' function, and change using
+    the 'Rmpc_set_default_rounding_mode' function).
+
+    Be aware that when you use overloading with a string operand,
+    the overload subroutine converts that string operand to a
+    Math::MPC object with *current default precision*, and using
+    the *current default rounding mode*.
+
+    Be aware also, that the sign of zero may not always handled
+    correctly by the overload subroutines. If it's important to you
+    that the sign of zero be handled correctly, don't use the
+    overloaded operators. (For multiplication, division, addition
+    and subtraction the sign of zero will be handled correctly by the
+    overloaded operators if both operands are Math::MPC objects.)
+
+    For the purposes of the overloaded 'not', '!' and 'bool'
+    operators, a "false" Math::MPC object is one with real and
+    imaginary parts that are both "false" - where "false" currently
+    means either 0 or NaN.
+    (A "true" Math::MPC object is, of course, simply one that is not
+    "false".)
+
+    The following operators are overloaded:
+     + - * / ** sqrt (Return object has default precision)
+     += -= *= /= **= (Precision remains unchanged)
+     == !=
+     ! bool
+     abs (Returns an MPFR object, blessed into package Math::MPFR)
+     exp log (Return object has default precision)
+     sin cos (Return object has default precision)
+     = (The copy has the same precision as the copied object.)
+     ""
+
+    Attempting to use the overloaded operators with objects that
+    have been blessed into some package other than 'Math::MPC'
+    will not work. The workaround is to convert this "foreign"
+    object to a Math::MPC object - thus allowing it to work with
+    the overloaded operator.
+
+    In those situations where the overload subroutine operates on 2
+    perl variables, then obviously one of those perl variables is
+    a Math::MPC object. To determine the value of the other variable
+    the subroutine works through the following steps (in order),
+    using the first value it finds, or croaking if it gets
+    to step 6:
+
+    1. If the variable is an unsigned long then that value is used.
+       The variable is considered to be an unsigned long if
+       (perl 5.8 on) the UOK flag is set or if (perl 5.6) SvIsUV()
+       returns true.(In the case of perls built with -Duse64bitint,
+       the variable is treated as an unsigned long long int if the
+       UOK flag is set.)
+
+    2. If the variable is a signed long int, then that value is used.
+       The variable is considered to be a signed long int if the
+       IOK flag is set. (In the case of perls built with
+       -Duse64bitint, the variable is treated as a signed long long
+       int if the IOK flag is set.)
+
+    3. If the variable is an NV (floating point value) then that
+       value is used. The variable is considered to be an NV if the
+       NOK flag is set && the POK flag is unset.
+       Note therefore, that if the variable is both an NV (NOK flag
+       set) and PV (POK flag also set) then the string value in the
+       PV slot will be used. This is probably, but not necessarily,
+       what you want, and it's recommended not to pass such values
+       to the overloaded operators.
+
+    4. If the variable is a string (ie the POK flag is set) then the
+       value of that string is used. If the POK flag is set, but the
+       string is not a valid number, the subroutine croaks with an
+       appropriate error message. If the string starts with '0b' or
+       '0B' it is regarded as a base 2 number. If it starts with '0x'
+       or '0X' it is regarded as a base 16 number. Otherwise it is
+       regarded as a base 10 number.
+
+    5. If the variable is a Math::MPC object then the value of that
+       object is used.
+
+    6. If none of the above is true, then the second variable is
+       deemed to be of an invalid type. The subroutine croaks with
+       an appropriate error message.
+
+   #####################
+
+   MISCELLANEOUS
+
+   $ui = MPC_VERSION_MAJOR;
+    Returns the 'x' in the 'x.y.z' of the MPC library version.
+    Value is as specified by the header file (mpc.h) that was
+    used to build Math::MPC.
+
+   $ui =MPC_VERSION_MINOR;
+    Returns the 'y' in the 'x.y.z' of the MPC library version.
+    Value is as specified by the header file (mpc.h) that was
+    used to build Math::MPC.
+
+   $ui = MPC_VERSION_PATCHLEVEL;
+    Returns the 'z' in the 'x.y.z' of the MPC library version.
+    Value is as specified by the header file (mpc.h) that was
+    used to build Math::MPC.
+
+   $ui = MPC_VERSION();
+    An integer value derived from the library's major, minor and
+    patchlevel values. Value is as specified by the header file
+    (mpc.h) that was used to build Math::MPC.
+
+   $ui = MPC_VERSION_NUM($major, $minor, $patchlevel);
+    Returns an integer in the same format as used by MPC_VERSION,
+    using the given $major, $minor and $patchlevel. Value is as
+    specified by the header file (mpc.h) that was used to build
+    Math::MPC.
+
+   $string = MPC_VERSION_STRING;
+    $string contains the MPC library version ('x.y.z'), as defined
+    by the header file (mpc.h) that was used to build Math::MPC
+
+   $string = Rmpc_get_version();
+    $string contains the MPC library version ('x.y.z'), as defined
+    by the mpc library being used by Math::MPC.
+
+   $MPFR_version = Math::MPC::mpfr_v();
+    $MPFR_version is set to the version of the mpfr library
+    being used by the mpc library that Math::MPC uses.
+    (The function is not exportable.)
+
+   $GMP_version = Math::MPC::gmp_v();
+    $GMP_version is set to the version of the gmp library being
+    used by the mpc library that Math::MPC uses.
+    (The function is not exportable.)
+
+   $iv = Math::MPC::nok_pokflag(); # not exported
+    Returns the value of the nok_pok flag. This flag is
+    initialized to zero, but incemented by 1 whenever a
+    scalar that is both a float (NOK) and string (POK) is passed
+    to new() or to an overloaded operator. The value of the flag
+    therefore tells us how many times such events occurred . The
+    flag can be reset to 0 by running clear_nok_pok().
+
+   Math::MPC::set_nok_pok($iv); # not exported
+    Resets the nok_pok flag to the value specified by $iv.
+
+   Math::MPC::clear_nok_pok(); # not exported
+    Resets the nok_pok flag to 0.(Essentially the same as
+    running set_nok_pok(0).)
+
+   ####################
+
+=head1 TODO
+
+    For completeness, we probably should wrap mpc_realref and
+    mpc_imagref - though I don't think there's much to be
+    achieved by doing this in a *perl* context.
+
+=head1 BUGS
+
+    You can get segfaults if you pass the wrong type of
+    argument to the functions - so if you get a segfault, the
+    first thing to do is to check that the argument types
+    you have supplied are appropriate.
+    Also, as mentioned above in the "OPERATOR OVERLOADING" section,
+    the overloaded operators are not guaranteed to always handle the
+    sign of zero correctly.
+
+=head1 LICENSE
+
+    This program is free software; you may redistribute it and/or
+    modify it under the same terms as Perl itself.
+    Copyright 2006-2011, 2014, 2016, 2018 Sisyphus
+
+=head1 AUTHOR
+
+    Sisyphus <sisyphus at(@) cpan dot (.) org>
+
+=cut
