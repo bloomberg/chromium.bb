@@ -179,7 +179,7 @@ const base::Feature kFeaturePolicyForSandbox{"FeaturePolicyForSandbox",
 // font name or postscript name. Rolling out behind a flag, as enabling this
 // enables a font indexer on Android which we need to test in the field first.
 const base::Feature kFontSrcLocalMatching{"FontSrcLocalMatching",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables forced colors mode for web content.
 const base::Feature kForcedColors{"ForcedColors",
