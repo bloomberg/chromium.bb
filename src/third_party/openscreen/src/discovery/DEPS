@@ -1,0 +1,9 @@
+# -*- Mode: Python; -*-
+
+include_rules = [
+  '+cast',
+
+  # All libcast code can use platform and cast/third_party.
+  '+cast/third_party',
+  '+platform'
+]
