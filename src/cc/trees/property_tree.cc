@@ -1101,7 +1101,7 @@ void TransformTree::UpdateNodeAndAncestorsHaveIntegerTranslations(
     TransformNode* parent_node) {
   DCHECK(parent_node);
   node->node_and_ancestors_have_only_integer_translation =
-      node->to_parent.IsIdentityOrIntegerTranslation() &&
+      node->to_parent.IsScaleOrTranslation() &&
       parent_node->node_and_ancestors_have_only_integer_translation;
 }
 

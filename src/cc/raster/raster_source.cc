@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#define DISALLOW_UNIFORM_SCALE_ENFORCEMENT
+
 #include "cc/raster/raster_source.h"
 
 #include <stddef.h>
@@ -146,8 +148,8 @@ void RasterSource::PlaybackToCanvas(
   raster_canvas->clipRect(SkRect::Make(raster_bounds));
   raster_canvas->translate(raster_transform.translation().x(),
                            raster_transform.translation().y());
-  raster_canvas->scale(raster_transform.scale() / recording_scale_factor_,
-                       raster_transform.scale() / recording_scale_factor_);
+  raster_canvas->scale(raster_transform.scale().width() / recording_scale_factor_,
+                       raster_transform.scale().height() / recording_scale_factor_);
 
   if (is_partial_raster && requires_clear_) {
     // TODO(enne): Should this be considered a partial clear?
@@ -224,8 +226,8 @@ gfx::Size RasterSource::GetSize() const {
   return size_;
 }
 
-gfx::Size RasterSource::GetContentSize(float content_scale) const {
-  return gfx::ScaleToCeiledSize(GetSize(), content_scale);
+gfx::Size RasterSource::GetContentSize(const gfx::SizeF& content_scale) const {
+  return gfx::ScaleToCeiledSize(GetSize(), content_scale.width(), content_scale.height());
 }
 
 bool RasterSource::IsSolidColor() const {

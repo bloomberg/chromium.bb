@@ -68,7 +68,7 @@
 
 namespace blink {
 
-GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
+GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client, bool use_nearest_neighbor_filter)
     : client_(client),
       prevent_contents_opaque_changes_(false),
       draws_content_(false),
@@ -77,6 +77,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
       hit_testable_(false),
       needs_check_raster_invalidation_(false),
       painted_(false),
+      use_nearest_neighbor_filter_(use_nearest_neighbor_filter),
       painting_phase_(kGraphicsLayerPaintAllWithOverflowClip),
       parent_(nullptr),
       mask_layer_(nullptr),
@@ -918,6 +919,10 @@ FloatSize GraphicsLayer::VisualRectSubpixelOffset() const {
   if (GetCompositingReasons() & CompositingReason::kComboAllDirectReasons)
     return FloatSize(client_.SubpixelAccumulation());
   return FloatSize();
+}
+
+bool GraphicsLayer::NearestNeighbor() const {
+  return use_nearest_neighbor_filter_;
 }
 
 }  // namespace blink
