@@ -94,6 +94,7 @@ Layer::Inputs::Inputs(int layer_id)
       masks_to_bounds(false),
       hit_testable(false),
       contents_opaque(false),
+      contents_opaque_for_lcd_text(false),
       is_drawable(false),
       double_sided(true),
       use_parent_backface_visibility(false),
@@ -795,6 +796,14 @@ void Layer::SetContentsOpaque(bool opaque) {
   SetPropertyTreesNeedRebuild();
 }
 
+void Layer::SetContentsOpaqueForLCDText(bool opaque) {
+  DCHECK(IsPropertyChangeAllowed());
+  if (inputs_.contents_opaque_for_lcd_text == opaque)
+    return;
+  inputs_.contents_opaque_for_lcd_text = opaque;
+  SetNeedsCommit();
+}
+
 void Layer::SetPosition(const gfx::PointF& position) {
   // The mask layer should always be at the same location as the masked layer
   // which is its parent, so its position should be always zero.
@@ -1357,6 +1366,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
     layer->SetWheelEventHandlerRegion(Region());
   }
   layer->SetContentsOpaque(inputs_.contents_opaque);
+  layer->SetContentsOpaqueForLCDText(inputs_.contents_opaque_for_lcd_text);
   layer->SetUseParentBackfaceVisibility(inputs_.use_parent_backface_visibility);
   layer->SetShouldCheckBackfaceVisibility(should_check_backface_visibility_);
 
