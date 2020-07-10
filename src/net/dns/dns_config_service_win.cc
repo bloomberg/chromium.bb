@@ -762,7 +762,7 @@ void DnsConfigServiceWin::OnConfigChanged(bool succeeded) {
   InvalidateConfig();
   config_reader_->WorkNow();
   if (!succeeded) {
-    LOG(ERROR) << "DNS config watch failed.";
+    LOG(WARNING) << "DNS config watch failed.";
     set_watch_failed(true);
     UMA_HISTOGRAM_ENUMERATION("AsyncDNS.WatchStatus",
                               DNS_CONFIG_WATCH_FAILED_CONFIG,
