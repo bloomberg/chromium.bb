@@ -577,6 +577,8 @@ class CONTENT_EXPORT RenderWidget
   // character is zero width rectangle.
   void GetCompositionCharacterBounds(std::vector<gfx::Rect>* character_bounds);
 
+  void bbHandleInputEvent(const blink::WebInputEvent& event);
+
   // Called when the Widget has changed size as a result of an auto-resize.
   void DidAutoResize(const gfx::Size& new_size);
 
@@ -1164,6 +1166,7 @@ class CONTENT_EXPORT RenderWidget
 
   uint32_t last_capture_sequence_number_ = 0u;
 
+  bool bb_OnHandleInputEvent_no_ack_{false};
   base::WeakPtrFactory<RenderWidget> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);

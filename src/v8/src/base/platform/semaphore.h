@@ -32,7 +32,7 @@ class TimeDelta;
 // count reaches zero,  threads waiting for the semaphore blocks until the
 // count becomes non-zero.
 
-class V8_BASE_EXPORT Semaphore final {
+class BLPV8_BASE_EXPORT Semaphore final {
  public:
   explicit Semaphore(int count);
   ~Semaphore();

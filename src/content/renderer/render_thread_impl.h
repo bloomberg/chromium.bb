@@ -687,6 +687,8 @@ class CONTENT_EXPORT RenderThreadImpl
   mojo::Receiver<viz::mojom::CompositingModeWatcher>
       compositing_mode_watcher_receiver_{this};
 
+  bool exit_process_gracefully_;
+
   base::WeakPtrFactory<RenderThreadImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RenderThreadImpl);

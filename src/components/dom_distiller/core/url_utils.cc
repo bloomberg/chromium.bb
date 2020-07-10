@@ -58,10 +58,13 @@ const GURL GetOriginalUrlFromDistillerUrl(const GURL& url) {
   std::string original_url_str;
   net::GetValueForKeyInQuery(url, kUrlKey, &original_url_str);
 
+#if defined(USE_DOM_DISTILLER)
   // Make sure kDomDistillerScheme is considered standard scheme for
   // |GURL::host_piece()| to work correctly.
   DCHECK(url::IsStandard(kDomDistillerScheme,
                          url::Component(0, strlen(kDomDistillerScheme))));
+#endif
+
   std::vector<base::StringPiece> pieces =
       base::SplitStringPiece(url.host_piece(), kSeparator,
                              base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
@@ -114,7 +117,11 @@ bool IsUrlDistillable(const GURL& url) {
 }
 
 bool IsDistilledPage(const GURL& url) {
+#if defined(USE_DOM_DISTILLER)
   return url.is_valid() && url.scheme() == kDomDistillerScheme;
+#else
+  return false;
+#endif
 }
 
 }  // namespace url_utils

@@ -3361,12 +3361,18 @@ void RenderFrameImpl::CommitNavigationInternal(
                                             WebString::FromUTF8(mime_type),
                                             WebString::FromUTF8(charset), data);
   } else {
+    auto bridge_creator = [](const ResourceRequestInfoProvider& request_info)
+        -> std::unique_ptr<blink::WebNavigationBodyLoader> {
+      return  GetContentClient()->renderer()->OverrideResourceLoaderBridge(
+          request_info);
+    };
+
     NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
         std::move(common_params), std::move(commit_params), request_id,
         response_head.Clone(), std::move(response_body),
         std::move(url_loader_client_endpoints),
         GetTaskRunner(blink::TaskType::kInternalLoading), GetRoutingID(),
-        !frame_->Parent(), navigation_params.get());
+        !frame_->Parent(), navigation_params.get(), bridge_creator);
   }
 
   FillNavigationParamsOriginPolicy(*response_head, navigation_params.get());

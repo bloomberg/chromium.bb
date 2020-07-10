@@ -74,6 +74,7 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.SpeechSynthesis",
                   "blink.mojom.StoragePartitionService",
                   "blink.mojom.WebDatabaseHost",
+                  "blpwtk2.mojom.ProcessHost",
                   "content.mojom.ClipboardHost",
                   "content.mojom.FieldTrialRecorder",
                   "content.mojom.FrameSinkProvider",

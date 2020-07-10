@@ -442,8 +442,10 @@ void GpuDataManagerImplPrivate::RequestGpuSupportedRuntimeVersion(
   base::OnceClosure task = base::BindOnce([]() {
     if (GpuDataManagerImpl::GetInstance()->Dx12VulkanRequested())
       return;
-    GpuProcessHost* host = GpuProcessHost::Get(
-        GPU_PROCESS_KIND_UNSANDBOXED_NO_GL, true /* force_create */);
+    auto kind = GpuProcessHost::HasInProcess()
+                    ? GPU_PROCESS_KIND_SANDBOXED
+                    : GPU_PROCESS_KIND_UNSANDBOXED_NO_GL;
+    GpuProcessHost* host = GpuProcessHost::Get(kind, true /* force_create */);
     if (!host) {
       GpuDataManagerImpl::GetInstance()->UpdateDx12VulkanRequestStatus(false);
       return;

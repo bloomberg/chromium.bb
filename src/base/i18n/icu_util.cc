@@ -47,6 +47,10 @@
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 #endif
 
+#if defined(IS_BLPWTK2)
+#include <blpwtk2_products.h>
+#endif
+
 namespace base {
 namespace i18n {
 
@@ -75,9 +79,13 @@ wchar_t g_debug_icu_pf_filename[_MAX_PATH];
 // No need to change the filename in multiple places (gyp files, windows
 // build pkg configurations, etc). 'l' stands for Little Endian.
 // This variable is exported through the header file.
+#if defined(IS_BLPWTK2)
+const char kIcuDataFileName[] = BLPWTK2_ICUDTL_DAT_NAME;
+const char kIcuExtraDataFileName[] = BLPWTK2_ICUDTL_EXT_DAT_NAME;
+#else
 const char kIcuDataFileName[] = "icudtl.dat";
 const char kIcuExtraDataFileName[] = "icudtl_extra.dat";
-
+#endif
 #if defined(OS_ANDROID)
 const char kAssetsPathPrefix[] = "assets/";
 #endif  // defined(OS_ANDROID)
@@ -384,7 +392,7 @@ void ResetGlobalsForTesting() {
 }
 #endif  // (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE)
 
-bool InitializeICU() {
+bool InitializeICU(const void **data) {
 #if DCHECK_IS_ON()
   DCHECK(!g_check_called_once || !g_called_once);
   g_called_once = true;
@@ -395,6 +403,10 @@ bool InitializeICU() {
 #elif (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE)
   if (!InitializeICUFromDataFile())
     return false;
+  
+  if (data) {
+    *data = g_icudtl_mapped_file->data();
+  }
 #else
 #error Unsupported ICU_UTIL_DATA_IMPL value
 #endif  // (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_STATIC)

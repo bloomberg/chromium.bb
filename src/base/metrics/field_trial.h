@@ -597,7 +597,8 @@ class BASE_EXPORT FieldTrialList {
   static void CopyFieldTrialStateToFlags(const char* field_trial_handle_switch,
                                          const char* enable_features_switch,
                                          const char* disable_features_switch,
-                                         CommandLine* cmd_line);
+                                         CommandLine* cmd_line,
+                                         base::ProcessHandle child_process = 0);
 
   // Create a FieldTrial with the given |name| and using 100% probability for
   // the FieldTrial, force FieldTrial to have the same group string as
@@ -692,7 +693,7 @@ class BASE_EXPORT FieldTrialList {
   // a GUID. Serialization and deserialization doesn't actually transport the
   // underlying OS resource - that must be done by the Process launcher.
   static std::string SerializeSharedMemoryRegionMetadata(
-      const ReadOnlySharedMemoryRegion& shm);
+      const ReadOnlySharedMemoryRegion& shm, base::ProcessHandle child_process = 0);
 #if defined(OS_WIN) || defined(OS_FUCHSIA) || \
     (defined(OS_MACOSX) && !defined(OS_IOS))
   static ReadOnlySharedMemoryRegion DeserializeSharedMemoryRegionMetadata(

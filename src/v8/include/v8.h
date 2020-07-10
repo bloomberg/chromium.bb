@@ -31,6 +31,18 @@
 // We reserve the V8_* prefix for macros defined in V8 public API and
 // assume there are no name conflicts with the embedder's code.
 
+// https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
+// MSVC++ 12.0  _MSC_VER == 1800 (Visual Studio 2013 version 12.0)
+// MSVC++ 14.0  _MSC_VER == 1900 (Visual Studio 2015 version 14.0)
+#if defined(_MSC_VER) && _MSC_VER >= 1900
+  #define MSVC_2015_PLUS
+  #define constexpr_func constexpr
+#else
+  #pragma warning( disable : 4251)
+  #define constexpr const
+  #define constexpr_func V8_INLINE static
+#endif
+
 /**
  * The v8 JavaScript engine.
  */
@@ -1657,6 +1669,27 @@ class V8_EXPORT ScriptCompiler {
     // Prevent copying.
     CachedData(const CachedData&) = delete;
     CachedData& operator=(const CachedData&) = delete;
+
+    //- - - - - - - - - - - - 'blpwtk2' Additions - - - - - - - - - - - - - - -
+    //
+    // 'CachedData' pointers are passed across the API in both
+    // 'CreateCodeCache()' and 'Source'.  In order to do this safely in
+    // 'bplus', we need to ensure that the data is created and destroyed in a
+    // single C++ heap.  To do so, we expose 'create' and 'dispose' methods.
+    // When multiple C++ heaps is a concern, these methods should be used over
+    // the public constructor.
+
+    static
+    CachedData *create(const uint8_t *data,
+                       int            length,
+                       BufferPolicy   buffer_policy = BufferNotOwned);
+        // Create a 'CachedData' in V8's C++ heap.
+
+    static
+    void dispose(CachedData *data);
+        // Dispose of the specified 'data' in V8's C++ heap.
+
+    //- - - - - - - - - - - End 'blpwtk2' Additions - - - - - - - - - - - - - -
   };
 
   /**
@@ -1731,7 +1764,7 @@ class V8_EXPORT ScriptCompiler {
      * V8 has parsed the data it received so far.
      */
     virtual size_t GetMoreData(const uint8_t** src) = 0;
-
+  
     /**
      * V8 calls this method to set a 'bookmark' at the current position in
      * the source stream, for the purpose of (maybe) later calling
@@ -4642,22 +4675,27 @@ struct OwnedBuffer {
   OwnedBuffer(std::unique_ptr<const uint8_t[]> buffer, size_t size)
       : buffer(std::move(buffer)), size(size) {}
   OwnedBuffer() = default;
+#if !defined(MSVC_2015_PLUS)
+  OwnedBuffer(OwnedBuffer&& src)
+      : buffer(std::move(src.buffer)), size(src.size) {}
+  OwnedBuffer(const OwnedBuffer& src) = delete;
+#endif
 };
 
 // Wrapper around a compiled WebAssembly module, which is potentially shared by
 // different WasmModuleObjects.
-class V8_EXPORT CompiledWasmModule {
+class CompiledWasmModule {
  public:
   /**
    * Serialize the compiled module. The serialized data does not include the
    * wire bytes.
    */
-  OwnedBuffer Serialize();
+  V8_EXPORT OwnedBuffer Serialize();
 
   /**
    * Get the (wasm-encoded) wire bytes that were used to compile this module.
    */
-  MemorySpan<const uint8_t> GetWireBytesRef();
+  V8_EXPORT MemorySpan<const uint8_t> GetWireBytesRef();
 
  private:
   explicit CompiledWasmModule(std::shared_ptr<internal::wasm::NativeModule>);
@@ -4780,7 +4818,7 @@ class V8_EXPORT WasmStreaming final {
 
 // TODO(mtrofin): when streaming compilation is done, we can rename this
 // to simply WasmModuleObjectBuilder
-class V8_EXPORT WasmModuleObjectBuilderStreaming final {
+class WasmModuleObjectBuilderStreaming final {
  public:
   explicit WasmModuleObjectBuilderStreaming(Isolate* isolate);
   /**
@@ -4801,12 +4839,21 @@ class V8_EXPORT WasmModuleObjectBuilderStreaming final {
  private:
   WasmModuleObjectBuilderStreaming(const WasmModuleObjectBuilderStreaming&) =
       delete;
+#if defined(MSVC_2015_PLUS)
   WasmModuleObjectBuilderStreaming(WasmModuleObjectBuilderStreaming&&) =
       default;
+#else
+  WasmModuleObjectBuilderStreaming(WasmModuleObjectBuilderStreaming&&);
+#endif
   WasmModuleObjectBuilderStreaming& operator=(
       const WasmModuleObjectBuilderStreaming&) = delete;
+#if defined(MSVC_2015_PLUS)
   WasmModuleObjectBuilderStreaming& operator=(
       WasmModuleObjectBuilderStreaming&&) = default;
+#else
+  WasmModuleObjectBuilderStreaming& operator=(
+      WasmModuleObjectBuilderStreaming&&);
+#endif
   Isolate* isolate_ = nullptr;
 
 #if V8_CC_MSVC
@@ -9386,6 +9433,11 @@ class V8_EXPORT V8 {
                                            const char* icu_data_file = nullptr);
 
   /**
+   * Initialize the ICU library bundled with V8 using the specified icu data.
+  */
+  static bool InitializeICUWithData(const void* icu_data);
+
+  /**
    * Initialize the external startup data. The embedder only needs to
    * invoke this method when external startup data was enabled in a build.
    *
@@ -10997,7 +11049,7 @@ ScriptCompiler::Source::Source(Local<String> string,
 
 
 ScriptCompiler::Source::~Source() {
-  delete cached_data;
+  CachedData::dispose(cached_data);
 }
 
 

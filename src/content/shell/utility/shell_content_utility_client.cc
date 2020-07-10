@@ -27,6 +27,11 @@
 #include "mojo/public/cpp/system/buffer.h"
 #include "services/test/echo/echo_service.h"
 
+#include <chrome/common/chrome_paths.h>
+#include <content/public/utility/content_utility_client.h>
+#include <content/public/utility/utility_thread.h>
+#include <ipc/ipc_message_macros.h>
+
 namespace content {
 
 namespace {
@@ -142,6 +147,10 @@ void ShellContentUtilityClient::RegisterNetworkBinders(
 void ShellContentUtilityClient::RegisterAudioBinders(
     service_manager::BinderMap* binders) {
   audio_service_test_helper_->RegisterAudioBinders(binders);
+}
+
+bool ShellContentUtilityClient::OnMessageReceived(const IPC::Message& message) {
+  return false;
 }
 
 }  // namespace content

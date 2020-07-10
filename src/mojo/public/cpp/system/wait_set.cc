@@ -17,8 +17,14 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "mojo/public/cpp/system/trap.h"
+#include "base/callback.h"
+#include "base/lazy_instance.h"
+#include "base/threading/thread_local.h"
 
 namespace mojo {
+
+base::LazyInstance<base::ThreadLocalPointer<UIWaitProxy>>::DestructorAtExit
+    g_lazy_tls = LAZY_INSTANCE_INITIALIZER;
 
 class WaitSet::State : public base::RefCountedThreadSafe<State> {
  public:
@@ -353,13 +359,23 @@ MojoResult WaitSet::RemoveHandle(Handle handle) {
   return state_->RemoveHandle(handle);
 }
 
+void WaitSet::SetProxy(UIWaitProxy *proxy) {
+  g_lazy_tls.Pointer()->Set(proxy);
+}
+
 void WaitSet::Wait(base::WaitableEvent** ready_event,
                    size_t* num_ready_handles,
                    Handle* ready_handles,
                    MojoResult* ready_results,
                    MojoHandleSignalsState* signals_states) {
-  state_->Wait(ready_event, num_ready_handles, ready_handles, ready_results,
-               signals_states);
+
+  auto *proxy = g_lazy_tls.Pointer()->Get();
+  if (proxy) {
+    proxy->Run(this, ready_event, num_ready_handles, ready_handles, ready_results, signals_states);
+  } else {
+    state_->Wait(ready_event, num_ready_handles, ready_handles, ready_results,
+                 signals_states);
+  }
 }
 
 }  // namespace mojo

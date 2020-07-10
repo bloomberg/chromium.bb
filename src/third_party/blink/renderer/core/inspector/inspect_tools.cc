@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/inspector/inspect_tools.h"
-
 #include "third_party/blink/public/platform/web_gesture_event.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/public/platform/web_keyboard_event.h"
 #include "third_party/blink/public/platform/web_pointer_event.h"
+#include "third_party/blink/public/resources/grit/blink_inspector_resources.h"
 #include "third_party/blink/public/resources/grit/blink_resources.h"
 #include "third_party/blink/renderer/core/css/css_color_value.h"
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"

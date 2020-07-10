@@ -164,6 +164,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // legal). |site_instance| is not used if |storage_partition_impl| is not
   // null.
   static RenderProcessHost* CreateRenderProcessHost(
+      int host_id,
+      std::shared_ptr<base::Process> externally_managed_process,
       BrowserContext* browser_context,
       StoragePartitionImpl* storage_partition_impl,
       SiteInstance* site_instance);
@@ -178,6 +180,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void RemoveRoute(int32_t routing_id) override;
   void AddObserver(RenderProcessHostObserver* observer) override;
   void RemoveObserver(RenderProcessHostObserver* observer) override;
+  size_t NumListeners() const override;
   void ShutdownForBadMessage(CrashReportMode crash_report_mode) override;
   void UpdateClientPriority(PriorityClient* client) override;
   int VisibleClientCount() override;
@@ -227,6 +230,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void EnableWebRtcEventLogOutput(int lid, int output_period_ms) override;
   void DisableWebRtcEventLogOutput(int lid) override;
   void BindReceiver(mojo::GenericPendingReceiver receiver) override;
+  bool IsProcessManagedExternally() const override;
   std::unique_ptr<base::PersistentMemoryAllocator> TakeMetricsAllocator()
       override;
   const base::TimeTicks& GetInitTimeForNavigationMetrics() override;
@@ -266,6 +270,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void ForceCrash() override;
   void CleanupCorbExceptionForPluginUponDestruction() override;
 
+  void AdjustCommandLineForRenderer(base::CommandLine* command_line,
+                                    base::ProcessHandle child_process) override;
   mojom::RouteProvider* GetRemoteRouteProvider();
 
   // IPC::Sender via RenderProcessHost.
@@ -310,6 +316,14 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void mark_child_process_activity_time() {
     child_process_activity_time_ = base::TimeTicks::Now();
   }
+
+  mojo::OutgoingInvitation TakeOutgoingInvitation();
+
+  // This value is guaranteed to never be returned by GenerateUniqueId() below.
+  static int kInvalidId;
+
+  // Generate a new unique host id.
+  static int GenerateUniqueId();
 
   // Used to extend the lifetime of the sessions until the render view
   // in the renderer is fully closed. This is static because its also called
@@ -666,7 +680,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Use CreateRenderProcessHost() instead of calling this constructor
   // directly.
-  RenderProcessHostImpl(BrowserContext* browser_context,
+  RenderProcessHostImpl(int host_id,
+                        std::shared_ptr<base::Process> externally_managed_process,
+                        BrowserContext* browser_context,
                         StoragePartitionImpl* storage_partition_impl,
                         bool is_for_guests_only);
 
@@ -750,7 +766,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // copied over.
   void PropagateBrowserCommandLineToRenderer(
       const base::CommandLine& browser_cmd,
-      base::CommandLine* renderer_cmd);
+      base::CommandLine* renderer_cmd,
+      base::ProcessHandle child_process);
 
   // Recompute |visible_clients_| and |effective_importance_| from
   // |priority_clients_|.
@@ -1007,6 +1024,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Used to launch and terminate the process without blocking the UI thread.
   std::unique_ptr<ChildProcessLauncher> child_process_launcher_;
+
+  // Handle for the renderer process if it is managed externally, otherwise
+  // this will be set to base::kNullProcessHandle (which means the
+  // RenderProcessHostImpl is the one that launches the process).
+  std::shared_ptr<base::Process> externally_managed_process_;
 
   // The globally-unique identifier for this RPH.
   const int id_;

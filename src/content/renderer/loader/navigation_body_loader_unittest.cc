@@ -45,15 +45,16 @@ class NavigationBodyLoaderTest : public ::testing::Test,
     writer_ = std::move(data_pipe_->producer_handle);
     auto endpoints = network::mojom::URLLoaderClientEndpoints::New();
     endpoints->url_loader_client = client_remote_.BindNewPipeAndPassReceiver();
+    auto response_body = mojo::ScopedDataPipeConsumerHandle();
     blink::WebNavigationParams navigation_params;
     auto common_params = CreateCommonNavigationParams();
     auto commit_params = CreateCommitNavigationParams();
     NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
         std::move(common_params), std::move(commit_params), 1 /* request_id */,
-        network::mojom::URLResponseHead::New(),
-        std::move(data_pipe_->consumer_handle), std::move(endpoints),
+        network::mojom::URLResponseHead::New(), std::move(response_body),
+        std::move(endpoints),
         blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
-        2 /* render_frame_id */, true /* is_main_frame */, &navigation_params);
+        2 /* render_frame_id */, true /* is_main_frame */, &navigation_params, nullptr);
     loader_ = std::move(navigation_params.body_loader);
   }
 
@@ -315,6 +316,7 @@ TEST_F(NavigationBodyLoaderTest, FillResponseWithSecurityDetails) {
 
   blink::WebNavigationParams navigation_params;
   auto endpoints = network::mojom::URLLoaderClientEndpoints::New();
+  auto response_body = mojo::ScopedDataPipeConsumerHandle();
   mojo::ScopedDataPipeProducerHandle producer_handle;
   mojo::ScopedDataPipeConsumerHandle consumer_handle;
   MojoResult rv =
@@ -322,9 +324,9 @@ TEST_F(NavigationBodyLoaderTest, FillResponseWithSecurityDetails) {
   ASSERT_EQ(MOJO_RESULT_OK, rv);
   NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
       std::move(common_params), std::move(commit_params), 1 /* request_id */,
-      std::move(response), std::move(consumer_handle), std::move(endpoints),
+      std::move(response), std::move(response_body), std::move(endpoints),
       blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
-      2 /* render_frame_id */, true /* is_main_frame */, &navigation_params);
+      2 /* render_frame_id */, true /* is_main_frame */, &navigation_params, nullptr);
   EXPECT_TRUE(
       navigation_params.response.SecurityDetailsForTesting().has_value());
 }

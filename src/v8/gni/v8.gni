@@ -215,6 +215,10 @@ template("v8_component") {
       configs -= invoker.remove_configs
     }
     configs += invoker.configs
+    if(defined(remove_dll_export_lines_)) {
+      configs -= [ "//build/config/win:compiler_dll_export_inlines_" ]
+      remove_dll_export_lines_ = true
+    }
   }
 }
 
@@ -226,5 +230,16 @@ template("v8_static_library") {
     configs -= [ "//build/config/compiler:thin_archive" ]
     configs += v8_add_configs
     configs += invoker.configs
+  }
+}
+
+# blpwtk2: This template is identical to 'v8_component' except the target type
+# is changed from 'component' to 'shared_library'
+template("v8_shared_library") {
+  shared_library(target_name) {
+    forward_variables_from(invoker, "*", [ "configs" ])
+    configs += invoker.configs
+    configs -= v8_remove_configs
+    configs += v8_add_configs
   }
 }

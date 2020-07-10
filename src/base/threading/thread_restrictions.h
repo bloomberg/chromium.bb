@@ -281,6 +281,10 @@ namespace webrtc {
 class DesktopConfigurationMonitor;
 }
 
+namespace blpwtk2 {
+class BrowserMainRunner;
+}
+
 namespace base {
 
 namespace sequence_manager {
@@ -372,6 +376,7 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend class web::WebSubThread;
   friend class StackSamplingProfiler;
   friend class weblayer::ProfileImpl;
+  friend class blpwtk2::BrowserMainRunner;
 
   ScopedAllowBlocking() EMPTY_BODY_IF_DCHECK_IS_OFF;
   ~ScopedAllowBlocking() EMPTY_BODY_IF_DCHECK_IS_OFF;

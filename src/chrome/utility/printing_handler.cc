@@ -5,6 +5,7 @@
 #include "chrome/utility/printing_handler.h"
 
 #include "build/build_config.h"
+#define IPC_MESSAGE_IMPL
 #include "chrome/common/chrome_utility_printing_messages.h"
 #include "components/crash/core/common/crash_keys.h"
 #include "content/public/utility/utility_thread.h"

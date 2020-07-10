@@ -33,7 +33,7 @@ namespace blink {
 
 ThreadDebugger::ThreadDebugger(v8::Isolate* isolate)
     : isolate_(isolate),
-      v8_inspector_(v8_inspector::V8Inspector::create(isolate, this)) {}
+      v8_inspector_(std::unique_ptr<v8_inspector::V8Inspector>(v8_inspector::V8Inspector::create(isolate, this))) {}
 
 ThreadDebugger::~ThreadDebugger() = default;
 
