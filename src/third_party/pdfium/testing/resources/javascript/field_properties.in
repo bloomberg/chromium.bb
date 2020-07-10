@@ -1,0 +1,137 @@
+{{header}}
+{{include field.fragment}}
+
+% JS program to exexute
+{{object 16 0}} <<
+  {{streamlen}}
+>>
+stream
+{{include property_test_helpers.js}}
+function testProperties() {
+  try {
+    var field = this.getField("MyField");
+    var text = this.getField("MyField.MyText");
+    var button = this.getField("MyField.MyPushButton");
+    var radio = this.getField("MyField.MyRadio");
+    var list = this.getField("MyField.MyMultiSelect");
+    var check = this.getField("MyField.MyCheckBox");
+    app.alert('Testing properties under delay');
+    testRWProperty(field, "delay", false, true);
+    // TODO(tsepez): try this case, too.
+    // testTextPropertiesCase(field);
+    app.alert('Testing properties under non-delay');
+    testRWProperty(field, "delay", true, false);
+    testTextPropertiesCase(field);
+    testPushButtonPropertiesCase(button);
+    testRadioButtonPropertiesCase(radio);
+    testCheckBoxPropertiesCase(check);
+    testListBoxPropertiesCase(list);
+  } catch (e) {
+    app.alert("Unexpected error: " + e);
+  }
+}
+
+function testTextPropertiesCase(field) {
+  try {
+    // TODO(tsepez): devise tests and uncomment.
+    testRIProperty(field, "alignment", "left", "center");
+    testRWProperty(field, "borderStyle", "solid", "inset");
+    testRIProperty(field, "calcOrderIndex", -1, 100);
+    testRIProperty(field, "charLimit", 0, 100);
+    testRIProperty(field, "comb", false, true);
+    // testRIProperty(field, "commitOnSelChange", false, true);
+    // testROProperty(field, "currentValueIndices", "clams");
+    testXXProperty(field, "defaultStyle");
+    testRIProperty(field, "defaultValue", "", "clams");
+    testRIProperty(field, "doNotScroll", false, true);
+    testRIProperty(field, "doNotSpellCheck", false, true);
+    testRWProperty(field, "display", 2, 3);
+    testROProperty(field, "doc", "[object global]");
+    // testROProperty(field, "editable", "clams");
+    testRWProperty(field, "hidden", false, true);
+    testRIProperty(field, "fileSelect", false, true);
+    testRIProperty(field, "fillColor", "T", ["RGB", 0, 0, 0]);
+    testRWProperty(field, "lineWidth", 1, 4);
+    testRIProperty(field, "multiline", false, true);
+    // testROProperty(field, "multipleSelection", "clams");
+    testROProperty(field, "name", "MyField");
+    // testROProperty(field, "numItems", "clams");
+    testROProperty(field, "page", 0);
+    testRIProperty(field, "password", false, 42);
+    testRWProperty(field, "print", true, false);
+    testRIProperty(field, "readonly", false, true);
+    // testRWProperty(field, "rect", [0,0,0,0], [0,0,0,0]);
+    // testROProperty(field, "required", "clams");
+    testRIProperty(field, "richText", false, true);
+    testRIProperty(field, "richValue", undefined, "clams");
+    testRIProperty(field, "rotation", 0, 42);
+    testRIProperty(field, "source", undefined, "clams");
+    testRIProperty(field, "strokeColor", "T", ["RGB", 0, 0, 0]);
+    testRIProperty(field, "submitName", undefined, "clams");
+    testRIProperty(field, "textColor", "T", ["RGB", 0, 0, 0]);
+    // testROProperty(field, "textFont", "clams");
+    testRIProperty(field, "textSize", 0, 32);
+    testROProperty(field, "type", "text");
+    testRIProperty(field, "userName", "");
+    testRIProperty(field, "value", "", "clams");
+    testROProperty(field, "valueAsString", "");
+  } catch (e) {
+    app.alert("Unexpected error: " + e);
+  }
+}
+
+function testPushButtonPropertiesCase(field) {
+  try {
+    testRIProperty(field, "buttonAlignX", 0, 50);
+    testRIProperty(field, "buttonAlignY", 0, 50);
+    testRIProperty(field, "buttonFitBounds", false);
+    testRIProperty(field, "buttonPosition", 0);
+    testRIProperty(field, "buttonScaleHow", 0);
+    testRIProperty(field, "buttonScaleWhen", 0);
+    testRIProperty(field, "highlight", "invert");
+    testROProperty(field, "type", "button");
+  } catch (e) {
+    app.alert("Unexpected error: " + e);
+  }
+}
+
+function testRadioButtonPropertiesCase(field) {
+  try {
+    testROProperty(field, "exportValues", "N");
+    testRIProperty(field, "radiosInUnison", false);
+    testRIProperty(field, "style", "check");
+    testROProperty(field, "type", "radiobutton");
+    testRIProperty(field, "value", "Off");
+    testROProperty(field, "valueAsString", "Off");
+  } catch (e) {
+    app.alert("Unexpected error: " + e);
+  }
+}
+
+function testCheckBoxPropertiesCase(field) {
+  try {
+    testROProperty(field, "exportValues", "N");
+    testRIProperty(field, "style", "check");
+    testROProperty(field, "type", "checkbox");
+    testRIProperty(field, "value", "Off");
+    testROProperty(field, "valueAsString", "Off");
+  } catch (e) {
+    app.alert("Unexpected error: " + e);
+  }
+}
+
+function testListBoxPropertiesCase(field) {
+  try {
+    testRWProperty(field, "currentValueIndices", 2, 1);
+  } catch (e) {
+    app.alert("Unexpected error: " + e);
+  }
+}
+
+testProperties();
+endstream
+endobj
+{{xref}}
+{{trailer}}
+{{startxref}}
+%%EOF
