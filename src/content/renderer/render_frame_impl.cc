@@ -3111,11 +3111,6 @@ void RenderFrameImpl::SetDeviceScaleFactorOnRenderView(
   render_view_->SetDeviceScaleFactor(use_zoom_for_dsf, device_scale_factor);
 }
 
-void RenderFrameImpl::SetVisibleViewportSizeOnRenderView(
-    const gfx::Size& visible_viewport_size) {
-  render_view_->SetVisibleViewportSize(visible_viewport_size);
-}
-
 void RenderFrameImpl::AddMessageToConsole(
     blink::mojom::ConsoleMessageLevel level,
     const std::string& message) {

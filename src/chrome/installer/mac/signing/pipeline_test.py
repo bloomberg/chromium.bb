@@ -35,6 +35,7 @@ def _read_file(p):
     if p == '$I/Product Packaging/pkg_postinstall.in':
         return """app dir is '@APP_DIR@'
 app product is '@APP_PRODUCT@'
+brand code is '@BRAND_CODE@'
 framework dir is '@FRAMEWORK_DIR@'"""
 
     raise
@@ -269,7 +270,11 @@ class TestPipelineHelpers(unittest.TestCase):
         for attr in kwargs:
             manager.attach_mock(kwargs[attr], attr)
 
-        dist = model.Distribution()
+        dist = model.Distribution(
+            branding_code='MOO',
+            packaging_name_fragment='ForCows',
+            package_as_dmg=False,
+            package_as_pkg=True)
         dist_config = dist.to_config(test_config.TestConfig())
         paths = self.paths.replace_work('$W')
 
@@ -286,6 +291,7 @@ class TestPipelineHelpers(unittest.TestCase):
         self.assertEqual(
             postinstall_string, """app dir is 'App Product.app'
 app product is 'App Product'
+brand code is 'MOO'
 framework dir is 'App Product.app/Contents/Frameworks/Product Framework.framework'"""
         )
 

@@ -782,6 +782,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   gfx::Size GetAutoResizeSize() override;
   void ResetAutoResizeSize() override;
   InputEventShim* GetInputEventShim() const override;
+  void NotifyVisibleViewportSizeChanged(
+      const gfx::Size& visible_viewport_size) override;
   RenderFrameHostImpl* GetFocusedFrameFromFocusedDelegate() override;
   void OnVerticalScrollDirectionChanged(
       viz::VerticalScrollDirection scroll_direction) override;

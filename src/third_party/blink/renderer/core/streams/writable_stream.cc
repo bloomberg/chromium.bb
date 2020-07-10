@@ -273,7 +273,7 @@ v8::Local<v8::Promise> WritableStream::Abort(ScriptState* script_state,
   }
 
   //  4. Assert: state is "writable" or "erroring".
-  DCHECK(state == kWritable || state == kErroring);
+  CHECK(state == kWritable || state == kErroring);
 
   //  5. Let wasAlreadyErroring be false.
   //  6. If state is "erroring",
@@ -312,7 +312,7 @@ v8::Local<v8::Promise> WritableStream::AddWriteRequest(
   DCHECK(IsLocked(stream));
 
   //  2. Assert: stream.[[state]] is "writable".
-  DCHECK_EQ(stream->state_, kWritable);
+  CHECK_EQ(stream->state_, kWritable);
 
   //  3. Let promise be a new promise.
   auto* promise = MakeGarbageCollected<StreamPromiseResolver>(script_state);
@@ -349,7 +349,7 @@ void WritableStream::DealWithRejection(ScriptState* script_state,
   }
 
   //  3. Assert: state is "erroring".
-  DCHECK_EQ(state, kErroring);
+  CHECK_EQ(state, kErroring);
 
   //  4. Perform ! WritableStreamFinishErroring(stream).
   FinishErroring(script_state, stream);
@@ -363,7 +363,7 @@ void WritableStream::StartErroring(ScriptState* script_state,
   DCHECK(stream->stored_error_.IsEmpty());
 
   //  2. Assert: stream.[[state]] is "writable".
-  DCHECK_EQ(stream->state_, kWritable);
+  CHECK_EQ(stream->state_, kWritable);
 
   //  3. Let controller be stream.[[writableStreamController]].
   WritableStreamDefaultController* controller =
@@ -400,7 +400,7 @@ void WritableStream::FinishErroring(ScriptState* script_state,
                                     WritableStream* stream) {
   // https://streams.spec.whatwg.org/#writable-stream-finish-erroring
   //  1. Assert: stream.[[state]] is "erroring".
-  DCHECK_EQ(stream->state_, kErroring);
+  CHECK_EQ(stream->state_, kErroring);
 
   //  2. Assert: ! WritableStreamHasOperationMarkedInFlight(stream) is false.
   DCHECK(!HasOperationMarkedInFlight(stream));
@@ -548,7 +548,7 @@ void WritableStream::FinishInFlightWriteWithError(ScriptState* script_state,
 
   //  4. Assert: stream.[[state]] is "writable" or "erroring".
   const auto state = stream->state_;
-  DCHECK(state == kWritable || state == kErroring);
+  CHECK(state == kWritable || state == kErroring);
 
   //  5. Perform ! WritableStreamDealWithRejection(stream, error).
   DealWithRejection(script_state, stream, error);
@@ -570,7 +570,7 @@ void WritableStream::FinishInFlightClose(ScriptState* script_state,
   const auto state = stream->state_;
 
   //  5. Assert: stream.[[state]] is "writable" or "erroring".
-  DCHECK(state == kWritable || state == kErroring);
+  CHECK(state == kWritable || state == kErroring);
 
   //  6. If state is "erroring",
   if (state == kErroring) {
@@ -623,7 +623,7 @@ void WritableStream::FinishInFlightCloseWithError(ScriptState* script_state,
 
   //  4. Assert: stream.[[state]] is "writable" or "erroring".
   const auto state = stream->state_;
-  DCHECK(state == kWritable || state == kErroring);
+  CHECK(state == kWritable || state == kErroring);
 
   //  5. If stream.[[pendingAbortRequest]] is not undefined,
   if (stream->pending_abort_request_) {
@@ -677,10 +677,10 @@ void WritableStream::UpdateBackpressure(ScriptState* script_state,
                                         bool backpressure) {
   // https://streams.spec.whatwg.org/#writable-stream-update-backpressure
   //  1. Assert: stream.[[state]] is "writable".
-  DCHECK_EQ(stream->state_, kWritable);
+  CHECK_EQ(stream->state_, kWritable);
 
   //  2. Assert: ! WritableStreamCloseQueuedOrInFlight(stream) is false.
-  DCHECK(!CloseQueuedOrInFlight(stream));
+  CHECK(!CloseQueuedOrInFlight(stream));
 
   //  3. Let writer be stream.[[writer]].
   WritableStreamDefaultWriter* writer = stream->writer_;
@@ -818,7 +818,7 @@ void WritableStream::RejectCloseAndClosedPromiseIfNeeded(
     WritableStream* stream) {
   // https://streams.spec.whatwg.org/#writable-stream-reject-close-and-closed-promise-if-needed
   // //  1. Assert: stream.[[state]] is "errored".
-  DCHECK_EQ(stream->state_, kErrored);
+  CHECK_EQ(stream->state_, kErrored);
 
   auto* isolate = script_state->GetIsolate();
 
