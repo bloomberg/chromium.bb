@@ -1,0 +1,12 @@
+Name: certifi
+Short Name: certifi
+URL: https://github.com/certifi/python-certifi/archive/2018.11.29.tar.gz
+Version: 2018.11.29
+Revision: 10a1f8a56c9675fa87c42abad25183adbc3bc783
+License: MPL2.0
+
+Description:
+
+Local Modifications:
+curl -sL URL: https://github.com/certifi/python-certifi/archive/2018.11.29.tar.gz | \
+    tar xvz --strip-components 2
