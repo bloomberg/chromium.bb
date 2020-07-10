@@ -699,6 +699,7 @@
         "inset-block-start",
         "syntax",
         "render-subtree",
+        "-bb-suppress-needs-compositing-input-update",
     ],
     "properties": {}
 }

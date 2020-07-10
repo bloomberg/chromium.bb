@@ -1386,6 +1386,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   mutable unsigned layer_list_mutation_allowed_ : 1;
 #endif
 
+  unsigned suppress_needs_compositing_inputs_update_ : 1;
+
   LayoutBoxModelObject& layout_object_;
 
   PaintLayer* parent_;
