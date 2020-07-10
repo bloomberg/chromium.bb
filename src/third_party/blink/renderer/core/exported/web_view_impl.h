@@ -119,6 +119,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // Returns whether frames under this WebView are backed by a compositor.
   bool does_composite() const { return does_composite_; }
 
+  void DidChangeWindowRect();
+
   // WebView methods:
   void DidAttachLocalMainFrame() override;
   void SetPrerendererClient(WebPrerendererClient*) override;
