@@ -696,6 +696,19 @@ enum CSSSampleId {
     kIntrinsicSize = 651,
     kIntrinsicWidth = 652,
     kRenderSubtree = 653,
+
+
+
+    // patch section: rubberband (features 654,655,656)
+
+
+    // patch section: lcd-text background (feature 657)
+
+
+    // patch section: suppress-needs-compositing-input-update (feature 658)
+
+
+
     // 1. Add new features above this line (don't change the assigned numbers of
     // the existing items).
     // 2. Run the update_use_counter_css.py script in
