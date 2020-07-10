@@ -168,6 +168,12 @@ class WebViewClientImpl final : public WebViewClient
     void didFinishLoadForFrame(int routingId, const std::string& url) override;
     void didFailLoadForFrame(int routingId, const std::string& url) override;
 
+    void devToolsAgentHostAttached() override;
+        // Notify the client that the devtools frontend is connected.
+
+    void devToolsAgentHostDetached() override;
+        // Notify the client that the devtools frontend is disconnected.
+
     // Mojo callbacks
     void loadStatus(int status);
     void moveAck(int x, int y, int w, int h);
