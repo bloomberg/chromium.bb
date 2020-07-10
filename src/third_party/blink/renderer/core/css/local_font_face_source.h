@@ -73,6 +73,7 @@ class LocalFontFaceSource final : public CSSFontFaceSource,
 
   AtomicString font_name_;
   LocalFontHistograms histograms_;
+  bool need_to_adjust_for_bold_italic_;
 };
 
 }  // namespace blink
