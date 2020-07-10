@@ -1,0 +1,8 @@
+android.webkit.WebView focusable focused scrollable
+++android.view.View name='copy'
+++android.view.View name='move'
+++android.view.View name='link'
+++android.view.View name='execute'
+++android.view.View name='popup'
+++android.view.View name='none(default)'
+++android.view.View name='link popup'

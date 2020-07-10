@@ -1,0 +1,297 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/html/util.html">
+<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_radio_group/cr_radio_group.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="sync_browser_proxy.html">
+<link rel="import" href="../privacy_page/personalization_options.html">
+<link rel="import" href="../route.html">
+<link rel="import" href="../settings_shared_css.html">
+<link rel="import" href="../settings_vars_css.html">
+
+<if expr="not chromeos">
+<link rel="import" href="sync_account_control.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_toast/cr_toast.html">
+</if>
+
+<dom-module id="settings-sync-page">
+  <template>
+    <style include="cr-shared-style settings-shared iron-flex">
+      #sync-separator {
+        border-bottom: var(--cr-separator-line);
+      }
+
+      #create-password-box {
+        /* In order to line up with the encryption radio box text. */
+        margin-inline-start: var(--cr-section-indent-width);
+      }
+
+      #create-password-box {
+        margin-bottom: 1em;
+      }
+
+      #create-password-box .list-item {
+        margin-bottom: var(--cr-form-field-bottom-spacing);
+      }
+
+      cr-input {
+        --cr-input-width: var(--settings-input-max-width);
+      }
+
+      #existingPassphrase {
+        border-bottom: var(--cr-separator-line);
+        border-top: var(--cr-separator-line);
+        /* This particular list frame is not indented. */
+        padding-inline-start: var(--cr-section-padding);
+      }
+
+      #submitExistingPassphrase {
+        /* The submit button for the existing passphrase is on the same line. */
+        margin-inline-start: 16px;
+      }
+
+      #passphraseRecoverHint {
+        align-items: center;
+      }
+
+      #other-sync-items {
+        padding-bottom: 8px;
+      }
+
+      #other-sync-items > .list-item:not(.first) {
+        border-top: var(--cr-separator-line);
+      }
+
+      .passphrase-reset-icon {
+        margin-inline-end: 8px;
+      }
+
+      #disabled-by-admin-icon {
+        text-align: center;
+        width: 40px;
+      }
+
+<if expr="not chromeos">
+      #toast {
+        left: 0;
+        z-index: 1;
+      }
+
+      :host-context([dir='rtl']) #toast {
+        left: auto;
+        right: 0;
+      }
+</if>
+    </style>
+<if expr="not chromeos">
+    <template is="dom-if" if="[[shouldShowSyncAccountControl_(
+        syncStatus.syncSystemEnabled, syncStatus.signinAllowed)]]">
+      <settings-sync-account-control embedded-in-subpage
+          sync-status="[[syncStatus]]" prefs="{{prefs}}"
+          promo-label-with-account=
+              "$i18n{peopleSignInPromptSecondaryWithAccount}"
+          promo-label-with-no-account=
+              "$i18n{peopleSignInPromptSecondaryWithNoAccount}"
+          on-sync-setup-done="onSyncSetupDone_">
+      </settings-sync-account-control>
+    </template>
+</if>
+    <div class="settings-box first" hidden="[[!syncDisabledByAdmin_]]">
+      <iron-icon id="disabled-by-admin-icon" icon="cr20:domain"></iron-icon>
+      <div class="middle settings-box-text">
+        $i18n{syncDisabledByAdministrator}
+      </div>
+    </div>
+
+    <template is="dom-if" if="[[shouldShowExistingPassphraseBelowAccount_(
+        syncPrefs.passphraseRequired)]]"
+        on-dom-change="focusPassphraseInput_">
+      <div id="existingPassphrase" class="list-frame">
+        <div id="existingPassphraseTitle" class="list-item">
+            <div class="start settings-box-text">
+              <div>$i18n{existingPassphraseTitle}</div>
+              <div class="secondary"
+                  inner-h-t-m-l="[[syncPrefs.enterPassphraseBody]]">
+              </div>
+            </div>
+        </div>
+        <div id="existingPassphraseContainer" class="list-item">
+          <cr-input id="existingPassphraseInput" type="password"
+              value="{{existingPassphrase_}}"
+              placeholder="$i18n{passphrasePlaceholder}"
+              error-message="$i18n{incorrectPassphraseError}"
+              on-keypress="onSubmitExistingPassphraseTap_">
+            <cr-button id="submitExistingPassphrase" slot="suffix"
+                on-click="onSubmitExistingPassphraseTap_"
+                class="action-button" disabled="[[!existingPassphrase_]]">
+              $i18n{submitPassphraseButton}
+            </cr-button>
+          </cr-input>
+        </div>
+        <div id="passphraseRecoverHint" class="list-item">
+          <div class="settings-box-text">$i18nRaw{passphraseRecover}</div>
+        </div>
+      </div>
+    </template>
+
+    <div id="sync-separator" hidden="[[!syncSectionDisabled_]]"></div>
+
+    <div id="sync-section" hidden="[[syncSectionDisabled_]]">
+      <div class="settings-box first">
+        <h2 class="cr-title-text start">$i18n{sync}</h2>
+      </div>
+
+      <div id="[[pages_.SPINNER]]" class="settings-box first settings-box-text"
+          hidden$="[[!isStatus_(pages_.SPINNER, pageStatus_)]]">
+        $i18n{syncLoading}
+      </div>
+      <div id="[[pages_.TIMEOUT]]" class="settings-box first settings-box-text"
+          hidden$="[[!isStatus_(pages_.TIMEOUT, pageStatus_)]]">
+        $i18n{syncTimeout}
+      </div>
+      <div id="[[pages_.CONFIGURE]]"
+          hidden$="[[!isStatus_(pages_.CONFIGURE, pageStatus_)]]">
+        <div id="other-sync-items" class="list-frame">
+          <div id="sync-advanced-row" class="list-item first"
+              on-click="onSyncAdvancedTap_" actionable>
+            <div class="start" id="page-title" aria-hidden="true">
+              $i18n{syncAdvancedPageTitle}
+            </div>
+            <cr-icon-button class="subpage-arrow" aria-labelledby="page-title"
+                aria-roledescription="$i18n{subpageArrowRoleDescription}">
+            </cr-icon-button>
+          </div>
+
+          <a class="inherit-color no-outline list-item" tabindex="-1"
+              target="_blank" href="$i18n{activityControlsUrl}"
+              on-click="onActivityControlsTap_">
+            <div class="start settings-box-text">
+              $i18n{personalizeGoogleServicesTitle}
+            </div>
+            <cr-icon-button class="icon-external"></cr-icon-button>
+          </a>
+
+          <a id="syncDashboardLink"
+              class="inherit-color no-outline list-item"
+              tabindex="-1" target="_blank" href="$i18n{syncDashboardUrl}"
+              hidden="[[syncStatus.supervisedUser]]">
+            <div class="start settings-box-text">
+              $i18n{manageSyncedDataTitle}
+            </div>
+            <cr-icon-button class="icon-external"></cr-icon-button>
+          </a>
+
+          <div id="encryptionDescription"
+              hidden="[[syncPrefs.passphraseRequired]]"
+              class$="single-column settings-box-text
+                  [[getPassphraseHintLines_(syncPrefs.encryptAllData)]]
+                  list-item">
+            $i18n{encryptionOptionsTitle}
+            <div class="secondary">
+              $i18n{syncDataEncryptedText}
+              <div hidden="[[!syncPrefs.encryptAllData]]">
+                <iron-icon icon="cr:info-outline"
+                    class="passphrase-reset-icon">
+                </iron-icon>
+                $i18nRaw{passphraseResetHintEncryption}
+              </div>
+            </div>
+          </div>
+
+          <div id="encryptionRadioGroupContainer" class="list-frame"
+              hidden="[[syncPrefs.passphraseRequired]]">
+            <cr-radio-group
+                id="encryptionRadioGroup"
+                selected="[[selectedEncryptionRadio_(syncPrefs)]]"
+                on-selected-changed="onEncryptionRadioSelectionChanged_"
+                disabled$="[[disableEncryptionOptions_]]">
+              <cr-radio-button name="encrypt-with-google" class="list-item"
+                  aria-label="$i18n{encryptWithGoogleCredentialsLabel}"
+                  disabled$="[[disableEncryptionOptions_]]">
+                $i18n{encryptWithGoogleCredentialsLabel}
+              </cr-radio-button>
+              <cr-radio-button name="encrypt-with-passphrase" class="list-item"
+                  disabled$="[[disableEncryptionOptions_]]">
+                <span hidden="[[!syncPrefs.fullEncryptionBody]]">
+                  [[syncPrefs.fullEncryptionBody]]
+                </span>
+                <span on-click="onLearnMoreTap_"
+                    hidden="[[syncPrefs.fullEncryptionBody]]">
+                  $i18nRaw{encryptWithSyncPassphraseLabel}
+                </span>
+              </cr-radio-button>
+            </cr-radio-group>
+          </div>
+
+          <template is="dom-if" if="[[creatingNewPassphrase_]]">
+            <div class="list-frame">
+              <div id="create-password-box"
+                  on-keypress="onSaveNewPassphraseTap_">
+                <div class="list-item">
+                  <span>$i18nRaw{passphraseExplanationText}</span>
+                </div>
+                <cr-input id="passphraseInput" type="password"
+                    value="{{passphrase_}}"
+                    placeholder="$i18n{passphrasePlaceholder}"
+                    error-message="$i18n{emptyPassphraseError}">
+                </cr-input>
+                <cr-input id="passphraseConfirmationInput" type="password"
+                    value="{{confirmation_}}"
+                    placeholder="$i18n{passphraseConfirmationPlaceholder}"
+                    error-message="$i18n{mismatchedPassphraseError}">
+                </cr-input>
+                <cr-button id="saveNewPassphrase"
+                    on-click="onSaveNewPassphraseTap_" class="action-button"
+                    disabled="[[!isSaveNewPassphraseEnabled_(passphrase_,
+                                                             confirmation_)]]">
+                  $i18n{save}
+                </cr-button>
+              </div>
+            </div>
+          </template>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-box first">
+      <h2 class="cr-title-text">
+        $i18n{nonPersonalizedServicesSectionLabel}
+      </h2>
+    </div>
+    <settings-personalization-options class="list-frame" prefs="{{prefs}}"
+        page-visibility="[[pageVisibility]]" sync-status="[[syncStatus]]">
+    </settings-personalization-options>
+
+<if expr="not chromeos">
+    <template is="dom-if" if="[[showSetupCancelDialog_]]" restamp>
+      <cr-dialog id="setupCancelDialog" on-close="onSetupCancelDialogClose_"
+          ignore-popstate>
+        <div slot="title">$i18n{syncSetupCancelDialogTitle}</div>
+        <div slot="body">$i18n{syncSetupCancelDialogBody}</div>
+        <div slot="button-container">
+          <cr-button class="cancel-button"
+              on-click="onSetupCancelDialogBack_">
+            $i18n{back}
+          </cr-button>
+          <cr-button class="action-button"
+              on-click="onSetupCancelDialogConfirm_">
+            $i18n{cancelSync}
+          </cr-button>
+        </div>
+      </cr-dialog>
+    </template>
+</if>
+  </template>
+  <script src="sync_page.js"></script>
+</dom-module>

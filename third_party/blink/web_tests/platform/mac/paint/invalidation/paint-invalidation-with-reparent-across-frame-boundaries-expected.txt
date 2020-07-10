@@ -1,0 +1,23 @@
+{
+  "layers": [
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutNGBlockFlow HTML",
+          "rect": [18, 18, 23, 18],
+          "reason": "chunk disappeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'abc'",
+          "rect": [8, 184, 23, 18],
+          "reason": "appeared"
+        }
+      ]
+    }
+  ]
+}
+

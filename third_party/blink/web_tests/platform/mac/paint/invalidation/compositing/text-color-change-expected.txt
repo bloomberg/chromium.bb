@@ -1,0 +1,78 @@
+{
+  "layers": [
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "NGPhysicalTextFragment '  Text'",
+          "rect": [8, 57, 47, 185],
+          "reason": "style change"
+        },
+        {
+          "object": "NGPhysicalTextFragment '  Text'",
+          "rect": [8, 57, 47, 185],
+          "reason": "style change"
+        },
+        {
+          "object": "NGPhysicalTextFragment '  Text'",
+          "rect": [8, 57, 47, 185],
+          "reason": "style change"
+        },
+        {
+          "object": "NGPhysicalTextFragment '  Text'",
+          "rect": [8, 57, 47, 185],
+          "reason": "style change"
+        },
+        {
+          "object": "NGPhysicalTextFragment '  Text'",
+          "rect": [8, 57, 47, 185],
+          "reason": "style change"
+        },
+        {
+          "object": "NGPhysicalTextFragment '  Text'",
+          "rect": [8, 57, 47, 185],
+          "reason": "style change"
+        },
+        {
+          "object": "NGPhysicalTextFragment '  Text'",
+          "rect": [8, 57, 47, 185],
+          "reason": "style change"
+        },
+        {
+          "object": "NGPhysicalTextFragment '  Text'",
+          "rect": [8, 57, 47, 185],
+          "reason": "style change"
+        },
+        {
+          "object": "NGPhysicalTextFragment '  Text'",
+          "rect": [8, 57, 47, 185],
+          "reason": "style change"
+        },
+        {
+          "object": "NGPhysicalTextFragment '  Text'",
+          "rect": [8, 57, 47, 185],
+          "reason": "style change"
+        },
+        {
+          "object": "NGPhysicalTextFragment '  Text'",
+          "rect": [8, 57, 47, 185],
+          "reason": "style change"
+        },
+        {
+          "object": "NGPhysicalTextFragment '  Text'",
+          "rect": [8, 57, 47, 185],
+          "reason": "style change"
+        },
+        {
+          "object": "NGPhysicalTextFragment '  Text'",
+          "rect": [8, 57, 47, 185],
+          "reason": "style change"
+        }
+      ]
+    }
+  ]
+}
+

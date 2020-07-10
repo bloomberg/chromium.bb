@@ -1,0 +1,53 @@
+Name: Immersive Web - WebXR Samples
+Short Name: webxr-samples
+URL: https://github.com/immersive-web/webxr-samples/
+Version: 0
+Revision: 2727b46707d766e358152194fbb4f6b2647ef2e9
+Date: 2019-01-15
+License: MIT
+License File: NOT_SHIPPED
+Security Critical: no
+
+Description:
+A fork of the WebXR samples to be kept in sync with Chrome and used for testing Chrome.
+
+Local Modifications:
+
+- Forked to provide a stable set of test pages in sync with Chrome.
+
+- Stripped out the media/ directory to minimize the size.
+
+- Adapted samples to work without node compilation
+
+- Added source from https://github.com/toji/gl-matrix (MIT licensed)
+  to js/third-party/gl-matrix, including license file and README.chromium.
+
+- Added missing license file and README.chromium for dat.gui
+
+- Removed the version shim, the samples are intended to work specifically
+  with the ToT Chrome version.
+
+Instructions:
+
+In order to serve the samples locally, few steps are required:
+
+1. Copy contents of src/chrome/test/data/xr/webxr_samples/media into
+   src/third_party/webxr_test_pages/webxr-samples/media
+
+2. Serve files, for example by running
+   `python -m SimpleHTTPServer <port number>` in
+   src/third_party/webxr_test_pages/webxr-samples
+
+3. If you are having trouble with the python server such as it being unreliable
+   serving media like the gltf files, try using "npm serve".
+   To install: `sudo npm install -g serve`
+   To run: `serve .` in src/third_party/webxr_test_pages/webxr-samples
+
+To publish samples for OT:
+
+1. python make_ot_samples_folder.py webxr-samples <dest-folder>
+   That copies just the subset of samples that we want to publish.
+
+2. Serve <dest-folder> locally and make sure everything works.
+
+3. python update_bucket.py --direct-publish-samples-source=<dest-folder> --direct-publish-samples-dest=<bucket-dest-subfolder>

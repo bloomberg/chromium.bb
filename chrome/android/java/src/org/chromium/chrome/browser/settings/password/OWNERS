@@ -1,0 +1,4 @@
+# For non-UI logic only. For UI, see parent OWNERS file.
+fhorschig@chromium.org
+
+# COMPONENT: UI>Browser>Passwords

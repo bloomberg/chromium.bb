@@ -1,0 +1,228 @@
+Tests that adding a property is undone properly.
+
+=== Last property ===
+(Initial value)
+[expanded] 
+element.style { ()
+
+[expanded] 
+.container { (<style>)
+    font-weight: bold;
+
+[expanded] 
+div { (user agent stylesheet)
+    display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
+
+(After adding property)
+[expanded] 
+element.style { ()
+
+[expanded] 
+.container { (<style>)
+    font-weight: bold;
+    margin-left: 2px;
+
+[expanded] 
+div { (user agent stylesheet)
+    display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
+
+(After undo)
+[expanded] 
+element.style { ()
+
+[expanded] 
+.container { (<style>)
+    font-weight: bold;
+
+[expanded] 
+div { (user agent stylesheet)
+    display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
+
+(After redo)
+[expanded] 
+element.style { ()
+
+[expanded] 
+.container { (<style>)
+    font-weight: bold;
+    margin-left: 2px;
+
+[expanded] 
+div { (user agent stylesheet)
+    display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
+
+=== First property ===
+(Initial value)
+[expanded] 
+element.style { ()
+
+[expanded] 
+.container { (<style>)
+    font-weight: bold;
+    margin-left: 2px;
+
+[expanded] 
+div { (user agent stylesheet)
+    display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
+
+(After adding property)
+[expanded] 
+element.style { ()
+
+[expanded] 
+.container { (<style>)
+    margin-top: 0px;
+    font-weight: bold;
+    margin-left: 2px;
+
+[expanded] 
+div { (user agent stylesheet)
+    display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
+
+(After undo)
+[expanded] 
+element.style { ()
+
+[expanded] 
+.container { (<style>)
+    font-weight: bold;
+    margin-left: 2px;
+
+[expanded] 
+div { (user agent stylesheet)
+    display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
+
+(After redo)
+[expanded] 
+element.style { ()
+
+[expanded] 
+.container { (<style>)
+    margin-top: 0px;
+    font-weight: bold;
+    margin-left: 2px;
+
+[expanded] 
+div { (user agent stylesheet)
+    display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
+
+=== Middle property ===
+(Initial value)
+[expanded] 
+element.style { ()
+
+[expanded] 
+.container { (<style>)
+    margin-top: 0px;
+    font-weight: bold;
+    margin-left: 2px;
+
+[expanded] 
+div { (user agent stylesheet)
+    display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
+
+(After adding property)
+[expanded] 
+element.style { ()
+
+[expanded] 
+.container { (<style>)
+    margin-top: 0px;
+    margin-right: 1px;
+    font-weight: bold;
+    margin-left: 2px;
+
+[expanded] 
+div { (user agent stylesheet)
+    display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
+
+(After undo)
+[expanded] 
+element.style { ()
+
+[expanded] 
+.container { (<style>)
+    margin-top: 0px;
+    font-weight: bold;
+    margin-left: 2px;
+
+[expanded] 
+div { (user agent stylesheet)
+    display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
+
+(After redo)
+[expanded] 
+element.style { ()
+
+[expanded] 
+.container { (<style>)
+    margin-top: 0px;
+    margin-right: 1px;
+    font-weight: bold;
+    margin-left: 2px;
+
+[expanded] 
+div { (user agent stylesheet)
+    display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
+
+

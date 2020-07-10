@@ -1,0 +1,300 @@
+<!-- TODO(crbug.com/603217): Use i18n instead of string literals. Figure out
+                             what i18n to use for keypad, ie, does 1 ABC make
+                             sense in every scenario? -->
+
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-iconset-svg/iron-iconset-svg.html">
+
+<iron-iconset-svg name="pin-keyboard" size="24">
+  <svg>
+    <defs>
+      <!--
+      Inlined from Polymer's iron-icons to avoid importing everything.
+      See http://goo.gl/Y1OdAq for instructions on adding additional icons.
+      -->
+      <g id="arrow-forward">
+        <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z">
+        </path>
+      </g>
+      <g id="backspace">
+        <path d="M22 3H7c-.69 0-1.23.35-1.59.88L0 12l5.41 8.11c.36.53.9.89 1.59.89h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-3 12.59L17.59 17 14 13.41 10.41 17 9 15.59 12.59 12 9 8.41 10.41 7 14 10.59 17.59 7 19 8.41 15.41 12 19 15.59z">
+      </g>
+    </defs>
+  </svg>
+</iron-iconset-svg>
+
+<dom-module id="pin-keyboard">
+  <template>
+    <style include="cr-shared-style">
+      :host {
+        --backspace-button-ripple-left: calc((var(--backspace-button-width) -
+            var(--pin-button-ripple-width)) / 2);
+        --backspace-button-width: calc(var(--pin-button-width) +
+            var(--pin-button-horizontal-margin) * 2);
+        --pin-button-height: 40px;
+        --pin-button-horizontal-margin: 20px;
+        --pin-button-ripple-height: 48px;
+        --pin-button-ripple-left: calc((var(--pin-button-width) -
+            var(--pin-button-ripple-width)) / 2);
+        --pin-button-ripple-top: calc((var(--pin-button-height) -
+            var(--pin-button-ripple-height)) / 2);
+        --pin-button-ripple-width: 48px;
+        --pin-button-vertical-margin: 8px;
+        --pin-button-width: 40px;
+        outline: none;
+      }
+
+      #root {
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+
+      #rowsContainer {
+        direction: ltr;
+        display: block;
+        width: calc((var(--pin-button-width) +
+            var(--pin-button-horizontal-margin) * 2) * 3);
+      }
+
+      .row {
+        display: flex;
+        margin-bottom: calc(var(--pin-button-vertical-margin) * 2);
+        min-height: 0;
+      }
+
+      :host([enable-password]) #pinInputDiv {
+        display: none;
+      }
+
+      .bottom-row {
+        margin-bottom: 6px;
+      }
+
+      #backspaceButton {
+        --cr-icon-button-fill-color: var(--pin-keyboard-backspace-color,
+            var(--google-grey-700));
+        --cr-icon-button-icon-size: 16px;
+        --cr-icon-button-size: 48px;
+        left: 0;
+        opacity: var(--pin-keyboard-backspace-opacity, --dark-primary-opacity);
+        position: relative;
+        top: -4px;
+      }
+
+      #backspaceButton[disabled] {
+        opacity: 0.34;
+      }
+
+      .digit-button {
+        align-items: center;
+        background: none;
+        border: 0;
+        box-shadow: none;
+        box-sizing: border-box;
+        color: var(--google-grey-900);
+        display: flex;
+        flex-direction: column;
+        font-weight: 400;
+        height: var(--pin-button-height);
+        justify-content: space-between;
+        margin: 0 var(--pin-button-horizontal-margin);
+        min-height: 0;
+        min-width: 0;
+        opacity: 0.87;
+        padding: 0;
+        width: var(--pin-button-width);
+
+        @apply --pin-keyboard-digit-button;
+      }
+
+      :host-context(.focus-outline-visible) .digit-button:focus {
+        font-weight: 500;
+      }
+
+      .digit-button inner-text {
+        font-family: 'Roboto';
+      }
+
+      inner-text.letter {
+        color: var(--pin-keyboard-letter-color, var(--google-grey-700));
+        font-size: 12px;
+        margin-top: 8px;
+
+        @apply --pin-keyboard-digit-button-letter;
+      }
+
+      .number {
+        color: var(--pin-keyboard-number-color, var(--paper-blue-grey-700));
+        font-size: 18px;
+        height: 16px;
+      }
+
+      paper-ripple {
+        --paper-ripple-opacity: .15;
+        color: var(--google-grey-900);
+        height: var(--pin-button-ripple-height);
+        left: var(--pin-button-ripple-left);
+        top: var(--pin-button-ripple-top);
+        width: var(--pin-button-ripple-width);
+
+        @apply --pin-keyboard-paper-ripple;
+      }
+
+      #pinInput {
+        --cr-input-error-display: none;
+        --cr-input-input: {
+          font-size: 28px;
+          letter-spacing: 18px;
+        };
+        --cr-input-padding-bottom: 1px;
+        --cr-input-padding-end: 0;
+        --cr-input-padding-start: 0;
+        --cr-input-padding-top: 1px;
+        background-color: white;
+        border: 0;
+        box-sizing: border-box;
+        font-face: Roboto-Regular;
+        font-size: 13px;
+        left: 0;
+        opacity: var(--dark-secondary-opacity);
+        outline: 0;
+        position: relative;
+        text-align: center;
+        width: 200px;
+
+        @apply --pin-keyboard-pin-input-style;
+      }
+
+      #pinInput[make-contrast] {
+        opacity: var(--dark-primary-opacity);
+      }
+
+      #pinInput[is-input-rtl] {
+        direction: rtl;
+      }
+
+      /* Ensure that all children of cr-button do not consume events. This
+       * simplifies the event handler code. */
+      cr-button * {
+        pointer-events: none;
+      }
+    </style>
+
+    <div id="root" on-tap="onRootTap_">
+      <div id="pinInputDiv">
+        <cr-input id="pinInput" type="password" value="{{value}}"
+            is-input-rtl$="[[isInputRtl_(value)]]" aria-label="[[ariaLabel]]"
+            make-contrast$="[[hasInputOrFocus_(value, focused_)]]" invalid="[[hasError]]"
+            placeholder="[[getInputPlaceholder_(enablePassword,
+                enablePlaceholder)]]"
+            on-keydown="onInputKeyDown_" force-underline="true"
+            disabled="[[disabled]]">
+        </cr-input>
+      </div>
+      <slot select="[problem]"></slot>
+      <div id="rowsContainer">
+        <div class="row">
+          <cr-button class="digit-button" on-tap="onNumberTap_" value="1"
+              noink disabled="[[disabled]]">
+            <inner-text class="number">[[i18n('pinKeyboard1')]]</inner-text>
+            <inner-text class="letter"
+                hidden="[[!enableLetters]]">&nbsp;</inner-text>
+            <paper-ripple class="circle" center></paper-ripple>
+          </cr-button>
+          <cr-button class="digit-button" on-tap="onNumberTap_" value="2"
+              noink disabled="[[disabled]]">
+            <inner-text class="number">[[i18n('pinKeyboard2')]]</inner-text>
+            <inner-text class="letter"
+                hidden="[[!enableLetters]]">ABC</inner-text>
+            <paper-ripple class="circle" center></paper-ripple>
+          </cr-button>
+          <cr-button class="digit-button" on-tap="onNumberTap_" value="3"
+              noink disabled="[[disabled]]">
+            <inner-text class="number">[[i18n('pinKeyboard3')]]</inner-text>
+            <inner-text class="letter"
+                hidden="[[!enableLetters]]">DEF</inner-text>
+            <paper-ripple class="circle" center></paper-ripple>
+          </cr-button>
+        </div>
+        <div class="row">
+          <cr-button class="digit-button" on-tap="onNumberTap_" value="4"
+              noink disabled="[[disabled]]">
+            <inner-text class="number">[[i18n('pinKeyboard4')]]</inner-text>
+            <inner-text class="letter"
+                hidden="[[!enableLetters]]">GHI</inner-text>
+            <paper-ripple class="circle" center></paper-ripple>
+          </cr-button>
+          <cr-button class="digit-button" on-tap="onNumberTap_" value="5"
+              noink disabled="[[disabled]]">
+            <inner-text class="number">[[i18n('pinKeyboard5')]]</inner-text>
+            <inner-text class="letter"
+                hidden="[[!enableLetters]]">JKL</inner-text>
+            <paper-ripple class="circle" center></paper-ripple>
+          </cr-button>
+          <cr-button class="digit-button" on-tap="onNumberTap_" value="6"
+              noink disabled="[[disabled]]">
+            <inner-text class="number">[[i18n('pinKeyboard6')]]</inner-text>
+            <inner-text class="letter"
+                hidden="[[!enableLetters]]">MNO</inner-text>
+            <paper-ripple class="circle" center></paper-ripple>
+          </cr-button>
+        </div>
+        <div class="row">
+          <cr-button class="digit-button" on-tap="onNumberTap_" value="7"
+              noink disabled="[[disabled]]">
+            <inner-text class="number">[[i18n('pinKeyboard7')]]</inner-text>
+            <inner-text class="letter"
+                hidden="[[!enableLetters]]">PQRS</inner-text>
+            <paper-ripple class="circle" center></paper-ripple>
+          </cr-button>
+          <cr-button class="digit-button" on-tap="onNumberTap_" value="8"
+              noink disabled="[[disabled]]">
+            <inner-text class="number">[[i18n('pinKeyboard8')]]</inner-text>
+            <inner-text class="letter"
+                hidden="[[!enableLetters]]">TUV</inner-text>
+            <paper-ripple class="circle" center></paper-ripple>
+          </cr-button>
+          <cr-button class="digit-button" on-tap="onNumberTap_" value="9"
+              noink disabled="[[disabled]]">
+            <inner-text class="number">[[i18n('pinKeyboard9')]]</inner-text>
+            <inner-text class="letter"
+                hidden="[[!enableLetters]]">WXYZ</inner-text>
+            <paper-ripple class="circle" center></paper-ripple>
+          </cr-button>
+        </div>
+        <div class="row bottom-row">
+          <div class="digit-button"></div>
+          <cr-button class="digit-button" on-tap="onNumberTap_" value="0"
+              noink disabled="[[disabled]]">
+            <inner-text class="number">[[i18n('pinKeyboard0')]]</inner-text>
+            <inner-text class="letter"
+                hidden="[[!enableLetters]]">+</inner-text>
+            <paper-ripple class="circle" center></paper-ripple>
+          </cr-button>
+          <cr-icon-button id="backspaceButton"
+              disabled$="[[!hasInput_(value)]]"
+              iron-icon="pin-keyboard:backspace"
+              on-tap="onBackspaceTap_"
+              on-pointerdown="onBackspacePointerDown_"
+              on-pointerout="clearAndReset_"
+              on-pointerup="onBackspacePointerUp_"
+              on-contextmenu="onBackspaceContextMenu_"
+              title="[[i18n('pinKeyboardDeleteAccessibleName')]]">
+          </cr-icon-button>
+        </div>
+      </div>
+    </div>
+  </template>
+  <script src="pin_keyboard.js"></script>
+</dom-module>

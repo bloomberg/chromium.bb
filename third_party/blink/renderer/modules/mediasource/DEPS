@@ -1,0 +1,7 @@
+include_rules = [
+    "-third_party/blink/renderer/modules",
+    "+media/base/logging_override_if_enabled.h",
+    "+third_party/blink/renderer/modules/event_modules.h",
+    "+third_party/blink/renderer/modules/event_target_modules.h",
+    "+third_party/blink/renderer/modules/mediasource",
+]

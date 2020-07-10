@@ -1,0 +1,23 @@
+Name: R8
+URL: https://r8.googlesource.com/r8
+Revision: 5cca4af33d246f51b49650d7480493247947eda9
+Version: 2.0.2-dev
+License: BSD 3-Clause
+License File: NOT_SHIPPED
+Security Critical: no
+
+Description:
+R8 is a proguard-like optimizer that also has the ability to dex.
+
+Local Modifications:
+Turning off vertical and horizontal class merging, as described in
+https://issuetracker.google.com/122902374#comment11. We should no longer make
+this modification once the linked bug is fixed.
+
+Turning off outlining because it caused issues when synchronized proguarding
+Trichrome due to illegal dex references (crbug.com/956839). Will only be used
+for android_apk() targets that set `disable_r8_outlining = true`):
+
+Increase callGraphCycleEliminatorMaxDepthThreshold (b/143685705).
+
+Patch is located at //third_party/r8/local_modifications.diff.

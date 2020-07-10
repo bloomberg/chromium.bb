@@ -1,0 +1,23 @@
+{
+  "layers": [
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutNGBlockFlow (floating) DIV",
+          "rect": [8, 204, 100, 100],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutNGBlockFlow (floating) DIV",
+          "rect": [8, 104, 100, 100],
+          "reason": "geometry"
+        }
+      ]
+    }
+  ]
+}
+

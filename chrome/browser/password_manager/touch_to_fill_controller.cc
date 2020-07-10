@@ -1,0 +1,98 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/password_manager/touch_to_fill_controller.h"
+
+#include <utility>
+
+#include "base/logging.h"
+#include "base/util/type_safety/pass_key.h"
+#include "chrome/browser/password_manager/chrome_password_manager_client.h"
+#include "chrome/browser/touch_to_fill/touch_to_fill_view.h"
+#include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
+#include "components/password_manager/core/browser/origin_credential_store.h"
+#include "components/password_manager/core/browser/password_manager_driver.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/ukm/content/source_url_recorder.h"
+#include "components/url_formatter/elide_url.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
+
+using ShowVirtualKeyboard =
+    password_manager::PasswordManagerDriver::ShowVirtualKeyboard;
+using password_manager::PasswordManagerDriver;
+using password_manager::UiCredential;
+
+TouchToFillController::TouchToFillController(
+    util::PassKey<TouchToFillControllerTest>) {}
+
+TouchToFillController::TouchToFillController(
+    ChromePasswordManagerClient* password_client)
+    : password_client_(password_client),
+      source_id_(ukm::GetSourceIdForWebContentsDocument(
+          password_client_->web_contents())) {}
+
+TouchToFillController::~TouchToFillController() = default;
+
+void TouchToFillController::Show(base::span<const UiCredential> credentials,
+                                 base::WeakPtr<PasswordManagerDriver> driver) {
+  DCHECK(!driver_ || driver_.get() == driver.get());
+  driver_ = std::move(driver);
+
+  if (!view_)
+    view_ = TouchToFillViewFactory::Create(this);
+
+  const GURL& url = driver_->GetLastCommittedURL();
+  view_->Show(url,
+              TouchToFillView::IsOriginSecure(
+                  network::IsUrlPotentiallyTrustworthy(url)),
+              credentials);
+}
+
+void TouchToFillController::OnCredentialSelected(
+    const UiCredential& credential) {
+  if (!driver_)
+    return;
+
+  password_manager::metrics_util::LogFilledCredentialIsFromAndroidApp(
+      credential.is_affiliation_based_match().value());
+  driver_->TouchToFillClosed(ShowVirtualKeyboard(false));
+  std::exchange(driver_, nullptr)
+      ->FillSuggestion(credential.username(), credential.password());
+
+  ukm::builders::TouchToFill_Shown(source_id_)
+      .SetUserAction(static_cast<int64_t>(UserAction::kSelectedCredential))
+      .Record(ukm::UkmRecorder::Get());
+}
+
+void TouchToFillController::OnManagePasswordsSelected() {
+  if (!driver_)
+    return;
+
+  std::exchange(driver_, nullptr)
+      ->TouchToFillClosed(ShowVirtualKeyboard(false));
+  password_client_->NavigateToManagePasswordsPage(
+      password_manager::ManagePasswordsReferrer::kTouchToFill);
+
+  ukm::builders::TouchToFill_Shown(source_id_)
+      .SetUserAction(static_cast<int64_t>(UserAction::kSelectedManagePasswords))
+      .Record(ukm::UkmRecorder::Get());
+}
+
+void TouchToFillController::OnDismiss() {
+  if (!driver_)
+    return;
+
+  std::exchange(driver_, nullptr)->TouchToFillClosed(ShowVirtualKeyboard(true));
+
+  ukm::builders::TouchToFill_Shown(source_id_)
+      .SetUserAction(static_cast<int64_t>(UserAction::kDismissed))
+      .Record(ukm::UkmRecorder::Get());
+}
+
+gfx::NativeView TouchToFillController::GetNativeView() {
+  return password_client_->web_contents()->GetNativeView();
+}

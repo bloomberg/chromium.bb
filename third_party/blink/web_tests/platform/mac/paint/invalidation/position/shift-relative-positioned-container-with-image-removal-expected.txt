@@ -1,0 +1,34 @@
+{
+  "layers": [
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [785, 735],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutIFrame IFRAME id='iframe'",
+          "rect": [8, 86, 732, 94],
+          "reason": "disappeared"
+        },
+        {
+          "object": "LayoutImage IMG",
+          "rect": [58, 136, 489, 537],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutImage IMG",
+          "rect": [58, 234, 489, 501],
+          "reason": "geometry"
+        }
+      ]
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [785, 0],
+      "bounds": [15, 600],
+      "contentsOpaque": true
+    }
+  ]
+}
+

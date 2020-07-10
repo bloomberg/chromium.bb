@@ -1,0 +1,28 @@
+<!DOCTYPE HTML>
+<html>
+<body>
+<p>Tests that reparenting media elements also reparents ActiveDOMObject.</p>
+<iframe src="resources/media-frame.html"></iframe>
+<script src="resources/activedomobject-test.js"></script>
+<script>
+    function runTest()
+    {
+        window.iframe = document.querySelector('iframe').contentDocument;
+
+        log('Before Reparenting');
+        shouldBe('internals.contextLifecycleStateObserverObjectCount(document)', 1);
+        shouldBe('internals.contextLifecycleStateObserverObjectCount(iframe)', 4);
+
+        document.body.appendChild(window.iframe.querySelector('video'));
+
+        // The media element has an internal MutationObserver that is a
+        // ContextLifecycleStateObserver. It will not yet be GCed at this point,
+        // but a new one will be created in |document|, so the count is expected
+        // to differ by one.
+        log('After Reparenting');
+        shouldBe('internals.contextLifecycleStateObserverObjectCount(document)', 4);
+        shouldBe('internals.contextLifecycleStateObserverObjectCount(iframe)', 2);
+    }
+</script>
+</body>
+</html>

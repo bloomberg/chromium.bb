@@ -1,0 +1,20 @@
+include_rules = [
+  # This is needed for error page strings/resources.
+  # TODO(1024326): If WebLayer stays with WebView's error pages implementation
+  # long-term, componentize these strings/resources as part of componentizing
+  # that implementation and remove the need for this dependency.
+  "+android_webview/grit",
+  "+components/safe_browsing/common",
+  "+components/safe_browsing/renderer",
+  "+components/security_interstitials/content/renderer",
+  "+components/security_interstitials/core/common",
+  "+components/spellcheck/renderer",
+  "+content/public/renderer",
+  # needed for safebrowsing
+  "+mojo/public/cpp/bindings",
+  "+net/base",
+  "+services/service_manager/public/cpp",
+  "+third_party/blink/public/common",
+  "+third_party/blink/public/platform",
+  "+ui/base",
+]

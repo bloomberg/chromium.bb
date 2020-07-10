@@ -1,0 +1,22 @@
+// The grouping parameter is a cumulative distribution over the whole set of ranked
+// CSS properties.
+{
+    "data": [
+        {
+            "name": "rare_non_inherited_properties_rule",
+            "cumulative_distribution": [
+                0.11925287356321838,
+                0.23275862068965517,
+                1.0
+            ]
+        },
+        {
+            "name": "rare_inherited_properties_rule",
+            "cumulative_distribution": [
+                0.5718390804597702,
+                1.0
+            ]
+        }
+    ],
+    "parameters": {}
+}

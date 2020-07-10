@@ -1,0 +1,14 @@
+include_rules = [
+  "+chrome/common",
+  "+chrome/installer/launcher_support",
+  "+chrome/installer/util",
+  "+components/crash",
+  "+google_apis",
+  "+third_party/boringssl/src/include",
+]
+
+specific_include_rules = {
+  ".+_unittests*\.cc": [
+    "+chrome/browser/ui/startup/credential_provider_signin_dialog_win_test_data.h",
+  ]
+}

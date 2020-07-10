@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<body>
+<a id="file" href="file:///path/to/file">File</a>
+<a id="chrome" href="about:chrome">Chrome</a>
+<a href="about:blank"><b id="blank">Click me</b></a>
+<script>
+
+function testQuoteString() {
+  // Basic cases.
+  assertEquals('\"test\"', quoteString('"test"'));
+  assertEquals('\\!\\?', quoteString('!?'));
+  assertEquals('\\(\\._\\.\\) \\( \\:l \\) \\(\\.-\\.\\)',
+      quoteString('(._.) ( :l ) (.-.)'));
+
+  // Using the output as a regex.
+  var re = new RegExp(quoteString('"hello"'), 'gim');
+  var match = re.exec('She said "Hello" loudly');
+  assertEquals(9, match.index);
+
+  re = new RegExp(quoteString('Hello, .*'), 'gim');
+  match = re.exec('Hello, world');
+  assertEquals(null, match);
+}
+</script>
+</body>
+</html>

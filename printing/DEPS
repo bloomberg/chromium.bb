@@ -1,0 +1,13 @@
+include_rules = [
+  "+cc/paint",
+  "+printing/printing_jni_headers",
+  "+skia/ext",
+  "+third_party/icu/source/common/unicode",
+  "+third_party/icu/source/i18n/unicode",
+  "+third_party/skia",
+  "+ui/android",
+  "+ui/aura",
+  "+ui/base/resource",
+  "+ui/base/text",
+  "+ui/gfx",
+]

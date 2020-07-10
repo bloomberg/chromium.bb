@@ -1,0 +1,197 @@
+<link rel="import" href="../../html/polymer.html">
+
+<link rel="import" href="../cr_icon_button/cr_icon_button.html">
+<link rel="import" href="../cr_icons_css.html">
+<link rel="import" href="../cr_toolbar/cr_toolbar_search_field.html">
+<link rel="import" href="../hidden_style_css.html">
+<link rel="import" href="../icons.html">
+<link rel="import" href="../shared_vars_css.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-media-query/iron-media-query.html">
+
+<dom-module id="cr-toolbar">
+  <template>
+    <style include="cr-icons cr-hidden-style">
+      :host {
+        align-items: center;
+        background-color: var(--cr-toolbar-background-color);
+        color: #fff;
+        display: flex;
+        height: var(--cr-toolbar-height);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :host {
+          border-bottom: var(--cr-separator-line);
+          box-sizing: border-box;
+          color: var(--cr-secondary-text-color);
+        }
+      }
+
+      h1 {
+        flex: 1;
+        font-size: 123%;
+        font-weight: var(--cr-toolbar-header-font-weight, 400);
+        letter-spacing: .25px;
+        line-height: normal;
+        margin-inline-start: 6px;
+        padding-inline-end: 12px;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        h1 {
+          color: var(--cr-primary-text-color);
+        }
+      }
+
+      #leftContent {
+        position: relative;
+        transition: opacity 100ms;
+      }
+
+      #leftSpacer {
+        align-items: center;
+        box-sizing: border-box;
+        display: flex;
+        /* 12px to match #rightSpacer + 6px to align with icons in menus. */
+        padding-inline-start: calc(12px + 6px);
+        width: var(--cr-toolbar-left-spacer-width, auto);
+      }
+
+      cr-icon-button {
+        --cr-icon-button-fill-color-focus: var(--cr-toolbar-background-color);
+        --cr-icon-button-size: 32px;
+        min-width: 32px;
+      }
+
+      @media (prefers-color-scheme: light) {
+        cr-icon-button {
+          --cr-icon-button-fill-color: currentColor;
+        }
+      }
+
+      #centeredContent {
+        display: flex;
+        flex: 1 1 0;
+        justify-content: center;
+      }
+
+      #rightSpacer {
+        padding-inline-end: 12px;
+      }
+
+      :host([narrow]) #centeredContent {
+        justify-content: flex-end;
+      }
+
+      :host([has-overlay]) {
+        transition: visibility var(--cr-toolbar-overlay-animation-duration);
+        visibility: hidden;
+      }
+
+      :host([narrow][showing-search_]) #leftContent {
+        opacity: 0;
+        position: absolute;
+      }
+
+      :host(:not([narrow])) #leftContent {
+        flex: 1 1 var(--cr-toolbar-field-margin, 0);
+      }
+
+      :host(:not([narrow])) #centeredContent {
+        flex-basis: var(--cr-toolbar-center-basis, 0);
+      }
+
+      :host(:not([narrow])) #rightContent {
+        flex: 1 1 0;
+        text-align: end;
+      }
+
+      #menuPromo {
+        align-items: center;
+        background: #616161;
+        border-radius: 2px;
+        color: white;
+        display: flex;
+        font-size: 92.3%;
+        font-weight: 500;
+        opacity: 0;
+        padding-bottom: 6px;
+        padding-inline-end: 12px;
+        padding-inline-start: 8px;
+        padding-top: 6px;
+        position: absolute;
+        top: var(--cr-toolbar-height);
+        white-space: nowrap;
+        z-index: 2;
+      }
+
+      #menuPromo::before {
+        background: inherit;
+        /* Up arrow. 105% in Y coordinates fixes glitch at 110/125% zoom. */
+        clip-path: polygon(0 105%, 100% 105%, 50% 0);
+        content: '';
+        display: block;
+        height: 6px;
+        left: 10px;
+        position: absolute;
+        top: -6px;
+        width: 12px;
+      }
+
+      :host-context([dir=rtl]) #menuPromo::before {
+        left: auto;
+        right: 10px;
+      }
+
+      #closePromo {
+        -webkit-appearance: none;
+        background: none;
+        border: none;
+        color: inherit;
+        font-size: 20px;  /* Shouldn't change if default font-size changes. */
+        line-height: 20px;
+        margin-inline-start: 12px;
+        padding: 0;
+        width: 20px;
+      }
+    </style>
+    <div id="leftContent">
+      <div id="leftSpacer">
+        <!-- Note: showing #menuPromo relies on this dom-if being [restamp]. -->
+        <template is="dom-if" if="[[showMenu]]" restamp>
+          <cr-icon-button id="menuButton" class="no-overlap"
+              iron-icon="cr20:menu" on-click="onMenuTap_"
+              aria-label$="[[menuLabel]]"
+              title="[[titleIfNotShowMenuPromo_(menuLabel, showMenuPromo)]]">
+          </cr-icon-button>
+          <template is="dom-if" if="[[showMenuPromo]]">
+            <div id="menuPromo" role="tooltip">
+              [[menuPromo]]
+              <button id="closePromo" on-click="onClosePromoTap_"
+                  aria-label$="[[closeMenuPromo]]">&#x2715;</button>
+            </paper-tooltip>
+          </template>
+        </template>
+        <h1>[[pageName]]</h1>
+      </div>
+    </div>
+
+    <div id="centeredContent" hidden$="[[!showSearch]]">
+      <cr-toolbar-search-field id="search" narrow="[[narrow]]"
+          label="[[searchPrompt]]" clear-label="[[clearLabel]]"
+          spinner-active="[[spinnerActive]]"
+          showing-search="{{showingSearch_}}">
+      </cr-toolbar-search-field>
+      <iron-media-query query="(max-width: [[narrowThreshold]]px)"
+          query-matches="{{narrow}}">
+      </iron-media-query>
+    </div>
+
+    <div id="rightContent">
+      <div id="rightSpacer">
+        <slot></slot>
+      </div>
+    </div>
+  </template>
+  <script src="cr_toolbar.js"></script>
+</dom-module>

@@ -1,0 +1,120 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/html/cr/ui/focus_row.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/html/icon.html">
+<link rel="import" href="browser_service.html">
+<link rel="import" href="constants.html">
+<link rel="import" href="searched_label.html">
+<link rel="import" href="shared_style.html">
+<link rel="import" href="strings.html">
+
+<dom-module id="history-synced-device-card">
+  <template>
+    <style include="shared-style">
+      :host {
+        @apply --card-sizing;
+        -webkit-tap-highlight-color: transparent;
+        display: block;
+        padding-bottom: var(--card-padding-between);
+      }
+
+      #card-heading {
+        cursor: pointer;
+        justify-content: space-between;
+        padding-inline-end: 0;
+      }
+
+      #tab-item-list {
+        padding: 8px 0;
+      }
+
+      #last-update-time {
+        color: var(--cr-secondary-text-color);
+      }
+
+      #title-left-content {
+        display: flex;
+        overflow: hidden;
+      }
+
+      #device-name {
+        overflow: hidden;
+        padding-inline-end: 3px;
+        text-overflow: ellipsis;
+      }
+
+      #right-buttons {
+        color: var(--cr-secondary-text-color);
+        margin-inline-end: 12px;
+      }
+
+      #collapse {
+        overflow: hidden;
+      }
+
+      #history-item-container {
+        @apply --cr-card-elevation;
+        background-color: var(--cr-card-background-color);
+        border-radius: var(--cr-card-border-radius);
+      }
+
+      .item-container {
+        align-items: center;
+        display: flex;
+        margin: 0 20px;
+        min-height: var(--item-height);
+      }
+
+      .window-separator {
+        background-color: var(--card-border-color);
+        height: 1px;
+        margin: 5px auto;
+        width: 80%;
+      }
+    </style>
+    <div id="history-item-container">
+      <div class="card-title" id="card-heading" aria-expanded$="[[opened]]"
+          aria-controls="collapse" on-click="toggleTabCard">
+        <div id="title-left-content">
+          <div id="device-name">
+            [[device]]
+          </div>
+          <span id="last-update-time">[[lastUpdateTime]]</span>
+        </div>
+        <div id="right-buttons">
+          <cr-icon-button id="menu-button" iron-icon="cr:more-vert"
+              on-click="onMenuButtonTap_" title="$i18n{actionMenuDescription}">
+          </cr-icon-button>
+          <cr-icon-button id="collapse-button"
+              iron-icon="[[getCollapseIcon_(opened)]]"
+              title$="[[getCollapseTitle_(opened)]]"></cr-icon-button>
+        </div>
+      </div>
+
+      <iron-collapse opened="{{opened}}" id="collapse">
+        <div id="tab-item-list">
+          <template is="dom-repeat" items="[[tabs]]" as="tab" id="tab-list">
+            <div class="item-container">
+              <a href="[[tab.url]]" class="website-link" title="[[tab.title]]"
+                  on-click="openTab_" on-contextmenu="onLinkRightClick_">
+              <div class="website-icon"></div>
+              <history-searched-label class="website-title"
+                  title="[[tab.title]]"
+                  search-term="[[searchTerm]]"></history-searched-label>
+              </a>
+            </div>
+            <div class="window-separator"
+                hidden$="[[!isWindowSeparatorIndex_(index, separatorIndexes)]]">
+            </div>
+          </template>
+        </div>
+      </iron-collapse>
+    </div>
+  </template>
+  <script src="synced_device_card.js"></script>
+</dom-module>

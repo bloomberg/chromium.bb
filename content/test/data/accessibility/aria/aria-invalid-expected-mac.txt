@@ -1,0 +1,23 @@
+AXWebArea AXInvalid='false'
+++AXGroup AXInvalid='true'
+++++AXStaticText AXValue='invalid=true'
+++AXTextArea AXValue='An eror via invalid=spelling' AXInvalid='false'
+++++AXStaticText AXValue='An '
+++++AXGroup AXInvalid='spelling'
+++++++AXStaticText AXValue='eror'
+++++AXStaticText AXValue=' via invalid=spelling'
+++AXTextArea AXValue='An errors via invalid=grammar' AXInvalid='false'
+++++AXStaticText AXValue='An '
+++++AXGroup AXInvalid='grammar'
+++++++AXStaticText AXValue='errors'
+++++AXStaticText AXValue=' via invalid=grammar'
+++AXGroup AXInvalid='false'
+++++AXStaticText AXValue='invalid=false'
+++AXGroup
+++++AXStaticText AXValue='invalid=<empty>'
+++AXGroup
+++++AXStaticText AXValue='invalid=<default>'
+++AXGroup AXInvalid='unknown'
+++++AXStaticText AXValue='invalid=unknown'
+++AXGroup
+++++AXTextField AXValue='1234' AXInvalid='true'

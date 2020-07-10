@@ -1,0 +1,8 @@
+rootWebArea
+++genericContainer ignored
+++++section
+++++++staticText name='This is a section element.'
+++++++++inlineTextBox name='This is a section element.'
+++++section name='section'
+++++++staticText name='This is a named section element.'
+++++++++inlineTextBox name='This is a named section element.'

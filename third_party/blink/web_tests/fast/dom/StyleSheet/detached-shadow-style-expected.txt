@@ -1,0 +1,16 @@
+CONSOLE WARNING: line 12: Element.createShadowRoot is deprecated and will be removed in M80, around February 2020. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 and https://developers.google.com/web/updates/2019/07/web-components-time-to-upgrade for more details.
+Testing <style>...
+PASS sheet.ownerNode is style
+PASS style.sheet === sheet is true
+Removing <style>...
+PASS style.sheet is null
+PASS sheet.ownerNode is null
+PASS sheet.cssRules[0].cssText[0] is "*"
+Re-adding <style>...
+PASS sheet.ownerNode is null
+PASS style.sheet === sheet is false
+PASS style.sheet.ownerNode is style
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

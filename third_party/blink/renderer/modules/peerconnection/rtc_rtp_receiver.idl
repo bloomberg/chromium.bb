@@ -1,0 +1,18 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://w3c.github.io/webrtc-pc/#rtcrtpreceiver-interface
+[Exposed=Window]
+interface RTCRtpReceiver {
+    readonly attribute MediaStreamTrack track;
+    [RuntimeEnabled=RTCDtlsTransport] readonly attribute RTCDtlsTransport? transport;
+    [RuntimeEnabled=RTCDtlsTransport] readonly attribute RTCDtlsTransport? rtcpTransport;
+    // https://henbos.github.io/webrtc-extensions/#dom-rtcrtpreceiver-playoutdelayhint
+    [RaisesException, Measure] attribute double? playoutDelayHint;
+    static RTCRtpCapabilities?            getCapabilities(DOMString kind);
+    RTCRtpReceiveParameters               getParameters();
+    sequence<RTCRtpSynchronizationSource> getSynchronizationSources();
+    sequence<RTCRtpContributingSource> getContributingSources();
+    [CallWith=ScriptState] Promise<RTCStatsReport> getStats();
+};

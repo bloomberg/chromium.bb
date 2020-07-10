@@ -1,0 +1,667 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CONTENT_PUBLIC_BROWSER_RENDER_PROCESS_HOST_H_
+#define CONTENT_PUBLIC_BROWSER_RENDER_PROCESS_HOST_H_
+
+#include <stddef.h>
+#include <stdint.h>
+
+#include <list>
+#include <memory>
+#include <string>
+
+#include "base/callback_list.h"
+#include "base/containers/id_map.h"
+#include "base/process/kill.h"
+#include "base/process/process.h"
+#include "base/supports_user_data.h"
+#include "build/build_config.h"
+#include "content/common/content_export.h"
+#include "ipc/ipc_channel_proxy.h"
+#include "ipc/ipc_sender.h"
+#include "media/media_buildflags.h"
+#include "media/mojo/mojom/video_decode_perf_history.mojom-forward.h"
+#include "mojo/public/cpp/bindings/generic_pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "net/base/network_isolation_key.h"
+#include "services/network/public/mojom/cross_origin_embedder_policy.mojom-forward.h"
+#include "services/network/public/mojom/network_context.mojom-forward.h"
+#include "services/network/public/mojom/restricted_cookie_manager.mojom-forward.h"
+#include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
+#include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-forward.h"
+#include "third_party/blink/public/mojom/filesystem/file_system.mojom-forward.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-forward.h"
+#include "third_party/blink/public/mojom/locks/lock_manager.mojom-forward.h"
+#include "third_party/blink/public/mojom/native_file_system/native_file_system_manager.mojom-forward.h"
+#include "third_party/blink/public/mojom/notifications/notification_service.mojom-forward.h"
+#include "third_party/blink/public/mojom/payments/payment_app.mojom-forward.h"
+#include "third_party/blink/public/mojom/permissions/permission.mojom-forward.h"
+#include "third_party/blink/public/mojom/quota/quota_dispatcher_host.mojom-forward.h"
+#include "third_party/blink/public/mojom/websockets/websocket_connector.mojom-forward.h"
+#include "ui/gfx/native_widget_types.h"
+
+#if defined(OS_ANDROID)
+#include "content/public/browser/android/child_process_importance.h"
+#endif
+
+class GURL;
+
+namespace base {
+class PersistentMemoryAllocator;
+class TimeDelta;
+class Token;
+}
+
+namespace url {
+class Origin;
+}
+
+namespace content {
+class BrowserContext;
+class BrowserMessageFilter;
+class IsolationContext;
+class RenderProcessHostObserver;
+class StoragePartition;
+struct WebPreferences;
+#if defined(OS_ANDROID)
+enum class ChildProcessImportance;
+#endif
+
+namespace mojom {
+class Renderer;
+}
+
+// Interface that represents the browser side of the browser <-> renderer
+// communication channel. There will generally be one RenderProcessHost per
+// renderer process.
+class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
+                                         public IPC::Listener,
+                                         public base::SupportsUserData {
+ public:
+  using iterator = base::IDMap<RenderProcessHost*>::iterator;
+
+  // The priority of a frame added to the RenderProcessHost.
+  // TODO(ericrobinson): Move to RenderProcessHostImpl after Mock refactor.
+  enum class FramePriority { kLow, kNormal };
+
+  // Priority (or on Android, the importance) that a client contributes to this
+  // RenderProcessHost. Eg a RenderProcessHost with a visible client has higher
+  // priority / importance than a RenderProcessHost with hidden clients only.
+  struct Priority {
+    bool is_hidden;
+    unsigned int frame_depth;
+    bool intersects_viewport;
+#if defined(OS_ANDROID)
+    ChildProcessImportance importance;
+#endif
+  };
+
+  // Interface for a client that contributes Priority to this
+  // RenderProcessHost. Clients can call UpdateClientPriority when their
+  // Priority changes.
+  class PriorityClient {
+   public:
+    virtual Priority GetPriority() = 0;
+
+   protected:
+    virtual ~PriorityClient() {}
+  };
+
+  // Crash reporting mode for ShutdownForBadMessage.
+  enum class CrashReportMode {
+    NO_CRASH_DUMP,
+    GENERATE_CRASH_DUMP,
+  };
+
+  // General functions ---------------------------------------------------------
+
+  ~RenderProcessHost() override {}
+
+  // Initialize the new renderer process, returning true on success. This must
+  // be called once before the object can be used, but can be called after
+  // that with no effect. Therefore, if the caller isn't sure about whether
+  // the process has been created, it should just call Init().
+  virtual bool Init() = 0;
+
+  // Ensures that a Channel exists and is at least queueing outgoing messages
+  // if there isn't a render process connected to it yet. This may be used to
+  // ensure that in the event of a renderer crash and restart, subsequent
+  // messages sent via Send() will eventually reach the new process.
+  virtual void EnableSendQueue() = 0;
+
+  // Gets the next available routing id.
+  virtual int GetNextRoutingID() = 0;
+
+  // These methods add or remove listener for a specific message routing ID.
+  // Used for refcounting, each holder of this object must AddRoute and
+  // RemoveRoute. This object should be allocated on the heap; when no
+  // listeners own it any more, it will delete itself.
+  virtual void AddRoute(int32_t routing_id, IPC::Listener* listener) = 0;
+  virtual void RemoveRoute(int32_t routing_id) = 0;
+
+  // Add and remove observers for lifecycle events. The order in which
+  // notifications are sent to observers is undefined. Observers must be sure to
+  // remove the observer before they go away.
+  virtual void AddObserver(RenderProcessHostObserver* observer) = 0;
+  virtual void RemoveObserver(RenderProcessHostObserver* observer) = 0;
+
+  // Called when a received message cannot be decoded. Terminates the renderer.
+  // Most callers should not call this directly, but instead should call
+  // bad_message::BadMessageReceived() or an equivalent method outside of the
+  // content module.
+  //
+  // If |crash_report_mode| is GENERATE_CRASH_DUMP, then a browser crash dump
+  // will be reported as well.
+  virtual void ShutdownForBadMessage(CrashReportMode crash_report_mode) = 0;
+
+  // Recompute Priority state. PriorityClient should call this when their
+  // individual priority changes.
+  virtual void UpdateClientPriority(PriorityClient* client) = 0;
+
+  // Update the total and low priority count as indicated by the previous and
+  // new priorities of the underlying document.  The nullopt option is used when
+  // there is no previous/subsequent navigation (when the frame is added/removed
+  // from the RenderProcessHost).
+  // TODO(ericrobinson): Move to RenderProcessHostImpl after Mock refactor.
+  virtual void UpdateFrameWithPriority(
+      base::Optional<FramePriority> previous_priority,
+      base::Optional<FramePriority> new_priority) = 0;
+
+  // Number of visible (ie |!is_hidden|) PriorityClients.
+  virtual int VisibleClientCount() = 0;
+
+  // Get computed frame depth from PriorityClients.
+  virtual unsigned int GetFrameDepth() = 0;
+
+  // Get computed viewport intersection state from PriorityClients.
+  virtual bool GetIntersectsViewport() = 0;
+
+  // Called when a video capture stream or an audio stream is added or removed
+  // and used to determine if the process should be backgrounded or not.
+  virtual void OnMediaStreamAdded() = 0;
+  virtual void OnMediaStreamRemoved() = 0;
+
+  // Called when a service worker is executing in the process and may need
+  // to respond to events from other processes in a timely manner.  This is
+  // used to determine if the process should be backgrounded or not.
+  virtual void OnForegroundServiceWorkerAdded() = 0;
+  virtual void OnForegroundServiceWorkerRemoved() = 0;
+
+  // Indicates whether the current RenderProcessHost is exclusively hosting
+  // guest RenderFrames. Not all guest RenderFrames are created equal.  A guest,
+  // as indicated by BrowserPluginGuest::IsGuest, may coexist with other
+  // non-guest RenderFrames in the same process if IsForGuestsOnly() is false.
+  virtual bool IsForGuestsOnly() = 0;
+
+  // Returns the storage partition associated with this process.
+  virtual StoragePartition* GetStoragePartition() = 0;
+
+  // Try to shut down the associated renderer process without running unload
+  // handlers, etc, giving it the specified exit code.  Returns true
+  // if it was able to shut down.  On Windows, this must not be called before
+  // RenderProcessReady was called on a RenderProcessHostObserver, otherwise
+  // RenderProcessExited may never be called.
+  virtual bool Shutdown(int exit_code) = 0;
+
+  // Try to shut down the associated renderer process as fast as possible.
+  // If a non-zero |page_count| value is provided, then a fast shutdown will
+  // only happen if the count matches the active view count. If
+  // |skip_unload_handlers| is false and this renderer has any RenderViews with
+  // unload handlers, then this function does nothing. Otherwise, the function
+  // will ingnore checking for those handlers. Returns true if it was able to do
+  // fast shutdown.
+  virtual bool FastShutdownIfPossible(size_t page_count = 0,
+                                      bool skip_unload_handlers = false) = 0;
+
+  // Returns true if fast shutdown was started for the renderer.
+  virtual bool FastShutdownStarted() = 0;
+
+  // Returns the process object associated with the child process.  In certain
+  // tests or single-process mode, this will actually represent the current
+  // process.
+  //
+  // NOTE: this is not necessarily valid immediately after calling Init, as
+  // Init starts the process asynchronously.  It's guaranteed to be valid after
+  // the first IPC arrives or RenderProcessReady was called on a
+  // RenderProcessHostObserver for this. At that point, IsReady() returns true.
+  virtual const base::Process& GetProcess() = 0;
+
+  // Returns whether the process is ready. The process is ready once both
+  // conditions (which can happen in arbitrary order) are true:
+  // 1- the launcher reported a successful launch
+  // 2- the channel is connected.
+  //
+  // After that point, GetHandle() is valid, and deferred messages have been
+  // sent.
+  virtual bool IsReady() = 0;
+
+  // Returns the user browser context associated with this renderer process.
+  virtual content::BrowserContext* GetBrowserContext() = 0;
+
+  // Returns whether this process is using the same StoragePartition as
+  // |partition|.
+  virtual bool InSameStoragePartition(StoragePartition* partition) = 0;
+
+  // Returns the unique ID for this child process host. This can be used later
+  // in a call to FromID() to get back to this object (this is used to avoid
+  // sending non-threadsafe pointers to other threads).
+  //
+  // This ID will be unique across all child process hosts, including workers,
+  // plugins, etc.
+  //
+  // This will never return ChildProcessHost::kInvalidUniqueID.
+  virtual int GetID() = 0;
+
+  // Returns true iff the Init() was called and the process hasn't died yet.
+  //
+  // Note that even if IsInitializedAndNotDead() returns true, then (for a short
+  // duration after calling Init()) the process might not be fully spawned
+  // *yet*.  For example - IsReady() might return false and GetProcess() might
+  // still return an invalid process with a null handle.
+  virtual bool IsInitializedAndNotDead() = 0;
+
+  // Returns the renderer channel.
+  virtual IPC::ChannelProxy* GetChannel() = 0;
+
+  // Adds a message filter to the IPC channel.
+  virtual void AddFilter(BrowserMessageFilter* filter) = 0;
+
+  // Sets whether this render process is blocked. This means that input events
+  // should not be sent to it, nor other timely signs of life expected from it.
+  virtual void SetBlocked(bool blocked) = 0;
+  virtual bool IsBlocked() = 0;
+
+  virtual std::unique_ptr<base::CallbackList<void(bool)>::Subscription>
+  RegisterBlockStateChangedCallback(
+      const base::RepeatingCallback<void(bool)>& cb) = 0;
+
+  // Schedules the host for deletion and removes it from the all_hosts list.
+  virtual void Cleanup() = 0;
+
+  // Track the count of pending views that are being swapped back in.  Called
+  // by listeners to register and unregister pending views to prevent the
+  // process from exiting.
+  virtual void AddPendingView() = 0;
+  virtual void RemovePendingView() = 0;
+
+  // Adds and removes priority clients.
+  virtual void AddPriorityClient(PriorityClient* priority_client) = 0;
+  virtual void RemovePriorityClient(PriorityClient* priority_client) = 0;
+
+  // Sets a process priority override. This overrides the entire built-in
+  // priority setting mechanism for the process.
+  virtual void SetPriorityOverride(bool foreground) = 0;
+  virtual bool HasPriorityOverride() = 0;
+  virtual void ClearPriorityOverride() = 0;
+
+#if defined(OS_ANDROID)
+  // Return the highest importance of all widgets in this process.
+  virtual ChildProcessImportance GetEffectiveImportance() = 0;
+
+  // Dumps the stack of this render process without crashing it.
+  virtual void DumpProcessStack() = 0;
+#endif
+
+  // Sets a flag indicating that the process can be abnormally terminated.
+  virtual void SetSuddenTerminationAllowed(bool allowed) = 0;
+  // Returns true if the process can be abnormally terminated.
+  virtual bool SuddenTerminationAllowed() = 0;
+
+  // Returns how long the child has been idle. The definition of idle
+  // depends on when a derived class calls mark_child_process_activity_time().
+  // This is a rough indicator and its resolution should not be better than
+  // 10 milliseconds.
+  virtual base::TimeDelta GetChildProcessIdleTime() = 0;
+
+  // Checks that the given renderer can request |url|, if not it sets it to
+  // about:blank.
+  // |empty_allowed| must be set to false for navigations for security reasons.
+  virtual void FilterURL(bool empty_allowed, GURL* url) = 0;
+
+  virtual void EnableAudioDebugRecordings(const base::FilePath& file) = 0;
+  virtual void DisableAudioDebugRecordings() = 0;
+
+  using WebRtcRtpPacketCallback =
+      base::Callback<void(std::unique_ptr<uint8_t[]> packet_header,
+                          size_t header_length,
+                          size_t packet_length,
+                          bool incoming)>;
+
+  using WebRtcStopRtpDumpCallback =
+      base::Callback<void(bool incoming, bool outgoing)>;
+
+  // Starts passing RTP packets to |packet_callback| and returns the callback
+  // used to stop dumping.
+  virtual WebRtcStopRtpDumpCallback StartRtpDump(
+      bool incoming,
+      bool outgoing,
+      const WebRtcRtpPacketCallback& packet_callback) = 0;
+
+  // Start/stop event log output from WebRTC on this RPH for the peer connection
+  // identified locally within the RPH using the ID |lid|.
+  virtual void EnableWebRtcEventLogOutput(int lid, int output_period_ms) = 0;
+  virtual void DisableWebRtcEventLogOutput(int lid) = 0;
+
+  // Asks the renderer process to bind |receiver|. |receiver| arrives in the
+  // renderer process and is carried through the following flow, stopping if any
+  // step decides to bind it:
+  //
+  //   1. IO thread, |ChildProcessImpl::BindReceiver()| (child_thread_impl.cc)
+  //   2. IO thread ,|ContentClient::BindChildProcessInterface()|
+  //   3. Main thread, |ChildThreadImpl::OnBindReceiver()| (virtual)
+  //   4. Possibly more stpes, depending on the ChildThreadImpl subclass.
+  virtual void BindReceiver(mojo::GenericPendingReceiver receiver) = 0;
+
+  // Extracts any persistent-memory-allocator used for renderer metrics.
+  // Ownership is passed to the caller. To support sharing of histogram data
+  // between the Renderer and the Browser, the allocator is created when the
+  // process is created and later retrieved by the SubprocessMetricsProvider
+  // for management.
+  virtual std::unique_ptr<base::PersistentMemoryAllocator>
+  TakeMetricsAllocator() = 0;
+
+  // Returns the time the first call to Init completed successfully (after a new
+  // renderer process was created); further calls to Init won't change this
+  // value.
+  // Note: Do not use! Will disappear after PlzNavitate is completed.
+  virtual const base::TimeTicks& GetInitTimeForNavigationMetrics() = 0;
+
+  // Returns true if this process currently has backgrounded priority.
+  virtual bool IsProcessBackgrounded() = 0;
+
+  // "Keep alive ref count" represents the number of the customers of this
+  // render process who wish the renderer process to be alive. While the ref
+  // count is positive, |this| object will keep the renderer process alive,
+  // unless DisableKeepAliveRefCount() is called.
+  //
+  // Here is the list of users:
+  //  - Service Worker:
+  //    While there are service workers who live in this process, they wish
+  //    the renderer process to be alive. The ref count is incremented when this
+  //    process is allocated to the worker, and decremented when worker's
+  //    shutdown sequence is completed.
+  //  - Shared Worker:
+  //    While there are shared workers who live in this process, they wish
+  //    the renderer process to be alive. The ref count is incremented when
+  //    a shared worker is created in the process, and decremented when
+  //    it is terminated (it self-destructs when it no longer has clients).
+  //  - Keepalive request (if the KeepAliveRendererForKeepaliveRequests
+  //    feature is enabled):
+  //    When a fetch request with keepalive flag
+  //    (https://fetch.spec.whatwg.org/#request-keepalive-flag) specified is
+  //    pending, it wishes the renderer process to be kept alive.
+  //  - Unload handlers:
+  //    Keeps the process alive briefly to give subframe unload handlers a
+  //    chance to execute after their parent frame navigates or is detached.
+  //    See https://crbug.com/852204.
+  virtual void IncrementKeepAliveRefCount() = 0;
+  virtual void DecrementKeepAliveRefCount() = 0;
+
+  // Sets keep alive ref counts to zero. Called when the browser context will be
+  // destroyed so this RenderProcessHost can immediately die.
+  //
+  // After this is called, the Increment/DecrementKeepAliveRefCount() functions
+  // must not be called.
+  virtual void DisableKeepAliveRefCount() = 0;
+
+  // Returns true if DisableKeepAliveRefCount() was called.
+  virtual bool IsKeepAliveRefCountDisabled() = 0;
+
+  // Resumes the renderer process.
+  virtual void Resume() = 0;
+
+  // Acquires the |mojom::Renderer| interface to the render process. This is for
+  // internal use only, and is only exposed here to support
+  // MockRenderProcessHost usage in tests.
+  virtual mojom::Renderer* GetRendererInterface() = 0;
+
+  // Create an URLLoaderFactory that can be used by |origin| being hosted in
+  // |this| process.
+  //
+  // |main_world_origin| specifies the origin of the main world that will use
+  // the URLLoaderFactory.  In most cases |main_world_origin| and |origin|
+  // should be the same, but they may differ if |origin| specifies an origin of
+  // an isolated world (e.g. a content script of a Chrome Extension - see also
+  // the doc comment for extensions::URLLoaderFactoryManager::CreateFactory).
+  // TODO(lukasza): Remove |main_world_origin| once there is no need for
+  // a separate URLLoaderFactory for allowlisted extensions (in all other cases
+  // |main_world_origin| should be the same as |origin|).  At the same time,
+  // consider renaming |origin| to |request_initiator|.
+  //
+  // When NetworkService is enabled, |receiver| will be bound with a new
+  // URLLoaderFactory created from the storage partition's Network Context. Note
+  // that the URLLoaderFactory returned by this method does NOT support
+  // auto-reconnect after a crash of Network Service.
+  // When NetworkService is not enabled, |receiver| will be bound with a
+  // URLLoaderFactory which routes requests to ResourceDispatcherHost.
+  //
+  // |preferences| is an optional argument that might be used to control some
+  // aspects of the URLLoaderFactory (e.g. via
+  // allow_universal_access_from_file_urls).
+  //
+  // |header_client| will be used in URLLoaderFactoryParams when creating the
+  // factory.
+  //
+  // |network_isolation_key| will be used in URLLoaderFactoryParams when
+  // creating the factory. All resource requests through this factory will
+  // propagate the key to the network stack so that resources with different
+  // keys do not share network resources like the http cache.
+  //
+  // |top_frame_token| is a token for the top level frame, and used for resource
+  // accounting for keepalive requests.
+  //
+  // |factory_override|, when non-null, replaces the lower level network
+  // URLLoaderFactory used by security features (e.g., CORS) in the network
+  // service.
+
+  virtual void CreateURLLoaderFactory(
+      const url::Origin& origin,
+      const url::Origin& main_world_origin,
+      network::mojom::CrossOriginEmbedderPolicy embedder_policy,
+      const WebPreferences* preferences,
+      const net::NetworkIsolationKey& network_isolation_key,
+      mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
+          header_client,
+      const base::Optional<base::UnguessableToken>& top_frame_token,
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
+      network::mojom::URLLoaderFactoryOverridePtr factory_override) = 0;
+
+  // Whether this process is locked out from ever being reused for sites other
+  // than the ones it currently has.
+  virtual bool MayReuseHost() = 0;
+
+  // Indicates whether this RenderProcessHost is "unused".  This starts out as
+  // true for new processes and becomes false after one of the following:
+  // (1) This process commits any page.
+  // (2) This process is given to a SiteInstance that already has a site
+  //     assigned.
+  // Note that a process hosting ServiceWorkers will be implicitly handled by
+  // (2) during ServiceWorker initialization, and SharedWorkers will be handled
+  // by (1) since a page needs to commit before it can create a SharedWorker.
+  //
+  // While a process is unused, it is still suitable to host a URL that
+  // requires a dedicated process.
+  virtual bool IsUnused() = 0;
+  virtual void SetIsUsed() = 0;
+
+  // Return true if the host has not been used. This is stronger than IsUnused()
+  // in that it checks if this RPH has ever been used to render at all, rather
+  // than just no being suitable to host a URL that requires a dedicated
+  // process.
+  // TODO(alexmos): can this be unified with IsUnused()? See also
+  // crbug.com/738634.
+  virtual bool HostHasNotBeenUsed() = 0;
+
+  // Locks this RenderProcessHost to the 'origin' |lock_url|. This method is
+  // public so that it can be called from SiteInstanceImpl, and used by
+  // MockRenderProcessHost. It isn't meant to be called outside of content.
+  // TODO(creis): Rename LockToOrigin to LockToPrincipal. See
+  // https://crbug.com/846155.
+  virtual void LockToOrigin(const IsolationContext& isolation_context,
+                            const GURL& lock_url) = 0;
+
+  // The following several methods are for internal use only, and are only
+  // exposed here to support MockRenderProcessHost usage in tests.
+  virtual void BindCacheStorage(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) = 0;
+  virtual void BindFileSystemManager(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver) = 0;
+  virtual void BindNativeFileSystemManager(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::NativeFileSystemManager>
+          receiver) = 0;
+
+  // |render_frame_id| is the frame associated with |receiver|, or
+  // MSG_ROUTING_NONE if |receiver| is associated with a worker.
+  virtual void BindIndexedDB(
+      int render_frame_id,
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) = 0;
+  virtual void BindRestrictedCookieManagerForServiceWorker(
+      const url::Origin& origin,
+      mojo::PendingReceiver<network::mojom::RestrictedCookieManager>
+          receiver) = 0;
+  virtual void BindVideoDecodePerfHistory(
+      mojo::PendingReceiver<media::mojom::VideoDecodePerfHistory> receiver) = 0;
+  virtual void BindQuotaDispatcherHost(
+      int render_frame_id,
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::QuotaDispatcherHost> receiver) = 0;
+  virtual void CreateLockManager(
+      int render_frame_id,
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::LockManager> receiver) = 0;
+  virtual void CreatePermissionService(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::PermissionService> receiver) = 0;
+  virtual void CreatePaymentManagerForOrigin(
+      const url::Origin& origin,
+      mojo::PendingReceiver<payments::mojom::PaymentManager> receiver) = 0;
+  virtual void CreateNotificationService(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::NotificationService> receiver) = 0;
+  virtual void CreateWebSocketConnector(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver) = 0;
+
+  // Returns the current number of active views in this process.  Excludes
+  // any RenderViewHosts that are swapped out.
+  size_t GetActiveViewCount();
+
+  // Posts |task|, if this RenderProcessHost is ready or when it becomes ready
+  // (see RenderProcessHost::IsReady method).  The |task| might not run at all
+  // (e.g. if |render_process_host| is destroyed before becoming ready).  This
+  // function can only be called on the browser's UI thread (and the |task| will
+  // be posted back on the UI thread).
+  void PostTaskWhenProcessIsReady(base::OnceClosure task);
+
+  // Forces the renderer process to crash ASAP.
+  virtual void ForceCrash() {}
+
+  // Controls whether the destructor of RenderProcessHost*Impl* will end up
+  // cleaning the memory used by the exception added via
+  // RenderProcessHostImpl::AddCorbExceptionForPlugin.
+  //
+  // TODO(lukasza): https://crbug.com/652474: This method shouldn't be part of
+  // the //content public API, because it shouldn't be called by anyone other
+  // than RenderProcessHostImpl (from underneath
+  // RenderProcessHostImpl::AddCorbExceptionForPlugin).
+  virtual void CleanupCorbExceptionForPluginUponDestruction() = 0;
+
+  // Static management functions -----------------------------------------------
+
+  // Possibly start an unbound, spare RenderProcessHost. A subsequent creation
+  // of a RenderProcessHost with a matching browser_context may use this
+  // preinitialized RenderProcessHost, improving performance.
+  //
+  // It is safe to call this multiple times or when it is not certain that the
+  // spare renderer will be used, although calling this too eagerly may reduce
+  // performance as unnecessary RenderProcessHosts are created. The spare
+  // renderer will only be used if it using the default StoragePartition of a
+  // matching BrowserContext.
+  //
+  // The spare RenderProcessHost is meant to be created in a situation where a
+  // navigation is imminent and it is unlikely an existing RenderProcessHost
+  // will be used, for example in a cross-site navigation when a Service Worker
+  // will need to be started.  Note that if ContentBrowserClient opts into
+  // strict site isolation (via ShouldEnableStrictSiteIsolation), then the
+  // //content layer will maintain a warm spare process host at all times
+  // (without a need for separate calls to WarmupSpareRenderProcessHost).
+  static void WarmupSpareRenderProcessHost(BrowserContext* browser_context);
+
+  // Flag to run the renderer in process.  This is primarily
+  // for debugging purposes.  When running "in process", the
+  // browser maintains a single RenderProcessHost which communicates
+  // to a RenderProcess which is instantiated in the same process
+  // with the Browser.  All IPC between the Browser and the
+  // Renderer is the same, it's just not crossing a process boundary.
+  static bool run_renderer_in_process();
+
+  // This also calls out to ContentBrowserClient::GetApplicationLocale and
+  // modifies the current process' command line.
+  static void SetRunRendererInProcess(bool value);
+
+  // Allows iteration over all the RenderProcessHosts in the browser. Note
+  // that each host may not be active, and therefore may have nullptr channels.
+  static iterator AllHostsIterator();
+
+  // Returns the RenderProcessHost given its ID.  Returns nullptr if the ID does
+  // not correspond to a live RenderProcessHost.
+  static RenderProcessHost* FromID(int render_process_id);
+
+  // Returns the RenderProcessHost given its renderer's service instance ID,
+  // generated randomly when launching the renderer. Returns nullptr if the
+  // instance does not correspond to a live RenderProcessHost.
+  static RenderProcessHost* FromRendererInstanceId(
+      const base::Token& instance_id);
+
+  // Returns whether the process-per-site model is in use (globally or just for
+  // the current site), in which case we should ensure there is only one
+  // RenderProcessHost per site for the entire browser context.
+  static bool ShouldUseProcessPerSite(content::BrowserContext* browser_context,
+                                      const GURL& url);
+
+  // Returns true if the caller should attempt to use an existing
+  // RenderProcessHost rather than creating a new one.
+  static bool ShouldTryToUseExistingProcessHost(
+      content::BrowserContext* browser_context, const GURL& site_url);
+
+  // Overrides the default heuristic for limiting the max renderer process
+  // count.  This is useful for unit testing process limit behaviors.  It is
+  // also used to allow a command line parameter to configure the max number of
+  // renderer processes and should only be called once during startup.
+  // A value of zero means to use the default heuristic.
+  static void SetMaxRendererProcessCount(size_t count);
+
+  // Returns the current maximum number of renderer process hosts kept by the
+  // content module.
+  static size_t GetMaxRendererProcessCount();
+
+  // TODO(siggi): Remove once https://crbug.com/806661 is resolved.
+  using AnalyzeHungRendererFunction = void (*)(const base::Process& renderer);
+  static void SetHungRendererAnalysisFunction(
+      AnalyzeHungRendererFunction analyze_hung_renderer);
+
+  // Counts current RenderProcessHost(s), ignoring the spare process.
+  static int GetCurrentRenderProcessCountForTesting();
+
+  // Allows tests to override host interface binding behavior. Any interface
+  // binding request which would normally pass through the RPH's internal
+  // IOThreadHostImpl::BindHostReceiver() will pass through |callback| first if
+  // non-null. |callback| is only called from the IO thread.
+  using BindHostReceiverInterceptor =
+      base::RepeatingCallback<void(int render_process_id,
+                                   mojo::GenericPendingReceiver* receiver)>;
+  static void InterceptBindHostReceiverForTesting(
+      BindHostReceiverInterceptor callback);
+};
+
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_BROWSER_RENDER_PROCESS_HOST_H_

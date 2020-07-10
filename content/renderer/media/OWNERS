@@ -1,0 +1,14 @@
+file://media/OWNERS
+miu@chromium.org
+
+# WebRTC OWNERS.
+hbos@chromium.org
+perkj@chromium.org
+tommi@chromium.org
+guidou@chromium.org
+olka@chromium.org
+
+# Original (legacy) owner.
+emircan@chromium.org
+
+# COMPONENT: Internals>Media

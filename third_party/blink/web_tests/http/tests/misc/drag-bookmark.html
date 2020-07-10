@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<script>
+
+// Simulate dragging a bookmark to a cross-site URL.
+const crossSiteURL = "http://localhost:8000/misc/resources/" +
+                     "drag-bookmark-destination.html";
+eventSender.beginDragWithStringData(crossSiteURL, "text/uri-list");
+eventSender.mouseMoveTo(10, 10);
+eventSender.mouseUp();
+
+// notifyDone will be called once we navigate to the "bookmarked" URL that is
+// being dragged above.
+testRunner.waitUntilDone();
+
+</script>

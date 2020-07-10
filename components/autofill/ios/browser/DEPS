@@ -1,0 +1,6 @@
+include_rules = [
+  "+ios/web/common",
+  "+ios/web/public",
+  "+services/network/public/cpp",
+  "+third_party/ocmock",
+]

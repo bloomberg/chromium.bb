@@ -1,0 +1,28 @@
+{
+  "layers": [
+    {
+      "name": "Scrolling background of LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [207, 57, 50, 66],
+          "reason": "chunk appeared"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [207, 57, 50, 66],
+          "reason": "chunk appeared"
+        },
+        {
+          "object": "LayoutSVGContainer g",
+          "rect": [207, 57, 50, 66],
+          "reason": "chunk disappeared"
+        }
+      ]
+    }
+  ]
+}
+

@@ -1,0 +1,37 @@
+noparent = True
+
+include_rules = [
+  "+ash/assistant/model",
+  "+ash/assistant/ui",
+  "+ash/assistant/util",
+  "+ash/keyboard/ui",
+  "+ash/public",
+  "+ash/resources/vector_icons",
+  "+ash/strings",
+  "+base",
+  "+build/buildflag.h",
+  "+cc/paint",
+  "+chromeos/assistant",
+  "+chromeos/services/assistant/public",
+  "+mojo/public/cpp",
+  "+net/base",
+  "+services/content/public",
+  "+third_party/skia/include/core",
+  "+ui",
+]
+
+specific_include_rules = {
+  ".*_unittest\.cc": [
+    "+ash/assistant/assistant_controller.h",
+    "+ash/assistant/assistant_ui_controller.h",
+    "+ash/assistant/assistant_web_ui_controller.h",
+    "+ash/assistant/test/assistant_ash_test_base.h",
+    "+ash/shell.h",
+    "+ash/session/session_controller_impl.h",
+    "+ash/test/ash_test_base.h",
+    "+ash/wm/tablet_mode/tablet_mode_controller.h",
+    "+base/test/scoped_feature_list.h",
+    "+chromeos/constants/chromeos_switches.h",
+    "+chromeos/services/assistant/test_support/mock_assistant.h",
+  ],
+}

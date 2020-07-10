@@ -1,0 +1,23 @@
+This test checks that style sheets hosted inside shadow roots could be inspected.
+
+
+Running: testInit
+
+Running: testDumpStyles
+[expanded] 
+element.style { ()
+
+[expanded] 
+.red { (<style>)
+    color: red;
+
+[expanded] 
+div { (user agent stylesheet)
+    display: block;
+
+======== Inherited from body ========
+[expanded] 
+html { (user agent stylesheet)
+/-- overloaded --/     color: -internal-root-color;
+
+

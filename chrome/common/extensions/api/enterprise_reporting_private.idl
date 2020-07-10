@@ -1,0 +1,68 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Private API for reporting Chrome browser status to admin console.
+namespace enterprise.reportingPrivate {
+
+  // Invoked by <code>UploadChromeDesktopReport</code> when the upload is
+  // finished.
+  // Also Invoked by <code>setDeviceData</code> when data is stored.
+  callback DoneCallback = void();
+
+  // Invoked by <code>getDeviceId</code> to return the ID.
+  callback GetDeviceIdCallback = void(DOMString id);
+
+  // Invoked by <code>getPersistentSecret</code> to return the secret.
+  callback GetPersistentSecretCallback = void(ArrayBuffer secret);
+
+  // Invoked by <code>getDeviceDataCallback</code> to return the device data.
+  callback GetDeviceDataCallback = void(ArrayBuffer data);
+
+  // Possible states a particular device setting can be in.
+  enum SettingValue { UNKNOWN, DISABLED, ENABLED };
+
+  // Device info fields returned by the getDeviceInfo API.
+  dictionary DeviceInfo {
+    DOMString osName;
+    DOMString osVersion;
+    DOMString deviceHostName;
+    DOMString deviceModel;
+    DOMString serialNumber;
+    SettingValue screenLockSecured;
+    SettingValue diskEncrypted;
+  };
+
+  // Invoked by <code>getDeviceInfo</code> to return device information.
+  callback GetDeviceInfoCallback = void(DeviceInfo deviceInfo);
+
+  interface Functions {
+
+    // Uploads the status of Chrome browser to the admin console by sending
+    // request to the DMServer. Sets runtime.lastError on failure.
+    static void uploadChromeDesktopReport(
+        object report,
+        optional DoneCallback callback);
+
+    // Gets the identity of device that Chrome browser is running on. The ID is
+    // retrieved from the local device and used by the Google admin console.
+    static void getDeviceId(optional GetDeviceIdCallback callback);
+
+    // Gets a randomly generated persistent secret (symmetric key) that
+    // can be used to encrypt the data stored with |setDeviceData|.
+    static void getPersistentSecret(GetPersistentSecretCallback callback);
+
+    // Gets the device data for |id|. Sets runtime.lastError on failure.
+    static void getDeviceData(DOMString id, GetDeviceDataCallback callback);
+
+    // Sets the device data for |id|. Sets runtime.lastError on failure.
+    static void setDeviceData(DOMString id,
+             ArrayBuffer data,
+             optional DoneCallback callback);
+
+    // Gets the device information (including disk encryption status,
+    // screen lock status, serial number, model).
+    static void getDeviceInfo(optional GetDeviceInfoCallback callback);
+  };
+
+};

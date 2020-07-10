@@ -1,0 +1,18 @@
+{
+  "layers": [
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "NGPhysicalTextFragment 'Testing both hit testing'",
+          "rect": [774, 38, 18, 79],
+          "reason": "selection"
+        }
+      ]
+    }
+  ]
+}
+

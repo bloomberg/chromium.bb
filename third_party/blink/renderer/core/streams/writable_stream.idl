@@ -1,0 +1,17 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://streams.spec.whatwg.org/#ws-class
+[
+    Exposed=(Window,Worker,Worklet),
+    Constructor(optional any underlyingSink, optional any strategy),
+    MeasureAs=WritableStreamConstructor,
+    RaisesException=Constructor,
+    ConstructorCallWith=ScriptState
+] interface WritableStream {
+    [NotEnumerable] readonly attribute boolean locked;
+    [RaisesException, CallWith=ScriptState, NotEnumerable] Promise<void> abort(
+        optional any reason);
+    [RaisesException, CallWith=ScriptState, NotEnumerable] WritableStreamDefaultWriter getWriter();
+};

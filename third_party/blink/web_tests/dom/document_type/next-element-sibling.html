@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<title>This tests the NonDocumentTypeChildNode interface nextElementSibling property on a DocumentType node</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+var doctype = document.doctype;
+assert_equals(doctype.nextElementSibling, undefined);
+done();
+</script>
