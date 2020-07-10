@@ -1,0 +1,112 @@
+<?xml version='1.0'?> <!--*-nxml-*-->
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+          "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+
+<!--
+  Written 2012 by David Herrmann <dh.herrmann@googlemail.com>
+  Dedicated to the Public Domain
+-->
+
+<refentry id="wl_display_connect">
+  <refentryinfo>
+    <title>wl_display_connect</title>
+    <productname>wayland-client</productname>
+    <date>September 2012</date>
+    <authorgroup>
+      <author>
+        <contrib>Developer</contrib>
+        <firstname>David</firstname>
+        <surname>Herrmann</surname>
+        <email>dh.herrmann@googlemail.com</email>
+      </author>
+    </authorgroup>
+  </refentryinfo>
+
+  <refmeta>
+    <refentrytitle>wl_display_connect</refentrytitle>
+    <manvolnum>3</manvolnum>
+  </refmeta>
+
+  <refnamediv>
+    <refname>wl_display_connect</refname>
+    <refname>wl_display_connect_to_fd</refname>
+    <refpurpose>Connect to a Wayland socket</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <funcsynopsis>
+
+      <funcsynopsisinfo>#include &lt;wayland-client.h&gt;</funcsynopsisinfo>
+
+      <funcprototype>
+        <funcdef>struct wl_display *<function>wl_display_connect</function></funcdef>
+        <paramdef>const char *<parameter>name</parameter></paramdef>
+      </funcprototype>
+
+      <funcprototype>
+        <funcdef>struct wl_display *<function>wl_display_connect_to_fd</function></funcdef>
+        <paramdef>int <parameter>fd</parameter></paramdef>
+      </funcprototype>
+
+    </funcsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1>
+    <title>Description</title>
+    <para><function>wl_display_connect</function> connects to a Wayland socket
+          that was previously opened by a Wayland server. The server socket must
+          be placed in <envar>XDG_RUNTIME_DIR</envar> when <envar>WAYLAND_DISPLAY</envar>
+	  (or <varname>name</varname>, see below) is a simple name, for this
+	  function to find it. The server socket is also allowed to exist at an
+	  arbitrary path; usage details follow. See below for compatibility issue
+	  details.</para>
+
+    <para>The <varname>name</varname> argument specifies the name of
+          the socket or <constant>NULL</constant> to use the default (which is
+          <constant>"wayland-0"</constant>). The environment variable
+          <envar>WAYLAND_DISPLAY</envar> replaces the default value.
+
+	  If <varname>name</varname> is an absolute path, then that path is used
+	  as the Wayland socket to which the connection is attempted. Note that
+	  in combination with the default-value behavior described above, this
+	  implies that setting <envar>WAYLAND_DISPLAY</envar> to an absolute
+	  path will implicitly cause <varname>name</varname> to take on that
+	  absolute path if <varname>name</varname> is <constant>NULL</constant>.
+
+          If <envar>WAYLAND_SOCKET</envar> is set, this function behaves like
+          <function>wl_display_connect_to_fd</function> with the file-descriptor
+          number taken from the environment variable.</para>
+
+    <para>Support for interpreting <envar>WAYLAND_DISPLAY</envar> as an
+          absolute path is a change in behavior compared to
+          <function>wl_display_connect</function>'s behavior in versions
+          1.14 and older of Wayland. It is no longer guaranteed in versions
+          1.15 and higher that the Wayland socket chosen is equivalent to
+          manually constructing a socket pathname by concatenating
+          <envar>XDG_RUNTIME_DIR</envar> and <envar>WAYLAND_DISPLAY</envar>.
+          Manual construction of the socket path must account for the
+          possibility that <envar>WAYLAND_DISPLAY</envar> contains an absolute
+          path.</para>
+
+    <para><function>wl_display_connect_to_fd</function> connects to a Wayland
+          socket with an explicit file-descriptor. The file-descriptor is passed
+          as argument <varname>fd</varname>.</para>
+  </refsect1>
+
+  <refsect1>
+    <title>Return Value</title>
+    <para><function>wl_display_connect</function> and
+          <function>wl_display_connect_to_fd</function> return a new display
+          context object or NULL on failure. <varname>errno</varname> is set
+          correspondingly.</para>
+  </refsect1>
+
+  <refsect1>
+    <title>See Also</title>
+    <para>
+      <citerefentry><refentrytitle>wayland-client</refentrytitle><manvolnum>7</manvolnum></citerefentry>,
+      <citerefentry><refentrytitle>wl_display_disconnect</refentrytitle><manvolnum>3</manvolnum></citerefentry>,
+      <citerefentry><refentrytitle>wl_display_iterate</refentrytitle><manvolnum>3</manvolnum></citerefentry>
+    </para>
+  </refsect1>
+</refentry>
