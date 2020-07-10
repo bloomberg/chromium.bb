@@ -419,7 +419,11 @@ SkBitmap ClipboardWin::ReadImage(ClipboardBuffer buffer) const {
   // We use a DIB rather than a DDB here since ::GetObject() with the
   // HBITMAP returned from ::GetClipboardData(CF_BITMAP) always reports a color
   // depth of 32bpp.
-  BITMAPINFO* bitmap = static_cast<BITMAPINFO*>(::GetClipboardData(CF_DIB));
+  HANDLE hBitmap = ::GetClipboardData(CF_DIB);
+  if (!hBitmap)
+    return SkBitmap();
+
+  BITMAPINFO* bitmap = static_cast<BITMAPINFO*>(GlobalLock(hBitmap));
   if (!bitmap)
     return SkBitmap();
   int color_table_length = 0;
@@ -490,6 +494,9 @@ SkBitmap ClipboardWin::ReadImage(ClipboardBuffer buffer) const {
                               DeleteObject(static_cast<HBITMAP>(hbitmap));
                             },
                             dst_hbitmap);
+  
+  GlobalUnlock(hBitmap);
+
   return skia_bitmap;
 }
 
