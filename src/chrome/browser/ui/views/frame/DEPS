@@ -1,0 +1,15 @@
+specific_include_rules = {
+  # Parts of this class use Ash, but only when run in classic Ash mode.
+  "browser_non_client_frame_view_ash\.*": [
+    "+ash",
+  ],
+  "browser_frame_ash\.*": [
+    "+ash",
+  ],
+  "global_menu_bar_.*x11\.*": [
+    "+dbus",
+  ],
+  "top_controls_slide_controller_chromeos_browsertest.cc": [
+    "+cc/base/math_util.h",
+  ],
+}

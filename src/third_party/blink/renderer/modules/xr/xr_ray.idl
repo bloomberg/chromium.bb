@@ -1,0 +1,19 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://immersive-web.github.io/webxr/#xrray-interface
+[
+    SecureContext,
+    Exposed=Window,
+    RuntimeEnabled=WebXRHitTest,
+    Constructor(),
+    Constructor(DOMPointInit origin),
+    Constructor(DOMPointInit origin, DOMPointInit direction),
+    Constructor(XRRigidTransform transform),
+    RaisesException=Constructor
+] interface XRRay {
+  [SameObject] readonly attribute DOMPointReadOnly origin;
+  [SameObject] readonly attribute DOMPointReadOnly direction;
+  [SameObject] readonly attribute Float32Array matrix;
+};

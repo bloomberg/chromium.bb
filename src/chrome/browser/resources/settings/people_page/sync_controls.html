@@ -1,0 +1,169 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/html/util.html">
+<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="sync_browser_proxy.html">
+<link rel="import" href="../route.html">
+<link rel="import" href="../settings_shared_css.html">
+
+<dom-module id="settings-sync-controls">
+  <template>
+    <style include="settings-shared">
+      #sync-data-types .list-item:not([hidden]) ~ .list-item:not([hidden]) {
+        border-top: var(--cr-separator-line);
+      }
+
+      .list-item {
+        display: flex;
+      }
+
+      .list-item > div {
+        flex: 1;
+      }
+    </style>
+    <div class="settings-box first">
+      <div id="syncEverythingCheckboxLabel" class="start">
+        $i18n{syncEverythingCheckboxLabel}
+      </div>
+      <cr-toggle id="syncAllDataTypesControl"
+          checked="{{syncPrefs.syncAllDataTypes}}"
+          on-change="onSyncAllDataTypesChanged_"
+          aria-labelledby="syncEverythingCheckboxLabel">
+      </cr-toggle>
+    </div>
+
+    <div class="list-frame" id="sync-data-types">
+      <div class="list-item" hidden="[[!syncPrefs.appsRegistered]]">
+        <div id="appCheckboxLabel">
+          $i18n{appCheckboxLabel}
+        </div>
+        <cr-toggle checked="{{syncPrefs.appsSynced}}"
+            on-change="onSingleSyncDataTypeChanged_"
+            disabled="[[shouldSyncCheckboxBeDisabled_(
+                syncPrefs.syncAllDataTypes, syncPrefs.appsEnforced)]]"
+            aria-labelledby="appCheckboxLabel">
+        </cr-toggle>
+      </div>
+
+      <div class="list-item" hidden="[[!syncPrefs.bookmarksRegistered]]">
+        <div id="bookmarksCheckboxLabel">
+          $i18n{bookmarksCheckboxLabel}
+        </div>
+        <cr-toggle checked="{{syncPrefs.bookmarksSynced}}"
+            on-change="onSingleSyncDataTypeChanged_"
+            disabled="[[shouldSyncCheckboxBeDisabled_(
+                syncPrefs.syncAllDataTypes, syncPrefs.bookmarksEnforced)]]"
+            aria-labelledby="bookmarksCheckboxLabel">
+        </cr-toggle>
+      </div>
+
+      <div class="list-item" hidden="[[!syncPrefs.extensionsRegistered]]">
+        <div id="extensionsCheckboxLabel">
+          $i18n{extensionsCheckboxLabel}
+        </div>
+        <cr-toggle checked="{{syncPrefs.extensionsSynced}}"
+            on-change="onSingleSyncDataTypeChanged_"
+            disabled="[[shouldSyncCheckboxBeDisabled_(
+                syncPrefs.syncAllDataTypes, syncPrefs.extensionsEnforced)]]"
+            aria-labelledby="extensionsCheckboxLabel">
+        </cr-toggle>
+      </div>
+
+      <div class="list-item" hidden="[[!syncPrefs.typedUrlsRegistered]]">
+        <div id="historyCheckboxLabel">
+          $i18n{historyCheckboxLabel}
+        </div>
+        <!-- TypedUrls has a special on-change handler to deal with user
+             events. -->
+        <cr-toggle id="historyToggle"
+            checked="{{syncPrefs.typedUrlsSynced}}"
+            on-change="onTypedUrlsDataTypeChanged_"
+            disabled="[[shouldSyncCheckboxBeDisabled_(
+                syncPrefs.syncAllDataTypes, syncPrefs.typedUrlsEnforced)]]"
+            aria-labelledby="historyCheckboxLabel">
+        </cr-toggle>
+      </div>
+
+      <div class="list-item" hidden="[[!syncPrefs.preferencesRegistered]]">
+        <div id="settingsCheckboxLabel">
+          $i18n{settingsCheckboxLabel}
+        </div>
+        <cr-toggle checked="{{syncPrefs.preferencesSynced}}"
+            on-change="onSingleSyncDataTypeChanged_"
+            disabled="[[shouldSyncCheckboxBeDisabled_(
+                syncPrefs.syncAllDataTypes,
+                syncPrefs.preferencesEnforced)]]"
+            aria-labelledby="settingsCheckboxLabel">
+        </cr-toggle>
+      </div>
+
+      <div class="list-item" hidden="[[!syncPrefs.themesRegistered]]">
+        <div id="themesAndWallpapersCheckboxLabel">
+          $i18n{themesAndWallpapersCheckboxLabel}
+        </div>
+        <cr-toggle checked="{{syncPrefs.themesSynced}}"
+            on-change="onSingleSyncDataTypeChanged_"
+            disabled="[[shouldSyncCheckboxBeDisabled_(
+                syncPrefs.syncAllDataTypes, syncPrefs.themesEnforced)]]"
+            aria-labelledby="themesAndWallpapersCheckboxLabel">
+        </cr-toggle>
+      </div>
+
+      <div class="list-item" hidden="[[!syncPrefs.tabsRegistered]]">
+        <div id="openTabsCheckboxLabel">
+          $i18n{openTabsCheckboxLabel}
+        </div>
+        <cr-toggle checked="{{syncPrefs.tabsSynced}}"
+            on-change="onSingleSyncDataTypeChanged_"
+            disabled="[[shouldSyncCheckboxBeDisabled_(
+                syncPrefs.syncAllDataTypes, syncPrefs.tabsEnforced)]]"
+            aria-labelledby="openTabsCheckboxLabel">
+        </cr-toggle>
+      </div>
+
+      <div class="list-item" hidden="[[!syncPrefs.passwordsRegistered]]">
+        <div id="passwordsCheckboxLabel">
+          $i18n{passwordsCheckboxLabel}
+        </div>
+        <cr-toggle checked="{{syncPrefs.passwordsSynced}}"
+            on-change="onSingleSyncDataTypeChanged_"
+            disabled="[[shouldSyncCheckboxBeDisabled_(
+                syncPrefs.syncAllDataTypes, syncPrefs.passwordsEnforced)]]"
+            aria-labelledby="passwordsCheckboxLabel">
+        </cr-toggle>
+      </div>
+
+      <div class="list-item" hidden="[[!syncPrefs.autofillRegistered]]">
+        <div id="autofillCheckboxLabel">
+          $i18n{autofillCheckboxLabel}
+        </div>
+        <!-- Autofill has a special on-change handler to deal with
+             Payments integration. -->
+        <cr-toggle checked="{{syncPrefs.autofillSynced}}"
+            on-change="onAutofillDataTypeChanged_"
+            disabled="[[shouldSyncCheckboxBeDisabled_(
+                syncPrefs.syncAllDataTypes, syncPrefs.autofillEnforced)]]"
+            aria-labelledby="autofillCheckboxLabel">
+        </cr-toggle>
+      </div>
+
+      <div class="list-item" hidden="[[!syncPrefs.autofillRegistered]]">
+        <!-- The Payments integration checkbox is a special case in many
+             ways. It's visible only if autofill is registered. It's
+             disabled and unchecked if autofill is unchecked.-->
+        <div>
+          $i18n{enablePaymentsIntegrationCheckboxLabel}
+        </div>
+        <cr-toggle checked="{{syncPrefs.paymentsIntegrationEnabled}}"
+            on-change="onSingleSyncDataTypeChanged_"
+            disabled="[[shouldPaymentsCheckboxBeDisabled_(
+                syncPrefs.syncAllDataTypes, syncPrefs.autofillSynced)]]"
+            aria-label="$i18n{enablePaymentsIntegrationCheckboxLabel}">
+        </cr-toggle>
+      </div>
+    </div>
+  </template>
+  <script src="sync_controls.js"></script>
+</dom-module>

@@ -1,0 +1,2 @@
+AutomationFocusChanged on role=rowgroup, name=tfoot
+AutomationFocusChanged on role=rowgroup, name=tfoot

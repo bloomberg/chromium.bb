@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This grd file contains images that are pre-scaled for device scale
+     factors. The image returned by ui::ResourceBundle::GetImageNamed()
+     will contain multiple gfx:ImageSkiaReps for each scale factors. The
+     |fallback_to_low_resolution| attribute controls behavior when
+     an image file is missing for target scale factor. If true, chrome
+     will automatically scale the 1x image to the target scale factor.
+     If false, build will fail due to missing resources. This is
+     currently set to true for all resources, but the default will
+     become false in near future.
+  -->
+<grit latest_public_release="0" current_release="1" output_all_resource_defines="false">
+  <outputs>
+    <output filename="grit/ios_theme_resources.h" type="rc_header" context="default_100_percent">
+      <emit emit_type='prepend'></emit>
+    </output>
+    <output filename="grit/ios_theme_resources_map.cc" type="resource_map_source" context="default_100_percent" />
+    <output filename="grit/ios_theme_resources_map.h" type="resource_map_header" context="default_100_percent" />
+    <output filename="ios_theme_resources_100_percent.pak" type="data_package" context="default_100_percent" />
+    <output filename="ios_theme_resources_200_percent.pak" type="data_package" context="default_200_percent" />
+    <output filename="ios_theme_resources_300_percent.pak" type="data_package" context="default_300_percent" />
+  </outputs>
+  <release seq="1">
+    <structures fallback_to_low_resolution="true">
+      <!-- KEEP THESE IN ALPHABETICAL ORDER!  DO NOT ADD TO RANDOM PLACES JUST
+           BECAUSE YOUR RESOURCES ARE FUNCTIONALLY RELATED OR FALL UNDER THE
+           SAME CONDITIONALS. -->
+      <structure type="chrome_scaled_image" name="IDR_IOS_CHECKMARK" file="checkmark.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_CONTROLLED_SETTING_MANDATORY" file="controlled_setting_mandatory.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_ERROR" file="error.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_INFOBAR_AUTOLOGIN" file="infobar_autologin.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_INFOBAR_CLOSE" file="infobar_close.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_INFOBAR_RESTORE_SESSION" file="infobar_restore_session.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_INFOBAR_SAVE_PASSWORD" file="infobar_save_password.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_INFOBAR_SEND_TAB_TO_SELF" file="infobar_send_tab_to_self.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_INFOBAR_TRANSLATE" file="infobar_translate.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_LOCATION_BAR_HTTP" file="omnibox_http.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_CALCULATOR" file="omnibox_calculator.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_CLEAR" file="omnibox/omnibox_clear.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_CLEAR_OTR" file="omnibox/omnibox_incognito_clear.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_CLEAR_OTR_PRESSED" file="omnibox/omnibox_incognito_clear_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_CLEAR_PRESSED" file="omnibox/omnibox_clear_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_HISTORY" file="omnibox_history.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_HISTORY_INCOGNITO" file="omnibox_history_incognito.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_HTTP" file="omnibox_http.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_HTTP_INCOGNITO" file="omnibox_http_incognito.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_HTTPS_INVALID" file="omnibox_https_invalid.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_HTTPS_POLICY_WARNING" file="controlled_setting_mandatory.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_HTTPS_VALID" file="omnibox_https_valid.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND" file="omnibox/append_ios.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_OFFLINE" file="omnibox_offline.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_SEARCH" file="omnibox_search.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_SEARCH_INCOGNITO" file="omnibox_search_incognito.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_STAR" file="omnibox_star.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_STAR_INCOGNITO" file="omnibox_star_incognito.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_PAGEINFO_BAD" file="omnibox/pageinfo_bad.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_PAGEINFO_GOOD" file="omnibox/pageinfo_good.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_PAGEINFO_INFO" file="omnibox/pageinfo_info.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_PAYMENTS_WARNING" file="payments_warning.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_PROMO_INFO" file="promo_info.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_SETTINGS_INFO_24" file="settings_info_24.png" />
+    </structures>
+  </release>
+</grit>

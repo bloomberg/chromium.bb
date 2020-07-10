@@ -1,0 +1,3 @@
+tmartino@chromium.org
+
+per-file credential_provider*=file://chrome/credential_provider/OWNERS

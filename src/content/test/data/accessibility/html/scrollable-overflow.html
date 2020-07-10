@@ -1,0 +1,54 @@
+<!--
+* Test scrollXMin -- the presence of this indicates something is scrollable.
+@BLINK-ALLOW:scrollXMin=*
+-->
+<html>
+  <style>
+  body { font-style: monospace; width: 999px;}
+  .x-overflow > div { width: 25px; height: 50px;}
+  .x-overflow > div > p { margin: 0; }
+  .y-overflow > div { height: 25px; }
+  .y-overflow > div > p { padding: 12px 0; margin: 0;}
+  </style>
+  <body>
+    <div class="no-overflow">  <!-- Not scrollable -->
+      <p>no overflow
+    </div>
+
+    <div class="not-enough-content-to-scroll">  <!-- Not scrollable -->
+      <div style="overflow: scroll; width: 100px; height: 100px">
+        <p>tiny
+      </div>
+    </div>
+
+    <div class="x-overflow">
+      <div style="overflow-x: hidden;">  <!-- Scrollable -->
+          <p>x=hidden
+      </div>
+      <div style="overflow-x: auto;">  <!-- Scrollable -->
+          <p>x=auto
+      </div>
+      <div style="overflow-x: scroll;">  <!-- Scrollable -->
+          <p>x=scroll
+      </div>
+      <div style="overflow-x: visible;">  <!-- Not scrollable -->
+          <p>x=visible
+      </div>
+    </div>
+
+    <div class="y-overflow">
+      <div style="overflow-y: hidden;">  <!-- Scrollable -->
+          <p>y=hidden
+      </div>
+      <div style="overflow-y: auto;">  <!-- Scrollable -->
+          <p>y=auto
+      </div>
+      <div style="overflow-y: scroll;">  <!-- Scrollable -->
+          <p>y=scroll
+      </div>
+      <div style="overflow-y: visible;">  <!-- Not scrollable -->
+          <p>y=visible
+      </div>
+    </div>
+  </body>
+</html>

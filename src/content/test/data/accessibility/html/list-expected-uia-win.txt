@@ -1,0 +1,23 @@
+document
+++list
+++++listitem
+++++++group
+++++++++description Name='• ' IsControlElement=false
+++++++description Name='tic' IsControlElement=false
+++++listitem
+++++++group
+++++++++description Name='• ' IsControlElement=false
+++++++description Name='tac' IsControlElement=false
+++++listitem
+++++++group
+++++++++description Name='• ' IsControlElement=false
+++++++description Name='toe' IsControlElement=false
+++list
+++++listitem
+++++++description Name='tic' IsControlElement=false
+++++description Name=' '
+++++listitem
+++++++description Name='tac' IsControlElement=false
+++++description Name=' '
+++++listitem
+++++++description Name='toe' IsControlElement=false

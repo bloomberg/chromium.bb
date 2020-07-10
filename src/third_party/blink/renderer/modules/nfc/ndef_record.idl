@@ -1,0 +1,22 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://w3c.github.io/web-nfc/#dom-ndefrecord
+
+[
+    RuntimeEnabled=WebNFC,
+    SecureContext,
+    Constructor(NDEFRecordInit recordInit),
+    ConstructorCallWith=ExecutionContext,
+    RaisesException=Constructor,
+    Exposed=Window
+] interface NDEFRecord {
+    readonly attribute USVString recordType;
+    readonly attribute USVString? mediaType;
+    readonly attribute USVString? id;
+    readonly attribute USVString? encoding;
+    readonly attribute USVString? lang;
+    readonly attribute DataView? data;
+    [RaisesException] sequence<NDEFRecord>? toRecords();
+};

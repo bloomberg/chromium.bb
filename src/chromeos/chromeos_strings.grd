@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<grit base_dir="." latest_public_release="0" current_release="1"
+      output_all_resource_defines="false" source_lang_id="en" enc_check="möl">
+  <outputs>
+    <output filename="grit/chromeos_strings.h" type="rc_header">
+      <emit emit_type='prepend'></emit>
+    </output>
+    <output filename="chromeos_strings_am.pak" type="data_package" lang="am" />
+    <output filename="chromeos_strings_ar.pak" type="data_package" lang="ar" />
+    <output filename="chromeos_strings_bg.pak" type="data_package" lang="bg" />
+    <output filename="chromeos_strings_bn.pak" type="data_package" lang="bn" />
+    <output filename="chromeos_strings_ca.pak" type="data_package" lang="ca" />
+    <output filename="chromeos_strings_cs.pak" type="data_package" lang="cs" />
+    <output filename="chromeos_strings_da.pak" type="data_package" lang="da" />
+    <output filename="chromeos_strings_de.pak" type="data_package" lang="de" />
+    <output filename="chromeos_strings_el.pak" type="data_package" lang="el" />
+    <output filename="chromeos_strings_en-GB.pak" type="data_package" lang="en-GB" />
+    <output filename="chromeos_strings_en-US.pak" type="data_package" lang="en" />
+    <output filename="chromeos_strings_es.pak" type="data_package" lang="es" />
+    <output filename="chromeos_strings_es-419.pak" type="data_package" lang="es-419" />
+    <output filename="chromeos_strings_et.pak" type="data_package" lang="et" />
+    <output filename="chromeos_strings_fa.pak" type="data_package" lang="fa" />
+    <output filename="chromeos_strings_fake-bidi.pak" type="data_package" lang="fake-bidi" />
+    <output filename="chromeos_strings_fi.pak" type="data_package" lang="fi" />
+    <output filename="chromeos_strings_fil.pak" type="data_package" lang="fil" />
+    <output filename="chromeos_strings_fr.pak" type="data_package" lang="fr" />
+    <output filename="chromeos_strings_gu.pak" type="data_package" lang="gu" />
+    <output filename="chromeos_strings_he.pak" type="data_package" lang="he" />
+    <output filename="chromeos_strings_hi.pak" type="data_package" lang="hi" />
+    <output filename="chromeos_strings_hr.pak" type="data_package" lang="hr" />
+    <output filename="chromeos_strings_hu.pak" type="data_package" lang="hu" />
+    <output filename="chromeos_strings_id.pak" type="data_package" lang="id" />
+    <output filename="chromeos_strings_it.pak" type="data_package" lang="it" />
+    <output filename="chromeos_strings_ja.pak" type="data_package" lang="ja" />
+    <output filename="chromeos_strings_kn.pak" type="data_package" lang="kn" />
+    <output filename="chromeos_strings_ko.pak" type="data_package" lang="ko" />
+    <output filename="chromeos_strings_lt.pak" type="data_package" lang="lt" />
+    <output filename="chromeos_strings_lv.pak" type="data_package" lang="lv" />
+    <output filename="chromeos_strings_ml.pak" type="data_package" lang="ml" />
+    <output filename="chromeos_strings_mr.pak" type="data_package" lang="mr" />
+    <output filename="chromeos_strings_ms.pak" type="data_package" lang="ms" />
+    <output filename="chromeos_strings_nl.pak" type="data_package" lang="nl" />
+    <!-- The translation console uses 'no' for Norwegian Bokmål. It should
+         be 'nb'. -->
+    <output filename="chromeos_strings_nb.pak" type="data_package" lang="no" />
+    <output filename="chromeos_strings_pl.pak" type="data_package" lang="pl" />
+    <output filename="chromeos_strings_pt-BR.pak" type="data_package" lang="pt-BR" />
+    <output filename="chromeos_strings_pt-PT.pak" type="data_package" lang="pt-PT" />
+    <output filename="chromeos_strings_ro.pak" type="data_package" lang="ro" />
+    <output filename="chromeos_strings_ru.pak" type="data_package" lang="ru" />
+    <output filename="chromeos_strings_sk.pak" type="data_package" lang="sk" />
+    <output filename="chromeos_strings_sl.pak" type="data_package" lang="sl" />
+    <output filename="chromeos_strings_sr.pak" type="data_package" lang="sr" />
+    <output filename="chromeos_strings_sv.pak" type="data_package" lang="sv" />
+    <output filename="chromeos_strings_sw.pak" type="data_package" lang="sw" />
+    <output filename="chromeos_strings_ta.pak" type="data_package" lang="ta" />
+    <output filename="chromeos_strings_te.pak" type="data_package" lang="te" />
+    <output filename="chromeos_strings_th.pak" type="data_package" lang="th" />
+    <output filename="chromeos_strings_tr.pak" type="data_package" lang="tr" />
+    <output filename="chromeos_strings_uk.pak" type="data_package" lang="uk" />
+    <output filename="chromeos_strings_vi.pak" type="data_package" lang="vi" />
+    <output filename="chromeos_strings_zh-CN.pak" type="data_package" lang="zh-CN" />
+    <output filename="chromeos_strings_zh-TW.pak" type="data_package" lang="zh-TW" />
+  </outputs>
+  <translations>
+    <file path="strings/chromeos_strings_af.xtb" lang="af" />
+    <file path="strings/chromeos_strings_am.xtb" lang="am" />
+    <file path="strings/chromeos_strings_ar.xtb" lang="ar" />
+    <file path="strings/chromeos_strings_as.xtb" lang="as" />
+    <file path="strings/chromeos_strings_az.xtb" lang="az" />
+    <file path="strings/chromeos_strings_be.xtb" lang="be" />
+    <file path="strings/chromeos_strings_bg.xtb" lang="bg" />
+    <file path="strings/chromeos_strings_bn.xtb" lang="bn" />
+    <file path="strings/chromeos_strings_bs.xtb" lang="bs" />
+    <file path="strings/chromeos_strings_ca.xtb" lang="ca" />
+    <file path="strings/chromeos_strings_cs.xtb" lang="cs" />
+    <file path="strings/chromeos_strings_da.xtb" lang="da" />
+    <file path="strings/chromeos_strings_de.xtb" lang="de" />
+    <file path="strings/chromeos_strings_el.xtb" lang="el" />
+    <file path="strings/chromeos_strings_en-GB.xtb" lang="en-GB" />
+    <file path="strings/chromeos_strings_es.xtb" lang="es" />
+    <file path="strings/chromeos_strings_es-419.xtb" lang="es-419" />
+    <file path="strings/chromeos_strings_et.xtb" lang="et" />
+    <file path="strings/chromeos_strings_eu.xtb" lang="eu" />
+    <file path="strings/chromeos_strings_fa.xtb" lang="fa" />
+    <file path="strings/chromeos_strings_fi.xtb" lang="fi" />
+    <file path="strings/chromeos_strings_fil.xtb" lang="fil" />
+    <file path="strings/chromeos_strings_fr.xtb" lang="fr" />
+    <file path="strings/chromeos_strings_fr-CA.xtb" lang="fr-CA" />
+    <file path="strings/chromeos_strings_gl.xtb" lang="gl" />
+    <file path="strings/chromeos_strings_gu.xtb" lang="gu" />
+    <file path="strings/chromeos_strings_hi.xtb" lang="hi" />
+    <file path="strings/chromeos_strings_hr.xtb" lang="hr" />
+    <file path="strings/chromeos_strings_hu.xtb" lang="hu" />
+    <file path="strings/chromeos_strings_hy.xtb" lang="hy" />
+    <file path="strings/chromeos_strings_id.xtb" lang="id" />
+    <file path="strings/chromeos_strings_is.xtb" lang="is" />
+    <file path="strings/chromeos_strings_it.xtb" lang="it" />
+    <!-- The translation console uses 'iw' for Hebrew, but we use 'he'. -->
+    <file path="strings/chromeos_strings_iw.xtb" lang="he" />
+    <file path="strings/chromeos_strings_ja.xtb" lang="ja" />
+    <file path="strings/chromeos_strings_ka.xtb" lang="ka" />
+    <file path="strings/chromeos_strings_kk.xtb" lang="kk" />
+    <file path="strings/chromeos_strings_km.xtb" lang="km" />
+    <file path="strings/chromeos_strings_kn.xtb" lang="kn" />
+    <file path="strings/chromeos_strings_ko.xtb" lang="ko" />
+    <file path="strings/chromeos_strings_ky.xtb" lang="ky" />
+    <file path="strings/chromeos_strings_lo.xtb" lang="lo" />
+    <file path="strings/chromeos_strings_lt.xtb" lang="lt" />
+    <file path="strings/chromeos_strings_lv.xtb" lang="lv" />
+    <file path="strings/chromeos_strings_mk.xtb" lang="mk" />
+    <file path="strings/chromeos_strings_ml.xtb" lang="ml" />
+    <file path="strings/chromeos_strings_mn.xtb" lang="mn" />
+    <file path="strings/chromeos_strings_mr.xtb" lang="mr" />
+    <file path="strings/chromeos_strings_ms.xtb" lang="ms" />
+    <file path="strings/chromeos_strings_my.xtb" lang="my" />
+    <file path="strings/chromeos_strings_ne.xtb" lang="ne" />
+    <file path="strings/chromeos_strings_nl.xtb" lang="nl" />
+    <file path="strings/chromeos_strings_no.xtb" lang="no" />
+    <file path="strings/chromeos_strings_or.xtb" lang="or" />
+    <file path="strings/chromeos_strings_pa.xtb" lang="pa" />
+    <file path="strings/chromeos_strings_pl.xtb" lang="pl" />
+    <file path="strings/chromeos_strings_pt-BR.xtb" lang="pt-BR" />
+    <file path="strings/chromeos_strings_pt-PT.xtb" lang="pt-PT" />
+    <file path="strings/chromeos_strings_ro.xtb" lang="ro" />
+    <file path="strings/chromeos_strings_ru.xtb" lang="ru" />
+    <file path="strings/chromeos_strings_si.xtb" lang="si" />
+    <file path="strings/chromeos_strings_sk.xtb" lang="sk" />
+    <file path="strings/chromeos_strings_sl.xtb" lang="sl" />
+    <file path="strings/chromeos_strings_sq.xtb" lang="sq" />
+    <file path="strings/chromeos_strings_sr.xtb" lang="sr" />
+    <file path="strings/chromeos_strings_sv.xtb" lang="sv" />
+    <file path="strings/chromeos_strings_sw.xtb" lang="sw" />
+    <file path="strings/chromeos_strings_ta.xtb" lang="ta" />
+    <file path="strings/chromeos_strings_te.xtb" lang="te" />
+    <file path="strings/chromeos_strings_th.xtb" lang="th" />
+    <file path="strings/chromeos_strings_tr.xtb" lang="tr" />
+    <file path="strings/chromeos_strings_uk.xtb" lang="uk" />
+    <file path="strings/chromeos_strings_ur.xtb" lang="ur" />
+    <file path="strings/chromeos_strings_uz.xtb" lang="uz" />
+    <file path="strings/chromeos_strings_vi.xtb" lang="vi" />
+    <file path="strings/chromeos_strings_zh-CN.xtb" lang="zh-CN" />
+    <file path="strings/chromeos_strings_zh-HK.xtb" lang="zh-HK" />
+    <file path="strings/chromeos_strings_zh-TW.xtb" lang="zh-TW" />
+    <file path="strings/chromeos_strings_zu.xtb" lang="zu" />
+  </translations>
+  <release seq="1" allow_pseudo="false">
+    <messages fallback_to_english="true">
+      <message name="IDS_ASSISTANT_SCREEN_CONTEXT_QUERY_FALLBACK_TEXT" desc="Message shown in Assistant UI when a query for content related to the screen context returns no results.">
+        I can't find anything on your screen I can help with.
+Try tapping the mic to ask me anything.
+      </message>
+      <message name="IDS_ASSISTANT_SCREEN_CONTEXT_QUERY_FALLBACK_CARD" desc="Message shown in Assistant UI when a query for content related to the screen context returns no results.">
+        Nothing found on screen
+      </message>
+
+      <!-- The following strings are located here for accessibility from both //ash and //chrome -->
+      <message name="IDS_ENABLE_BLUETOOTH" desc="The message to display in the network list when Tether is enabled but Bluetooth is disabled.">
+        Turn on Bluetooth to discover nearby devices
+      </message>
+
+      <!-- Managed guest session warnings -->
+      <message name="IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_FULL_WARNING" desc="Text shown in the public account user pod in case of risky configuration, informing the user that this session is managed and admin can monitor all activity.">
+        <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph> manages this device and has access to all user activity, including webpages visited, passwords, and email.
+      </message>
+      <message name="IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_SOFT_WARNING" desc="Text shown in the public account user pod in case of non-risky configuration, informing the user that this session is managed and admin can monitor all activity.">
+        <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph> manages this device and may be able to monitor your activity.
+      </message>
+
+      <!-- Status tray enterprise management. -->
+      <message name="IDS_ASH_ENTERPRISE_DEVICE_MANAGED_BY" desc="Text for notifications showing that this device is enterpise managed. Used when the organization's domain name is available.">
+        This device is managed by <ph name="DOMAIN">$1<ex>acmecorp.com</ex></ph>.
+      </message>
+      <message name="IDS_ASH_ENTERPRISE_DEVICE_MANAGED" desc="Text for notifications showing that this device is enterprise managed. Used when the organization's domain name is not available (e.g. Active Directory).">
+        This device is enterprise managed
+      </message>
+      <message name="IDS_ASH_ENTERPRISE_DEVICE_MANAGED_SHORT" desc="Short text showing that the device is enterprise managed.">
+        Managed
+      </message>
+
+      <!-- Shelf buttons -->
+      <message name="IDS_ASH_SHELF_SHUTDOWN_BUTTON" desc="Text shown on shutdown button on login/lock screen.">
+        Shut down
+      </message>
+      <message name="IDS_ASH_SHELF_RESTART_BUTTON" desc="Text shown on restart button on login/lock screen.">
+        Restart
+      </message>
+      <message name="IDS_ASH_SHELF_UNLOCK_BUTTON" desc="Text shown on unlock button on lock screen.">
+        Unlock
+      </message>
+      <message name="IDS_ASH_SHELF_SIGN_OUT_BUTTON" desc="Text shown on sign out button on lock screen.">
+        Sign out
+      </message>
+      <message name="IDS_ASH_SHELF_CANCEL_BUTTON" desc="Text shown on cancel button on add user screen.">
+        Cancel
+      </message>
+      <message name="IDS_ASH_BROWSE_AS_GUEST_BUTTON" desc="Text shown on Chrome OS sign-in screen button that launches guest session. Should be short.">
+        Browse as Guest
+      </message>
+      <message name="IDS_ASH_ADD_USER_BUTTON" desc="Text shown on an add user button on login/locker screen">
+        Add Person
+      </message>
+      <message name="IDS_ASH_PARENT_ACCESS_BUTTON" desc="Text shown on an parent access button on login/lock screen">
+        Parent access
+      </message>
+      <message name="IDS_ASH_SHELF_APPS_BUTTON" desc="Text shown on apps button on login screen.">
+        Apps
+      </message>
+
+      <message name="IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE" desc="The title used for the Ash Launcher in the Shelf (not mentioning 'Apps' since this is a general launcher).">
+        Launcher
+      </message>
+
+      <!-- Password expiry notifications -->
+      <message name="IDS_PASSWORD_CHANGE_OVERDUE_TITLE" desc="Message title for a notification that tells the user they are already late in changing their password, since the password has already expired.">
+        Password change overdue
+      </message>
+      <message name="IDS_PASSWORD_EXPIRES_AFTER_TIME_TITLE" desc="Message title for a notification that tells the user their password will expire at a certain time. This time could be X days(s) or X hour(s) or X minute(s). The alternative text 'Password expires in: $1' is okay if this would make more sense in the grammar of the target language.">
+        Password expires in <ph name="TIME">$1<ex>5 days</ex></ph>
+      </message>
+      <message name="IDS_PASSWORD_EXPIRY_CALL_TO_ACTION" desc="Message body on a notification that politely requests the user to choose a new password since their old password is expiring soon. (The title makes clear that the password is expiring.)">
+        Choose a new one now
+      </message>
+      <message name="IDS_PASSWORD_EXPIRY_CALL_TO_ACTION_CRITICAL" desc="Message body on a notification that *URGENTLY* requests the user to choose a new password since their old password is expiring *VERY* soon. (The title makes clear that the password is expiring.)">
+        Choose a new one immediately
+      </message>
+      <message name="IDS_PASSWORD_EXPIRY_CHANGE_PASSWORD_BUTTON" desc="Text on a button that takes the user to page to change their password">
+        Change password
+      </message>
+
+      <!-- In-session password change -->
+      <message name="IDS_PASSWORD_CHANGE_CONFIRM_DIALOG_TITLE" desc="Title for the dialog where a user corrects and confirms their old and new passwords in order to complete a password change">
+        Confirm change
+      </message>
+      <message name="IDS_PASSWORD_CHANGE_CONFIRM_DIALOG_BOTH_PASSWORDS_PROMPT" desc="Text on the password-change confirmation dialog explaining that the user has to enter both their old and new passwords again to finish the password change.">
+        To finish, enter your old and new passwords
+      </message>
+      <message name="IDS_PASSWORD_CHANGE_CONFIRM_DIALOG_OLD_PASSWORD_PROMPT" desc="Text on the password-change confirmation dialog explaining that the user has to enter their old password again to finish the password change.">
+        To finish, enter your old password
+      </message>
+      <message name="IDS_PASSWORD_CHANGE_CONFIRM_DIALOG_NEW_PASSWORD_PROMPT" desc="Text on the password-change confirmation dialog explaining that the user has to enter their new password again to finish the password change.">
+        To finish, enter your new password
+      </message>
+      <message name="IDS_PASSWORD_CHANGE_OLD_PASSWORD_LABEL" desc="Label for a box where the user enters their old password">
+        Old password
+      </message>
+      <message name="IDS_PASSWORD_CHANGE_NEW_PASSWORD_LABEL" desc="Label for a box where the user enters their new password">
+        New password
+      </message>
+      <message name="IDS_PASSWORD_CHANGE_CONFIRM_NEW_PASSWORD_LABEL" desc="Label for the second box where the user enters their new password again, to ensure they don't mistype it">
+        Confirm new password
+      </message>
+      <message name="IDS_PASSWORD_CHANGE_CONFIRM_SAVE_BUTTON" desc="Text on a button that confirms the change to the password and saves the new password in place of the old one">
+        Save
+      </message>
+      <message name="IDS_PASSWORD_CHANGE_PASSWORDS_DONT_MATCH" desc="Error text in the case that the user entered their new password twice into two different boxes as required, but the two entries do not match">
+        Passwords do not match
+      </message>
+
+      <!-- Kerberos ticket expiry notifications -->
+      <message name="IDS_KERBEROS_TICKET_EXPIRY_TITLE" desc="Title of the notification shown when a Kerberos ticket is about to expire (shown below the display source and above the body).">
+        Kerberos ticket expires soon
+      </message>
+      <message name="IDS_KERBEROS_TICKET_EXPIRY_BODY" desc="Body of the notification shown when a Kerberos ticket is about to expire (shown below the title).">
+        Refresh ticket for <ph name="PRINCIPAL_NAME">$1<ex>user@EXAMPLE.COM</ex></ph>
+      </message>
+      <message name="IDS_KERBEROS_TICKET_EXPIRY_BUTTON" desc="Button label of the notification shown when a Kerberos ticket is about to expire.">
+        REFRESH
+      </message>
+
+      <message name="IDS_IME_SERVICE_DISPLAY_NAME" desc="The display name (in the system task manager, etc) of the service process providing the input methods.">
+        Chrome OS Input Method Service
+      </message>
+    </messages>
+  </release>
+</grit>

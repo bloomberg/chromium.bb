@@ -1,0 +1,6 @@
+include_rules = [
+  "+content/public/browser",
+  "+components/google/core/common",
+  "+components/ukm",
+  "+services/metrics/public/cpp",
+]

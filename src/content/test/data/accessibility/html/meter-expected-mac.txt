@@ -1,0 +1,3 @@
+AXWebArea AXRoleDescription='HTML content'
+++AXGroup AXRoleDescription='group'
+++++AXLevelIndicator AXRoleDescription='level indicator' AXValue='2' AXMinValue='1' AXMaxValue='10'

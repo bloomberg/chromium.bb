@@ -1,0 +1,128 @@
+<!DOCTYPE HTML>
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta name="theme-color" id="theme-color">
+  <title>$1</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet">
+  <!-- Placeholder for CSS. -->
+  $2
+</head>
+<body class="$3">
+  <div id="content-wrap">
+    <div id="main-content">
+      <div id="settings-container" class="desktop-only">
+        <button id="settings-toggle" type="button"
+            aria-label="Adjust appearance settings" tabindex=0>
+          <i class="material-icons">text_format</i>
+        </button>
+        <dialog id="settings-dialog">
+          <div id="settings-header">
+            <h2>Reader Mode Styling</h2>
+            <button id="close-settings-button" type="button" aria-label="Close settings"
+                tabindex=0>
+              <i class="material-icons">close</i>
+            </button>
+          </div>
+          <div id="settings-fields">
+            <div class="setting">
+              <label for="font-family-selection" class="screen-reader-only">
+                Font Style
+              </label>
+              <select id="font-family-selection" name="font-family">
+                <option value="sans-serif" selected>Sans-serif font</option>
+                <option value="serif">Serif font</option>
+                <option value="monospace">Monospace font</option>
+              </select>
+            </div>
+            <div class="setting">
+              <fieldset id="theme-selection">
+                <legend class="screen-reader-only">
+                  Page Theme
+                </legend>
+                <ul>
+                  <li class="theme-option">
+                    <label for="theme-option-light" class="screen-reader-only">
+                      Light
+                    </label>
+                    <input type="radio" name="theme" value="light"
+                       id="theme-option-light" class="light" checked/>
+                    <div class="checkmark"><i class="material-icons">check_circle</i></div>
+                  </li>
+                  <li class="theme-option">
+                    <label for="theme-option-sepia" class="screen-reader-only">
+                      Sepia
+                    </label>
+                    <input type="radio" name="theme" value="sepia"
+                       id="theme-option-sepia" class="sepia"/>
+                    <div class="checkmark"><i class="material-icons">check_circle</i></div>
+                  </li>
+                  <li class="theme-option">
+                    <label for="theme-option-dark" class="screen-reader-only">
+                      Dark
+                    </label>
+                    <input type="radio" name="theme" value="dark"
+                        id="theme-option-dark" class="dark"/>
+                    <div class="checkmark"><i class="material-icons">check_circle</i></div>
+                  </li>
+                </ul>
+              </fieldset>
+            </div>
+            <div class="setting" id="font-size-wrapper">
+              <label for="font-size-selection" class="screen-reader-only">
+                Font Size
+              </label>
+              <input id="font-size-selection"
+                     type="range"
+                     name="font-size"
+                     list="tickmarks"
+                     min="0"
+                     max="9"
+                     value="2">
+              <datalist class="tickmarks">
+                <option value="0" aria-labelledby="slider-label-min"></option>
+                <option value="1"></option>
+                <option value="2"></option>
+                <option value="3"></option>
+                <option value="4"></option>
+                <option value="5"></option>
+                <option value="6"></option>
+                <option value="7"></option>
+                <option value="8"></option>
+                <option value="9" aria-labelledby="slider-label-max"></option>
+              </datalist>
+              <div class="label-container">
+                <span id="slider-label-min">Small</span>
+                <span id="slider-label-max">Large</span>
+              </div>
+            </div>
+          </div>
+        </dialog>
+      </div>
+      <article>
+        <header id="article-header">
+          <div id="title-collapse">
+            <div class="vertical-center-outer">
+              <div class="vertical-center-inner">
+                <h1 id="title-holder"><noscript>$4</noscript></h1>
+              </div>
+            </div>
+          </div>
+        </header>
+        <div id="content"><noscript>$5</noscript></div>
+      </article>
+      <div id="loading-indicator" class="visible">
+        <!-- SVG material loading spinner. -->
+        $6
+      </div>
+    </div>
+  </div>
+</body>
+</html>

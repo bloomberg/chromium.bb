@@ -1,0 +1,6 @@
+AXWebArea
+++AXGroup
+++++AXImage AXRoleDescription='image' AXDescription='pipe'
+++++AXStaticText AXValue=' '
+++++AXStaticText AXValue=' '
+++++AXImage AXRoleDescription='image' AXDescription='  '

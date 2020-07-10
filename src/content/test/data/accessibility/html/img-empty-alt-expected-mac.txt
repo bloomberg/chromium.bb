@@ -1,0 +1,4 @@
+AXWebArea
+++AXGroup
+++++AXImage AXDescription='/read.jpg'
+++++AXImage AXDescription='full'

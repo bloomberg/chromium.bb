@@ -1,0 +1,12 @@
+include_rules = [
+  "+components/cryptauth",
+  "+components/gcm_driver",
+  "+components/proximity_auth/logging",
+  "+components/signin/public",
+  "+components/version_info",
+  "+google_apis/gaia",
+  "+mojo/public/cpp",
+  "+services/network/public",
+  "+services/network/test",
+  "+components/cryptauth"
+]

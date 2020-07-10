@@ -1,0 +1,15 @@
+include_rules = [
+  "+content/child",
+  "+content/public/utility",
+  "+chromeos/services/ime",
+  "+services/audio",
+  "+services/data_decoder",
+  "+services/network",
+  "+services/proxy_resolver",
+  "+services/service_manager",
+  "+services/shape_detection",
+  "+services/tracing",
+  "+services/video_capture",
+  "+services/viz",
+  "+sandbox/win/src",
+]

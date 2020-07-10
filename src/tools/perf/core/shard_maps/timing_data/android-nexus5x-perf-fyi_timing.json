@@ -1,0 +1,38 @@
+[
+    {
+        "duration": "23.0",
+        "name": "tracing.tracing_with_background_memory_infra/Facebook"
+    },
+    {
+        "duration": "23.0",
+        "name": "tracing.tracing_with_background_memory_infra/Wikipedia"
+    },
+    {
+        "duration": "22.0",
+        "name": "tracing.tracing_with_background_memory_infra/http://www.amazon.com"
+    },
+    {
+        "duration": "19.0",
+        "name": "tracing.tracing_with_background_memory_infra/http://www.ask.com/"
+    },
+    {
+        "duration": "19.0",
+        "name": "tracing.tracing_with_background_memory_infra/http://www.bing.com/"
+    },
+    {
+        "duration": "20.0",
+        "name": "tracing.tracing_with_background_memory_infra/http://www.yahoo.com/"
+    },
+    {
+        "duration": "22.0",
+        "name": "tracing.tracing_with_background_memory_infra/http://www.youtube.com"
+    },
+    {
+        "duration": "24.0",
+        "name": "tracing.tracing_with_background_memory_infra/https://www.google.com/#hl=en&q=barack+obama"
+    },
+    {
+        "duration": "22.0",
+        "name": "tracing.tracing_with_background_memory_infra/https://www.google.com/calendar/"
+    }
+]

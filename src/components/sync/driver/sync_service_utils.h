@@ -1,0 +1,73 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef COMPONENTS_SYNC_DRIVER_SYNC_SERVICE_UTILS_H_
+#define COMPONENTS_SYNC_DRIVER_SYNC_SERVICE_UTILS_H_
+
+#include "components/sync/base/model_type.h"
+
+namespace syncer {
+
+class SyncService;
+
+// Indicates whether uploading of data to Google is enabled, i.e. the user has
+// given consent to upload this data. Since this enum is used for logging
+// histograms, entries must not be removed or reordered.
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.sync
+enum class UploadState {
+  // Syncing is enabled in principle, but the sync service is not actually
+  // active yet. Either it's still initializing (in which case we e.g. don't
+  // know about any auth errors yet), or it's in a transient auth error state.
+  INITIALIZING,
+  // We are not syncing to Google, and the caller should assume that we do not
+  // have consent to do so. This can have a number of reasons, e.g.: sync as a
+  // whole is disabled, or the given model type is disabled, or we're in
+  // "local sync" mode, or this data type is encrypted with a custom passphrase
+  // (in which case we're technically still uploading, but Google can't inspect
+  // the data), or we're in a persistent auth error state. As one special case
+  // of an auth error, sync may be "paused" because the user signed out of the
+  // content area.
+  NOT_ACTIVE,
+  // We're actively syncing data to Google servers, in a form that is readable
+  // by Google.
+  ACTIVE,
+  // Used when logging histograms. Must have this exact name.
+  kMaxValue = ACTIVE
+};
+
+// Returns whether |type| is being uploaded to Google. This is useful for
+// features that depend on user consent for uploading data (e.g. history) to
+// Google.
+UploadState GetUploadToGoogleState(const SyncService* sync_service,
+                                   ModelType type);
+
+// NOTE: Used in a UMA histogram, do not reorder etc.
+enum SyncEventCodes {
+  // Events starting the sync service.
+  // START_FROM_NTP = 1,
+  // START_FROM_WRENCH = 2,
+  // START_FROM_OPTIONS = 3,
+  // START_FROM_BOOKMARK_MANAGER = 4,
+  // START_FROM_PROFILE_MENU = 5,
+  // START_FROM_URL = 6,
+
+  // Events regarding cancellation of the signon process of sync.
+  // CANCEL_FROM_SIGNON_WITHOUT_AUTH = 10,
+  // CANCEL_DURING_SIGNON = 11,
+  CANCEL_DURING_CONFIGURE = 12,  // Cancelled before choosing data types and
+                                 // clicking OK.
+
+  // Events resulting in the stoppage of sync service.
+  STOP_FROM_OPTIONS = 20,  // Sync was stopped from Wrench->Options.
+  // STOP_FROM_ADVANCED_DIALOG = 21,
+
+  MAX_SYNC_EVENT_CODE = 22
+};
+
+void RecordSyncEvent(SyncEventCodes code);
+
+}  // namespace syncer
+
+#endif  // COMPONENTS_SYNC_DRIVER_SYNC_SERVICE_UTILS_H_

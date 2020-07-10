@@ -1,0 +1,177 @@
+{
+  "layers": [
+    {
+      "name": "Scrolling background of LayoutView #document",
+      "bounds": [1008, 1016],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "HorizontalScrollbar",
+      "position": [0, 235],
+      "bounds": [585, 15]
+    },
+    {
+      "name": "VerticalScrollbar",
+      "position": [585, 0],
+      "bounds": [15, 235]
+    },
+    {
+      "name": "LayoutView #document",
+      "bounds": [600, 250],
+      "paintInvalidations": [
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 600, 250],
+          "reason": "geometry"
+        }
+      ]
+    },
+    {
+      "name": "LayoutNGBlockFlow HTML",
+      "position": [8, 8],
+      "bounds": [1000, 1000],
+      "contentsOpaque": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutNGBlockFlow DIV id='target'",
+          "rect": [0, 0, 1000, 1000],
+          "reason": "background"
+        }
+      ]
+    }
+  ]
+}
+{
+  "layers": [
+    {
+      "name": "Scrolling background of LayoutView #document",
+      "bounds": [1008, 1016],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "HorizontalScrollbar",
+      "position": [0, 235],
+      "bounds": [385, 15]
+    },
+    {
+      "name": "VerticalScrollbar",
+      "position": [385, 0],
+      "bounds": [15, 235]
+    },
+    {
+      "name": "LayoutView #document",
+      "bounds": [400, 250],
+      "paintInvalidations": [
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 400, 250],
+          "reason": "geometry"
+        }
+      ]
+    },
+    {
+      "name": "LayoutNGBlockFlow HTML",
+      "position": [8, 8],
+      "bounds": [1000, 1000],
+      "contentsOpaque": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutNGBlockFlow DIV id='target'",
+          "rect": [0, 0, 1000, 1000],
+          "reason": "background"
+        }
+      ]
+    }
+  ]
+}
+{
+  "layers": [
+    {
+      "name": "Scrolling background of LayoutView #document",
+      "bounds": [1008, 1016],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "HorizontalScrollbar",
+      "position": [0, 585],
+      "bounds": [385, 15]
+    },
+    {
+      "name": "VerticalScrollbar",
+      "position": [385, 0],
+      "bounds": [15, 585]
+    },
+    {
+      "name": "LayoutView #document",
+      "bounds": [400, 600],
+      "paintInvalidations": [
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 400, 600],
+          "reason": "geometry"
+        }
+      ]
+    },
+    {
+      "name": "LayoutNGBlockFlow HTML",
+      "position": [8, 8],
+      "bounds": [1000, 1000],
+      "contentsOpaque": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutNGBlockFlow DIV id='target'",
+          "rect": [0, 0, 1000, 1000],
+          "reason": "background"
+        }
+      ]
+    }
+  ]
+}
+{
+  "layers": [
+    {
+      "name": "Scrolling background of LayoutView #document",
+      "bounds": [1008, 1016],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "HorizontalScrollbar",
+      "position": [0, 585],
+      "bounds": [785, 15]
+    },
+    {
+      "name": "VerticalScrollbar",
+      "position": [785, 0],
+      "bounds": [15, 585]
+    },
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "paintInvalidations": [
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 800, 600],
+          "reason": "geometry"
+        }
+      ]
+    },
+    {
+      "name": "LayoutNGBlockFlow HTML",
+      "position": [8, 8],
+      "bounds": [1000, 1000],
+      "contentsOpaque": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutNGBlockFlow DIV id='target'",
+          "rect": [0, 0, 1000, 1000],
+          "reason": "background"
+        }
+      ]
+    }
+  ]
+}
+

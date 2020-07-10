@@ -1,0 +1,7 @@
+rootWebArea
+++genericContainer
+++++checkBox inputType='checkbox' name='Checkbox0' checkedState=false
+++++checkBox inputType='checkbox' name='Checkbox1' checkedState=true
+++++checkBox inputType='checkbox' name='Checkbox2' checkedState=true
+++++checkBox inputType='checkbox' name='Checkbox3' checkedState=true
+++++checkBox inputType='checkbox' name='Checkbox4' checkedState=mixed

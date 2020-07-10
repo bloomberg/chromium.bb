@@ -1,0 +1,99 @@
+<!-- Copyright 2018 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/cr_elements/chromeos/cr_lottie/cr_lottie.html">
+<dom-module id="assistant-voice-match">
+  <template>
+    <link rel="stylesheet" href="../login/oobe_dialog_host.css">
+    <link rel="stylesheet" href="../login/oobe_flex_layout.css">
+    <link rel="stylesheet" href="assistant_shared_styles.css">
+    <link rel="stylesheet" href="assistant_voice_match.css">
+    <oobe-dialog id="voice-match-dialog" role="dialog" has-buttons hide-shadow
+        no-footer-padding no-header class="intro"
+        i18n-values="aria-label:assistantVoiceMatchTitle">
+      <div slot="footer">
+        <div class="container">
+          <img id="logo" src="assistant_logo.png"
+              i18n-values="aria-label:assistantLogo">
+          <div id="intro-container">
+            <div class="title" i18n-content="assistantVoiceMatchTitle"></div>
+            <div class="content"
+                i18n-values=".innerHTML:assistantVoiceMatchMessage">
+            </div>
+            <div class="content" id="no-dsp-message"
+                i18n-content="assistantVoiceMatchNoDspMessage">
+            </div>
+            <div id="voice-match-animation-container">
+              <div id="voice-match-animation">
+                <cr-lottie id="voice-match-lottie"
+                    animation-url="voice_match_animation.json">
+                </cr-lottie>
+              </div>
+            </div>
+          </div>
+          <div id="recording-container">
+            <div class="title" id="title-recording"
+                i18n-content="assistantVoiceMatchRecording"></div>
+            <div class="title" id="title-completed"
+                i18n-content="assistantVoiceMatchCompleted"></div>
+            <div id="voice-match-entries">
+              <voice-match-entry id="voice-entry-0">
+                <div class="entry-content"
+                    i18n-content="assistantVoiceMatchInstruction0"></div>
+              </voice-match-entry>
+              <voice-match-entry id="voice-entry-1">
+                <div class="entry-content"
+                    i18n-content="assistantVoiceMatchInstruction1"></div>
+              </voice-match-entry>
+              <voice-match-entry id="voice-entry-2">
+                <div class="entry-content"
+                    i18n-content="assistantVoiceMatchInstruction2"></div>
+              </voice-match-entry>
+              <voice-match-entry id="voice-entry-3">
+                <div class="entry-content"
+                    i18n-content="assistantVoiceMatchInstruction3"></div>
+              </voice-match-entry>
+            </div>
+            <div id="loading-animation" hidden>
+              <paper-spinner-lite id="loading-spinner" active>
+              </paper-spinner-lite>
+            </div>
+            <div class="content" id="footer-text"
+                i18n-content="assistantVoiceMatchFooter"></div>
+          </div>
+          <div id="already-setup-container">
+            <div class="title" id="title-already-setup"
+                i18n-content="assistantVoiceMatchAlreadySetupTitle"></div>
+            <div class="content"
+                i18n-content="assistantVoiceMatchAlreadySetupMessage"></div>
+            <div id="already-setup-animation-container">
+              <div id="already-setup-animation">
+                <cr-lottie id="already-setup-lottie"
+                    animation-url="voice_match_already_setup_animation.json">
+                </cr-lottie>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div slot="bottom-buttons" class="flex layout horizontal">
+        <div class="flex"></div>
+        <oobe-text-button id="skip-button" on-tap="onSkipTap_"
+            disabled="[[buttonsDisabled]]">
+          <div i18n-content="assistantOptinNoThanksButton"></div>
+        </oobe-text-button>
+        <oobe-text-button id="later-button" on-tap="onSkipTap_"
+            disabled="[[buttonsDisabled]]">
+          <div i18n-content="assistantOptinLaterButton"></div>
+        </oobe-text-button>
+        <oobe-text-button id="agree-button" inverse on-tap="onAgreeTap_"
+            disabled="[[buttonsDisabled]]">
+          <div i18n-content="assistantOptinAgreeButton"></div>
+        </oobe-text-button>
+      </div>
+    </oobe-dialog>
+  </template>
+</dom-module>

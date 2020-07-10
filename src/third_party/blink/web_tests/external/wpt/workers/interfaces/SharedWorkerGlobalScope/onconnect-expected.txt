@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL onconnect assert_array_equals: property 1, expected "null" but got "[object Object]"
+Harness: the test ran to completion.
+

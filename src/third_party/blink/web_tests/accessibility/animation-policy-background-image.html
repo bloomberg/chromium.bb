@@ -1,0 +1,26 @@
+<html>
+  <head>
+    <script>
+      if (window.internals)
+        internals.settings.setImageAnimationPolicy("none");
+
+      function finishTest() { window.testRunner.notifyDone(); }
+
+      function waitForFrame() {
+        if (window.testRunner) {
+          setTimeout(finishTest, 0.5);
+        }
+      }
+    </script>
+    <style>
+      div {
+        background-image: url(animation-blue.gif);
+        height: 100px;
+        width: 100px;
+      }
+    </style>
+  </head>
+  <body onload="waitForFrame()">
+    <div></div>
+  </body>
+</html>

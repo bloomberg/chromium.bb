@@ -1,0 +1,18 @@
+{
+  "layers": [
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "Caret",
+          "rect": [791, 8, 1, 18],
+          "reason": "appeared"
+        }
+      ]
+    }
+  ]
+}
+

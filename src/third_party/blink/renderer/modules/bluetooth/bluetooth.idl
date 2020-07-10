@@ -1,0 +1,20 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://webbluetoothcg.github.io/web-bluetooth/#bluetooth
+
+[
+    Exposed=Window,
+    RuntimeEnabled=WebBluetooth,
+    SecureContext
+] interface Bluetooth : EventTarget {
+    [CallWith=ScriptState] Promise<boolean> getAvailability();
+    [CallWith=ScriptState, RaisesException, MeasureAs=WebBluetoothRequestDevice] Promise<BluetoothDevice> requestDevice (optional RequestDeviceOptions options);
+
+    // https://webbluetoothcg.github.io/web-bluetooth/scanning.html#dom-bluetooth-requestlescan
+    [RuntimeEnabled=WebBluetoothScanning, CallWith=ScriptState, RaisesException, MeasureAs=WebBluetoothRequestScan]
+    Promise<BluetoothLEScan> requestLEScan (optional BluetoothLEScanOptions options);
+
+    [RuntimeEnabled=WebBluetoothScanning] attribute EventHandler onadvertisementreceived;
+};

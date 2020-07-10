@@ -1,0 +1,5 @@
+file://chrome/browser/resources/settings/OWNERS
+
+per-file people_handler*=tangltom@chromium.org
+
+# COMPONENT: UI>Settings

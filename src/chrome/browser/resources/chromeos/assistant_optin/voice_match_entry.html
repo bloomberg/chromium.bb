@@ -1,0 +1,30 @@
+<!-- Copyright 2018 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
+<dom-module id="voice-match-entry">
+  <template>
+    <link rel="stylesheet" href="../login/oobe_flex_layout.css">
+    <link rel="stylesheet" href="assistant_shared_styles.css">
+    <link rel="stylesheet" href="voice_match_entry.css">
+    <div class="flex layout horizontal center" id="container">
+      <div class="icon">
+        <div id="default-icon" class="dot" active$="[[active]]"
+            completed$="[[completed]]"></div>
+        <paper-spinner-lite id="active-icon" active$="[[active]]">
+        </paper-spinner-lite>
+        <iron-icon id="completed-icon" icon="cr:check"
+            completed$="[[completed]]"></iron-icon>
+      </div>
+      <div id="entry-text" class="content">
+        <div id="active-text" active$="[[active]]">
+          <content select=".entry-content"></content>
+        </div>
+        <div id="completed-text" completed$="[[completed]]"
+            i18n-content=assistantVoiceMatchComplete></div>
+      </div>
+    </div>
+  </template>
+</dom-module>
