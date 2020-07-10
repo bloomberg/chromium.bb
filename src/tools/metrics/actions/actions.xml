@@ -22109,6 +22109,14 @@ should be able to be added at any place in this file.
   <description>User drags a tab to reorder it.</description>
 </action>
 
+<action name="TabGrid.TabSearchChipTapped">
+  <owner>yusufo@chromium.org</owner>
+  <owner>wychen@chromium.org</owner>
+  <description>
+    User tapped on the search term chip on a tab card in the TabGrid.
+  </description>
+</action>
+
 <action name="TabGridDialog">
   <owner>yusufo@chromium.org</owner>
   <owner>wychen@chromium.org</owner>

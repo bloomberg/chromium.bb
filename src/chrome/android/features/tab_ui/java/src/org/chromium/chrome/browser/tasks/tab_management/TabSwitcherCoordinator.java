@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tasks.pseudotab.TabAttributeCache;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -62,6 +63,7 @@ public class TabSwitcherCoordinator
     private final UndoGroupSnackbarController mUndoGroupSnackbarController;
     private final TabModelSelector mTabModelSelector;
     private NewTabTileCoordinator mNewTabTileCoordinator;
+    private TabAttributeCache mTabAttributeCache;
 
     private final MenuOrKeyboardActionController
             .MenuOrKeyboardActionHandler mTabSwitcherMenuActionHandler =
@@ -179,6 +181,11 @@ public class TabSwitcherCoordinator
                             R.layout.new_tab_tile_card_item, container, false);
                 }, NewTabTileViewBinder::bind);
             }
+        }
+
+        if (TabUiFeatureUtilities.isSearchTermChipEnabled()
+                && mode != TabListCoordinator.TabListMode.CAROUSEL) {
+            mTabAttributeCache = new TabAttributeCache(mTabModelSelector);
         }
 
         mMenuOrKeyboardActionController = menuOrKeyboardActionController;
@@ -350,5 +357,8 @@ public class TabSwitcherCoordinator
         mTabSelectionEditorCoordinator.destroy();
         mMediator.destroy();
         mLifecycleDispatcher.unregister(this);
+        if (mTabAttributeCache != null) {
+            mTabAttributeCache.destroy();
+        }
     }
 }

@@ -124,7 +124,10 @@ BrowserAccessibilityManagerMac::BrowserAccessibilityManagerMac(
     BrowserAccessibilityFactory* factory)
     : BrowserAccessibilityManager(delegate, factory) {
   Initialize(initial_tree);
-  tree_->SetEnableExtraMacNodes(true);
+  // Temporary fix. Disable extra mac nodes, which only affects column
+  // navigation but fixes a number of crash bugs seen only with VoiceOver.
+  // This does not affect verbalization of columns headers in cell navigation.
+  tree_->SetEnableExtraMacNodes(GetExtraMacNodesAllowed());
 }
 
 BrowserAccessibilityManagerMac::~BrowserAccessibilityManagerMac() {}
