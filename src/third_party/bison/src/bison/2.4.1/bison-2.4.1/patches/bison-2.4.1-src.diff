@@ -1,0 +1,3186 @@
+diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.4.1-orig/doc/bison.1 bison-2.4.1-src/doc/bison.1
+--- bison-2.4.1-orig/doc/bison.1	2008-12-11 23:07:25.000000000 +0100
++++ bison-2.4.1-src/doc/bison.1	2008-12-14 13:03:25.203125000 +0100
+@@ -3,7 +3,7 @@
+ .SH NAME
+ bison \- GNU Project parser generator (yacc replacement)
+ .SH SYNOPSIS
+-.B bison
++.B j:\Devel\bison\2.4.1\bison-2.4.1\src\bison.exe
+ [\fIOPTION\fR]... \fIFILE\fR
+ .SH DESCRIPTION
+ .I Bison
+@@ -60,9 +60,12 @@ connect the option name and the argument
+ .PP
+ Generate LALR(1) and GLR parsers.
+ .PP
++
+ Mandatory arguments to long options are mandatory for short options too.
+ The same is true for optional arguments.
+-.SS "Operation modes:"
++.PP
++
++Operation modes:
+ .TP
+ \fB\-h\fR, \fB\-\-help\fR
+ display this help and exit
+@@ -81,7 +84,9 @@ emulate POSIX Yacc
+ .TP
+ \fB\-W\fR, \fB\-\-warnings\fR=\fI[CATEGORY]\fR
+ report the warnings falling in CATEGORY
+-.SS "Parser:"
++.PP
++
++Parser:
+ .TP
+ \fB\-L\fR, \fB\-\-language\fR=\fILANGUAGE\fR
+ specify the output programming language
+@@ -104,7 +109,9 @@ don't generate `#line' directives
+ .TP
+ \fB\-k\fR, \fB\-\-token\-table\fR
+ include a table of token names
+-.SS "Output:"
++.PP
++
++Output:
+ .TP
+ \fB\-\-defines\fR[=\fIFILE\fR]
+ also produce a header file
+@@ -133,7 +140,9 @@ also output a graph of the automaton
+ \fB\-x\fR, \fB\-\-xml\fR[=\fIFILE\fR]
+ also output an XML report of the automaton
+ (the XML schema is experimental)
+-.SS "Warning categories include:"
++.PP
++
++Warning categories include:
+ .TP
+ `midrule\-values'
+ unset or unused midrule values
+@@ -152,7 +161,9 @@ turn off all the warnings
+ .TP
+ `error'
+ treat warnings as errors
+-.SS "THINGS is a list of comma separated words that can include:"
++.PP
++
++THINGS is a list of comma separated words that can include:
+ .TP
+ `state'
+ describe the states
+@@ -171,15 +182,17 @@ include all the above information
+ .TP
+ `none'
+ disable the report
++.PP
++
+ .SH AUTHOR
+ Written by Robert Corbett and Richard Stallman.
+-.SH "REPORTING BUGS"
+-Report bugs to <bug\-bison@gnu.org>.
+-.SH COPYRIGHT
+-Copyright \(co 2008 Free Software Foundation, Inc.
+-.br
++.PP
++
++Copyright (C) 2008 Free Software Foundation, Inc.
+ This is free software; see the source for copying conditions.  There is NO
+ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
++.SH "REPORTING BUGS"
++Report bugs to <bug\-bison@gnu.org>.
+ .SH "SEE ALSO"
+ .BR lex (1),
+ .BR flex (1),
+diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.4.1-orig/doc/bison.info bison-2.4.1-src/doc/bison.info
+--- bison-2.4.1-orig/doc/bison.info	2008-12-11 23:07:25.000000000 +0100
++++ bison-2.4.1-src/doc/bison.info	2008-12-14 13:03:22.312500000 +0100
+@@ -1,5 +1,5 @@
+-This is bison.info, produced by makeinfo version 4.11 from
+-bison.texinfo.
++This is ../../bison-2.4.1-src/doc/bison.info, produced by makeinfo
++version 4.8 from ../../bison-2.4.1-src/doc/bison.texinfo.
+ 
+ This manual (19 November 2008) is for GNU Bison (version 2.4.1), the
+ GNU parser generator.
+@@ -3501,8 +3501,8 @@ underscores and periods.  Periods make s
+      By convention, a literal string token is used only to represent a
+      token that consists of that particular string.  Thus, you should
+      use the token type `"<="' to represent the string `<=' as a token.
+-     Bison does not enforce this convention, but if you depart from it,
+-     people who read your program will be confused.
++     Bison does not enforce this convention, but if you depart from
++     it, people who read your program will be confused.
+ 
+      All the escape sequences used in string literals in C can be used
+      in Bison as well, except that you must not use a null character
+@@ -10178,60 +10178,65 @@ Index
+ * Menu:
+ 
+ * $ <1>:                                 Table of Symbols.    (line  19)
+-* $ <2>:                                 Java Action Features.
++* $ <2>:                                 Action Features.     (line  14)
++* $:                                     Java Action Features.
+                                                               (line  13)
+-* $:                                     Action Features.     (line  14)
+-* $$ <1>:                                Table of Symbols.    (line  15)
++* $$ <1>:                                Action Features.     (line  10)
+ * $$ <2>:                                Java Action Features.
+                                                               (line  21)
+-* $$ <3>:                                Action Features.     (line  10)
+-* $$:                                    Actions.             (line   6)
++* $$ <3>:                                Actions.             (line   6)
++* $$:                                    Table of Symbols.    (line  15)
+ * $< <1>:                                Java Action Features.
+                                                               (line  17)
++* $< <2>:                                Action Features.     (line  23)
++* $< <3>:                                Java Action Features.
++                                                              (line  29)
+ * $<:                                    Action Features.     (line  18)
+ * $accept:                               Table of Symbols.    (line  65)
+ * $end:                                  Table of Symbols.    (line 104)
+ * $N:                                    Actions.             (line   6)
+ * $undefined:                            Table of Symbols.    (line 212)
+-* % <1>:                                 Table of Symbols.    (line  28)
+-* %:                                     Java Declarations Summary.
++* % <1>:                                 Java Declarations Summary.
+                                                               (line  53)
++* %:                                     Table of Symbols.    (line  28)
+ * %% <1>:                                Table of Symbols.    (line  23)
+ * %%:                                    Java Declarations Summary.
+                                                               (line  49)
+-* %code <1>:                             Table of Symbols.    (line  70)
+-* %code <2>:                             Java Declarations Summary.
+-                                                              (line  37)
+-* %code <3>:                             Calc++ Parser.       (line  64)
+-* %code <4>:                             Decl Summary.        (line  46)
+-* %code:                                 Prologue Alternatives.
++* %code <1>:                             Table of Symbols.    (line  71)
++* %code <2>:                             Prologue Alternatives.
+                                                               (line   6)
++* %code <3>:                             Java Declarations Summary.
++                                                              (line  37)
++* %code <4>:                             Calc++ Parser.       (line  64)
++* %code:                                 Decl Summary.        (line  63)
+ * %code imports <1>:                     Java Declarations Summary.
+                                                               (line  41)
+ * %code imports:                         Decl Summary.        (line 115)
+ * %code lexer:                           Java Declarations Summary.
+                                                               (line  45)
+-* %code provides <1>:                    Decl Summary.        (line  86)
+-* %code provides:                        Prologue Alternatives.
++* %code provides <1>:                    Prologue Alternatives.
+                                                               (line   6)
+-* %code requires <1>:                    Calc++ Parser.       (line  17)
+-* %code requires <2>:                    Decl Summary.        (line  72)
++* %code provides:                        Decl Summary.        (line 303)
++* %code requires <1>:                    Decl Summary.        (line  72)
++* %code requires <2>:                    Calc++ Parser.       (line  17)
+ * %code requires:                        Prologue Alternatives.
+                                                               (line   6)
+ * %code top <1>:                         Decl Summary.        (line  98)
+ * %code top:                             Prologue Alternatives.
+                                                               (line   6)
+-* %debug <1>:                            Table of Symbols.    (line  75)
++* %debug <1>:                            Table of Symbols.    (line  78)
+ * %debug <2>:                            Tracing.             (line  23)
+-* %debug:                                Decl Summary.        (line 134)
++* %debug <3>:                            Decl Summary.        (line 134)
++* %debug:                                Table of Symbols.    (line  75)
+ * %define <1>:                           Table of Symbols.    (line  81)
+-* %define:                               Decl Summary.        (line 139)
++* %define <2>:                           Decl Summary.        (line 140)
++* %define:                               Table of Symbols.    (line  82)
+ * %define abstract:                      Java Declarations Summary.
+                                                               (line  57)
+ * %define api.pure <1>:                  Decl Summary.        (line 166)
+ * %define api.pure:                      Pure Decl.           (line   6)
+-* %define api.push_pull <1>:             Decl Summary.        (line 177)
+-* %define api.push_pull:                 Push Decl.           (line   6)
++* %define api.push_pull <1>:             Push Decl.           (line   6)
++* %define api.push_pull:                 Decl Summary.        (line 177)
+ * %define extends:                       Java Declarations Summary.
+                                                               (line  61)
+ * %define final:                         Java Declarations Summary.
+@@ -10243,8 +10248,8 @@ Index
+ * %define location_type:                 Java Declarations Summary.
+                                                               (line  78)
+ * %define lr.keep_unreachable_states:    Decl Summary.        (line 190)
+-* %define namespace <1>:                 C++ Bison Interface. (line  10)
+-* %define namespace:                     Decl Summary.        (line 232)
++* %define namespace <1>:                 Decl Summary.        (line 232)
++* %define namespace:                     C++ Bison Interface. (line  10)
+ * %define package:                       Java Declarations Summary.
+                                                               (line  84)
+ * %define parser_class_name:             Java Declarations Summary.
+@@ -10259,12 +10264,15 @@ Index
+                                                               (line 101)
+ * %define throws:                        Java Declarations Summary.
+                                                               (line 109)
+-* %defines <1>:                          Table of Symbols.    (line  86)
+-* %defines:                              Decl Summary.        (line 274)
+-* %destructor <1>:                       Table of Symbols.    (line  94)
++* %defines <1>:                          Table of Symbols.    (line  90)
++* %defines <2>:                          Decl Summary.        (line 307)
++* %defines:                              Table of Symbols.    (line  86)
++* %destructor <1>:                       Destructor Decl.     (line  22)
+ * %destructor <2>:                       Decl Summary.        (line 310)
+ * %destructor <3>:                       Destructor Decl.     (line   6)
+-* %destructor:                           Mid-Rule Actions.    (line  59)
++* %destructor <4>:                       Mid-Rule Actions.    (line  59)
++* %destructor <5>:                       Table of Symbols.    (line  94)
++* %destructor:                           Destructor Decl.     (line  22)
+ * %dprec <1>:                            Table of Symbols.    (line  99)
+ * %dprec:                                Merging GLR Parses.  (line   6)
+ * %error-verbose <1>:                    Table of Symbols.    (line 118)
+@@ -10273,41 +10281,42 @@ Index
+ * %expect:                               Expect Decl.         (line   6)
+ * %expect-rr <1>:                        Expect Decl.         (line   6)
+ * %expect-rr:                            Simple GLR Parsers.  (line   6)
+-* %file-prefix <1>:                      Table of Symbols.    (line 122)
+-* %file-prefix:                          Decl Summary.        (line 315)
+-* %glr-parser <1>:                       Table of Symbols.    (line 126)
+-* %glr-parser <2>:                       Simple GLR Parsers.  (line   6)
++* %file-prefix <1>:                      Decl Summary.        (line 315)
++* %file-prefix:                          Table of Symbols.    (line 122)
++* %glr-parser <1>:                       Simple GLR Parsers.  (line   6)
++* %glr-parser <2>:                       Table of Symbols.    (line 126)
+ * %glr-parser:                           GLR Parsers.         (line   6)
+ * %initial-action <1>:                   Table of Symbols.    (line 130)
+-* %initial-action:                       Initial Action Decl. (line   6)
+-* %language <1>:                         Table of Symbols.    (line 134)
+-* %language:                             Decl Summary.        (line 319)
++* %initial-action:                       Initial Action Decl. (line  11)
++* %language <1>:                         Decl Summary.        (line 319)
++* %language:                             Table of Symbols.    (line 134)
+ * %language "Java":                      Java Declarations Summary.
+                                                               (line  10)
+-* %left <1>:                             Table of Symbols.    (line 138)
+-* %left <2>:                             Using Precedence.    (line   6)
+-* %left:                                 Decl Summary.        (line  21)
++* %left <1>:                             Using Precedence.    (line   6)
++* %left <2>:                             Decl Summary.        (line  21)
++* %left:                                 Table of Symbols.    (line 138)
+ * %lex-param <1>:                        Table of Symbols.    (line 142)
+-* %lex-param <2>:                        Java Declarations Summary.
++* %lex-param <2>:                        Pure Calling.        (line  31)
++* %lex-param:                            Java Declarations Summary.
+                                                               (line  13)
+-* %lex-param:                            Pure Calling.        (line  31)
+ * %locations:                            Decl Summary.        (line 327)
+-* %merge <1>:                            Table of Symbols.    (line 147)
+-* %merge:                                Merging GLR Parses.  (line   6)
+-* %name-prefix <1>:                      Table of Symbols.    (line 154)
+-* %name-prefix <2>:                      Java Declarations Summary.
++* %merge <1>:                            Merging GLR Parses.  (line   6)
++* %merge:                                Table of Symbols.    (line 147)
++* %name-prefix <1>:                      Java Declarations Summary.
+                                                               (line  19)
+-* %name-prefix:                          Decl Summary.        (line 334)
+-* %no-lines <1>:                         Table of Symbols.    (line 158)
+-* %no-lines:                             Decl Summary.        (line 346)
++* %name-prefix <2>:                      Decl Summary.        (line 334)
++* %name-prefix:                          Table of Symbols.    (line 154)
++* %no-lines <1>:                         Decl Summary.        (line 346)
++* %no-lines:                             Table of Symbols.    (line 158)
+ * %nonassoc <1>:                         Table of Symbols.    (line 162)
+ * %nonassoc <2>:                         Using Precedence.    (line   6)
+ * %nonassoc:                             Decl Summary.        (line  25)
+-* %output <1>:                           Table of Symbols.    (line 166)
+-* %output:                               Decl Summary.        (line 354)
+-* %parse-param <1>:                      Table of Symbols.    (line 170)
+-* %parse-param <2>:                      Java Declarations Summary.
++* %output <1>:                           Decl Summary.        (line 354)
++* %output:                               Table of Symbols.    (line 166)
++* %parse-param <1>:                      Java Declarations Summary.
+                                                               (line  24)
++* %parse-param <2>:                      Parser Function.     (line  36)
++* %parse-param <3>:                      Table of Symbols.    (line 170)
+ * %parse-param:                          Parser Function.     (line  36)
+ * %prec <1>:                             Table of Symbols.    (line 175)
+ * %prec:                                 Contextual Precedence.
+@@ -10315,31 +10324,31 @@ Index
+ * %pure-parser <1>:                      Table of Symbols.    (line 179)
+ * %pure-parser:                          Decl Summary.        (line 357)
+ * %require <1>:                          Table of Symbols.    (line 184)
+-* %require <2>:                          Decl Summary.        (line 362)
+-* %require:                              Require Decl.        (line   6)
+-* %right <1>:                            Table of Symbols.    (line 188)
+-* %right <2>:                            Using Precedence.    (line   6)
+-* %right:                                Decl Summary.        (line  17)
+-* %skeleton <1>:                         Table of Symbols.    (line 192)
+-* %skeleton:                             Decl Summary.        (line 366)
++* %require <2>:                          Require Decl.        (line   6)
++* %require:                              Decl Summary.        (line 362)
++* %right <1>:                            Using Precedence.    (line   6)
++* %right <2>:                            Decl Summary.        (line  17)
++* %right:                                Table of Symbols.    (line 188)
++* %skeleton <1>:                         Decl Summary.        (line 366)
++* %skeleton:                             Table of Symbols.    (line 192)
+ * %start <1>:                            Table of Symbols.    (line 196)
+ * %start <2>:                            Decl Summary.        (line  34)
+ * %start:                                Start Decl.          (line   6)
+-* %token <1>:                            Table of Symbols.    (line 200)
+-* %token <2>:                            Java Declarations Summary.
++* %token <1>:                            Decl Summary.        (line  13)
++* %token <2>:                            Token Decl.          (line   6)
++* %token <3>:                            Java Declarations Summary.
+                                                               (line  29)
+-* %token <3>:                            Decl Summary.        (line  13)
+-* %token:                                Token Decl.          (line   6)
+-* %token-table <1>:                      Table of Symbols.    (line 204)
+-* %token-table:                          Decl Summary.        (line 374)
+-* %type <1>:                             Table of Symbols.    (line 208)
+-* %type <2>:                             Java Declarations Summary.
++* %token:                                Table of Symbols.    (line 200)
++* %token-table <1>:                      Decl Summary.        (line 374)
++* %token-table:                          Table of Symbols.    (line 204)
++* %type <1>:                             Java Declarations Summary.
+                                                               (line  33)
+-* %type <3>:                             Decl Summary.        (line  30)
+-* %type:                                 Type Decl.           (line   6)
+-* %union <1>:                            Table of Symbols.    (line 217)
+-* %union <2>:                            Decl Summary.        (line   9)
+-* %union:                                Union Decl.          (line   6)
++* %type <2>:                             Type Decl.           (line   6)
++* %type <3>:                             Table of Symbols.    (line 208)
++* %type:                                 Decl Summary.        (line  30)
++* %union <1>:                            Decl Summary.        (line   9)
++* %union <2>:                            Union Decl.          (line   6)
++* %union:                                Table of Symbols.    (line 217)
+ * %verbose:                              Decl Summary.        (line 407)
+ * %yacc:                                 Decl Summary.        (line 413)
+ * *yypstate_new:                         Parser Create Function.
+@@ -10347,29 +10356,30 @@ Index
+ * /*:                                    Table of Symbols.    (line  33)
+ * ::                                     Table of Symbols.    (line  36)
+ * ;:                                     Table of Symbols.    (line  40)
+-* <*> <1>:                               Table of Symbols.    (line  47)
+-* <*>:                                   Destructor Decl.     (line   6)
+-* <> <1>:                                Table of Symbols.    (line  56)
+-* <>:                                    Destructor Decl.     (line   6)
+-* @$ <1>:                                Table of Symbols.    (line   7)
++* <*> <1>:                               Destructor Decl.     (line   6)
++* <*>:                                   Table of Symbols.    (line  47)
++* <> <1>:                                Destructor Decl.     (line   6)
++* <>:                                    Table of Symbols.    (line  56)
++* @$ <1>:                                Action Features.     (line  98)
+ * @$ <2>:                                Java Action Features.
+                                                               (line  39)
+-* @$ <3>:                                Action Features.     (line  98)
++* @$ <3>:                                Table of Symbols.    (line   7)
+ * @$:                                    Actions and Locations.
+                                                               (line   6)
+-* @N <1>:                                Table of Symbols.    (line  11)
+-* @N <2>:                                Java Action Features.
+-                                                              (line  35)
+-* @N <3>:                                Action Features.     (line 104)
+-* @N:                                    Actions and Locations.
++* @N <1>:                                Action Features.     (line 104)
++* @N <2>:                                Actions and Locations.
+                                                               (line   6)
++* @N <3>:                                Table of Symbols.    (line  11)
++* @N <4>:                                Action Features.     (line 104)
++* @N:                                    Java Action Features.
++                                                              (line  35)
+ * abstract syntax tree:                  Implementing Gotos/Loops.
+                                                               (line  17)
+ * action:                                Actions.             (line   6)
+ * action data types:                     Action Types.        (line   6)
+ * action features summary:               Action Features.     (line   6)
+-* actions in mid-rule <1>:               Destructor Decl.     (line  88)
+-* actions in mid-rule:                   Mid-Rule Actions.    (line   6)
++* actions in mid-rule <1>:               Mid-Rule Actions.    (line   6)
++* actions in mid-rule:                   Destructor Decl.     (line  88)
+ * actions, location:                     Actions and Locations.
+                                                               (line   6)
+ * actions, semantic:                     Semantic Actions.    (line   6)
+@@ -10422,8 +10432,8 @@ Index
+ * compiling the parser:                  Rpcalc Compile.      (line   6)
+ * conflicts <1>:                         Shift/Reduce.        (line   6)
+ * conflicts <2>:                         Merging GLR Parses.  (line   6)
+-* conflicts <3>:                         Simple GLR Parsers.  (line   6)
+-* conflicts:                             GLR Parsers.         (line   6)
++* conflicts <3>:                         GLR Parsers.         (line   6)
++* conflicts:                             Simple GLR Parsers.  (line   6)
+ * conflicts, reduce/reduce:              Reduce/Reduce.       (line   6)
+ * conflicts, suppressing warnings of:    Expect Decl.         (line   6)
+ * context-dependent precedence:          Contextual Precedence.
+@@ -10467,8 +10477,8 @@ Index
+                                                               (line  22)
+ * end on location:                       C++ Location Values. (line  45)
+ * epilogue:                              Epilogue.            (line   6)
+-* error <1>:                             Table of Symbols.    (line 108)
+-* error:                                 Error Recovery.      (line  20)
++* error <1>:                             Error Recovery.      (line  20)
++* error:                                 Table of Symbols.    (line 108)
+ * error on parser:                       C++ Parser Interface.
+                                                               (line  37)
+ * error recovery:                        Error Recovery.      (line   6)
+@@ -10488,9 +10498,9 @@ Index
+ * frequently asked questions:            FAQ.                 (line   6)
+ * generalized LR (GLR) parsing <1>:      Generalized LR Parsing.
+                                                               (line   6)
+-* generalized LR (GLR) parsing <2>:      GLR Parsers.         (line   6)
+-* generalized LR (GLR) parsing:          Language and Grammar.
++* generalized LR (GLR) parsing <2>:      Language and Grammar.
+                                                               (line  33)
++* generalized LR (GLR) parsing:          GLR Parsers.         (line   6)
+ * generalized LR (GLR) parsing, ambiguous grammars: Merging GLR Parses.
+                                                               (line   6)
+ * generalized LR (GLR) parsing, unambiguous grammars: Simple GLR Parsers.
+@@ -10522,11 +10532,11 @@ Index
+                                                               (line   6)
+ * GLR parsers and yylval:                GLR Semantic Actions.
+                                                               (line  10)
+-* GLR parsing <1>:                       Generalized LR Parsing.
+-                                                              (line   6)
+-* GLR parsing <2>:                       GLR Parsers.         (line   6)
+-* GLR parsing:                           Language and Grammar.
++* GLR parsing <1>:                       Language and Grammar.
+                                                               (line  33)
++* GLR parsing <2>:                       Generalized LR Parsing.
++                                                              (line   6)
++* GLR parsing:                           GLR Parsers.         (line   6)
+ * GLR parsing, ambiguous grammars:       Merging GLR Parses.  (line   6)
+ * GLR parsing, unambiguous grammars:     Simple GLR Parsers.  (line   6)
+ * grammar file:                          Grammar Layout.      (line   6)
+@@ -10566,8 +10576,8 @@ Index
+ * lines on position:                     C++ Location Values. (line  22)
+ * literal string token:                  Symbols.             (line  53)
+ * literal token:                         Symbols.             (line  31)
+-* location <1>:                          Locations.           (line   6)
+-* location:                              Locations Overview.  (line   6)
++* location <1>:                          Locations Overview.  (line   6)
++* location:                              Locations.           (line   6)
+ * location actions:                      Actions and Locations.
+                                                               (line   6)
+ * Location on Location:                  Java Location Values.
+@@ -10632,8 +10642,9 @@ Index
+ * precedence, unary operator:            Contextual Precedence.
+                                                               (line   6)
+ * preventing warnings about conflicts:   Expect Decl.         (line   6)
+-* Prologue <1>:                          Decl Summary.        (line  50)
+-* Prologue:                              Prologue.            (line   6)
++* Prologue <1>:                          Decl Summary.        (line 129)
++* Prologue <2>:                          Prologue.            (line   6)
++* Prologue:                              Decl Summary.        (line  50)
+ * Prologue Alternatives:                 Prologue Alternatives.
+                                                               (line   6)
+ * pure parser:                           Pure Decl.           (line   6)
+@@ -10646,9 +10657,9 @@ Index
+ * recovery from errors:                  Error Recovery.      (line   6)
+ * recursive rule:                        Recursion.           (line   6)
+ * reduce/reduce conflict:                Reduce/Reduce.       (line   6)
+-* reduce/reduce conflicts <1>:           Merging GLR Parses.  (line   6)
++* reduce/reduce conflicts <1>:           GLR Parsers.         (line   6)
+ * reduce/reduce conflicts <2>:           Simple GLR Parsers.  (line   6)
+-* reduce/reduce conflicts:               GLR Parsers.         (line   6)
++* reduce/reduce conflicts:               Merging GLR Parses.  (line   6)
+ * reduction:                             Algorithm.           (line   6)
+ * reentrant parser:                      Pure Decl.           (line   6)
+ * requiring a version of Bison:          Require Decl.        (line   6)
+@@ -10681,8 +10692,8 @@ Index
+                                                               (line  68)
+ * setDebugStream on YYParser:            Java Parser Interface.
+                                                               (line  63)
+-* shift/reduce conflicts <1>:            Shift/Reduce.        (line   6)
+-* shift/reduce conflicts <2>:            Simple GLR Parsers.  (line   6)
++* shift/reduce conflicts <1>:            Simple GLR Parsers.  (line   6)
++* shift/reduce conflicts <2>:            Shift/Reduce.        (line   6)
+ * shift/reduce conflicts:                GLR Parsers.         (line   6)
+ * shifting:                              Algorithm.           (line   6)
+ * simple examples:                       Examples.            (line   6)
+@@ -10709,8 +10720,8 @@ Index
+ * syntax error:                          Error Reporting.     (line   6)
+ * syntax of grammar rules:               Rules.               (line   6)
+ * terminal symbol:                       Symbols.             (line   6)
+-* textual location <1>:                  Locations.           (line   6)
+-* textual location:                      Locations Overview.  (line   6)
++* textual location <1>:                  Locations Overview.  (line   6)
++* textual location:                      Locations.           (line   6)
+ * token:                                 Language and Grammar.
+                                                               (line  47)
+ * token type:                            Symbols.             (line   6)
+@@ -10740,20 +10751,20 @@ Index
+ * YYACCEPT;:                             Action Features.     (line  32)
+ * YYBACKUP <1>:                          Table of Symbols.    (line 238)
+ * YYBACKUP:                              Action Features.     (line  36)
+-* yychar <1>:                            Table of Symbols.    (line 242)
++* yychar <1>:                            Action Features.     (line  69)
+ * yychar <2>:                            Lookahead.           (line  47)
+-* yychar <3>:                            Action Features.     (line  69)
++* yychar <3>:                            Table of Symbols.    (line 242)
+ * yychar:                                GLR Semantic Actions.
+                                                               (line  10)
+-* yyclearin <1>:                         Table of Symbols.    (line 248)
+-* yyclearin <2>:                         Error Recovery.      (line  97)
+-* yyclearin:                             GLR Semantic Actions.
++* yyclearin <1>:                         GLR Semantic Actions.
+                                                               (line  18)
++* yyclearin <2>:                         Table of Symbols.    (line 248)
++* yyclearin:                             Error Recovery.      (line  97)
+ * yyclearin;:                            Action Features.     (line  76)
++* yydebug <1>:                           Tracing.             (line   6)
+ * yydebug:                               Table of Symbols.    (line 256)
+ * YYDEBUG <1>:                           Table of Symbols.    (line 252)
+ * YYDEBUG:                               Tracing.             (line  12)
+-* yydebug:                               Tracing.             (line   6)
+ * YYEMPTY:                               Action Features.     (line  49)
+ * YYENABLE_NLS:                          Internationalization.
+                                                               (line  27)
+@@ -10761,11 +10772,11 @@ Index
+ * yyerrok <1>:                           Table of Symbols.    (line 261)
+ * yyerrok:                               Error Recovery.      (line  92)
+ * yyerrok;:                              Action Features.     (line  81)
+-* yyerror:                               Table of Symbols.    (line 274)
+-* YYERROR:                               Table of Symbols.    (line 265)
++* YYERROR:                               Action Features.     (line  56)
+ * yyerror:                               Java Action Features.
+                                                               (line  64)
+-* YYERROR:                               Action Features.     (line  56)
++* YYERROR:                               Table of Symbols.    (line 265)
++* yyerror <1>:                           Table of Symbols.    (line 274)
+ * yyerror:                               Error Reporting.     (line   6)
+ * YYERROR:                               GLR Semantic Actions.
+                                                               (line  28)
+@@ -10782,29 +10793,29 @@ Index
+ * yylex on parser:                       C++ Scanner Interface.
+                                                               (line  12)
+ * YYLEX_PARAM:                           Table of Symbols.    (line 294)
+-* yylloc <1>:                            Table of Symbols.    (line 300)
+-* yylloc <2>:                            Lookahead.           (line  47)
+-* yylloc <3>:                            Action Features.     (line  86)
+-* yylloc <4>:                            Token Locations.     (line   6)
+-* yylloc <5>:                            Actions and Locations.
+-                                                              (line  60)
+-* yylloc:                                GLR Semantic Actions.
++* yylloc <1>:                            Token Locations.     (line   6)
++* yylloc <2>:                            Table of Symbols.    (line 300)
++* yylloc <3>:                            GLR Semantic Actions.
+                                                               (line  10)
++* yylloc <4>:                            Action Features.     (line  86)
++* yylloc <5>:                            Lookahead.           (line  47)
++* yylloc:                                Actions and Locations.
++                                                              (line  60)
+ * YYLLOC_DEFAULT:                        Location Default Action.
+                                                               (line   6)
+ * YYLTYPE <1>:                           Table of Symbols.    (line 310)
+ * YYLTYPE:                               Token Locations.     (line  19)
+-* yylval <1>:                            Table of Symbols.    (line 314)
+-* yylval <2>:                            Lookahead.           (line  47)
+-* yylval <3>:                            Action Features.     (line  92)
+-* yylval <4>:                            Token Values.        (line   6)
+-* yylval <5>:                            Actions.             (line  74)
+-* yylval:                                GLR Semantic Actions.
++* yylval <1>:                            Actions.             (line  74)
++* yylval <2>:                            Action Features.     (line  92)
++* yylval <3>:                            Table of Symbols.    (line 314)
++* yylval <4>:                            GLR Semantic Actions.
+                                                               (line  10)
++* yylval <5>:                            Lookahead.           (line  47)
++* yylval:                                Token Values.        (line   6)
+ * YYMAXDEPTH <1>:                        Table of Symbols.    (line 322)
+ * YYMAXDEPTH:                            Memory Management.   (line  14)
+-* yynerrs <1>:                           Table of Symbols.    (line 326)
+-* yynerrs:                               Error Reporting.     (line  92)
++* yynerrs <1>:                           Error Reporting.     (line  92)
++* yynerrs:                               Table of Symbols.    (line 326)
+ * yyparse <1>:                           Table of Symbols.    (line 332)
+ * yyparse:                               Parser Function.     (line   6)
+ * YYPARSE_PARAM:                         Table of Symbols.    (line 365)
+@@ -10814,18 +10825,21 @@ Index
+ * yypstate_delete <1>:                   Table of Symbols.    (line 336)
+ * yypstate_delete:                       Parser Delete Function.
+                                                               (line   6)
+-* yypstate_new <1>:                      Table of Symbols.    (line 344)
+-* yypstate_new:                          Parser Create Function.
++* yypstate_new <1>:                      Parser Create Function.
+                                                               (line   6)
+-* yypull_parse <1>:                      Table of Symbols.    (line 351)
+-* yypull_parse:                          Pull Parser Function.
+-                                                              (line   6)
+-* yypush_parse <1>:                      Table of Symbols.    (line 358)
+-* yypush_parse:                          Push Parser Function.
++* yypstate_new:                          Table of Symbols.    (line 344)
++* yypull_parse <1>:                      Pull Parser Function.
+                                                               (line   6)
+-* YYRECOVERING <1>:                      Table of Symbols.    (line 371)
++* yypull_parse <2>:                      Table of Symbols.    (line 351)
++* yypull_parse:                          Pull Parser Function.
++                                                              (line  14)
++* yypush_parse <1>:                      Push Parser Function.
++                                                              (line  15)
++* yypush_parse:                          Table of Symbols.    (line 358)
++* YYRECOVERING <1>:                      Action Features.     (line  64)
+ * YYRECOVERING <2>:                      Error Recovery.      (line 109)
+-* YYRECOVERING:                          Action Features.     (line  64)
++* YYRECOVERING <3>:                      Action Features.     (line  64)
++* YYRECOVERING:                          Table of Symbols.    (line 371)
+ * YYSTACK_USE_ALLOCA:                    Table of Symbols.    (line 376)
+ * YYSTYPE:                               Table of Symbols.    (line 392)
+ * | <1>:                                 Table of Symbols.    (line  43)
+@@ -10834,162 +10848,162 @@ Index
+ 
+ 
+ Tag Table:
+-Node: Top1120
+-Node: Introduction13685
+-Node: Conditions14948
+-Node: Copying16839
+-Node: Concepts54377
+-Node: Language and Grammar55558
+-Node: Grammar in Bison61447
+-Node: Semantic Values63376
+-Node: Semantic Actions65482
+-Node: GLR Parsers66669
+-Node: Simple GLR Parsers69416
+-Node: Merging GLR Parses76068
+-Node: GLR Semantic Actions80637
+-Node: Compiler Requirements82527
+-Node: Locations Overview83263
+-Node: Bison Parser84716
+-Node: Stages87656
+-Node: Grammar Layout88944
+-Node: Examples90276
+-Node: RPN Calc91479
+-Node: Rpcalc Declarations92479
+-Node: Rpcalc Rules94407
+-Node: Rpcalc Input96223
+-Node: Rpcalc Line97698
+-Node: Rpcalc Expr98826
+-Node: Rpcalc Lexer100793
+-Node: Rpcalc Main103387
+-Node: Rpcalc Error103794
+-Node: Rpcalc Generate104827
+-Node: Rpcalc Compile105962
+-Node: Infix Calc106841
+-Node: Simple Error Recovery109604
+-Node: Location Tracking Calc111499
+-Node: Ltcalc Declarations112195
+-Node: Ltcalc Rules113284
+-Node: Ltcalc Lexer115300
+-Node: Multi-function Calc117623
+-Node: Mfcalc Declarations119199
+-Node: Mfcalc Rules121246
+-Node: Mfcalc Symbol Table122641
+-Node: Exercises128817
+-Node: Grammar File129331
+-Node: Grammar Outline130180
+-Node: Prologue131030
+-Node: Prologue Alternatives132819
+-Node: Bison Declarations142504
+-Node: Grammar Rules142932
+-Node: Epilogue143403
+-Node: Symbols144419
+-Node: Rules151122
+-Node: Recursion153601
+-Node: Semantics155319
+-Node: Value Type156418
+-Node: Multiple Types157253
+-Node: Actions158420
+-Node: Action Types161835
+-Node: Mid-Rule Actions163147
+-Node: Locations169612
+-Node: Location Type170263
+-Node: Actions and Locations171049
+-Node: Location Default Action173510
+-Node: Declarations177230
+-Node: Require Decl178757
+-Node: Token Decl179076
+-Node: Precedence Decl181502
+-Node: Union Decl183512
+-Node: Type Decl185286
+-Node: Initial Action Decl186212
+-Node: Destructor Decl186983
+-Node: Expect Decl192447
+-Node: Start Decl194440
+-Node: Pure Decl194828
+-Node: Push Decl196578
+-Node: Decl Summary201077
+-Ref: Decl Summary-Footnote-1217963
+-Node: Multiple Parsers218167
+-Node: Interface219806
+-Node: Parser Function221124
+-Node: Push Parser Function223140
+-Node: Pull Parser Function223950
+-Node: Parser Create Function224601
+-Node: Parser Delete Function225424
+-Node: Lexical226195
+-Node: Calling Convention227627
+-Node: Token Values230587
+-Node: Token Locations231751
+-Node: Pure Calling232645
+-Node: Error Reporting234526
+-Node: Action Features238656
+-Node: Internationalization242958
+-Node: Algorithm245499
+-Node: Lookahead247865
+-Node: Shift/Reduce250074
+-Node: Precedence252969
+-Node: Why Precedence253625
+-Node: Using Precedence255498
+-Node: Precedence Examples256475
+-Node: How Precedence257185
+-Node: Contextual Precedence258342
+-Node: Parser States260138
+-Node: Reduce/Reduce261382
+-Node: Mystery Conflicts264923
+-Node: Generalized LR Parsing268630
+-Node: Memory Management273249
+-Node: Error Recovery275462
+-Node: Context Dependency280765
+-Node: Semantic Tokens281614
+-Node: Lexical Tie-ins284684
+-Node: Tie-in Recovery286261
+-Node: Debugging288438
+-Node: Understanding289104
+-Node: Tracing300263
+-Node: Invocation304365
+-Node: Bison Options305764
+-Node: Option Cross Key312768
+-Node: Yacc Library313820
+-Node: Other Languages314645
+-Node: C++ Parsers314972
+-Node: C++ Bison Interface315469
+-Node: C++ Semantic Values316737
+-Ref: C++ Semantic Values-Footnote-1317679
+-Node: C++ Location Values317832
+-Node: C++ Parser Interface320205
+-Node: C++ Scanner Interface321922
+-Node: A Complete C++ Example322624
+-Node: Calc++ --- C++ Calculator323566
+-Node: Calc++ Parsing Driver324080
+-Node: Calc++ Parser327861
+-Node: Calc++ Scanner331651
+-Node: Calc++ Top Level335077
+-Node: Java Parsers335726
+-Node: Java Bison Interface336403
+-Node: Java Semantic Values338366
+-Node: Java Location Values339980
+-Node: Java Parser Interface341536
+-Node: Java Scanner Interface344774
+-Node: Java Action Features346959
+-Node: Java Differences349686
+-Ref: Java Differences-Footnote-1352261
+-Node: Java Declarations Summary352411
+-Node: FAQ356659
+-Node: Memory Exhausted357606
+-Node: How Can I Reset the Parser357916
+-Node: Strings are Destroyed360185
+-Node: Implementing Gotos/Loops361774
+-Node: Multiple start-symbols363057
+-Node: Secure? Conform?364602
+-Node: I can't build Bison365050
+-Node: Where can I find help?365768
+-Node: Bug Reports366561
+-Node: More Languages368022
+-Node: Beta Testing368380
+-Node: Mailing Lists369254
+-Node: Table of Symbols369465
+-Node: Glossary384847
+-Node: Copying This Manual391744
+-Node: Index414137
++Node: Top1174
++Node: Introduction13739
++Node: Conditions15002
++Node: Copying16893
++Node: Concepts54431
++Node: Language and Grammar55612
++Node: Grammar in Bison61501
++Node: Semantic Values63430
++Node: Semantic Actions65536
++Node: GLR Parsers66723
++Node: Simple GLR Parsers69470
++Node: Merging GLR Parses76122
++Node: GLR Semantic Actions80691
++Node: Compiler Requirements82581
++Node: Locations Overview83317
++Node: Bison Parser84770
++Node: Stages87710
++Node: Grammar Layout88998
++Node: Examples90330
++Node: RPN Calc91533
++Node: Rpcalc Declarations92533
++Node: Rpcalc Rules94461
++Node: Rpcalc Input96277
++Node: Rpcalc Line97752
++Node: Rpcalc Expr98880
++Node: Rpcalc Lexer100847
++Node: Rpcalc Main103441
++Node: Rpcalc Error103848
++Node: Rpcalc Generate104881
++Node: Rpcalc Compile106016
++Node: Infix Calc106895
++Node: Simple Error Recovery109658
++Node: Location Tracking Calc111553
++Node: Ltcalc Declarations112249
++Node: Ltcalc Rules113338
++Node: Ltcalc Lexer115354
++Node: Multi-function Calc117677
++Node: Mfcalc Declarations119253
++Node: Mfcalc Rules121300
++Node: Mfcalc Symbol Table122695
++Node: Exercises128871
++Node: Grammar File129385
++Node: Grammar Outline130234
++Node: Prologue131084
++Node: Prologue Alternatives132873
++Node: Bison Declarations142558
++Node: Grammar Rules142986
++Node: Epilogue143457
++Node: Symbols144473
++Node: Rules151176
++Node: Recursion153655
++Node: Semantics155373
++Node: Value Type156472
++Node: Multiple Types157307
++Node: Actions158474
++Node: Action Types161889
++Node: Mid-Rule Actions163201
++Node: Locations169666
++Node: Location Type170317
++Node: Actions and Locations171103
++Node: Location Default Action173564
++Node: Declarations177284
++Node: Require Decl178811
++Node: Token Decl179130
++Node: Precedence Decl181556
++Node: Union Decl183566
++Node: Type Decl185340
++Node: Initial Action Decl186266
++Node: Destructor Decl187037
++Node: Expect Decl192501
++Node: Start Decl194494
++Node: Pure Decl194882
++Node: Push Decl196632
++Node: Decl Summary201131
++Ref: Decl Summary-Footnote-1218017
++Node: Multiple Parsers218221
++Node: Interface219860
++Node: Parser Function221178
++Node: Push Parser Function223194
++Node: Pull Parser Function224004
++Node: Parser Create Function224655
++Node: Parser Delete Function225478
++Node: Lexical226249
++Node: Calling Convention227681
++Node: Token Values230641
++Node: Token Locations231805
++Node: Pure Calling232699
++Node: Error Reporting234580
++Node: Action Features238710
++Node: Internationalization243012
++Node: Algorithm245553
++Node: Lookahead247919
++Node: Shift/Reduce250128
++Node: Precedence253023
++Node: Why Precedence253679
++Node: Using Precedence255552
++Node: Precedence Examples256529
++Node: How Precedence257239
++Node: Contextual Precedence258396
++Node: Parser States260192
++Node: Reduce/Reduce261436
++Node: Mystery Conflicts264977
++Node: Generalized LR Parsing268684
++Node: Memory Management273303
++Node: Error Recovery275516
++Node: Context Dependency280819
++Node: Semantic Tokens281668
++Node: Lexical Tie-ins284738
++Node: Tie-in Recovery286315
++Node: Debugging288492
++Node: Understanding289158
++Node: Tracing300317
++Node: Invocation304419
++Node: Bison Options305818
++Node: Option Cross Key312822
++Node: Yacc Library313874
++Node: Other Languages314699
++Node: C++ Parsers315026
++Node: C++ Bison Interface315523
++Node: C++ Semantic Values316791
++Ref: C++ Semantic Values-Footnote-1317733
++Node: C++ Location Values317886
++Node: C++ Parser Interface320259
++Node: C++ Scanner Interface321976
++Node: A Complete C++ Example322678
++Node: Calc++ --- C++ Calculator323620
++Node: Calc++ Parsing Driver324134
++Node: Calc++ Parser327915
++Node: Calc++ Scanner331705
++Node: Calc++ Top Level335131
++Node: Java Parsers335780
++Node: Java Bison Interface336457
++Node: Java Semantic Values338420
++Node: Java Location Values340034
++Node: Java Parser Interface341590
++Node: Java Scanner Interface344828
++Node: Java Action Features347013
++Node: Java Differences349740
++Ref: Java Differences-Footnote-1352315
++Node: Java Declarations Summary352465
++Node: FAQ356713
++Node: Memory Exhausted357660
++Node: How Can I Reset the Parser357970
++Node: Strings are Destroyed360239
++Node: Implementing Gotos/Loops361828
++Node: Multiple start-symbols363111
++Node: Secure? Conform?364656
++Node: I can't build Bison365104
++Node: Where can I find help?365822
++Node: Bug Reports366615
++Node: More Languages368076
++Node: Beta Testing368434
++Node: Mailing Lists369308
++Node: Table of Symbols369519
++Node: Glossary384901
++Node: Copying This Manual391798
++Node: Index414191
+ 
+ End Tag Table
+diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.4.1-orig/lib/Makefile.in bison-2.4.1-src/lib/Makefile.in
+--- bison-2.4.1-orig/lib/Makefile.in	2008-12-11 23:05:55.000000000 +0100
++++ bison-2.4.1-src/lib/Makefile.in	2008-12-14 12:51:16.812500000 +0100
+@@ -132,7 +132,8 @@ am_libbison_a_OBJECTS = c-ctype.$(OBJEXT
+ 	mbswidth.$(OBJEXT) uniwidth/width.$(OBJEXT) \
+ 	xalloc-die.$(OBJEXT) xstrndup.$(OBJEXT) get-errno.$(OBJEXT) \
+ 	subpipe.$(OBJEXT) $(am__objects_1) $(am__objects_2) \
+-	$(am__objects_3)
++	$(am__objects_3) \
++	progname.$(OBJEXT) progreloc.$(OBJEXT) relocatable.$(OBJEXT)
+ libbison_a_OBJECTS = $(am_libbison_a_OBJECTS)
+ liby_a_AR = $(AR) $(ARFLAGS)
+ liby_a_LIBADD =
+diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.4.1-orig/lib/config.hin bison-2.4.1-src/lib/config.hin
+--- bison-2.4.1-orig/lib/config.hin	2008-12-11 23:05:52.000000000 +0100
++++ bison-2.4.1-src/lib/config.hin	2008-12-14 13:00:12.984375000 +0100
+@@ -551,3 +551,5 @@
+ 
+ /* Define as `fork' if `vfork' does not work. */
+ #undef vfork
++
++#include "confsys.h"
+diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.4.1-orig/lib/pipe-safer.c bison-2.4.1-src/lib/pipe-safer.c
+--- bison-2.4.1-orig/lib/pipe-safer.c	2008-11-03 20:07:17.000000000 +0100
++++ bison-2.4.1-src/lib/pipe-safer.c	2008-12-14 14:25:38.687500000 +0100
+@@ -19,6 +19,7 @@
+ #include <config.h>
+ 
+ #include "unistd-safer.h"
++#include "subpipe.h"
+ 
+ #include <unistd.h>
+ #include <errno.h>
+diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.4.1-orig/lib/subpipe.c bison-2.4.1-src/lib/subpipe.c
+--- bison-2.4.1-orig/lib/subpipe.c	2008-11-03 19:54:12.000000000 +0100
++++ bison-2.4.1-src/lib/subpipe.c	2008-12-13 18:14:40.906250000 +0100
+@@ -78,7 +78,6 @@
+ # define ATTRIBUTE_UNUSED __attribute__ ((__unused__))
+ #endif
+ 
+-
+ /* Initialize this module.  */
+ 
+ void
+@@ -114,6 +113,45 @@ create_subpipe (char const * const *argv
+   fd[1] = pipe_fd[0];
+   child_fd[1] = pipe_fd[1];
+ 
++/* WIN32 patch taken from the Mingw port:
++   http://prdownloads.sourceforge.net/mingw/bison-1.875-2003.02.10-1-src.tar.bz2?download
++*/
++#ifdef _WIN32
++  /* In windows we must control what the child inherits with the parent process
++   * and then use a spawn function instead of a fork/exec pair.
++   *
++   * So, in assigning the pipe pair we must dup stdio to save the originals,
++   * dup2 the pipe handles to the stdio handles, spawn and then dup2 the saved
++   * handles back to stdio and close the dupped ones.
++   */
++  int osi, oso;
++  
++  if ((osi = dup (STDIN_FILENO)) < 0)
++      error (EXIT_FAILURE, errno, "pipe");
++  setmode(osi, O_NOINHERIT);
++  if ((oso = dup (STDOUT_FILENO)) < 0)
++      error (EXIT_FAILURE, errno, "pipe");
++  setmode(oso, O_NOINHERIT);
++
++  if (dup2(child_fd[0], STDIN_FILENO) < 0)
++      error (EXIT_FAILURE, errno, "pipe");
++  if (dup2(child_fd[1], STDOUT_FILENO) < 0)
++      error (EXIT_FAILURE, errno, "pipe");
++
++#include <conio.h>
++  pid = spawnvp(P_NOWAIT, argv[0], argv);
++  if (pid < 0) {
++  	  printf ("spawnvp: %s\n", argv[0]);
++      error (EXIT_FAILURE, errno, argv[0]);
++  }
++  if (dup2 (osi, STDIN_FILENO))
++      error (EXIT_FAILURE, errno, "dup2");
++  close (osi);
++  if (dup2 (oso, STDOUT_FILENO))
++      error (EXIT_FAILURE, errno, "dup2");
++  close (oso);
++
++#else
+   pid = vfork ();
+   if (pid < 0)
+     error (EXIT_FAILURE, errno, "fork");
+@@ -135,7 +173,7 @@ create_subpipe (char const * const *argv
+ 
+       _exit (errno == ENOENT ? 127 : 126);
+     }
+-
++#endif /* _WIN32 */
+   /* Parent.  */
+   close (child_fd[0]);
+   close (child_fd[1]);
+diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.4.1-orig/lib/subpipe.h bison-2.4.1-src/lib/subpipe.h
+--- bison-2.4.1-orig/lib/subpipe.h	2008-11-03 19:54:12.000000000 +0100
++++ bison-2.4.1-src/lib/subpipe.h	2008-12-13 18:14:41.000000000 +0100
+@@ -25,3 +25,8 @@ void init_subpipe (void);
+ pid_t create_subpipe (char const * const *, int[2]);
+ void end_of_output_subpipe (pid_t, int[2]);
+ void reap_subpipe (pid_t, char const *);
++#ifdef _WIN32
++# include <io.h>
++# include <fcntl.h>
++# define pipe(a) _pipe((a), 0, O_NOINHERIT)
++#endif
+diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.4.1-orig/src/Makefile.in bison-2.4.1-src/src/Makefile.in
+--- bison-2.4.1-orig/src/Makefile.in	2008-12-11 23:05:55.000000000 +0100
++++ bison-2.4.1-src/src/Makefile.in	2008-12-13 18:22:23.468750000 +0100
+@@ -110,7 +110,7 @@ am_bison_OBJECTS = LR0.$(OBJEXT) assoc.$
+ 	relation.$(OBJEXT) scan-code-c.$(OBJEXT) scan-gram-c.$(OBJEXT) \
+ 	scan-skel-c.$(OBJEXT) state.$(OBJEXT) symlist.$(OBJEXT) \
+ 	symtab.$(OBJEXT) tables.$(OBJEXT) uniqstr.$(OBJEXT) \
+-	graphviz.$(OBJEXT)
++	graphviz.$(OBJEXT) bison-res.$(OBJEXT)
+ bison_OBJECTS = $(am_bison_OBJECTS)
+ bison_LDADD = $(LDADD)
+ am__DEPENDENCIES_1 =
+@@ -367,7 +367,7 @@ LOCALCHARSET_TESTS_ENVIRONMENT = @LOCALC
+ LTLIBICONV = @LTLIBICONV@
+ LTLIBINTL = @LTLIBINTL@
+ LTLIBOBJS = @LTLIBOBJS@
+-M4 = @M4@
++M4 = m4.exe
+ MAKEINFO = @MAKEINFO@
+ MKDIR_P = @MKDIR_P@
+ MSGFMT = @MSGFMT@
+@@ -430,6 +430,9 @@ UNISTD_H_HAVE_WINSOCK2_H = @UNISTD_H_HAV
+ USE_NLS = @USE_NLS@
+ VALGRIND = @VALGRIND@
+ VERSION = @VERSION@
++MAJOR=$(shell echo $(VERSION) | sed -e "s/\..*$$//")
++MINOR=$(shell echo $(VERSION) | sed -e "s/^[^\.]*\.0*\([0-9]\+\).*$$/\1/")
++LDFLAGS += -Wl,--major-image-version=$(MAJOR) -Wl,--minor-image-version=$(MINOR) 
+ VOID_UNSETENV = @VOID_UNSETENV@
+ WARN_CFLAGS = @WARN_CFLAGS@
+ WARN_CXXFLAGS = @WARN_CXXFLAGS@
+@@ -508,7 +511,7 @@ top_srcdir = @top_srcdir@
+ AM_CFLAGS = $(WARN_CFLAGS) $(WERROR_CFLAGS)
+ AM_CPPFLAGS = -I$(top_srcdir)/lib
+ AM_YFLAGS = "-dv"
+-LDADD = ../lib/libbison.a $(LIBINTL)
++LDADD = ../lib/libbison.a $(LIBINTL) $(VERSADD)
+ bin_SCRIPTS = $(YACC_SCRIPT)
+ EXTRA_SCRIPTS = yacc
+ bison_SOURCES = \
+@@ -558,7 +561,7 @@ all: $(BUILT_SOURCES)
+ 	$(MAKE) $(AM_MAKEFLAGS) all-am
+ 
+ .SUFFIXES:
+-.SUFFIXES: .c .l .o .obj .y
++.SUFFIXES: .c .l .o .obj .y .rc
+ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
+ 	@for dep in $?; do \
+ 	  case '$(am__configure_deps)' in \
+@@ -706,6 +709,12 @@ distclean-compile:
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tables.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/uniqstr.Po@am__quote@
+ 
++# Rule to make compiled resource (Windows)
++resdir = @top_builddir@/resource
++vpath %-res.rc $(resdir)
++%-res.o: %-res.rc
++	windres --include-dir $(resdir) -i $< -o $@
++
+ .c.o:
+ @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+ @am__fastdepCC_TRUE@	mv -f $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.4.1-orig/src/getargs.c bison-2.4.1-src/src/getargs.c
+--- bison-2.4.1-orig/src/getargs.c	2008-11-19 17:57:30.000000000 +0100
++++ bison-2.4.1-src/src/getargs.c	2008-12-14 13:02:51.015625000 +0100
+@@ -76,8 +76,6 @@ int language_prio = default_prio;
+ struct bison_language const *language = &valid_languages[0];
+ const char *include = NULL;
+ 
+-char *program_name;
+-
+ 
+ /** Decode an option's set of keys.
+  *
+diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.4.1-orig/src/getargs.h bison-2.4.1-src/src/getargs.h
+--- bison-2.4.1-orig/src/getargs.h	2008-11-19 17:57:30.000000000 +0100
++++ bison-2.4.1-src/src/getargs.h	2008-12-14 13:02:13.437500000 +0100
+@@ -23,7 +23,7 @@
+ 
+ #include "location.h"
+ 
+-extern char *program_name;
++#include "progname.h"
+ enum { command_line_prio, grammar_prio, default_prio };
+ 
+ /* flags set by % directives */
+diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.4.1-orig/src/main.c bison-2.4.1-src/src/main.c
+--- bison-2.4.1-orig/src/main.c	2008-11-19 17:57:30.000000000 +0100
++++ bison-2.4.1-src/src/main.c	2008-12-14 13:03:00.234375000 +0100
+@@ -55,7 +55,7 @@
+ int
+ main (int argc, char *argv[])
+ {
+-  program_name = argv[0];
++  set_program_name (argv[0]);
+   setlocale (LC_ALL, "");
+   (void) bindtextdomain (PACKAGE, LOCALEDIR);
+   (void) bindtextdomain ("bison-runtime", LOCALEDIR);
+diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.4.1-orig/src/output.c bison-2.4.1-src/src/output.c
+--- bison-2.4.1-orig/src/output.c	2008-11-19 17:57:30.000000000 +0100
++++ bison-2.4.1-src/src/output.c	2008-12-14 12:49:25.203125000 +0100
+@@ -39,6 +39,7 @@
+ #include "scan-skel.h"
+ #include "symtab.h"
+ #include "tables.h"
++#include <relocatable.h>
+ 
+ 
+ static struct obstack format_obstack;
+@@ -672,5 +673,5 @@ char const *
+ compute_pkgdatadir (void)
+ {
+   char const *pkgdatadir = getenv ("BISON_PKGDATADIR");
+-  return pkgdatadir ? pkgdatadir : PKGDATADIR;
++  return pkgdatadir ? pkgdatadir : relocate (PKGDATADIR);
+ }
+diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.4.1-orig/tests/Makefile.in bison-2.4.1-src/tests/Makefile.in
+--- bison-2.4.1-orig/tests/Makefile.in	2008-12-11 23:05:55.000000000 +0100
++++ bison-2.4.1-src/tests/Makefile.in	2008-12-14 22:46:56.578125000 +0100
+@@ -514,7 +514,7 @@ $(top_srcdir)/configure:  $(am__configur
+ $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
+ 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
+ atlocal: $(top_builddir)/config.status $(srcdir)/atlocal.in
+-	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
++	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ && sed -i.orig -e  's/\\\"\$$(/$$/g;s/)\\\"//g' $(subdir)/$@
+ bison: $(top_builddir)/config.status $(srcdir)/bison.in
+ 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+ tags: TAGS
+@@ -661,7 +661,7 @@ $(srcdir)/package.m4: $(top_srcdir)/conf
+ 	} >$(srcdir)/package.m4
+ $(TESTSUITE): package.m4 $(TESTSUITE_AT)
+ 	$(AUTOTEST) -I $(srcdir) testsuite.at -o $@.tmp
+-	mv $@.tmp $@
++	sed -e "s/diff -u/diff -u --strip-trailing-cr/g" $@.tmp > $@
+ 
+ atconfig: $(top_builddir)/config.status
+ 	cd $(top_builddir) && ./config.status tests/$@
+diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.4.1-orig/tests/atlocal.in bison-2.4.1-src/tests/atlocal.in
+--- bison-2.4.1-orig/tests/atlocal.in	2008-12-11 22:01:35.000000000 +0100
++++ bison-2.4.1-src/tests/atlocal.in	2008-12-14 21:29:01.171875000 +0100
+@@ -4,6 +4,13 @@
+ # Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008 Free
+ # Software Foundation, Inc.
+ 
++EXEEXT='@EXEEXT@'
++exec_prefix='@exec_prefix@'
++bindir='@bindir@'
++prefix='@prefix@'
++buildlibdir=$(cygpath -m $abs_top_builddir/lib)
++srclibdir=$(cygpath -m $abs_top_srcdir/lib)
++
+ # We need a C compiler.
+ CC='@CC@'
+ 
+@@ -11,7 +18,7 @@ CC='@CC@'
+ CFLAGS='@O0CFLAGS@ @WARN_CFLAGS@ @WERROR_CFLAGS@'
+ 
+ # We need `config.h'.
+-CPPFLAGS="-I$abs_top_builddir/lib @CPPFLAGS@"
++CPPFLAGS="-I$buildlibdir -I$srclibdir @CPPFLAGS@"
+ 
+ # Is the compiler GCC?
+ GCC='@GCC@'
+@@ -29,7 +36,7 @@ CXXFLAGS='@O0CXXFLAGS@ @WARN_CXXFLAGS@ @
+ LDFLAGS='@LDFLAGS@'
+ 
+ # Are special libraries needed?
+-LIBS='@LIBS@ @INTLLIBS@'
++LIBS="@LIBS@ @INTLLIBS@ $buildlibdir/libbison.a"
+ 
+ # Empty if no javac was found
+ CONF_JAVAC='@CONF_JAVAC@'
+diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.4.1-orig/tests/bison.in bison-2.4.1-src/tests/bison.in
+--- bison-2.4.1-orig/tests/bison.in	2008-07-14 11:56:12.000000000 +0200
++++ bison-2.4.1-src/tests/bison.in	2008-12-13 18:14:41.109375000 +0100
+@@ -3,6 +3,6 @@
+ # Wrapper around a non installed bison to make it work as an installed one.
+ 
+ # Use the shipped files, not those installed.
+-BISON_PKGDATADIR='@abs_top_srcdir@/data'
++BISON_PKGDATADIR=$(cygpath -m '@abs_top_srcdir@/data')
+ export BISON_PKGDATADIR
+-exec $PREBISON '@abs_top_builddir@/src/bison' ${1+"$@"}
++exec $PREBISON $(cygpath -m '@abs_top_builddir@/src/bison') ${1+"$@"}
+diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.4.1-orig/tests/calc.at bison-2.4.1-src/tests/calc.at
+--- bison-2.4.1-orig/tests/calc.at	2008-11-19 17:57:30.000000000 +0100
++++ bison-2.4.1-src/tests/calc.at	2008-12-14 23:06:11.296875000 +0100
+@@ -186,7 +186,7 @@ extern FILE *input;]AT_SKEL_CC_IF([[
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -500,7 +500,7 @@ _AT_CHECK_CALC_ERROR([$1], [1],
+                      [20],
+                      [2.1: syntax error, unexpected '+'])
+ # Exercise error messages with EOF: work on an empty file.
+-_AT_CHECK_CALC_ERROR([$1], [1], [/dev/null], [4],
++_AT_CHECK_CALC_ERROR([$1], [1], [NUL], [4],
+                      [1.1: syntax error, unexpected end of input])
+ 
+ # Exercise the error token: without it, we die at the first error,
+diff -ipuwr --binary --strip-trailing-cr -x '*.bak' -x '*.orig' -x '*.rej' -x '*.new' -x '*~' -x debian -x '*.po' -x '*.pot' bison-2.4.1-orig/tests/testsuite bison-2.4.1-src/tests/testsuite
+--- bison-2.4.1-orig/tests/testsuite	2008-12-11 23:07:46.000000000 +0100
++++ bison-2.4.1-src/tests/testsuite	2009-05-04 21:39:11.562500000 +0200
+@@ -1,5 +1,5 @@
+ #! /bin/sh
+-# Generated from local.at by GNU Autoconf 2.62.
++# Generated from ../../bison-2.4.1-src/tests/local.at by GNU Autoconf 2.63.
+ #
+ # Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+ # Free Software Foundation, Inc.
+@@ -470,7 +470,8 @@ test \$exitcode = 0") || {
+       s/-\n.*//
+     ' >$as_me.lineno &&
+   chmod +x "$as_me.lineno" ||
+-    { $as_echo "$as_me: error: cannot create $as_me.lineno; rerun with a POSIX shell" >&2
++    { { $as_echo "$as_me:$LINENO: error: cannot create $as_me.lineno; rerun with a POSIX shell" >&5
++$as_echo "$as_me: error: cannot create $as_me.lineno; rerun with a POSIX shell" >&2;}
+    { (exit 1); exit 1; }; }
+ 
+   # Don't try to exec as it changes $[0], causing all sort of problems
+@@ -868,17 +869,27 @@ at_help_all="1;input.at:27;Invalid \$n a
+ 240;push.at:155;Push Parsing: Unsupported Skeletons;;
+ "
+ 
+-# at_func_validate_ranges [N...]
+-# ------------------------------
+-# validate test group ranges
++# at_func_validate_ranges [NAME...]
++# ---------------------------------
++# Validate and normalize the test group number contained in each
++# variable NAME.  Leading zeroes are treated as decimal.
+ at_func_validate_ranges ()
+ {
+   for at_grp
+   do
+-    if test $at_grp -lt 1 || test $at_grp -gt 240; then
+-      $as_echo "invalid test group: $at_grp" >&2
++    eval at_value=\$$at_grp
++    if test $at_value -lt 1 || test $at_value -gt 240; then
++      $as_echo "invalid test group: $at_value" >&2
+       exit 1
+     fi
++    case $at_value in
++      0*) # We want to treat leading 0 as decimal, like expr and test, but
++	  # at_func_arith treats it as octal if it uses $(( )).
++	  # With XSI shells, ${at_value#${at_value%%[1-9]*}} avoids the
++	  # expr fork, but it is not worth the effort to determine if the
++	  # shell supports XSI when the user can just avoid leading 0.
++	  eval $at_grp='`expr $at_value + 0`' ;;
++    esac
+   done
+ }
+ 
+@@ -933,14 +944,14 @@ do
+ 	;;
+ 
+     [0-9] | [0-9][0-9] | [0-9][0-9][0-9] | [0-9][0-9][0-9][0-9])
+-	at_func_validate_ranges $at_option
++	at_func_validate_ranges at_option
+ 	at_groups="$at_groups$at_option "
+ 	;;
+ 
+     # Ranges
+     [0-9]- | [0-9][0-9]- | [0-9][0-9][0-9]- | [0-9][0-9][0-9][0-9]-)
+ 	at_range_start=`echo $at_option |tr -d X-`
+-	at_func_validate_ranges $at_range_start
++	at_func_validate_ranges at_range_start
+ 	at_range=`$as_echo " $at_groups_all " | \
+ 	  sed -e 's/^.* \('$at_range_start' \)/\1/'`
+ 	at_groups="$at_groups$at_range "
+@@ -948,7 +959,7 @@ do
+ 
+     -[0-9] | -[0-9][0-9] | -[0-9][0-9][0-9] | -[0-9][0-9][0-9][0-9])
+ 	at_range_end=`echo $at_option |tr -d X-`
+-	at_func_validate_ranges $at_range_end
++	at_func_validate_ranges at_range_end
+ 	at_range=`$as_echo " $at_groups_all " | \
+ 	  sed -e 's/\( '$at_range_end'\) .*$/\1/'`
+ 	at_groups="$at_groups$at_range "
+@@ -967,7 +978,7 @@ do
+ 	  at_range_end=$at_range_start
+ 	  at_range_start=$at_tmp
+ 	fi
+-	at_func_validate_ranges $at_range_start $at_range_end
++	at_func_validate_ranges at_range_start at_range_end
+ 	at_range=`$as_echo " $at_groups_all " | \
+ 	  sed -e 's/^.*\( '$at_range_start' \)/\1/' \
+ 	      -e 's/\( '$at_range_end'\) .*$/\1/'`
+@@ -1019,7 +1030,8 @@ do
+ 	# Reject names that are not valid shell variable names.
+ 	case $at_envvar in
+ 	  '' | [0-9]* | *[!_$as_cr_alnum]* )
+-	    { $as_echo "$as_me: error: invalid variable name: $at_envvar" >&2
++	    { { $as_echo "$as_me:$LINENO: error: invalid variable name: $at_envvar" >&5
++$as_echo "$as_me: error: invalid variable name: $at_envvar" >&2;}
+    { (exit 1); exit 1; }; } ;;
+ 	esac
+ 	at_value=`$as_echo "$at_optarg" | sed "s/'/'\\\\\\\\''/g"`
+@@ -1037,7 +1049,8 @@ done
+ 
+ # Verify our last option didn't require an argument
+ if test -n "$at_prev"; then
+-  { $as_echo "$as_me: error: \`$at_prev' requires an argument." >&2
++  { { $as_echo "$as_me:$LINENO: error: \`$at_prev' requires an argument." >&5
++$as_echo "$as_me: error: \`$at_prev' requires an argument." >&2;}
+    { (exit 1); exit 1; }; }
+ fi
+ 
+@@ -1223,7 +1236,8 @@ if $at_change_dir ; then
+     at_dir=./-
+   fi
+   test x != "x$at_dir" && cd "$at_dir" \
+-    || { $as_echo "$as_me: error: unable to change directory" >&2
++    || { { $as_echo "$as_me:$LINENO: error: unable to change directory" >&5
++$as_echo "$as_me: error: unable to change directory" >&2;}
+    { (exit 1); exit 1; }; }
+   at_dir=`pwd`
+ fi
+@@ -1232,7 +1246,8 @@ fi
+ for at_file in atconfig atlocal
+ do
+   test -r $at_file || continue
+-  . ./$at_file || { $as_echo "$as_me: error: invalid content: $at_file" >&2
++  . ./$at_file || { { $as_echo "$as_me:$LINENO: error: invalid content: $at_file" >&5
++$as_echo "$as_me: error: invalid content: $at_file" >&2;}
+    { (exit 1); exit 1; }; }
+ done
+ 
+@@ -1258,23 +1273,45 @@ if test -n "$at_top_srcdir"; then
+   done
+ fi
+ 
++## ------------------- ##
++## Directory structure ##
++## ------------------- ##
++
++# This is the set of directories and files used by this script
++# (non-literals are capitalized):
++#
++# TESTSUITE         - the testsuite
++# TESTSUITE.log     - summarizes the complete testsuite run
++# TESTSUITE.dir/    - created during a run, remains after -d or failed test
++# + at-groups/      - during a run: status of all groups in run
++# | + NNN/          - during a run: meta-data about test group NNN
++# | | + check-line  - location (source file and line) of current AT_CHECK
++# | | + status      - exit status of current AT_CHECK
++# | | + stdout      - stdout of current AT_CHECK
++# | | + stder1      - stderr, including trace
++# | | + stderr      - stderr, with trace filtered out
++# | | + test-source - portion of testsuite that defines group
++# | | + times       - timestamps for computing duration
++# | | + pass        - created if group passed
++# | | + xpass       - created if group xpassed
++# | | + fail        - created if group failed
++# | | + xfail       - created if group xfailed
++# | | + skip        - created if group skipped
++# + at-stop         - during a run: end the run if this file exists
++# + at-source-lines - during a run: cache of TESTSUITE line numbers for extraction
++# + 0..NNN/         - created for each group NNN, remains after -d or failed test
++# | + TESTSUITE.log - summarizes the group results
++# | + ...           - files created during the group
++
+ # The directory the whole suite works in.
+ # Should be absolute to let the user `cd' at will.
+ at_suite_dir=$at_dir/$as_me.dir
+ # The file containing the suite.
+ at_suite_log=$at_dir/$as_me.log
+-# The file containing the location of the last AT_CHECK.
+-at_check_line_file=$at_suite_dir/at-check-line
+-# The file containing the exit status of the last command.
+-at_status_file=$at_suite_dir/at-status
+-# The files containing the output of the tested commands.
+-at_stdout=$at_suite_dir/at-stdout
+-at_stder1=$at_suite_dir/at-stder1
+-at_stderr=$at_suite_dir/at-stderr
+-# The file containing the function to run a test group.
+-at_test_source=$at_suite_dir/at-test-source
+-# The file containing dates.
+-at_times_file=$at_suite_dir/at-times
++# The directory containing helper files per test group.
++at_helper_dir=$at_suite_dir/at-groups
++# Stop file: if it exists, do not start new jobs.
++at_stop_file=$at_suite_dir/at-stop
+ 
+ if $at_clean; then
+   test -d "$at_suite_dir" &&
+@@ -1346,7 +1383,6 @@ export PATH
+ 
+ # Setting up the FDs.
+ # 5 is the log file.  Not to be overwritten if `-d'.
+-
+ if $at_debug_p; then
+   at_suite_log=/dev/null
+ else
+@@ -1559,7 +1595,8 @@ at_func_create_debugging_script ()
+ 
+ # at_func_arith
+ # -------------
+-# Arithmetic evaluation, avoids expr if the shell is sane.
++# Arithmetic evaluation, avoids expr if the shell is sane.  The
++# interpretation of leading zeroes is unspecified.
+ #
+ # subshell and eval are needed to keep Solaris sh from bailing out:
+ if ( eval 'test $(( 1 + 1 )) = 2' ) 2>/dev/null; then
+@@ -1624,12 +1661,6 @@ _ASBOX
+ at_start_date=`date`
+ at_start_time=`date +%s 2>/dev/null`
+ $as_echo "$as_me: starting at: $at_start_date" >&5
+-at_xpass_list=
+-at_xfail_list=
+-at_pass_list=
+-at_fail_list=
+-at_skip_list=
+-at_group_count=0
+ 
+ # Create the master directory if it doesn't already exist.
+ test -d "$at_suite_dir" ||
+@@ -1646,10 +1677,10 @@ else
+   >"$at_devnull"
+ fi
+ 
+-# Use `diff -u' when possible.
+-if at_diff=`diff -u "$at_devnull" "$at_devnull" 2>&1` && test -z "$at_diff"
++# Use `diff -u --strip-trailing-cr' when possible.
++if at_diff=`diff -u --strip-trailing-cr "$at_devnull" "$at_devnull" 2>&1` && test -z "$at_diff"
+ then
+-  at_diff='diff -u'
++  at_diff='diff -u --strip-trailing-cr'
+ else
+   at_diff=diff
+ fi
+@@ -1668,23 +1699,51 @@ BEGIN { FS="" }
+   test = substr ($ 0, 10)
+   print "at_sed" test "=\"1," start "d;" (NR-1) "q\""
+   if (test == "'"$at_group"'") exit
+-}' "$at_myself" > "$at_test_source" &&
+-. "$at_test_source" ||
++}' "$at_myself" > "$at_suite_dir/at-source-lines" &&
++. "$at_suite_dir/at-source-lines" ||
+   { { $as_echo "$as_me:$LINENO: error: cannot create test line number cache" >&5
+ $as_echo "$as_me: error: cannot create test line number cache" >&2;}
+    { (exit 1); exit 1; }; }
++rm -f "$at_suite_dir/at-source-lines"
+ 
++# Set up helper dirs.
++rm -rf "$at_helper_dir" &&
++mkdir "$at_helper_dir" &&
++cd "$at_helper_dir" &&
++{ test -z "$at_groups" || mkdir $at_groups; } ||
++{ { $as_echo "$as_me:$LINENO: error: testsuite directory setup failed" >&5
++$as_echo "$as_me: error: testsuite directory setup failed" >&2;}
++   { (exit 1); exit 1; }; }
++
++# Functions for running a test group.  We leave the actual
++# test group execution outside of a shell function in order
++# to avoid hitting zsh 4.x exit status bugs.
++
++# at_func_group_prepare
++# ---------------------
++# Prepare running a test group
++at_func_group_prepare ()
++{
++  # The directory for additional per-group helper files.
++  at_job_dir=$at_helper_dir/$at_group
++  # The file containing the location of the last AT_CHECK.
++  at_check_line_file=$at_job_dir/check-line
++  # The file containing the exit status of the last command.
++  at_status_file=$at_job_dir/status
++  # The files containing the output of the tested commands.
++  at_stdout=$at_job_dir/stdout
++  at_stder1=$at_job_dir/stder1
++  at_stderr=$at_job_dir/stderr
++  # The file containing the code for a test group.
++  at_test_source=$at_job_dir/test-source
++  # The file containing dates.
++  at_times_file=$at_job_dir/times
+ 
+-## ------------ ##
+-## Driver loop. ##
+-## ------------ ##
+-for at_group in $at_groups
+-do
+   # Be sure to come back to the top test directory.
+   cd "$at_suite_dir"
+ 
+   # Clearly separate the test groups when verbose.
+-  test $at_group_count != 0 && $at_verbose echo
++  $at_first || $at_verbose echo
+ 
+   at_group_normalized=$at_group
+ 
+@@ -1702,8 +1761,8 @@ do
+   if test -d "$at_group_dir"; then
+     find "$at_group_dir" -type d ! -perm -700 -exec chmod u+rwx \{\} \;
+     rm -fr "$at_group_dir" ||
+-      { $as_echo "$as_me:$LINENO: WARNING: test directory could not be cleaned." >&5
+-$as_echo "$as_me: WARNING: test directory could not be cleaned." >&2;}
++    { $as_echo "$as_me:$LINENO: WARNING: test directory for $at_group_normalized could not be cleaned." >&5
++$as_echo "$as_me: WARNING: test directory for $at_group_normalized could not be cleaned." >&2;}
+   fi
+   # Be tolerant if the above `rm' was not able to remove the directory.
+   { as_dir="$at_group_dir"
+@@ -1747,23 +1806,22 @@ $as_echo X"$as_dir" |
+   } || test -d "$as_dir" || { { $as_echo "$as_me:$LINENO: error: cannot create directory $as_dir" >&5
+ $as_echo "$as_me: error: cannot create directory $as_dir" >&2;}
+    { (exit 1); exit 1; }; }; }
+-  cd "$at_group_dir"
+ 
+   echo 0 > "$at_status_file"
+ 
+   # In verbose mode, append to the log file *and* show on
+-  # the standard output; in quiet mode only write to the log
++  # the standard output; in quiet mode only write to the log.
+   if test -z "$at_verbose"; then
+     at_tee_pipe='tee -a "$at_group_log"'
+   else
+     at_tee_pipe='cat >> "$at_group_log"'
+   fi
++}
+ 
+-  if at_func_test $at_group && . "$at_test_source"; then :; else
+-    $as_echo "$as_me: unable to parse test group: $at_group" >&2
+-    at_failed=:
+-  fi
+-
++# at_func_group_postprocess
++# -------------------------
++at_func_group_postprocess ()
++{
+   # Be sure to come back to the suite directory, in particular
+   # since below we might `rm' the group directory we are in currently.
+   cd "$at_suite_dir"
+@@ -1776,37 +1834,36 @@ $as_echo "$as_me: error: cannot create d
+ _ATEOF
+     $as_echo "$at_setup_line" >"$at_check_line_file"
+   fi
+-  at_func_arith 1 + $at_group_count
+-  at_group_count=$at_func_arith_result
+   $at_verbose $as_echo_n "$at_group. $at_setup_line: "
+   $as_echo_n "$at_group. $at_setup_line: " >> "$at_group_log"
+   case $at_xfail:$at_status in
+     yes:0)
+ 	at_msg="UNEXPECTED PASS"
+-	at_xpass_list="$at_xpass_list $at_group"
++	at_res=xpass
+ 	at_errexit=$at_errexit_p
+ 	;;
+     no:0)
+ 	at_msg="ok"
+-	at_pass_list="$at_pass_list $at_group"
++	at_res=pass
+ 	at_errexit=false
+ 	;;
+     *:77)
+ 	at_msg='skipped ('`cat "$at_check_line_file"`')'
+-	at_skip_list="$at_skip_list $at_group"
++	at_res=skip
+ 	at_errexit=false
+ 	;;
+     yes:*)
+ 	at_msg='expected failure ('`cat "$at_check_line_file"`')'
+-	at_xfail_list="$at_xfail_list $at_group"
++	at_res=xfail
+ 	at_errexit=false
+ 	;;
+     no:*)
+ 	at_msg='FAILED ('`cat "$at_check_line_file"`')'
+-	at_fail_list="$at_fail_list $at_group"
++	at_res=fail
+ 	at_errexit=$at_errexit_p
+ 	;;
+   esac
++  echo "$at_res" > "$at_job_dir/$at_res"
+   # Make sure there is a separator even with long titles.
+   $as_echo " $at_msg"
+   at_log_msg="$at_group. $at_desc ($at_setup_line): $at_msg"
+@@ -1840,16 +1897,67 @@ _ATEOF
+       # is later included in the global log.
+       $as_echo "$at_log_msg" >> "$at_group_log"
+ 
+-      # Upon failure, keep the group directory for autopsy, and
+-      # create the debugging script.
++      # Upon failure, keep the group directory for autopsy, and create
++      # the debugging script.  With -e, do not start any further tests.
+       at_func_create_debugging_script
+-      $at_errexit && break
++      if $at_errexit; then
++	echo stop > "$at_stop_file"
++      fi
+       ;;
+   esac
++}
++
++
++## ------------ ##
++## Driver loop. ##
++## ------------ ##
++
++rm -f "$at_stop_file"
++at_first=:
++
++for at_group in $at_groups; do
++  at_func_group_prepare
++  if cd "$at_group_dir" &&
++     at_func_test $at_group &&
++     . "$at_test_source"; then :; else
++    { $as_echo "$as_me:$LINENO: WARNING: unable to parse test group: $at_group" >&5
++$as_echo "$as_me: WARNING: unable to parse test group: $at_group" >&2;}
++    at_failed=:
++  fi
++  at_func_group_postprocess
++  test -f "$at_stop_file" && break
++  at_first=false
+ done
+ 
++# Wrap up the test suite with summary statistics.
++cd "$at_helper_dir"
++
++# Use ?..???? when the list must remain sorted, the faster * otherwise.
++at_pass_list=`for f in */pass; do echo $f; done | sed '/\*/d; s,/pass,,'`
++at_skip_list=`for f in */skip; do echo $f; done | sed '/\*/d; s,/skip,,'`
++at_xfail_list=`for f in */xfail; do echo $f; done | sed '/\*/d; s,/xfail,,'`
++at_xpass_list=`for f in ?/xpass ??/xpass ???/xpass ????/xpass; do
++		 echo $f; done | sed '/?/d; s,/xpass,,'`
++at_fail_list=`for f in ?/fail ??/fail ???/fail ????/fail; do
++		echo $f; done | sed '/?/d; s,/fail,,'`
++
++set X $at_pass_list $at_xpass_list $at_xfail_list $at_fail_list $at_skip_list
++shift; at_group_count=$#
++set X $at_xpass_list; shift; at_xpass_count=$#; at_xpass_list=$*
++set X $at_xfail_list; shift; at_xfail_count=$#
++set X $at_fail_list; shift; at_fail_count=$#; at_fail_list=$*
++set X $at_skip_list; shift; at_skip_count=$#
++
++at_func_arith $at_group_count - $at_skip_count
++at_run_count=$at_func_arith_result
++at_func_arith $at_xpass_count + $at_fail_count
++at_unexpected_count=$at_func_arith_result
++at_func_arith $at_xfail_count + $at_fail_count
++at_total_fail_count=$at_func_arith_result
++
+ # Back to the top directory.
+ cd "$at_dir"
++rm -rf "$at_helper_dir"
+ 
+ # Compute the duration of the suite.
+ at_stop_date=`date`
+@@ -1872,19 +1980,6 @@ case $at_start_time,$at_stop_time in
+     ;;
+ esac
+ 
+-# Wrap up the test suite with summary statistics.
+-set X $at_skip_list; shift; at_skip_count=$#
+-set X $at_fail_list; shift; at_fail_count=$#
+-set X $at_xpass_list; shift; at_xpass_count=$#
+-set X $at_xfail_list; shift; at_xfail_count=$#
+-
+-at_func_arith $at_group_count - $at_skip_count
+-at_run_count=$at_func_arith_result
+-at_func_arith $at_xpass_count + $at_fail_count
+-at_unexpected_count=$at_func_arith_result
+-at_func_arith $at_xfail_count + $at_fail_count
+-at_total_fail_count=$at_func_arith_result
+-
+ echo
+ cat <<\_ASBOX
+ ## ------------- ##
+@@ -30931,7 +31026,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -31718,16 +31813,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:569:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:569:  \$PREPARSER ./calc input"
+ echo calc.at:569 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -32239,7 +32338,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -33037,16 +33136,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:571:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:571:  \$PREPARSER ./calc input"
+ echo calc.at:571 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -33558,7 +33661,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -34371,16 +34474,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:572:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:572:  \$PREPARSER ./calc input"
+ echo calc.at:572 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -34887,7 +34994,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -35674,16 +35781,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:573:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:573:  \$PREPARSER ./calc input"
+ echo calc.at:573 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -36195,7 +36306,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -36982,16 +37093,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:574:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:574:  \$PREPARSER ./calc input"
+ echo calc.at:574 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -37503,7 +37618,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -38290,16 +38405,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:575:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:575:  \$PREPARSER ./calc input"
+ echo calc.at:575 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -38811,7 +38930,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -39593,16 +39712,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:576:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:576:  \$PREPARSER ./calc input"
+ echo calc.at:576 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -40109,7 +40232,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -40918,16 +41041,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:578:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:578:  \$PREPARSER ./calc input"
+ echo calc.at:578 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -41439,7 +41566,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -42248,16 +42375,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:579:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:579:  \$PREPARSER ./calc input"
+ echo calc.at:579 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -42769,7 +42900,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -43577,16 +43708,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:580:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:580:  \$PREPARSER ./calc input"
+ echo calc.at:580 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -44088,7 +44223,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -44907,16 +45042,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:582:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:582:  \$PREPARSER ./calc input"
+ echo calc.at:582 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -45418,7 +45557,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -46205,16 +46344,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:584:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:584:  \$PREPARSER ./calc input"
+ echo calc.at:584 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -46726,7 +46869,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -47545,16 +47688,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:585:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:585:  \$PREPARSER ./calc input"
+ echo calc.at:585 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -48056,7 +48203,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -48871,16 +49018,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:587:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:587:  \$PREPARSER ./calc input"
+ echo calc.at:587 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -49387,7 +49538,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -50202,16 +50353,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:588:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:588:  \$PREPARSER ./calc input"
+ echo calc.at:588 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -50718,7 +50873,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -51537,16 +51692,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:590:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:590:  \$PREPARSER ./calc input"
+ echo calc.at:590 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -52048,7 +52207,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -52835,16 +52994,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:607:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:607:  \$PREPARSER ./calc input"
+ echo calc.at:607 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -53356,7 +53519,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -54154,16 +54317,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:609:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:609:  \$PREPARSER ./calc input"
+ echo calc.at:609 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -54675,7 +54842,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -55488,16 +55655,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:610:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:610:  \$PREPARSER ./calc input"
+ echo calc.at:610 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -56004,7 +56175,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -56791,16 +56962,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:611:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:611:  \$PREPARSER ./calc input"
+ echo calc.at:611 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -57312,7 +57487,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -58099,16 +58274,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:612:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:612:  \$PREPARSER ./calc input"
+ echo calc.at:612 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -58620,7 +58799,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -59407,16 +59586,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:613:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:613:  \$PREPARSER ./calc input"
+ echo calc.at:613 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -59928,7 +60111,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -60710,16 +60893,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:614:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:614:  \$PREPARSER ./calc input"
+ echo calc.at:614 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -61226,7 +61413,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -62039,16 +62226,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:616:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:616:  \$PREPARSER ./calc input"
+ echo calc.at:616 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -62555,7 +62746,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -63363,16 +63554,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:617:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:617:  \$PREPARSER ./calc input"
+ echo calc.at:617 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -63874,7 +64069,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -64693,16 +64888,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:619:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:619:  \$PREPARSER ./calc input"
+ echo calc.at:619 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -65204,7 +65403,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -65991,16 +66190,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:621:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:621:  \$PREPARSER ./calc input"
+ echo calc.at:621 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -66512,7 +66715,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -67331,16 +67534,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:622:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:622:  \$PREPARSER ./calc input"
+ echo calc.at:622 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -67842,7 +68049,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -68661,16 +68868,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:624:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:624:  \$PREPARSER ./calc input"
+ echo calc.at:624 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -69172,7 +69383,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -69991,16 +70202,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:626:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:626:  \$PREPARSER ./calc input"
+ echo calc.at:626 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -70509,7 +70724,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -71356,16 +71571,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:636:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:636:  \$PREPARSER ./calc input"
+ echo calc.at:636 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -71879,7 +72098,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -72726,16 +72945,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:645:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:645:  \$PREPARSER ./calc input"
+ echo calc.at:645 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -73249,7 +73472,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -74091,16 +74314,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:646:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:646:  \$PREPARSER ./calc input"
+ echo calc.at:646 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -74609,7 +74836,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -75451,16 +75678,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:648:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:648:  \$PREPARSER ./calc input"
+ echo calc.at:648 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -75969,7 +76200,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -76811,16 +77042,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:650:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:650:  \$PREPARSER ./calc input"
+ echo calc.at:650 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -77329,7 +77564,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -78171,16 +78406,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:652:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:652:  \$PREPARSER ./calc input"
+ echo calc.at:652 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -78689,7 +78928,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -79536,16 +79775,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:663:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:663:  \$PREPARSER ./calc input"
+ echo calc.at:663 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -80059,7 +80302,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -80906,16 +81149,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:672:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:672:  \$PREPARSER ./calc input"
+ echo calc.at:672 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -81429,7 +81676,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -82271,16 +82518,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:673:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:673:  \$PREPARSER ./calc input"
+ echo calc.at:673 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -82789,7 +83040,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -83636,16 +83887,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:675:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:675:  \$PREPARSER ./calc input"
+ echo calc.at:675 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -84159,7 +84414,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -85001,16 +85256,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:676:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:676:  \$PREPARSER ./calc input"
+ echo calc.at:676 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -85519,7 +85778,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -86361,16 +86620,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:678:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:678:  \$PREPARSER ./calc input"
+ echo calc.at:678 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false
+@@ -86879,7 +87142,7 @@ extern FILE *input;
+ %code {
+ #include <stdlib.h>
+ #include <string.h>
+-#if HAVE_UNISTD_H
++#if HAVE_UNISTD_H && !_WIN32
+ # include <unistd.h>
+ #else
+ # undef alarm
+@@ -87721,16 +87984,20 @@ $at_traceon; }
+ 
+ 
+ # Exercise error messages with EOF: work on an empty file.
++cat >input <<'_ATEOF'
++NUL
++_ATEOF
++
+ { $at_traceoff
+-$as_echo "$at_srcdir/calc.at:680:  \$PREPARSER ./calc /dev/null"
++$as_echo "$at_srcdir/calc.at:680:  \$PREPARSER ./calc input"
+ echo calc.at:680 >"$at_check_line_file"
+ 
+ if test -n "$at_traceon" \
+-  && at_func_check_newline " $PREPARSER ./calc /dev/null"; then
+-  ( $at_traceon;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stder1"
++  && at_func_check_newline " $PREPARSER ./calc input"; then
++  ( $at_traceon;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stder1"
+   at_func_filter_trace $?
+ else
+-  ( :;  $PREPARSER ./calc /dev/null ) >"$at_stdout" 2>"$at_stderr"
++  ( :;  $PREPARSER ./calc input ) >"$at_stdout" 2>"$at_stderr"
+ fi
+ at_status=$?
+ at_failed=false

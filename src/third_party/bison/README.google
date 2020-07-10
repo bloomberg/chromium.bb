@@ -1,0 +1,8 @@
+URL: http://gnuwin32.sourceforge.net/packages/bison.htm
+Version: 2.4.1
+License File: src/bison/2.4.1/bison-2.4.1-src/COPYING
+Description: Bison for Windows: Yacc-compatible parser generator.
+Local Modifications: None.
+
+Includes Binaries, Developer files, Sources, and Dependencies from
+distribution page.
