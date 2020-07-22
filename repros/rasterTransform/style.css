@@ -1,7 +1,25 @@
-#composited {
-  position: absolute;
-  transform: translate3d(20.5px, 0, 10px);
+.common {
   border: 4px inset pink;
+}
+
+.mainlayer {
+  position: absolute;
+  left: 500px;
+  top: 300px;
+}
+
+.composited1 {
+  position: absolute;
+  transform: scale3d(1, 5, 1);
+  left: 500px;
+  top: 500px;
+}
+
+.composited2 {
+  position: absolute;
+  transform: scale3d(5, 1, 1);
+  left: 500px;
+  top: 700px;
 }
 
 html {
