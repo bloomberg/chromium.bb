@@ -1429,7 +1429,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
       params->main_frame_widget_routing_id, compositor_deps,
       params->visual_properties.display_mode,
       /*is_undead=*/params->main_frame_routing_id == MSG_ROUTING_NONE,
-      params->never_visible);
+      params->never_visible, params->view_id);
 
   RenderWidget* render_widget = render_view->GetWidget();
   render_widget->set_delegate(render_view);
