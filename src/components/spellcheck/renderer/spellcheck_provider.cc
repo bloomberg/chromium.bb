@@ -84,6 +84,7 @@ SpellCheckProvider::SpellCheckProvider(
     SpellCheck* spellcheck,
     service_manager::LocalInterfaceProvider* embedder_provider)
     : content::RenderFrameObserver(render_frame),
+      content::RenderFrameObserverTracker<SpellCheckProvider>(render_frame),
       spellcheck_(spellcheck),
       embedder_provider_(embedder_provider) {
   DCHECK(spellcheck_);
@@ -202,6 +203,18 @@ void SpellCheckProvider::RequestTextChecking(
 #endif
 }
 
+void SpellCheckProvider::DidFinishLoad() {
+  if (spellcheck_->IsSpellcheckEnabled()) {
+    blink::WebDocument document = render_frame()->GetWebFrame()->GetDocument();
+    if (document.IsNull())
+      return;
+    blink::WebElement documentElement = document.DocumentElement();
+    if (documentElement.IsNull())
+      return;
+    documentElement.requestSpellCheck();
+  }
+}
+
 void SpellCheckProvider::FocusedElementChanged(
     const blink::WebElement& unused) {
 #if defined(OS_ANDROID)
@@ -229,11 +242,10 @@ void SpellCheckProvider::CheckSpelling(
     WebVector<WebString>* optional_suggestions) {
   base::string16 word = text.Utf16();
   const int kWordStart = 0;
-
   if (optional_suggestions) {
     spellcheck::PerLanguageSuggestions per_language_suggestions;
     spellcheck_->SpellCheckWord(word.c_str(), kWordStart, word.size(),
-                                routing_id(), &offset, &length,
+                                routing_id(), &offset, &length, true,
                                 &per_language_suggestions);
 
 #if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
@@ -263,7 +275,7 @@ void SpellCheckProvider::CheckSpelling(
                             base::saturated_cast<int>(word.size()));
   } else {
     spellcheck_->SpellCheckWord(word.c_str(), kWordStart, word.size(),
-                                routing_id(), &offset, &length,
+                                routing_id(), &offset, &length, true,
                                 /* optional suggestions vector */ nullptr);
     UMA_HISTOGRAM_COUNTS_1M("SpellCheck.api.check",
                             base::saturated_cast<int>(word.size()));
@@ -276,7 +288,8 @@ void SpellCheckProvider::CheckSpelling(
 void SpellCheckProvider::RequestCheckingOfText(
     const WebString& text,
     std::unique_ptr<WebTextCheckingCompletion> completion) {
-  RequestTextChecking(text.Utf16(), std::move(completion));
+  //RequestTextChecking(text.Utf16(), std::move(completion));
+  spellcheck_->RequestTextChecking(text.Utf16(), std::move(completion));
   UMA_HISTOGRAM_COUNTS_1M("SpellCheck.api.async",
                           base::saturated_cast<int>(text.length()));
 }
@@ -351,6 +364,19 @@ void SpellCheckProvider::OnRespondTextCheck(
   last_results_.Swap(textcheck_results);
 }
 #endif
+
+void SpellCheckProvider::RequestSpellcheck() {
+  WebLocalFrame* frame = render_frame()->GetWebFrame();
+  DCHECK(frame);
+  DCHECK(IsSpellCheckingEnabled());
+  blink::WebDocument document = frame->GetDocument();
+  if (document.IsNull())
+    return;
+  blink::WebElement documentElement = document.DocumentElement();
+  if (documentElement.IsNull())
+    return;
+  documentElement.requestSpellCheck();
+}
 
 bool SpellCheckProvider::SatisfyRequestFromCache(
     const base::string16& text,
