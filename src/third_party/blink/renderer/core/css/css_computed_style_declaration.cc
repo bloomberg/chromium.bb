@@ -211,7 +211,9 @@ const CSSPropertyID kComputedPropertyArray[] = {
 
 
     // patch section: rubberband
-
+    CSSPropertyID::kRubberbandable,
+    CSSPropertyID::kBbRubberbandEmptyText,
+    CSSPropertyID::kBbRubberbandGroupDelimiter,
 
 
     CSSPropertyID::kRotate, CSSPropertyID::kScale, CSSPropertyID::kCaretColor,
