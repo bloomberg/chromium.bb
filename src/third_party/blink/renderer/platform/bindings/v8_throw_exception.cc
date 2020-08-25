@@ -48,6 +48,7 @@ DEFINE_CREATE_AND_THROW_ERROR_FUNC(ReferenceError,
                                    "Reference error")
 DEFINE_CREATE_AND_THROW_ERROR_FUNC(SyntaxError, SyntaxError, "Syntax error")
 DEFINE_CREATE_AND_THROW_ERROR_FUNC(TypeError, TypeError, "Type error")
+DEFINE_CREATE_AND_THROW_ERROR_FUNC(AccessError, ReferenceError, "Access error")
 
 #undef DEFINE_CREATE_AND_THROW_ERROR_FUNC
 
