@@ -42,10 +42,6 @@
 #include <third_party/blink/public/platform/web_url_request.h>
 #include <url/gurl.h>
 
-namespace {
-  static char gHttpOK[] = "HTTP/1.1 200 OK\0\0";
-}
-
 namespace blpwtk2 {
 
 class InProcessResourceLoaderBridge::InProcessURLRequest : public URLRequest {
@@ -236,7 +232,7 @@ InProcessResourceLoaderBridge::InProcessResourceContext::
   DCHECK(Statics::isInApplicationMainThread());
   DCHECK(Statics::inProcessResourceLoader);
   DCHECK(Statics::inProcessResourceLoader->canHandleURL(d_url.spec()));
-  d_responseHeaders = base::MakeRefCounted<net::HttpResponseHeaders>(gHttpOK);
+  d_responseHeaders = new net::HttpResponseHeaders("HTTP/1.1 200 OK\0\0");
 }
 
 InProcessResourceLoaderBridge::InProcessResourceContext::
@@ -274,8 +270,6 @@ void InProcessResourceLoaderBridge::InProcessResourceContext::cancel() {
     return;
   }
 
-  // Keep this alive for ::cancelLoad callback
-  AddRef();
   d_waitingForCancelLoad = true;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&InProcessResourceContext::cancelLoad, this));
@@ -298,6 +292,7 @@ void InProcessResourceLoaderBridge::InProcessResourceContext::replaceStatusLine(
     const StringRef& newStatus) {
   DCHECK(Statics::isInApplicationMainThread());
   DCHECK(!d_failed);
+  DCHECK(d_responseHeaders.get());
 
   std::string str(newStatus.data(), newStatus.length());
   d_responseHeaders->ReplaceStatusLine(str);
@@ -363,6 +358,8 @@ void InProcessResourceLoaderBridge::InProcessResourceContext::failed() {
 
 void InProcessResourceLoaderBridge::InProcessResourceContext::finish() {
   DCHECK(Statics::isInApplicationMainThread());
+  DCHECK(!d_finished);
+
   d_finished = true;
 
   if (d_waitingForCancelLoad) {
@@ -371,9 +368,7 @@ void InProcessResourceLoaderBridge::InProcessResourceContext::finish() {
     // where we will destroy ourself.
 
     // This is to balance the AddRef from startLoad().
-    if(d_started) {
-      Release();
-    }
+    Release();
     return;
   }
 
@@ -394,7 +389,6 @@ void InProcessResourceLoaderBridge::InProcessResourceContext::finish() {
     completeStatus.encoded_body_length = d_totalTransferSize;
     completeStatus.decoded_body_length = d_totalTransferSize;
     d_peer->OnCompletedRequest(completeStatus, d_url);
-    d_responseHeaders.reset();
   } else {
     LOG(WARNING) << "d_peer has been deleted before finishing loading";
   }
@@ -440,18 +434,13 @@ void InProcessResourceLoaderBridge::InProcessResourceContext::cancelLoad() {
       completeStatus.encoded_body_length = d_totalTransferSize;
       completeStatus.decoded_body_length = d_totalTransferSize;
       d_peer->OnCompletedRequest(completeStatus, d_url);
-      d_responseHeaders.reset();
     }
-    // for AddRef() in ::cancel()
-    Release();
     return;
   }
 
   d_waitingForCancelLoad = false;
   d_canceled = true;
   Statics::inProcessResourceLoader->cancel(this, d_userData);
-  // for AddRef() in ::cancel()
-  Release();
 }
 
 void InProcessResourceLoaderBridge::InProcessResourceContext::
@@ -469,11 +458,12 @@ void InProcessResourceLoaderBridge::InProcessResourceContext::
   responseInfo->content_length = d_responseHeaders->GetContentLength();
   d_responseHeaders->GetMimeTypeAndCharset(&responseInfo->mime_type,
                                            &responseInfo->charset);
+   d_responseHeaders.reset();
   if (responseInfo->mime_type.empty() && length > 0) {
     net::SniffMimeType(buffer, std::min(length, net::kMaxBytesToSniff), d_url,
                        "", net::ForceSniffFileUrlsForHtml::kDisabled,
                        &responseInfo->mime_type);
-  }
+  }  
 
   d_peer->OnReceivedResponse(std::move(responseInfo));
 }
