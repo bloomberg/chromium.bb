@@ -36,12 +36,14 @@ CustomEvent::CustomEvent(ScriptState* script_state,
                          const CustomEventInit* initializer)
     : Event(type, initializer) {
   if (initializer->hasDetail()) {
-    detail_.SetAcrossWorld(script_state->GetIsolate(),
-                           initializer->detail().V8Value());
+    v8::Isolate *isolate = script_state->GetIsolate();
+    detail_.Reset(isolate, initializer->detail().V8Value());
   }
 }
 
-CustomEvent::~CustomEvent() = default;
+CustomEvent::~CustomEvent() {
+  detail_.Reset();
+}
 
 void CustomEvent::initCustomEvent(ScriptState* script_state,
                                   const AtomicString& type,
@@ -50,14 +52,15 @@ void CustomEvent::initCustomEvent(ScriptState* script_state,
                                   const ScriptValue& script_value) {
   initEvent(type, bubbles, cancelable);
   if (!IsBeingDispatched() && !script_value.IsEmpty())
-    detail_.SetAcrossWorld(script_state->GetIsolate(), script_value.V8Value());
+    detail_.Reset(script_state->GetIsolate(), script_value.V8Value());
 }
 
 ScriptValue CustomEvent::detail(ScriptState* script_state) const {
   v8::Isolate* isolate = script_state->GetIsolate();
   if (detail_.IsEmpty())
     return ScriptValue(isolate, v8::Null(isolate));
-  return ScriptValue(isolate, detail_.GetAcrossWorld(script_state));
+  v8::Local<v8::Value> value = v8::Local<v8::Value>::New(isolate, detail_);
+  return ScriptValue(isolate, value);
 }
 
 const AtomicString& CustomEvent::InterfaceName() const {
@@ -65,7 +68,6 @@ const AtomicString& CustomEvent::InterfaceName() const {
 }
 
 void CustomEvent::Trace(Visitor* visitor) {
-  visitor->Trace(detail_);
   Event::Trace(visitor);
 }
 
