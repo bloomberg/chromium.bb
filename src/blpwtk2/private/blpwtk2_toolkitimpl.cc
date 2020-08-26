@@ -75,6 +75,7 @@
 //#include <third_party/blink/public/web/blink.h>
 #include <third_party/blink/public/web/web_security_policy.h>
 #include <third_party/blink/public/web/web_script_controller.h>
+#include <third_party/blink/renderer/platform/heap/thread_state.h>
 #include <third_party/icu/source/common/unicode/locid.h>
 #include <ui/base/ime/init/input_method_initializer.h>
 #include <ui/base/l10n/l10n_util.h>
@@ -93,6 +94,9 @@
 
 
 // patch section: multi-heap tracer
+#include <gin/public/multi_heap_tracer.h>
+#include <tuple>
+#include <utility>
 
 
 
@@ -764,7 +768,66 @@ void ToolkitImpl::setTraceThreshold(unsigned int timeoutMS)
 
 
 // patch section: multi-heap tracer
+int ToolkitImpl::addV8HeapTracer(EmbedderHeapTracer *tracer)
+{
+#if defined(BLPWTK2_FEATURE_BROWSER_V8)
+    auto *multiHeapTracer = d_multiHeapTracerForBrowserV8 ? d_multiHeapTracerForBrowserV8.get() :
+        blink::ThreadState::Current()->GetMultiHeapTracer();
+#else
+    auto *multiHeapTracer = blink::ThreadState::Current()->GetMultiHeapTracer();
+#endif
+    CHECK(multiHeapTracer);
 
+    // As 'multiHeapTracer' never sees 'tracer' directly, we have to configure
+    // its 'isolate' member manually.
+
+    multiHeapTracer->SetIsolate(tracer);
+
+    // We wrap the specified 'tracer' in an 'EmbedderHeapTracerShim' to avoid
+    // passing C++ objects across dll boundaries.
+
+    auto tracerShim = std::make_unique<EmbedderHeapTracerShim>(tracer);
+
+    const int embedder_id = multiHeapTracer->AddHeapTracer(tracerShim.get());
+
+    DCHECK(0 == d_heapTracers.count(embedder_id));
+
+    d_heapTracers.emplace(std::piecewise_construct,
+                          std::forward_as_tuple(embedder_id),
+                          std::forward_as_tuple(std::move(tracerShim)));
+
+    return embedder_id;
+}
+
+void ToolkitImpl::removeV8HeapTracer(int embedder_id)
+{
+#if defined(BLPWTK2_FEATURE_BROWSER_V8)
+    auto *multiHeapTracer = d_multiHeapTracerForBrowserV8 ? d_multiHeapTracerForBrowserV8.get() :
+        blink::ThreadState::Current()->GetMultiHeapTracer();
+#else
+    auto *multiHeapTracer = blink::ThreadState::Current()->GetMultiHeapTracer();
+#endif
+    CHECK(multiHeapTracer);
+
+    multiHeapTracer->RemoveHeapTracer(embedder_id);
+
+    DCHECK(1 == d_heapTracers.count(embedder_id));
+
+    d_heapTracers.erase(embedder_id);
+}
+
+void ToolkitImpl::setIsolate(v8::EmbedderHeapTracer *tracer)
+{
+#if defined(BLPWTK2_FEATURE_BROWSER_V8)
+    auto *multiHeapTracer = d_multiHeapTracerForBrowserV8 ? d_multiHeapTracerForBrowserV8.get() :
+        blink::ThreadState::Current()->GetMultiHeapTracer();
+#else
+    auto *multiHeapTracer = blink::ThreadState::Current()->GetMultiHeapTracer();
+#endif
+    CHECK(multiHeapTracer);
+
+    multiHeapTracer->SetIsolate(tracer);
+}
 
 
 }  // close namespace blpwtk2
