@@ -1,0 +1,325 @@
+=encoding utf8
+
+=head1 NAME
+
+Log::Report::Dispatcher::Try - capture all reports as exceptions
+
+=head1 INHERITANCE
+
+ Log::Report::Dispatcher::Try
+   is a Log::Report::Dispatcher
+
+=head1 SYNOPSIS
+
+ try { ... };       # mind the ';' !!
+ if($@) {           # signals something went wrong
+
+ if(try {...}) {    # block ended normally
+
+ my $x = try { read_temperature() };
+ my @x = try { read_lines_from_file() };
+
+ try { ... }        # no comma!!
+    mode => 'DEBUG', accept => 'ERROR-';
+
+ try sub { ... },   # with comma
+    mode => 'DEBUG', accept => 'ALL';
+
+ try \&myhandler, accept => 'ERROR-';
+ try { ... } hide => 'TRACE';
+
+ print ref $@;      # Log::Report::Dispatcher::Try
+
+ $@->reportFatal;   # re-dispatch result of try block
+ $@->reportAll;     # ... also warnings etc
+ if($@) {...}       # if errors
+ if($@->failed) {   # same       # }
+ if($@->success) {  # no errors  # }
+
+ try { # something causes an error report, which is caught
+       failure 'no network';
+     };
+ $@->reportFatal(to => 'syslog');  # overrule destination
+
+ print $@->exceptions; # no re-cast, just print
+
+=head1 DESCRIPTION
+
+The L<Log::Report::try()|Log::Report/"Report Production and Configuration"> catches errors in the block (CODE
+reference) which is just following the function name.  All
+dispatchers are temporarily disabled by C<try>, and messages
+which are reported are collected within a temporary dispatcher
+named C<try>.  When the CODE has run, that C<try> dispatcher
+is returned in C<$@>, and all original dispatchers reinstated.
+
+Then, after the C<try> has finished, the routine which used
+the "try" should decide what to do with the collected reports.
+These reports are collected as L<Log::Report::Exception|Log::Report::Exception> objects.
+They can be ignored, or thrown to a higher level try... causing
+an exit of the program if there is none.
+
+Extends L<"DESCRIPTION" in Log::Report::Dispatcher|Log::Report::Dispatcher/"DESCRIPTION">.
+ 
+=head1 METHODS
+
+Extends L<"METHODS" in Log::Report::Dispatcher|Log::Report::Dispatcher/"METHODS">.
+ 
+=head2 Constructors
+
+Extends L<"Constructors" in Log::Report::Dispatcher|Log::Report::Dispatcher/"Constructors">.
+ 
+=over 4
+
+=item $obj-E<gt>B<close>()
+
+Inherited, see L<Log::Report::Dispatcher/"Constructors">
+
+=item Log::Report::Dispatcher::Try-E<gt>B<new>($type, $name, %options)
+
+ -Option       --Defined in             --Default
+  accept         Log::Report::Dispatcher  depend on mode
+  charset        Log::Report::Dispatcher  <undef>
+  died                                    undef
+  exceptions                              []
+  format_reason  Log::Report::Dispatcher  'LOWERCASE'
+  hide                                    'NONE'
+  locale         Log::Report::Dispatcher  <system locale>
+  mode           Log::Report::Dispatcher  'NORMAL'
+  on_die                                  'ERROR'
+
+=over 2
+
+=item accept => REASONS
+
+=item charset => CHARSET
+
+=item died => STRING
+
+The exit string ($@) of the eval'ed block.
+
+=item exceptions => ARRAY
+
+ARRAY of L<Log::Report::Exception|Log::Report::Exception> objects.
+
+=item format_reason => 'UPPERCASE'|'LOWERCASE'|'UCFIRST'|'IGNORE'|CODE
+
+=item hide => REASON|ARRAY|'ALL'|'NONE'
+
+[1.09] see L<hide()|Log::Report::Dispatcher::Try/"Accessors">
+
+=item locale => LOCALE
+
+=item mode => 'NORMAL'|'VERBOSE'|'ASSERT'|'DEBUG'|0..3
+
+=item on_die => 'ERROR'|'PANIC'
+
+When code which runs in this block exits with a die(), it will get
+translated into a L<Log::Report::Exception|Log::Report::Exception> using
+L<Log::Report::Die::die_decode()|Log::Report::Die/"FUNCTIONS">.  How serious are we about these
+errors?
+
+=back
+
+=back
+
+=head2 Accessors
+
+Extends L<"Accessors" in Log::Report::Dispatcher|Log::Report::Dispatcher/"Accessors">.
+ 
+=over 4
+
+=item $obj-E<gt>B<die2reason>()
+
+Returns the value of L<new(on_die)|Log::Report::Dispatcher::Try/"Constructors">.
+
+=item $obj-E<gt>B<died>( [STRING] )
+
+The message which was reported by C<eval>, which is used internally
+to catch problems in the try block.
+
+=item $obj-E<gt>B<exceptions>()
+
+Returns all collected C<Log::Report::Exceptions>.  The last of
+them may be a fatal one.  The other are non-fatal.
+
+=item $obj-E<gt>B<hide>(REASON|REASONS|ARRAY|'ALL'|'NONE')
+
+[1.09] By default, the try will only catch messages which stop the
+execution of the block (errors etc, internally a 'die').  Other messages
+are passed to parent try blocks, if none than to the dispatchers.
+
+This option gives the opportunity to block, for instance, trace messages.
+Those messages are still collected inside the try object, so may get
+passed-on later via L<reportAll()|Log::Report::Dispatcher::Try/"Logging"> if you like.
+
+Be warned: Using this method will reset the whole 'hide' configuration:
+it's a I<set> not an I<add>.
+
+example: change the setting of the running block
+
+  my $parent_try = dispatcher 'active-try';
+  parent_try->hide('NONE');
+
+=item $obj-E<gt>B<hides>(REASON)
+
+=item $obj-E<gt>B<isDisabled>()
+
+Inherited, see L<Log::Report::Dispatcher/"Accessors">
+
+=item $obj-E<gt>B<mode>()
+
+Inherited, see L<Log::Report::Dispatcher/"Accessors">
+
+=item $obj-E<gt>B<name>()
+
+Inherited, see L<Log::Report::Dispatcher/"Accessors">
+
+=item $obj-E<gt>B<needs>( [$reason] )
+
+Inherited, see L<Log::Report::Dispatcher/"Accessors">
+
+=item $obj-E<gt>B<type>()
+
+Inherited, see L<Log::Report::Dispatcher/"Accessors">
+
+=back
+
+=head2 Logging
+
+Extends L<"Logging" in Log::Report::Dispatcher|Log::Report::Dispatcher/"Logging">.
+ 
+=over 4
+
+=item $obj-E<gt>B<addSkipStack>(@CODE)
+
+=item Log::Report::Dispatcher::Try-E<gt>B<addSkipStack>(@CODE)
+
+Inherited, see L<Log::Report::Dispatcher/"Logging">
+
+=item $obj-E<gt>B<collectLocation>()
+
+=item Log::Report::Dispatcher::Try-E<gt>B<collectLocation>()
+
+Inherited, see L<Log::Report::Dispatcher/"Logging">
+
+=item $obj-E<gt>B<collectStack>( [$maxdepth] )
+
+=item Log::Report::Dispatcher::Try-E<gt>B<collectStack>( [$maxdepth] )
+
+Inherited, see L<Log::Report::Dispatcher/"Logging">
+
+=item $obj-E<gt>B<log>($opts, $reason, $message)
+
+Other dispatchers translate the message here, and make it leave the
+program.  However, messages in a "try" block are only captured in
+an intermediate layer: they may never be presented to an end-users.
+And for sure, we do not know the language yet.
+
+The $message is either a STRING or a L<Log::Report::Message|Log::Report::Message>.
+
+=item $obj-E<gt>B<reportAll>(%options)
+
+Re-cast the messages in all collect exceptions into the defined
+dispatchers, which were disabled during the try block. The %options
+will end-up as HASH of %options to L<Log::Report::report()|Log::Report/"Report Production and Configuration">; see
+L<Log::Report::Exception::throw()|Log::Report::Exception/"Processing"> which does the job.
+
+=item $obj-E<gt>B<reportFatal>()
+
+Re-cast only the fatal message to the defined dispatchers.  If the
+block was left without problems, then nothing will be done.  The %options
+will end-up as HASH of %options to L<Log::Report::report()|Log::Report/"Report Production and Configuration">; see
+L<Log::Report::Exception::throw()|Log::Report::Exception/"Processing"> which does the job.
+
+=item $obj-E<gt>B<skipStack>()
+
+Inherited, see L<Log::Report::Dispatcher/"Logging">
+
+=item $obj-E<gt>B<stackTraceLine>(%options)
+
+=item Log::Report::Dispatcher::Try-E<gt>B<stackTraceLine>(%options)
+
+Inherited, see L<Log::Report::Dispatcher/"Logging">
+
+=item $obj-E<gt>B<translate>(HASH-$of-%options, $reason, $message)
+
+Inherited, see L<Log::Report::Dispatcher/"Logging">
+
+=back
+
+=head2 Status
+
+=over 4
+
+=item $obj-E<gt>B<failed>()
+
+Returns true if the block was left with an fatal message.
+
+=item $obj-E<gt>B<showStatus>()
+
+If this object is kept in C<$@>, and someone uses this as string, we
+want to show the fatal error message.
+
+The message is not very informative for the good cause: we do not want
+people to simply print the C<$@>, but wish for a re-cast of the message
+using L<reportAll()|Log::Report::Dispatcher::Try/"Logging"> or L<reportFatal()|Log::Report::Dispatcher::Try/"Logging">.
+
+=item $obj-E<gt>B<success>()
+
+Returns true if the block exited normally.
+
+=item $obj-E<gt>B<wasFatal>(%options)
+
+Returns the L<Log::Report::Exception|Log::Report::Exception> which caused the "try" block to
+die, otherwise an empty LIST (undef).
+
+ -Option--Default
+  class   undef
+
+=over 2
+
+=item class => CLASS|REGEX
+
+Only return the exception if it was fatal, and in the same time in
+the specified CLASS (as string) or matches the REGEX.
+See L<Log::Report::Message::inClass()|Log::Report::Message/"Processing">
+
+=back
+
+=back
+
+=head1 DETAILS
+
+Extends L<"DETAILS" in Log::Report::Dispatcher|Log::Report::Dispatcher/"DETAILS">.
+ 
+=head1 OVERLOADING
+
+=over 4
+
+=item overload: B<boolean>
+
+Returns true if the previous try block did produce a terminal
+error.  This "try" object is assigned to C<$@>, and the usual
+perl syntax is C<if($@) {...error-handler...}>.
+
+=item overload: B<stringify>
+
+When C<$@> is used the traditional way, it is checked to have
+a string content.  In this case, stringify into the fatal error
+or nothing.
+
+=back
+
+=head1 SEE ALSO
+
+This module is part of Log-Report distribution version 1.28,
+built on May 14, 2019. Website: F<http://perl.overmeer.net/CPAN/>
+
+=head1 LICENSE
+
+Copyrights 2007-2019 by [Mark Overmeer <markov@cpan.org>]. For other contributors see ChangeLog.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See F<http://dev.perl.org/licenses/>
+

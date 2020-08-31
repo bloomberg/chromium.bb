@@ -1,0 +1,4124 @@
+# PODNAME: Moose::Manual::Exceptions::Manifest
+# ABSTRACT: Moose's Exception Types
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+Moose::Manual::Exceptions::Manifest - Moose's Exception Types
+
+=head1 VERSION
+
+version 2.2011
+
+=head1 DESCRIPTION
+
+This document contains a manifest of all the exception classes that are thrown
+as Moose internal errors.
+
+=head1 COMMON ELEMENTS
+
+Unless otherwise stated, all classes are subclasses of L<Moose::Exception>.
+
+Similarly, all classes provide the following attribute reader methods:
+
+=head2 $exception->message
+
+This method returns the error message for the exception.
+
+=head2 $exception->trace
+
+This method returns a L<Devel::StackTrace> object.
+
+=head1 EXCEPTION CLASSES
+
+Moose ships with the following exception classes:
+
+=head2 Moose::Exception::AccessorMustReadWrite
+
+This class consumes the Moose::Exception::Role::InvalidAttributeOptions and Moose::Exception::Role::ParamsHash roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute_name()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::AddParameterizableTypeTakesParameterizableType
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->type_name()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::AddRoleTakesAMooseMetaRoleInstance
+
+This class consumes the Moose::Exception::Role::Class role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=item * $exception->role_to_be_added()
+
+=back
+
+=head2 Moose::Exception::AddRoleToARoleTakesAMooseMetaRole
+
+This class consumes the Moose::Exception::Role::Role role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->role_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching the class's metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->role_name );
+
+
+=item * $exception->role_to_be_added()
+
+=back
+
+=head2 Moose::Exception::ApplyTakesABlessedInstance
+
+This class consumes the Moose::Exception::Role::Role role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->param()
+
+=item * $exception->role_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching the class's metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->role_name );
+
+
+=back
+
+=head2 Moose::Exception::AttachToClassNeedsAClassMOPClassInstanceOrASubclass
+
+This class consumes the Moose::Exception::Role::Attribute role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute()
+
+Returns a L<Class::MOP::Attribute> object.
+
+=item * $exception->class()
+
+=back
+
+=head2 Moose::Exception::AttributeConflictInRoles
+
+This class consumes the Moose::Exception::Role::Role role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute_name()
+
+Returns a Str value.
+
+=item * $exception->role_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching the class's metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->role_name );
+
+
+=item * $exception->second_role_name()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::AttributeConflictInSummation
+
+This class consumes the Moose::Exception::Role::AttributeName and Moose::Exception::Role::Role roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute_name()
+
+Returns a Str value.
+
+=item * $exception->role_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching the class's metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->role_name );
+
+
+=item * $exception->second_role_name()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::AttributeExtensionIsNotSupportedInRoles
+
+This class consumes the Moose::Exception::Role::Role role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute_name()
+
+Returns a Str value.
+
+=item * $exception->role_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching the class's metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->role_name );
+
+
+=back
+
+=head2 Moose::Exception::AttributeIsRequired
+
+This class consumes the Moose::Exception::Role::Class role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute_init_arg()
+
+Returns a Str value.
+
+=item * $exception->attribute_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching attribute instance:
+
+    my $class = Moose::Util::find_meta( $exception->class_name );
+    my $attribute = $class->get_attribute( $exception->attribute_name );
+
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::AttributeMustBeAnClassMOPMixinAttributeCoreOrSubclass
+
+This class consumes the Moose::Exception::Role::Class role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute()
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=back
+
+=head2 Moose::Exception::AttributeNamesDoNotMatch
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute()
+
+Returns a L<Class::MOP::Attribute> object.
+
+=item * $exception->attribute_name()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::AttributeValueIsNotAnObject
+
+This class consumes the Moose::Exception::Role::Attribute and Moose::Exception::Role::Instance roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute()
+
+Returns a L<Class::MOP::Attribute> object.
+
+=item * $exception->given_value()
+
+=item * $exception->instance()
+
+Returns an Object value.
+
+=item * $exception->method()
+
+Returns a L<Moose::Meta::Method::Delegation> object.
+
+=back
+
+=head2 Moose::Exception::AttributeValueIsNotDefined
+
+This class consumes the Moose::Exception::Role::Attribute and Moose::Exception::Role::Instance roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute()
+
+Returns a L<Class::MOP::Attribute> object.
+
+=item * $exception->instance()
+
+Returns an Object value.
+
+=item * $exception->method()
+
+Returns a L<Moose::Meta::Method::Delegation> object.
+
+=back
+
+=head2 Moose::Exception::AutoDeRefNeedsArrayRefOrHashRef
+
+This class consumes the Moose::Exception::Role::InvalidAttributeOptions and Moose::Exception::Role::ParamsHash roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute_name()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::BadOptionFormat
+
+This class consumes the Moose::Exception::Role::Attribute role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute()
+
+Returns a L<Class::MOP::Attribute> object.
+
+=item * $exception->option_name()
+
+Returns a Str value.
+
+=item * $exception->option_value()
+
+=back
+
+=head2 Moose::Exception::BothBuilderAndDefaultAreNotAllowed
+
+This class consumes the Moose::Exception::Role::ParamsHash role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::BuilderDoesNotExist
+
+This class consumes the Moose::Exception::Role::Attribute and Moose::Exception::Role::Instance roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute()
+
+Returns a L<Class::MOP::Attribute> object.
+
+=item * $exception->instance()
+
+Returns an Object value.
+
+=back
+
+=head2 Moose::Exception::BuilderMethodNotSupportedForAttribute
+
+This class consumes the Moose::Exception::Role::Attribute and Moose::Exception::Role::Instance roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute()
+
+Returns a L<Class::MOP::Attribute> object.
+
+=item * $exception->instance()
+
+Returns an Object value.
+
+=back
+
+=head2 Moose::Exception::BuilderMethodNotSupportedForInlineAttribute
+
+This class consumes the Moose::Exception::Role::Class and Moose::Exception::Role::Instance roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute_name()
+
+Returns a Str value.
+
+=item * $exception->builder()
+
+Returns a Str value.
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=item * $exception->instance()
+
+Returns an Object value.
+
+=back
+
+=head2 Moose::Exception::BuilderMustBeAMethodName
+
+This class consumes the Moose::Exception::Role::ParamsHash role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::CallingMethodOnAnImmutableInstance
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->method_name()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::CallingReadOnlyMethodOnAnImmutableInstance
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->method_name()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::CanExtendOnlyClasses
+
+This class consumes the Moose::Exception::Role::Role role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->role_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching the class's metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->role_name );
+
+
+=back
+
+=head2 Moose::Exception::CanOnlyConsumeRole
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->role_name()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::CanOnlyWrapBlessedCode
+
+This class consumes the Moose::Exception::Role::ParamsHash role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class()
+
+Returns a Str value.
+
+=item * $exception->code()
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::CanReblessOnlyIntoASubclass
+
+This class consumes the Moose::Exception::Role::Class, Moose::Exception::Role::Instance, Moose::Exception::Role::InstanceClass, and Moose::Exception::Role::ParamsHash roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=item * $exception->instance()
+
+Returns an Object value.
+
+=item * $exception->instance_class()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::CanReblessOnlyIntoASuperclass
+
+This class consumes the Moose::Exception::Role::Class, Moose::Exception::Role::Instance, and Moose::Exception::Role::InstanceClass roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=item * $exception->instance()
+
+Returns an Object value.
+
+=item * $exception->instance_class()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::CannotAddAdditionalTypeCoercionsToUnion
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->type_coercion_union_object()
+
+Returns a L<Moose::Meta::TypeCoercion::Union> object.
+
+=back
+
+=head2 Moose::Exception::CannotAddAsAnAttributeToARole
+
+This class consumes the Moose::Exception::Role::Role role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute_class()
+
+Returns a Str value.
+
+=item * $exception->role_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching the class's metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->role_name );
+
+
+=back
+
+=head2 Moose::Exception::CannotApplyBaseClassRolesToRole
+
+This class consumes the Moose::Exception::Role::ParamsHash and Moose::Exception::Role::Role roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=item * $exception->role_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching the class's metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->role_name );
+
+
+=back
+
+=head2 Moose::Exception::CannotAssignValueToReadOnlyAccessor
+
+This class consumes the Moose::Exception::Role::Class and Moose::Exception::Role::EitherAttributeOrAttributeName roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute()
+
+Returns a L<Class::MOP::Attribute> object.
+
+=item * $exception->attribute_name()
+
+Returns a Str value.
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=item * $exception->value()
+
+=back
+
+=head2 Moose::Exception::CannotAugmentIfLocalMethodPresent
+
+This class consumes the Moose::Exception::Role::Class and Moose::Exception::Role::Method roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=item * $exception->method()
+
+Returns a L<Moose::Meta::Method> object.
+
+=back
+
+=head2 Moose::Exception::CannotAugmentNoSuperMethod
+
+This class consumes the Moose::Exception::Role::ParamsHash role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class()
+
+Returns a Str value.
+
+=item * $exception->method_name()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::CannotAutoDerefWithoutIsa
+
+This class consumes the Moose::Exception::Role::InvalidAttributeOptions and Moose::Exception::Role::ParamsHash roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute_name()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::CannotAutoDereferenceTypeConstraint
+
+This class consumes the Moose::Exception::Role::Attribute, Moose::Exception::Role::Instance, and Moose::Exception::Role::TypeConstraint roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute()
+
+Returns a L<Class::MOP::Attribute> object.
+
+=item * $exception->instance()
+
+Returns an Object value.
+
+=item * $exception->type_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching type constraint(Moose::Meta::TypeConstraint):
+
+    my $type_constraint =  Moose::Util::TypeConstraints::find_type_constraint( $exception->type_name );
+
+
+=back
+
+=head2 Moose::Exception::CannotCalculateNativeType
+
+This class consumes the Moose::Exception::Role::Instance role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->instance()
+
+Returns an Object value.
+
+=back
+
+=head2 Moose::Exception::CannotCallAnAbstractBaseMethod
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->package_name()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::CannotCallAnAbstractMethod
+
+This class has no attributes except for C<message> and C<trace()>.
+
+=head2 Moose::Exception::CannotCoerceAWeakRef
+
+This class consumes the Moose::Exception::Role::InvalidAttributeOptions and Moose::Exception::Role::ParamsHash roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute_name()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::CannotCoerceAttributeWhichHasNoCoercion
+
+This class consumes the Moose::Exception::Role::InvalidAttributeOptions, Moose::Exception::Role::ParamsHash, and Moose::Exception::Role::TypeConstraint roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute_name()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=item * $exception->type_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching type constraint(Moose::Meta::TypeConstraint):
+
+    my $type_constraint =  Moose::Util::TypeConstraints::find_type_constraint( $exception->type_name );
+
+
+=back
+
+=head2 Moose::Exception::CannotCreateHigherOrderTypeWithoutATypeParameter
+
+This class consumes the Moose::Exception::Role::TypeConstraint role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->type_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching type constraint(Moose::Meta::TypeConstraint):
+
+    my $type_constraint =  Moose::Util::TypeConstraints::find_type_constraint( $exception->type_name );
+
+
+=back
+
+=head2 Moose::Exception::CannotCreateMethodAliasLocalMethodIsPresent
+
+This class consumes the Moose::Exception::Role::Method and Moose::Exception::Role::Role roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->aliased_method_name()
+
+Returns a Str value.
+
+=item * $exception->method()
+
+Returns a L<Moose::Meta::Method> object.
+
+=item * $exception->role_being_applied_name()
+
+Returns a Str value.
+
+=item * $exception->role_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching the class's metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->role_name );
+
+
+=back
+
+=head2 Moose::Exception::CannotCreateMethodAliasLocalMethodIsPresentInClass
+
+This class consumes the Moose::Exception::Role::Class, Moose::Exception::Role::Method, and Moose::Exception::Role::Role roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->aliased_method_name()
+
+Returns a Str value.
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=item * $exception->method()
+
+Returns a L<Moose::Meta::Method> object.
+
+=item * $exception->role_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching the class's metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->role_name );
+
+
+=back
+
+=head2 Moose::Exception::CannotDelegateLocalMethodIsPresent
+
+This class consumes the Moose::Exception::Role::Attribute and Moose::Exception::Role::Method roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute()
+
+Returns a L<Class::MOP::Attribute> object.
+
+=item * $exception->method()
+
+Returns a L<Moose::Meta::Method> object.
+
+=back
+
+=head2 Moose::Exception::CannotDelegateWithoutIsa
+
+This class consumes the Moose::Exception::Role::Attribute role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute()
+
+Returns a L<Class::MOP::Attribute> object.
+
+=back
+
+=head2 Moose::Exception::CannotFindDelegateMetaclass
+
+This class consumes the Moose::Exception::Role::Attribute role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute()
+
+Returns a L<Class::MOP::Attribute> object.
+
+=back
+
+=head2 Moose::Exception::CannotFindType
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->type_name()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::CannotFindTypeGivenToMatchOnType
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->action()
+
+=item * $exception->to_match()
+
+=item * $exception->type()
+
+=back
+
+=head2 Moose::Exception::CannotFixMetaclassCompatibility
+
+This class consumes the Moose::Exception::Role::Class role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=item * $exception->metaclass_type()
+
+Returns a Str value.
+
+=item * $exception->superclass()
+
+Returns an Object value.
+
+=back
+
+=head2 Moose::Exception::CannotGenerateInlineConstraint
+
+This class consumes the Moose::Exception::Role::TypeConstraint role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->parameterizable_type_object_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching parameterizable type constraint(Moose::Meta::TypeConstraint::Parameterizable):
+
+    my $type_constraint =  Moose::Util::TypeConstraints::find_type_constraint( $exception->type_name );
+
+
+=item * $exception->type_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching type constraint(Moose::Meta::TypeConstraint):
+
+    my $type_constraint =  Moose::Util::TypeConstraints::find_type_constraint( $exception->type_name );
+
+
+=item * $exception->value()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::CannotInitializeMooseMetaRoleComposite
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->args()
+
+Returns an ArrayRef value.
+
+=item * $exception->old_meta()
+
+=item * $exception->role_composite()
+
+Returns a L<Moose::Meta::Role::Composite> object.
+
+=back
+
+=head2 Moose::Exception::CannotInlineTypeConstraintCheck
+
+This class consumes the Moose::Exception::Role::TypeConstraint role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->type_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching type constraint(Moose::Meta::TypeConstraint):
+
+    my $type_constraint =  Moose::Util::TypeConstraints::find_type_constraint( $exception->type_name );
+
+
+=back
+
+=head2 Moose::Exception::CannotLocatePackageInINC
+
+This class consumes the Moose::Exception::Role::ParamsHash role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->INC()
+
+Returns an ArrayRef value.
+
+=item * $exception->metaclass_name()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=item * $exception->possible_packages()
+
+Returns a Str value.
+
+=item * $exception->type()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::CannotMakeMetaclassCompatible
+
+This class consumes the Moose::Exception::Role::Class role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=item * $exception->superclass_name()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::CannotOverrideALocalMethod
+
+This class consumes the Moose::Exception::Role::Role role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->method_name()
+
+Returns a Str value.
+
+=item * $exception->role_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching the class's metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->role_name );
+
+
+=back
+
+=head2 Moose::Exception::CannotOverrideBodyOfMetaMethods
+
+This class consumes the Moose::Exception::Role::ParamsHash role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::CannotOverrideLocalMethodIsPresent
+
+This class consumes the Moose::Exception::Role::Class and Moose::Exception::Role::Method roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=item * $exception->method()
+
+Returns a L<Moose::Meta::Method> object.
+
+=back
+
+=head2 Moose::Exception::CannotOverrideNoSuperMethod
+
+This class consumes the Moose::Exception::Role::ParamsHash role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class()
+
+Returns a Str value.
+
+=item * $exception->method_name()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::CannotRegisterUnnamedTypeConstraint
+
+This class has no attributes except for C<message> and C<trace()>.
+
+=head2 Moose::Exception::CannotUseLazyBuildAndDefaultSimultaneously
+
+This class consumes the Moose::Exception::Role::InvalidAttributeOptions and Moose::Exception::Role::ParamsHash roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute_name()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::CircularReferenceInAlso
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->also_parameter()
+
+Returns a Str value.
+
+=item * $exception->stack()
+
+Returns an ArrayRef value.
+
+=back
+
+=head2 Moose::Exception::ClassDoesNotHaveInitMeta
+
+This class consumes the Moose::Exception::Role::Class role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=item * $exception->traits()
+
+Returns an ArrayRef value.
+
+=back
+
+=head2 Moose::Exception::ClassDoesTheExcludedRole
+
+This class consumes the Moose::Exception::Role::Class and Moose::Exception::Role::Role roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=item * $exception->excluded_role_name()
+
+Returns a Str value.
+
+=item * $exception->role_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching the class's metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->role_name );
+
+
+=back
+
+=head2 Moose::Exception::ClassNamesDoNotMatch
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class()
+
+Returns a L<Class::MOP::Class> object.
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::CloneObjectExpectsAnInstanceOfMetaclass
+
+This class consumes the Moose::Exception::Role::Class role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=item * $exception->instance()
+
+=back
+
+=head2 Moose::Exception::CodeBlockMustBeACodeRef
+
+This class consumes the Moose::Exception::Role::Instance and Moose::Exception::Role::ParamsHash roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->instance()
+
+Returns an Object value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::CoercingWithoutCoercions
+
+This class consumes the Moose::Exception::Role::TypeConstraint role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->type_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching type constraint(Moose::Meta::TypeConstraint):
+
+    my $type_constraint =  Moose::Util::TypeConstraints::find_type_constraint( $exception->type_name );
+
+
+=back
+
+=head2 Moose::Exception::CoercionAlreadyExists
+
+This class consumes the Moose::Exception::Role::Instance role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->constraint_name()
+
+Returns a Str value.
+
+=item * $exception->instance()
+
+Returns an Object value.
+
+=back
+
+=head2 Moose::Exception::CoercionNeedsTypeConstraint
+
+This class consumes the Moose::Exception::Role::InvalidAttributeOptions and Moose::Exception::Role::ParamsHash roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute_name()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::ConflictDetectedInCheckRoleExclusions
+
+This class consumes the Moose::Exception::Role::Role role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->excluded_role_name()
+
+Returns a Str value.
+
+=item * $exception->role_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching the class's metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->role_name );
+
+
+=back
+
+=head2 Moose::Exception::ConflictDetectedInCheckRoleExclusionsInToClass
+
+This class consumes the Moose::Exception::Role::Class and Moose::Exception::Role::Role roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=item * $exception->role_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching the class's metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->role_name );
+
+
+=back
+
+=head2 Moose::Exception::ConstructClassInstanceTakesPackageName
+
+This class has no attributes except for C<message> and C<trace()>.
+
+=head2 Moose::Exception::CouldNotCreateMethod
+
+This class consumes the Moose::Exception::Role::Attribute role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute()
+
+Returns a L<Class::MOP::Attribute> object.
+
+=item * $exception->error()
+
+Returns a Str value.
+
+=item * $exception->option_name()
+
+Returns a Str value.
+
+=item * $exception->option_value()
+
+=back
+
+=head2 Moose::Exception::CouldNotCreateWriter
+
+This class consumes the Moose::Exception::Role::EitherAttributeOrAttributeName and Moose::Exception::Role::Instance roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute()
+
+Returns a L<Class::MOP::Attribute> object.
+
+=item * $exception->attribute_name()
+
+Returns a Str value.
+
+=item * $exception->error()
+
+Returns a Str value.
+
+=item * $exception->instance()
+
+Returns an Object value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::CouldNotEvalConstructor
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->constructor_method()
+
+Returns a L<Class::MOP::Method::Constructor> object.
+
+=item * $exception->error()
+
+Returns a Str value.
+
+=item * $exception->source()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::CouldNotEvalDestructor
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->error()
+
+Returns a Str value.
+
+=item * $exception->method_destructor_object()
+
+Returns a L<Moose::Meta::Method::Destructor> object.
+
+=item * $exception->source()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::CouldNotFindTypeConstraintToCoerceFrom
+
+This class consumes the Moose::Exception::Role::Instance role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->constraint_name()
+
+Returns a Str value.
+
+=item * $exception->instance()
+
+Returns an Object value.
+
+=back
+
+=head2 Moose::Exception::CouldNotGenerateInlineAttributeMethod
+
+This class consumes the Moose::Exception::Role::Instance role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->error()
+
+Returns a Moose::Exception|Str value.
+
+=item * $exception->instance()
+
+Returns an Object value.
+
+=item * $exception->option()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::CouldNotLocateTypeConstraintForUnion
+
+This class consumes the Moose::Exception::Role::TypeConstraint role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->type_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching type constraint(Moose::Meta::TypeConstraint):
+
+    my $type_constraint =  Moose::Util::TypeConstraints::find_type_constraint( $exception->type_name );
+
+
+=back
+
+=head2 Moose::Exception::CouldNotParseType
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->position()
+
+Returns an Int value.
+
+=item * $exception->type()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::CreateMOPClassTakesArrayRefOfAttributes
+
+This class consumes the Moose::Exception::Role::ParamsHash and Moose::Exception::Role::RoleForCreateMOPClass roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::CreateMOPClassTakesArrayRefOfSuperclasses
+
+This class consumes the Moose::Exception::Role::ParamsHash and Moose::Exception::Role::RoleForCreateMOPClass roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::CreateMOPClassTakesHashRefOfMethods
+
+This class consumes the Moose::Exception::Role::ParamsHash and Moose::Exception::Role::RoleForCreateMOPClass roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::CreateTakesArrayRefOfRoles
+
+This class consumes the Moose::Exception::Role::ParamsHash and Moose::Exception::Role::RoleForCreate roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute_class()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::CreateTakesHashRefOfAttributes
+
+This class consumes the Moose::Exception::Role::ParamsHash and Moose::Exception::Role::RoleForCreate roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute_class()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::CreateTakesHashRefOfMethods
+
+This class consumes the Moose::Exception::Role::ParamsHash and Moose::Exception::Role::RoleForCreate roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute_class()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::DefaultToMatchOnTypeMustBeCodeRef
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->cases_to_be_matched()
+
+Returns an ArrayRef value.
+
+=item * $exception->default_action()
+
+=item * $exception->to_match()
+
+=back
+
+=head2 Moose::Exception::DelegationToAClassWhichIsNotLoaded
+
+This class consumes the Moose::Exception::Role::Attribute role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute()
+
+Returns a L<Class::MOP::Attribute> object.
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::DelegationToARoleWhichIsNotLoaded
+
+This class consumes the Moose::Exception::Role::Attribute role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute()
+
+Returns a L<Class::MOP::Attribute> object.
+
+=item * $exception->role_name()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::DelegationToATypeWhichIsNotAClass
+
+This class consumes the Moose::Exception::Role::Attribute role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute()
+
+Returns a L<Class::MOP::Attribute> object.
+
+=back
+
+=head2 Moose::Exception::DoesRequiresRoleName
+
+This class consumes the Moose::Exception::Role::Class role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=back
+
+=head2 Moose::Exception::EnumCalledWithAnArrayRefAndAdditionalArgs
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->args()
+
+Returns an ArrayRef value.
+
+=item * $exception->array()
+
+Returns an ArrayRef value.
+
+=back
+
+=head2 Moose::Exception::EnumValuesMustBeString
+
+This class consumes the Moose::Exception::Role::ParamsHash role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=item * $exception->value()
+
+=back
+
+=head2 Moose::Exception::ExtendsMissingArgs
+
+This class consumes the Moose::Exception::Role::Class role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=back
+
+=head2 Moose::Exception::HandlesMustBeAHashRef
+
+This class consumes the Moose::Exception::Role::Instance role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->given_handles()
+
+=item * $exception->instance()
+
+Returns an Object value.
+
+=back
+
+=head2 Moose::Exception::IllegalInheritedOptions
+
+This class consumes the Moose::Exception::Role::ParamsHash role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->illegal_options()
+
+Returns an ArrayRef value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::IllegalMethodTypeToAddMethodModifier
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class_or_object()
+
+=item * $exception->modifier_name()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns an ArrayRef value.
+
+=back
+
+=head2 Moose::Exception::IncompatibleMetaclassOfSuperclass
+
+This class consumes the Moose::Exception::Role::Class role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class_meta_type()
+
+Returns a Str value.
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=item * $exception->superclass_meta_type()
+
+Returns a Str value.
+
+=item * $exception->superclass_name()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::InitMetaRequiresClass
+
+This class consumes the Moose::Exception::Role::ParamsHash role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::InitializeTakesUnBlessedPackageName
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->package_name()
+
+=back
+
+=head2 Moose::Exception::InstanceBlessedIntoWrongClass
+
+This class consumes the Moose::Exception::Role::Class, Moose::Exception::Role::Instance, and Moose::Exception::Role::ParamsHash roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=item * $exception->instance()
+
+Returns an Object value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::InstanceMustBeABlessedReference
+
+This class consumes the Moose::Exception::Role::Class and Moose::Exception::Role::ParamsHash roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=item * $exception->instance()
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::InvalidArgPassedToMooseUtilMetaRole
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->argument()
+
+=back
+
+=head2 Moose::Exception::InvalidArgumentToMethod
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->argument()
+
+=item * $exception->argument_noun()
+
+Returns a Str value.
+
+=item * $exception->method_name()
+
+Returns a Str value.
+
+=item * $exception->ordinal()
+
+Returns a Str value.
+
+=item * $exception->type()
+
+Returns a Str value.
+
+=item * $exception->type_of_argument()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::InvalidArgumentsToTraitAliases
+
+This class consumes the Moose::Exception::Role::Class role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->alias()
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=item * $exception->package_name()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::InvalidBaseTypeGivenToCreateParameterizedTypeConstraint
+
+This class consumes the Moose::Exception::Role::TypeConstraint role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->type_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching type constraint(Moose::Meta::TypeConstraint):
+
+    my $type_constraint =  Moose::Util::TypeConstraints::find_type_constraint( $exception->type_name );
+
+
+=back
+
+=head2 Moose::Exception::InvalidHandleValue
+
+This class consumes the Moose::Exception::Role::Instance role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->handle_value()
+
+=item * $exception->instance()
+
+Returns an Object value.
+
+=back
+
+=head2 Moose::Exception::InvalidHasProvidedInARole
+
+This class consumes the Moose::Exception::Role::Role role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute_name()
+
+Returns a Str value.
+
+=item * $exception->role_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching the class's metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->role_name );
+
+
+=back
+
+=head2 Moose::Exception::InvalidNameForType
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->name()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::InvalidOverloadOperator
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->operator()
+
+Returns a Defined value.
+
+=back
+
+=head2 Moose::Exception::InvalidRoleApplication
+
+This class consumes the Moose::Exception::Role::Class role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->application()
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=back
+
+=head2 Moose::Exception::InvalidTypeConstraint
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->registry_object()
+
+Returns a L<Moose::Meta::TypeConstraint::Registry> object.
+
+=item * $exception->type()
+
+=back
+
+=head2 Moose::Exception::InvalidTypeGivenToCreateParameterizedTypeConstraint
+
+This class consumes the Moose::Exception::Role::TypeConstraint role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->type_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching type constraint(Moose::Meta::TypeConstraint):
+
+    my $type_constraint =  Moose::Util::TypeConstraints::find_type_constraint( $exception->type_name );
+
+
+=back
+
+=head2 Moose::Exception::InvalidValueForIs
+
+This class consumes the Moose::Exception::Role::InvalidAttributeOptions and Moose::Exception::Role::ParamsHash roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute_name()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::IsaDoesNotDoTheRole
+
+This class consumes the Moose::Exception::Role::InvalidAttributeOptions and Moose::Exception::Role::ParamsHash roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute_name()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::IsaLacksDoesMethod
+
+This class consumes the Moose::Exception::Role::InvalidAttributeOptions and Moose::Exception::Role::ParamsHash roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute_name()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::LazyAttributeNeedsADefault
+
+This class consumes the Moose::Exception::Role::EitherAttributeOrAttributeName role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute()
+
+Returns a L<Class::MOP::Attribute> object.
+
+=item * $exception->attribute_name()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::Legacy
+
+This class has no attributes except for C<message> and C<trace()>.
+
+=head2 Moose::Exception::MOPAttributeNewNeedsAttributeName
+
+This class consumes the Moose::Exception::Role::ParamsHash role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::MatchActionMustBeACodeRef
+
+This class consumes the Moose::Exception::Role::TypeConstraint role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->action()
+
+=item * $exception->to_match()
+
+=item * $exception->type_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching type constraint(Moose::Meta::TypeConstraint):
+
+    my $type_constraint =  Moose::Util::TypeConstraints::find_type_constraint( $exception->type_name );
+
+
+=back
+
+=head2 Moose::Exception::MessageParameterMustBeCodeRef
+
+This class consumes the Moose::Exception::Role::ParamsHash role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::MetaclassIsAClassNotASubclassOfGivenMetaclass
+
+This class consumes the Moose::Exception::Role::Class role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=item * $exception->metaclass()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::MetaclassIsARoleNotASubclassOfGivenMetaclass
+
+This class consumes the Moose::Exception::Role::Role role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->metaclass()
+
+Returns a Str value.
+
+=item * $exception->role_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching the class's metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->role_name );
+
+
+=back
+
+=head2 Moose::Exception::MetaclassIsNotASubclassOfGivenMetaclass
+
+This class consumes the Moose::Exception::Role::Class role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=item * $exception->metaclass()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::MetaclassMustBeASubclassOfMooseMetaClass
+
+This class consumes the Moose::Exception::Role::Class role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=back
+
+=head2 Moose::Exception::MetaclassMustBeASubclassOfMooseMetaRole
+
+This class consumes the Moose::Exception::Role::Role role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->role_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching the class's metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->role_name );
+
+
+=back
+
+=head2 Moose::Exception::MetaclassMustBeDerivedFromClassMOPClass
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::MetaclassNotLoaded
+
+This class consumes the Moose::Exception::Role::Class role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=back
+
+=head2 Moose::Exception::MetaclassTypeIncompatible
+
+This class consumes the Moose::Exception::Role::Class role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=item * $exception->metaclass_type()
+
+Returns a Str value.
+
+=item * $exception->superclass_name()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::MethodExpectedAMetaclassObject
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class()
+
+Returns a Str value.
+
+=item * $exception->metaclass()
+
+=back
+
+=head2 Moose::Exception::MethodExpectsFewerArgs
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->maximum_args()
+
+Returns an Int value.
+
+=item * $exception->method_name()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::MethodExpectsMoreArgs
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->method_name()
+
+Returns a Str value.
+
+=item * $exception->minimum_args()
+
+Returns an Int value.
+
+=back
+
+=head2 Moose::Exception::MethodModifierNeedsMethodName
+
+This class consumes the Moose::Exception::Role::Class role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=back
+
+=head2 Moose::Exception::MethodNameConflictInRoles
+
+This class consumes the Moose::Exception::Role::Class role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=item * $exception->conflict()
+
+Returns an ArrayRef[Moose::Meta::Role::Method::Conflicting] value.
+
+=back
+
+=head2 Moose::Exception::MethodNameNotFoundInInheritanceHierarchy
+
+This class consumes the Moose::Exception::Role::Class role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=item * $exception->method_name()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::MethodNameNotGiven
+
+This class consumes the Moose::Exception::Role::Class role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=back
+
+=head2 Moose::Exception::MustDefineAMethodName
+
+This class consumes the Moose::Exception::Role::Instance role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->instance()
+
+Returns an Object value.
+
+=back
+
+=head2 Moose::Exception::MustDefineAnAttributeName
+
+This class consumes the Moose::Exception::Role::Class role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=back
+
+=head2 Moose::Exception::MustDefineAnOverloadOperator
+
+This class consumes the Moose::Exception::Role::Instance role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->instance()
+
+Returns an Object value.
+
+=back
+
+=head2 Moose::Exception::MustHaveAtLeastOneValueToEnumerate
+
+This class consumes the Moose::Exception::Role::ParamsHash role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::MustPassAHashOfOptions
+
+This class consumes the Moose::Exception::Role::ParamsHash role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::MustPassAMooseMetaRoleInstanceOrSubclass
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class()
+
+Returns a Str value.
+
+=item * $exception->role()
+
+=back
+
+=head2 Moose::Exception::MustPassAPackageNameOrAnExistingClassMOPPackageInstance
+
+This class consumes the Moose::Exception::Role::ParamsHash role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class()
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::MustPassEvenNumberOfArguments
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->args()
+
+Returns an ArrayRef value.
+
+=item * $exception->method_name()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::MustPassEvenNumberOfAttributeOptions
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute_name()
+
+Returns a Str value.
+
+=item * $exception->options()
+
+Returns an ArrayRef value.
+
+=back
+
+=head2 Moose::Exception::MustProvideANameForTheAttribute
+
+This class consumes the Moose::Exception::Role::ParamsHash role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::MustSpecifyAtleastOneMethod
+
+This class consumes the Moose::Exception::Role::Role role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->role_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching the class's metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->role_name );
+
+
+=back
+
+=head2 Moose::Exception::MustSpecifyAtleastOneRole
+
+This class consumes the Moose::Exception::Role::Role role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->role_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching the class's metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->role_name );
+
+
+=back
+
+=head2 Moose::Exception::MustSpecifyAtleastOneRoleToApplicant
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->applicant()
+
+=back
+
+=head2 Moose::Exception::MustSupplyAClassMOPAttributeInstance
+
+This class consumes the Moose::Exception::Role::ParamsHash role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::MustSupplyADelegateToMethod
+
+This class consumes the Moose::Exception::Role::ParamsHash role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::MustSupplyAMetaclass
+
+This class consumes the Moose::Exception::Role::ParamsHash role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::MustSupplyAMooseMetaAttributeInstance
+
+This class consumes the Moose::Exception::Role::ParamsHash role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::MustSupplyAnAccessorTypeToConstructWith
+
+This class consumes the Moose::Exception::Role::ParamsHash role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::MustSupplyAnAttributeToConstructWith
+
+This class consumes the Moose::Exception::Role::ParamsHash role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::MustSupplyArrayRefAsCurriedArguments
+
+This class consumes the Moose::Exception::Role::Class and Moose::Exception::Role::ParamsHash roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::MustSupplyPackageNameAndName
+
+This class consumes the Moose::Exception::Role::ParamsHash role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::NeedsTypeConstraintUnionForTypeCoercionUnion
+
+This class consumes the Moose::Exception::Role::TypeConstraint role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->type_coercion_union_object()
+
+Returns a L<Moose::Meta::TypeCoercion::Union> object.
+
+=item * $exception->type_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching type constraint(Moose::Meta::TypeConstraint):
+
+    my $type_constraint =  Moose::Util::TypeConstraints::find_type_constraint( $exception->type_name );
+
+
+=back
+
+=head2 Moose::Exception::NeitherAttributeNorAttributeNameIsGiven
+
+This class has no attributes except for C<message> and C<trace()>.
+
+=head2 Moose::Exception::NeitherClassNorClassNameIsGiven
+
+This class has no attributes except for C<message> and C<trace()>.
+
+=head2 Moose::Exception::NeitherRoleNorRoleNameIsGiven
+
+This class has no attributes except for C<message> and C<trace()>.
+
+=head2 Moose::Exception::NeitherTypeNorTypeNameIsGiven
+
+This class has no attributes except for C<message> and C<trace()>.
+
+=head2 Moose::Exception::NoAttributeFoundInSuperClass
+
+This class consumes the Moose::Exception::Role::Class, Moose::Exception::Role::InvalidAttributeOptions, and Moose::Exception::Role::ParamsHash roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute_name()
+
+Returns a Str value.
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::NoBodyToInitializeInAnAbstractBaseClass
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->package_name()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::NoCasesMatched
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->cases_to_be_matched()
+
+Returns an ArrayRef value.
+
+=item * $exception->to_match()
+
+=back
+
+=head2 Moose::Exception::NoConstraintCheckForTypeConstraint
+
+This class consumes the Moose::Exception::Role::TypeConstraint role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->type_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching type constraint(Moose::Meta::TypeConstraint):
+
+    my $type_constraint =  Moose::Util::TypeConstraints::find_type_constraint( $exception->type_name );
+
+
+=back
+
+=head2 Moose::Exception::NoDestructorClassSpecified
+
+This class consumes the Moose::Exception::Role::Class and Moose::Exception::Role::ParamsHash roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::NoImmutableTraitSpecifiedForClass
+
+This class consumes the Moose::Exception::Role::Class and Moose::Exception::Role::ParamsHash roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::NoParentGivenToSubtype
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->name()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::OnlyInstancesCanBeCloned
+
+This class consumes the Moose::Exception::Role::Class and Moose::Exception::Role::ParamsHash roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=item * $exception->instance()
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::OperatorIsRequired
+
+This class consumes the Moose::Exception::Role::ParamsHash role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::OverloadConflictInSummation
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->overloaded_op()
+
+Returns a Str value.
+
+=item * $exception->role_application()
+
+Returns a L<Moose::Meta::Role::Application::RoleSummation> object.
+
+=item * $exception->role_names()
+
+=item * $exception->elements()
+
+This attribute is an ArrayRef containing role names, if you want metaobjects
+associated with these role names, then call method roles on the exception object.
+
+
+=back
+
+=head2 Moose::Exception::OverloadRequiresAMetaClass
+
+This class has no attributes except for C<message> and C<trace()>.
+
+=head2 Moose::Exception::OverloadRequiresAMetaMethod
+
+This class has no attributes except for C<message> and C<trace()>.
+
+=head2 Moose::Exception::OverloadRequiresAMetaOverload
+
+This class has no attributes except for C<message> and C<trace()>.
+
+=head2 Moose::Exception::OverloadRequiresAMethodNameOrCoderef
+
+This class has no attributes except for C<message> and C<trace()>.
+
+=head2 Moose::Exception::OverloadRequiresAnOperator
+
+This class has no attributes except for C<message> and C<trace()>.
+
+=head2 Moose::Exception::OverloadRequiresNamesForCoderef
+
+This class has no attributes except for C<message> and C<trace()>.
+
+=head2 Moose::Exception::OverrideConflictInComposition
+
+This class consumes the Moose::Exception::Role::Role role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->method_name()
+
+Returns a Str value.
+
+=item * $exception->role_being_applied_name()
+
+Returns a Str value.
+
+=item * $exception->role_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching the class's metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->role_name );
+
+
+=item * $exception->two_overrides_found()
+
+Returns a Bool value.
+
+=back
+
+=head2 Moose::Exception::OverrideConflictInSummation
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->method_name()
+
+Returns a Str value.
+
+=item * $exception->role_application()
+
+Returns a L<Moose::Meta::Role::Application::RoleSummation> object.
+
+=item * $exception->role_names()
+
+=item * $exception->elements()
+
+This attribute is an ArrayRef containing role names, if you want metaobjects
+associated with these role names, then call method roles on the exception object.
+
+
+=item * $exception->two_overrides_found()
+
+Returns a Bool value.
+
+=back
+
+=head2 Moose::Exception::PackageDoesNotUseMooseExporter
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->is_loaded()
+
+Returns a Bool value.
+
+=item * $exception->package()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::PackageNameAndNameParamsNotGivenToWrap
+
+This class consumes the Moose::Exception::Role::ParamsHash role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class()
+
+Returns a Str value.
+
+=item * $exception->code()
+
+Returns a CodeRef value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::PackagesAndModulesAreNotCachable
+
+This class consumes the Moose::Exception::Role::Class and Moose::Exception::Role::ParamsHash roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=item * $exception->is_module()
+
+Returns a Bool value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::ParameterIsNotSubtypeOfParent
+
+This class consumes the Moose::Exception::Role::TypeConstraint role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->type_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching type constraint(Moose::Meta::TypeConstraint):
+
+    my $type_constraint =  Moose::Util::TypeConstraints::find_type_constraint( $exception->type_name );
+
+
+=item * $exception->type_parameter()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::ReferencesAreNotAllowedAsDefault
+
+This class consumes the Moose::Exception::Role::ParamsHash role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute_name()
+
+Returns a Str value.
+
+=item * $exception->class()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::RequiredAttributeLacksInitialization
+
+This class consumes the Moose::Exception::Role::ParamsHash role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::RequiredAttributeNeedsADefault
+
+This class consumes the Moose::Exception::Role::InvalidAttributeOptions and Moose::Exception::Role::ParamsHash roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute_name()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::RequiredMethodsImportedByClass
+
+This class consumes the Moose::Exception::Role::Class and Moose::Exception::Role::Role roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=item * $exception->imported_method()
+
+Returns a L<Moose::Meta::Role::Method::Required> object.
+
+=item * $exception->missing_methods()
+
+Returns an ArrayRef[Moose::Meta::Role::Method::Required] value.
+
+=item * $exception->role_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching the class's metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->role_name );
+
+
+=back
+
+=head2 Moose::Exception::RequiredMethodsNotImplementedByClass
+
+This class consumes the Moose::Exception::Role::Class and Moose::Exception::Role::Role roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=item * $exception->missing_methods()
+
+Returns an ArrayRef[Moose::Meta::Role::Method::Required] value.
+
+=item * $exception->role_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching the class's metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->role_name );
+
+
+=back
+
+=head2 Moose::Exception::RoleDoesTheExcludedRole
+
+This class consumes the Moose::Exception::Role::Role role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->excluded_role_name()
+
+Returns a Str value.
+
+=item * $exception->role_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching the class's metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->role_name );
+
+
+=item * $exception->second_role_name()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::RoleExclusionConflict
+
+This class consumes the Moose::Exception::Role::Role role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->role_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching the class's metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->role_name );
+
+
+=item * $exception->roles()
+
+Returns an ArrayRef value.
+
+=back
+
+=head2 Moose::Exception::RoleNameRequired
+
+This class consumes the Moose::Exception::Role::Class role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=back
+
+=head2 Moose::Exception::RoleNameRequiredForMooseMetaRole
+
+This class consumes the Moose::Exception::Role::Role role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->role_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching the class's metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->role_name );
+
+
+=back
+
+=head2 Moose::Exception::RolesDoNotSupportAugment
+
+This class has no attributes except for C<message> and C<trace()>.
+
+=head2 Moose::Exception::RolesDoNotSupportExtends
+
+This class has no attributes except for C<message> and C<trace()>.
+
+=head2 Moose::Exception::RolesDoNotSupportInner
+
+This class has no attributes except for C<message> and C<trace()>.
+
+=head2 Moose::Exception::RolesDoNotSupportRegexReferencesForMethodModifiers
+
+This class consumes the Moose::Exception::Role::Role role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->modifier_type()
+
+Returns a Str value.
+
+=item * $exception->role_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching the class's metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->role_name );
+
+
+=back
+
+=head2 Moose::Exception::RolesInCreateTakesAnArrayRef
+
+This class consumes the Moose::Exception::Role::ParamsHash role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::RolesListMustBeInstancesOfMooseMetaRole
+
+This class consumes the Moose::Exception::Role::ParamsHash role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=item * $exception->role()
+
+=back
+
+=head2 Moose::Exception::SingleParamsToNewMustBeHashRef
+
+This class has no attributes except for C<message> and C<trace()>.
+
+=head2 Moose::Exception::TriggerMustBeACodeRef
+
+This class consumes the Moose::Exception::Role::InvalidAttributeOptions and Moose::Exception::Role::ParamsHash roles.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute_name()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::TypeConstraintCannotBeUsedForAParameterizableType
+
+This class consumes the Moose::Exception::Role::TypeConstraint role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->parent_type_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching type constraint(Moose::Meta::TypeConstraint):
+
+    my $type_constraint =  Moose::Util::TypeConstraints::find_type_constraint( $exception->parent_type_name );
+
+
+=item * $exception->type_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching type constraint(Moose::Meta::TypeConstraint):
+
+    my $type_constraint =  Moose::Util::TypeConstraints::find_type_constraint( $exception->type_name );
+
+
+=back
+
+=head2 Moose::Exception::TypeConstraintIsAlreadyCreated
+
+This class consumes the Moose::Exception::Role::TypeConstraint role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->package_defined_in()
+
+Returns a Str value.
+
+=item * $exception->type_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching type constraint(Moose::Meta::TypeConstraint):
+
+    my $type_constraint =  Moose::Util::TypeConstraints::find_type_constraint( $exception->type_name );
+
+
+=back
+
+=head2 Moose::Exception::TypeParameterMustBeMooseMetaType
+
+This class consumes the Moose::Exception::Role::TypeConstraint role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->type_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching type constraint(Moose::Meta::TypeConstraint):
+
+    my $type_constraint =  Moose::Util::TypeConstraints::find_type_constraint( $exception->type_name );
+
+
+=back
+
+=head2 Moose::Exception::UnableToCanonicalizeHandles
+
+This class consumes the Moose::Exception::Role::Attribute role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute()
+
+Returns a L<Class::MOP::Attribute> object.
+
+=item * $exception->handles()
+
+=back
+
+=head2 Moose::Exception::UnableToCanonicalizeNonRolePackage
+
+This class consumes the Moose::Exception::Role::Attribute role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute()
+
+Returns a L<Class::MOP::Attribute> object.
+
+=item * $exception->handles()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::UnableToRecognizeDelegateMetaclass
+
+This class consumes the Moose::Exception::Role::Attribute role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute()
+
+Returns a L<Class::MOP::Attribute> object.
+
+=item * $exception->delegate_metaclass()
+
+=back
+
+=head2 Moose::Exception::UndefinedHashKeysPassedToMethod
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->hash_keys()
+
+Returns an ArrayRef value.
+
+=item * $exception->method_name()
+
+Returns a Str value.
+
+=back
+
+=head2 Moose::Exception::UnionCalledWithAnArrayRefAndAdditionalArgs
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->args()
+
+Returns an ArrayRef value.
+
+=item * $exception->array()
+
+Returns an ArrayRef value.
+
+=back
+
+=head2 Moose::Exception::UnionTakesAtleastTwoTypeNames
+
+This class has no attributes except for C<message> and C<trace()>.
+
+=head2 Moose::Exception::ValidationFailedForInlineTypeConstraint
+
+This class consumes the Moose::Exception::Role::Class role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute_name()
+
+Returns a Str value.
+
+=item * $exception->class_name()
+
+Returns a Str value.
+
+This attribute can be used for fetching metaclass instance:
+
+    my $metaclass_instance = Moose::Util::find_meta( $exception->class_name );
+
+
+=item * $exception->new_member()
+
+Returns a Bool value.
+
+=item * $exception->type_constraint_message()
+
+Returns a Str value.
+
+=item * $exception->value()
+
+=back
+
+=head2 Moose::Exception::ValidationFailedForTypeConstraint
+
+This class consumes the Moose::Exception::Role::Attribute role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute()
+
+Returns a L<Class::MOP::Attribute> object.
+
+=item * $exception->type()
+
+Returns a Moose::Util::TypeConstraints value.
+
+=item * $exception->value()
+
+=back
+
+=head2 Moose::Exception::WrapTakesACodeRefToBless
+
+This class consumes the Moose::Exception::Role::ParamsHash role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->class()
+
+Returns a Str value.
+
+=item * $exception->code()
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=back
+
+=head2 Moose::Exception::WrongTypeConstraintGiven
+
+This class consumes the Moose::Exception::Role::ParamsHash role.
+
+This class has the following methods:
+
+=over 4
+
+=item * $exception->attribute_name()
+
+Returns a Str value.
+
+=item * $exception->given_type()
+
+Returns a Str value.
+
+=item * $exception->params()
+
+Returns a HashRef value.
+
+=item * $exception->required_type()
+
+Returns a Str value.
+
+=back
+
+=cut
+
+
+=for comment insert generated content here
+
+=head1 AUTHORS
+
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut

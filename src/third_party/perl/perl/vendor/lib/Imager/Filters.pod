@@ -1,0 +1,800 @@
+=head1 NAME
+
+Imager::Filters - Entire Image Filtering Operations
+
+=head1 SYNOPSIS
+
+  use Imager;
+
+  $img = ...;
+
+  $img->filter(type=>'autolevels');
+  $img->filter(type=>'autolevels', lsat=>0.2);
+  $img->filter(type=>'turbnoise')
+
+  # and lots of others
+
+  load_plugin("dynfilt/dyntest.so")
+    or die "unable to load plugin\n";
+
+  $img->filter(type=>'lin_stretch', a=>35, b=>200);
+
+  unload_plugin("dynfilt/dyntest.so")
+    or die "unable to load plugin\n";
+
+  $out = $img->difference(other=>$other_img);
+
+=head1 DESCRIPTION
+
+Filters are operations that have similar calling interface.
+
+=over
+
+=item filter()
+
+Parameters:
+
+=over
+
+=item *
+
+type - the type of filter, see L</Types of Filters>.
+
+=item *
+
+many other possible parameters, see L</Types of Filters> below.
+
+=back
+
+Returns the invocant (C<$self>) on success, returns a false value on
+failure.  You can call C<< $self->errstr >> to determine the cause of
+the failure.
+
+  $self->filter(type => $type, ...)
+    or die $self->errstr;
+
+=back
+
+=head2 Types of Filters
+
+Here is a list of the filters that are always available in Imager.
+This list can be obtained by running the C<filterlist.perl> script
+that comes with the module source.
+
+  Filter          Arguments   Default value
+  autolevels      lsat        0.1
+                  usat        0.1
+
+  autolevels_skew lsat        0.1
+                  usat        0.1
+                  skew        0
+
+  bumpmap         bump lightx lighty
+                  elevation   0
+                  st          2
+
+  bumpmap_complex bump
+                  channel     0
+                  tx          0
+                  ty          0
+                  Lx          0.2
+                  Ly          0.4
+                  Lz          -1 
+                  cd          1.0 
+                  cs          40.0
+                  n           1.3
+                  Ia          (0 0 0)
+                  Il          (255 255 255)
+                  Is          (255 255 255)
+
+  contrast        intensity
+
+  conv            coef
+
+  fountain        xa ya xb yb
+                  ftype        linear
+                  repeat       none
+                  combine      none
+                  super_sample none
+                  ssample_param 4
+                  segments(see below)
+
+  gaussian        stddev
+
+  gradgen         xo yo colors 
+                  dist         0
+
+  hardinvert
+
+  hardinvertall
+
+  mosaic          size         20
+
+  noise           amount       3
+                  subtype      0
+
+  postlevels      levels       10
+
+  radnoise        xo           100
+                  yo           100
+                  ascale       17.0
+                  rscale       0.02
+
+  turbnoise       xo           0.0
+                  yo           0.0
+                  scale        10.0
+
+  unsharpmask     stddev       2.0
+                  scale        1.0
+
+  watermark       wmark
+                  pixdiff      10
+                  tx           0
+                  ty           0
+
+All parameters must have some value but if a parameter has a default
+value it may be omitted when calling the filter function.
+
+Every one of these filters modifies the image in place.
+
+If none of the filters here do what you need, the
+L<Imager::Engines/transform()> or L<Imager::Engines/transform2()>
+function may be useful.
+
+=for stopwords
+autolevels bumpmap bumpmap_complex conv gaussian hardinvert hardinvertall
+radnoise turbnoise unsharpmask gradgen postlevels
+
+A reference of the filters follows:
+
+=over
+
+=item autolevels
+
+Scales the luminosity of the image so that the luminosity will cover
+the possible range for the image.  C<lsat> and C<usat> truncate the
+range by the specified fraction at the top and bottom of the range
+respectively.
+
+  # increase contrast, losing little detail
+  $img->filter(type=>"autolevels")
+    or die $img->errstr;
+
+The method used here is typically called L<Histogram
+Equalization|http://en.wikipedia.org/wiki/Histogram_equalization>.
+
+=item autolevels_skew
+
+Scales the value of each channel so that the values in the image will
+cover the whole possible range for the channel.  C<lsat> and C<usat>
+truncate the range by the specified fraction at the top and bottom of
+the range respectively.
+
+  # increase contrast per channel, losing little detail
+  $img->filter(type=>"autolevels_skew")
+    or die $img->errstr;
+
+  # increase contrast, losing 20% of highlight at top and bottom range
+  $img->filter(type=>"autolevels", lsat=>0.2, usat=>0.2)
+    or die $img->errstr;
+
+This filter was the original C<autolevels> filter, but it's typically
+useless due to the significant color skew it can produce.
+
+=item bumpmap
+
+uses the channel C<elevation> image C<bump> as a bump map on your
+image, with the light at (C<lightx>, C<lightty>), with a shadow length
+of C<st>.
+
+  $img->filter(type=>"bumpmap", bump=>$bumpmap_img,
+               lightx=>10, lighty=>10, st=>5)
+    or die $img->errstr;
+
+=item bumpmap_complex
+
+uses the channel C<channel> image C<bump> as a bump map on your image.
+If C<< Lz < 0 >> the three L parameters are considered to be the
+direction of the light.  If C<< Lz > 0 >> the L parameters are
+considered to be the light position.  C<Ia> is the ambient color,
+C<Il> is the light color, C<Is> is the color of specular highlights.
+C<cd> is the diffuse coefficient and C<cs> is the specular
+coefficient.  C<n> is the shininess of the surface.
+
+  $img->filter(type=>"bumpmap_complex", bump=>$bumpmap_img)
+    or die $img->errstr;
+
+=item contrast
+
+scales each channel by C<intensity>.  Values of C<intensity> < 1.0
+will reduce the contrast.
+
+  # higher contrast
+  $img->filter(type=>"contrast", intensity=>1.3)
+    or die $img->errstr;
+
+  # lower contrast
+  $img->filter(type=>"contrast", intensity=>0.8)
+    or die $img->errstr;
+
+=item conv
+
+performs 2 1-dimensional convolutions on the image using the values
+from C<coef>.  C<coef> should be have an odd length and the sum of the
+coefficients must be non-zero.
+
+  # sharper
+  $img->filter(type=>"conv", coef=>[-0.5, 2, -0.5 ])
+    or die $img->errstr;
+
+  # blur
+  $img->filter(type=>"conv", coef=>[ 1, 2, 1 ])
+    or die $img->errstr;
+
+  # error
+  $img->filter(type=>"conv", coef=>[ -0.5, 1, -0.5 ])
+    or die $img->errstr;
+
+=item fountain
+
+renders a fountain fill, similar to the gradient tool in most paint
+software.  The default fill is a linear fill from opaque black to
+opaque white.  The points C<A(Cxa, ya)> and C<B(xb, yb)> control the
+way the fill is performed, depending on the C<ftype> parameter:
+
+=for stopwords ramping
+
+=over
+
+=item C<linear>
+
+the fill ramps from A through to B.
+
+=item C<bilinear>
+
+the fill ramps in both directions from A, where AB defines the length
+of the gradient.
+
+=item C<radial>
+
+A is the center of a circle, and B is a point on it's circumference.
+The fill ramps from the center out to the circumference.
+
+=item C<radial_square>
+
+A is the center of a square and B is the center of one of it's sides.
+This can be used to rotate the square.  The fill ramps out to the
+edges of the square.
+
+=item C<revolution>
+
+A is the center of a circle and B is a point on its circumference.  B
+marks the 0 and 360 point on the circle, with the fill ramping
+clockwise.
+
+=item C<conical>
+
+A is the center of a circle and B is a point on it's circumference.  B
+marks the 0 and point on the circle, with the fill ramping in both
+directions to meet opposite.
+
+=back
+
+The C<repeat> option controls how the fill is repeated for some
+C<ftype>s after it leaves the AB range:
+
+=over
+
+=item C<none>
+
+no repeats, points outside of each range are treated as if they were
+on the extreme end of that range.
+
+=item C<sawtooth>
+
+the fill simply repeats in the positive direction
+
+=item C<triangle>
+
+the fill repeats in reverse and then forward and so on, in the
+positive direction
+
+=item C<saw_both>
+
+the fill repeats in both the positive and negative directions (only
+meaningful for a linear fill).
+
+=item C<tri_both>
+
+as for triangle, but in the negative direction too (only meaningful
+for a linear fill).
+
+=back
+
+By default the fill simply overwrites the whole image (unless you have
+parts of the range 0 through 1 that aren't covered by a segment), if
+any segments of your fill have any transparency, you can set the
+I<combine> option to 'normal' to have the fill combined with the
+existing pixels.  See the description of I<combine> in L<Imager::Fill>.
+
+If your fill has sharp edges, for example between steps if you use
+repeat set to 'triangle', you may see some aliased or ragged edges.
+You can enable super-sampling which will take extra samples within the
+pixel in an attempt anti-alias the fill.
+
+The possible values for the super_sample option are:
+
+=over
+
+=item none
+
+no super-sampling is done
+
+=item grid
+
+a square grid of points are sampled.  The number of points sampled is
+the square of ceil(0.5 + sqrt(ssample_param)).
+
+=item random
+
+a random set of points within the pixel are sampled.  This looks
+pretty bad for low ssample_param values.
+
+=item circle
+
+the points on the radius of a circle within the pixel are sampled.
+This seems to produce the best results, but is fairly slow (for now).
+
+=back
+
+You can control the level of sampling by setting the ssample_param
+option.  This is roughly the number of points sampled, but depends on
+the type of sampling.
+
+The segments option is an arrayref of segments.  You really should use
+the L<Imager::Fountain> class to build your fountain fill.  Each
+segment is an array ref containing:
+
+=over
+
+=item start
+
+a floating point number between 0 and 1, the start of the range of
+fill parameters covered by this segment.
+
+=item middle
+
+a floating point number between start and end which can be used to
+push the color range towards one end of the segment.
+
+=item end
+
+a floating point number between 0 and 1, the end of the range of fill
+parameters covered by this segment.  This should be greater than
+start.
+
+=item c0
+
+=item c1
+
+The colors at each end of the segment.  These can be either
+Imager::Color or Imager::Color::Float objects.
+
+=item segment type
+
+The type of segment, this controls the way the fill parameter varies
+over the segment. 0 for linear, 1 for curved (unimplemented), 2 for
+sine, 3 for sphere increasing, 4 for sphere decreasing.
+
+=item color type
+
+The way the color varies within the segment, 0 for simple RGB, 1 for
+hue increasing and 2 for hue decreasing.
+
+=back
+
+Don't forget to use Imager::Fountain instead of building your own.
+Really.  It even loads GIMP gradient files.
+
+  # build the gradient the hard way - linear from black to white,
+  # then back again
+  my @simple =
+   (
+     [   0, 0.25, 0.5, 'black', 'white', 0, 0 ],
+     [ 0.5. 0.75, 1.0, 'white', 'black', 0, 0 ],
+   );
+  # across
+  my $linear = $img->copy;
+  $linear->filter(type     => "fountain",
+                  ftype    => 'linear',
+                  repeat   => 'sawtooth',
+		  segments => \@simple,
+                  xa       => 0,
+                  ya       => $linear->getheight / 2,
+                  xb       => $linear->getwidth - 1,
+                  yb       => $linear->getheight / 2)
+    or die $linear->errstr;
+  # around
+  my $revolution = $img->copy;
+  $revolution->filter(type     => "fountain",
+                      ftype    => 'revolution',
+		      segments => \@simple,
+                      xa       => $revolution->getwidth / 2,
+                      ya       => $revolution->getheight / 2,
+                      xb       => $revolution->getwidth / 2,
+                      yb       => 0)
+    or die $revolution->errstr;
+  # out from the middle
+  my $radial = $img->copy;
+  $radial->filter(type     => "fountain",
+                  ftype    => 'radial',
+		  segments => \@simple,
+                  xa       => $im->getwidth / 2,
+                  ya       => $im->getheight / 2,
+                  xb       => $im->getwidth / 2,
+                  yb       => 0)
+    or die $radial->errstr;
+
+=for stopwords Gaussian
+                           
+=item gaussian
+
+performs a Gaussian blur of the image, using C<stddev> as the standard
+deviation of the curve used to combine pixels, larger values give
+bigger blurs.  For a definition of Gaussian Blur, see:
+
+  http://www.maths.abdn.ac.uk/~igc/tch/mx4002/notes/node99.html
+
+Values of C<stddev> around 0.5 provide a barely noticeable blur,
+values around 5 provide a very strong blur.
+
+  # only slightly blurred
+  $img->filter(type=>"gaussian", stddev=>0.5)
+    or die $img->errstr;
+
+  # more strongly blurred
+  $img->filter(type=>"gaussian", stddev=>5)
+    or die $img->errstr;
+
+=item gradgen
+
+renders a gradient, with the given I<colors> at the corresponding
+points (x,y) in C<xo> and C<yo>.  You can specify the way distance is
+measured for color blending by setting C<dist> to 0 for Euclidean, 1
+for Euclidean squared, and 2 for Manhattan distance.
+
+  $img->filter(type="gradgen", 
+               xo=>[ 10, 50, 10 ], 
+               yo=>[ 10, 50, 50 ],
+               colors=>[ qw(red blue green) ]);
+
+=item hardinvert
+X<filters, hardinvert>X<hardinvert>
+
+inverts the image, black to white, white to black.  All color channels
+are inverted, excluding the alpha channel if any.
+
+  $img->filter(type=>"hardinvert")
+    or die $img->errstr;
+
+=item hardinvertall
+X<filters, hardinvertall>X<hardinvertall>
+
+inverts the image, black to white, white to black.  All channels are
+inverted, including the alpha channel if any.
+
+  $img->filter(type=>"hardinvertall")
+    or die $img->errstr;
+
+=item mosaic
+
+produces averaged tiles of the given C<size>.
+
+  $img->filter(type=>"mosaic", size=>5)
+    or die $img->errstr;
+
+=item noise
+
+adds noise of the given C<amount> to the image.  If C<subtype> is
+zero, the noise is even to each channel, otherwise noise is added to
+each channel independently.
+
+  # monochrome noise
+  $img->filter(type=>"noise", amount=>20, subtype=>0)
+    or die $img->errstr;
+
+  # color noise
+  $img->filter(type=>"noise", amount=>20, subtype=>1)
+    or die $img->errstr;
+
+=for stopwords Perlin
+
+=item radnoise
+
+renders radiant Perlin turbulent noise.  The center of the noise is at
+(C<xo>, C<yo>), C<ascale> controls the angular scale of the noise ,
+and C<rscale> the radial scale, higher numbers give more detail.
+
+  $img->filter(type=>"radnoise", xo=>50, yo=>50,
+               ascale=>1, rscale=>0.02)
+    or die $img->errstr;
+
+=item postlevels
+
+alters the image to have only C<levels> distinct level in each
+channel.
+
+  $img->filter(type=>"postlevels", levels=>10)
+    or die $img->errstr;
+
+=item turbnoise
+
+renders Perlin turbulent noise.  (C<xo>, C<yo>) controls the origin of
+the noise, and C<scale> the scale of the noise, with lower numbers
+giving more detail.
+
+  $img->filter(type=>"turbnoise", xo=>10, yo=>10, scale=>10)
+    or die $img->errstr;
+
+=for stopwords unsharp
+
+=item unsharpmask
+
+performs an unsharp mask on the image.  This increases the contrast of
+edges in the image.
+
+This is the result of subtracting a Gaussian blurred version of the
+image from the original.  C<stddev> controls the C<stddev> parameter
+of the Gaussian blur.  Each output pixel is:
+
+  in + scale * (in - blurred)
+
+eg.
+
+  $img->filter(type=>"unsharpmask", stddev=>1, scale=>0.5)
+    or die $img->errstr;
+
+C<unsharpmark> has the following parameters:
+
+=for stopwords GIMP GIMP's
+
+=over
+
+=item *
+
+C<stddev> - this is equivalent to the C<Radius> value in the GIMP's
+unsharp mask filter.  This controls the size of the contrast increase
+around edges, larger values will remove fine detail. You should
+probably experiment on the types of images you plan to work with.
+Default: 2.0.
+
+=item *
+
+C<scale> - controls the strength of the edge enhancement, equivalent
+to I<Amount> in the GIMP's unsharp mask filter.  Default: 1.0.
+
+=back
+
+=item watermark
+
+applies C<wmark> as a watermark on the image with strength C<pixdiff>,
+with an origin at (C<tx>, C<ty>)
+
+  $img->filter(type=>"watermark", tx=>10, ty=>50, 
+               wmark=>$wmark_image, pixdiff=>50)
+    or die $img->errstr;
+
+=back
+
+A demonstration of most of the filters can be found at:
+
+  http://www.develop-help.com/imager/filters.html
+
+=head2 External Filters
+
+As of Imager 0.48 you can create perl or XS based filters and hook
+them into Imager's filter() method:
+
+=over
+
+=item register_filter()
+
+Registers a filter so it is visible via Imager's filter() method.
+
+  Imager->register_filter(type => 'your_filter',
+                          defaults => { parm1 => 'default1' },
+                          callseq => [ qw/image parm1/ ],
+                          callsub => \&your_filter);
+  $img->filter(type=>'your_filter', parm1 => 'something');
+
+The following parameters are needed:
+
+=over
+
+=item *
+
+C<type> - the type value that will be supplied to filter() to use your
+filter.
+
+=item *
+
+C<defaults> - a hash of defaults for the filter's parameters
+
+=item *
+
+C<callseq> - a reference to an array of required parameter names.
+
+=item *
+
+C<callsub> - a code reference called to execute your filter.  The
+parameters passed to filter() are supplied as a list of parameter
+name, value ... which can be assigned to a hash.
+
+The special parameters C<image> and C<imager> are supplied as the low
+level image object from $self and $self itself respectively.
+
+The function you supply must modify the image in place.
+
+To indicate an error, die with an error message followed by a
+newline. C<filter()> will store the error message as the C<errstr()>
+for the invocant and return false to indicate failure.
+
+  sub my_filter {
+    my %opts = @_;
+    _is_valid($opts{myparam})
+      or die "myparam invalid!\n";
+
+    # actually do the filtering...
+  }
+
+=back
+
+See L<Imager::Filter::Mandelbrot> for an example.
+
+=back
+
+=for stopwords DSOs
+
+=head2 Plug-ins
+
+The plug in interface is deprecated.  Please use the Imager API, see
+L<Imager::API> and L</External Filters> for details
+
+It is possible to add filters to the module without recompiling Imager
+itself.  This is done by using DSOs (Dynamic shared object) available
+on most systems.  This way you can maintain your own filters and not
+have to have it added to Imager, or worse patch every new version of
+Imager.  Modules can be loaded AND UNLOADED at run time.  This means
+that you can have a server/daemon thingy that can do something like:
+
+  load_plugin("dynfilt/dyntest.so")
+    or die "unable to load plugin\n";
+
+  $img->filter(type=>'lin_stretch', a=>35, b=>200);
+
+  unload_plugin("dynfilt/dyntest.so")
+    or die "unable to load plugin\n";
+
+Someone decides that the filter is not working as it should -
+F<dyntest.c> can be modified and recompiled, and then reloaded:
+
+  load_plugin("dynfilt/dyntest.so")
+    or die "unable to load plugin\n";
+
+  $img->filter(%hsh);
+
+=for stopwords Linux Solaris HPUX OpenBSD FreeBSD TRU64 OSF1 AIX Win32 OS X
+
+Note: This has been tested successfully on the following systems:
+Linux, Solaris, HPUX, OpenBSD, FreeBSD, TRU64/OSF1, AIX, Win32, OS X.
+
+=over
+
+=item load_plugin()
+
+This is a function, not a method, exported by default.  You should
+import this function explicitly for future compatibility if you need
+it.
+
+Accepts a single parameter, the name of a shared library file to load.
+
+Returns true on success.  Check Imager->errstr on failure.
+
+=item unload_plugin()
+
+This is a function, not a method, which is exported by default.  You
+should import this function explicitly for future compatibility if you
+need it.
+
+Accepts a single parameter, the name of a shared library to unload.
+This library must have been previously loaded by load_plugin().
+
+Returns true on success.  Check Imager->errstr on failure.
+
+=back
+
+A few example plug-ins are included and built (but not installed):
+
+=over
+
+=item *
+
+F<plugins/dyntest.c> - provides the C<null> (no action) filter, and
+C<lin_stretch> filters.  C<lin_stretch> stretches sample values
+between C<a> and C<b> out to the full sample range.
+
+=item *
+
+F<plugins/dt2.c> - provides the C<html_art> filter that writes the
+image to the HTML fragment file supplied in C<fname> as a HTML table.
+
+=item *
+
+F<plugins/flines.c> - provides the C<flines> filter that dims
+alternate lines to emulate an old CRT display.
+L<Imager::Filter::Flines> provides the same functionality.
+
+=item *
+
+F<plugins/mandelbrot.c> - provides the C<mandelbrot> filter that
+renders the Mandelbrot set within the given range of x [-2, 0.5) and y
+[-1.25, 1,25).  L<Imager::Filter::Mandelbrot> provides a more flexible
+Mandelbrot set renderer.
+
+=back
+
+=head2 Image Difference
+
+=over
+
+=item difference()
+
+You can create a new image that is the difference between 2 other images.
+
+  my $diff = $img->difference(other=>$other_img);
+
+For each pixel in $img that is different to the pixel in $other_img,
+the pixel from $other_img is given, otherwise the pixel is transparent
+black.
+
+This can be used for debugging image differences ("Where are they
+different?"), and for optimizing animated GIFs.
+
+Note that $img and $other_img must have the same number of channels.
+The width and height of $diff will be the minimum of each of the width
+and height of $img and $other_img.
+
+Parameters:
+
+=over
+
+=item *
+
+C<other> - the other image object to compare against
+
+=item *
+
+C<mindist> - the difference between corresponding samples must be
+greater than C<mindist> for the pixel to be considered different.  So
+a value of zero returns all different pixels, not all pixels.  Range:
+0 to 255 inclusive.  Default: 0.
+
+For large sample images this is scaled down to the range 0 .. 1.
+
+=back
+
+=back
+
+=head1 AUTHOR
+
+Arnar M. Hrafnkelsson, Tony Cook <tonyc@cpan.org>.
+
+=head1 SEE ALSO
+
+Imager, Imager::Filter::Flines, Imager::Filter::Mandelbrot
+
+=head1 REVISION
+
+$Revision$
+
+=cut

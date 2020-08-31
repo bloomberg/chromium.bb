@@ -1,0 +1,196 @@
+=encoding utf8
+
+=head1 NAME
+
+Mail::Field - base-class for manipulation of mail header fields
+
+=head1 INHERITANCE
+
+ Mail::Field is extended by
+   Mail::Field::AddrList
+   Mail::Field::Date
+   Mail::Field::Generic
+
+=head1 SYNOPSIS
+
+ use Mail::Field;
+    
+ my $field = Mail::Field->new('Subject', 'some subject text');
+ my $field = Mail::Field->new(Subject => 'some subject text');
+ print $field->tag,": ",$field->stringify,"\n";
+
+ my $field = Mail::Field->subject('some subject text');
+
+=head1 DESCRIPTION
+
+C<Mail::Field> creates and manipulates fields in MIME headers, collected
+within a L<Mail::Header|Mail::Header> object.  Different field types have their
+own sub-class (extension), defining additional useful accessors to the
+field content.
+
+People are invited to merge their implementation to special fields into
+MailTools, to maintain a consistent set of packages and documentation.
+
+=head1 METHODS
+
+=head2 Constructors
+
+Mail::Field (and it's sub-classes) define several methods which return
+new objects. These can all be categorized as constructor.
+
+=over 4
+
+=item Mail::Field-E<gt>B<combine>($fields)
+
+Take a LIST of C<Mail::Field> objects (which should all be of the same
+sub-class) and create a new object in that same class.
+
+=item Mail::Field-E<gt>B<extract>( $tag, $head [, $index ] )
+
+Takes as arguments the tag name, a C<Mail::Head> object
+and optionally an index.
+
+If the index argument is given then C<extract> will retrieve the given tag
+from the C<Mail::Head> object and create a new C<Mail::Field> based object.
+I<undef> will be returned in the field does not exist.
+
+If the index argument is not given the result depends on the context
+in which C<extract> is called. If called in a scalar context the result
+will be as if C<extract> was called with an index value of zero. If called
+in an array context then all tags will be retrieved and a list of
+C<Mail::Field> objects will be returned.
+
+=item Mail::Field-E<gt>B<new>( $tag [, STRING | %options] )
+
+Create an object in the class which defines the field specified by
+the $tag argument.
+
+=back
+
+=head2 "Fake" constructors
+
+=over 4
+
+=item $obj-E<gt>B<create>(%options)
+
+This constructor is used internally with preprocessed field information.
+When called on an existing object, its original content will get
+replaced.
+
+=item $obj-E<gt>B<parse>()
+
+Parse a field line.
+
+=back
+
+=head2 Accessors
+
+=over 4
+
+=item $obj-E<gt>B<set>(%options)
+
+Change the settings (the content, but then smart) of this field.
+
+=item $obj-E<gt>B<stringify>()
+
+Returns the field as a string.
+
+=item $obj-E<gt>B<tag>()
+
+=item Mail::Field-E<gt>B<tag>()
+
+Return the tag (in the correct case) for this item.  Well, actually any
+casing is OK, because the field tags are treated case-insensitive; however
+people have some preferences.
+
+=back
+
+=head2 Smart accessors
+
+=over 4
+
+=item $obj-E<gt>B<text>( [STRING] )
+
+Without arguments, the field is returned as L<stringify()|Mail::Field/"Accessors"> does.  Otherwise,
+the STRING is parsed with L<parse()|Mail::Field/""Fake" constructors"> to replace the object's content.
+
+It is more clear to call either L<stringify()|Mail::Field/"Accessors"> or L<parse()|Mail::Field/""Fake" constructors"> directly, because
+this method does not add additional processing.
+
+=back
+
+=head1 DETAILS
+
+=head2 SUB-CLASS PACKAGE NAMES
+
+All sub-classes should be called Mail::Field::I<name> where I<name> is
+derived from the tag using these rules.
+
+=over 4
+
+=item *
+
+Consider a tag as being made up of elements separated by '-'
+
+=item *
+
+Convert all characters to lowercase except the first in each element, which
+should be uppercase.
+
+=item *
+
+I<name> is then created from these elements by using the first
+N characters from each element.
+
+=item *
+
+N is calculated by using the formula :-
+
+    int((7 + #elements) / #elements)
+
+=item *
+
+I<name> is then limited to a maximum of 8 characters, keeping the first 8
+characters.
+
+=back
+
+For an example of this take a look at the definition of the 
+C<_header_pkg_name()> subroutine in C<Mail::Field>
+
+=head1 DIAGNOSTICS
+
+=over 4
+
+=item Error: Undefined subroutine <method> called
+
+Mail::Field objects use autoloading to compile new functionality.
+Apparently, the method called is not implemented for the specific
+class of the field object.
+
+=back
+
+=head1 SEE ALSO
+
+This module is part of the MailTools distribution,
+F<http://perl.overmeer.net/mailtools/>.
+
+=head1 AUTHORS
+
+The MailTools bundle was developed by Graham Barr.  Later, Mark
+Overmeer took over maintenance without commitment to further development.
+
+Mail::Cap by Gisle Aas E<lt>aas@oslonett.noE<gt>.
+Mail::Field::AddrList by Peter Orbaek E<lt>poe@cit.dkE<gt>.
+Mail::Mailer and Mail::Send by Tim Bunce E<lt>Tim.Bunce@ig.co.ukE<gt>.
+For other contributors see ChangeLog.
+
+=head1 LICENSE
+
+Copyrights 1995-2000 Graham Barr E<lt>gbarr@pobox.comE<gt> and
+2001-2017 Mark Overmeer E<lt>perl@overmeer.netE<gt>.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See F<http://www.perl.com/perl/misc/Artistic.html>
+

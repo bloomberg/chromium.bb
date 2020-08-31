@@ -1,0 +1,157 @@
+=encoding utf8
+
+=head1 NAME
+
+Mail::Cap - understand mailcap files
+
+=head1 SYNOPSIS
+
+ my $mc   = Mail::Cap->new;
+
+ my $desc = $mc->description('image/gif');
+ print "GIF desc: $desc\n";
+
+ my $cmd  = $mc->viewCmd('text/plain; charset=iso-8859-1', 'file.txt');
+
+=head1 DESCRIPTION
+
+Parse mailcap files as specified in "RFC 1524 --A User Agent
+Configuration Mechanism For Multimedia Mail Format Information>.  In
+the description below C<$type> refers to the MIME type as specified in
+the C<Content-Type> header of mail or HTTP messages.  Examples of
+types are:
+
+  image/gif
+  text/html
+  text/plain; charset=iso-8859-1
+
+You could also take a look at the File::MimeInfo distribution, which
+are accessing tables which are used by many applications on a system,
+and therefore have succeeded the mail-cap specifications on modern
+(UNIX) systems.
+
+=head1 METHODS
+
+=head2 Constructors
+
+=over 4
+
+=item Mail::Cap-E<gt>B<new>(%options)
+
+Create and initialize a new Mail::Cap object.  If you give it an
+argument it will try to parse the specified file.  Without any
+arguments it will search for the mailcap file using the standard
+mailcap path, or the MAILCAPS environment variable if it is defined.
+
+ -Option  --Default
+  filename  undef
+  take      'FIRST'
+
+=over 2
+
+=item filename => FILENAME
+
+Add the specified file to the list to standard locations.  This file
+is tried first.
+
+=item take => 'ALL'|'FIRST'
+
+Include all mailcap files you can find.  By default, only the first
+file is parsed, however the RFC tells us to include ALL.  To maintain
+backwards compatibility, the default only takes the FIRST.
+
+=back
+
+example: 
+
+  $mcap = new Mail::Cap;
+  $mcap = new Mail::Cap "/mydir/mailcap";
+  $mcap = new Mail::Cap filename => "/mydir/mailcap";
+  $mcap = new Mail::Cap take => 'ALL';
+  $mcap = Mail::Cap->new(take => 'ALL');
+
+=back
+
+=head2 Run commands
+
+These methods invoke a suitable program presenting or manipulating the
+media object in the specified file.  They all return C<1> if a command
+was found, and C<0> otherwise.  You might test C<$?> for the outcome
+of the command.
+
+=over 4
+
+=item $obj-E<gt>B<compose>($type, $file)
+
+=item $obj-E<gt>B<edit>($type, $file)
+
+=item $obj-E<gt>B<print>($type, $file)
+
+=item $obj-E<gt>B<view>($type, $file)
+
+=back
+
+=head2 Command creator
+
+These methods return a string that is suitable for feeding to system()
+in order to invoke a suitable program presenting or manipulating the
+media object in the specified file.  It will return C<undef> if no
+suitable specification exists.
+
+=over 4
+
+=item $obj-E<gt>B<composeCmd>($type, $file)
+
+=item $obj-E<gt>B<editCmd>($type, $file)
+
+=item $obj-E<gt>B<printCmd>($type, $file)
+
+=item $obj-E<gt>B<viewCmd>($type, $file)
+
+=back
+
+=head2 Look-up definitions
+
+Methods return the corresponding mailcap field for the type.
+
+=over 4
+
+=item $obj-E<gt>B<description>($type)
+
+=item $obj-E<gt>B<field>($type, $field)
+
+Returns the specified field for the type.  Returns undef if no
+specification exists.
+
+=item $obj-E<gt>B<nametemplate>($type)
+
+=item $obj-E<gt>B<textualnewlines>($type)
+
+=item $obj-E<gt>B<x11_bitmap>($type)
+
+=back
+
+=head1 SEE ALSO
+
+This module is part of the MailTools distribution,
+F<http://perl.overmeer.net/mailtools/>.
+
+=head1 AUTHORS
+
+The MailTools bundle was developed by Graham Barr.  Later, Mark
+Overmeer took over maintenance without commitment to further development.
+
+Mail::Cap by Gisle Aas E<lt>aas@oslonett.noE<gt>.
+Mail::Field::AddrList by Peter Orbaek E<lt>poe@cit.dkE<gt>.
+Mail::Mailer and Mail::Send by Tim Bunce E<lt>Tim.Bunce@ig.co.ukE<gt>.
+For other contributors see ChangeLog.
+
+=head1 LICENSE
+
+Copyrights 1995-2000 Graham Barr E<lt>gbarr@pobox.comE<gt> and
+2001-2017 Mark Overmeer E<lt>perl@overmeer.netE<gt>.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See F<http://www.perl.com/perl/misc/Artistic.html>
+

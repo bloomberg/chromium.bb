@@ -1,0 +1,166 @@
+#PODNAME: DBD::Oracle::Troubleshooting::Linux
+#ABSTRACT: Tips and Hints to Troubleshoot DBD::Oracle on Linux
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+DBD::Oracle::Troubleshooting::Linux - Tips and Hints to Troubleshoot DBD::Oracle on Linux
+
+=head1 VERSION
+
+version 1.76
+
+=head1 SELinux and httpd
+
+If SELinux is running, it can prevents DBD::Oracle running in
+an Apache process to load shared libraries it requires (libclntsh.so
+or libnnz12.so). A typical symptom is a line like the following in
+the Apache error logs:
+
+    [Tue Apr 17 13:22:45 2012] [error] Can't load '.../DBD/Oracle/Oracle.so' for
+    module DBD::Oracle: libnnz11.so: cannot enable executable stack as shared
+    object requires: Permission denied at .../DynaLoader.pm line 190.\n at
+    .../startup.pl line 17\nCompilation failed in require at ...
+
+The fix:
+
+    /usr/sbin/setsebool -P httpd_execmem
+
+=head1 Installing with Instantclient .rpm files.
+
+Nothing special with this you just have to set up you permissions as follows;
+
+1) Have permission for RWE on '/usr/lib/oracle/10.2.0.3/client/' or the other directory where you RPMed to
+
+2) Set export ORACLE_HOME=/usr/lib/oracle/10.2.0.3/client
+
+3) Set export LD_LIBRARY_PATH=$ORACLE_HOME/lib
+
+4) If you plan to use tnsnames to connect to remote servers and your tnsnames.ora file is not in $ORACLE_HOME/network/admin, you will need to Export TNS_ADMIN=dir to point DBD::Oracle to where your tnsnames.ora file is
+
+=head1 undefined symbol: __cmpdi2 comes up when Oracle isn't properly linked to the libgcc.a library.
+
+In version 8, this was corrected by changing the SYSLIBS entry in
+$ORACLE_HOME/bin/genclntsh to include
+"-L/usr/lib/gcc-lib/i386-redhat-linux/3.2 -lgcc".
+
+I had tried this with no success as when this program was then run, the
+error "unable to find libgcc" was generated.  Of course, this was the
+library I was trying to describe!
+
+It turns out that now it is necessary to edit the same file and append
+"`gcc -print-libgcc-file-name`" (including the backquotes!).  If you do
+this and then run "genclntsh", the libclntsh is properly generated and
+the linkage with DBD::Oracle proceeds properly.
+
+=head1 cc1: invalid option `tune=pentium4'" error
+
+If you get the above it seems that either your Perl or OS where compiled with a different version of GCC or the GCC that is on your system is very old.
+
+No real problem with the above however you will have to
+
+1) run Perl Makefile.PL
+
+2) edit the Makefile and remove the offending '-mtune=pentium4' text
+
+3) save and exit
+
+4) do the make install and it should work fine for you
+
+=head1 Oracle 9i Lite
+
+The advice is to use the regular Oracle9i not the lite version.
+
+Another great source of help was: http://www.puschitz.com/InstallingOracle9i.html
+
+just getting 9i and 9i lite installed.  I use fvwm2(nvidia X driver) as
+a window manager which does not work with the 9i install program, works
+fine with the default Gnomish(nv X driver), it could have been the X
+driver too.
+
+With Redhat9 it is REAL important to set LD_ASSUME_KERNEL to 2.4.1.
+
+I didn't try this but it may be possible to install what is needed by
+only downloading the first disk saving some 1.3GB of download fun.
+
+I installed a custom install from the client group.  The packages I
+installed are the Programmers section and sqlplus.  I noticed that the
+Pro*C when on as a result of the checking the Programmers section I
+assume.
+
+Once Oracle was installed properly the DBD::Oracle install went as
+smooth as just about every other CPAN module.
+
+=head1 Oracle 10g Instantclient
+
+The Makefile.PL will now work for  Oracle 10g Instantclient. To have both the Compile and
+the test.pl to work you must first have the LD_LIBRARY_PATH correctly set to your
+"instantclient" directory. (http://www.oracle.com/technology/tech/oci/instantclient/instantclient.html)
+
+The present version of the make creates a link on your "instantclient" directory as follows
+"ln -s libclntsh.so.10.1 libclntsh.so". It is needed for both the makefile creation and the compile
+but is not need for the test.pl. It should be removed after the compile.
+
+If the Makefile.PL or make fails try creating this link directly in your "instantclient" directory.
+
+=head1 Oracle Database 10g Express Edition  10.2
+
+To get 10Xe to compile correctly I had to add $ORACLE_HOME/lib to the LD_LIBRARY_PATH
+as you would for an install against 10g Standard Edition, Standard Edition One, or
+Enterprise Edition
+
+=head1 UTF8 bug in Oracle  9.2.0.5.0 and 9.2.0.7.0
+
+DBD::Oracle seems to hit some sort of bug with the above two versions of DB.
+The bug seems to hit when you when the Oracle database charset: US7ASCII and the Oracle nchar charset: AL16UTF16 and it has also
+been reported when the Oracle database charset: WE8ISO8850P1 Oracle nchar charset: AL32UTF16.
+
+So far there is no patch for this but here are some workarounds
+
+    use DBD::Oracle qw( SQLCS_IMPLICIT SQLCS_NCHAR );
+    ...
+    $sth->bind_param(1, $value, { ora_csform => SQLCS_NCHAR });
+
+    or this way
+
+    $dbh->{ora_ph_csform} = SQLCS_NCHAR; # default for all future placeholders
+
+    or this way
+
+    utf8::downgrade($parameter, 1);
+
+=head1 AUTHORS
+
+=over 4
+
+=item *
+
+Tim Bunce <timb@cpan.org>
+
+=item *
+
+John Scoles <byterock@cpan.org>
+
+=item *
+
+Yanick Champoux <yanick@cpan.org>
+
+=item *
+
+Martin J. Evans <mjevans@cpan.org>
+
+=back
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2018, 2014, 2013, 2012, 2011, 2010 by Tim Bunce.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut

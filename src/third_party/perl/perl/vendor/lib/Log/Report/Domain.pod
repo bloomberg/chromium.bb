@@ -1,0 +1,297 @@
+=encoding utf8
+
+=head1 NAME
+
+Log::Report::Domain - administer one text-domain
+
+=head1 INHERITANCE
+
+ Log::Report::Domain
+   is a Log::Report::Minimal::Domain
+
+ Log::Report::Domain is extended by
+   Log::Report::Template::Textdomain
+
+=head1 SYNOPSIS
+
+ # internal usage
+ use Log::Report::Domain;
+ my $domain = Log::Report::Domain->new(name => $name);
+
+ # find a ::Domain object
+ use Log::Report 'my-domain';
+ my $domain = textdomain 'my-domain'; # find domain config
+ my $domain = textdomain;             # config of this package
+
+ # explicit domain configuration
+ package My::Package;
+ use Log::Report 'my-domain';         # set textdomain for package
+
+ textdomain $name, %configure;        # set config, once per program
+ (textdomain $name)->configure(%configure); # same
+ textdomain->configure(%configure);   # same if current package in $name
+
+ # implicit domain configuration
+ package My::Package;
+ use Log::Report 'my-domain', %configure;
+ 
+ # external file for configuration (perl or json format)
+ use Log::Report 'my-domain', config => $filename;
+
+ use Log::Report 'my-domain';
+ textdomain->configure(config => $filename);
+
+=head1 DESCRIPTION
+
+L<Log::Report> can handle multiple sets of packages at the same
+time: in the usual case a program consists of more than one software
+distribution, each containing a number of packages.  Each module
+in an application belongs to one of these sets, by default the domain set
+'default'.
+
+For C<Log::Report>, those packags sets are differentiated via the
+text-domain value in the C<use> statement:
+
+  use Log::Report 'my-domain';
+
+There are many things you can configure per (text)domain.  This is not
+only related to translations, but also -for instance- for text formatting
+configuration.  The administration for the configuration is managed in
+this package.
+
+Extends L<"DESCRIPTION" in Log::Report::Minimal::Domain|Log::Report::Minimal::Domain/"DESCRIPTION">.
+ 
+=head1 METHODS
+
+Extends L<"METHODS" in Log::Report::Minimal::Domain|Log::Report::Minimal::Domain/"METHODS">.
+ 
+=head2 Constructors
+
+Extends L<"Constructors" in Log::Report::Minimal::Domain|Log::Report::Minimal::Domain/"Constructors">.
+ 
+=over 4
+
+=item Log::Report::Domain-E<gt>B<new>(%options)
+
+Create a new Domain object.
+
+ -Option--Defined in                  --Default
+  name    Log::Report::Minimal::Domain  <required>
+
+=over 2
+
+=item name => STRING
+
+=back
+
+=back
+
+=head2 Attributes
+
+Extends L<"Attributes" in Log::Report::Minimal::Domain|Log::Report::Minimal::Domain/"Attributes">.
+ 
+=over 4
+
+=item $obj-E<gt>B<configure>(%options)
+
+The import is automatically called when the package is compiled.  For all
+but one packages in your distribution, it will only contain the name of
+the DOMAIN.  For one package, it will contain configuration information.
+These %options are used for all packages which use the same DOMAIN.
+See chapter L</Configuring> below.
+
+ -Option         --Defined in                  --Default
+  config                                         undef
+  context_rules                                  undef
+  formatter                                      PRINTI
+  native_language                                'en_US'
+  translator                                     created internally
+  where            Log::Report::Minimal::Domain  <required>
+
+=over 2
+
+=item config => FILENAME
+
+Read the settings from the file.  The parameters found in the file are
+used as default for the parameters above.  This parameter is especially
+useful for the C<context_rules>, which need to be shared between the
+running application and F<xgettext-perl>.  See L<readConfig()|Log::Report::Domain/"Attributes">
+
+=item context_rules => HASH|OBJECT
+
+When rules are provided, the translator will use the C<msgctxt> fields
+as provided by PO-files (gettext).  This parameter is used to initialize
+a L<Log::Report::Translator::Context|Log::Report::Translator::Context> helper object.
+
+=item formatter => CODE|HASH|'PRINTI'
+
+Selects the formatter used for the errors messages.  The default is C<PRINTI>,
+which will use L<String::Print::printi()|String::Print/"FUNCTIONS">: interpolation with curly
+braces around the variable names.
+
+=item native_language => CODESET
+
+This is the language which you have used to write the translatable and
+the non-translatable messages in.  In case no translation is needed,
+you still wish the system error messages to be in the same language
+as the report.  Of course, each textdomain can define its own.
+
+=item translator => L<Log::Report::Translator|Log::Report::Translator>|HASH
+
+Set the object which will do the translations for this domain.
+
+=item where => ARRAY
+
+=back
+
+=item $obj-E<gt>B<contextRules>()
+
+=item $obj-E<gt>B<defaultContext>()
+
+Returns the current default translation context settings as HASH.  You should
+not modify the content of that HASH: change it by called L<setContext()|Log::Report::Domain/"Attributes"> or
+L<updateContext()|Log::Report::Domain/"Attributes">.
+
+=item $obj-E<gt>B<isConfigured>()
+
+Inherited, see L<Log::Report::Minimal::Domain/"Attributes">
+
+=item $obj-E<gt>B<name>()
+
+Inherited, see L<Log::Report::Minimal::Domain/"Attributes">
+
+=item $obj-E<gt>B<nativeLanguage>()
+
+=item $obj-E<gt>B<readConfig>($filename)
+
+=item Log::Report::Domain-E<gt>B<readConfig>($filename)
+
+Helper method, which simply parses the content $filename into a HASH to be
+used as parameters to L<configure()|Log::Report::Domain/"Attributes">. The filename must end on '.pl',
+to indicate that it uses perl syntax (can be processed with Perl's C<do>
+command) or end on '.json'.  See also chapter L</Configuring> below.
+
+Currently, this file can be in Perl native format (when ending on C<.pl>)
+or JSON (when it ends with C<.json>).  Various modules may explain parts
+of what can be found in these files, for instance
+L<Log::Report::Translator::Context|Log::Report::Translator::Context>.
+
+=item $obj-E<gt>B<setContext>(STRING|HASH|ARRAY|PAIRS)
+
+Temporary set the default translation context for messages.  This is used
+when the message is created without a C<_context> parameter. The context
+can be retrieved with L<defaultContext()|Log::Report::Domain/"Attributes">.
+
+Contexts are totally ignored then there are no C<context_rules>.  When
+you do not wish to change settings, you may simply provide a HASH.
+
+example: 
+
+   use Log::Report 'my-domain', context_rules => {};
+
+=item $obj-E<gt>B<translator>()
+
+=item $obj-E<gt>B<updateContext>(STRING|HASH|ARRAY|PAIRS)
+
+[1.10] Make changes and additions to the active context (see L<setContext()|Log::Report::Domain/"Attributes">).
+
+=back
+
+=head2 Action
+
+Extends L<"Action" in Log::Report::Minimal::Domain|Log::Report::Minimal::Domain/"Action">.
+ 
+=over 4
+
+=item $obj-E<gt>B<interpolate>( $msgid, [$args] )
+
+Inherited, see L<Log::Report::Minimal::Domain/"Action">
+
+=item $obj-E<gt>B<translate>($message, $language)
+
+Translate the $message into the $language.
+
+=back
+
+=head1 DETAILS
+
+=head2 Configuring
+
+Configuration of a domain can happen in many ways: either explicitly or
+implicitly.  The explicit form:
+
+   package My::Package;
+   use Log::Report 'my-domain';
+
+   textdomain 'my-domain', %configuration;
+   textdomain->configure(%configuration);
+   textdomain->configure(\%configuration);
+
+   textdomain->configure(conf => $filename);
+
+The implicit form is (no variables possible, only constants!)
+
+   package My::Package;
+   use Log::Report 'my-domain', %configuration;
+   use Log::Report 'my-domain', conf => '/filename';
+
+You can only configure your domain in one place in your program.  The
+textdomain setup is then used for all packages in the same domain.
+
+This also works for L<Log::Report::Optional|Log::Report::Optional>, which is a dressed-down
+version of L<Log::Report|Log::Report>.
+
+=head3 configuring your own formatter
+
+[0.91] The C<PRINTI> is a special constants for L<configure(formatter)|Log::Report::Domain/"Attributes">, and
+will use L<String::Print|String::Print> function C<printi()>, with the standard tricks.
+
+  textdomain 'some-domain'
+    formatter =>
+      { class     => 'String::Print'    # default
+      , method    => 'sprinti'          # default
+      , %options    # constructor options for the class
+      );
+
+When you want your own formatter, or configuration of C<String::Print>,
+you need to pass a CODE.  Be aware that you may loose magic added by
+L<Log::Report|Log::Report> and other layers, like L<Log::Report::Template|Log::Report::Template>:
+
+  textdomain 'some-domain'
+    , formatter => \&my_formatter;
+
+=head3 configuring global values
+
+Say, you log for a (Dancer) webserver, where you wish to include the website
+name in some of the log lines.  For this, (ab)use the translation context:
+
+  ### first enabled translation contexts
+  use Log::Report 'my-domain', context_rules => {};
+  # or
+  use Log::Report 'my-domain';
+  textdomain->configure(context_rules => {});
+  # or
+  textdomain 'my-domain'
+    , content_rules => {};
+  
+  ### every time you start working for a different virtual host
+  (textdomain 'my-domain')->setContext(host => $host);
+
+  ### now you can use that in your code
+  package My::Package;
+  use Log::Report 'my-domain';
+  error __x"in {_context.host} not logged-in {user}", user => $username;
+
+=head1 SEE ALSO
+
+This module is part of Log-Report distribution version 1.28,
+built on May 14, 2019. Website: F<http://perl.overmeer.net/CPAN/>
+
+=head1 LICENSE
+
+Copyrights 2007-2019 by [Mark Overmeer <markov@cpan.org>]. For other contributors see ChangeLog.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See F<http://dev.perl.org/licenses/>
+

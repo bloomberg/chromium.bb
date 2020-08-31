@@ -1,0 +1,110 @@
+# PODNAME: Alien::Build::Plugin::Decode
+# ABSTRACT: Decode Alien::Build plugins
+# VERSION
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+Alien::Build::Plugin::Decode - Decode Alien::Build plugins
+
+=head1 VERSION
+
+version 1.74
+
+=head1 SYNOPSIS
+
+ use alienfile;
+ plugin 'Decode::HTML';
+ plugin 'Decode::DirListing';
+
+=head1 DESCRIPTION
+
+Decode plugins decode HTML and FTP file listings.  Normally you
+will want to use the L<Alien::Build::Plugin::Download::Negotiate>
+plugin which will automatically load the appropriate Decode plugins.
+
+=over 4
+
+=item L<Alien::Build::Plugin::Decode::HTML>
+
+=item L<Alien::Build::Plugin::Decode::DirListing>
+
+=item L<Alien::Build::Plugin::Decode::DirListingFtpcopy>
+
+=back
+
+=head1 SEE ALSO
+
+L<Alien::Build>, L<Alien::Build::Plugin>
+
+=head1 AUTHOR
+
+Author: Graham Ollis E<lt>plicease@cpan.orgE<gt>
+
+Contributors:
+
+Diab Jerius (DJERIUS)
+
+Roy Storey (KIWIROY)
+
+Ilya Pavlov
+
+David Mertens (run4flat)
+
+Mark Nunberg (mordy, mnunberg)
+
+Christian Walde (Mithaldu)
+
+Brian Wightman (MidLifeXis)
+
+Zaki Mughal (zmughal)
+
+mohawk (mohawk2, ETJ)
+
+Vikas N Kumar (vikasnkumar)
+
+Flavio Poletti (polettix)
+
+Salvador Fandiño (salva)
+
+Gianni Ceccarelli (dakkar)
+
+Pavel Shaydo (zwon, trinitum)
+
+Kang-min Liu (劉康民, gugod)
+
+Nicholas Shipp (nshp)
+
+Juan Julián Merelo Guervós (JJ)
+
+Joel Berger (JBERGER)
+
+Petr Pisar (ppisar)
+
+Lance Wicks (LANCEW)
+
+Ahmad Fatoum (a3f, ATHREEF)
+
+José Joaquín Atria (JJATRIA)
+
+Duke Leto (LETO)
+
+Shoichi Kaji (SKAJI)
+
+Shawn Laffan (SLAFFAN)
+
+Paul Evans (leonerd, PEVANS)
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2011-2019 by Graham Ollis.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut

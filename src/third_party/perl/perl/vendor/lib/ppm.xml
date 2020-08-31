@@ -1,0 +1,8 @@
+<PPMCONFIG>
+    <PPMVER>0,01_03,0,0</PPMVER>
+    <PLATFORM CPU="x86" OSVALUE="MSWin32" OSVERSION="4,0,0,0" />
+    <OPTIONS BUILDDIR="C:\strawberry\ppm" CLEAN="1" CONFIRM="1" DOWNLOADSTATUS="16384" FORCEINSTALL="1" IGNORECASE="1" MORE="24" ROOT="" TRACE="0" TRACEFILE="PPM.LOG" VERBOSE="1" />
+    <REPOSITORY LOCATION="http://www.bribes.org/perl/ppm" NAME="Bribes" SUMMARYFILE="searchsummary.ppm" />
+    <REPOSITORY LOCATION="http://www.sisyphusion.tk/ppm" NAME="Sisyphusion" SUMMARYFILE="searchsummary.ppm" />
+    <PPMPRECIOUS>Compress-Zlib;Archive-Tar;Digest-MD5;File-CounterFile;Font-AFM;HTML-Parser;HTML-Tree;MIME-Base64;URI;XML-Element;libwww-perl;XML-Parser;SOAP-Lite;PPM;libnet;libwin32</PPMPRECIOUS>
+</PPMCONFIG>

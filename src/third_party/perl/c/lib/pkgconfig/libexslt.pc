@@ -1,0 +1,12 @@
+prefix=${pcfiledir}/../..
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+
+Name: libexslt
+Version: 0.8.20
+Description: EXSLT Extension library
+Requires: libxml-2.0
+Libs: -L${libdir} -lexslt -lxslt -L${pcfiledir}/../../lib -lxml2 -L${pcfiledir}/../../lib -lz -L${pcfiledir}/../../lib -llzma -L${pcfiledir}/../../lib -lws2_32  
+Cflags: -I${includedir}

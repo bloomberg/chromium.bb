@@ -1,0 +1,72 @@
+=head1 NAME
+
+XML::LibXML::XPathExpression - XML::LibXML::XPathExpression - interface to libxml2 pre-compiled XPath expressions
+
+=head1 SYNOPSIS
+
+
+
+  use XML::LibXML;
+  my $compiled_xpath = XML::LibXML::XPathExpression->new('//foo[@bar="baz"][position()<4]');
+
+  # interface from XML::LibXML::Node
+
+  my $result = $node->find($compiled_xpath);
+  my @nodes = $node->findnodes($compiled_xpath);
+  my $value = $node->findvalue($compiled_xpath);
+
+  # interface from XML::LibXML::XPathContext
+
+  my $result = $xpc->find($compiled_xpath,$node);
+  my @nodes = $xpc->findnodes($compiled_xpath,$node);
+  my $value = $xpc->findvalue($compiled_xpath,$node);
+
+  $compiled = XML::LibXML::XPathExpression->new( xpath_string );
+
+=head1 DESCRIPTION
+
+This is a perl interface to libxml2's pre-compiled XPath expressions.
+Pre-compiling an XPath expression can give in some performance benefit if the
+same XPath query is evaluated many times. C<<<<<< XML::LibXML::XPathExpression >>>>>> objects can be passed to all C<<<<<< find... >>>>>> functions C<<<<<< XML::LibXML >>>>>> that expect an XPath expression.
+
+=over 4
+
+=item new()
+
+  $compiled = XML::LibXML::XPathExpression->new( xpath_string );
+
+The constructor takes an XPath 1.0 expression as a string and returns an object
+representing the pre-compiled expressions (the actual data structure is
+internal to libxml2).
+
+
+
+=back
+
+=head1 AUTHORS
+
+Matt Sergeant,
+Christian Glahn,
+Petr Pajas
+
+
+=head1 VERSION
+
+2.0200
+
+=head1 COPYRIGHT
+
+2001-2007, AxKit.com Ltd.
+
+2002-2006, Christian Glahn.
+
+2006-2009, Petr Pajas.
+
+=cut
+
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify it under
+the same terms as Perl itself.
+

@@ -1,0 +1,483 @@
+=head1 NAME
+
+DBIx::Class::Manual::Intro - Introduction to DBIx::Class
+
+=head1 INTRODUCTION
+
+You're bored with SQL, and want a native Perl interface for your database?  Or
+you've been doing this for a while with L<Class::DBI>, and think there's a
+better way?  You've come to the right place.
+
+=head1 THE DBIx::Class WAY
+
+Here are a few simple tips that will help you get your bearings with
+DBIx::Class.
+
+=head2 Tables become Result classes
+
+DBIx::Class needs to know what your Table structure looks like.  You
+do that by defining Result classes. Result classes are defined by
+calling methods proxied to L<DBIx::Class::ResultSource>.  Each Result
+class defines one Table, which defines the Columns it has, along with
+any Relationships it has to other tables.  (And oh, so much more
+besides) The important thing to understand:
+
+  A Result class == Table
+
+(most of the time, but just bear with my simplification)
+
+=head2 It's all about the ResultSet
+
+So, we've got some ResultSources defined.  Now, we want to actually use those
+definitions to help us translate the queries we need into handy perl objects!
+
+Let's say we defined a ResultSource for an "album" table with three columns:
+"albumid", "artist", and "title".  Any time we want to query this table, we'll
+be creating a L<DBIx::Class::ResultSet> from its ResultSource.  For example, the
+results of:
+
+  SELECT albumid, artist, title FROM album;
+
+Would be retrieved by creating a ResultSet object from the album table's
+ResultSource, likely by using the "search" method.
+
+DBIx::Class doesn't limit you to creating only simple ResultSets -- if you
+wanted to do something like:
+
+  SELECT title FROM album GROUP BY title;
+
+You could easily achieve it.
+
+The important thing to understand:
+
+  Any time you would reach for a SQL query in DBI, you are
+  creating a DBIx::Class::ResultSet.
+
+=head2 Search is like "prepare"
+
+DBIx::Class tends to wait until it absolutely must fetch information from the
+database.  If you are returning a ResultSet, the query won't execute until you
+use a method that wants to access the data. (Such as "next", or "first")
+
+The important thing to understand:
+
+  Setting up a ResultSet does not execute the query; retrieving
+  the data does.
+
+=head2 Search results are returned as Rows
+
+Rows of the search from the database are blessed into
+L<Result|DBIx::Class::Manual::ResultClass> objects.
+
+=head1 SETTING UP DBIx::Class
+
+Let's look at how you can set and use your first native L<DBIx::Class> tree.
+
+First we'll see how you can set up your classes yourself.  If you want them to
+be auto-discovered, just skip to the L<next section|/Using
+DBIx::Class::Schema::Loader>, which shows you how to use
+L<DBIx::Class::Schema::Loader>.
+
+=head2 Setting it up manually
+
+First, you should create your base schema class, which inherits from
+L<DBIx::Class::Schema>:
+
+  package My::Schema;
+  use base qw/DBIx::Class::Schema/;
+
+In this class you load your result_source ("table", "model") classes, which we
+will define later, using the load_namespaces() method:
+
+  # load My::Schema::Result::* and their resultset classes
+  __PACKAGE__->load_namespaces();
+
+By default this loads all the Result (Row) classes in the
+My::Schema::Result:: namespace, and also any resultset classes in the
+My::Schema::ResultSet:: namespace (if missing, the resultsets are
+defaulted to be DBIx::Class::ResultSet objects). You can change the
+result and resultset namespaces by using options to the
+L<DBIx::Class::Schema/load_namespaces> call.
+
+It is also possible to do the same things manually by calling
+C<load_classes> for the Row classes and defining in those classes any
+required resultset classes.
+
+Next, create each of the classes you want to load as specified above:
+
+  package My::Schema::Result::Album;
+  use base qw/DBIx::Class::Core/;
+
+Load any additional components you may need with the load_components() method,
+and provide component configuration if required. For example, if you want
+automatic row ordering:
+
+  __PACKAGE__->load_components(qw/ Ordered /);
+  __PACKAGE__->position_column('rank');
+
+Ordered will refer to a field called 'position' unless otherwise directed.  Here you are defining
+the ordering field to be named 'rank'.  (NOTE: Insert errors may occur if you use the Ordered
+component, but have not defined a position column or have a 'position' field in your row.)
+
+Set the table for your class:
+
+  __PACKAGE__->table('album');
+
+Add columns to your class:
+
+  __PACKAGE__->add_columns(qw/ albumid artist title rank /);
+
+Each column can also be set up with its own accessor, data_type and other pieces
+of information that it may be useful to have -- just pass C<add_columns> a hash:
+
+  __PACKAGE__->add_columns(albumid =>
+                            { accessor  => 'album',
+                              data_type => 'integer',
+                              size      => 16,
+                              is_nullable => 0,
+                              is_auto_increment => 1,
+                            },
+                          artist =>
+                            { data_type => 'integer',
+                              size      => 16,
+                              is_nullable => 0,
+                            },
+                          title  =>
+                            { data_type => 'varchar',
+                              size      => 256,
+                              is_nullable => 0,
+                            },
+                          rank =>
+                            { data_type => 'integer',
+                              size      => 16,
+                              is_nullable => 0,
+                              default_value => 0,
+                            }
+                         );
+
+DBIx::Class doesn't directly use most of this data yet, but various related
+modules such as L<HTML::FormHandler::Model::DBIC> make use of it.
+Also it allows you to create your database tables from your Schema,
+instead of the other way around.
+See L<DBIx::Class::Schema/deploy> for details.
+
+See L<DBIx::Class::ResultSource> for more details of the possible column
+attributes.
+
+Accessors are created for each column automatically, so My::Schema::Result::Album will
+have albumid() (or album(), when using the accessor), artist() and title()
+methods.
+
+Define a primary key for your class:
+
+  __PACKAGE__->set_primary_key('albumid');
+
+If you have a multi-column primary key, just pass a list instead:
+
+  __PACKAGE__->set_primary_key( qw/ albumid artistid / );
+
+Define this class' relationships with other classes using either C<belongs_to>
+to describe a column which contains an ID of another Table, or C<has_many> to
+make a predefined accessor for fetching objects that contain this Table's
+foreign key:
+
+  # in My::Schema::Result::Artist
+  __PACKAGE__->has_many('albums', 'My::Schema::Result::Album', 'artist');
+
+See L<DBIx::Class::Relationship> for more information about the various types of
+available relationships and how you can design your own.
+
+=head2 Using DBIx::Class::Schema::Loader
+
+This module (L<DBIx::Class::Schema::Loader>) is an external module, and not part
+of the L<DBIx::Class> distribution. It inspects your database, and automatically
+creates classes for all the tables in your schema.
+
+The simplest way to use it is via the L<dbicdump> script from the
+L<DBIx::Class::Schema::Loader> distribution. For example:
+
+    $ dbicdump -o dump_directory=./lib \
+        -o components='["InflateColumn::DateTime"]' \
+        MyApp::Schema dbi:mysql:mydb user pass
+
+If you have a mixed-case database, use the C<preserve_case> option, e.g.:
+
+    $ dbicdump -o dump_directory=./lib -o preserve_case=1 \
+        -o components='["InflateColumn::DateTime"]' \
+        MyApp::Schema dbi:mysql:mydb user pass
+
+If you are using L<Catalyst>, then you can use the helper that comes with
+L<Catalyst::Model::DBIC::Schema>:
+
+    $ script/myapp_create.pl model MyModel DBIC::Schema MyApp::Schema \
+        create=static moniker_map='{ foo => "FOO" }' dbi:SQLite:./myapp.db \
+        on_connect_do='PRAGMA foreign_keys=ON' quote_char='"'
+
+See L<Catalyst::Helper::Model::DBIC::Schema> for more information on this
+helper.
+
+See the L<DBIx::Class::Schema::Loader> and L<DBIx::Class::Schema::Loader::Base>
+documentation for more information on the many loader options.
+
+=head2 Connecting
+
+To connect to your Schema, you need to provide the connection details or a
+database handle.
+
+=head3 Via connection details
+
+The arguments are the same as for L<DBI/connect>:
+
+  my $schema = My::Schema->connect('dbi:SQLite:/home/me/myapp/my.db');
+
+You can create as many different schema instances as you need. So if you have a
+second database you want to access:
+
+  my $other_schema = My::Schema->connect( $dsn, $user, $password, $attrs );
+
+Note that L<DBIx::Class::Schema> does not cache connections for you. If you use
+multiple connections, you need to do this manually.
+
+To execute some SQL statements on every connect you can add them as an option in
+a special fifth argument to connect:
+
+  my $another_schema = My::Schema->connect(
+      $dsn,
+      $user,
+      $password,
+      $attrs,
+      { on_connect_do => \@on_connect_sql_statments }
+  );
+
+See L<DBIx::Class::Storage::DBI/connect_info> for more information about
+this and other special C<connect>-time options.
+
+=head3 Via a database handle
+
+The supplied coderef is expected to return a single connected database handle
+(e.g. a L<DBI> C<$dbh>)
+
+  my $schema = My::Schema->connect (
+    sub { Some::DBH::Factory->connect },
+    \%extra_attrs,
+  );
+
+=head2 Basic usage
+
+Once you've defined the basic classes, either manually or using
+L<DBIx::Class::Schema::Loader>, you can start interacting with your database.
+
+To access your database using your $schema object, you can fetch a
+L<DBIx::Class::Manual::Glossary/"ResultSet"> representing each of your tables by
+calling the C<resultset> method.
+
+The simplest way to get a record is by primary key:
+
+  my $album = $schema->resultset('Album')->find(14);
+
+This will run a C<SELECT> with C<albumid = 14> in the C<WHERE> clause, and
+return an instance of C<My::Schema::Result::Album> that represents this row.  Once you
+have that row, you can access and update columns:
+
+  $album->title('Physical Graffiti');
+  my $title = $album->title; # $title holds 'Physical Graffiti'
+
+If you prefer, you can use the C<set_column> and C<get_column> accessors
+instead:
+
+  $album->set_column('title', 'Presence');
+  $title = $album->get_column('title');
+
+Just like with L<Class::DBI>, you call C<update> to save your changes to the
+database (by executing the actual C<UPDATE> statement):
+
+  $album->update;
+
+If needed, you can throw away your local changes:
+
+  $album->discard_changes if $album->is_changed;
+
+As you can see, C<is_changed> allows you to check if there are local changes to
+your object.
+
+=head2 Adding and removing rows
+
+To create a new record in the database, you can use the C<create> method.  It
+returns an instance of C<My::Schema::Result::Album> that can be used to access the data
+in the new record:
+
+  my $new_album = $schema->resultset('Album')->create({
+    title  => 'Wish You Were Here',
+    artist => 'Pink Floyd'
+  });
+
+Now you can add data to the new record:
+
+  $new_album->label('Capitol');
+  $new_album->year('1975');
+  $new_album->update;
+
+Likewise, you can remove it from the database:
+
+  $new_album->delete;
+
+You can also remove records without retrieving them first, by calling delete
+directly on a ResultSet object.
+
+  # Delete all of Falco's albums
+  $schema->resultset('Album')->search({ artist => 'Falco' })->delete;
+
+=head2 Finding your objects
+
+L<DBIx::Class> provides a few different ways to retrieve data from your
+database.  Here's one example:
+
+  # Find all of Santana's albums
+  my $rs = $schema->resultset('Album')->search({ artist => 'Santana' });
+
+In scalar context, as above, C<search> returns a L<DBIx::Class::ResultSet>
+object.  It can be used to peek at the first album returned by the database:
+
+  my $album = $rs->first;
+  print $album->title;
+
+You can loop over the albums and update each one:
+
+  while (my $album = $rs->next) {
+    print $album->artist . ' - ' . $album->title;
+    $album->year(2001);
+    $album->update;
+  }
+
+Or, you can update them all at once:
+
+  $rs->update({ year => 2001 });
+
+In list context, the C<search> method returns all of the matching rows:
+
+  # Fetch immediately all of Carlos Santana's albums
+  my @albums = $schema->resultset('Album')->search(
+    { artist => 'Carlos Santana' }
+  );
+  foreach my $album (@albums) {
+    print $album->artist . ' - ' . $album->title;
+  }
+
+We also provide a handy shortcut for doing a C<LIKE> search:
+
+  # Find albums whose artist starts with 'Jimi'
+  my $rs = $schema->resultset('Album')->search_like({ artist => 'Jimi%' });
+
+Or you can provide your own C<WHERE> clause:
+
+  # Find Peter Frampton albums from the year 1986
+  my $where = 'artist = ? AND year = ?';
+  my @bind  = ( 'Peter Frampton', 1986 );
+  my $rs    = $schema->resultset('Album')->search_literal( $where, @bind );
+
+The preferred way to generate complex queries is to provide a L<SQL::Abstract>
+construct to C<search>:
+
+  my $rs = $schema->resultset('Album')->search({
+    artist  => { '!=', 'Janis Joplin' },
+    year    => { '<' => 1980 },
+    albumid => { '-in' => [ 1, 14, 15, 65, 43 ] }
+  });
+
+This results in something like the following C<WHERE> clause:
+
+  WHERE artist != 'Janis Joplin'
+    AND year < 1980
+    AND albumid IN (1, 14, 15, 65, 43)
+
+For more examples of complex queries, see L<DBIx::Class::Manual::Cookbook>.
+
+The search can also be modified by passing another hash with
+attributes:
+
+  my @albums = My::Schema->resultset('Album')->search(
+    { artist => 'Bob Marley' },
+    { rows => 2, order_by => { -desc => 'year' } }
+  );
+
+C<@albums> then holds the two most recent Bob Marley albums.
+
+For more information on what you can do with a L<DBIx::Class::ResultSet>, see
+L<DBIx::Class::ResultSet/METHODS>.
+
+For a complete overview of the available attributes, see
+L<DBIx::Class::ResultSet/ATTRIBUTES>.
+
+=head1 NOTES
+
+=head2 The Significance and Importance of Primary Keys
+
+The concept of a L<primary key|DBIx::Class::ResultSource/set_primary_key> in
+DBIx::Class warrants special discussion. The formal definition (which somewhat
+resembles that of a classic RDBMS) is I<a unique constraint that is least
+likely to change after initial row creation>. However this is where the
+similarity ends. Any time you call a CRUD operation on a row (e.g.
+L<delete|DBIx::Class::Row/delete>,
+L<update|DBIx::Class::Row/update>,
+L<discard_changes|DBIx::Class::Row/discard_changes>,
+etc.) DBIx::Class will use the values of the
+L<primary key|DBIx::Class::ResultSource/set_primary_key> columns to populate
+the C<WHERE> clause necessary to accomplish the operation. This is why it is
+important to declare a L<primary key|DBIx::Class::ResultSource/set_primary_key>
+on all your result sources B<even if the underlying RDBMS does not have one>.
+In a pinch one can always declare each row identifiable by all its columns:
+
+ __PACKAGE__->set_primary_key(__PACKAGE__->columns);
+
+Note that DBIx::Class is smart enough to store a copy of the PK values before
+any row-object changes take place, so even if you change the values of PK
+columns the C<WHERE> clause will remain correct.
+
+If you elect not to declare a C<primary key>, DBIx::Class will behave correctly
+by throwing exceptions on any row operation that relies on unique identifiable
+rows. If you inherited datasets with multiple identical rows in them, you can
+still operate with such sets provided you only utilize
+L<DBIx::Class::ResultSet> CRUD methods:
+L<search|DBIx::Class::ResultSet/search>,
+L<update|DBIx::Class::ResultSet/update>,
+L<delete|DBIx::Class::ResultSet/delete>
+
+For example, the following would not work (assuming C<People> does not have
+a declared PK):
+
+ my $result = $schema->resultset('People')
+                   ->search({ last_name => 'Dantes' })
+                    ->next;
+ $result->update({ children => 2 }); # <-- exception thrown because $result isn't
+                                  # necessarily unique
+
+So instead the following should be done:
+
+ $schema->resultset('People')
+         ->search({ last_name => 'Dantes' })
+          ->update({ children => 2 }); # <-- update's ALL Dantes to have children of 2
+
+=head2 Problems on RHEL5/CentOS5
+
+There used to be an issue with the system perl on Red Hat Enterprise
+Linux 5, some versions of Fedora and derived systems. Further
+information on this can be found in L<DBIx::Class::Manual::Troubleshooting>
+
+=head1 SEE ALSO
+
+=over 4
+
+=item * L<DBIx::Class::Manual::Cookbook>
+
+=back
+
+=head1 FURTHER QUESTIONS?
+
+Check the list of L<additional DBIC resources|DBIx::Class/GETTING HELP/SUPPORT>.
+
+=head1 COPYRIGHT AND LICENSE
+
+This module is free software L<copyright|DBIx::Class/COPYRIGHT AND LICENSE>
+by the L<DBIx::Class (DBIC) authors|DBIx::Class/AUTHORS>. You can
+redistribute it and/or modify it under the same terms as the
+L<DBIx::Class library|DBIx::Class/COPYRIGHT AND LICENSE>.

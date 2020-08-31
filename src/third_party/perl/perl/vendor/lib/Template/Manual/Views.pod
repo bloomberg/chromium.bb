@@ -1,0 +1,586 @@
+#============================================================= -*-perl-*-
+#
+# Template::Manual::Views
+#
+# AUTHOR
+#   Andy Wardley  <abw@wardley.org>
+#
+# COPYRIGHT
+#   Copyright (C) 1996-2007 Andy Wardley.  All Rights Reserved.
+#
+#   This module is free software; you can redistribute it and/or
+#   modify it under the same terms as Perl itself.
+#
+#========================================================================
+
+=head1 NAME
+
+Template::Manual::Views - Template Toolkit views (experimental)
+
+=head1 Overview
+
+A view is effectively a collection of templates and/or variable
+definitions which can be passed around as a self-contained unit.  This
+then represents a particular interface or presentation style for other
+objects or items of data.
+
+You can use views to implement custom "skins" for an application or
+content set.  You can use them to help simplify the presentation of
+common objects or data types.  You can even use then to automate the
+presentation of complex data structures such as that generated in an
+C<XML::DOM> tree or similar.  You let an iterator do the walking, and the
+view does the talking (or in this case, the presenting).  Voila - you
+have view independent, structure shy traversal using templates.  
+
+In general, views can be used in a number of different ways to achieve
+several different things.  They elegantly solve some problems which
+were otherwise difficult or complicated, and make easy some things
+that were previously hard.
+
+At the moment, they're still very experimental.  The directive syntax
+and underlying API are likely to change quite considerably over the 
+next version or two.  Please be very wary about building your 
+multi-million dollar e-commerce solutions based around this feature.
+
+=head1 Views as Template Collectors/Providers
+
+The C<VIEW> directive starts a view definition and includes a name by
+which the view can be referenced.  The view definition continues up to
+the matching C<END> directive.
+
+    [% VIEW myview %]
+       ...
+    [% END %]
+
+The first role of a view is to act as a collector and provider of templates.
+The C<include()> method can be called on a view to effectively do the same 
+thing as the C<INCLUDE> directive.  The template name is passed as the first 
+argument, followed by any local variable definitions for the template.
+
+    [% myview.include('header', title='The Title') %]
+    
+    # equivalent to
+    [% INCLUDE header  title='The Title' %] 
+
+Views accept a number of configuration options which can be used to control
+different aspects of their behaviour.  The 'C<prefix>' and 'C<suffix>' options 
+can be specified to add a fixed prefix and/or suffix to the name of each template.
+
+    [% VIEW myview 
+         prefix = 'my/'
+         suffix = '.tt2' ;
+       END
+    %]
+
+Now the call 
+
+    [% myview.include('header', title='The Title') %]
+
+is equivalent to
+
+    [% INCLUDE my/header.tt2  title='The Title' %]
+
+Views provide an C<AUTOLOAD> method which maps method names to the
+C<include()> method.  Thus, the following are all equivalent:
+
+    [% myview.include('header', title='Hello World') %]
+    [% myview.include_header(title='Hello World') %]
+    [% myview.header(title='Hello World') %]
+
+=head1 Local BLOCK Definitions
+
+A C<VIEW> definition can include C<BLOCK> definitions which remain local to
+the view.   A request for a particular template will return a C<BLOCK>,
+if defined, in preference to any other template of the same name.
+
+    [% BLOCK foo %]
+       public foo block
+    [% END %]
+    
+    [% VIEW plain %]
+       [% BLOCK foo %]
+       plain foo block
+       [% END %]
+    [% END %]
+    
+    [% VIEW fancy %]
+       [% BLOCK foo %]
+       fancy foo block
+       [% END %]
+    [% END %]
+    
+    [% INCLUDE foo %]       # public foo block
+    [% plain.foo %]         # plain foo block 
+    [% fancy.foo %]         # fancy foo block 
+
+In addition to C<BLOCK> definitions, a C<VIEW> can contain any other
+template directives.  The entire C<VIEW> definition block is processed to
+initialise the view but no output is generated (this may change RSN -
+and get stored as 'C<output>' item, subsequently accessible as C<[%
+view.output %]>).  However, directives that have side-effects, such as
+those that update a variable, will have noticeable consequences.
+
+=head1 Preserving Variable State within Views
+
+Views can also be used to save the values of any existing variables,
+or to create new ones at the point at which the view is defined.
+Unlike simple template metadata (C<META>) which can only contain static
+string values, the view initialisation block can contain any template
+directives and generate any kind of dynamic output and/or data items.
+
+    [% VIEW my_web_site %]
+       [% view.title   = title or 'My Cool Web Site' %]
+       [% view.author  = "$abw.name, $abw.email" %]
+       [% view.sidebar = INCLUDE my/sidebar.tt2 %]
+    [% END %]
+
+Note that additional data items can be specified as arguments to the C<VIEW>
+directive.  Anything that doesn't look like a configuration parameter is 
+assumed to be a data item.  This can be a little hazardous, of course, because
+you never know when a new configuration item might get added which interferes 
+with your data.
+
+    [% VIEW my_web_site
+            # config options
+            prefix = 'my/'
+            # misc data
+            title   = title or 'My Cool Web Site'
+            author  = "$abw.name, $abw.email"
+            sidebar = INCLUDE my/sidebar.tt2 
+    %]
+       ...
+    [% END %]
+
+Outside of the view definition you can access the view variables as, for
+example:
+
+    [% my_web_site.title %]
+
+One important feature is the equivalence of simple variables and templates.
+You can implement the view item 'C<title>' as a simple variable, a template
+defined in an external file, possibly with a prefix/suffix automatically
+appended, or as a local C<BLOCK> definition within the C<[% VIEW %] ... [% END %]>
+definition.  If you use the syntax above then the view will Do The Right
+Thing to return the appropriate output.
+
+At the C<END> of the C<VIEW> definition the view is "sealed" to prevent you
+from accidentally updating any variable values.  If you attempt to change
+the value of a variable after the C<END> of the C<VIEW> definition block then
+a C<view> error will be thrown.
+
+    [% TRY; 
+         my_web_site.title = 'New Title';
+       CATCH;
+         error;
+       END
+    %]
+
+The error above will be reported as:
+
+    view error - cannot update item in sealed view: title
+
+The same is true if you pass a parameter to a view variable.  This is
+interpreted as an attempt to update the variable and will raise the same
+warning.
+
+    [% my_web_site.title('New Title') %]    # view error!
+
+You can set the C<silent> parameter to have the view ignore these
+parameters and simply return the variable value. 
+
+    [% VIEW my_web_site
+            silent = 1
+            title  = title or 'My Cool Web Site'
+            # ... ;
+       END
+    %]
+    
+    [% my_web_site.title('Blah Blah') %]   # My Cool Web Site
+
+Alternately, you can specify that a view is unsealed allowing existing
+variables to be updated and new variables defined.
+
+    [% VIEW my_web_site
+            sealed = 0
+            title  = title or 'My Cool Web Site'
+            # ... ;
+       END
+    %]
+    
+    [% my_web_site.title('Blah Blah') %]   # Blah Blah
+    [% my_web_site.title %]                # Blah Blah
+
+=head2 Inheritance, Delegation and Reuse
+
+Views can be inherited from previously defined views by use of the C<base>
+parameter.  This example shows how a base class view is defined which 
+applies a C<view/default/> prefix to all template names.
+
+    [% VIEW my.view.default
+            prefix = 'view/default/';
+       END
+    %]
+
+Thus the directive:
+
+    [% my.view.default.header(title='Hello World') %]
+
+is now equivalent to:
+
+    [% INCLUDE view/default/header title='Hello World' %]
+
+A second view can be defined which specifies the default view as a 
+base.
+
+    [% VIEW my.view.fancy
+            base   = my.view.default
+            prefix = 'view/fancy/';
+       END
+    %]
+
+Now the directive:
+
+    [% my.view.fancy.header(title='Hello World') %]
+
+will resolve to:
+
+    [% INCLUDE view/fancy/header title='Hello World' %]
+
+or if that doesn't exist, it will be handled by the base view as:
+
+    [% INCLUDE view/default/header title='Hello World' %]
+
+When a parent view is specified via the C<base> parameter, the
+delegation of a view to its parent for fetching templates and accessing
+user defined variables is automatic.  You can also implement your own
+inheritance, delegation or other reuse patterns by explicitly
+delegating to other views.
+
+    [% BLOCK foo %]
+       public foo block
+    [% END %]
+    
+    [% VIEW plain %]
+       [% BLOCK foo %]
+       <plain>[% PROCESS foo %]</plain>
+       [% END %]
+    [% END %]
+    
+    [% VIEW fancy %]
+       [% BLOCK foo %]
+       [% plain.foo | replace('plain', 'fancy') %]
+       [% END %]
+    [% END %]
+
+    [% plain.foo %]     # <plain>public foo block</plain>
+    [% fancy.foo %]     # <fancy>public foo block</fancy>
+
+Note that the regular C<INCLUDE/PROCESS/WRAPPER> directives work entirely
+independently of views and will always get the original, unaltered
+template name rather than any local per-view definition.
+
+=head2 Self-Reference
+
+A reference to the view object under definition is available with the
+C<VIEW ... END> block by its specified name and also by the special name
+'C<view>' (similar to the C<my $self = shift;> in a Perl method or the
+'C<this>' pointer in C++, etc).  The view is initially unsealed allowing
+any data items to be defined and updated within the C<VIEW ... END>
+block.  The view is automatically sealed at the end of the definition
+block, preventing any view data from being subsequently changed.
+
+(NOTE: sealing should be optional.  As well as sealing a view to prevent
+updates (C<SEALED>), it should be possible to set an option in the view to 
+allow external contexts to update existing variables (C<UPDATE>) or even 
+create totally new view variables (C<CREATE>)).
+
+    [% VIEW fancy %]
+       [% fancy.title  = 'My Fancy Title' %]
+       [% fancy.author = 'Frank Open' %]
+       [% fancy.col    = { bg => '#ffffff', bar => '#a0a0ff' } %]
+    [% END %]
+
+or
+
+    [% VIEW fancy %]
+       [% view.title  = 'My Fancy Title' %]
+       [% view.author = 'Frank Open' %]
+       [% view.col    = { bg => '#ffffff', bar => '#a0a0ff' } %]
+    [% END %]
+
+It makes no real difference in this case if you refer to the view by
+its name, 'C<fancy>', or by the general name, 'C<view>'.  Outside of the
+view block, however, you should always use the given name, 'C<fancy>':
+
+    [% fancy.title  %]
+    [% fancy.author %]
+    [% fancy.col.bg %]
+
+The choice of given name or 'C<view>' is much more important when it
+comes to C<BLOCK> definitions within a C<VIEW>.  It is generally recommended
+that you use 'C<view>' inside a C<VIEW> definition because this is guaranteed
+to be correctly defined at any point in the future when the block gets
+called.  The original name of the view might have long since been changed
+or reused but the self-reference via 'C<view>' should always be intact and 
+valid.
+
+Take the following VIEW as an example:
+
+    [% VIEW foo %]
+       [% view.title = 'Hello World' %]
+       [% BLOCK header %]
+       Title: [% view.title %]
+       [% END %]
+    [% END %]
+
+Even if we rename the view, or create a new C<foo> variable, the header
+block still correctly accesses the C<title> attribute of the view to
+which it belongs.  Whenever a view C<BLOCK> is processed, the C<view>
+variable is always updated to contain the correct reference to the
+view object to which it belongs.
+
+    [% bar = foo %]
+    [% foo = { title => "New Foo" } %]  # no problem
+    [% bar.header %]                    # => Title: Hello World
+
+=head2 Saving References to External Views
+
+When it comes to view inheritance, it's always a good idea to take a
+local copy of a parent or delegate view and store it as an attribute
+within the view for later use.  This ensures that the correct view
+reference is always available, even if the external name of a view
+has been changed.
+
+    [% VIEW plain %]
+       ...
+    [% END %]
+    
+    [% VIEW fancy %]
+       [% view.plain = plain %]
+       [% BLOCK foo %]
+       [% view.plain.foo | replace('plain', 'fancy') %]
+       [% END %]
+    [% END %]
+    
+    [% plain.foo %]         # => <plain>public foo block</plain>
+    [% plain = 'blah' %]    # no problem
+    [% fancy.foo %]         # => <fancy>public foo block</fancy>
+
+=head2 Views as Data Presenters
+
+Another key role of a view is to act as a dispatcher to automatically
+apply the correct template to present a particular object or data
+item.  This is handled via the C<print()> method.
+
+Here's an example:
+
+    [% VIEW foo %]
+    
+       [% BLOCK text %]
+          Some text: [% item %]
+       [% END %]
+       
+       [% BLOCK hash %]
+          a hash:
+          [% FOREACH key = item.keys.sort -%]
+             [% key %] => [% item.$key %]
+          [% END -%]
+       [% END %]
+       
+       [% BLOCK list %]
+          a list: [% item.sort.join(', ') %]
+       [% END %]
+       
+    [% END %]
+
+We can now use the view to print text, hashes or lists.  The C<print()>
+method includes the right template depending on the typing of the
+argument (or arguments) passed.
+
+    [% some_text = 'I read the news today, oh boy.' %]
+    [% a_hash    = { house => 'Lords', hall => 'Albert' } %]
+    [% a_list    = [ 'sure', 'Nobody', 'really' ] %]
+    
+    [% view.print(some_text) %]
+                        # Some text: I read the news today, oh boy.
+                        
+    [% view.print(a_hash) %]
+                        # a hash:
+                             hall => Albert
+                             house => Lords
+    [% view.print(a_list) %]
+                        # a list: Nobody, really, sure
+
+You can also provide templates to print objects of any other class.
+The class name is mapped to a template name with all non-word
+character sequences such as 'C<::>' converted to a single 'C<_>'.
+
+    [% VIEW foo %]
+       [% BLOCK Foo_Bar %]
+          a Foo::Bar object: 
+              thingies: [% view.print(item.thingies) %]
+               doodahs: [% view.print(item.doodahs)  %]
+       [% END %]
+    [% END %]
+    
+    [% USE fubar = Foo::Bar(...) %]
+    
+    [% foo.print(fubar) %]
+
+Note how we use the view object to display various items within the 
+objects ('C<thingies>' and 'C<doodahs>').  We don't need to worry what 
+kind of data these represent (text, list, hash, etc) because we can
+let the view worry about it, automatically mapping the data type to 
+the correct template.
+
+Views may define their own type =E<gt> template map.
+
+    [% VIEW foo 
+         map = { TEXT  => 'plain_text',
+                 ARRAY => 'show_list', 
+                 HASH  => 'show_hash',
+                 My::Module => 'template_name'
+                 default    => 'any_old_data'
+               }
+    %]
+        [% BLOCK plain_text %]
+           ...
+        [% END %]
+       
+        ...
+    [% END %]
+
+They can also provide a C<default> map entry, specified as part of the C<map>
+hash or as a parameter by itself.
+
+    [% VIEW foo 
+         map     = { ... },
+         default = 'whatever'
+    %]
+       ...
+    [% END %]
+
+or
+
+    [% VIEW foo %]
+       [% view.map     = { ... }
+          view.default = 'whatever'
+       %]
+       ...
+    [% END %]
+
+The C<print()> method provides one more piece of magic. If you pass it a
+reference to an object which provides a C<present()> method, then the method
+will be called passing the view as an argument. This then gives any object a
+chance to determine how it should be presented via the view.
+
+    package Foo::Bar;
+    ...
+    sub present {
+        my ($self, $view) = @_;
+        return "a Foo::Bar object:\n"
+             . "thingies: " . $view->print($self->{ _THINGIES }) . "\n"
+             . "doodahs: " . $view->print($self->{ _DOODAHS }) . "\n";
+    }
+
+The object is free to delve deeply into its innards and mess around with
+its own private data, before presenting the relevant data via the view.
+In a more complex example, a C<present()> method might walk part of a tree
+making calls back against the view to present different nodes within the 
+tree.  We may not want to expose the internal structure of the tree
+(because that would break encapsulation and make our presentation code
+dependant on it) but we want to have some way of walking the tree and 
+presenting items found in a particular manner.
+
+This is known as I<Structure Shy Traversal>.  Our view object doesn't require
+prior knowledge about the internal structure of any data set to be able
+to traverse it and present the data contained therein.  The data items
+themselves, via the C<present()> method, can implement the internal iterators
+to guide the view along the right path to presentation happiness.
+
+The upshot is that you can use views to greatly simplify the display
+of data structures like C<XML::DOM> trees.  The documentation for the 
+C<Template::Plugin::XML::DOM> module contains an example of this.  In 
+essence, it looks something like this:
+
+XML source:
+
+    <user name="Andy Wardley">
+        <project id="iCan" title="iCan, but theyCan't"/>
+        <project id="p45"  title="iDid, but theyDidn't"/>
+    </user>
+
+TT View:
+
+    [% VIEW fancy %]
+       [% BLOCK user %]
+          User: [% item.name %]
+                [% item.content(myview) %]
+       [% END %]
+       
+       [% BLOCK project %]
+            Project: [% project.id %] - [% project.name %]
+       [% END %]
+    [% END %]
+
+Generate view:
+
+    [% USE dom = XML.DOM %]
+    [% fancy.print(dom.parse(xml_source)) %]
+
+Output:
+
+          User: Andy Wardley
+            Project: iCan - iCan, but theyCan't
+            Project: p45 - iDid, but theyDidn't
+
+The same approach can be applied to many other areas.  Here's an example from 
+the C<File>/C<Directory> plugins.
+
+    [% VIEW myview %]
+       [% BLOCK file %]
+          - [% item.name %]
+       [% END %]
+        
+       [% BLOCK directory %]
+          * [% item.name %]
+            [% item.content(myview) FILTER indent %]
+       [% END %]
+    [% END %]
+    
+    [% USE dir = Directory(dirpath) %]
+    [% myview.print(dir) %]
+
+And here's the same approach use to convert POD documentation to any 
+other format via template.
+
+    [%  # load Pod plugin and parse source file into Pod Object Model
+        USE Pod;
+        pom = Pod.parse_file(my_pod_file);
+        
+        # define view to map all Pod elements to "pod/html/xxx" templates
+        VIEW pod2html
+            prefix='pod/html';
+        END;
+        
+        # now print document via view (i.e. as HTML)
+        pod2html.print(pom) 
+    %]
+
+Here we simply define a template prefix for the view which causes the
+view to look for C<pod/html/head1>, C<pod/html/head2>, C<pod/html/over> 
+as templates to present the different sections of the parsed Pod document.
+
+There are some examples in the Template Toolkit test suite: F<t/pod.t> and 
+F<t/view.t> which may shed some more light on this.  See the distribution
+sub-directory F<examples/pod/html> for examples of Pod -E<gt> HTML templates.
+
+=cut
+
+# Local Variables:
+# mode: perl
+# perl-indent-level: 4
+# indent-tabs-mode: nil
+# End:
+#
+# vim: expandtab shiftwidth=4:

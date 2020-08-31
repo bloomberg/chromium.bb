@@ -1,0 +1,294 @@
+=encoding utf-8
+
+=head1 NAME
+
+Unicode::GCString~[ja] - UAX #29 書記素クラスタの列としての文字列
+
+=head1 SYNOPSIS
+
+    use Unicode::GCString;
+    $gcstring = Unicode::GCString->new($string);
+    
+=head1 DESCRIPTION
+
+Unicode::GCString はUnicode文字列を、Unicode標準附属書29 [UAX #29] で定義される「拡張書記素クラスタ」〔extended grapheme cluster〕の列として扱う。
+
+B<書記素クラスタ>〔grapheme cluster〕は、Unicode文字の列で、ひとつのB<書記素基底>〔grapheme base〕と、付加的なB<書記素エキステンダ>〔grapheme extender〕および/またはB<「前置」文字>〔“prepend” character〕から成る。これは人が「文字」とみなすものに近い。
+
+=head2 公開インタフェース
+
+=head3 コンストラクタ
+
+=over 4
+
+=item new (STRING, [KEY => VALUE, ...])
+
+=item new (STRING, [LINEBREAK])
+
+I<コンストラクタ>。
+Unicode文字列 STRING から新たに書記素クラスタ文字列
+(Unicode::GCString オブジェクト) を作る。
+
+KEY => VALUE の対については L<Unicode::LineBreak~[ja]/オプション>を参照。
+第二の形式では、
+L<Unicode::LineBreak~[ja]> オブジェクト LINEBREAK で分節の仕様を決定する。
+
+B<注>:
+最初の形式はリリース 2012.10 で導入された。
+
+=item copy
+
+I<コピーコンストラクタ>。
+書記素クラスタ文字列の複製を作る。
+新たな文字列では、次の位置は先頭になる。
+
+=back
+
+=head3 長さ
+
+=over 4
+
+=item chars
+
+I<インスタンスメソッド>。
+書記素クラスタ文字列に含まれるUnicode文字の数、つまりUnicode文字列としての長さを返す。
+
+=item columns
+
+I<インスタンスメソッド>。
+組み込みの文字データベースで決定される書記素クラスタ文字列の桁数を返す。
+詳しくは L<Unicode::LineBreak~[ja]/DESCRIPTION> を参照。
+
+=item length
+
+I<インスタンスメソッド>。
+書記素クラスタ文字列に含まれる書記素クラスタの数を返す。
+
+=back
+
+=head3 文字列としての操作
+
+=over 4
+
+=item as_string
+
+=item C<">OBJECTC<">
+
+I<インスタンスメソッド>。
+書記素クラスタ文字列を明示的にUnicode文字列に変換する。
+
+=item cmp (STRING)
+
+=item STRING C<cmp> STRING
+
+I<インスタンスメソッド>。
+文字列を比較する。特に風変わりなところはない。
+文字列のどちらかがUnicode文字列でもよい。
+
+=item concat (STRING)
+
+=item STRING C<.> STRING
+
+I<インスタンスメソッド>。
+書記素クラスタ文字列を結合する。
+STRING のどちらかがUnicode文字列でもよい。
+結果の文字列の桁数 (columns() を参照) や書記素クラスタの数 (length() を参照) は、ふたつの文字列のそれの和になるとはかぎらないことに注意。
+新たな文字列では、次の位置は左辺の文字列にセットされていた位置になる。
+
+=item join ([STRING, ...])
+
+I<インスタンスメソッド>。
+STRING を、書記素クラスタ文字列をはさんでつなげる。
+STRING のうちに Unicode文字列があってもよい。
+
+=item substr (OFFSET, [LENGTH, [REPLACEMENT]])
+
+I<インスタンスメソッド>。
+書記素クラスタ文字列の部分文字列を返す。
+OFFSET と LENGTH は書記素クラスタで数える。
+REPLACEMENT を指定すると、部分文字列をそれで置き換える。
+REPLACEMENT は Unicode文字列でもよい。
+
+Note:
+このメソッドは組み込み関数 substr() と異なり、左辺値を返すことはない。
+
+=back
+
+=head3 書記素クラスタの列としての操作
+
+=over 4
+
+=item as_array
+
+=item C<@{>OBJECTC<}>
+
+=item as_arrayref
+
+I<インスタンスメソッド>。
+書記素クラスタ文字列を、書記素クラスタの情報の配列に変換する。
+
+=item eos
+
+I<インスタンスメソッド>。
+現在の位置が書記素クラスタ文字列の最後かどうか調べる。
+
+=item item ([OFFSET])
+
+I<インスタンスメソッド>。
+OFFSET番めの書記素クラスタを返す。
+OFFSET を指定しないと、次の位置の書記素クラスタの情報を返す。
+
+=item next
+
+=item C<E<lt>>OBJECTC<E<gt>>
+
+I<インスタンスメソッド>、反復的。
+次の位置の書記素クラスタを返し、次の位置をひとつ進める。
+
+=item pos ([OFFSET])
+
+I<インスタンスメソッド>。
+OFFSET を指定した場合は、次の位置をそれにする。
+書記素クラスタ文字列の次の位置を返す。
+
+=back
+
+=begin comment
+
+=head4 廃止予定のメソッド
+
+=over 4
+
+=item flag ([OFFSET, [VALUE]])
+
+I<インスタンスメソッド>。
+OFFSET番めの書記素クラスタのフラグ値を取得、設定する。
+OFFSET を指定しないと、次の位置の書記素クラスタのフラグ値を返す。
+フラグ値は 255 を超えない非負整数で、はじめは 0。
+
+定義ずみのフラグには次のものがある。
+
+=over 4
+
+=item Unicode::LineBreak::ALLOW_BEFORE
+
+この書記素クラスタの直前で行分割を許す。
+
+=item Unicode::LineBreak::PROHIBIT_BEFORE
+
+この書記素クラスタの直前での行分割を禁ずる。
+
+=back
+
+=item lbclass ([OFFSET])
+
+I<インスタンスメソッド>。
+OFFSET番めの書記素クラスタの最初の文字の行分割クラス
+(L<Unicode::LineBreak~[ja]> 参照) を返す。
+OFFSET を指定しないと、次の位置の書記素クラスタの情報を返す。
+
+B<注>:
+lbc() を使ってほしい。
+
+=item lbclass_ext ([OFFSET])
+
+I<インスタンスメソッド>。
+OFFSET番めの書記素クラスタの最後の書記素エキステンダの行分割クラス
+(L<Unicode::LineBreak> 参照) を返す。
+書記素エキステンダがないか、またはクラスが CM の場合は、lbclass() の値を返す。
+
+B<注>:
+lbcext() を使ってほしい。
+
+=back
+
+=end comment
+
+=head3 その他
+
+=over 4
+
+=item lbc
+
+I<インスタンスメソッド>。
+最初の書記素クラスタの最初の文字の行分割クラス
+(L<Unicode::LineBreak~[ja]> 参照) を返す。
+
+=item lbcext
+
+I<インスタンスメソッド>。
+最後の書記素クラスタの最後の書記素エキステンダの行分割クラス
+(L<Unicode::LineBreak~[ja]> 参照) を返す。
+書記素エキステンダがないか、またはクラスが CM の場合は、
+最後の書記素基底の行分割クラスを返す。
+
+=back
+
+=head1 CAVEATS
+
+=over 4
+
+=item *
+
+書記素クラスタを「書記素」と呼ぶべきではない (ラリーはそう呼ぶが)。
+
+=item *
+
+Perl の 5.10.1 版あたりでは、Unicode::GCString オブジェクトから Unicode 文字列への暗黙の変換が C<"utf8_mg_pos_cache_update"> キャッシュを混乱させることがある。
+
+たとえば、つぎのように
+
+    $sub = substr($gcstring, $i, $j);
+
+するかわりに、つぎのようにするとよい。
+
+    $sub = substr("$gcstring", $i, $j);
+
+    $sub = substr($gcstring->as_string, $i, $j);
+
+=item *
+
+このモジュールでは「初期の」書記素クラスタ境界判別アルゴリズムを実装している。
+手直し〔tailoring〕の機構にはまだ対応していない。
+
+=back
+
+=head1 VERSION
+
+$VERSION 変数を参照してほしい。
+
+=head2 非互換な変更
+
+=over 4
+
+=item 2013.10
+
+=over 4
+
+=item *
+
+new() メソッドは非Unicode文字列を引数に取れるようになった。
+その場合、文字列をiso-8859-1 (Latin 1) キャラクタセットで復号する。
+以前のリリースでは、このメソッドに非Unicodeを入力すると死ぬようになっていた。
+
+=back
+
+=back
+
+=head1 SEE ALSO
+
+[UAX #29]
+Mark Davis (ed.) (2009-2013).
+I<Unicode Standard Annex #29: Unicode Text Segmentation>, Revisions 15-23.
+L<http://www.unicode.org/reports/tr29/>.
+
+=head1 AUTHOR
+
+Hatuka*nezumi - IKEDA Soji <hatuka(at)nezumi.nu>
+
+=head1 COPYRIGHT
+
+Copyright (C) 2009-2013 Hatuka*nezumi - IKEDA Soji.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.

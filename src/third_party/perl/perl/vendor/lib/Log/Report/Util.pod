@@ -1,0 +1,145 @@
+=encoding utf8
+
+=head1 NAME
+
+Log::Report::Util - helpful routines to Log::Report
+
+=head1 INHERITANCE
+
+ Log::Report::Util
+   is a Exporter
+
+=head1 SYNOPSIS
+
+ my ($language, $territory, $charset, $modifier)
+    = parse_locale 'nl_BE.utf-8@home';
+
+ my @take = expand_reasons 'INFO-ERROR,PANIC';
+
+=head1 DESCRIPTION
+
+This module collects a few functions and definitions which are shared
+between different components in the Log::Report infrastructure.
+They should not be needed for end-user applications, although this
+man-page may contain some useful background information.
+
+=head1 FUNCTIONS
+
+=head2 Reasons
+
+=over 4
+
+=item B<expand_reasons>($reasons)
+
+Returns a sub-set of all existing message reason labels, based on the
+content $reasons string. The following rules apply:
+ REASONS = BLOCK [ ',' BLOCKS]
+ BLOCK   = '-' TO | FROM '-' TO | ONE | SOURCE
+ FROM,TO,ONE = 'TRACE' | 'ASSERT' | ,,, | 'PANIC'
+ SOURCE  = 'USER' | 'PROGRAM' | 'SYSTEM' | 'ALL'
+
+The SOURCE specification group all reasons which are usually related to
+the problem: report about problems caused by the user, reported by
+the program, or with system interaction.
+
+example: of expended REASONS
+
+ WARNING-FAULT # == WARNING,MISTAKE,ERROR,FAULT
+ -INFO         # == TRACE-INFO
+ ALERT-        # == ALERT,FAILURE,PANIC
+ USER          # == MISTAKE,ERROR
+ ALL           # == TRACE-PANIC
+
+=item B<is_fatal>($reason)
+
+Returns true if the $reason is severe enough to cause an exception
+(or program termination).
+
+=item B<is_reason>($name)
+
+Returns true if the STRING is one of the predefined REASONS.
+
+=item B<use_errno>($reason)
+
+=back
+
+=head2 Modes
+
+Run-modes are explained in Log::Report::Dispatcher.
+
+=over 4
+
+=item B<mode_accepts>($mode)
+
+Returns something acceptable by L<expand_reasons()|Log::Report::Util/"Reasons">
+
+=item B<mode_number>($name|$mode)
+
+Returns the $mode as number.
+
+=item B<must_show_location>($mode, $reason)
+
+=item B<must_show_stack>($mode, $reason)
+
+=back
+
+=head2 Other
+
+=over 4
+
+=item B<escape_chars>(STRING)
+
+Replace all escape characters into their readable counterpart.  For
+instance, a new-line is replaced by backslash-n.
+
+=item B<parse_locale>(STRING)
+
+Decompose a locale string.
+
+For simplicity of the caller's code, the capatization of the returned
+fields is standardized to the preferred, although the match is case-
+insensitive as required by the RFC. The territory in returned in capitals
+(ISO3166), the language is lower-case (ISO639), the script as upper-case
+first, the character-set as lower-case, and the modifier and variant unchanged.
+
+In LIST context, four elements are returned: language, territory,
+character-set (codeset), and modifier.  Those four are important for the
+usual unix translationg infrastructure.  Only the "country" is obligatory,
+the others can be C<undef>.  It may also return C<C> and C<POSIX>.
+
+In SCALAR context, a HASH is returned which can contain more information:
+language, script, territory, variant, codeset, and modifiers.  The
+variant (RFC3066 is probably never used)
+
+=item B<pkg2domain>( $package, [$domain, $filename, $line] )
+
+With $domain, $filename and $line, this registers a location where the
+textdomain is specified.  Each $package can only belong to one $domain.
+
+Without these parameters, the registered domain for the $package is
+returned.
+
+=item B<to_html>($string)
+
+[1.02] Escape HTML volatile characters.
+
+=item B<unescape_chars>(STRING)
+
+Replace all backslash-something escapes by their escape character.
+For instance, backslash-t is replaced by a tab character.
+
+=back
+
+=head1 SEE ALSO
+
+This module is part of Log-Report-Optional distribution version 1.06,
+built on February 02, 2018. Website: F<http://perl.overmeer.net/CPAN/>
+
+=head1 LICENSE
+
+Copyrights 2013-2018 by [Mark Overmeer <mark@overmeer.net>]. For other contributors see ChangeLog.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See F<http://dev.perl.org/licenses/>
+

@@ -1,0 +1,12 @@
+prefix=${pcfiledir}/../..
+exec_prefix=${pcfiledir}/../..
+libdir=${pcfiledir}/../../lib
+includedir=${pcfiledir}/../../include
+
+Name: harfbuzz
+Description: HarfBuzz font subsetter
+Version: 2.3.1
+
+Requires: harfbuzz
+Libs: -L${libdir} -lharfbuzz-subset
+Cflags: -I${includedir}/harfbuzz

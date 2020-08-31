@@ -1,0 +1,215 @@
+=encoding utf8
+
+=head1 NAME
+
+MojoX::MIME::Types - MIME Types for Mojolicious
+
+=head1 INHERITANCE
+
+ MojoX::MIME::Types
+   is a Mojo::Base
+
+=head1 SYNOPSIS
+
+  use MojoX::MIME::Types;
+
+  # set in Mojolicious as default
+  $app->types(MojoX::MIME::Types->new);
+  app->types(MojoX::MIME::Types->new);   # ::Lite
+
+  # basic interface translated into pure MIME::Types
+  $types->type(foo => 'text/foo');
+  say $types->type('foo');
+
+=head1 DESCRIPTION
+
+[Added to MIME::Types 2.07]
+This module is a drop-in replacement for Mojolicious::Types, but
+with a more correct handling plus a complete list of types... a huge
+list of types.
+
+Some methods ignore information they receive: those parameters are
+accepted for compatibility with the Mojolicious::Types interface,
+but should not contain useful information.
+
+Read the L</DETAILS> below, about how to connect this module into
+Mojolicious and the differences you get.
+
+=head1 METHODS
+
+=head2 Constructors
+
+=over 4
+
+=item MojoX::MIME::Types-E<gt>B<new>(%options)
+
+Create the 'type' handler for Mojolicious.  When you do not specify your
+own MIME::Type object ($mime_type), it will be instantanted for you.
+You create one yourself when you would like to pass some parameter to
+the object constructor.
+
+ -Option    --Default
+  mime_types  <created internally>
+  types       undef
+
+=over 2
+
+=item mime_types => MIME::Types-object
+
+Pass your own prepared L<MIME::Types|MIME::Types> object, when you need some
+instantiation parameters different from the defaults.
+
+=item types => HASH
+
+Ignored.
+
+=back
+
+example: 
+
+  $app->types(MojoX::MIME::Types->new);
+
+  # when you need to pass options to MIME::Types->new
+  my $mt    = MIME::Types->new(%opts);
+  my $types = MojoX::MIME::Types->new(mime_types => $mt);
+  $app->types($types);
+
+=back
+
+=head2 Attributes
+
+=over 4
+
+=item $obj-E<gt>B<mimeTypes>()
+
+Returns the internal mime types object.
+
+=item $obj-E<gt>B<types>( [\%table] )
+
+In Mojolicious::Types, this attribute exposes the internal
+administration of types, offering to change it with using a clean
+abstract interface.  That interface mistake bites now we have more
+complex internals.
+
+B<Avoid this method!>  The returned HASH is expensive to construct,
+changes passed via C<%table> are ignored: L<MIME::Types|MIME::Types> is very complete!
+
+=back
+
+=head2 Actions
+
+=over 4
+
+=item $obj-E<gt>B<detect>( $accept, [$prio] )
+
+Returns a list of filename extensions.  The $accept header in HTTP can
+contain multiple types, with a priority indication ('q' attributes).
+The returned list contains a list with extensions, the extensions related
+to the highest priority type first.  The C<$prio>-flag is ignored.
+See L<MIME::Types::httpAccept()|MIME::Types/"HTTP support">.
+
+This detect() function is not the correct approach for the Accept header:
+the "Accept" may contain wildcards ('*') in types for globbing, which
+does not produce extensions.  Better use L<MIME::Types::httpAcceptBest()|MIME::Types/"HTTP support">
+or L<MIME::Types::httpAcceptSelect()|MIME::Types/"HTTP support">.
+
+example: 
+
+  my $exts = $types->detect('application/json;q=9');
+  my $exts = $types->detect('text/html, application/json;q=9');
+
+=item $obj-E<gt>B<type>( $ext, [$type|\@types] )
+
+Returns the first type name for an extension $ext, unless you specify
+type names.
+
+When a single $type or an ARRAY of @types are specified, the C<$self>
+object is returned.  Nothing is done with the provided info.
+
+=back
+
+=head1 DETAILS
+
+=head2 Why?
+
+The Mojolicious::Types module has only very little knowledge about
+what is really needed to treat types correctly, and only contains a tiny
+list of extensions.  L<MIME::Types|MIME::Types> tries to follow the standards
+very closely and contains all types found in various lists on internet.
+
+=head2 How to use with Mojolicious
+
+Start your Mojo application like this:
+
+  package MyApp;
+  use Mojo::Base 'Mojolicious';
+
+  sub startup {
+     my $self = shift;
+     ...
+     $self->types(MojoX::MIME::Types->new);
+  }
+
+If you have special options for L<MIME::Types::new()|MIME::Types/"Constructors">, then create
+your own MIME::Types object first:
+
+  my $mt    = MIME::Types->new(%opts);
+  my $types = MojoX::MIME::Types->new(mime_types => $mt);
+  $self->types($types);
+
+In any case, you can reach the smart L<MIME::Types|MIME::Types> object later as
+
+  my $mt    = $app->types->mimeTypes;
+  my $mime  = $mt->mimeTypeOf($filename);
+
+=head2 How to use with Mojolicious::Lite
+
+The use in Mojolicious::Lite applications is only slightly different
+from above:
+
+  app->types(MojoX::MIME::Types->new);
+  my $types = app->types;
+
+=head2 Differences with Mojolicious::Types
+
+There are a few major difference with Mojolicious::Types:
+
+=over 4
+
+=item *
+
+the tables maintained by L<MIME::Types|MIME::Types> are complete.  So: there shouldn't
+be a need to add your own types, not via L<types()|MojoX::MIME::Types/"Attributes">, not via L<type()|MojoX::MIME::Types/"Actions">.
+All attempts to add types are ignored; better remove them from your code.
+
+=item *
+
+This plugin understands the experimental flag 'x-' in types and handles
+casing issues.
+
+=item *
+
+Updates to the internal hash via types() are simply ignored, because it
+is expensive to implement (and won't add something new).
+
+=item *
+
+The L<detect()|MojoX::MIME::Types/"Actions"> is implemented in a compatible way, but does not understand
+wildcards ('*').  You should use L<MIME::Types::httpAcceptBest()|MIME::Types/"HTTP support"> or
+L<MIME::Types::httpAcceptSelect()|MIME::Types/"HTTP support"> to replace this broken function.
+
+=back
+
+=head1 SEE ALSO
+
+This module is part of MIME-Types distribution version 2.17,
+built on January 26, 2018. Website: F<http://perl.overmeer.net/CPAN/>
+
+=head1 LICENSE
+
+Copyrights 1999-2018 by [Mark Overmeer <markov@cpan.org>]. For other contributors see ChangeLog.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See F<http://dev.perl.org/licenses/>
+

@@ -1,0 +1,196 @@
+#PODNAME: DBD::Oracle::Troubleshooting::Win64
+#ABSTRACT: Tips and Hints to Troubleshoot DBD::Oracle on Win64
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+DBD::Oracle::Troubleshooting::Win64 - Tips and Hints to Troubleshoot DBD::Oracle on Win64
+
+=head1 VERSION
+
+version 1.76
+
+=head1 DBD::Oracle and Windows 64bit 
+
+I have successfully compiled and installed  DBD::Oracle on Windows 2008 server 64bit operating system today.  
+
+I used the latest version of <a href='http://search.cpan.org/~pythian/DBD-Oracle-1.24a/'>DBD::Oracle 1.24</A>
+version 11.2.0.1.0 for 64bit windows of Oracle's
+<a href='http://www.oracle.com/technology/software/tech/oci/instantclient/htdocs/winx64soft.html'>Instant Client Package - Basic</a>
+along with the Instant Client Package - SQL*Plus and finally the Instant Client Package - SDK.
+
+To get it to Make and compile correctly I had to download Microsoft's <a href='http://www.microsoft.com/visualstudio/en-ca/download'>Visual Studio Ultimate</a>
+
+which should contain all the files you need.  It is rather portly at 2+gb so you might want to grab lunch while you are downloading it.
+
+After all the above downloading DBB::Oracle installed right out of the box.
+
+All one has to do is select  'Start Menu->All Programs->Microsoft Visual Studio 2010->Visual Studio Tools->Visual Studio x64 Win64 Command Prompt (2010)' 
+which will open a good old 'dos' window.
+
+At this point CD to the directory where you downloaded DBD::Oracle
+
+c:\DBD-Oracle>
+
+then set your 'ORACLE_HOME to the Instant Client directory
+
+c:\DBD-Oracle>set ORACLE_HOME=c:\IC_11
+
+you should also set your NLS like this
+
+c:\DBD-Oracle>set NLS_LANG=.WE8ISO8859P15
+
+Once the above setting are done do a 
+
+c:\DBD-Oracle>perl Makefile.PL
+
+and then a 
+
+c:\DBD-Oracle>nmake install
+
+Which will produce a whole of warnings (the make you can ignore them for now as they do not seem to effect DBD::Oracle at all) and near the end it should output something like this;
+
+Generating code
+Finished generating code
+        if exist blib\arch\auto\DBD\Oracle\Oracle.dll.manifest mt -nologo -manifest blib\arch\auto\DBD\Oracle\Oracle.dll.manifest -outputresource:blib\arch\auto
+\DBD\Oracle\Oracle.dll;2
+        if exist blib\arch\auto\DBD\Oracle\Oracle.dll.manifest del blib\arch\auto\DBD\Oracle\Oracle.dll.manifest
+        C:\Perl64\bin\perl.exe -MExtUtils::Command -e "chmod" -- 755 blib\arch\auto\DBD\Oracle\Oracle.dll
+        C:\Perl64\bin\perl.exe -MExtUtils::Command -e "cp" -- Oracle.bs blib\arch\auto\DBD\Oracle\Oracle.bs
+        C:\Perl64\bin\perl.exe -MExtUtils::Command -e "chmod" -- 644 blib\arch\auto\DBD\Oracle\Oracle.bs
+        C:\Perl64\bin\perl.exe "-Iblib\arch" "-Iblib\lib" ora_explain.PL ora_explain
+Extracted ora_explain from ora_explain.PL with variable substitutions.
+        C:\Perl64\bin\perl.exe -MExtUtils::Command -e "cp" -- ora_explain blib\script\ora_explain
+        pl2bat.bat blib\script\ora_explain
+
+At this point you are all done.  
+
+Well almost
+
+It is important that you test your code before you install but you will have to set a few things up to get it to fully test correctly
+
+You will need a TNSNAMES.ORA file that points to a valid DB in the Instant Client Directory
+
+Next you will need to set the ORACLE_USER_ID to a valid user
+
+c:\DBD-Oracle>set ORACLE_USER_ID=system/system@XE
+
+You will have to set up TNS_ADMIN to point to the Instant Client Directory
+
+c:\DBD-Oracle>set TNS_ADMIN=c:\IC_11
+
+Most importantly you will have to add the Instant Client directory to your path like this
+
+c:\DBD-Oracle>path = c:\IC_11;%path%
+
+If you do not do this step you will run into the dreaded 
+
+Can't load 'C:/Perl/lib/auto/DBD/Oracle/Oracle.dll' for module DBD::Oracle: load_file:%1 is not a valid Win32 application at C:/Perl/lib/DynaLoader.pm line 202.
+
+Error later on after the compile when you try to use DBD::Oracle.
+
+What is actually going on is that Perl cannot find oci.dll (or one of the other .dlls it needs to run) the 'C:/Perl/lib/auto/DBD/Oracle/Oracle.dll' and the DynaLoader error
+are just a false trails. For more info on this check out this page <a href='http://www.alexander-foken.de/Censored%20copy%20of%20Oracle%20Troubleshooter%20HOWTO.html#oneoci'>Oracle Troubleshooter'</a>
+by Alexander Foken.  It is rather dated but the facts of why perl did not find a dll are still valid.
+
+now you can do this
+
+c:\DBD-Oracle>nmake test
+
+and all the tests should run and it will report
+
+Finally simple do a 
+
+c:\DBD-Oracle>nmake install
+
+and you are all set
+
+That is about it.
+
+At this point you might want to add the Instant Client directory permanently to your path so you will not run into the Dynaloader error again.
+
+In general compiling DBD:Oracle for 64 bit machines has been a hit or miss operation.  
+The main thing to remember is you will have to compile using 32 bit Perl and compile DBD::Oracle against a 32bit client
+which sort of defeats the purpose of having a 64bit box.  
+So until 64bit Perl comes out we will be posing in this README any success stories we have come across
+
+-------- Original Message --------
+From: 	Alex Buttery, OCA, MCTS
+	Director, Database Architecture and Operations
+	Impact Rx, Inc.
+
+I needed to get perl working on a 64-bit Windows Server so I got creative. Since I was unable to build DBD::Oracle on the Windows Server
+(even with Visual Studio 6 installed), I decided that I would try another approach. Here are the steps I took to get it working 
+(yes, this is a hack and I'm not even sure that it does not violate someone's license agreements but I'm not going to be asking anyone 
+else to support this configuration). 
+
+ Step 1: Install 32-bit Perl 5.8.8 from Activestate on the Server to the C: drive.
+
+ Step 2: Install the 32-bit Oracle client on the server (I'm assuming the 64-bit client has already been installed and is working) to 
+ 	 the c:\oracle\product\10.2.0\client32 directory in the OraHome_Client32 Home.
+
+ Step 3: Locate Oracle.dll in the new Oracle Home directory, it should be located somewhere close to 
+ 	 c:\oracle\product\10.2.0\client32\perl\site\5.8.3\MSWin32-x86-multi-thread\auto\DBD\Oracle.
+
+ Step 4: Locate Oracle.dll in the Perl 5.8.8 directory. (C:\Perl) It should be somewhere close to c:\Perl\site\lib\auto\DBD\Oracle.
+
+ Step 5: Copy the contents of the Oracle directory found in Step 3 to the Perl directory found in Step 4.
+
+ Step 6: Copy GetInfo.pm from C:\oracle\product\10.2.0\client32\perl\site\5.8.3\lib\MSWin32-x86-multi-thread\DBD\Oracle to C:\Perl\site\lib\DBD\Oracle
+
+ Step 7: Locate Oracle.pm in the new Oracle Home directory, it should be located somewhere close to 
+ 	 c:\oracle\product\10.2.0\client32\perl\site\5.8.3\MSWin32-x86-multi-thread\auto\DBD.
+
+ Step 8: Locate Oracle.pm in the Perl 5.8.8 directory. (C:\Perl) It should be somewhere close to c:\Perl\site\lib\auto\DBD.
+
+ Step 9: Copy Oracle.pm from the Oracle directory found in Step 7 to the Perl directory found in Step 8.
+
+ Step 10: Set up required ODBC connections using the 32-bit ODBC applet (odbcad32.exe) located in the C:\Windows\SysWOW64 directory.  
+ 	  Note: The ODBC applet in the Administrative Tools menu points to the odbcad32.exe located in the C:\Windows\system32 directory 
+ 	  and is actually the 64 bit version of the ODBC applet This cannot be used by Perl
+
+ Step 11: Create batch scripts to run Perl programs and include the following SET statements to point Perl to the correct Oracle Home:
+
+ 	SET ORACLE_HOME=c:\oracle\product\10.2.0\client32 <== 32-bit Oracle Home
+
+	SET ORACLE_SID=xyz123                             <== SID of Production Database
+
+	SET NLS_LANG=.WE8ISO8859P1                        <== Default Language from Database   (preceding "." Is required)
+
+	SET PATH=%ORACLE_HOME%\bin;%PATH%                 <== Add 32-bit Oracle Home to beginning of default PATH
+
+=head1 AUTHORS
+
+=over 4
+
+=item *
+
+Tim Bunce <timb@cpan.org>
+
+=item *
+
+John Scoles <byterock@cpan.org>
+
+=item *
+
+Yanick Champoux <yanick@cpan.org>
+
+=item *
+
+Martin J. Evans <mjevans@cpan.org>
+
+=back
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2018, 2014, 2013, 2012, 2011, 2010 by Tim Bunce.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut

@@ -1,0 +1,57 @@
+=for comment POD_DERIVED_INDEX_GENERATED
+The following documentation is automatically generated.  Please do not edit
+this file, but rather the original, inline with DBIx::Class::SQLMaker
+at lib/DBIx/Class/SQLMaker.pm
+(on the system that originally ran this).
+If you do edit this file, and don't want your changes to be removed, make
+sure you change the first line.
+
+=cut
+
+=head1 NAME
+
+DBIx::Class::SQLMaker - An SQL::Abstract-based SQL maker class
+
+=head1 DESCRIPTION
+
+This module is a subclass of L<SQL::Abstract> and includes a number of
+DBIC-specific workarounds, not yet suitable for inclusion into the
+L<SQL::Abstract> core. It also provides all (and more than) the functionality
+of L<SQL::Abstract::Limit>, see L<DBIx::Class::SQLMaker::LimitDialects> for
+more info.
+
+Currently the enhancements to L<SQL::Abstract> are:
+
+=over 4
+
+=item * Support for C<JOIN> statements (via extended C<table/from> support)
+
+=item * Support of functions in C<SELECT> lists
+
+=item * C<GROUP BY>/C<HAVING> support (via extensions to the order_by parameter)
+
+=item * Support of C<...FOR UPDATE> type of select statement modifiers
+
+=back
+
+=head1 INHERITED METHODS
+
+=over 4
+
+=item L<SQL::Abstract>
+
+L<is_literal_value|SQL::Abstract/is_literal_value>, L<is_plain_value|SQL::Abstract/is_plain_value>
+
+=back
+
+=head1 FURTHER QUESTIONS?
+
+Check the list of L<additional DBIC resources|DBIx::Class/GETTING HELP/SUPPORT>.
+
+=head1 COPYRIGHT AND LICENSE
+
+This module is free software L<copyright|DBIx::Class/COPYRIGHT AND LICENSE>
+by the L<DBIx::Class (DBIC) authors|DBIx::Class/AUTHORS>. You can
+redistribute it and/or modify it under the same terms as the
+L<DBIx::Class library|DBIx::Class/COPYRIGHT AND LICENSE>.
+

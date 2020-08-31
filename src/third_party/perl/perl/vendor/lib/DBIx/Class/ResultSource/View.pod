@@ -1,0 +1,172 @@
+=for comment POD_DERIVED_INDEX_GENERATED
+The following documentation is automatically generated.  Please do not edit
+this file, but rather the original, inline with DBIx::Class::ResultSource::View
+at lib/DBIx/Class/ResultSource/View.pm
+(on the system that originally ran this).
+If you do edit this file, and don't want your changes to be removed, make
+sure you change the first line.
+
+=cut
+
+=head1 NAME
+
+DBIx::Class::ResultSource::View - ResultSource object representing a view
+
+=head1 SYNOPSIS
+
+  package MyApp::Schema::Result::Year2000CDs;
+
+  use base qw/DBIx::Class::Core/;
+
+  __PACKAGE__->table_class('DBIx::Class::ResultSource::View');
+
+  __PACKAGE__->table('year2000cds');
+  __PACKAGE__->result_source_instance->is_virtual(1);
+  __PACKAGE__->result_source_instance->view_definition(
+      "SELECT cdid, artist, title FROM cd WHERE year ='2000'"
+  );
+  __PACKAGE__->add_columns(
+    'cdid' => {
+      data_type => 'integer',
+      is_auto_increment => 1,
+    },
+    'artist' => {
+      data_type => 'integer',
+    },
+    'title' => {
+      data_type => 'varchar',
+      size      => 100,
+    },
+  );
+
+=head1 DESCRIPTION
+
+View object that inherits from L<DBIx::Class::ResultSource>
+
+This class extends ResultSource to add basic view support.
+
+A view has a L</view_definition>, which contains a SQL query. The query can
+only have parameters if L</is_virtual> is set to true. It may contain JOINs,
+sub selects and any other SQL your database supports.
+
+View definition SQL is deployed to your database on
+L<DBIx::Class::Schema/deploy> unless you set L</is_virtual> to true.
+
+Deploying the view does B<not> translate it between different database
+syntaxes, so be careful what you write in your view SQL.
+
+Virtual views (L</is_virtual> true), are assumed to not
+exist in your database as a real view. The L</view_definition> in this
+case replaces the view name in a FROM clause in a subselect.
+
+=head1 EXAMPLES
+
+Having created the MyApp::Schema::Year2000CDs schema as shown in the SYNOPSIS
+above, you can then:
+
+  $2000_cds = $schema->resultset('Year2000CDs')
+                     ->search()
+                     ->all();
+  $count    = $schema->resultset('Year2000CDs')
+                     ->search()
+                     ->count();
+
+If you modified the schema to include a placeholder
+
+  __PACKAGE__->result_source_instance->view_definition(
+      "SELECT cdid, artist, title FROM cd WHERE year = ?"
+  );
+
+and ensuring you have is_virtual set to true:
+
+  __PACKAGE__->result_source_instance->is_virtual(1);
+
+You could now say:
+
+  $2001_cds = $schema->resultset('Year2000CDs')
+                     ->search({}, { bind => [2001] })
+                     ->all();
+  $count    = $schema->resultset('Year2000CDs')
+                     ->search({}, { bind => [2001] })
+                     ->count();
+
+=head1 SQL EXAMPLES
+
+=over 4
+
+=item is_virtual set to false
+
+  $schema->resultset('Year2000CDs')->all();
+
+  SELECT cdid, artist, title FROM year2000cds me
+
+=item is_virtual set to true
+
+  $schema->resultset('Year2000CDs')->all();
+
+  SELECT cdid, artist, title FROM
+    (SELECT cdid, artist, title FROM cd WHERE year ='2000') me
+
+=back
+
+=head1 METHODS
+
+=head2 is_virtual
+
+  __PACKAGE__->result_source_instance->is_virtual(1);
+
+Set to true for a virtual view, false or unset for a real
+database-based view.
+
+=head2 view_definition
+
+  __PACKAGE__->result_source_instance->view_definition(
+      "SELECT cdid, artist, title FROM cd WHERE year ='2000'"
+      );
+
+An SQL query for your view. Will not be translated across database
+syntaxes.
+
+=head2 deploy_depends_on
+
+  __PACKAGE__->result_source_instance->deploy_depends_on(
+      ["MyApp::Schema::Result::Year","MyApp::Schema::Result::CD"]
+      );
+
+Specify the views (and only the views) that this view depends on.
+Pass this an array reference of fully qualified result classes.
+
+=head1 OVERRIDDEN METHODS
+
+=head2 from
+
+Returns the FROM entry for the table (i.e. the view name)
+or the SQL as a subselect if this is a virtual view.
+
+=head1 OTHER METHODS
+
+=head2 new
+
+The constructor.
+
+=head1 INHERITED METHODS
+
+=over 4
+
+=item L<DBIx::Class::ResultSource>
+
+L<add_column|DBIx::Class::ResultSource/add_column>, L<add_columns|DBIx::Class::ResultSource/add_columns>, L<add_relationship|DBIx::Class::ResultSource/add_relationship>, L<add_unique_constraint|DBIx::Class::ResultSource/add_unique_constraint>, L<add_unique_constraints|DBIx::Class::ResultSource/add_unique_constraints>, L<column_info|DBIx::Class::ResultSource/column_info>, L<column_info_from_storage|DBIx::Class::ResultSource/column_info_from_storage>, L<columns|DBIx::Class::ResultSource/columns>, L<columns_info|DBIx::Class::ResultSource/columns_info>, L<default_sqlt_deploy_hook|DBIx::Class::ResultSource/default_sqlt_deploy_hook>, L<handle|DBIx::Class::ResultSource/handle>, L<has_column|DBIx::Class::ResultSource/has_column>, L<has_relationship|DBIx::Class::ResultSource/has_relationship>, L<name|DBIx::Class::ResultSource/name>, L<name_unique_constraint|DBIx::Class::ResultSource/name_unique_constraint>, L<primary_columns|DBIx::Class::ResultSource/primary_columns>, L<related_class|DBIx::Class::ResultSource/related_class>, L<related_source|DBIx::Class::ResultSource/related_source>, L<relationship_info|DBIx::Class::ResultSource/relationship_info>, L<relationships|DBIx::Class::ResultSource/relationships>, L<remove_column|DBIx::Class::ResultSource/remove_column>, L<remove_columns|DBIx::Class::ResultSource/remove_columns>, L<result_class|DBIx::Class::ResultSource/result_class>, L<resultset|DBIx::Class::ResultSource/resultset>, L<resultset_attributes|DBIx::Class::ResultSource/resultset_attributes>, L<resultset_class|DBIx::Class::ResultSource/resultset_class>, L<reverse_relationship_info|DBIx::Class::ResultSource/reverse_relationship_info>, L<schema|DBIx::Class::ResultSource/schema>, L<sequence|DBIx::Class::ResultSource/sequence>, L<set_primary_key|DBIx::Class::ResultSource/set_primary_key>, L<source_info|DBIx::Class::ResultSource/source_info>, L<source_name|DBIx::Class::ResultSource/source_name>, L<sqlt_deploy_callback|DBIx::Class::ResultSource/sqlt_deploy_callback>, L<storage|DBIx::Class::ResultSource/storage>, L<throw_exception|DBIx::Class::ResultSource/throw_exception>, L<unique_constraint_columns|DBIx::Class::ResultSource/unique_constraint_columns>, L<unique_constraint_names|DBIx::Class::ResultSource/unique_constraint_names>, L<unique_constraints|DBIx::Class::ResultSource/unique_constraints>
+
+=back
+
+=head1 FURTHER QUESTIONS?
+
+Check the list of L<additional DBIC resources|DBIx::Class/GETTING HELP/SUPPORT>.
+
+=head1 COPYRIGHT AND LICENSE
+
+This module is free software L<copyright|DBIx::Class/COPYRIGHT AND LICENSE>
+by the L<DBIx::Class (DBIC) authors|DBIx::Class/AUTHORS>. You can
+redistribute it and/or modify it under the same terms as the
+L<DBIx::Class library|DBIx::Class/COPYRIGHT AND LICENSE>.
+

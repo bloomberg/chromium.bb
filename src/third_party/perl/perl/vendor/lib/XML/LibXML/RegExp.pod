@@ -1,0 +1,78 @@
+=head1 NAME
+
+XML::LibXML::RegExp - XML::LibXML::RegExp - interface to libxml2 regular expressions
+
+=head1 SYNOPSIS
+
+
+
+  use XML::LibXML;
+  my $compiled_re = XML::LibXML::RegExp->new('[0-9]{5}(-[0-9]{4})?');
+  if ($compiled_re->isDeterministic()) { ... }
+  if ($compiled_re->matches($string)) { ... }
+
+  $compiled_re = XML::LibXML::RegExp->new( $regexp_str );
+  $bool = $compiled_re->matches($string);
+  $bool = $compiled_re->isDeterministic();
+
+=head1 DESCRIPTION
+
+This is a perl interface to libxml2's implementation of regular expressions,
+which are used e.g. for validation of XML Schema simple types (pattern facet).
+
+=over 4
+
+=item new()
+
+  $compiled_re = XML::LibXML::RegExp->new( $regexp_str );
+
+The constructor takes a string containing a regular expression and returns a
+compiled regexp object.
+
+
+=item matches($string)
+
+  $bool = $compiled_re->matches($string);
+
+Given a string value, returns a true value if the value is matched by the
+compiled regular expression.
+
+
+=item isDeterministic()
+
+  $bool = $compiled_re->isDeterministic();
+
+Returns a true value if the regular expression is deterministic; returns false
+otherwise. (See the definition of determinism in the XML spec (L<<<<<< http://www.w3.org/TR/REC-xml/#determinism >>>>>>))
+
+
+
+=back
+
+=head1 AUTHORS
+
+Matt Sergeant,
+Christian Glahn,
+Petr Pajas
+
+
+=head1 VERSION
+
+2.0200
+
+=head1 COPYRIGHT
+
+2001-2007, AxKit.com Ltd.
+
+2002-2006, Christian Glahn.
+
+2006-2009, Petr Pajas.
+
+=cut
+
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify it under
+the same terms as Perl itself.
+

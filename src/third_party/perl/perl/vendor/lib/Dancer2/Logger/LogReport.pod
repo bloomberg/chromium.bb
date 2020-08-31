@@ -1,0 +1,84 @@
+=encoding utf8
+
+=head1 NAME
+
+Dancer2::Logger::LogReport - reroute Dancer2 logs into Log::Report
+
+=head1 INHERITANCE
+
+ Dancer2::Logger::LogReport
+   is a Moo::Object
+
+=head1 SYNOPSIS
+
+  # This module is loaded when configured.  It does not provide
+  # end-user functions or methods.
+
+  # See DETAILS
+
+=head1 DESCRIPTION
+
+[The Dancer2 plugin was contributed by Andrew Beverley]
+
+This logger allows the use of the many logging backends available
+in L<Log::Report|Log::Report>.  It will process all of the Dancer2 log messages,
+and also allow any other module to use the same logging facilities. The
+same log messages can be sent to multiple destinations at the same time
+via flexible dispatchers.
+
+If using this logger, you may also want to use
+L<Dancer2::Plugin::LogReport|Dancer2::Plugin::LogReport>
+
+Many log back-ends, like syslog, have more levels of system messages.
+Modules who explicitly load this module can use the missing C<assert>,
+C<notice>, C<panic>, and C<alert> log levels.  The C<trace> name is
+provided as well: when you are debugging, you add a 'trace' to your
+program... it's just a better name than 'debug'. You will need to load
+Log::Report in order to use the additional levels; if doing so directly within
+a Dancer2 application (not a sub-module), then you will either need to load
+Log::Report with C<syntax, 'LONG'> or use L<Dancer2::Plugin::LogReport|Dancer2::Plugin::LogReport> to
+prevent namespace clashes.
+
+=head2 Log Format
+
+If using this module on its own (such as a drop-in replacement for
+Dancer2::Logger::Syslog), then the logging format is configured as with any
+other Dancer logger. If using this module with L<Dancer2::Plugin::LogReport|Dancer2::Plugin::LogReport>,
+then log_format is ignored and messages are not formatted, in order to keep the
+message format consistent regardless of where the message was generated (be it
+another module using Log::Report, the plugin, or Dancer itself). In this case,
+the log format should be configured using the applicable dispatcher (such as
+L<Log::Report::Dispatcher::Syslog::new(format)|Log::Report::Dispatcher::Syslog/"Constructors">).
+    
+If also using with the L<Log::Report> logging functions, then you probably want
+to set a very simple C<logger_format>, because the dispatchers do already add
+some of the fields that the default C<simple> format adds.  For instance, to
+get the filename/line-number in messages depends on the dispatcher 'mode' (f.i.
+'DEBUG').
+
+You also want to set the Dancer2 log level to C<debug>, because level filtering
+is controlled per dispatcher (as well).
+
+See L<Dancer2::Plugin::LogReport/"DETAILS"> for examples.
+
+=head1 METHODS
+
+=over 4
+
+=item $obj-E<gt>B<log>($level, $params)
+
+=back
+
+=head1 SEE ALSO
+
+This module is part of Log-Report distribution version 1.28,
+built on May 14, 2019. Website: F<http://perl.overmeer.net/CPAN/>
+
+=head1 LICENSE
+
+Copyrights 2007-2019 by [Mark Overmeer <markov@cpan.org>]. For other contributors see ChangeLog.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See F<http://dev.perl.org/licenses/>
+

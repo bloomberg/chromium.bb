@@ -1,0 +1,249 @@
+=head1 NAME
+
+SQL::Statement::Roadmap - Planned Enhancements for SQL::Statement and SQL::Parser
+
+Jens Rehsack - June 2010
+
+=head1 SYNOPSIS
+
+This document gives a high level overview of the future of SQL::Statement,
+SQL::Parser and its impact.
+
+The planned enhancements cover testing, performance, reliability,
+extensibility and more.
+
+=head1 CHANGES AND ENHANCEMENTS
+
+=head2 Enhancements in SQL::Statement 1.xx
+
+SQL::Statement 1.xx will not receive big changes, but a few enhancements
+may help us to design SQL::Statement 2.xx much better.
+
+=head3 CREATE and DROP of FUNCTION, KEYWORD, OPERATOR, TYPE
+
+SQL::Statement is missing some functions, types, operators etc. It's
+supported to add missing functionality - but the implementation wasn't
+picked up during the modernizing of column evaluation. See RT#52397
+for some more information.
+
+This should be done before SQL::Statement 1.xx reaches the end of its
+road.
+
+=head3 Parser improvements
+
+The SQL::Parser is implemented based on a lot of regular expressions
+and some manually developed logic. This creates some issues like
+RT#53416 or RT#55190. Further, trailing C<;> causes SQL::Parser to
+croak. We need to decide what can be fixed without internal design
+changes and what has to wait.
+
+=head3 Performance
+
+There is no intention to work on performance improvements in
+SQL::Statement 1.xx. The performance is good as it is and improvement
+requires design changes.
+
+=head3 Reliability
+
+Bugs will be fixed - where possible. SQL::Statement 1.28 is much more
+reliable than SQL::Statement 1.15. Even if a bug cannot be fixed all
+issues are gratefully received as they will be considered in the
+design process for SQL::Statement 2.xx better.
+
+=head3 Extensibility
+
+SQL::Statement 1.xx is highly extensible, even if a more object oriented
+design would improve that. The 1.xx branch will not be redesigned for
+greater extensibility on a coding level.
+
+=head2 Enhancements in SQL::Statement 2.xx
+
+Concerning the procedural design of SQL::Statement 1.xx a rewrite of the
+basic components is required.
+
+=head3 SQL::Parser rewrite
+
+The SQL::Parser needs to be modified to be able to use a
+L<Backus Naur Form|http://en.wikipedia.org/wiki/Backus_Naur_Form>.
+This would allow users and developers to rely on many different
+SQL dialects.  This will allow better extensibility from a feature
+point of view without losing ANSI SQL compatibility.
+
+=head3 SQL::Statement rewrite
+
+SQL::Statement should be reduced to a simple coordinating engine. The
+executing tasks should be organized into separated commands. This will
+reduce side effects and will open the door for higher level optimizations,
+reliability improvements or sub-selects (or other calculated tables).
+
+=head3 Features
+
+There is a large list of missing features but not all table backends
+will be able to support each new feature. The most popular requested
+features need additional discussion and everyone is welcome to do it
+on the L<mailto:dbi-dev@perl.org|DBI Development Mailing List>.
+
+=head4 LOCK TABLE
+
+Locking table within SQL scripts to manually control table consistence over
+several operations. The current locking support is restricted to one
+statement.
+
+=head4 Transaction support
+
+Executing statements on a temporary copy of the table data.
+
+The easiest way to implement this would be to create a
+L<SQL::Statement::RAM|SQL::Statement::RAM::Table> on C<BEGIN TRANSACTION>
+and write the entire table back on C<COMMIT> or discard on C<ROLLBACK>.
+
+Better performance could be achieved in cases where the implementation is
+enabled to memorize pending modifications and apply them at C<COMMIT>.
+On the other hand there are already
+L<capabilities|SQL::Eval/"Method interface of SQL::Eval::Table"> to
+improve some operations, which might create confusion in case of
+transactions.
+
+This needs more discussion.
+
+=head4 ALTER TABLE
+
+Adding, removing or modifying columns is not supported for created
+tables. A generic C<ALTER TABLE> seems to rely on the implementation
+of the transaction support - until better ideas are provided.
+
+=head4 Indices
+
+Currently some table backends have implicit support to access
+specified rows quicker than fetching each row and evaluating the where
+clause against the row data.
+
+An interface would be required to configure fetching to return only
+rows matching a restricted where clause. Another (probably better) way
+to support indices would be to fetch index entries at first and have
+an interface to the table fetching lines based on an index key.
+
+=head4 Sub-Selects
+
+In most cases queries can be re-expressed without using sub-selects. But
+in any case, there are circumstances where sub-selects are required.
+
+The first implementation will do the sub-select before the primary
+statement is executed without any further optimization. Hopefully
+a later version will provide better L<Performance> with some
+optimization.
+
+=head4 Query based variables
+
+Currently the only variable I can imagine is C<ROWNUM>. More suggestions
+are very welcome.
+
+=head4 Better SQL Script support
+
+In SQL::Statement 1.xx the function C<RUN ()> provides SQL script
+execution. This function may have limitations and side effects (at least
+when the executed SQL touched the same tables as the primary statement).
+
+I plan to improve the SQL script support to remove the side effects on
+the one hand and have a more flexible and easier way to execute them.
+
+Finally it should be possible to execute a script via:
+
+    $dbh->do( join( ";", @script ) );
+
+=head4 Trigger support
+
+Most important when doing complicated things is having callback
+functions for several events. While real triggers will not be possible
+for SQL::Statement and underlying pseudo-databases, callbacks could be
+provided via triggers.
+
+=head3 Performance
+
+There are several performance optimizations required for
+SQL::Statement 2.xx.
+
+The first one should be done on a very high level (query optimization)
+by implementing algebraic evaluation of queries and clean
+implementation of typical database algorithms. With respect to the
+basic optimization rule I<premature optimization is the root of all
+evil>, it is primarily targeted to have an adequately fast, reliable
+implementation of many algorithms (e.g. early incomplete evaluation to
+reduce amount of rows, transpose where clause to evaluate constants
+first) and a clever controller choosing the right algorithm for a
+specific query.
+
+The second optimization goal means: implementing most expensive methods
+in XS. This requires a good performance test suite as well as some real
+world usage cases.
+
+=head3 Reliability
+
+This is one of the primary goals of SQL::Statement. I hope to reach it
+using test driven development and I hope I get some more todo's from the
+users for this.
+
+=head3 Extensibility
+
+The currently high level of extensibility should be increased on a
+coding level. This will be done by redesigning the entire parser and
+execution engine using object oriented techniques and design patterns.
+
+=head3 Testing
+
+Many tests in SQL::Statement are not well organized. The tests should be
+reorganized into several parts:
+
+=over 4
+
+=item Basic API
+
+This part should test the entire basic API of SQL::Statement,
+SQL::Parser and probably the entire engine command classes.
+
+=item DBI / Table API
+
+This part should test if the API to DBI drivers work (maybe an empty test
+driver will be needed for that).
+
+=item Functionality
+
+This part should test the functionality of the SQL::Parser and the
+SQL::Statement engine.
+
+=item Performance
+
+This part should be used to implement full usage cases (ideally from
+real world projects) to allow for testing optimizations.
+
+=back
+
+=head1 PRIORITIES
+
+Our priorities are localized to our current issues and proof of concept
+fixes for upcoming SQL::Statement 2.xx.
+
+Any additional priorities (as missing features, the SQL::Statement rewrite)
+will come later and can be modified by (paying) users.
+
+=head1 RESOURCES AND CONTRIBUTIONS
+
+See L<http://dbi.perl.org/contributing> for I<how you can help>.
+
+If your company has benefited from the DBI or SQL::Statement, please
+consider if it could make a donation to The Perl Foundation
+"DBI Development" or "SQL::Statement Development" fund at
+L<http://dbi.perl.org/donate> to secure future development.
+
+Alternatively, if your company would benefit from a specific new
+DBI or SQL::Statement feature, please consider sponsoring its development
+through the options listed in the section "Commercial Support from the
+Author" on L<http://dbi.perl.org/support/>.
+
+Using such targeted financing allows you to contribute to DBI
+development (including SQL::Statement and PurePerl DBI drivers) and rapidly
+get something specific and directly valuable to you in return.
+
+Thank you.
+
+=cut

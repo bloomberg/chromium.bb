@@ -1,0 +1,18 @@
+prefix=${pcfiledir}/../..
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+sysconfdir=${prefix}/etc
+localstatedir=${prefix}/var
+PACKAGE=fontconfig
+confdir=${sysconfdir}/fonts
+cachedir=LOCAL_APPDATA_FONTCONFIG_CACHE
+
+Name: Fontconfig
+Description: Font configuration and customization library
+Version: 2.13.1
+Requires:  freetype2 >= 21.0.15
+Requires.private:  expat
+Libs: -L${libdir} -lfontconfig
+Libs.private: -L${pcfiledir}/../../lib -liconv 
+Cflags: -I${includedir} -I${pcfiledir}/../../include 

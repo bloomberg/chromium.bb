@@ -1,0 +1,437 @@
+#============================================================= -*-perl-*-
+#
+# Template::Tutorial::Datafile
+#
+# DESCRIPTION
+
+#
+# AUTHOR
+#   Dave Cross  <dave@dave.org.uk>
+#
+# COPYRIGHT
+#   Copyright (C) 1996-2008 Andy Wardley.  All Rights Reserved.
+#
+#   This module is free software; you can redistribute it and/or
+#   modify it under the same terms as Perl itself.
+#
+#========================================================================
+
+=head1 NAME
+
+Template::Tutorial::Datafile - Creating Data Output Files Using the Template Toolkit
+
+=head1 DESCRIPTION
+
+
+
+=head1 Introducing the Template Toolkit
+
+There are a number of Perl modules that are universally 
+recognised as The Right Thing To Use for certain tasks. If you 
+accessed a database without using DBI, pulled data from the WWW 
+without using one of the LWP modules or parsed XML without using 
+XML::Parser or one of its subclasses then you'd run the risk of 
+being shunned by polite Perl society.
+
+I believe that the year 2000 saw the emergence of another 'must 
+have' Perl module - the Template Toolkit. I don't think I'm 
+alone in this belief as the Template Toolkit won the 'Best New 
+Module' award at the Perl Conference last summer. Version 2.0 of 
+the Template Toolkit (known as TT2 to its friends) was recently 
+released to the CPAN.
+
+TT2 was designed and written by Andy Wardley E<lt>abw@wardley.orgE<gt>. 
+It was born out of Andy's previous templating module, 
+Text::Metatext, in best Fred Brooks 'plan to throw one away' 
+manner; and aims to be the most useful (or, at least, the most 
+I<used>) Perl templating system.
+
+TT2 provides a way to take a file of fixed boilerplate text 
+(the template) and embed variable data within it. One obvious 
+use of this is in the creation of dynamic web pages and this is 
+where a lot of the attention that TT2 has received has been 
+focussed. In this article, I hope to demonstrate that TT2 is 
+just as useful in non-web applications.
+
+=head1 Using the Template Toolkit
+
+Let's look at how we'd use TT2 to process a simple data file. 
+TT2 is an object oriented Perl module. Having downloaded it from 
+CPAN and installed it in the usual manner, using it in your 
+program is as easy as putting the lines
+
+    use Template;
+    my $tt = Template->new;
+
+in your code. The constructor function, C<new>, takes 
+a number of optional parameters which are documented in the 
+copious manual pages that come with the module, but for the 
+purposes of this article we'll keep things as simple as 
+possible.
+
+To process the template, you would call the C<process> method 
+like this
+
+    $tt->process('my_template', \%data)
+        || die $tt->error;
+
+We pass two parameters to C<process>, the first is the name of 
+the file containing the template to process (in this case, 
+my_template) and the second is a reference to a hash which 
+contains the data items that you want to use in the template. If 
+processing the template gives  any kind of error, the program 
+will die with a (hopefully) useful error message.
+
+So what kinds of things can go in C<%data>? The answer is just 
+about anything. Here's an example showing data about English 
+Premier League football teams.
+
+    my @teams = ({ name   => 'Man Utd',
+                   played => 16,
+                   won    => 12,
+                   drawn  => 3,
+                   lost   => 1 },
+                 { name   => 'Bradford',
+                   played => 16,
+                   won    => 2,
+                   drawn  => 5,
+                   lost   => 9 });
+
+    my %data = ( name   => 'English Premier League',
+                 season => '2000/01',
+                 teams  => \@teams );
+
+This creates three data items which can be accessed within the 
+template, called C<name>, C<season> and C<teams>. Notice that 
+C<teams> is a complex data structure.
+
+Here is a template that we might use to process this data.
+
+    League Standings
+
+    League Name: [% name %]
+    Season     : [% season %]
+
+    Teams:
+    [% FOREACH team = teams -%]
+    [% team.name %] [% team.played -%] 
+     [% team.won %] [% team.drawn %] [% team.lost %]
+    [% END %]
+
+Running this template with this data gives us the following 
+output
+
+	        League Standings
+
+    League Name: English Premier League
+    Season     : 2000/01
+
+    Teams:
+    Man Utd 16 12 3 1
+    Bradford 16 2 5 9
+
+Hopefully the syntax of the template is simple enough to 
+follow. There are a few points to note.
+
+=over 4
+
+=item *
+
+Template processing directives are written using a simple 
+language which is not Perl.
+
+=item *
+
+The keys of the C<%data> have become the names of the data 
+variables within the template.
+
+=item *
+
+Template processing directives are surrounded by C<[%> and 
+C<%]> sequences.
+
+=item *
+
+If these tags are replaced with C<[%-> C<-%]> then the preceding 
+or following linefeed is suppressed.
+
+=item *
+
+In the C<FOREACH> loop, each element of the C<teams> list was 
+assigned, in turn, to the temporary variable C<team>.
+
+=item *
+
+Each item assigned to the C<team> variable is a Perl hash. 
+Individual values within the hash are accessed using a dot notation.
+
+=back
+
+It's probably the first and last of these points which are the 
+most important. The first point emphasises the separation of the 
+data acquisition logic from the presentation logic. The person 
+creating the presentation template doesn't need to know Perl, 
+they only need to know the data items which will be passed into
+the template.
+
+The last point demonstrates the way that TT2 protects the 
+template designer from the implementation of the data structures.
+The data objects passed to the template processor can be scalars,
+arrays, hashes, objects or even subroutines. The template 
+processor will just interpret your data correctly and Do The 
+Right Thing to return the correct value to you. In this example 
+each team was a hash, but in a larger system each team might be 
+an object, in which case C<name>, C<played>, etc. would be accessor 
+methods to the underlying object attributes. No changes would be 
+required to the template as the template processor would realise 
+that it needed to call methods rather than access hash values.
+
+=head2 A more complex example
+
+Stats about the English Football League are usually presented in
+a slightly more complex format than the one we used above. A 
+full set of stats will show the number of games that a team has 
+won, lost or drawn, the number of goals scored for and against 
+the team and the number of points that the team therefore has.
+Teams gain three points for a win and one point for a draw. When
+teams have the same number of points they are separated by the 
+goal difference, that is the number of goals the team has scored
+minus the number of team scored against them. To complicate 
+things even further, the games won, drawn and lost and the goals 
+for and against are often split between home and away games.
+
+Therefore if you have a data source which lists the team name 
+together with the games won, drawn and lost and the goals for and 
+against split into home and away (a total of eleven data items) 
+you can calculate all of the other items (goal difference, 
+points awarded and even position in the league). Let's take such 
+a file, but we'll only look at the top three teams. It will look 
+something like this:
+
+    Man Utd,7,1,0,26,4,5,2,1,15,6
+    Arsenal,7,1,0,17,4,2,3,3,7,9
+    Leicester,4,3,1,10,8,4,2,2,7,4
+
+A simple script to read this data into an array of hashes will 
+look something like this (I've simplified the names of the data 
+columns - w, d, and l are games won, drawn and lost and f and a 
+are goals scored for and against; h and a at the front of a data 
+item name indicates whether it's a home or away statistic):
+
+    my @cols = qw(name hw hd hl hf ha aw ad al af aa);
+
+    my @teams;
+    while (<>) {
+        chomp;
+
+        my %team;
+
+        @team{@cols} = split /,/;
+
+        push @teams, \%team;
+    }
+
+We can then go thru the teams again and calculate all of the 
+derived data items:
+
+    foreach (@teams) {
+        $_->{w} = $_->{hw} + $_->{aw};
+        $_->{d} = $_->{hd} + $_->{ad};
+        $_->{l} = $_->{hl} + $_->{al};
+
+        $_->{pl} = $_->{w} + $_->{d} + $_->{l};
+
+        $_->{f} = $_->{hf} + $_->{af};
+        $_->{a} = $_->{ha} + $_->{aa};
+
+        $_->{gd} = $_->{f} - $_->{a};
+        $_->{pt} = (3 * $_->{w}) + $_->{d};
+    }
+
+And then produce a list sorted in descending order:
+
+    @teams = sort { 
+	$b->{pt} <=> $b->{pt} || $b->{gd} <=> $a->{gd} 
+    } @teams;
+
+And finally add the league position data item:
+
+    $teams[$_]->{pos} = $_ + 1 
+        foreach 0 .. $#teams;
+
+Having pulled all of our data into an internal data structure 
+we can start to produce output using out templates. A template 
+to create a CSV file containing the data split between home and 
+away stats would look like this:
+
+    [% FOREACH team = teams -%]
+    [% team.pos %],[% team.name %],[% team.pl %],[% team.hw %],
+    [%- team.hd %],[% team.hl %],[% team.hf %],[% team.ha %],
+    [%- team.aw %],[% team.ad %],[% team.al %],[% team.af %],
+    [%- team.aa %],[% team.gd %],[% team.pt %]
+    [%- END %]
+
+And processing it like this:
+
+    $tt->process('split.tt', { teams => \@teams }, 'split.csv')
+      || die $tt->error;
+
+produces the following output:
+
+    1,Man Utd,16,7,1,0,26,4,5,2,1,15,6,31,39
+    2,Arsenal,16,7,1,0,17,4,2,3,3,7,9,11,31
+    3,Leicester,16,4,3,1,10,8,4,2,2,7,4,5,29
+
+Notice that we've introduced the third parameter to C<process>. 
+If this parameter is missing then the TT2 sends its output to 
+C<STDOUT>. If this parameter is a scalar then it is taken as the 
+name of a file to write the output to. This parameter can also be 
+(amongst other things) a filehandle or a reference to an object
+which is assumed to implement a C<print> method.
+
+If we weren't interested in the split between home and away games, 
+then we could use a simpler template like this:
+
+    [% FOREACH team = teams -%]
+    [% team.pos %],[% team.name %],[% team.pl %],[% team.w %],
+    [%- team.d %],[% team.l %],[% team.f %],[% team.a %],
+    [%- team.aa %],[% team.gd %],[% team.pt %]
+    [% END -%]
+
+Which would produce output like this:
+
+    1,Man Utd,16,12,3,1,41,10,6,31,39
+    2,Arsenal,16,9,4,3,24,13,9,11,31
+    3,Leicester,16,8,5,3,17,12,4,5,29
+
+=head1 Producing XML
+
+This is starting to show some of the power and flexibility of 
+TT2, but you may be thinking that you could just as easily produce 
+this output with a C<foreach> loop and a couple of C<print> 
+statements in your code. This is, of course, true; but that's 
+because I've chosen a deliberately simple example to explain the 
+concepts. What if we wanted to produce an XML file containing the 
+data? And what if (as I mentioned earlier) the league data was held 
+in an object? The code would then look even easier as most of the code 
+we've written earlier would be hidden away in C<FootballLeague.pm>.
+
+    use FootballLeague;
+    use Template;
+
+    my $league = FootballLeague->new(name => 'English Premier');
+
+    my $tt = Template->new;
+
+    $tt->process('league_xml.tt', { league => $league })
+        || die $tt->error;
+
+And the template in C<league_xml.tt> would look something like this:
+
+    <?xml version="1.0"?>
+    <!DOCTYPE LEAGUE SYSTEM "league.dtd">
+
+    <league name="[% league.name %]" season="[% league.season %]">
+    [% FOREACH team = league.teams -%]
+      <team name="[% team.name %]"
+            pos="[% team.pos %]"
+            played="[% team.pl %]"
+            goal_diff="[% team.gd %]"
+            points="[% team.pt %]">
+         <stats type="home">
+        	win="[% team.hw %]"
+        	draw="[%- team.hd %]"
+        	lose="[% team.hl %]"
+        	for="[% team.hf %]"
+        	against="[% team.ha %]" />
+         <stats type="away">
+        	win="[% team.aw %]"
+        	draw="[%- team.ad %]"
+        	lose="[% team.al %]"
+        	for="[% team.af %]"
+        	against="[% team.aa %]" />
+      </team>
+    [% END -%]
+    &/league>
+
+Notice that as we've passed the whole object into C<process> then 
+we need to put an extra level of indirection on our template 
+variables - everything is now a component of the C<league> variable. 
+Other than that, everything in the template is very similar to what 
+we've used before. Presumably now C<team.name> calls an accessor 
+function rather than carrying out a hash lookup, but all of this 
+is transparent to our template designer.
+
+=head1 Multiple Formats
+
+As a final example, let's suppose that we need to create output
+football league tables in a number of formats. Perhaps we are 
+passing this data on to other people and they can't all use the 
+same format. Some of our users need CSV files and others need 
+XML. Some require data split between home and away matches and 
+other just want the totals. In total, then, we'll need four 
+different templates, but the good news is that they can use the 
+same data object. All the script needs to do is to establish 
+which template is required and process it.
+
+    use FootballLeague;
+    use Template;
+
+    my ($name, $type, $stats) = @_;
+
+    my $league = FootballLeague->new(name => $name);
+
+    my $tt = Template->new;
+
+    $tt->process("league_${type}_$stats.tt", 
+                 { league => $league }
+                 "league_$stats.$type")
+        || die $tt->error;
+
+For example, you can call this script as
+
+    league.pl 'English Premier' xml split
+
+This will process a template called C<league_xml_split.tt> 
+and put the results in a file called C<league_split.xml>.
+
+This starts to show the true strength of the Template Toolkit. 
+If we later wanted to add another file format - perhaps we 
+wanted to create a league table HTML page or even a LaTeX 
+document - then we would just need to create the appropriate 
+template and name it according to our existing naming 
+convention. We would need to make no changes to the code.
+
+I hope you can now see why the Template Toolkit is fast becoming
+an essential part of many people's Perl installation.
+
+=head1 AUTHOR
+
+Dave Cross E<lt>dave@dave.org.ukE<gt>
+
+
+
+
+=head1 VERSION
+
+Template Toolkit version 2.19, released on 27 April 2007.
+
+=head1 COPYRIGHT
+
+
+Copyright (C) 2001 Dave Cross E<lt>dave@dave.org.ukE<gt>
+
+This module is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+
+
+
+=cut
+
+# Local Variables:
+# mode: perl
+# perl-indent-level: 4
+# indent-tabs-mode: nil
+# End:
+#
+# vim: expandtab shiftwidth=4:

@@ -1,0 +1,1330 @@
+=head1 NAME
+
+Imager::ImageTypes - image models for Imager
+
+=head1 SYNOPSIS
+
+  use Imager;
+
+  $img = Imager->new(); #  Empty image (size is 0 by 0)
+  $img->open(file=>'lena.png',type=>'png'); # Read image from file
+
+  $img = Imager->new(xsize=>400, ysize=>300); # RGB data
+
+  $img = Imager->new(xsize=>400, ysize=>300,  # Grayscale
+                     channels=>1);            #
+
+  $img = Imager->new(xsize=>400, ysize=>300,  # RGB with alpha
+                     channels=>4);            #
+					      
+  $img = Imager->new(xsize=>200, ysize=>200,  
+                     type=>'paletted');       # paletted image
+					      
+  $img = Imager->new(xsize=>200, ysize=>200,  
+                     bits=>16);               # 16 bits/channel rgb
+					      
+  $img = Imager->new(xsize=>200, ysize=>200,  
+                     bits=>'double');         # 'double' floating point
+                                              #  per channel
+
+  $img->img_set(xsize=>500, ysize=>500,       # reset the image object
+                channels=>4);
+
+
+  # Example getting information about an Imager object
+
+  print "Image information:\n";
+  print "Width:        ", $img->getwidth(),    "\n";
+  print "Height:       ", $img->getheight(),   "\n";
+  print "Channels:     ", $img->getchannels(), "\n";
+  print "Bits/Channel: ", $img->bits(),        "\n";
+  print "Virtual:      ", $img->virtual() ? "Yes" : "No", "\n";
+  my $colorcount = $img->getcolorcount(maxcolors=>512);
+        print "Actual number of colors in image: ";
+  print defined($colorcount) ? $colorcount : ">512", "\n";
+  print "Type:         ", $img->type(),        "\n";
+
+  if ($img->type() eq 'direct') {
+    print "Modifiable Channels: ";
+    print join " ", map {
+      ($img->getmask() & 1<<$_) ? $_ : ()
+    } 0..$img->getchannels();
+    print "\n";
+  
+  } else {
+    # palette info
+    my $count = $img->colorcount;  
+    @colors = $img->getcolors();
+    print "Palette size: $count\n";
+    my $mx = @colors > 4 ? 4 : 0+@colors;
+    print "First $mx entries:\n";
+    for (@colors[0..$mx-1]) {
+      my @res = $_->rgba();
+      print "(", join(", ", @res[0..$img->getchannels()-1]), ")\n";
+    }
+  }
+  
+  my @tags = $img->tags();
+  if (@tags) {
+    print "Tags:\n";
+    for(@tags) {
+      print shift @$_, ": ", join " ", @$_, "\n";
+    }
+  } else {
+    print "No tags in image\n";
+  }
+  
+=head1 DESCRIPTION
+
+Imager supports two basic models of image:
+
+=over
+
+=item *
+
+direct color - all samples are stored for every pixel.  eg. for an
+8-bit/sample RGB image, 24 bits are stored for each pixel.
+
+=item *
+
+paletted - an index into a table of colors is stored for each pixel.
+
+=back
+
+Direct color or paletted images can have 1 to 4 samples per color
+stored.  Imager treats these as follows:
+
+=over
+
+=item *
+
+1 sample per color - gray scale image.
+
+=item *
+
+2 samples per color - gray scale image with alpha channel, allowing
+transparency.
+
+=item *
+
+3 samples per color - RGB image.
+
+=item *
+
+4 samples per color - RGB image with alpha channel, allowing
+transparency.
+
+=back
+
+Direct color images can have sample sizes of 8-bits per sample,
+16-bits per sample or a double precision floating point number per
+sample (64-bits on many systems).
+
+Paletted images are always 8-bits/sample.
+
+To query an existing image about it's parameters see the C<bits()>,
+C<type()>, C<getwidth()>, C<getheight()>, C<getchannels()> and
+C<virtual()> methods.
+
+The coordinate system in Imager has the origin in the upper left
+corner, see L<Imager::Draw> for details.
+
+The alpha channel when one is present is considered unassociated -
+ie the color data has not been scaled by the alpha channel.  Note
+that not all code follows this (recent) rule, but will over time.
+
+=head2 Creating Imager Objects
+
+=over
+
+=item new()
+X<new(), Imager methods>
+
+  $img = Imager->new();
+  $img->read(file=>"alligator.ppm") or die $img->errstr;
+
+Here C<new()> creates an empty image with width and height of zero.
+It's only useful for creating an Imager object to call the read()
+method on later.
+
+  %opts = (xsize=>300, ysize=>200);
+  $img = Imager->new(%opts); # create direct mode RGBA image
+  $img = Imager->new(%opts, channels=>4); # create direct mode RGBA image
+
+You can also read a file from new():
+
+  $img = Imager->new(file => "someimage.png");
+
+The parameters for new are:
+
+=over
+
+=item *
+
+C<xsize>, C<ysize> - Defines the width and height in pixels of the
+image.  These must be positive.
+
+If not supplied then only placeholder object is created, which can be
+supplied to the C<read()> or C<img_set()> methods.
+
+=item *
+
+C<channels> - The number of channels for the image.  Default 3.  Valid
+values are from 1 to 4.
+
+=item *
+
+C<model> - this overrides the value, if any, supplied for C<channels>.
+This can be one of C<gray>, C<graya>, C<rgb> or C<rgba>.
+
+=item *
+
+C<bits> - The storage type for samples in the image.  Default: 8.
+Valid values are:
+
+=over
+
+=item *
+
+C<8> - One byte per sample.  256 discrete values.
+
+=item *
+
+C<16> - 16-bits per sample, 65536 discrete values.
+
+=item *
+
+C<double> - one C double per sample.
+
+=back
+
+Note: you can use any Imager function on any sample size image.
+
+Paletted images always use 8 bits/sample.
+
+=item *
+
+C<type> - either C<'direct'> or C<'paletted'>.  Default: C<'direct'>.
+
+Direct images store color values for each pixel.  
+
+Paletted images keep a table of up to 256 colors called the palette,
+each pixel is represented as an index into that table.
+
+In most cases when working with Imager you will want to use the
+C<direct> image type.
+
+If you draw on a C<paletted> image with a color not in the image's
+palette then Imager will transparently convert it to a C<direct>
+image.
+
+=item *
+
+C<maxcolors> - the maximum number of colors in a paletted image.
+Default: 256.  This must be in the range 1 through 256.
+
+=item *
+
+C<file>, C<fh>, C<fd>, C<callback>, C<readcb>, or C<io> - specify a
+file name, filehandle, file descriptor or callback to read image data
+from.  See L<Imager::Files> for details.  The typical use is:
+
+  my $im = Imager->new(file => $filename);
+
+=item *
+
+C<filetype> - treated as the file format parameter, as for C<type>
+with the read() method, eg:
+
+  my $im = Imager->new(file => $filename, filetype => "gif");
+
+In most cases Imager will detect the file's format itself.
+
+=back
+
+In the simplest case just supply the width and height of the image:
+
+  # 8 bit/sample, RGB image
+  my $img = Imager->new(xsize => $width, ysize => $height);
+
+or if you want an alpha channel:
+
+  # 8 bits/sample, RGBA image
+  my $img = Imager->new(xsize => $width, ysize => $height, channels=>4);
+
+Note that it I<is> possible for image creation to fail, for example if
+channels is out of range, or if the image would take too much memory.
+
+To create paletted images, set the 'type' parameter to 'paletted':
+
+  $img = Imager->new(xsize=>200, ysize=>200, type=>'paletted');
+
+which creates an image with a maximum of 256 colors, which you can
+change by supplying the C<maxcolors> parameter.
+
+For improved color precision you can use the bits parameter to specify
+16 bit per channel:
+
+  $img = Imager->new(xsize=>200, ysize=>200,
+                     channels=>3, bits=>16);
+
+or for even more precision:
+
+  $img = Imager->new(xsize=>200, ysize=>200,
+                     channels=>3, bits=>'double');
+
+to get an image that uses a double for each channel.
+
+Note that as of this writing all functions should work on images with
+more than 8-bits/channel, but many will only work at only
+8-bit/channel precision.
+
+If you want an empty Imager object to call the read() method on, just
+call new() with no parameters:
+
+  my $img = Imager->new;
+  $img->read(file=>$filename)
+    or die $img->errstr;
+
+Though it's much easier now to just call new() with a C<file>
+parameter:
+
+  my $img = Imager->new(file => $filename)
+    or die Imager->errstr;
+
+If none of C<xsize>, C<ysize>, C<file>, C<fh>, C<fd>, C<callback>,
+C<readcb>, C<data>, C<io> is supplied, and other parameters I<are> supplied
+C<< Imager->new >> will return failure rather than returning an empty
+image object.
+
+=item img_set()
+X<img_set>
+
+img_set destroys the image data in the object and creates a new one
+with the given dimensions and channels.  For a way to convert image
+data between formats see the C<convert()> method.
+
+  $img->img_set(xsize=>500, ysize=>500, channels=>4);
+
+This takes exactly the same parameters as the new() method, excluding
+those for reading from files.
+
+=back
+
+=head2 Image Attribute functions
+
+These return basic attributes of an image object.
+
+=over
+
+=item getwidth()
+
+  print "Image width: ", $img->getwidth(), "\n";
+
+The C<getwidth()> method returns the width of the image.  This value
+comes either from C<new()> with C<xsize>, C<ysize> parameters or from
+reading data from a file with C<read()>.  If called on an image that
+has no valid data in it like C<Imager-E<gt>new()> returns, the return
+value of C<getwidth()> is undef.
+
+=item getheight()
+
+  print "Image height: ", $img->getheight(), "\n";
+
+Same details apply as for L</getwidth()>.
+
+=item getchannels()
+X<getchannels() method>X<methods, getchannels()>
+
+  print "Image has ",$img->getchannels(), " channels\n";
+
+Returns the number of channels in an image.
+
+Note: previously the number of channels in an image mapped directly to
+the color model of the image, ie a 4 channel image was always RGBA.
+This may change in a future release of Imager.
+
+Returns an empty list if the image object is not initialized.
+
+=item colorchannels()
+X<colorchannels() method>X<methods, colorchannels()>
+
+Returns the number of color channels.
+
+Currently this is always 1 or 3, but may be 0 for some rare images in
+a future version of Imager.
+
+Returns an empty list if the image object is not initialized.
+
+=item colormodel()
+X<colormodel method>X<methods, colormodel>
+
+Returns the color model of the image, including whether there is an
+alpha channel.
+
+By default this is returned as a string, one of C<unknown>, C<gray>,
+C<graya>, C<rgb> or C<rgba>.
+
+If you call C<colormodel()> with a true numeric parameter:
+
+  my $model = $img->colormodel(numeric => 1);
+
+then the color model is returned as a number, mapped as follows:
+
+  Numeric  String
+  -------  ------
+      0    unknown
+      1    gray
+      2    graya
+      3    rgb
+      4    rgba
+
+=item alphachannel()
+X<alphachannel() method>X<methods, alphachannel()>
+
+Returns the channel index of the alpha channel of the image.
+
+This is 1 for grayscale images with alpha, 3 for RGB images with alpha
+and will return C<undef> for all other images.
+
+Returns an empty list if the image object is not initialized.
+
+=item bits()
+
+The bits() method retrieves the number of bits used to represent each
+channel in a pixel, 8 for a normal image, 16 for 16-bit image and
+'double' for a double/channel image.
+
+  if ($img->bits eq 8) {
+    # fast but limited to 8-bits/sample
+  }
+  else {
+    # slower but more precise
+  }
+
+Returns an empty list if the image object is not initialized.
+
+=item type()
+
+The type() method returns either 'direct' for direct color images or
+'paletted' for paletted images.
+
+  if ($img->type eq 'paletted') {
+    # print the palette
+    for my $color ($img->getcolors) {
+      print join(",", $color->rgba), "\n";
+    }
+  }
+
+Returns an empty list if the image object is not initialized.
+
+=item virtual()
+
+The virtual() method returns non-zero if the image contains no actual
+pixels, for example masked images.
+
+=for stopwords SDL
+
+This may also be used for non-native Imager images in the future, for
+example, for an Imager object that draws on an SDL surface.
+
+=item is_bilevel()
+
+Tests if the image will be written as a monochrome or bi-level image
+for formats that support that image organization.
+
+In scalar context, returns true if the image is bi-level.
+
+In list context returns a list:
+
+  ($is_bilevel, $zero_is_white) = $img->is_bilevel;
+
+An image is considered bi-level, if all of the following are true:
+
+=over
+
+=item *
+
+the image is a paletted image
+
+=item *
+
+the image has 1 or 3 channels
+
+=item *
+
+the image has only 2 colors in the palette
+
+=item *
+
+those 2 colors are black and white, in either order.
+
+=back
+
+If a real bi-level organization image is ever added to Imager, this
+function will return true for that too.
+
+Returns an empty list if the image object is not initialized.
+
+=back
+
+=head2 Direct Type Images
+
+Direct images store the color value directly for each pixel in the
+image.
+
+=over
+
+=item getmask()
+
+  @rgbanames = qw( red green blue alpha );
+  my $mask = $img->getmask();
+  print "Modifiable channels:\n";
+  for (0..$img->getchannels()-1) {
+    print $rgbanames[$_],"\n" if $mask & 1<<$_;
+  }
+
+=for stopwords th
+
+C<getmask()> is used to fetch the current channel mask.  The mask
+determines what channels are currently modifiable in the image.  The
+channel mask is an integer value, if the C<i-th> least significant bit
+is set the C<i-th> channel is modifiable.  eg. a channel mask of 0x5
+means only channels 0 and 2 are writable.
+
+=item setmask()
+
+  $mask = $img->getmask();
+  $img->setmask(mask=>8);     # modify alpha only
+
+    ...
+
+  $img->setmask(mask=>$mask); # restore previous mask
+
+C<setmask()> is used to set the channel mask of the image.  See
+L</getmask()> for details.
+
+=back
+
+=head2 Palette Type Images
+
+Paletted images keep an array of up to 256 colors, and each pixel is
+stored as an index into that array.
+
+In general you can work with paletted images in the same way as RGB
+images, except that if you attempt to draw to a paletted image with a
+color that is not in the image's palette, the image will be converted
+to an RGB image.  This means that drawing on a paletted image with
+anti-aliasing enabled will almost certainly convert the image to RGB.
+
+Palette management takes place through C<addcolors()>, C<setcolors()>,
+C<getcolors()> and C<findcolor()>:
+
+=over
+
+=item addcolors()
+
+You can add colors to a paletted image with the addcolors() method:
+
+   my @colors = ( Imager::Color->new(255, 0, 0), 
+                  Imager::Color->new(0, 255, 0) );
+   my $index = $img->addcolors(colors=>\@colors);
+
+The return value is the index of the first color added, or undef if
+adding the colors would overflow the palette.
+
+The only parameter is C<colors> which must be a reference to an array
+of Imager::Color objects.
+
+=item setcolors()
+
+  $img->setcolors(start=>$start, colors=>\@colors);
+
+Once you have colors in the palette you can overwrite them with the
+C<setcolors()> method:  C<setcolors()> returns true on success.
+
+Parameters:
+
+=over
+
+=item *
+
+start - the first index to be set.  Default: 0
+
+=item *
+
+colors - reference to an array of Imager::Color objects.
+
+=back
+
+=item getcolors()
+
+To retrieve existing colors from the palette use the getcolors() method:
+
+  # get the whole palette
+  my @colors = $img->getcolors();
+  # get a single color
+  my $color = $img->getcolors(start=>$index);
+  # get a range of colors
+  my @colors = $img->getcolors(start=>$index, count=>$count);
+
+=item findcolor()
+
+To quickly find a color in the palette use findcolor():
+
+  my $index = $img->findcolor(color=>$color);
+
+which returns undef on failure, or the index of the color.
+
+Parameter:
+
+=over
+
+=item *
+
+color - an Imager::Color object.
+
+=back
+
+=item colorcount()
+
+Returns the number of colors in the image's palette:
+
+  my $count = $img->colorcount;
+
+=item maxcolors()
+
+Returns the maximum size of the image's palette.
+
+  my $maxcount = $img->maxcolors;
+
+=back
+
+=head2 Color Distribution
+
+=over
+
+=item getcolorcount()
+
+Calculates the number of colors in an image.
+
+The amount of memory used by this is proportional to the number of
+colors present in the image, so to avoid using too much memory you can
+supply a maxcolors() parameter to limit the memory used.
+
+Note: getcolorcount() treats the image as an 8-bit per sample image.
+
+=over
+
+=item *
+
+X<maxcolors!getcolorcount>C<maxcolors> - the maximum number of colors to
+return.  Default: unlimited.
+
+=back
+
+  if (defined($img->getcolorcount(maxcolors=>512)) {
+    print "Less than 512 colors in image\n";
+  }
+
+=item getcolorusagehash()
+
+Calculates a histogram of colors used by the image.
+
+=over
+
+=item *
+
+X<maxcolors!getcolorusagehash>C<maxcolors> - the maximum number of colors
+to return.  Default: unlimited.
+
+=back
+
+Returns a reference to a hash where the keys are the raw color as
+bytes, and the values are the counts for that color.
+
+The alpha channel of the image is ignored.  If the image is gray scale
+then the hash keys will each be a single character.
+
+  my $colors = $img->getcolorusagehash;
+  my $blue_count = $colors->{pack("CCC", 0, 0, 255)} || 0;
+  print "#0000FF used $blue_count times\n";
+
+=item getcolorusage()
+
+Calculates color usage counts and returns just the counts.
+
+=over
+
+=item *
+
+X<maxcolors!getcolorusage>C<maxcolors> - the maximum number of colors
+to return.  Default: unlimited.
+
+=back
+
+Returns a list of the color frequencies in ascending order.
+
+  my @counts = $img->getcolorusage;
+  print "The most common color is used $counts[0] times\n";
+
+=back
+
+=head2 Conversion Between Image Types
+
+Warning: if you draw on a paletted image with colors that aren't in
+the palette, the image will be internally converted to a normal image.
+
+=over
+
+=item to_paletted()
+
+You can create a new paletted image from an existing image using the
+to_paletted() method:
+
+ $palimg = $img->to_paletted(\%opts)
+
+where %opts contains the options specified under L</Quantization options>.
+
+  # convert to a paletted image using the web palette
+  # use the closest color to each pixel
+  my $webimg = $img->to_paletted({ make_colors => 'webmap' });
+
+  # convert to a paletted image using a fairly optimal palette
+  # use an error diffusion dither to try to reduce the average error
+  my $optimag = $img->to_paletted({ make_colors => 'mediancut',
+                                    translate => 'errdiff' });
+
+=item to_rgb8()
+
+You can convert a paletted image (or any image) to an 8-bit/channel
+RGB image with:
+
+  $rgbimg = $img->to_rgb8;
+
+No parameters.
+
+=item to_rgb16()
+
+Convert a paletted image (or any image) to a 16-bit/channel RGB image.
+
+  $rgbimg = $img->to_rgb16;
+
+No parameters.
+
+=item to_rgb_double()
+
+Convert a paletted image (or any image) to an double/channel direct
+color image.
+
+  $rgbimg = $img->to_rgb_double;
+
+No parameters.
+
+=item masked()
+
+Creates a masked image.  A masked image lets you create an image proxy
+object that protects parts of the underlying target image.
+
+In the discussion below there are 3 image objects involved:
+
+=over
+
+=item *
+
+the masked image - the return value of the masked() method.  Any
+writes to this image are written to the target image, assuming the
+mask image allows it.
+
+=item *
+
+the mask image - the image that protects writes to the target image.
+Supplied as the C<mask> parameter to the masked() method.
+
+=item *
+
+the target image - the image you called the masked() method on.  Any
+writes to the masked image end up on this image.
+
+=back
+
+Parameters:
+
+=over
+
+=item *
+
+mask - the mask image.  If not supplied then all pixels in the target
+image are writable.  On each write to the masked image, only pixels
+that have non-zero in channel 0 of the mask image will be written to
+the original image.  Default: none, if not supplied then no masking is
+done, but the other parameters are still honored.
+
+=item *
+
+left, top - the offset of writes to the target image.  eg. if you
+attempt to set pixel (x,y) in the masked image, then pixel (x+left,
+y+top) will be written to in the original image.
+
+=item *
+
+bottom, right - the bottom right of the area in the target available
+from the masked image.
+
+=back
+
+Masked images let you control which pixels are modified in an
+underlying image.  Where the first channel is completely black in the
+mask image, writes to the underlying image are ignored.
+
+For example, given a base image called $img:
+
+  my $mask = Imager->new(xsize=>$img->getwidth, ysize=>$img->getheight,
+                         channels=>1);
+  # ... draw something on the mask
+  my $maskedimg = $img->masked(mask=>$mask);
+
+  # now draw on $maskedimg and it will only draw on areas of $img 
+  # where $mask is non-zero in channel 0.
+
+You can specify the region of the underlying image that is masked
+using the left, top, right and bottom options.
+
+If you just want a subset of the image, without masking, just specify
+the region without specifying a mask.  For example:
+
+  # just work with a 100x100 region of $img
+  my $maskedimg = $img->masked(left => 100, top=>100,
+                               right=>200, bottom=>200);
+
+=item make_palette()
+
+This doesn't perform an image conversion, but it can be used to
+construct a common palette for use in several images:
+
+  my @colors = Imager->make_palette(\%opts, @images);
+
+You must supply at least one image, even if the C<make_colors>
+parameter produces a fixed palette.
+
+On failure returns no colors and you can check C<< Imager->errstr >>.
+
+=back
+
+=head2 Tags
+
+Image tags contain meta-data about the image, ie. information not
+stored as pixels of the image.
+
+At the perl level each tag has a name or code and a value, which is an
+integer or an arbitrary string.  An image can contain more than one
+tag with the same name or code, but having more than one tag with the
+same name is discouraged.
+
+You can retrieve tags from an image using the tags() method, you can
+get all of the tags in an image, as a list of array references, with
+the code or name of the tag followed by the value of the tag.
+
+Imager's support for fairly limited, for access to pretty much all
+image metadata you may want to try L<Image::ExifTool>.
+
+=over
+
+=item tags()
+
+Retrieve tags from the image.
+
+With no parameters, retrieves a list array references, each containing
+a name and value: all tags in the image:
+
+  # get a list of ( [ name1 => value1 ], [ name2 => value2 ] ... )
+  my @alltags = $img->tags;
+  print $_->[0], ":", $_->[1], "\n" for @all_tags;
+
+  # or put it in a hash, but this will lose duplicates
+  my %alltags = map @$_, $img->tags;
+
+in scalar context this returns the number of tags:
+
+  my $num_tags = $img->tags;
+
+or you can get all tags values for the given name:
+
+  my @namedtags = $img->tags(name => $name);
+
+in scalar context this returns the first tag of that name:
+
+  my $firstnamed = $img->tags(name => $name);
+
+or a given code:
+
+  my @tags = $img->tags(code=>$code);
+
+=item addtag()
+
+You can add tags using the addtag() method, either by name:
+
+  my $index = $img->addtag(name=>$name, value=>$value);
+
+or by code:
+
+  my $index = $img->addtag(code=>$code, value=>$value);
+
+=item deltag()
+
+You can remove tags with the deltag() method, either by index:
+
+  $img->deltag(index=>$index);
+
+or by name:
+
+  $img->deltag(name=>$name);
+
+or by code:
+
+  $img->deltag(code=>$code);
+
+In each case deltag() returns the number of tags deleted.
+
+=item settag()
+
+settag() replaces any existing tags with a new tag.  This is
+equivalent to calling deltag() then addtag().
+
+=back
+
+=head2 Common Tags
+
+Many tags are only meaningful for one format.  GIF looping information
+is pretty useless for JPEG for example.  Thus, many tags are set by
+only a single reader or used by a single writer.  For a complete list
+of format specific tags see L<Imager::Files>.
+
+Since tags are a relatively new addition their use is not wide spread
+but eventually we hope to have all the readers for various formats set
+some standard information.
+
+=over
+
+=item *
+
+X<i_xres tag>X<i_yres tag>X<tags, i_xres>X<tags, i_yres>C<i_xres>, C<i_yres>
+- The spatial resolution of the image in pixels per inch.  If the
+image format uses a different scale, eg. pixels per meter, then this
+value is converted.  A floating point number stored as a string.
+
+  # our image was generated as a 300 dpi image
+  $img->settag(name => 'i_xres', value => 300);
+  $img->settag(name => 'i_yres', value => 300);
+
+  # 100 pixel/cm for a TIFF image
+  $img->settag(name => 'tiff_resolutionunit', value => 3); # RESUNIT_CENTIMETER
+  # convert to pixels per inch, Imager will convert it back
+  $img->settag(name => 'i_xres', value => 100 * 2.54);
+  $img->settag(name => 'i_yres', value => 100 * 2.54);
+
+=item *
+
+X<i_aspect_only tag>X<tags, i_aspect_only>C<i_aspect_only> - If this is
+non-zero then the values in i_xres and i_yres are treated as a ratio
+only.  If the image format does not support aspect ratios then this is
+scaled so the smaller value is 72 DPI.
+
+=item *
+
+X<i_incomplete tag>X<tags, i_incomplete>C<i_incomplete> - If this tag is
+present then the whole image could not be read.  This isn't
+implemented for all images yet, and may not be.
+
+=item *
+
+X<i_lines_read tag>X<tags, i_lines_read>C<i_lines_read> - If
+C<i_incomplete> is set then this tag may be set to the number of
+scan lines successfully read from the file.  This can be used to decide
+whether an image is worth processing.
+
+=item *
+
+X<i_format tag>X<tags, i_format>i_format - The file format this file
+was read from.
+
+=item *
+
+X<i_background>X<tags, i_background>i_background - used when writing
+an image with an alpha channel to a file format that doesn't support
+alpha channels.  The C<write> method will convert a normal color
+specification like "#FF0000" into a color object for you, but if you
+set this as a tag you will need to format it like
+C<color(>I<red>C<,>I<green>C<,>I<blue>C<)>, eg color(255,0,0).
+
+=item *
+
+X<i_comment>C<i_comment> - used when reading or writing several image
+formats.  If the format has only one text field it will be read into
+the C<i_comment> tag or written to the file.
+
+=back
+
+=head2 Quantization options
+
+These options can be specified when calling
+L<Imager::ImageTypes/to_paletted()>, write_multi() for GIF files, when
+writing a single image with the C<gifquant> option set to C<gen>, or for
+direct calls to i_writegif_gen() and i_writegif_callback().
+
+=over
+
+=item *
+
+C<colors> - An arrayref of colors that are fixed.  Note that some
+color generators will ignore this.  If this is supplied it will be
+filled with the color table generated for the image.
+
+=item *
+
+C<transp> - The type of transparency processing to perform for images
+with an alpha channel where the output format does not have a proper
+alpha channel (eg. GIF).  This can be any of:
+
+=over
+
+=item *
+
+C<none> - No transparency processing is done. (default)
+
+=item *
+
+C<threshold> - pixels more transparent than C<tr_threshold> are
+rendered as transparent.
+
+=item *
+
+C<errdiff> - An error diffusion dither is done on the alpha channel.
+Note that this is independent of the translation performed on the
+color channels, so some combinations may cause undesired artifacts.
+
+=item *
+
+C<ordered> - the ordered dither specified by tr_orddith is performed
+on the alpha channel.
+
+=back
+
+This will only be used if the image has an alpha channel, and if there
+is space in the palette for a transparency color.
+
+=item *
+
+C<tr_threshold> - the highest alpha value at which a pixel will be
+made transparent when C<transp> is 'threshold'. (0-255, default 127)
+
+=item *
+
+C<tr_errdiff> - The type of error diffusion to perform on the alpha
+channel when C<transp> is C<errdiff>.  This can be any defined error
+diffusion type except for custom (see C<errdiff> below).
+
+=item *
+
+C<tr_orddith> - The type of ordered dither to perform on the alpha
+channel when C<transp> is 'ordered'.  Possible values are:
+
+=over
+
+=item *
+
+C<random> - A semi-random map is used.  The map is the same each time.
+
+=item *
+
+C<dot8> - 8x8 dot dither.
+
+=item *
+
+C<dot4> - 4x4 dot dither
+
+=item *
+
+C<hline> - horizontal line dither.
+
+=item *
+
+C<vline> - vertical line dither.
+
+=item *
+
+C</line>, C<slashline> - diagonal line dither
+
+=item *
+
+C<\line>, C<backline> - diagonal line dither
+
+=item *
+
+C<tiny> - dot matrix dither (currently the default).  This is probably
+the best for displays (like web pages).
+
+=item *
+
+C<custom> - A custom dither matrix is used - see C<tr_map>.
+
+=back
+
+=item *
+
+C<tr_map> - When tr_orddith is custom this defines an 8 x 8 matrix of
+integers representing the transparency threshold for pixels
+corresponding to each position.  This should be a 64 element array
+where the first 8 entries correspond to the first row of the matrix.
+Values should be between 0 and 255.
+
+=item *
+
+C<make_colors> - Defines how the quantization engine will build the
+palette(s).  Currently this is ignored if C<translate> is C<giflib>,
+but that may change.  Possible values are:
+
+=over
+
+=item *
+
+C<none> - only colors supplied in 'colors' are used.
+
+=item *
+
+C<webmap> - the web color map is used (need URL here.)
+
+=item *
+
+C<addi> - The original code for generating the color map (Addi's code) is
+used.
+
+=item *
+
+C<mediancut> - Uses a median-cut algorithm, faster than C<addi>, but not
+as good a result.
+
+=item *
+
+C<mono>, C<monochrome> - a fixed black and white palette, suitable for
+producing bi-level images (eg. facsimile)
+
+=item *
+
+C<gray>, C<gray4>, C<gray16> - make fixed gray palette with 256, 4 or
+16 entries respectively.
+
+=back
+
+Other methods may be added in the future.
+
+=item *
+
+C<colors> - an arrayref containing Imager::Color objects, which
+represents the starting set of colors to use in translating the
+images.  C<webmap> will ignore this.  On return the final colors used
+are copied back into this array (which is expanded if necessary.)
+
+=item *
+
+C<max_colors> - the maximum number of colors to use in the image.
+
+=item *
+
+C<translate> - The method used to translate the RGB values in the
+source image into the colors selected by make_colors.  Note that
+make_colors is ignored when C<translate> is C<giflib>.
+
+Possible values are:
+
+=over
+
+=item *
+
+C<giflib> - this is a historical equivalent for C<closest> that also
+forces C<make_colors> to C<mediancut>.
+
+=item *
+
+C<closest> - the closest color available is used.
+
+=item *
+
+C<perturb> - the pixel color is modified by C<perturb>, and the
+closest color is chosen.
+
+=item *
+
+C<errdiff> - an error diffusion dither is performed.  If the supplied
+(or generated) palette contains only grays the source colors are
+converted to gray before error diffusion is performed.
+
+=back
+
+It's possible other C<translate> values will be added.
+
+=item *
+
+C<errdiff> - The type of error diffusion dither to perform.  These
+values (except for custom) can also be used in tr_errdif.
+
+=for stopwords Floyd-Steinberg Jarvis Judice Ninke Stucki
+
+=over
+
+=item *
+
+C<floyd> - Floyd-Steinberg dither
+
+=item *
+
+C<jarvis> - Jarvis, Judice and Ninke dither
+
+=item *
+
+C<stucki> - Stucki dither
+
+=item *
+
+C<custom> - custom.  If you use this you must also set C<errdiff_width>,
+C<errdiff_height> and C<errdiff_map>.
+
+=back
+
+=item *
+
+C<errdiff_width>, C<errdiff_height>, C<errdiff_orig>, C<errdiff_map> -
+When C<translate> is C<errdiff> and C<errdiff> is C<custom> these
+define a custom error diffusion map.  C<errdiff_width> and
+C<errdiff_height> define the size of the map in the arrayref in
+C<errdiff_map>.  C<errdiff_orig> is an integer which indicates the
+current pixel position in the top row of the map.
+
+=item *
+
+C<perturb> - When translate is C<perturb> this is the magnitude of the
+random bias applied to each channel of the pixel before it is looked
+up in the color table.
+
+=back
+
+=head1 INITIALIZATION
+
+This documents the Imager initialization function, which you will
+almost never need to call.
+
+=over
+
+=item init()
+
+This is a function, not a method.
+
+This function is a mess, it can take the following named parameters:
+
+=over
+
+=item *
+
+C<log> - name of a log file to log Imager's actions to.  Not all
+actions are logged, but the debugging memory allocator does log
+allocations here.  Ignored if Imager has been built without logging
+support.  Preferably use the open_log() method instead.
+
+=item *
+
+C<loglevel> - the maximum level of message to log.  Default: 1.
+
+=item *
+
+C<warn_obsolete> - if this is non-zero then Imager will warn when you
+attempt to use obsoleted parameters or functionality.  This currently
+only includes the old GIF output options instead of tags.
+
+=item *
+
+C<t1log> - if non-zero then T1lib will be configured to produce a log
+file.  This will fail if there are any existing T1lib font objects.
+
+=back
+
+Example:
+
+  Imager::init(log => 'trace.log', loglevel => 9);
+
+=back
+
+=head1 LOGGING METHODS
+
+Imager can open an internal log to send debugging information to.
+This log is extensively used in Imager's tests, but you're unlikely to
+use it otherwise.
+
+If Imager has been built with logging disabled, the methods fail
+quietly.
+
+=over
+
+=item open_log()
+
+Open the Imager debugging log file.
+
+=over
+
+=item *
+
+C<log> - the file name to log to.  If this is undef logging information
+is sent to the standard error stream.
+
+=item *
+
+C<loglevel> the level of logging to produce.  Default: 1.
+
+=back
+
+Returns a true value if the log file was opened successfully.
+
+  # send debug output to test.log
+  Imager->open_log(log => "test.log");
+
+  # send debug output to stderr
+  Imager->open_log();
+
+=item close_log()
+
+Close the Imager debugging log file and disable debug logging.
+
+No parameters.
+
+  Imager->close_log();
+
+=item log()
+
+ Imager->log($message)
+ Imager->log($message, $level)
+
+This method does not use named parameters.
+
+The default for C<$level> is 1.
+
+Send a message to the debug log.
+
+  Imager->log("My code got here!");
+
+=item is_logging()
+
+Returns a true value if logging is enabled.
+
+=back
+
+=head1 AUTHOR
+
+Tony Cook <tonyc@cpan.org>, Arnar M. Hrafnkelsson
+
+=head1 SEE ALSO
+
+Imager(3), Imager::Files(3), Imager::Draw(3),
+Imager::Color(3), Imager::Fill(3), Imager::Font(3),
+Imager::Transformations(3), Imager::Engines(3), Imager::Filters(3),
+Imager::Expr(3), Imager::Matrix2d(3), Imager::Fountain(3)
+
+=cut

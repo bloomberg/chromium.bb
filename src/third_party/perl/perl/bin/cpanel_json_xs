@@ -1,0 +1,325 @@
+#!perl
+
+=head1 NAME
+
+cpanel_json_xs - Cpanel::JSON::XS commandline utility
+
+=head1 SYNOPSIS
+
+   cpanel_json_xs [-v] [-f inputformat] [-t outputformat]
+
+=head1 DESCRIPTION
+
+F<cpanel_json_xs> converts between some input and output formats (one of them is
+JSON).
+
+The default input format is C<json> and the default output format is
+C<json-pretty>.
+
+=head1 OPTIONS
+
+=over 4
+
+=item -v
+
+Be slightly more verbose.
+
+=item -f fromformat
+
+Read a file in the given format from STDIN.
+
+C<fromformat> can be one of:
+
+=over 4
+
+=item json - a json text encoded, either utf-8, utf16-be/le, utf32-be/le
+
+=item json-nonref - json according to RFC 7159
+
+=item json-relaxed - json with all relaxed options
+
+=item json-unknown - json with allow_unknown
+
+=item storable - a Storable frozen value
+
+=item storable-file - a Storable file (Storable has two incompatible formats)
+
+=item bencode - uses one of Net::BitTorrent::Protocol::BEP03::Bencode, Bencode or the broken Convert::Bencode, if available (used by torrent files, among others)
+
+=item clzf - Compress::LZF format (requires that module to be installed)
+
+=item eval - evaluate the given code as (non-utf-8) Perl, basically the reverse of "-t dump"
+
+=item yaml - loose YAML (requires YAML)
+
+=item yaml-tiny - loose YAML (requires YAML::Tiny or CPAN::Meta::YAML)
+
+=item yaml-xs - strict YAML 1.2 (requires YAML::XS)
+
+=item yaml-syck - YAML (requires YAML::Syck)
+
+=item cbor - CBOR (via CBOR::XS)
+
+=item string - do not attempt to decode the file data
+
+=item sereal - Sereal (via Sereal::Decoder)
+
+=item none - nothing is read, creates an C<undef> scalar - mainly useful with C<-e>
+
+=back
+
+=item -t toformat
+
+Write the file in the given format to STDOUT.
+
+C<toformat> can be one of:
+
+=over 4
+
+=item json, json-utf-8 - json, utf-8 encoded
+
+=item json-pretty - as above, but pretty-printed with sorted object keys
+
+=item json-stringify - as json-pretty with allow_stringify
+
+=item json-relaxed  - as json-pretty, but with the additional options
+
+->allow_stringify->allow_blessed->convert_blessed->allow_unknown
+->allow_tags->stringify_infnan(1)
+
+=item json-utf-16le, json-utf-16be - little endian/big endian utf-16
+
+=item json-utf-32le, json-utf-32be - little endian/big endian utf-32
+
+=item storable - a Storable frozen value in network format
+
+=item storable-file - a Storable file in network format (Storable has two incompatible formats)
+
+=item bencode - uses one of Net::BitTorrent::Protocol::BEP03::Bencode, Bencode or the broken Convert::Bencode, if available (used by torrent files, among others)
+
+=item clzf - Compress::LZF format
+
+=item yaml - loose YAML (requires YAML)
+
+=item yaml-tiny - loose YAML (requires YAML::Tiny or CPAN::Meta::YAML)
+
+=item yaml-xs - strict YAML 1.2 (requires YAML::XS)
+
+=item yaml-syck - YAML (requires YAML::Syck)
+
+=item dump - Data::Dump
+
+=item dumper - Data::Dumper
+
+=item string - writes the data out as if it were a string
+
+=item sereal - Sereal (via Sereal::Encoder)
+
+=item none - nothing gets written, mainly useful together with C<-e>
+
+Note that Data::Dumper doesn't handle self-referential data structures
+correctly - use "dump" instead.
+
+=back
+
+=item -e code
+
+Evaluate perl code after reading the data and before writing it out again
+- can be used to filter, create or extract data. The data that has been
+written is in C<$_>, and whatever is in there is written out afterwards.
+
+=back
+
+=head1 EXAMPLES
+
+   cpanel_json_xs -t none <isitreally.json
+
+"JSON Lint" - tries to parse the file F<isitreally.json> as JSON - if it
+is valid JSON, the command outputs nothing, otherwise it will print an
+error message and exit with non-zero exit status.
+
+   <src.json cpanel_json_xs >pretty.json
+
+Prettify the JSON file F<src.json> to F<dst.json>.
+
+   cpanel_json_xs -f storable-file <file
+
+Read the serialized Storable file F<file> and print a human-readable JSON
+version of it to STDOUT.
+
+   cpanel_json_xs -f storable-file -t yaml <file
+
+Same as above, but write YAML instead (not using JSON at all :)
+
+   cpanel_json_xs -f none -e '$_ = [1, 2, 3]'
+
+Dump the perl array as UTF-8 encoded JSON text.
+
+   <torrentfile cpanel_json_xs -f bencode -e '$_ = join "\n", map @$_, @{$_->{"announce-list"}}' -t string
+
+Print the tracker list inside a torrent file.
+
+   lwp-request http://cpantesters.perl.org/show/Cpanel-JSON-XS.json | cpanel_json_xs
+
+Fetch the cpan-testers result summary C<Cpanel::JSON::XS> and pretty-print it.
+
+    cpanel_json_xs -f yaml-xs -t yaml-tiny <META.yml   >MYMETA.yml
+    cpanel_json_xs -f yaml-tiny -t yaml-xs <MYMETA.yml >XSMETA.yml
+    cpanel_json_xs -f yaml -t yaml <XSMETA.yml #BOOM!
+    Error: YAML_LOAD_ERR_BAD_MAP_ELEMENT
+
+Compare YAML en- and decoders, and see that YAML::XS generates unparsable YAML
+L<https://github.com/ingydotnet/yaml-libyaml-pm/issues/9>
+
+=head1 AUTHOR
+
+Copyright (C) 2008 Marc Lehmann <json@schmorp.de>
+Copyright (C) 2016 Cpanel Inc
+
+=cut
+
+use strict;
+
+use Getopt::Long;
+use Storable ();
+use Encode;
+
+use Cpanel::JSON::XS;
+
+my $opt_verbose;
+my $opt_from = "json";
+my $opt_to   = "json-pretty";
+my $opt_eval;
+
+Getopt::Long::Configure ("bundling", "no_ignore_case", "require_order");
+
+GetOptions(
+   "v"   => \$opt_verbose,
+   "f=s" => \$opt_from,
+   "t=s" => \$opt_to,
+   "e=s" => \$opt_eval,
+) or die "Usage: $0 [-v] -f fromformat [-e code] [-t toformat]\n";
+
+sub enc {
+  $_ = shift;
+  my $enc =
+    /^\x00\x00\x00/s    ? "utf-32be"
+    : /^\x00.\x00/s     ? "utf-16be"
+    : /^.\x00\x00\x00/s ? "utf-32le"
+    : /^.\x00.\x00/s    ? "utf-16le"
+    :                     "utf-8";
+  warn "input text encoding is $enc\n" if $opt_verbose;
+  $enc;
+}
+
+my %F = (
+   "none"          => sub { undef },
+   "string"        => sub { $_ },
+   "json"          => sub {
+      Cpanel::JSON::XS->new->decode (decode enc($_), $_)
+   },
+   "json-nonref"   => sub {
+      Cpanel::JSON::XS->new->allow_nonref->decode (decode enc($_), $_)
+   },
+   "json-relaxed"   => sub {
+      Cpanel::JSON::XS->new->relaxed->decode (decode enc($_), $_)
+   },
+   "json-unknown"   => sub {
+      Cpanel::JSON::XS->new->allow_unknown->decode (decode enc($_), $_)
+   },
+   "storable"      => sub { Storable::thaw $_ },
+   "storable-file" => sub { open my $fh, "<", \$_; Storable::fd_retrieve $fh },
+   "bencode"       => sub {
+      if (eval {require Net::BitTorrent::Protocol::BEP03::Bencode }) {
+        return Net::BitTorrent::Protocol::BEP03::Bencode::bdecode ($_);
+      }
+      if (eval {require Bencode}) {
+        return Bencode::bdecode ($_);
+      }
+      require Convert::Bencode; return Convert::Bencode::bdecode ($_);
+   },
+   "clzf"          => sub { require Compress::LZF; Compress::LZF::sthaw ($_) },
+   "yaml"          => sub { require YAML; YAML::Load ($_) },
+   "yaml-tiny"     => sub { require CPAN::Meta::YAML; CPAN::Meta::YAML::Load ($_) },
+   "yaml-xs"       => sub { require YAML::XS; YAML::XS::Load ($_) },
+   "yaml-syck"     => sub { require YAML::Syck; YAML::Syck::Load ($_) },
+   "cbor"          => sub { require CBOR::XS; CBOR::XS::decode_cbor ($_) },
+   "sereal"        => sub { require Sereal::Decoder; Sereal::Decoder::decode_sereal ($_) },
+   "eval"          => sub { my $v = eval "no strict; no warnings; no utf8;\n#line 1 \"input\"\n$_"; die "$@" if $@; $v },
+);
+
+my %T = (
+   "none"          => sub { "" },
+   "string"        => sub { $_ },
+   "json"          => sub { encode_json $_ },
+   "json-utf-8"    => sub { encode_json $_ },
+   "json-pretty"   => sub { Cpanel::JSON::XS->new->utf8->pretty->canonical->encode ($_) },
+   "json-stringify"=> sub { Cpanel::JSON::XS->new->utf8->pretty->canonical->allow_stringify->encode ($_) },
+   "json-relaxed"  => sub { Cpanel::JSON::XS->new->utf8->pretty->canonical
+                              ->allow_stringify->allow_blessed->convert_blessed
+                              ->allow_unknown->allow_tags->stringify_infnan(1)
+                              ->encode ($_) },
+   "json-utf-16le" => sub { encode "utf-16le", Cpanel::JSON::XS->new->encode ($_) },
+   "json-utf-16be" => sub { encode "utf-16be", Cpanel::JSON::XS->new->encode ($_) },
+   "json-utf-32le" => sub { encode "utf-32le", Cpanel::JSON::XS->new->encode ($_) },
+   "json-utf-32be" => sub { encode "utf-32be", Cpanel::JSON::XS->new->encode ($_) },
+
+   "storable"      => sub { Storable::nfreeze $_ },
+   "storable-file" => sub { open my $fh, ">", \my $buf; Storable::nstore_fd $_, $fh; $buf },
+
+   "bencode"       => sub {
+      if (eval {require Net::BitTorrent::Protocol::BEP03::Bencode }) {
+        return Net::BitTorrent::Protocol::BEP03::Bencode::bencode ($_);
+      }
+      if (eval {require Bencode}) {
+        return Bencode::bencode ($_);
+      }
+      require Convert::Bencode; return Convert::Bencode::bencode ($_);
+   },
+   "clzf"          => sub { require Compress::LZF; Compress::LZF::sfreeze_cr ($_) },
+   "yaml"          => sub { require YAML; YAML::Dump ($_) },
+   "yaml-tiny"     => sub { require CPAN::Meta::YAML; CPAN::Meta::YAML::Dump ($_) },
+   "yaml-xs"       => sub { require YAML::XS; YAML::XS::Dump ($_) },
+   "yaml-syck"     => sub { require YAML::Syck; YAML::Syck::Dump ($_) },
+   "dumper"        => sub {
+      require Data::Dumper;
+      #local $Data::Dumper::Purity    = 1; # hopeless case
+      local $Data::Dumper::Terse     = 1;
+      local $Data::Dumper::Indent    = 1;
+      local $Data::Dumper::Useqq     = 1;
+      local $Data::Dumper::Quotekeys = 0;
+      local $Data::Dumper::Sortkeys  = 1;
+      Data::Dumper::Dumper($_)
+   },
+   "dump"          => sub {
+      require Data::Dump;
+      local $Data::Dump::TRY_BASE64 = 0;
+      Data::Dump::dump ($_) . "\n"
+   },
+   "sereal"        => sub { require Sereal::Encoder; Sereal::Encoder::encode_sereal ($_) },
+);
+
+$F{$opt_from}
+   or die "$opt_from: not a valid fromformat\n";
+
+$T{$opt_to}
+   or die "$opt_from: not a valid toformat\n";
+
+if ($opt_from ne "none") {
+   local $/;
+   binmode STDIN; # stupid perl sometimes thinks its funny
+   $_ = <STDIN>;
+}
+
+$_ = $F{$opt_from}->();
+
+eval $opt_eval;
+die $@ if $@;
+
+$_ = $T{$opt_to}->();
+
+binmode STDOUT;
+syswrite STDOUT, $_;
+
+
+

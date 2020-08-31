@@ -1,0 +1,115 @@
+=for comment POD_DERIVED_INDEX_GENERATED
+The following documentation is automatically generated.  Please do not edit
+this file, but rather the original, inline with DBIx::Class::FilterColumn
+at lib/DBIx/Class/FilterColumn.pm
+(on the system that originally ran this).
+If you do edit this file, and don't want your changes to be removed, make
+sure you change the first line.
+
+=cut
+
+=head1 NAME
+
+DBIx::Class::FilterColumn - Automatically convert column data
+
+=head1 SYNOPSIS
+
+In your Schema or DB class add "FilterColumn" to the top of the component list.
+
+  __PACKAGE__->load_components(qw( FilterColumn ... ));
+
+Set up filters for the columns you want to convert.
+
+ __PACKAGE__->filter_column( money => {
+     filter_to_storage => 'to_pennies',
+     filter_from_storage => 'from_pennies',
+ });
+
+ sub to_pennies   { $_[1] * 100 }
+
+ sub from_pennies { $_[1] / 100 }
+
+ 1;
+
+=head1 DESCRIPTION
+
+This component is meant to be a more powerful, but less DWIM-y,
+L<DBIx::Class::InflateColumn>.  One of the major issues with said component is
+that it B<only> works with references.  Generally speaking anything that can
+be done with L<DBIx::Class::InflateColumn> can be done with this component.
+
+=head1 METHODS
+
+=head2 filter_column
+
+ __PACKAGE__->filter_column( colname => {
+     filter_from_storage => 'method'|\&coderef,
+     filter_to_storage   => 'method'|\&coderef,
+ })
+
+This is the method that you need to call to set up a filtered column. It takes
+exactly two arguments; the first being the column name the second being a hash
+reference with C<filter_from_storage> and C<filter_to_storage> set to either
+a method name or a code reference. In either case the filter is invoked as:
+
+  $result->$filter_specification ($value_to_filter)
+
+with C<$filter_specification> being chosen depending on whether the
+C<$value_to_filter> is being retrieved from or written to permanent
+storage.
+
+If a specific directional filter is not specified, the original value will be
+passed to/from storage unfiltered.
+
+=head2 get_filtered_column
+
+ $obj->get_filtered_column('colname')
+
+Returns the filtered value of the column
+
+=head2 set_filtered_column
+
+ $obj->set_filtered_column(colname => 'new_value')
+
+Sets the filtered value of the column
+
+=head1 EXAMPLE OF USE
+
+Some databases have restrictions on values that can be passed to
+boolean columns, and problems can be caused by passing value that
+perl considers to be false (such as C<undef>).
+
+One solution to this is to ensure that the boolean values are set
+to something that the database can handle - such as numeric zero
+and one, using code like this:-
+
+    __PACKAGE__->filter_column(
+        my_boolean_column => {
+            filter_to_storage   => sub { $_[1] ? 1 : 0 },
+        }
+    );
+
+In this case the C<filter_from_storage> is not required, as just
+passing the database value through to perl does the right thing.
+
+=head1 INHERITED METHODS
+
+=over 4
+
+=item L<DBIx::Class::Row>
+
+L<copy|DBIx::Class::Row/copy>, L<delete|DBIx::Class::Row/delete>, L<discard_changes|DBIx::Class::Row/discard_changes>, L<get_from_storage|DBIx::Class::Row/get_from_storage>, L<get_inflated_columns|DBIx::Class::Row/get_inflated_columns>, L<in_storage|DBIx::Class::Row/in_storage>, L<inflate_result|DBIx::Class::Row/inflate_result>, L<insert|DBIx::Class::Row/insert>, L<insert_or_update|DBIx::Class::Row/insert_or_update>, L<is_changed|DBIx::Class::Row/is_changed>, L<is_column_changed|DBIx::Class::Row/is_column_changed>, L<make_column_dirty|DBIx::Class::Row/make_column_dirty>, L<register_column|DBIx::Class::Row/register_column>, L<result_source|DBIx::Class::Row/result_source>, L<set_column|DBIx::Class::Row/set_column>, L<set_columns|DBIx::Class::Row/set_columns>, L<set_inflated_columns|DBIx::Class::Row/set_inflated_columns>, L<throw_exception|DBIx::Class::Row/throw_exception>, L<update_or_insert|DBIx::Class::Row/update_or_insert>
+
+=back
+
+=head1 FURTHER QUESTIONS?
+
+Check the list of L<additional DBIC resources|DBIx::Class/GETTING HELP/SUPPORT>.
+
+=head1 COPYRIGHT AND LICENSE
+
+This module is free software L<copyright|DBIx::Class/COPYRIGHT AND LICENSE>
+by the L<DBIx::Class (DBIC) authors|DBIx::Class/AUTHORS>. You can
+redistribute it and/or modify it under the same terms as the
+L<DBIx::Class library|DBIx::Class/COPYRIGHT AND LICENSE>.
+

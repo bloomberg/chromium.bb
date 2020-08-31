@@ -1,0 +1,489 @@
+#. Header generated with Log::Report::Lexicon::POT 0.0
+msgid ""
+msgstr ""
+"Project-Id-Version: log-report 0.01\n"
+"Report-Msgid-Bugs-To:\n"
+"POT-Creation-Date: 2007-05-14 17:14+0200\n"
+"PO-Revision-Date: 2013-08-22 16:17+0200\n"
+"Last-Translator: Mark Overmeer <mark@overmeer.net>\n"
+"Language-Team:\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+
+#: lib/Log/Report/Util.pm:14
+msgid "ALERT"
+msgstr "ALARM"
+
+#: lib/Log/Report/Util.pm:14
+msgid "ASSERT"
+msgstr "CONDITIE"
+
+#: lib/Log/Report/Util.pm:14
+msgid "ERROR"
+msgstr "ERROR"
+
+#: lib/Log/Report/Util.pm:14
+msgid "FAILURE"
+msgstr "STORING"
+
+#: lib/Log/Report/Util.pm:14
+msgid "FAULT"
+msgstr "PROBLEEM"
+
+#: lib/Log/Report/Util.pm:14
+msgid "INFO"
+msgstr "INFO"
+
+#: lib/Log/Report/Dispatcher/LogDispatch.pm:105
+msgid "Log::Dispatch level '{level}' not understood"
+msgstr "Log::Dispatch level '{level}' niet herkend"
+
+#: lib/Log/Report/Dispatcher/Log4perl.pm:100
+msgid "Log::Log4perl back-end {name} requires a 'config' parameter"
+msgstr "Log::Log4perl back-end {name} verwacht een 'config' argument"
+
+#: lib/Log/Report/Dispatcher/Log4perl.pm:111
+msgid "Log::Log4perl level '{level}' must be in 0-5"
+msgstr "Log::Log4perl level '{level}' is getal van 0 tot 5"
+
+#: lib/Log/Report/Util.pm:14
+msgid "MISTAKE"
+msgstr "FOUT"
+
+#: lib/Log/Report/Util.pm:14
+msgid "NOTICE"
+msgstr "OPGELET"
+
+#: lib/Log/Report/Dispatcher/Log4perl.pm:27
+#: lib/Log/Report/Dispatcher/LogDispatch.pm:27
+#: lib/Log/Report/Dispatcher/Syslog.pm:28
+msgid "Not all reasons have a default translation"
+msgstr "Niet alle redenen hebben een default vertaling"
+
+#: lib/Log/Report/Util.pm:14
+msgid "PANIC"
+msgstr "PANIEK"
+
+#: lib/Log/Report/Extract/PerlPPI.pm:66
+msgid "PPI only supports iso-8859-1 (latin-1) on the moment"
+msgstr "PPI ondersteunt momenteel alleen iso-8859-1 (latin-1)"
+
+#: lib/Log/Report/Dispatcher.pm:152
+msgid "Perl does not support charset {cs}"
+msgstr "Perl heeft geen support voor tekenset {cs}"
+
+#: lib/Log/Report/Util.pm:14
+msgid "TRACE"
+msgstr "TRACE"
+
+#: lib/Log/Report/Util.pm:14
+msgid "WARNING"
+msgstr "WAARSCHUWING"
+
+#: lib/Log/Report.pm:256
+msgid "a message object is reported with more parameters"
+msgstr "een message object vergezeld van meer parameters"
+
+#: lib/Log/Report/Dispatcher.pm:299 lib/Log/Report/Dispatcher.pm:309
+msgid "at {filename} line {line}"
+msgstr "in {filename} regel {line}"
+
+#: lib/Log/Report/Extract.pm:50
+msgid "cannot create lexicon directory {dir}"
+msgstr "kan lexicon map {dir} niet aanmaken"
+
+#: bin/xgettext-perl:57
+msgid "cannot create output directory {dir}"
+msgstr "uitvoer map {dir} kan niet worden aangemaakt"
+
+#: lib/Log/Report/Dispatcher/Log4perl.pm:121
+msgid "cannot find logger '{name}' in configuration {config}"
+msgstr "kan logger '{name}' in configuratie {config} niet vinden"
+
+#: bin/xgettext-perl:65
+msgid "cannot read filename list from {fn}"
+msgstr "lijst met filenamen {fn} kan niet worden gelezen"
+
+#: lib/Log/Report/Extract/PerlPPI.pm:69
+msgid "cannot read from file {filename}"
+msgstr "kan bestand {filename} niet lezen"
+
+#: lib/Log/Report/Lexicon/MOTcompact.pm:70 lib/Log/Report/Lexicon/POT.pm:149
+#: lib/Log/Report/Lexicon/POTcompact.pm:60
+msgid "cannot read in {cs} from file {fn}"
+msgstr "kan bestand {fn} niet lezen in {cs}"
+
+#: lib/Log/Report/Lexicon/MOTcompact.pm:77
+#, fuzzy
+msgid "cannot read magic from {fn}"
+msgstr ""
+
+#: lib/Log/Report/Lexicon/MOTcompact.pm:129
+#, fuzzy
+msgid "cannot read msgids from {fn}, need {size} at {loc}"
+msgstr ""
+
+#: lib/Log/Report/Lexicon/MOTcompact.pm:101
+#, fuzzy
+msgid "cannot read originals from {fn}, need {size} at {loc}"
+msgstr ""
+
+#: lib/Log/Report/Lexicon/MOTcompact.pm:87
+#, fuzzy
+msgid "cannot read superblock from {fn}"
+msgstr ""
+
+#: lib/Log/Report/Extract/Template.pm:98
+msgid "cannot read template from {fn}"
+msgstr "template {fn} kan niet worden gelezen"
+
+#: lib/Log/Report/Lexicon/MOTcompact.pm:208
+#, fuzzy
+msgid "cannot read transl late from {fn}, need {size} at {loc}"
+msgstr ""
+
+#: lib/Log/Report/Lexicon/MOTcompact.pm:112
+#: lib/Log/Report/Lexicon/MOTcompact.pm:140
+#, fuzzy
+msgid "cannot read translations from {fn}, need {size} at {loc}"
+msgstr ""
+
+#: lib/Log/Report/Lexicon/MOTcompact.pm:123
+#, fuzzy
+msgid "cannot seek to {loc} in {fn} for msgid strings"
+msgstr ""
+
+#: lib/Log/Report/Lexicon/MOTcompact.pm:97
+#, fuzzy
+msgid "cannot seek to {loc} in {fn} for originals"
+msgstr ""
+
+#: lib/Log/Report/Lexicon/MOTcompact.pm:134
+#, fuzzy
+msgid "cannot seek to {loc} in {fn} for transl strings"
+msgstr ""
+
+#: lib/Log/Report/Lexicon/MOTcompact.pm:108
+#, fuzzy
+msgid "cannot seek to {loc} in {fn} for translations"
+msgstr ""
+
+#: lib/Log/Report/Lexicon/MOTcompact.pm:203
+#, fuzzy
+msgid "cannot seek to {loc} late in {fn} for transl strings"
+msgstr ""
+
+#: lib/Log/Report/Dispatcher/File.pm:96
+msgid "cannot write log into {file} with {binmode}"
+msgstr "kan log niet naar bestand {file} schrijven in {binmode}"
+
+#: lib/Log/Report/Lexicon/POT.pm:203
+msgid "cannot write to file {fn} in {layers}"
+msgstr "kan bestand {fn} niet schrijven in {layers}"
+
+#: lib/Log/Report/Lexicon/POT.pm:106 lib/Log/Report/Lexicon/POT.pm:146
+msgid "charset parameter is required for {fn}"
+msgstr "charset argument is verplicht voor {fn}"
+
+#: lib/Log/Report/Lexicon/MOTcompact.pm:57
+#: lib/Log/Report/Lexicon/POTcompact.pm:57
+msgid "charset parameter required for {fn}"
+msgstr ""
+
+#: lib/Log/Report/Dispatcher/Callback.pm:62
+msgid "dispatcher {name} needs a 'callback'"
+msgstr "dispatcher {name} verlangt een 'callback'"
+
+#: lib/Log/Report/Dispatcher/File.pm:85
+msgid "dispatcher {name} needs parameter 'to'"
+msgstr "dispatcher {name} verlangt argument 'to'"
+
+#: bin/xgettext-perl:62
+msgid "do not combine command-line filenames with --files-from"
+msgstr "combineer filenamen op de commando-regel niet met --files-from"
+
+#: lib/Log/Report/Extract/PerlPPI.pm:170
+msgid "do not interpolate in msgid (found '{var}' in line {line})"
+msgstr "gebruik geen variabelen in een msgid (vond '{var}' op regel {line'})"
+
+#: lib/Log/Report/Lexicon/PO.pm:374
+msgid "do not understand command '{cmd}' at {where}"
+msgstr "commando '{cmd}' op plaats {where} niet begrepen"
+
+#: lib/Log/Report/Lexicon/PO.pm:391
+msgid ""
+"do not understand line at {where}:\n"
+"  {line}"
+msgstr ""
+"de regel op {where} wordt niet begrepen:\n"
+"  {line}"
+
+#: lib/Log/Report.pm:656
+msgid "even length parameter list for __x at {where}"
+msgstr "een even-lengte lijst van parameters bij __x bij {where}"
+
+#: bin/xgettext-perl:54
+msgid "explicit output directory (-p) required"
+msgstr "expliciete uitvoer map (met -p) verplicht"
+
+#: lib/Log/Report/Extract.pm:47
+msgid "extractions require an explicit lexicon directory"
+msgstr "een expliciete lexicon directory is nodig voor de uittreksels"
+
+#: lib/Log/Report/Lexicon/MOTcompact.pm:162 lib/Log/Report/Lexicon/POT.pm:169
+#: lib/Log/Report/Lexicon/POTcompact.pm:100
+msgid "failed reading from file {fn}"
+msgstr "lezen uit bestand {fn} mislukt"
+
+#: lib/Log/Report/Extract.pm:199
+msgid "found one pot file for domain {domain}"
+msgid_plural "found {_count} pot files for domain {domain}"
+msgstr[0] "één pot bestand voor domein {domain} gevonden"
+msgstr[1] "{_count} pot bestanden voor domain {domain} gevonden"
+
+#: lib/Log/Report/Dispatcher.pm:146
+msgid "illegal format_reason '{format}' for dispatcher"
+msgstr "onbekende format_reason '{format}' voor dispatcher"
+
+#: lib/Log/Report/Lexicon/Table.pm:98
+msgid "invalid plural-form algorithm '{alg}'"
+msgstr "incorrect meervoudsvorm algoritme '{alg}'"
+
+#: lib/Log/Report/Exception.pm:102
+msgid "message() of exception expects Log::Report::Message"
+msgstr "message() van een exception verwacht een Log::Report::Message"
+
+#: lib/Log/Report/Extract/Template.pm:93
+msgid "need pattern to scan for, either via new() or process()"
+msgstr "een scan pattern is nodig, via new() of process()"
+
+#: lib/Log/Report/Extract/PerlPPI.pm:188
+msgid "new-line is added automatically (found in line {line})"
+msgstr "een regel-overgang wordt automatisch toegevoegd (gevonden op regel {line})"
+
+#: lib/Log/Report/Extract/PerlPPI.pm:73
+#, fuzzy
+msgid "no Perl in file {filename}"
+msgstr ""
+
+#: lib/Log/Report/Lexicon/POT.pm:194
+msgid "no filename or file-handle specified for PO"
+msgstr "geen bestandsnaam of -handle meegegeven voor PO"
+
+#: lib/Log/Report/Lexicon/POT.pm:317
+msgid "no header defined in POT for file {fn}"
+msgstr "geen kop opgegeven in POT in bestand {fn}"
+
+#: lib/Log/Report/Lexicon/PO.pm:397
+msgid "no msgid in block {where}"
+msgstr "geen msgid in blok {where}"
+
+#: lib/Log/Report/Lexicon/PO.pm:476
+msgid "no plurals for '{msgid}'"
+msgstr "geen meervoudsvormen voor '{msgid}'"
+
+#: lib/Log/Report/Extract/PerlPPI.pm:121
+msgid "no text-domain for translatable at {fn} line {line}"
+msgstr "geen text-domain voor vertaalbare string in {fn} regel {line}"
+
+#: lib/Log/Report.pm:506
+msgid "odd length parameter list for try(): forgot the terminating ';'?"
+msgstr "oneven lengte van parameterlijst voor try(): afsluitende ';' vergeten?"
+
+#: lib/Log/Report.pm:264
+msgid "odd length parameter list with '{msg}'"
+msgstr "parameter-lijst van oneven lengte bij '{msg}'"
+
+#: lib/Log/Report.pm:421
+msgid "only one dispatcher name accepted in SCALAR context"
+msgstr "dispatcher gebruik in SCALAR context accepteert slechts één naam"
+
+#: lib/Log/Report.pm:954
+msgid "only one package can contain configuration; for {domain} already in {pkg} in file {fn} line {line}"
+msgstr "slechts één package mag configuratie informatie bevatten; voor {domain} is dit al gevonden in {pkg}, bestand {fn} regel {line}"
+
+#: lib/Log/Report/Extract/PerlPPI.pm:77 lib/Log/Report/Extract/Template.pm:90
+msgid "processing file {fn} in {charset}"
+msgstr "verwerk bestand {fn} in {charset}"
+
+#: bin/xgettext-perl:51
+msgid "programming language {lang} not supported"
+msgstr "programmeertaal {lang} wordt niet ondersteund"
+
+#: lib/Log/Report/Lexicon/PO.pm:386
+msgid "quoted line is not a continuation at {where}"
+msgstr "regel met quotes is geen voortzetting in {where}"
+
+#~ msgid "read pot-file {filename} for {domain} in {locale}"
+#~ msgstr "lees pot bestand {filename} voor {domain} in {locale}"
+
+#: lib/Log/Report/Translator/POT.pm:90
+#, fuzzy
+msgid "read table {filename} as {class} for {domain} in {locale}"
+msgstr ""
+
+#: lib/Log/Report/Util.pm:136
+msgid "reason '{begin}' more serious than '{end}' in '{reasons}"
+msgstr "reden '{begin}' is serieuzer dan '{end}' in '{reasons}'"
+
+#~ msgid "scan pattern `{pattern}' not recognized"
+#~ msgstr "scan patroon `{pattern}' wordt niet herkend"
+
+#: bin/xgettext-perl:83
+#, fuzzy
+msgid "specify a text-domain (-d) for the templates"
+msgstr ""
+
+#: lib/Log/Report/Extract.pm:208
+msgid "starting new textdomain {domain}, template in {filename}"
+msgstr "begin van nieuw textdomain {domain}, sjabloon in {filename}"
+
+#: lib/Log/Report/Lexicon/POTcompact.pm:154
+msgid "string '{text}' not between quotes at {location}"
+msgstr "tekst '{text}' niet tussen quotes in {location}"
+
+#: lib/Log/Report/Extract/PerlPPI.pm:178
+msgid "string is incorrect at line {line}: {error}"
+msgstr "foutieve string in regel {regel}: {error}"
+
+#: lib/Log/Report/Dispatcher.pm:211
+msgid "switching to run mode {mode}, accept {accept}"
+msgstr "verwerkingsmode {mode}, accepteert {accept}"
+
+#: lib/Log/Report.pm:882
+msgid "syntax flag must be either SHORT or REPORT, not `{syntax}'"
+msgstr "syntax parameter moet zijn SHORT of REPORT, niet `{syntax}'"
+
+#: lib/Log/Report/Dispatcher/Syslog.pm:122
+msgid "syslog level '{level}' not understood"
+msgstr "syslog level '{level}' niet herkend"
+
+#: lib/Log/Report/Extract/Template.pm:145
+#, fuzzy
+msgid "template syntax error, no END in {fn} line {line}"
+msgstr ""
+
+#: lib/Log/Report.pm:922
+msgid "textdomain for translator not defined"
+msgstr "tekstdomein voor vertaler niet gedefinieerd"
+
+#: lib/Log/Report/Lexicon/POT.pm:111
+msgid "textdomain parameter is required"
+msgstr "tekstdomain argument is verplicht"
+
+#: lib/Log/Report.pm:406
+msgid "the 'filter' sub-command needs a CODE reference"
+msgstr "het 'filter' sub-commando verwacht een CODE referentie"
+
+#: lib/Log/Report.pm:393
+msgid "the 'list' sub-command doesn't expect additional parameters"
+msgstr "het 'list' sub-commando verwacht geen aanvullende argumenten"
+
+#: lib/Log/Report.pm:399
+msgid "the 'needs' sub-command parameter '{reason}' is not a reason"
+msgstr "het 'needs' sub-commando argument '{reason}' is geen reden"
+
+#: lib/Log/Report/Lexicon/POT.pm:296
+msgid "the only acceptable parameter is 'ACTIVE', not '{p}'"
+msgstr "het enige geaccepteerde argument is 'ACTIVE', niet '{p}'"
+
+#: lib/Log/Report/Lexicon/Table.pm:93
+#, fuzzy
+msgid "there is no Plural-Forms field in the header"
+msgstr ""
+
+#: lib/Log/Report.pm:233
+msgid "token '{token}' not recognized as reason"
+msgstr "token '{token}' niet herkend als reden"
+
+#: lib/Log/Report/Lexicon/PO.pm:465
+msgid "too many plurals for '{msgid}'"
+msgstr "te veel meervouden voor '{msgid}'"
+
+#: lib/Log/Report/Lexicon/POT.pm:279
+msgid "translation already exists for '{msgid}'"
+msgstr "er bestaat al een vertaling voor '{msgid}'"
+
+#: lib/Log/Report.pm:929
+msgid "translator must be a Log::Report::Translator object"
+msgstr "vertaler moet een Log::Report::Translator object zijn"
+
+#: lib/Log/Report/Dispatcher/Try.pm:220
+msgid "try-block stopped with {reason}: {text}"
+msgstr "try-blok gestopt met {reason}: {text}"
+
+#: lib/Log/Report/Lexicon/PO.pm:348
+msgid "unknown comment type '{cmd}' at {where}"
+msgstr "onbekend commentaar type '{cmd}' in {where}"
+
+#: lib/Log/Report/Lexicon/PO.pm:316
+msgid "unknown flag {flag} ignored"
+msgstr "onbekende vlag {flag} wordt genegeerd"
+
+#: lib/Log/Report/Util.pm:84
+msgid "unknown locale language in locale `{locale}'"
+msgstr "onbekende locale taal in locale `{locale}'"
+
+#: lib/Log/Report/Extract/Template.pm:114
+#, fuzzy
+msgid "unknown pattern {pattern}"
+msgstr ""
+
+#: lib/Log/Report/Util.pm:133 lib/Log/Report/Util.pm:148
+msgid "unknown reason {which} in '{reasons}'"
+msgstr "onbekende reden {which} is '{reasons}'"
+
+#~ msgid "unknown run mode '{mode}'"
+#~ msgstr "onbekende verwerkingsmode '{mode}'"
+
+#: lib/Log/Report/Translator/POT.pm:87
+#, fuzzy
+msgid "unknown translation table extension '{ext}' in {filename}"
+msgstr ""
+
+#: lib/Log/Report/Lexicon/POT.pm:107
+msgid "unnamed file"
+msgstr "naamloze file"
+
+#: lib/Log/Report/Lexicon/MOTcompact.pm:82
+#, fuzzy
+msgid "unsupported file type (magic number is {magic%x})"
+msgstr ""
+
+#: lib/Log/Report.pm:959
+msgid "value for {name} specified twice"
+msgstr "twee keer een waarde voor {name}"
+
+#: lib/Log/Report/Lexicon/POT.pm:219
+msgid "write errors for file {fn}"
+msgstr "schrijfproblemen bij bestand {fn}"
+
+#: lib/Log/Report/Extract.pm:146
+msgid "{domain}: one file with {ids} msgids"
+msgid_plural "{domain}: {_count} files with each {ids} msgids"
+msgstr[0] "{domain}: één bestand met {ids} mgsids"
+msgstr[1] "{domain}: {_count} bestanden met elk {ids} msgids"
+
+#: lib/Log/Report/Extract.pm:139
+msgid "{domain}: one file with {ids} msgids, {f} fuzzy and {i} inactive translations"
+msgid_plural "{domain}: {_count} files each {ids} msgids, {f} fuzzy and {i} inactive translations in total"
+msgstr[0] "{domain}: één bestand met {ids} mgsids, {f} fuzzy en {i} op non-actief"
+msgstr[1] "{domain}: {_count} bestanden met elk {ids} msgids, {f} fuzzy en {i} op non-actief in het totaal"
+
+#: lib/Log/Report/Extract.pm:129
+msgid "{domain}: {fuzzy%3d} fuzzy, {inact%3d} inactive in {filename}"
+msgstr "{domain}: {fuzzy%3d} fuzzy, {inact%3d} op non-actief in {filename}"
+
+#: lib/Log/Report/Dispatcher.pm:285
+msgid "{message}; {error}"
+msgstr "{message}; {error}"
+
+#: lib/Log/Report/Dispatcher.pm:284
+msgid "{reason}: {message}"
+msgstr "{reason}: {message}"
+
+#: lib/Log/Report/Dispatcher.pm:283
+msgid "{reason}: {message}; {error}"
+msgstr "{reason}: {message}; {error}"

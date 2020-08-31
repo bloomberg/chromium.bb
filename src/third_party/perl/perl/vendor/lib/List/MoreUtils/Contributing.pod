@@ -1,0 +1,100 @@
+=head1 NAME
+
+List::MoreUtils::Contributing - Gives rough introduction into contributing to List::MoreUtils
+
+=head1 DESCRIPTION
+
+List::Moreutils has a turbulent history and a strong approach. Before
+going further, please step to
+L<Open Source Contribution Etiquette|http://tirania.org/blog/archive/2010/Dec-31.html>
+and then come back.
+
+The current distribution is a balance between finishing the history and
+claiming for future requirements. Therefore some components will receive
+a rewrite on purpose - others won't.
+
+For the moment - it's not the primary goal to clean up the configuration
+stage, until the primary goals and prerequisites are done.
+
+To contribute to List::MoreUtils, one has to arrange with the current
+situation, dig into details and ask for clarifying when parts are
+incomprehensible.
+
+=head2 Primary Goals
+
+The very first primary goal is to clear the backlog. These are primarily
+the open issues, feature requests and missing infrastructure elements.
+
+As example see RT#93207 or RT#75672 for missing configure time checks,
+while RT#93207 radiates until test - but doesn't affect runtime nor
+installation (beside test failures).
+
+=head2 Secondary Goals
+
+Secondary goals are harmonizing the function names and calling convention
+(see RT#102673), tidying the infrastructure of the distribution and remove
+unnecessary complexity (while protecting the necessary).
+
+One example of removing unnecessary infrastructure could be to move
+L<Data::Tumbler> and L<Test::WriteVariants> into authoring mode, when
+improved test for RT#93207 could be reasonably done by a module which
+is recommended for test. The recommendation of
+L<Graham Knop's Makefile.PL#L82|https://github.com/haarg/List-MoreUtils/blob/dd877f963deead742fc90005636c72c6be9060fc/Makefile.PL#L82>
+in L<PR#9|https://github.com/perl5-utils/List-MoreUtils/pull/9> a desirable
+one.
+
+=head2 Orientation Guide
+
+List::MoreUtils configuration stage heavily depends on L<Config::AutoConf>
+and L<Data::Tumbler>. A few prerequisites of both modules aren't available
+for Perl 5.6 - which leads to a tiny emulation layer t the begin of
+C<Makefile.PL>.
+
+The reason for L<Config::AutoConf> is quite simple - the opportunities
+for checking the environment cover a much wider range than a simple test
+whether there is a working compiler. It requires a lot of improvements
+since its base L<ExtUtils::CBuilder> was never designed to support
+that kind of solutions - but there is I<Work In Progress>. To finally
+solve issues as RT#75672 even in cross-compile environments - there is
+no way around such a checking tool.
+
+The reason for L<Data::Tumbler> in combination with L<Test::WriteVariants>
+are extensible tests with reasonable effort and easy figuring out which
+extra condition causes failures. Also - missing pre-conditions should
+result in failing tests i some cases - what is fully supported by the
+logic behind L<Data::Tumbler> in combination with L<Test::WriteVariants>.
+
+Finally - L<inc::latest> glues the stuff in a bundle together to allow
+people with older toolchains to use List::MoreUtils out of the box (maybe
+with reduced quantity but full quality).
+
+=head1 SEE ALSO
+
+L<Config::AutoConf>, L<Data::Tumbler>, L<Test::WriteVariants>,
+L<ExtUtils::MakeMaker::Extensions>
+
+=head1 AUTHOR
+
+Jens Rehsack E<lt>rehsack AT cpan.orgE<gt>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2015-2017 by Jens Rehsack
+
+All code added with 0.417 or later is licensed under the Apache License,
+Version 2.0 (the "License"); you may not use this file except in compliance
+with the License. You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+All code until 0.416 is licensed under the same terms as Perl itself,
+either Perl version 5.8.4 or, at your option, any later version of
+Perl 5 you may have available.
+
+=cut

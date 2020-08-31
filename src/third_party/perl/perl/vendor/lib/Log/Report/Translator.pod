@@ -1,0 +1,79 @@
+=encoding utf8
+
+=head1 NAME
+
+Log::Report::Translator - base implementation for translating messages
+
+=head1 INHERITANCE
+
+ Log::Report::Translator is extended by
+   Log::Report::Translator::Gettext
+   Log::Report::Translator::POT
+
+=head1 SYNOPSIS
+
+ # internal infrastructure
+ my $msg = Log::Report::Message->new(_msgid => "Hello World\n");
+ print Log::Report::Translator->new(...)->translate($msg);
+
+ # normal use
+ textdomain 'my-domain'
+   , translator => Log::Report::Translator->new;  # default
+ print __"Hello World\n";
+
+=head1 DESCRIPTION
+
+A module (or distribution) has a certain way of translating messages,
+usually C<gettext>.  The translator is based on some C<textdomain>
+for the message, which can be specified as option per text element,
+but usually is package scoped.
+
+This base class does not translate at all: it will use the MSGID
+(and MSGID_PLURAL if available).  It's a nice fallback if the
+language packs are not installed.
+
+=head1 METHODS
+
+=head2 Constructors
+
+=over 4
+
+=item Log::Report::Translator-E<gt>B<new>(%options)
+
+=back
+
+=head2 Accessors
+
+=head2 Translating
+
+=over 4
+
+=item $obj-E<gt>B<load>($domain, $locale)
+
+Load the translation information in the text $domain for the indicated $locale.
+Multiple calls to L<load()|Log::Report::Translator/"Translating"> should not cost significant performance: the
+data must be cached.
+
+=item $obj-E<gt>B<translate>( $message, [$language, $ctxt] )
+
+Returns the translation of the $message, a C<Log::Report::Message> object,
+based on the current locale.
+
+Translators are permitted to peek into the internal HASH of the
+message object, for performance reasons.
+
+=back
+
+=head1 SEE ALSO
+
+This module is part of Log-Report distribution version 1.28,
+built on May 14, 2019. Website: F<http://perl.overmeer.net/CPAN/>
+
+=head1 LICENSE
+
+Copyrights 2007-2019 by [Mark Overmeer <markov@cpan.org>]. For other contributors see ChangeLog.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See F<http://dev.perl.org/licenses/>
+

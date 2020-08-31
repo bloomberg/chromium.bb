@@ -1,0 +1,207 @@
+=encoding utf8
+
+=head1 NAME
+
+Log::Report::Dispatcher::LogDispatch - send messages to Log::Dispatch back-end
+
+=head1 INHERITANCE
+
+ Log::Report::Dispatcher::LogDispatch
+   is a Log::Report::Dispatcher
+
+=head1 SYNOPSIS
+
+ use Log::Dispatch::File;
+ dispatcher Log::Dispatch::File => 'logger', accept => 'NOTICE-'
+   , filename => 'logfile', to_level => [ 'ALERT-' => 'err' ];
+
+ # disable default dispatcher
+ dispatcher close => 'logger';
+
+=head1 DESCRIPTION
+
+This dispatchers produces output to and C<Log::Dispatch> back-end.
+(which will NOT be automatically installed for you).
+
+The REASON for a message often uses names which are quite similar to the
+log-levels used by Log::Dispatch.  However: they have a different
+approach.  The REASON of Log::Report limits the responsibility of the
+programmer to indicate the cause of the message: whether it was able to
+handle a certain situation.  The Log::Dispatch levels are there for the
+user's of the program.  However: the programmer does not known anything
+about the application (in the general case).  This is cause of much of
+the trickery in Perl programs.
+
+The default translation table is list below.  You can change the mapping
+using L<new(to_level)|Log::Report::Dispatcher::LogDispatch/"Constructors">.  See example in SYNOPSIS.
+
+Extends L<"DESCRIPTION" in Log::Report::Dispatcher|Log::Report::Dispatcher/"DESCRIPTION">.
+ 
+=head1 METHODS
+
+Extends L<"METHODS" in Log::Report::Dispatcher|Log::Report::Dispatcher/"METHODS">.
+ 
+=head2 Constructors
+
+Extends L<"Constructors" in Log::Report::Dispatcher|Log::Report::Dispatcher/"Constructors">.
+ 
+=over 4
+
+=item $obj-E<gt>B<close>()
+
+Inherited, see L<Log::Report::Dispatcher/"Constructors">
+
+=item Log::Report::Dispatcher::LogDispatch-E<gt>B<new>($type, $name, %options)
+
+The Log::Dispatch infrastructure has quite a large number of output
+TYPEs, each extending the Log::Dispatch::Output base-class.  You
+do not create these objects yourself: Log::Report is doing it for you.
+
+The Log::Dispatch back-ends are very careful with validating their
+parameters, so you will need to restrict the options to what is supported
+for the specific back-end.  See their respective manual-pages.  The errors
+produced by the back-ends quite horrible and untranslated, sorry.
+
+ -Option       --Defined in             --Default
+  accept         Log::Report::Dispatcher  depend on mode
+  callbacks                               []
+  charset        Log::Report::Dispatcher  <undef>
+  format_reason  Log::Report::Dispatcher  'LOWERCASE'
+  locale         Log::Report::Dispatcher  <system locale>
+  max_level                               undef
+  min_level                               debug
+  mode           Log::Report::Dispatcher  'NORMAL'
+  to_level                                []
+
+=over 2
+
+=item accept => REASONS
+
+=item callbacks => CODE|ARRAY-of-CODE
+
+See Log::Dispatch::Output.
+
+=item charset => CHARSET
+
+=item format_reason => 'UPPERCASE'|'LOWERCASE'|'UCFIRST'|'IGNORE'|CODE
+
+=item locale => LOCALE
+
+=item max_level => LEVEL
+
+Like C<min_level>.
+
+=item min_level => LEVEL
+
+Restrict the messages which are passed through based on the LEVEL,
+so after the reason got translated into a Log::Dispatch compatible
+LEVEL.  The default will use Log::Report restrictions only.
+
+=item mode => 'NORMAL'|'VERBOSE'|'ASSERT'|'DEBUG'|0..3
+
+=item to_level => ARRAY-of-PAIRS
+
+See L<reasonToLevel()|Log::Report::Dispatcher::LogDispatch/"Logging">.
+
+=back
+
+=back
+
+=head2 Accessors
+
+Extends L<"Accessors" in Log::Report::Dispatcher|Log::Report::Dispatcher/"Accessors">.
+ 
+=over 4
+
+=item $obj-E<gt>B<backend>()
+
+Returns the Log::Dispatch::Output object which is used for logging.
+
+=item $obj-E<gt>B<isDisabled>()
+
+Inherited, see L<Log::Report::Dispatcher/"Accessors">
+
+=item $obj-E<gt>B<mode>()
+
+Inherited, see L<Log::Report::Dispatcher/"Accessors">
+
+=item $obj-E<gt>B<name>()
+
+Inherited, see L<Log::Report::Dispatcher/"Accessors">
+
+=item $obj-E<gt>B<needs>( [$reason] )
+
+Inherited, see L<Log::Report::Dispatcher/"Accessors">
+
+=item $obj-E<gt>B<type>()
+
+Inherited, see L<Log::Report::Dispatcher/"Accessors">
+
+=back
+
+=head2 Logging
+
+Extends L<"Logging" in Log::Report::Dispatcher|Log::Report::Dispatcher/"Logging">.
+ 
+=over 4
+
+=item $obj-E<gt>B<addSkipStack>(@CODE)
+
+=item Log::Report::Dispatcher::LogDispatch-E<gt>B<addSkipStack>(@CODE)
+
+Inherited, see L<Log::Report::Dispatcher/"Logging">
+
+=item $obj-E<gt>B<collectLocation>()
+
+=item Log::Report::Dispatcher::LogDispatch-E<gt>B<collectLocation>()
+
+Inherited, see L<Log::Report::Dispatcher/"Logging">
+
+=item $obj-E<gt>B<collectStack>( [$maxdepth] )
+
+=item Log::Report::Dispatcher::LogDispatch-E<gt>B<collectStack>( [$maxdepth] )
+
+Inherited, see L<Log::Report::Dispatcher/"Logging">
+
+=item $obj-E<gt>B<log>(HASH-$of-%options, $reason, $message, $domain)
+
+Inherited, see L<Log::Report::Dispatcher/"Logging">
+
+=item $obj-E<gt>B<reasonToLevel>($reason)
+
+Returns a level which is understood by Log::Dispatch, based on
+a translation table.  This can be changed with L<new(to_level)|Log::Report::Dispatcher::LogDispatch/"Constructors">.
+
+=item $obj-E<gt>B<skipStack>()
+
+Inherited, see L<Log::Report::Dispatcher/"Logging">
+
+=item $obj-E<gt>B<stackTraceLine>(%options)
+
+=item Log::Report::Dispatcher::LogDispatch-E<gt>B<stackTraceLine>(%options)
+
+Inherited, see L<Log::Report::Dispatcher/"Logging">
+
+=item $obj-E<gt>B<translate>(HASH-$of-%options, $reason, $message)
+
+Inherited, see L<Log::Report::Dispatcher/"Logging">
+
+=back
+
+=head1 DETAILS
+
+Extends L<"DETAILS" in Log::Report::Dispatcher|Log::Report::Dispatcher/"DETAILS">.
+ 
+=head1 SEE ALSO
+
+This module is part of Log-Report distribution version 1.28,
+built on May 14, 2019. Website: F<http://perl.overmeer.net/CPAN/>
+
+=head1 LICENSE
+
+Copyrights 2007-2019 by [Mark Overmeer <markov@cpan.org>]. For other contributors see ChangeLog.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See F<http://dev.perl.org/licenses/>
+

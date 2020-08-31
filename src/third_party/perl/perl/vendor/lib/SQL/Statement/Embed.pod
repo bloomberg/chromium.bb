@@ -1,0 +1,322 @@
+=pod
+
+=head1 NAME
+
+SQL::Statement::Embed - embed a SQL engine in a DBD or module
+
+=head1 SYNOPSIS
+
+=head1 DESCRIPTION
+
+SQL::Statement is designed to be easy to embed in other modules and to be
+especially easy to embed in DBI drivers.  It provides a SQL Engine and the
+other module needs to then provide a data source and a storage mechanism.
+For example, the L<DBD::CSV> module uses SQL::Statement as an embedded SQL
+engine by implementing a file-based data source and by using DBI as the
+user interface.  Similarly L<DBD::Amazon> uses SQL::Statement as its SQL
+engine, provides its own extensions to the supported SQL syntax, and uses
+on-the-fly searches of Amazon.com as its data source.
+
+SQL::Statement is the basis for at least eight existing DBDs (DBI database
+drivers).  If you have a new data source, you too can create a DBD without
+having to reinvent the SQL wheel.  It is fun and easy so become a DBD
+author today!
+
+SQL::Statement can be also be embedded without DBI.  We will explore that
+first since developing a DBD uses most of the same methods and techniques.
+
+=head1 The role of SQL::Statement subclasses
+
+SQL::Statement provides a SQL parsing and execution engine.  It neither
+provides a data source nor storage mechanism other than in-memory tables.
+The L<DBI::DBD::SqlEngine> contains a subclass of SQL::Statement to
+abstract from embedding SQL::Statement into a DBD and lets you concentrate
+on the extensions you need to make. L<DBD::File> extends DBI::DBD::SqlEngine
+by providing access to file-based storage mechanisms.  It is quite possible
+to use things other than files as data sources, in which case you would not
+use L<DBD::File>, instead you would replace L<DBD::File>'s methods with your
+own.  In the examples below, we use DBD::File, replacing only a few
+methods.
+
+SQL::Statement provides SQL parsing and evaluation and DBI::DBD::SqlEngine
+provides DBI integration.  The only thing missing is a data source - what we
+actually want to store and query.   As an example suppose we are going to
+create a subclass called 'Foo' that will provide as a data source the
+in-memory storage which is used in L<SQL::RAM> to provide the C<TEMP>
+tables in SQL::Statement, but the rows are stored as a string using a
+serializer (Storable).
+
+Consider what needs to happen to perform a SELECT query on our 'Foo' data:
+
+ * receive a SQL string
+ * parse the SQL string into a request structure
+ * open the table(s) specified in the request
+ * define column names and positions for the table
+ * read rows from the table
+ * convert the rows from colon-separated format into perl arrays
+ * match the columns and rows against the requested selection criteria
+ * return requested rows and columns to the user
+
+To perform operations like INSERT and DELETE, we also need to:
+
+ * convert rows from perl arrays into colon-separated format
+ * write rows
+ * delete rows
+
+SQL::Statement takes care of all of the SQL parsing and evaluation.
+DBD::File takes care of file opening, reading, writing, and deleting.
+So the only things 'Foo' is really responsible for are:
+
+ * define column names and positions for the table
+ * convert rows from colon-separated format into perl arrays
+ * convert rows from perl arrays into colon-separated format
+
+In SQL::Statement subclasses these responsibilities are assigned to two
+objects.  A ::Statement object is responsible for opening the table by
+creating new ::Table objects.  A ::Table object is responsible for
+defining the column names and positions, opening data sources, reading,
+converting, writing and deleting data.
+
+The real work is therefore done in the ::Table object, the ::Statement
+subclass is required to deliver the right ::Table object.
+
+=head1 Creating a ::Statement object
+
+A subclass of SQL::Statement must provide at least one method called
+open_table().  The method should open a new Table object and define the
+table's columns.  For our 'Foo' module, here is the complete object
+definition:
+
+    package Foo;
+
+    package Foo::Statement;
+    use DBD::File;
+    use base qw(DBI::DBD::SqlEngine::Statement);
+
+    sub open_table {
+	my ($self, $sth, $table, $createMode, $lockMode) = @_;
+
+	my $class = ref $self;
+	$class =~ s/::Statement/::Table/;
+
+	return $class->new ($sth, $table, $createMode, $lockMode);
+    }
+
+Since 'Foo' is an in-memory data source, we subclass SQL::Statement
+indirectly through DBD::File::Statement.  The open_table() method lets
+DBD::File do the actual table opening.  All we do is define the files
+directory (f_dir), the names of the columns (col_names) and the positions
+of the columns (col_nums).  DBD::File creates and returns a $tbl object.
+It names that object according to the module that calls it, so in our
+case the object will be a Foo::Table object.
+
+=head1 Creating a ::Table object
+
+Table objects are responsible for reading, converting, writing, and
+deleting data. Since DBD::File provides most of those services, our 'Foo'
+subclass only needs to define three methods - fetch_row() to read data,
+push_row() to write data, and push_names() to store column names.  We will
+leave deleting to DBD::File, since deleting a record in the 'Foo' format
+is the same process as deleting a record in any other simple file-based
+format.  Here is the complete object definition:
+
+ package Foo::Table;
+ use base qw(DBD::File::Table);
+
+ sub fetch_row {
+    my($self, $data) = @_;
+    my $fieldstr = $self->{fh}->getline;
+    return undef unless $fieldstr;
+    chomp $fieldstr;
+    my @fields   = split /:/,$fieldstr;
+    $self->{row} = (@fields ? \@fields : undef);
+ }
+ sub push_row {
+    my($self, $data, $fields) = @_;
+    my $str = join ':', map { defined $_ ? $_ : '' } @$fields;
+    $self->{fh}->print( $str."\n");
+    1;
+ }
+ sub push_names {}
+ 1;
+
+The fetch_row() method uses DBD::File's getline() method to physically
+read a row of data, then we convert it from native colon-separated format
+into a perl arrayref.
+
+The push_row() method converts from a perl arrayref back to colon-separated
+format then uses DBD::File's print() method to print it to file.
+
+The push_names method does nothing because it's purpose is to store column
+names in a file and in our 'Foo' subclass, we are defining the column names
+ourselves, not storing them in a file.
+
+=head1 Trying out our new subclass
+
+Here is a script which should create and query a file in our 'Foo' format.
+It assumes you have saved the Foo, Foo::Statement, and Foo::Table classes
+shown above into a file called Foo.pm.
+
+ #!perl -w
+ use strict;
+ use Foo;
+ my $parser = SQL::Parser->new();
+ $parser->{RaiseError}=1;
+ $parser->{PrintError}=0;
+ for my $sql(split /\n/,
+ "  DROP TABLE IF EXISTS group_id
+    CREATE TABLE group_id (username CHAR,uid INT, gid INT)
+    INSERT INTO group_id VALUES('joe',1,1)
+    INSERT INTO group_id VALUES('sue',2,1)
+    INSERT INTO group_id VALUES('bob',3,2)
+    SELECT * FROM group_id             "
+ ){
+    my $stmt = Foo::Statement->new($sql,$parser);
+    $stmt->execute;
+    next unless $stmt->command eq 'SELECT';
+    while (my $row=$stmt->fetch) {
+        print "@$row\n";
+    }
+ }
+
+This is the same script as shown in the section on executing and fetching
+in L<SQL::Statement::Structure> except that instead of
+SQL::Statement->new(), we are using Foo::Statement->new().   The other
+difference is that the execute/fetch example was using in-memory storage
+while this script is using file-based storage and the 'Foo' format we
+defined.  When you run this script, you will be creating a file called
+"group_id" and it will contain the specified data in colon-separated
+format.
+
+=head1 Developing a new DBD
+
+=head2 Moving from a subclass to a DBD
+
+A DBD based on SQL::Statement uses the same two subclasses that are shown
+above.  They should be called DBD::Foo::Statement and DBD::Foo::Table, but
+would otherwise be identical to the non-DBD subclass illustrated above.
+To turn it into a full DBD, you have to subclass DBD::File, DBD::File::dr,
+DBD::File::db, and DBD::File::st.  In many cases a simple subclass with
+few or no methods overridden is sufficient.
+
+Here is a working DBD::Foo:
+
+ package DBD::Foo;
+ use base qw(DBD::File);
+
+ package DBD::Foo::dr;
+ $DBD::Foo::dr::imp_data_size = 0;
+ use base qw(DBD::File::dr);
+
+ package DBD::Foo::db;
+ $DBD::Foo::db::imp_data_size = 0;
+ use base qw(DBD::File::db);
+
+ package DBD::Foo::st;
+ $DBD::Foo::st::imp_data_size = 0;
+ use base qw(DBD::File::st);
+
+ package DBD::Foo::Statement;
+ use base qw(DBD::File::Statement);
+
+ sub open_table {
+     my $self = shift @_;
+     my $data = shift @_;
+     $data->{Database}->{f_dir} = './';
+     my $tbl  = $self->SUPER::open_table($data,@_);
+     $tbl->{col_names} = [qw(username uid gid)];
+     $tbl->{col_nums}  = {username=>0,uid=>1,gid=>2};
+     return $tbl;
+ }
+
+ package DBD::Foo::Table;
+ use base qw(DBD::File::Table);
+
+ sub fetch_row {
+    my($self, $data) = @_;
+    my $fieldstr = $self->{fh}->getline;
+    return undef unless $fieldstr;
+    chomp $fieldstr;
+    my @fields   = split /:/,$fieldstr;
+    $self->{row} = (@fields ? \@fields : undef);
+ }
+ sub push_row {
+     my($self, $data, $fields) = @_;
+     my $str = join ':', map { defined $_ ? $_ : '' } @$fields;
+     $self->{fh}->print( $str."\n");
+     1;
+ }
+ sub push_names {}
+ 1;
+
+=head2 A sample script to test our new DBD
+
+Assuming you saved the DBD::Foo shown above as a file called "Foo.pm" in
+a directory called "DBD", this script will work, so will most other DBI
+methods such as selectall_arrayref, fetchrow_hashref, etc.
+
+ #!perl -w
+ use strict;
+ use lib qw(/home/jeff/data/module/lib); # or wherever you stored DBD::Foo
+ use DBI;
+ my $dbh=DBI->connect('dbi:Foo:');
+ $dbh->{RaiseError}=1;
+ $dbh->{PrintError}=0;
+ for my $sql(split /\n/,
+ "  DROP TABLE IF EXISTS group_id
+    CREATE TABLE group_id (username CHAR,uid INT, gid INT)
+    INSERT INTO group_id VALUES('joe',1,1)
+    INSERT INTO group_id VALUES('sue',2,1)
+    INSERT INTO group_id VALUES('bob',3,2)
+    SELECT * FROM group_id             "
+ ){
+    my $stmt = $dbh->prepare($sql);
+    $stmt->execute;
+    next unless $stmt->{NUM_OF_FIELDS};
+    while (my $row=$stmt->fetch) {
+        print "@$row\n";
+    }
+ }
+
+=head1 Expanding the DBD
+
+Now that we have a basic DBD operational, there are several directions for
+expansion.  In the first place, we might want to override some or all of
+DBD::File::Table to provide alternate means of reading, writing, and
+deleting from our data source.  We might want to override the open_table()
+method to provide a different means of identifying column names (e.g.
+reading them from the file itself) or to provide other kinds of metadata.
+See L<SQL::Eval> for documentation of the API for ::Table objects and see
+L<DBD::File> for an example subclass.
+
+We might want to create extensions to the SQL syntax specific to our DBD.
+See the section on extending SQL syntax in L<SQL::Statement::Syntax>.
+
+We might want to provide a completely different kind of data source.  See
+L<DBD::DBM> (whose source code includes documentation on subclassing
+SQL::Statement and DBD::File), and other DBD::File subclasses such as
+L<DBD::CSV>.
+
+We might also want to provide a completely different storage mechanism,
+something not based on files at all.  See L<DBD::Amazon> and
+L<DBD::AnyData>.
+
+And we will almost certainly want to fine-tune the DBI interface, see
+L<DBI::DBD>.
+
+=head1 Getting help with a new DBD
+
+The dbi-devATperl.org mailing list should be your first stop in creating a
+new DBD.  Tim Bunce, the author of DBI and many DBD authors hang out there.
+Tell us what you are planning and we will offer suggestions about similar
+modules or other people working on similar issues, or on how to proceed.
+
+=head1 AUTHOR & COPYRIGHT
+
+  Copyright (c) 2005, Jeff Zucker <jzuckerATcpan.org>, all rights reserved.
+  Copyright (c) 2010, Jens Rehsack <rehsackATcpan.org>, all rights reserved.
+
+This document may be freely modified and distributed under the same terms
+as Perl itself.
+
+=cut

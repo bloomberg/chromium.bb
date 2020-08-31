@@ -1,0 +1,165 @@
+=encoding utf8
+
+=head1 NAME
+
+Log::Report::Exception - a collected report
+
+=head1 SYNOPSIS
+
+ # created within a try block
+ try { error "help!" };
+ my $exception = $@->wasFatal;
+ $exception->throw if $exception;
+
+ $@->reportFatal;  # combination of above two lines
+
+ my $message = $exception->message;   # the Log::Report::Message
+
+ if($message->inClass('die')) ...
+ if($exception->inClass('die')) ...   # same
+ if($@->wasFatal(class => 'die')) ... # same
+
+=head1 DESCRIPTION
+
+In Log::Report, exceptions are not as extended as available in
+languages as Java: you do not create classes for them.  The only
+thing an exception object does, is capture some information about
+an (untranslated) report.
+
+=head1 METHODS
+
+=head2 Constructors
+
+=over 4
+
+=item Log::Report::Exception-E<gt>B<new>(%options)
+
+ -Option     --Default
+  message      <required>
+  reason       <required>
+  report_opts  {}
+
+=over 2
+
+=item message => Log::Report::Message
+
+=item reason => REASON
+
+=item report_opts => HASH
+
+=back
+
+=back
+
+=head2 Accessors
+
+=over 4
+
+=item $obj-E<gt>B<isFatal>()
+
+Returns whether this exception has a severity which makes it fatal
+when thrown.  See L<Log::Report::Util::is_fatal()|Log::Report::Util/"Reasons">.
+
+example: 
+
+  if($ex->isFatal) { $ex->throw(reason => 'ALERT') }
+  else { $ex->throw }
+
+=item $obj-E<gt>B<message>( [$message] )
+
+Change the $message of the exception, must be a L<Log::Report::Message|Log::Report::Message>
+object.
+
+When you use a C<Log::Report::Message> object, you will get a new one
+returned. Therefore, if you want to modify the message in an exception,
+you have to re-assign the result of the modification.
+
+example: 
+
+ $e->message->concat('!!')); # will not work!
+ $e->message($e->message->concat('!!'));
+ $e->message(__x"some message {msg}", msg => $xyz);
+
+=item $obj-E<gt>B<reason>( [$reason] )
+
+=item $obj-E<gt>B<report_opts>()
+
+=back
+
+=head2 Processing
+
+=over 4
+
+=item $obj-E<gt>B<inClass>($class|Regexp)
+
+Check whether any of the classes listed in the message match $class
+(string) or the Regexp.  This uses L<Log::Report::Message::inClass()|Log::Report::Message/"Processing">.
+
+=item $obj-E<gt>B<print>( [$fh] )
+
+The default filehandle is STDOUT.
+
+example: 
+
+ print $exception;  # via overloading
+ $exception->print; # OO style
+
+=item $obj-E<gt>B<throw>(%options)
+
+Insert the message contained in the exception into the currently
+defined dispatchers.  The C<throw> name is commonly known
+exception related terminology for C<report>.
+
+The %options overrule the captured options to L<Log::Report::report()|Log::Report/"Report Production and Configuration">.
+This can be used to overrule a destination.  Also, the reason can
+be changed.
+
+example: overrule defaults to report
+
+ try { print {to => 'stderr'}, ERROR => 'oops!' };
+ $@->reportFatal(to => 'syslog');
+
+ $exception->throw(to => 'syslog');
+
+ $@->wasFatal->throw(reason => 'WARNING');
+
+=item $obj-E<gt>B<toHTML>( [$locale] )
+
+[1.11] as L<toString()|Log::Report::Exception/"Processing">, and escape HTML volatile characters.
+
+=item $obj-E<gt>B<toString>( [$locale] )
+
+Prints the reason and the message.  Differently from L<throw()|Log::Report::Exception/"Processing">, this
+only represents the textual content: it does not re-cast the exceptions to
+higher levels.
+
+example: printing exceptions
+
+ print $_->toString for $@->exceptions;
+ print $_ for $@->exceptions;   # via overloading
+
+=back
+
+=head1 OVERLOADING
+
+=over 4
+
+=item overload: B<stringification>
+
+Produces "reason: message".
+
+=back
+
+=head1 SEE ALSO
+
+This module is part of Log-Report distribution version 1.28,
+built on May 14, 2019. Website: F<http://perl.overmeer.net/CPAN/>
+
+=head1 LICENSE
+
+Copyrights 2007-2019 by [Mark Overmeer <markov@cpan.org>]. For other contributors see ChangeLog.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See F<http://dev.perl.org/licenses/>
+

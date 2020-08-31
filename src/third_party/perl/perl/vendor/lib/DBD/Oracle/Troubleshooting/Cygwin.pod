@@ -1,0 +1,112 @@
+#PODNAME: DBD::Oracle::Troubleshooting::Cygwin
+#ABSTRACT: Tips and Hints to Troubleshoot DBD::Oracle on Cygwin
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+DBD::Oracle::Troubleshooting::Cygwin - Tips and Hints to Troubleshoot DBD::Oracle on Cygwin
+
+=head1 VERSION
+
+version 1.76
+
+=head1 General Info
+
+Makefile.PL should find and make use of OCI include
+files, but you have to build an import library for
+OCI.DLL and put it somewhere in library search path.
+one of the possible ways to do this is issuing command
+
+    dlltool --input-def oci.def --output-lib liboci.a
+
+in the directory where you unpacked DBD::Oracle distribution
+archive.  this will create import library for Oracle 8.0.4.
+
+Note: make clean removes '*.a' files, so put a copy in a safe place.
+
+=head1 Compiling DBD::Oracle using the Oracle Instant Client, Cygwin Perl and gcc
+
+=over
+
+=item 1
+
+Download these two packages from Oracle's Instant Client for
+Windows site
+(http://www.oracle.com/technology/software/tech/oci/instantclient/htdocs/winsoft.html):
+
+Instant Client Package - Basic: All files required to run OCI,
+OCCI, and JDBC-OCI applications
+
+Instant Client Package - SDK: Additional header files and an
+example makefile for developing Oracle applications with Instant Client
+
+(I usually just use the latest version of the client)
+
+=item 2
+
+Unpack both into C:\oracle\instantclient_11_1
+
+=item 3
+
+Download and unpack DBD::Oracle from CPAN to some place with no
+spaces in the path (I used /tmp/DBD-Oracle) and cd to it.
+
+=item 4
+
+Set up some environment variables (it didn't work until I got the
+DSN right):
+
+      ORACLE_DSN=DBI:Oracle:host=oraclehost;sid=oracledb1
+      ORACLE_USERID=username/password
+
+=item 5
+
+      perl Makefile.PL
+      make
+      make test
+      make install
+
+=back
+
+Note, the TNS Names stuff doesn't always seem to work with the instant
+client so Perl scripts need to explicitly use host/sid in the DSN, like
+this:
+
+    my $dbh = DBI->connect('dbi:Oracle:host=oraclehost;sid=oracledb1',
+    'username', 'password');
+
+=head1 AUTHORS
+
+=over 4
+
+=item *
+
+Tim Bunce <timb@cpan.org>
+
+=item *
+
+John Scoles <byterock@cpan.org>
+
+=item *
+
+Yanick Champoux <yanick@cpan.org>
+
+=item *
+
+Martin J. Evans <mjevans@cpan.org>
+
+=back
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2018, 2014, 2013, 2012, 2011, 2010 by Tim Bunce.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut

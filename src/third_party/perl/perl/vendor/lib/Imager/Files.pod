@@ -1,0 +1,2076 @@
+=head1 NAME
+
+Imager::Files - working with image files
+
+=head1 SYNOPSIS
+
+  use Imager;
+  my $img = ...;
+  $img->write(file=>$filename, type=>$type)
+    or die "Cannot write: ",$img->errstr;
+
+  # type is optional if we can guess the format from the filename
+  $img->write(file => "foo.png")
+    or die "Cannot write: ",$img->errstr;
+
+  $img = Imager->new;
+  $img->read(file=>$filename, type=>$type)
+    or die "Cannot read: ", $img->errstr;
+
+  # type is optional if we can guess the type from the file data
+  # and we normally can guess
+  $img->read(file => $filename)
+    or die "Cannot read: ", $img->errstr;
+
+  Imager->write_multi({ file=> $filename, ... }, @images)
+    or die "Cannot write: ", Imager->errstr;
+
+  my @imgs = Imager->read_multi(file=>$filename)
+    or die "Cannot read: ", Imager->errstr;
+
+  Imager->set_file_limits(width=>$max_width, height=>$max_height)
+
+  my @read_types = Imager->read_types;
+  my @write_types = Imager->write_types;
+
+  # we can write/write_multi to things other than filenames
+  my $data;
+  $img->write(data => \$data, type => $type) or die;
+
+  my $fh = ... ; # eg. IO::File
+  $img->write(fh => $fh, type => $type) or die;
+
+  $img->write(fd => fileno($fh), type => $type) or die;
+
+  # some file types need seek callbacks too
+  $img->write(callback => \&write_callback, type => $type) or die;
+
+  # and similarly for read/read_multi
+  $img->read(data => $data) or die;
+  $img->read(fh => $fh) or die;
+  $img->read(fd => fileno($fh)) or die;
+  $img->read(callback => \&read_callback) or die;
+
+  use Imager 0.68;
+  my $img = Imager->new(file => $filename)
+    or die Imager->errstr;
+
+  Imager->add_file_magic(name => $name, bits => $bits, mask => $mask);
+
+=head1 DESCRIPTION
+
+You can read and write a variety of images formats, assuming you have
+the L<appropriate libraries|Imager::Install/EXTERNAL LIBRARIES>, and
+images can be read or written to/from files, file handles, file
+descriptors, scalars, or through callbacks.
+
+To see which image formats Imager is compiled to support the following
+code snippet is sufficient:
+
+  use Imager;
+  print join " ", keys %Imager::formats;
+
+This will include some other information identifying libraries rather
+than file formats.  For new code you might find the L</read_types()>
+or L</write_types()> methods useful.
+
+=over 
+
+=item read()
+
+Reading writing to and from files is simple, use the C<read()>
+method to read an image:
+
+  my $img = Imager->new;
+  $img->read(file=>$filename, type=>$type)
+    or die "Cannot read $filename: ", $img->errstr;
+
+In most cases Imager can auto-detect the file type, so you can just
+supply the file name:
+
+  $img->read(file => $filename)
+    or die "Cannot read $filename: ", $img->errstr;
+
+The read() method accepts the C<allow_incomplete> parameter.  If this
+is non-zero then read() can return true on an incomplete image and set
+the C<i_incomplete> tag.
+
+From Imager 0.68 you can supply most read() parameters to the new()
+method to read the image file on creation.  If the read fails, check
+Imager->errstr() for the cause:
+
+  use Imager 0.68;
+  my $img = Imager->new(file => $filename)
+    or die "Cannot read $filename: ", Imager->errstr;
+
+=item write()
+
+and the C<write()> method to write an image:
+
+  $img->write(file=>$filename, type=>$type)
+    or die "Cannot write $filename: ", $img->errstr;
+
+=item read_multi()
+
+If you're reading from a format that supports multiple images per
+file, use the C<read_multi()> method:
+
+  my @imgs = Imager->read_multi(file=>$filename, type=>$type)
+    or die "Cannot read $filename: ", Imager->errstr;
+
+As with the read() method, Imager will normally detect the C<type>
+automatically.
+
+=item write_multi()
+
+and if you want to write multiple images to a single file use the
+C<write_multi()> method:
+
+  Imager->write_multi({ file=> $filename, type=>$type }, @images)
+    or die "Cannot write $filename: ", Imager->errstr;
+
+=item read_types()
+
+This is a class method that returns a list of the image file types
+that Imager can read.
+
+  my @types = Imager->read_types;
+
+These types are the possible values for the C<type> parameter, not
+necessarily the extension of the files you're reading.
+
+It is possible for extra file read handlers to be loaded when
+attempting to read a file, which may modify the list of available read
+types.
+
+=item write_types()
+
+This is a class method that returns a list of the image file types
+that Imager can write.
+
+  my @types = Imager->write_types;
+
+Note that these are the possible values for the C<type> parameter, not
+necessarily the extension of the files you're writing.
+
+It is possible for extra file write handlers to be loaded when
+attempting to write a file, which may modify the list of available
+write types.
+
+=back
+
+When writing, if the C<filename> includes an extension that Imager
+recognizes, then you don't need the C<type>, but you may want to
+provide one anyway.  See L</Guessing types> for information on
+controlling this recognition.
+
+The C<type> parameter is a lowercase representation of the file type,
+and can be any of the following:
+
+  bmp   Windows BitMaP (BMP)
+  gif   Graphics Interchange Format (GIF)
+  jpeg  JPEG/JFIF
+  png   Portable Network Graphics (PNG)
+  pnm   Portable aNyMap (PNM)
+  raw   Raw
+  sgi   SGI .rgb files
+  tga   TARGA
+  tiff  Tagged Image File Format (TIFF)
+
+When you read an image, Imager may set some tags, possibly including
+information about the spatial resolution, textual information, and
+animation information.  See L<Imager::ImageTypes/Tags> for specifics.
+
+The open() method is a historical alias for the read() method.
+
+=head2 Input and output
+
+When reading or writing you can specify one of a variety of sources or
+targets:
+
+=over
+
+=item *
+
+C<file> - The C<file> parameter is the name of the image file to be
+written to or read from.  If Imager recognizes the extension of the
+file you do not need to supply a C<type>.
+
+  # write in tiff format
+  $image->write(file => "example.tif")
+    or die $image->errstr;
+
+  $image->write(file => 'foo.tmp', type => 'tiff')
+    or die $image->errstr;
+
+  my $image = Imager->new;
+  $image->read(file => 'example.tif')
+    or die $image->errstr;
+
+=item *
+
+C<fh> - C<fh> is a file handle, typically either returned from
+C<<IO::File->new()>>, or a glob from an C<open> call.  You should call
+C<binmode> on the handle before passing it to Imager.
+
+Imager will set the handle to autoflush to make sure any buffered data
+is flushed , since Imager will write to the file descriptor (from
+fileno()) rather than writing at the perl level.
+
+  $image->write(fh => \*STDOUT, type => 'gif')
+    or die $image->errstr;
+
+  # for example, a file uploaded via CGI.pm
+  $image->read(fd => $cgi->param('file')) 
+    or die $image->errstr;
+
+=item *
+
+C<fd> - C<fd> is a file descriptor.  You can get this by calling the
+C<fileno()> function on a file handle, or by using one of the standard
+file descriptor numbers.
+
+If you get this from a perl file handle, you may need to flush any
+buffered output, otherwise it may appear in the output stream after
+the image.
+
+  $image->write(fd => file(STDOUT), type => 'gif')
+    or die $image->errstr;
+
+=item *
+
+C<data> - When reading data, C<data> is a scalar containing the image
+file data, or a reference to such a scalar.  When writing, C<data> is
+a reference to the scalar to save the image file data to.
+
+  my $data;
+  $image->write(data => \$data, type => 'tiff')
+    or die $image->errstr;
+
+  my $data = $row->{someblob}; # eg. from a database
+  my @images = Imager->read_multi(data => $data)
+    or die Imager->errstr;
+
+  # from Imager 0.99
+  my @images = Imager->read_multi(data => \$data)
+    or die Imager->errstr;
+
+=item *
+
+C<callback>, C<readcb>, C<writecb>, C<seekcb>, C<closecb> - Imager
+will make calls back to your supplied coderefs to read, write and seek
+from/to/through the image file.  See L</"I/O Callbacks"> below for details.
+
+=item *
+
+C<io> - an L<Imager::IO> object.
+
+=back
+
+X<buffering>X<unbuffered>By default Imager will use buffered I/O when
+reading or writing an image.  You can disabled buffering for output by
+supplying a C<< buffered => 0 >> parameter to C<write()> or
+C<write_multi()>.
+
+=head2 I/O Callbacks
+
+When reading from a file you can use either C<callback> or C<readcb>
+to supply the read callback, and when writing C<callback> or
+C<writecb> to supply the write callback.
+
+Whether reading or writing a C<TIFF> image, C<seekcb> and C<readcb>
+are required.
+
+If a file handler attempts to use C<readcb>, C<writecb> or C<seekcb>
+and you haven't supplied one, the call will fail, failing the image
+read or write, returning an error message indicating that the callback
+is missing:
+
+  # attempting to read a TIFF image without a seekcb
+  open my $fh, "<", $filename or die;
+  my $rcb = sub {
+    my $val;
+    read($fh, $val, $_[0]) or return "";
+    return $val;
+  };
+  my $im = Imager->new(callback => $rcb)
+    or die Imager->errstr
+  # dies with (wrapped here):
+  # Error opening file: (Iolayer): Failed to read directory at offset 0:
+  # (Iolayer): Seek error accessing TIFF directory: seek callback called
+  # but no seekcb supplied
+
+You can also provide a C<closecb> parameter called when writing the
+file is complete.  If no C<closecb> is supplied the default will
+succeed silently.
+
+  # contrived
+  my $data;
+  sub mywrite {
+    $data .= unpack("H*", shift);
+    1;
+  }
+  Imager->write_multi({ callback => \&mywrite, type => 'gif'}, @images)
+    or die Imager->errstr;
+
+=head3 C<readcb>
+
+The read callback is called with 2 parameters:
+
+=over
+
+=item *
+
+C<size> - the minimum amount of data required.
+
+=item *
+
+C<maxsize> - previously this was the maximum amount of data returnable
+- currently it's always the same as C<size>
+
+=back
+
+Your read callback should return the data as a scalar:
+
+=over
+
+=item *
+
+on success, a string containing the bytes read.
+
+=item *
+
+on end of file, an empty string
+
+=item *
+
+on error, C<undef>.
+
+=back
+
+If your return value contains more data than C<size> Imager will
+panic.
+
+Your return value must not contain any characters over C<\xFF> or
+Imager will panic.
+
+=head3 C<writecb>
+
+Your write callback takes exactly one parameter, a scalar containing
+the data to be written.
+
+Return true for success.
+
+=head3 C<seekcb>
+
+The seek callback takes 2 parameters, a I<POSITION>, and a I<WHENCE>,
+defined in the same way as perl's seek function.
+
+Previously you always needed a C<seekcb> callback if you called
+Imager's L</read()> or L</read_multi()> without a C<type> parameter,
+but this is no longer necessary unless the file handler requires
+seeking, such as for TIFF files.
+
+Returns the new position in the file, or -1 on failure.
+
+=head3 C<closecb>
+
+You can also supply a C<closecb> which is called with no parameters
+when there is no more data to be written.  This could be used to flush
+buffered data.
+
+Return true on success.
+
+=head2 Guessing types
+X<FORMATGUESS>
+
+When writing to a file, if you don't supply a C<type> parameter Imager
+will attempt to guess it from the file name.  This is done by calling
+the code reference stored in C<$Imager::FORMATGUESS>.  This is only
+done when write() or write_multi() is called with a C<file> parameter,
+or if read() or read_multi() can't determine the type from the file's
+header.
+
+The default function value of C<$Imager::FORMATGUESS> is
+C<\&Imager::def_guess_type>.
+
+=over
+
+=item def_guess_type()
+X<methods, def_guess_type()>
+
+This is the default function Imager uses to derive a file type from a
+file name.  This is a function, not a method.
+
+Accepts a single parameter, the file name and returns the type or
+undef.
+
+=back
+
+You can replace function with your own implementation if you have some
+specialized need.  The function takes a single parameter, the name of
+the file, and should return either a file type or under.
+
+  # I'm writing jpegs to weird filenames
+  local $Imager::FORMATGUESS = sub { 'jpeg' };
+
+When reading a file Imager examines beginning of the file for
+identifying information.  The current implementation attempts to
+detect the following image types beyond those supported by Imager:
+
+=for stopwords Photoshop
+
+=over
+
+C<xpm>, C<mng>, C<jng>, C<ilbm>, C<pcx>, C<fits>, C<psd> (Photoshop), C<eps>, Utah
+C<RLE>.
+
+=back
+
+You can now add to the magic database Imager uses for detecting file
+types:
+
+=over
+
+=item add_file_magic()
+
+  Imager->add_file_magic(name => $name, bits => $bits, mask => $mask)
+
+Adds to list of magic, the parameters are all required.  The
+parameters are:
+
+=over
+
+=item *
+
+C<name> - the file type name to return on match.
+
+=item *
+
+C<bits> - a binary string to match.
+
+=item *
+
+C<mask> - a mask controlling which parts of I<bits> are significant.
+
+=back
+
+While I<mask> is mostly a bit mask, some byte values are translated,
+the space character is treated as all zeros (C<"\x00">), and the C<x> character as
+all ones (C<"\xFF">).
+
+New magic entries take priority over old entries.
+
+You can add more than one magic entry for a given I<name>.
+
+  Imager->add_file_magic(name => "heif",
+                         bits => "    ftypheif"
+                         mask => "    xxxxxxxx");
+
+=back
+
+=head2 Limiting the sizes of images you read
+
+=over
+
+=item set_file_limits()
+
+In some cases you will be receiving images from an untested source,
+such as submissions via CGI.  To prevent such images from consuming
+large amounts of memory, you can set limits on the dimensions of
+images you read from files:
+
+=over
+
+=item *
+
+width - limit the width in pixels of the image
+
+=item *
+
+height - limit the height in pixels of the image
+
+=item *
+
+bytes - limits the amount of storage used by the image.  This depends
+on the width, height, channels and sample size of the image.  For
+paletted images this is calculated as if the image was expanded to a
+direct color image.
+
+=back
+
+To set the limits, call the class method set_file_limits:
+
+  Imager->set_file_limits(width=>$max_width, height=>$max_height);
+
+You can pass any or all of the limits above, any limits you do not
+pass are left as they were.
+
+Any limit of zero for width or height is treated as unlimited.
+
+A limit of zero for bytes is treated as one gigabyte, but higher bytes
+limits can be set explicitly.
+
+By default, the width and height limits are zero, or unlimited.  The
+default memory size limit is one gigabyte.
+
+You can reset all limits to their defaults with the reset parameter:
+
+  # no limits
+  Imager->set_file_limits(reset=>1);
+
+This can be used with the other limits to reset all but the limit you
+pass:
+
+  # only width is limited
+  Imager->set_file_limits(reset=>1, width=>100);
+
+  # only bytes is limited
+  Imager->set_file_limits(reset=>1, bytes=>10_000_000);
+
+=item get_file_limits()
+
+You can get the current limits with the get_file_limits() method:
+
+  my ($max_width, $max_height, $max_bytes) =
+     Imager->get_file_limits();
+
+=item check_file_limits()
+X<class methods, check_file_limits()>X<check_file_limits()>
+
+Intended for use by file handlers to check that the size of a file is
+within the limits set by C<set_file_limits()>.
+
+Parameters:
+
+=over
+
+=item *
+
+C<width>, C<height> - the width and height of the image in pixels.
+Must be a positive integer. Required.
+
+=item *
+
+C<channels> - the number of channels in the image, including the alpha
+channel if any.  Must be a positive integer between 1 and 4
+inclusive.  Default: 3.
+
+=item *
+
+C<sample_size> - the number of bytes stored per sample.  Must be a
+positive integer or C<"float">.  Note that this should be the sample
+size of the Imager image you will be creating, not the sample size in
+the source, eg. if the source has 32-bit samples this should be
+C<"float"> since Imager doesn't have 32-bit/sample images.
+
+=back
+
+=back
+
+=head1 TYPE SPECIFIC INFORMATION
+
+The different image formats can write different image type, and some have
+different options to control how the images are written.
+
+When you call C<write()> or C<write_multi()> with an option that has
+the same name as a tag for the image format you're writing, then the
+value supplied to that option will be used to set the corresponding
+tag in the image.  Depending on the image format, these values will be
+used when writing the image.
+
+This replaces the previous options that were used when writing GIF
+images.  Currently if you use an obsolete option, it will be converted
+to the equivalent tag and Imager will produced a warning.  You can
+suppress these warnings by calling the C<Imager::init()> function with
+the C<warn_obsolete> option set to false:
+
+  Imager::init(warn_obsolete=>0);
+
+At some point in the future these obsolete options will no longer be
+supported.
+
+=for stopwords aNy PixMaps BitMap
+
+=head2 PNM (Portable aNy Map)
+
+Imager can write C<PGM> (Portable Gray Map) and C<PPM> (Portable
+PixMaps) files, depending on the number of channels in the image.
+Currently the images are written in binary formats.  Only 1 and 3
+channel images can be written, including 1 and 3 channel paletted
+images.
+
+  $img->write(file=>'foo.ppm') or die $img->errstr;
+
+Imager can read both the ASCII and binary versions of each of the
+C<PBM> (Portable BitMap), C<PGM> and C<PPM> formats.
+
+  $img->read(file=>'foo.ppm') or die $img->errstr;
+
+PNM does not support the spatial resolution tags.
+
+The following tags are set when reading a PNM file:
+
+=over
+
+=item *
+
+X<pnm_maxval>C<pnm_maxval> - the C<maxvals> number from the PGM/PPM header.
+Always set to 2 for a C<PBM> file.
+
+=item *
+
+X<pnm_type>C<pnm_type> - the type number from the C<PNM> header, 1 for ASCII
+C<PBM> files, 2 for ASCII C<PGM> files, 3 for ASCII c<PPM> files, 4 for binary
+C<PBM> files, 5 for binary C<PGM> files, 6 for binary C<PPM> files.
+
+=back
+
+The following tag is checked when writing an image with more than
+8-bits/sample:
+
+=over
+
+=item *
+
+X<pnm_write_wide_data>pnm_write_wide_data - if this is non-zero then
+write() can write C<PGM>/C<PPM> files with 16-bits/sample.  Some
+applications, for example GIMP 2.2, and tools can only read
+8-bit/sample binary PNM files, so Imager will only write a 16-bit
+image when this tag is non-zero.
+
+=back
+
+=head2 JPEG
+
+You can supply a C<jpegquality> parameter ranging from 0 (worst
+quality) to 100 (best quality) when writing a JPEG file, which
+defaults to 75.
+
+  $img->write(file=>'foo.jpg', jpegquality=>90) or die $img->errstr;
+
+If you write an image with an alpha channel to a JPEG file then it
+will be composed against the background set by the C<i_background>
+parameter (or tag), or black if not supplied.
+
+Imager will read a gray scale JPEG as a 1 channel image and a color
+JPEG as a 3 channel image.
+
+  $img->read(file=>'foo.jpg') or die $img->errstr;
+
+The following tags are set in a JPEG image when read, and can be set
+to control output:
+
+=over
+
+=item *
+
+C<jpeg_density_unit> - The value of the density unit field in the
+C<JFIF> header.  This is ignored on writing if the C<i_aspect_only>
+tag is non-zero.
+
+The C<i_xres> and C<i_yres> tags are expressed in pixels per inch no
+matter the value of this tag, they will be converted to/from the value
+stored in the JPEG file.
+
+=item *
+
+C<jpeg_density_unit_name> - This is set when reading a JPEG file to
+the name of the unit given by C<jpeg_density_unit>.  Possible results
+include C<inch>, C<centimeter>, C<none> (the C<i_aspect_only> tag is
+also set reading these files).  If the value of C<jpeg_density_unit>
+is unknown then this tag isn't set.
+
+=item *
+
+C<jpeg_comment> - Text comment.
+
+=item *
+
+C<jpeg_progressive> - Whether the JPEG file is a progressive
+file. (Imager 0.84)
+
+=back
+
+JPEG supports the spatial resolution tags C<i_xres>, C<i_yres> and
+C<i_aspect_only>.
+
+You can also set the following tags when writing to an image, they are
+not set in the image when reading:
+
+=over
+
+C<jpeg_optimize> - set to a non-zero integer to compute optimal
+Huffman coding tables for the image.  This will increase memory usage
+and processing time (about 12% in my simple tests) but can
+significantly reduce file size without a loss of quality.
+
+=back
+
+=for stopwords EXIF
+
+If an C<APP1> block containing EXIF information is found, then any of the
+following tags can be set when reading a JPEG image:
+
+=over
+
+exif_aperture exif_artist exif_brightness exif_color_space
+exif_contrast exif_copyright exif_custom_rendered exif_date_time
+exif_date_time_digitized exif_date_time_original
+exif_digital_zoom_ratio exif_exposure_bias exif_exposure_index
+exif_exposure_mode exif_exposure_program exif_exposure_time
+exif_f_number exif_flash exif_flash_energy exif_flashpix_version
+exif_focal_length exif_focal_length_in_35mm_film
+exif_focal_plane_resolution_unit exif_focal_plane_x_resolution
+exif_focal_plane_y_resolution exif_gain_control exif_image_description
+exif_image_unique_id exif_iso_speed_rating exif_make exif_max_aperture
+exif_metering_mode exif_model exif_orientation exif_related_sound_file
+exif_resolution_unit exif_saturation exif_scene_capture_type
+exif_sensing_method exif_sharpness exif_shutter_speed exif_software
+exif_spectral_sensitivity exif_sub_sec_time
+exif_sub_sec_time_digitized exif_sub_sec_time_original
+exif_subject_distance exif_subject_distance_range
+exif_subject_location exif_tag_light_source exif_user_comment
+exif_version exif_white_balance exif_x_resolution exif_y_resolution
+
+=back
+
+The following derived tags can also be set when reading a JPEG image:
+
+=over
+
+exif_color_space_name exif_contrast_name exif_custom_rendered_name
+exif_exposure_mode_name exif_exposure_program_name exif_flash_name
+exif_focal_plane_resolution_unit_name exif_gain_control_name
+exif_light_source_name exif_metering_mode_name
+exif_resolution_unit_name exif_saturation_name
+exif_scene_capture_type_name exif_sensing_method_name
+exif_sharpness_name exif_subject_distance_range_name
+exif_white_balance_name
+
+=back
+
+The derived tags are for enumerated fields, when the value for the
+base field is valid then the text that appears in the EXIF
+specification for that value appears in the derived field.  So for
+example if C<exf_metering_mode> is C<5> then
+C<exif_metering_mode_name> is set to C<Pattern>.
+
+eg.
+
+  my $image = Imager->new;
+  $image->read(file => 'exiftest.jpg')
+    or die "Cannot load image: ", $image->errstr;
+  print $image->tags(name => "exif_image_description"), "\n";
+  print $image->tags(name => "exif_exposure_mode"), "\n";
+  print $image->tags(name => "exif_exposure_mode_name"), "\n";
+
+  # for the exiftest.jpg in the Imager distribution the output would be:
+  Imager Development Notes
+  0
+  Auto exposure
+
+Imager will not write EXIF tags to any type of image, if you need more
+advanced EXIF handling, consider L<Image::ExifTool>.
+
+=for stopwords IPTC
+
+=over
+
+=item parseiptc()
+
+Historically, Imager saves IPTC data when reading a JPEG image, the
+parseiptc() method returns a list of key/value pairs resulting from a
+simple decoding of that data.
+
+Any future IPTC data decoding is likely to go into tags.
+
+=back
+
+=head2 GIF
+
+When writing one of more GIF images you can use the same
+L<Quantization Options|Imager::ImageTypes> as you can when converting
+an RGB image into a paletted image.
+
+When reading a GIF all of the sub-images are combined using the screen
+size and image positions into one big image, producing an RGB image.
+This may change in the future to produce a paletted image where possible.
+
+When you read a single GIF with C<$img-E<gt>read()> you can supply a
+reference to a scalar in the C<colors> parameter, if the image is read
+the scalar will be filled with a reference to an anonymous array of
+L<Imager::Color> objects, representing the palette of the image.  This
+will be the first palette found in the image.  If you want the
+palettes for each of the images in the file, use C<read_multi()> and
+use the C<getcolors()> method on each image.
+
+GIF does not support the spatial resolution tags.
+
+Imager will set the following tags in each image when reading, and can
+use most of them when writing to GIF:
+
+=over
+
+=item *
+
+gif_left - the offset of the image from the left of the "screen"
+("Image Left Position")
+
+=item *
+
+gif_top - the offset of the image from the top of the "screen" ("Image
+Top Position")
+
+=item *
+
+gif_interlace - non-zero if the image was interlaced ("Interlace
+Flag")
+
+=item *
+
+gif_screen_width, gif_screen_height - the size of the logical
+screen. When writing this is used as the minimum.  If any image being
+written would extend beyond this then the screen size is extended.
+("Logical Screen Width", "Logical Screen Height").
+
+=item *
+
+gif_local_map - Non-zero if this image had a local color map.  If set
+for an image when writing the image is quantized separately from the
+other images in the file.
+
+=item *
+
+gif_background - The index in the global color map of the logical
+screen's background color.  This is only set if the current image uses
+the global color map.  You can set this on write too, but for it to
+choose the color you want, you will need to supply only paletted
+images and set the C<gif_eliminate_unused> tag to 0.
+
+=item *
+
+gif_trans_index - The index of the color in the color map used for
+transparency.  If the image has a transparency then it is returned as
+a 4 channel image with the alpha set to zero in this palette entry.
+This value is not used when writing. ("Transparent Color Index")
+
+=item *
+
+gif_trans_color - A reference to an Imager::Color object, which is the
+color to use for the palette entry used to represent transparency in
+the palette.  You need to set the C<transp> option (see
+L<Imager::ImageTypes/"Quantization options">) for this value to be
+used.
+
+=item *
+
+gif_delay - The delay until the next frame is displayed, in 1/100 of a
+second.  ("Delay Time").
+
+=item *
+
+gif_user_input - whether or not a user input is expected before
+continuing (view dependent) ("User Input Flag").
+
+=item *
+
+gif_disposal - how the next frame is displayed ("Disposal Method")
+
+=item *
+
+gif_loop - the number of loops from the Netscape Loop extension.  This
+may be zero to loop forever.
+
+=item *
+
+gif_comment - the first block of the first GIF comment before each
+image.
+
+=item *
+
+gif_eliminate_unused - If this is true, when you write a paletted
+image any unused colors will be eliminated from its palette.  This is
+set by default.
+
+=item *
+
+gif_colormap_size - the original size of the color map for the image.
+The color map of the image may have been expanded to include out of
+range color indexes.
+
+=back
+
+Where applicable, the ("name") is the name of that field from the C<GIF89>
+standard.
+
+The following GIF writing options are obsolete, you should set the
+corresponding tag in the image, either by using the tags functions, or
+by supplying the tag and value as options.
+
+=over
+
+=item *
+
+gif_each_palette - Each image in the GIF file has it's own palette if
+this is non-zero.  All but the first image has a local color table
+(the first uses the global color table.
+
+Use C<gif_local_map> in new code.
+
+=item *
+
+interlace - The images are written interlaced if this is non-zero.
+
+Use C<gif_interlace> in new code.
+
+=item *
+
+gif_delays - A reference to an array containing the delays between
+images, in 1/100 seconds.
+
+Use C<gif_delay> in new code.
+
+=item *
+
+gif_positions - A reference to an array of references to arrays which
+represent screen positions for each image.
+
+New code should use the C<gif_left> and C<gif_top> tags.
+
+=item *
+
+gif_loop_count - If this is non-zero the Netscape loop extension block
+is generated, which makes the animation of the images repeat.
+
+This is currently unimplemented due to some limitations in C<giflib>.
+
+=back
+
+You can supply a C<page> parameter to the C<read()> method to read
+some page other than the first.  The page is 0 based:
+
+  # read the second image in the file
+  $image->read(file=>"example.gif", page=>1)
+    or die "Cannot read second page: ",$image->errstr,"\n";
+
+Before release 0.46, Imager would read multiple image GIF image files
+into a single image, overlaying each of the images onto the virtual
+GIF screen.
+
+As of 0.46 the default is to read the first image from the file, as if
+called with C<< page => 0 >>.
+
+You can return to the previous behavior by calling read with the
+C<gif_consolidate> parameter set to a true value:
+
+  $img->read(file=>$some_gif_file, gif_consolidate=>1);
+
+As with the to_paletted() method, if you supply a colors parameter as
+a reference to an array, this will be filled with Imager::Color
+objects of the color table generated for the image file.
+
+=head2 TIFF (Tagged Image File Format)
+
+Imager can write images to either paletted or RGB TIFF images,
+depending on the type of the source image.
+
+When writing direct color images to TIFF the sample size of the
+output file depends on the input:
+
+=over
+
+=item *
+
+double/sample - written as 32-bit/sample TIFF
+
+=item *
+
+16-bit/sample - written as 16-bit/sample TIFF
+
+=item *
+
+8-bit/sample - written as 8-bit/sample TIFF
+
+=back
+
+For paletted images:
+
+=over
+
+=item *
+
+C<< $img->is_bilevel >> is true - the image is written as bi-level
+
+=item *
+
+otherwise - image is written as paletted.
+
+=back
+
+If you are creating images for faxing you can set the I<class>
+parameter set to C<fax>.  By default the image is written in fine
+mode, but this can be overridden by setting the I<fax_fine> parameter
+to zero.  Since a fax image is bi-level, Imager uses a threshold to
+decide if a given pixel is black or white, based on a single channel.
+For gray scale images channel 0 is used, for color images channel 1
+(green) is used.  If you want more control over the conversion you can
+use $img->to_paletted() to product a bi-level image.  This way you can
+use dithering:
+
+  my $bilevel = $img->to_paletted(make_colors => 'mono',
+                                  translate => 'errdiff',
+                                  errdiff => 'stucki');
+
+=over
+
+=item *
+
+C<class> - If set to 'fax' the image will be written as a bi-level fax
+image.
+
+=item *
+
+C<fax_fine> - By default when C<class> is set to 'fax' the image is
+written in fine mode, you can select normal mode by setting
+C<fax_fine> to 0.
+
+=back
+
+Imager should be able to read any TIFF image you supply.  Paletted
+TIFF images are read as paletted Imager images, since paletted TIFF
+images have 16-bits/sample (48-bits/color) this means the bottom
+8-bits are lost, but this shouldn't be a big deal.
+
+TIFF supports the spatial resolution tags.  See the
+C<tiff_resolutionunit> tag for some extra options.
+
+As of Imager 0.62 Imager reads:
+
+=over
+
+=item *
+
+8-bit/sample gray, RGB or CMYK images, including a possible alpha
+channel as an 8-bit/sample image.
+
+=item *
+
+16-bit gray, RGB, or CMYK image, including a possible alpha channel as
+a 16-bit/sample image.
+
+=item *
+
+32-bit gray, RGB image, including a possible alpha channel as a
+double/sample image.
+
+=item *
+
+bi-level images as paletted images containing only black and white,
+which other formats will also write as bi-level.
+
+=item *
+
+tiled paletted images are now handled correctly
+
+=item *
+
+other images are read using C<tifflib>'s RGBA interface as
+8-bit/sample images.
+
+=back
+
+The following tags are set in a TIFF image when read, and can be set
+to control output:
+
+=over
+
+=item *
+
+C<tiff_compression> - When reading an image this is set to the numeric
+value of the TIFF compression tag.
+
+On writing you can set this to either a numeric compression tag value,
+or one of the following values:
+
+  Ident     Number  Description
+  none         1    No compression
+  packbits   32773  Macintosh RLE
+  ccittrle     2    CCITT RLE
+  fax3         3    CCITT Group 3 fax encoding (T.4)
+  t4           3    As above
+  fax4         4    CCITT Group 4 fax encoding (T.6)
+  t6           4    As above
+  lzw          5    LZW
+  jpeg         7    JPEG
+  zip          8    Deflate (GZIP) Non-standard
+  deflate      8    As above.
+  oldzip     32946  Deflate with an older code.
+  ccittrlew  32771  Word aligned CCITT RLE
+
+In general a compression setting will be ignored where it doesn't make
+sense, eg. C<jpeg> will be ignored for compression if the image is
+being written as bilevel.
+
+=for stopwords LZW
+
+Imager attempts to check that your build of C<libtiff> supports the
+given compression, and will fallback to C<packbits> if it isn't
+enabled.  eg. older distributions didn't include LZW compression, and
+JPEG compression is only available if C<libtiff> is configured with
+C<libjpeg>'s location.
+
+  $im->write(file => 'foo.tif', tiff_compression => 'lzw')
+    or die $im->errstr;
+
+=item *
+
+C<tags, tiff_jpegquality>C<tiff_jpegquality> - If C<tiff_compression>
+is C<jpeg> then this can be a number from 1 to 100 giving the JPEG
+compression quality.  High values are better quality and larger files.
+
+=item *
+
+X<tags, tiff_resolutionunit>C<tiff_resolutionunit> - The value of the
+C<ResolutionUnit> tag.  This is ignored on writing if the
+i_aspect_only tag is non-zero.
+
+The C<i_xres> and C<i_yres> tags are expressed in pixels per inch no
+matter the value of this tag, they will be converted to/from the value
+stored in the TIFF file.
+
+=item *
+
+X<tags, tiff_resolutionunit_name>C<tiff_resolutionunit_name> - This is
+set when reading a TIFF file to the name of the unit given by
+C<tiff_resolutionunit>.  Possible results include C<inch>,
+C<centimeter>, C<none> (the C<i_aspect_only> tag is also set reading
+these files) or C<unknown>.
+
+=item *
+
+X<tags, tiff_bitspersample>C<tiff_bitspersample> - Bits per sample
+from the image.  This value is not used when writing an image, it is
+only set on a read image.
+
+=item *
+
+X<tags, tiff_photometric>C<tiff_photometric> - Value of the
+C<PhotometricInterpretation> tag from the image.  This value is not
+used when writing an image, it is only set on a read image.
+
+=item *
+
+C<tiff_documentname>, C<tiff_imagedescription>, C<tiff_make>,
+C<tiff_model>, C<tiff_pagename>, C<tiff_software>, C<tiff_datetime>,
+C<tiff_artist>, C<tiff_hostcomputer> - Various strings describing the
+image.  C<tiff_datetime> must be formatted as "YYYY:MM:DD HH:MM:SS".
+These correspond directly to the mixed case names in the TIFF
+specification.  These are set in images read from a TIFF and saved
+when writing a TIFF image.
+
+=back
+
+You can supply a C<page> parameter to the C<read()> method to read
+some page other than the first.  The page is 0 based:
+
+  # read the second image in the file
+  $image->read(file=>"example.tif", page=>1)
+    or die "Cannot read second page: ",$image->errstr,"\n";
+
+If you read an image with multiple alpha channels, then only the first
+alpha channel will be read.
+
+When reading a C<TIFF> image with callbacks, the C<seekcb> callback
+parameter is also required.
+
+When writing a C<TIFF> image with callbacks, the C<seekcb> and
+C<readcb> parameters are also required.
+
+C<TIFF> is a random access file format, it cannot be read from or
+written to unseekable streams such as pipes or sockets.
+
+=head2 BMP (Windows Bitmap)
+
+Imager can write 24-bit RGB, and 8, 4 and 1-bit per pixel paletted
+Windows BMP files.  Currently you cannot write compressed BMP files
+with Imager.
+
+Imager can read 24-bit RGB, and 8, 4 and 1-bit perl pixel paletted
+Windows BMP files.  There is some support for reading 16-bit per pixel
+images, but I haven't found any for testing.
+
+BMP has no support for multiple image files.
+
+BMP files support the spatial resolution tags, but since BMP has no
+support for storing only an aspect ratio, if C<i_aspect_only> is set
+when you write the C<i_xres> and C<i_yres> values are scaled so the
+smaller is 72 DPI.
+
+The following tags are set when you read an image from a BMP file:
+
+=over
+
+=item bmp_compression
+
+The type of compression, if any.  This can be any of the following
+values:
+
+=for stopwords RLE
+
+=over
+
+=item BI_RGB (0)
+
+Uncompressed.
+
+=item BI_RLE8 (1)
+
+8-bits/pixel paletted value RLE compression.
+
+=item BI_RLE4 (2)
+
+4-bits/pixel paletted value RLE compression.
+
+=item BI_BITFIELDS (3)
+
+Packed RGB values.
+
+=back
+
+=item bmp_compression_name
+
+The bmp_compression value as a BI_* string
+
+=item bmp_important_colors
+
+The number of important colors as defined by the writer of the image.
+
+=item bmp_used_colors
+
+Number of color used from the BMP header
+
+=item bmp_filesize
+
+The file size from the BMP header
+
+=item bmp_bit_count
+
+Number of bits stored per pixel. (24, 8, 4 or 1)
+
+=back
+
+=for stopwords Targa
+
+=head2 TGA (Targa)
+
+When storing Targa images RLE compression can be activated with the
+C<compress> parameter, the C<idstring> parameter can be used to set the
+Targa comment field and the C<wierdpack> option can be used to use the
+15 and 16 bit Targa formats for RGB and RGBA data.  The 15 bit format
+has 5 of each red, green and blue.  The 16 bit format in addition
+allows 1 bit of alpha.  The most significant bits are used for each
+channel.
+
+Tags:
+
+=over
+
+=item tga_idstring
+
+=item tga_bitspp
+
+=item compressed
+
+=back
+
+=head2 RAW
+
+When reading raw images you need to supply the width and height of the
+image in the C<xsize> and C<ysize> options:
+
+  $img->read(file=>'foo.raw', xsize=>100, ysize=>100)
+    or die "Cannot read raw image\n";
+
+If your input file has more channels than you want, or (as is common),
+junk in the fourth channel, you can use the C<raw_datachannels> and
+C<raw_storechannels> options to control the number of channels in your input
+file and the resulting channels in your image.  For example, if your
+input image uses 32-bits per pixel with red, green, blue and junk
+values for each pixel you could do:
+
+  $img->read(file=>'foo.raw', xsize => 100, ysize => 100,
+             raw_datachannels => 4, raw_storechannels => 3,
+	     raw_interleave => 0)
+    or die "Cannot read raw image\n";
+
+In general, if you supply C<raw_storechannels> you should also supply
+C<raw_datachannels>
+
+Read parameters:
+
+=over
+
+=item *
+
+C<raw_interleave> - controls the ordering of samples within the image.
+Default: 1.  Alternatively and historically spelled C<interleave>.
+Possible values:
+
+=over
+
+=item *
+
+0 - samples are pixel by pixel, so all samples for the first pixel,
+then all samples for the second pixel and so on.  eg. for a four pixel
+scan line the channels would be laid out as:
+
+  012012012012
+
+=item *
+
+1 - samples are line by line, so channel 0 for the entire scan line is
+followed by channel 1 for the entire scan line and so on.  eg. for a
+four pixel scan line the channels would be laid out as:
+
+  000011112222
+
+This is the default.
+
+=back
+
+Unfortunately, historically, the default C<raw_interleave> for read
+has been 1, while writing only supports the C<raw_interleave> = 0
+format.
+
+For future compatibility, you should always supply the
+C<raw_interleave> (or C<interleave>) parameter.  As of 0.68, Imager
+will warn if you attempt to read a raw image without a
+C<raw_interleave> parameter.
+
+=item *
+
+C<raw_storechannels> - the number of channels to store in the image.
+Range: 1 to 4.  Default: 3.  Alternatively and historically spelled
+C<storechannels>.
+
+=item *
+
+C<raw_datachannels> - the number of channels to read from the file.
+Range: 1 or more.  Default: 3.  Alternatively and historically spelled
+C<datachannels>.
+
+=back
+
+  $img->read(file=>'foo.raw', xsize=100, ysize=>100, raw_interleave=>1)
+    or die "Cannot read raw image\n";
+
+=head2 PNG
+
+=head3 PNG Image modes
+
+PNG files can be read and written in the following modes:
+
+=over
+
+=item *
+
+bi-level - written as a 1-bit per sample gray scale image
+
+=item *
+
+paletted - Imager gray scale paletted images are written as RGB
+paletted images.  PNG palettes can include alpha values for each entry
+and this is honored as an Imager four channel paletted image.
+
+=item *
+
+8 and 16-bit per sample gray scale, optionally with an alpha channel.
+
+=item *
+
+8 and 16-bit per sample RGB, optionally with an alpha channel.
+
+=back
+
+Unlike GIF, there is no automatic conversion to a paletted image,
+since PNG supports direct color.
+
+=head3 PNG Text tags
+
+Text tags are retrieved from and written to PNG C<tEXT> or C<zTXT>
+chunks.  The following standard tags from the PNG specification are
+directly supported:
+
+=over
+
+=item *
+
+C<i_comment>X<tags,i_comment> - keyword of "Comment".
+
+=item *
+
+C<png_author>X<tags,PNG,png_author> - keyword "Author".
+
+=item *
+
+C<png_copyright>X<tags,PNG,png_copyright> - keyword "Copyright".
+
+=item *
+
+C<png_creation_time>X<tags,PNG,png_creation_time> - keyword "Creation Time".
+
+=item *
+
+C<png_description>X<tags,PNG,png_description> - keyword "Description".
+
+=item *
+
+C<png_disclaimer>X<tags,PNG,png_disclaimer> - keyword "Disclaimer".
+
+=item *
+
+C<png_software>X<tags,PNG,png_software> - keyword "Software".
+
+=item *
+
+C<png_title>X<tags,PNG,png_title> - keyword "Title".
+
+=item *
+
+C<png_warning>X<tags,PNG,png_warning> - keyword "Warning".
+
+=back
+
+Each of these tags has a corresponding C<< I<base-tag-name>_compressed
+>> tag, eg. C<png_comment_compressed>.  When reading, if the PNG chunk
+is compressed this tag will be set to 1, but is otherwise unset.  When
+writing, Imager will honor the compression tag if set and non-zero,
+otherwise the chunk text will be compressed if the value is longer
+than 1000 characters, as recommended by the C<libpng> documentation.
+
+PNG C<tEXT> or C<zTXT> chunks outside of those above are read into or
+written from Imager tags named like:
+
+=over
+
+=item *
+
+C<< png_textI<N>_key >> - the key for the text chunk.  This can be 1
+to 79 characters, may not contain any leading, trailing or consecutive
+spaces, and may contain only Latin-1 characters from 32-126, 161-255.
+
+=item *
+
+C<< png_textI<N>_text >> - the text for the text chunk.  This may not
+contain any C<NUL> characters.
+
+=item *
+
+C<< png_textI<N>_compressed >> - whether or not the text chunk is
+compressed.  This behaves similarly to the C<<
+I<base-tag-name>_compressed >> tags described above.
+
+=back
+
+Where I<N> starts from 0.  When writing both the C<..._key> and
+C<..._text> tags must be present or the write will fail.  If the key
+or text do not satisfy the requirements above the write will fail.
+
+=head3 Other PNG metadata tags
+
+=over
+
+=item *
+
+X<tags, png_interlace>C<png_interlace>, C<png_interlace_name> - only
+set when reading, C<png_interlace> is set to the type of interlacing
+used by the file, 0 for one, 1 for Adam7.  C<png_interlace_name> is
+set to a keyword describing the interlacing, either C<none> or
+C<adam7>.
+
+=item *
+
+X<tags, png_srgb_intent>C<png_srgb_intent> - the sRGB rendering intent
+for the image. an integer from 0 to 3, per the PNG specification.  If
+this chunk is found in the PNG file the C<gAMA> and C<cHRM> are
+ignored and the C<png_gamma> and C<png_chroma_...> tags are not set.
+Similarly when writing if C<png_srgb_intent> is set the C<gAMA> and
+C<cHRM> chunks are not written.
+
+=item *
+
+X<tags, png_gamma>C<png_gamma> - the gamma of the image. This value is
+not currently used by Imager when processing the image, but this may
+change in the future.
+
+=item *
+
+X<tags, png_chroma_...>C<png_chroma_white_x>, C<png_chroma_white_y>,
+C<png_chroma_red_x>, C<png_chroma_red_y>, C<png_chroma_green_x>,
+C<png_chroma_green_y>, C<png_chroma_blue_x>, C<png_chroma_blue_y> -
+the primary chromaticities of the image, defining the color model.
+This is currently not used by Imager when processing the image, but
+this may change in the future.
+
+=item *
+
+C<i_xres>, C<i_yres>, C<i_aspect_only> - processed per
+I<Imager::ImageTypes/CommonTags>.
+
+=item *
+
+X<tags, png_bits>C<png_bits> - the number of bits per sample in the
+representation.  Ignored when writing.
+
+=item *
+
+X<tags, png_time>C<png_time> - the creation time of the file formatted
+as C<< I<year>-I<month>-I<day>TI<hour>:I<minute>:I<second> >>.  This
+is stored as time data structure in the file, not a string.  If you
+set C<png_time> and it cannot be parsed as above, writing the PNG file
+will fail.
+
+=item *
+
+C<i_background> - set from the C<sBKG> when reading an image file.
+
+=back
+
+X<compression>X<png_compression_level>You can control the level of
+F<zlib> compression used when writing with the
+C<png_compression_level> parameter.  This can be an integer between 0
+(uncompressed) and 9 (best compression).
+
+=for stopwords
+CRC
+
+X<png_ignore_benign_errors>If you're using F<libpng> 1.6 or later, or
+an earlier release configured with C<PNG_BENIGN_ERRORS_SUPPORTED>, you
+can choose to ignore file format errors the authors of F<libpng>
+consider I<benign>, this includes at least CRC errors and palette
+index overflows.  Do this by supplying a true value for the
+C<png_ignore_benign_errors> parameter to the read() method:
+
+  $im->read(file => "foo.png", png_ignore_benign_errors => 1)
+    or die $im->errstr;
+
+=head2 ICO (Microsoft Windows Icon) and CUR (Microsoft Windows Cursor)
+
+Icon and Cursor files are very similar, the only differences being a
+number in the header and the storage of the cursor hot spot.  I've
+treated them separately so that you're not messing with tags to
+distinguish between them.
+
+The following tags are set when reading an icon image and are used
+when writing it:
+
+=over
+
+=item ico_mask
+
+This is the AND mask of the icon.  When used as an icon in Windows 1
+bits in the mask correspond to pixels that are modified by the source
+image rather than simply replaced by the source image.
+
+Rather than requiring a binary bitmap this is accepted in a specific format:
+
+=over
+
+=item *
+
+first line consisting of the 0 placeholder, the 1 placeholder and a
+newline.
+
+=item *
+
+following lines which contain 0 and 1 placeholders for each scan line
+of the image, starting from the top of the image.
+
+=back
+
+When reading an image, '.' is used as the 0 placeholder and '*' as the
+1 placeholder.  An example:
+
+  .*
+  ..........................******
+  ..........................******
+  ..........................******
+  ..........................******
+  ...........................*****
+  ............................****
+  ............................****
+  .............................***
+  .............................***
+  .............................***
+  .............................***
+  ..............................**
+  ..............................**
+  ...............................*
+  ...............................*
+  ................................
+  ................................
+  ................................
+  ................................
+  ................................
+  ................................
+  *...............................
+  **..............................
+  **..............................
+  ***.............................
+  ***.............................
+  ****............................
+  ****............................
+  *****...........................
+  *****...........................
+  *****...........................
+  *****...........................
+
+=back
+
+The following tags are set when reading an icon:
+
+=over
+
+=item ico_bits
+
+The number of bits per pixel used to store the image.
+
+=back
+
+For cursor files the following tags are set and read when reading and
+writing:
+
+=over
+
+=item cur_mask
+
+This is the same as the ico_mask above.
+
+=item cur_hotspotx
+
+=item cur_hotspoty
+
+The "hot" spot of the cursor image.  This is the spot on the cursor
+that you click with.  If you set these to out of range values they are
+clipped to the size of the image when written to the file.
+
+=back
+
+The following parameters can be supplied to read() or read_multi() to
+control reading of ICO/CUR files:
+
+=over
+
+=item *
+
+C<ico_masked> - if true, the default, then the icon/cursors mask is
+applied as an alpha channel to the image, unless that image already
+has an alpha channel.  This may result in a paletted image being
+returned as a direct color image.  Default: 1
+
+  # retrieve the image as stored, without using the mask as an alpha
+  # channel
+  $img->read(file => 'foo.ico', ico_masked => 0)
+    or die $img->errstr;
+
+This was introduced in Imager 0.60.  Previously reading ICO images
+acted as if C<ico_masked =E<gt> 0>.
+
+=item *
+
+C<ico_alpha_masked> - if true, then the icon/cursor mask is applied as
+an alpha channel to images that already have an alpha mask.  Note that
+this will only make pixels transparent, not opaque.  Default: 0.
+
+Note: If you get different results between C<ico_alpha_masked> being
+set to 0 and 1, your mask may break when used with the Win32 API.
+
+=back
+
+C<cur_bits> is set when reading a cursor.
+
+Examples:
+
+  my $img = Imager->new(xsize => 32, ysize => 32, channels => 4);
+  $im->box(color => 'FF0000');
+  $im->write(file => 'box.ico');
+
+  $im->settag(name => 'cur_hotspotx', value => 16);
+  $im->settag(name => 'cur_hotspoty', value => 16);
+  $im->write(file => 'box.cur');
+
+=for stopwords BW
+
+=head2 SGI (RGB, BW)
+
+SGI images, often called by the extensions, RGB or BW, can be stored
+either uncompressed or compressed using an RLE compression.
+
+By default, when saving to an extension of C<rgb>, C<bw>, C<sgi>,
+C<rgba> the file will be saved in SGI format.  The file extension is
+otherwise ignored, so saving a 3-channel image to a C<.bw> file will
+result in a 3-channel image on disk.
+
+The following tags are set when reading a SGI image:
+
+=over
+
+=item *
+
+i_comment - the C<IMAGENAME> field from the image.  Also written to
+the file when writing.
+
+=item *
+
+sgi_pixmin, sgi_pixmax - the C<PIXMIN> and C<PIXMAX> fields from the
+image.  On reading image data is expanded from this range to the full
+range of samples in the image.
+
+=item *
+
+sgi_bpc - the number of bytes per sample for the image.  Ignored when
+writing.
+
+=item *
+
+sgi_rle - whether or not the image is compressed.  If this is non-zero
+when writing the image will be compressed.
+
+=back
+
+=head1 ADDING NEW FORMATS
+
+To support a new format for reading, call the register_reader() class
+method:
+
+=over
+
+=item register_reader()
+
+Registers single or multiple image read functions.
+
+Parameters:
+
+=over
+
+=item *
+
+type - the identifier of the file format, if Imager's
+i_test_format_probe() can identify the format then this value should
+match i_test_format_probe()'s result.
+
+This parameter is required.
+
+=item *
+
+single - a code ref to read a single image from a file.  This is
+supplied:
+
+=over
+
+=item *
+
+the object that read() was called on,
+
+=item *
+
+an Imager::IO object that should be used to read the file, and
+
+=item *
+
+all the parameters supplied to the read() method.
+
+=back
+
+The single parameter is required.
+
+=item *
+
+multiple - a code ref which is called to read multiple images from a
+file. This is supplied:
+
+=over
+
+=item *
+
+an Imager::IO object that should be used to read the file, and
+
+=item *
+
+all the parameters supplied to the read_multi() method.
+
+=back
+
+=back
+
+Example:
+
+  # from Imager::File::ICO
+  Imager->register_reader
+    (
+     type=>'ico',
+     single => 
+     sub { 
+       my ($im, $io, %hsh) = @_;
+       $im->{IMG} = i_readico_single($io, $hsh{page} || 0);
+
+       unless ($im->{IMG}) {
+         $im->_set_error(Imager->_error_as_msg);
+         return;
+       }
+       return $im;
+     },
+     multiple =>
+     sub {
+       my ($io, %hsh) = @_;
+     
+       my @imgs = i_readico_multi($io);
+       unless (@imgs) {
+         Imager->_set_error(Imager->_error_as_msg);
+         return;
+       }
+       return map { 
+         bless { IMG => $_, DEBUG => $Imager::DEBUG, ERRSTR => undef }, 'Imager'
+       } @imgs;
+     },
+    );
+
+=item register_writer()
+
+Registers single or multiple image write functions.
+
+Parameters:
+
+=over
+
+=item *
+
+type - the identifier of the file format.  This is typically the
+extension in lowercase.
+
+This parameter is required.
+
+=item *
+
+single - a code ref to write a single image to a file.  This is
+supplied:
+
+=over
+
+=item *
+
+the object that write() was called on,
+
+=item *
+
+an Imager::IO object that should be used to write the file, and
+
+=item *
+
+all the parameters supplied to the write() method.
+
+=back
+
+The single parameter is required.
+
+=item *
+
+multiple - a code ref which is called to write multiple images to a
+file. This is supplied:
+
+=over
+
+=item *
+
+the class name write_multi() was called on, this is typically
+C<Imager>.
+
+=item *
+
+an Imager::IO object that should be used to write the file, and
+
+=item *
+
+all the parameters supplied to the read_multi() method.
+
+=back
+
+=back
+
+=item add_type_extensions($type, $ext, ...)
+
+This class method can be used to add extensions to the map used by
+C<def_guess_type> when working out the file type a filename extension.
+
+  Imager->add_type_extension(mytype => "mytype", "mytypish");
+  ...
+  $im->write(file => "foo.mytypish") # use the mytype handler
+
+=back
+
+If you name the reader module C<Imager::File::>I<your-format-name>
+where I<your-format-name> is a fully upper case version of the type
+value you would pass to read(), read_multi(), write() or write_multi()
+then Imager will attempt to load that module if it has no other way to
+read or write that format.
+
+For example, if you create a module Imager::File::GIF and the user has
+built Imager without it's normal GIF support then an attempt to read a
+GIF image will attempt to load Imager::File::GIF.
+
+If your module can only handle reading then you can name your module
+C<Imager::File::>I<your-format-name>C<Reader> and Imager will attempt
+to autoload it.
+
+If your module can only handle writing then you can name your module 
+C<Imager::File::>I<your-format-name>C<Writer> and Imager will attempt
+to autoload it.
+
+=head1 PRELOADING FILE MODULES
+
+=over
+
+=item preload()
+
+This preloads the file support modules included with or that have been
+included with Imager in the past.  This is intended for use in forking
+servers such as mod_perl.
+
+If the module is not available no error occurs.
+
+Preserves $@.
+
+  use Imager;
+  Imager->preload;
+
+=back
+
+=head1 EXAMPLES
+
+=head2 Producing an image from a CGI script
+
+Once you have an image the basic mechanism is:
+
+=for stopwords STDOUT
+
+=over
+
+=item 1.
+
+set STDOUT to autoflush
+
+=item 2.
+
+output a content-type header, and optionally a content-length header
+
+=item 3.
+
+put STDOUT into binmode
+
+=item 4.
+
+call write() with the C<fd> or C<fh> parameter.  You will need to
+provide the C<type> parameter since Imager can't use the extension to
+guess the file format you want.
+
+=back
+
+  # write an image from a CGI script
+  # using CGI.pm
+  use CGI qw(:standard);
+  $| = 1;
+  binmode STDOUT;
+  print header(-type=>'image/gif');
+  $img->write(type=>'gif', fd=>fileno(STDOUT))
+    or die $img->errstr;
+
+If you want to send a content length you can send the output to a
+scalar to get the length:
+
+  my $data;
+  $img->write(type=>'gif', data=>\$data)
+    or die $img->errstr;
+  binmode STDOUT;
+  print header(-type=>'image/gif', -content_length=>length($data));
+  print $data;
+
+=head2 Writing an animated GIF
+
+The basic idea is simple, just use write_multi():
+
+  my @imgs = ...;
+  Imager->write_multi({ file=>$filename, type=>'gif' }, @imgs);
+
+If your images are RGB images the default quantization mechanism will
+produce a very good result, but can take a long time to execute.  You
+could either use the standard web color map:
+
+  Imager->write_multi({ file=>$filename, 
+                        type=>'gif',
+                        make_colors=>'webmap' },
+                      @imgs);
+
+or use a median cut algorithm to built a fairly optimal color map:
+
+  Imager->write_multi({ file=>$filename,
+                        type=>'gif',
+                        make_colors=>'mediancut' },
+                      @imgs);
+
+By default all of the images will use the same global color map, which
+will produce a smaller image.  If your images have significant color
+differences, you may want to generate a new palette for each image:
+
+  Imager->write_multi({ file=>$filename,
+                        type=>'gif',
+                        make_colors=>'mediancut',
+                        gif_local_map => 1 },
+                      @imgs);
+
+which will set the C<gif_local_map> tag in each image to 1.
+Alternatively, if you know only some images have different colors, you
+can set the tag just for those images:
+
+  $imgs[2]->settag(name=>'gif_local_map', value=>1);
+  $imgs[4]->settag(name=>'gif_local_map', value=>1);
+
+and call write_multi() without a C<gif_local_map> parameter, or supply
+an arrayref of values for the tag:
+
+  Imager->write_multi({ file=>$filename,
+                        type=>'gif',
+                        make_colors=>'mediancut',
+                        gif_local_map => [ 0, 0, 1, 0, 1 ] },
+                      @imgs);
+
+Other useful parameters include C<gif_delay> to control the delay
+between frames and C<transp> to control transparency.
+
+=head2 Reading tags after reading an image
+
+This is pretty simple:
+
+  # print the author of a TIFF, if any
+  my $img = Imager->new;
+  $img->read(file=>$filename, type='tiff') or die $img->errstr;
+  my $author = $img->tags(name=>'tiff_author');
+  if (defined $author) {
+    print "Author: $author\n";
+  }
+
+=head1 BUGS
+
+When saving GIF images the program does NOT try to shave off extra
+colors if it is possible.  If you specify 128 colors and there are
+only 2 colors used - it will have a 128 color table anyway.
+
+=head1 SEE ALSO
+
+Imager(3)
+
+=head1 AUTHOR
+
+Tony Cook <tonyc@cpan.org>, Arnar M. Hrafnkelsson
+
+=cut
